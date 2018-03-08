@@ -29,7 +29,7 @@ public class TmfTimePreferences {
     // Constants
     // ------------------------------------------------------------------------
 
-    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss.SSS_CCC_NNN"; //$NON-NLS-1$
+    public static final String DEFAULT_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS CCC NNN"; //$NON-NLS-1$
 
     static final String TIME_FORMAT_PREF = "org.eclipse.linuxtools.tmf.ui.prefs.time.format"; //$NON-NLS-1$
     static final String DATIME = TIME_FORMAT_PREF + ".datime";   //$NON-NLS-1$
@@ -93,7 +93,7 @@ public class TmfTimePreferences {
 
     public static void init() {
         fPreferenceStore = Activator.getDefault().getPreferenceStore();
-        fPreferenceStore.setDefault(TmfTimePreferences.DATIME, TIME_HOUR_FMT);
+        fPreferenceStore.setDefault(TmfTimePreferences.DATIME, DATE_YEAR_FMT);
         fPreferenceStore.setDefault(TmfTimePreferences.SUBSEC, SUBSEC_NANO_FMT);
         fPreferenceStore.setDefault(TmfTimePreferences.DATE_DELIMITER, DELIMITER_DASH);
         fPreferenceStore.setDefault(TmfTimePreferences.TIME_DELIMITER, DELIMITER_COLON);
@@ -221,7 +221,7 @@ public class TmfTimePreferences {
     }
 
     void setDefaults() {
-        setDateTimeFormat(TmfTimePreferences.TIME_HOUR_FMT);
+        setDateTimeFormat(TmfTimePreferences.DATE_YEAR_FMT);
         setSSecFormat(TmfTimePreferences.SUBSEC_NANO_FMT);
         setDateFieldSep(TmfTimePreferences.DELIMITER_DASH);
         setTimeFieldSep(TmfTimePreferences.DELIMITER_COLON);

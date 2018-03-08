@@ -188,7 +188,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     /**
      * The default timestamp pattern
      */
-    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss.SSS CCC NNN"; //$NON-NLS-1$
+    public static final String DEFAULT_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS CCC NNN"; //$NON-NLS-1$
 
     /**
      * The LTTng 0.x legacy timestamp format
