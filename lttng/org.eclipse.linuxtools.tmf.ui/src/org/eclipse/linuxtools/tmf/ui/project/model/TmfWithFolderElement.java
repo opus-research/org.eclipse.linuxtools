@@ -9,7 +9,9 @@
  * Contributors:
  *   Bernd Hufmann - Added supplementary files handling (in class TmfTraceElement)
  *   Geneviève Bastien - Copied supplementary files handling from TmfTracElement
- *                       Moved to this class code to copy a model element
+ *                 Moved to this class code to copy a model element
+ *                 Added trace type in this class so experiments can use it
+ *                 Deprecated, renamed to TmfCommonProjectElement
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -24,14 +26,16 @@ import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 
-
 /**
- * Base class for project elements who will have folder elements
- * under them to store supplementary files.
+ * Base class for project elements who will have folder elements under them to
+ * store supplementary files.
  *
  * @author gbastien
  * @since 2.0
+ * @deprecated This class has been moved(renamed) to TmfCommonProjectElement
+ *             that describe more what it is
  */
+@Deprecated
 public abstract class TmfWithFolderElement extends TmfProjectModelElement {
 
     // ------------------------------------------------------------------------
@@ -49,6 +53,10 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
     public TmfWithFolderElement(String name, IResource resource, TmfProjectModelElement parent) {
         super(name, resource, parent);
     }
+
+    // ------------------------------------------------------------------------
+    // Operations
+    // ------------------------------------------------------------------------
 
     /**
      * Return the resource name for this element

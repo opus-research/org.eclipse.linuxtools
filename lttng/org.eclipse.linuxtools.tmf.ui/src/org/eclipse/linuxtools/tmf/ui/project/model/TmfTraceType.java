@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,6 +9,7 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   Matthew Khouzam - Added import functionalities
+ *   Geneviève Bastien - New is_experiment parameter to trace type extension
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -77,6 +78,11 @@ public final class TmfTraceType {
      */
     public static final String TYPE_ELEM = "type"; //$NON-NLS-1$
     /**
+     * Extension point element 'Experiment'
+     * @since 2.1
+     */
+    public static final String EXPERIMENT_ELEM = "experiment"; //$NON-NLS-1$
+    /**
      * Extension point element 'Default editor'
      */
     public static final String DEFAULT_EDITOR_ELEM = "defaultEditor"; //$NON-NLS-1$
@@ -107,6 +113,11 @@ public final class TmfTraceType {
      * Extension point attribute 'trace_type'
      */
     public static final String TRACE_TYPE_ATTR = "trace_type"; //$NON-NLS-1$
+    /**
+     * Extension point attribute 'trace_type'
+     * @since 2.1
+     */
+    public static final String EXPERIMENT_TYPE_ATTR = "experiment_type"; //$NON-NLS-1$
     /**
      * Extension point attribute 'event_type'
      */
@@ -344,6 +355,9 @@ public final class TmfTraceType {
                 } else if (elementName.equals(TmfTraceType.CATEGORY_ELEM)) {
                     String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
                     fTraceCategories.put(categoryId, ce);
+                } else if (elementName.equals(TmfTraceType.EXPERIMENT_ELEM)) {
+                    String experimentTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
+                    fTraceTypeAttributes.put(experimentTypeId, ce);
                 }
             }
             // create the trace types
@@ -353,7 +367,11 @@ public final class TmfTraceType {
                 final String attribute = ce.getAttribute(TmfTraceType.NAME_ATTR);
                 ITmfTrace trace = null;
                 try {
-                    trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                    if (ce.getName().equals(TmfTraceType.TYPE_ELEM)) {
+                        trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
+                    } else if (ce.getName().equals(TmfTraceType.EXPERIMENT_ELEM)) {
+                        trace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.EXPERIMENT_TYPE_ATTR);
+                    }
                 } catch (CoreException e) {
                 }
                 TraceTypeHelper tt = new TraceTypeHelper(typeId, category, attribute, trace);
