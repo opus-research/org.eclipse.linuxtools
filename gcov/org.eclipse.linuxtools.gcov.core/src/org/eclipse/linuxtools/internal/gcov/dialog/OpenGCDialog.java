@@ -236,11 +236,11 @@ public class OpenGCDialog extends Dialog {
     		}
         	binaryValid = true;
             getButton(IDialogConstants.OK_ID).setEnabled(binaryValid);
-            errorLabel.setText(""); //$NON-NLS-1$
+            errorLabel.setText("");
         } else {
         	binaryValid = false;
             getButton(IDialogConstants.OK_ID).setEnabled(false);
-            if (!binValue.equals("")) { //$NON-NLS-1$
+            if (!binValue.equals("")) {
             	errorLabel.setText("\"" + binText.getText() + "\" doesn't exist");
             } else {
             	errorLabel.setText("Please enter a binary file");
@@ -282,7 +282,7 @@ public class OpenGCDialog extends Dialog {
         });
         if (dialog.open() == IDialogConstants.OK_ID) {
             IResource resource = (IResource) dialog.getFirstResult();
-            text.setText("${resource_loc:" + resource.getFullPath() + "}"); //$NON-NLS-1$ //$NON-NLS-2$
+            text.setText("${resource_loc:" + resource.getFullPath() + "}");
         }
     }
 
