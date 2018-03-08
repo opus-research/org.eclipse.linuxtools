@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +26,7 @@ import org.eclipse.linuxtools.internal.perf.model.PMStatEntry.Type;
 /**
  * Class containing all functionality for comparting perf statistics data.
  */
-public class StatComparisonData extends BaseDataManipulator implements IPerfData {
+public class StatComparisonData implements IPerfData {
 	// Old stats file.
 	private File oldFile;
 
@@ -54,22 +53,6 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 	@Override
 	public String getTitle() {
 		return title;
-	}
-
-	/**
-	 * Get old perf data file.
-	 * @return File corresponding to old perf data.
-	 */
-	public File getOldData(){
-		return oldFile;
-	}
-
-	/**
-	 * Get new perf data file.
-	 * @return File corresponding to new perf data.
-	 */
-	public File getNewData(){
-		return newFile;
 	}
 
 	/**
@@ -108,7 +91,6 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 	 * @return
 	 */
 	public ArrayList<PMStatEntry> getComparisonStats() {
-		createTempFiles();
 		ArrayList<PMStatEntry> oldStats = collectStats(oldFile);
 		ArrayList<PMStatEntry> newStats = collectStats(newFile);
 		ArrayList<PMStatEntry> result = new ArrayList<PMStatEntry>();
@@ -233,28 +215,6 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 				arguments.toArray());
 
 		return entryFormat;
-	}
-
-	/**
-	 * Create temporary duplicates of the new and old data corresponding to this
-	 * StatComparisonData.
-	 */
-	public void createTempFiles(){
-		try {
-			String timestamp = String.valueOf(((new Date().getTime())));
-			File oldTmp = File.createTempFile(oldFile.getName(), timestamp);
-			File newTmp = File.createTempFile(newFile.getName(), timestamp);
-
-			//copy file contents into temp files
-			copyFile(oldFile, oldTmp);
-			copyFile(newFile, newTmp);
-			oldFile = oldTmp;
-			newFile = newTmp;
-
-		} catch (IOException e) {
-			PerfPlugin.getDefault().openError(e,
-					Messages.StatComparisonData_temp_files_error);
-		}
 	}
 
 	/**
