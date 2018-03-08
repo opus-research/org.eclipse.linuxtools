@@ -10,6 +10,11 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.launch.PerfEventsTab;
@@ -25,28 +30,29 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
 public class LaunchTabsTest extends AbstractTest {
 	protected ILaunchConfiguration config;
 	protected Shell testShell;
-	
-	@Override
+
+	@Before
 	protected void setUp() throws Exception {
-		super.setUp();
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest"); //$NON-NLS-1$
 		config = createConfiguration(proj.getProject());
 		testShell = new Shell(Display.getDefault());
 		testShell.setLayout(new GridLayout());
 	}
 
-	@Override
+	@After
 	protected void tearDown() throws Exception {
 		testShell.dispose();
 		deleteProject(proj);
-		super.tearDown();
 	}
-	
+
 	@Override
 	protected ILaunchConfigurationType getLaunchConfigType() {
 		return getLaunchManager().getLaunchConfigurationType(PerfPlugin.LAUNCHCONF_ID);
@@ -59,9 +65,9 @@ public class LaunchTabsTest extends AbstractTest {
 		eventsTab.setDefaults(wc);
 		optionsTab.setDefaults(wc);
 	}
-	
-	
-	//getter functions for otherwise unaccessible member variables 
+
+
+	//getter functions for otherwise unaccessible member variables
 	private static class TestOptionsTab extends PerfOptionsTab {
 		protected Text getTxtKernelLocation() { return txtKernelLocation; }
 		protected Button getChkRecordRealtime() { return chkRecordRealtime; }
@@ -72,19 +78,19 @@ public class LaunchTabsTest extends AbstractTest {
 		protected Button getChkModuleSymbols() { return chkModuleSymbols; }
 		protected Button getChkHideUnresolvedSymbols() { return chkHideUnresolvedSymbols; }
 	}
-	
+
 	public void testOptionsTab() throws CoreException {
 		ILaunchConfigurationWorkingCopy wc = config.getWorkingCopy();
 		TestOptionsTab tab = new TestOptionsTab();
 		tab.createControl(new Shell());
 		assertNotNull(tab.getImage());
 		assertNotNull(tab.getName());
-		
+
 		//default config
 		tab.setDefaults(wc);
 		tab.initializeFrom(config);
 		assertTrue(tab.isValid(config));
-		
+
 		Button rrCheck = tab.getChkRecordRealtime();
 		rrCheck.setSelection(true);
 		rrCheck.notifyListeners(SWT.Selection, null);
@@ -94,7 +100,7 @@ public class LaunchTabsTest extends AbstractTest {
 		rrCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Record_Realtime, true));
-		
+
 		Button rvCheck = tab.getChkRecordVerbose();
 		rvCheck.setSelection(true);
 		rvCheck.notifyListeners(SWT.Selection, null);
@@ -104,7 +110,7 @@ public class LaunchTabsTest extends AbstractTest {
 		rvCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Record_Verbose, true));
-		
+
 		Button slcCheck = tab.getChkSourceLineNumbers();
 		slcCheck.setSelection(true);
 		slcCheck.notifyListeners(SWT.Selection, null);
@@ -114,7 +120,7 @@ public class LaunchTabsTest extends AbstractTest {
 		slcCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_SourceLineNumbers, true));
-		
+
 		Button kslcCheck = tab.getChkKernelSourceLineNumbers();
 		kslcCheck.setSelection(true);
 		kslcCheck.notifyListeners(SWT.Selection, null);
@@ -124,7 +130,7 @@ public class LaunchTabsTest extends AbstractTest {
 		kslcCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Kernel_SourceLineNumbers, true));
-		
+
 		Button meCheck = tab.getChkMultiplexEvents();
 		meCheck.setSelection(true);
 		meCheck.notifyListeners(SWT.Selection, null);
@@ -134,7 +140,7 @@ public class LaunchTabsTest extends AbstractTest {
 		meCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Multiplex, true));
-		
+
 		Button msCheck = tab.getChkModuleSymbols();
 		msCheck.setSelection(true);
 		msCheck.notifyListeners(SWT.Selection, null);
@@ -144,7 +150,7 @@ public class LaunchTabsTest extends AbstractTest {
 		msCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_ModuleSymbols, true));
-		
+
 		Button husCheck = tab.getChkHideUnresolvedSymbols();
 		husCheck.setSelection(true);
 		husCheck.notifyListeners(SWT.Selection, null);
@@ -154,7 +160,7 @@ public class LaunchTabsTest extends AbstractTest {
 		husCheck.notifyListeners(SWT.Selection, null);
 		testPerformApply(tab, wc);
 		assertEquals(false, config.getAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, true));
-		
+
 		rrCheck.setSelection(true);
 		rrCheck.notifyListeners(SWT.Selection, null);
 		rvCheck.setSelection(true);
@@ -178,7 +184,7 @@ public class LaunchTabsTest extends AbstractTest {
 		assertTrue(meCheck.getSelection());
 		assertTrue(msCheck.getSelection());
 		assertTrue(husCheck.getSelection());
-		
+
 		Text klocText = tab.getTxtKernelLocation();
 		klocText.setText("doesntexist"); //$NON-NLS-1$
 		klocText.notifyListeners(SWT.Selection, null);
@@ -190,31 +196,33 @@ public class LaunchTabsTest extends AbstractTest {
 		testPerformApply(tab, wc);
 		assertTrue(tab.isValid(config));
 	}
-	
-	//getter functions for otherwise unaccessible member variables 
+
+	//getter functions for otherwise unaccessible member variables
 	private static class TestEventsTab extends PerfEventsTab {
 		public Button get_chkDefaultEvent() { return chkDefaultEvent; }
 	}
-	
+
+	@Test
 	public void testEventsTab() throws CoreException {
 		TestEventsTab tab = new TestEventsTab();
 		tab.createControl(new Shell());
 		assertNotNull(tab.getImage());
 		assertNotNull(tab.getName());
-		
+
 		//default config
 		tab.setDefaults(config.getWorkingCopy());
 		tab.initializeFrom(config);
 		assertTrue(tab.isValid(config));
-		
+
 		assertTrue(tab.get_chkDefaultEvent().getSelection());
-		
-		tab.get_chkDefaultEvent().notifyListeners(SWT.Selection, null);		
+
+		tab.get_chkDefaultEvent().notifyListeners(SWT.Selection, null);
 		tab.get_chkDefaultEvent().setSelection(false);
 		tab.get_chkDefaultEvent().notifyListeners(SWT.Selection, null);
 		assertFalse(tab.get_chkDefaultEvent().getSelection());
 	}
 
+	@Test
 	public void testPerformApply (ILaunchConfigurationTab tab, ILaunchConfigurationWorkingCopy wc) throws CoreException {
 		tab.performApply(wc);
 		wc.doSave();
