@@ -29,7 +29,6 @@ public class AllTests {
         suite.addTestSuite(TraceControlKernelSessionTests.class);
         suite.addTestSuite(TraceControlUstSessionTests.class);
         suite.addTestSuite(TraceControlPropertiesTest.class);
-        suite.addTestSuite(TraceControlCreateSessionTests.class);
         //$JUnit-END$
         return new ModelImplTestSetup(suite);
     }
