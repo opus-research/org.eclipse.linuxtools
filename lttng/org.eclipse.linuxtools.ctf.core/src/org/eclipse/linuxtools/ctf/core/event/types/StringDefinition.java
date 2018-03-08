@@ -32,9 +32,9 @@ public class StringDefinition extends Definition {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private StringDeclaration fDeclaration;
+    private StringDeclaration declaration;
 
-    private String fString;
+    private StringBuilder string;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -54,9 +54,9 @@ public class StringDefinition extends Definition {
             IDefinitionScope definitionScope, String fieldName) {
         super(definitionScope, fieldName);
 
-        fDeclaration = declaration;
+        this.declaration = declaration;
 
-        fString = ""; //$NON-NLS-1$
+        string = new StringBuilder();
     }
 
     // ------------------------------------------------------------------------
@@ -65,7 +65,7 @@ public class StringDefinition extends Definition {
 
     @Override
     public StringDeclaration getDeclaration() {
-        return fDeclaration;
+        return declaration;
     }
 
     /**
@@ -75,7 +75,26 @@ public class StringDefinition extends Definition {
      *            the declaration
      */
     public void setDeclaration(StringDeclaration declaration) {
-        fDeclaration = declaration;
+        this.declaration = declaration;
+    }
+
+    /**
+     * Gets the string
+     *
+     * @return the stringbuilder
+     */
+    public StringBuilder getString() {
+        return string;
+    }
+
+    /**
+     * Sets a stringbuilder for the definition
+     *
+     * @param string
+     *            the stringbuilder
+     */
+    public void setString(StringBuilder string) {
+        this.string = string;
     }
 
     /**
@@ -84,16 +103,7 @@ public class StringDefinition extends Definition {
      * @return the string
      */
     public String getValue() {
-        return fString;
-    }
-
-    /**
-     * Sets the string (value)
-     *
-     * @param str the string
-     */
-    public void setValue(String str) {
-        fString = str;
+        return string.toString();
     }
 
     // ------------------------------------------------------------------------
@@ -103,15 +113,13 @@ public class StringDefinition extends Definition {
     @Override
     public void read(BitBuffer input) throws CTFReaderException {
         /* Offset the buffer position wrt the current alignment */
-        alignRead(input, fDeclaration);
-
-        StringBuilder sb = new StringBuilder();
+        alignRead(input, this.declaration);
+        string.setLength(0);
         char c = (char) input.get(8, false);
         while (c != 0) {
-            sb.append(c);
+            string.append(c);
             c = (char) input.get(8, false);
         }
-        fString = sb.toString();
     }
 
     @Override
