@@ -37,7 +37,7 @@ import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 /**
  * Test suite for the TmfCheckpointIndexTest class.
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("nls")
 public class TmfCheckpointIndexTest extends TestCase {
 
     // ------------------------------------------------------------------------
@@ -55,10 +55,7 @@ public class TmfCheckpointIndexTest extends TestCase {
     // Housekeeping
     // ------------------------------------------------------------------------
 
-    /**
-     * @param name the test name
-     */
-    public TmfCheckpointIndexTest(final String name)  {
+    public TmfCheckpointIndexTest(final String name) throws Exception {
         super(name);
     }
 
@@ -81,14 +78,14 @@ public class TmfCheckpointIndexTest extends TestCase {
     // Helper classes
     // ------------------------------------------------------------------------
 
-    private static class TestIndexer extends TmfCheckpointIndexer {
-        @SuppressWarnings({ })
+    private static class TestIndexer extends TmfCheckpointIndexer<ITmfTrace<ITmfEvent>> {
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         public TestIndexer(TestTrace testTrace) {
-            super(testTrace, BLOCK_SIZE);
+            super((ITmfTrace) testTrace, BLOCK_SIZE);
         }
-        @SuppressWarnings({ })
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         public TestIndexer(EmptyTestTrace testTrace) {
-            super(testTrace, BLOCK_SIZE);
+            super((ITmfTrace) testTrace, BLOCK_SIZE);
         }
         public List<ITmfCheckpoint> getCheckpoints() {
             return getTraceIndex();
@@ -147,8 +144,7 @@ public class TmfCheckpointIndexTest extends TestCase {
     // Verify checkpoints
     // ------------------------------------------------------------------------
 
-    @SuppressWarnings("null")
-    public void testTmfTraceIndexing() {
+    public void testTmfTraceIndexing() throws Exception {
         assertEquals("getCacheSize",   BLOCK_SIZE, fTrace.getCacheSize());
         assertEquals("getTraceSize",   NB_EVENTS,  fTrace.getNbEvents());
         assertEquals("getRange-start", 1,          fTrace.getTimeRange().getStartTime().getValue());
@@ -171,8 +167,7 @@ public class TmfCheckpointIndexTest extends TestCase {
         }
     }
 
-    @SuppressWarnings("null")
-    public void testEmptyTmfTraceIndexing() {
+    public void testEmptyTmfTraceIndexing() throws Exception {
         assertEquals("getCacheSize",   ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, fEmptyTrace.getCacheSize());
         assertEquals("getTraceSize",   0,  fEmptyTrace.getNbEvents());
         assertEquals("getRange-start", TmfTimestamp.BIG_CRUNCH, fEmptyTrace.getTimeRange().getStartTime());

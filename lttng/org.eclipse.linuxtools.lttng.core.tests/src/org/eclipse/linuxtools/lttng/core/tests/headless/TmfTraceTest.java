@@ -1,12 +1,12 @@
 package org.eclipse.linuxtools.lttng.core.tests.headless;
 /*******************************************************************************
  * Copyright (c) 2009 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   William Bourque (wbourque@gmail.com) - Initial API and implementation
  *******************************************************************************/
@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.lttng.core.tests.headless;
 import org.eclipse.linuxtools.internal.lttng.core.event.LttngEvent;
 import org.eclipse.linuxtools.internal.lttng.core.event.LttngTimestamp;
 import org.eclipse.linuxtools.internal.lttng.core.trace.LTTngTrace;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -22,10 +21,11 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
 @SuppressWarnings("nls")
-public class TmfTraceTest extends TmfEventRequest {
+public class TmfTraceTest extends TmfEventRequest<LttngEvent> {
 
+    @SuppressWarnings("unchecked")
     public TmfTraceTest(final Class<? extends TmfEvent> dataType, final TmfTimeRange range, final int nbRequested) {
-        super(dataType, range, nbRequested, 1);
+        super((Class<LttngEvent>)dataType, range, nbRequested, 1);
     }
 
 
@@ -43,17 +43,19 @@ public class TmfTraceTest extends TmfEventRequest {
     // Work variables
     public static int nbEvent = 0;
     public static int nbPassDone = 0;
-    public static TmfExperiment fExperiment = null;
+    public static TmfExperiment<LttngEvent> fExperiment = null;
 
 
     public static void main(final String[] args) {
 
         try {
             // OUr experiment will contains ONE trace
-            final ITmfTrace[] traces = new ITmfTrace[1];
+            @SuppressWarnings("unchecked")
+            final
+            ITmfTrace<LttngEvent>[] traces = new ITmfTrace[1];
             traces[0] = new LTTngTrace(null, TRACE_PATH);
             // Create our new experiment
-            fExperiment = new TmfExperiment(LttngEvent.class, "Headless", traces);
+            fExperiment = new TmfExperiment<LttngEvent>(LttngEvent.class, "Headless", traces);
 
 
             // Create a new time range from -infinity to +infinity
@@ -83,7 +85,7 @@ public class TmfTraceTest extends TmfEventRequest {
     }
 
     @Override
-    public void handleData(final ITmfEvent event) {
+    public void handleData(final LttngEvent event) {
         super.handleData(event);
         if ( (event != null) && (PARSE_EVENTS) ) {
             event.getContent().getFields();
@@ -100,14 +102,13 @@ public class TmfTraceTest extends TmfEventRequest {
 
     @Override
     public void handleCompleted() {
-        if ( nbPassDone >= NB_OF_PASS ) {
+        if ( nbPassDone >= NB_OF_PASS )
             try {
                 System.out.println("Nb events : " + nbEvent);
 
                 fExperiment.sendRequest(null);
             }
         catch (final Exception e) {}
-        }
     }
 
     @Override

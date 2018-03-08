@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and Implementation
+ *   Mathieu Denis (mathieu.denis@polymtl.ca) - Initial API and Implementation
  *   Bernd Hufmann - Fixed header and warnings
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
@@ -31,10 +31,6 @@ import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseColumnData.IT
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseColumnDataProvider;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsTreeNode;
-
-/**
- * TmfBaseColumnDataProvider test cases.
- */
 @SuppressWarnings("nls")
 public class TmfBaseColumnDataProviderTest extends TestCase {
 
@@ -62,7 +58,7 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     private final TmfTimestamp fTimestamp2 = new TmfTimestamp(12350, (byte) 2, 5);
     private final TmfTimestamp fTimestamp3 = new TmfTimestamp(12355, (byte) 2, 5);
 
-    private final String fSource = "Source";
+    private final String       fSource = "Source";
 
     private final TmfEventType fType1 = new TmfEventType(fContext, fTypeId1, TmfEventField.makeRoot(fLabels));
     private final TmfEventType fType2 = new TmfEventType(fContext, fTypeId1, TmfEventField.makeRoot(fLabels));
@@ -86,10 +82,6 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     // Housekeeping
     // ------------------------------------------------------------------------
 
-    /**
-     * Constructor
-     * @param name trace name to set
-     */
     public TmfBaseColumnDataProviderTest(final String name) {
         super(name);
 
@@ -122,13 +114,11 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
     // ------------------------------------------------------------------------
     // Get Column Data
     // ------------------------------------------------------------------------
-    /**
-     * Method with test cases.
-     */
+
     public void testGetColumnData() {
         List<TmfBaseColumnData> columnsData = provider.getColumnData();
         assertNotNull("getColumnData", columnsData);
-        assertEquals("getColumnData", 3, columnsData.size());
+        assertEquals("getColumnData", 2, columnsData.size());
 
         TmfStatisticsTreeNode parentNode = fStatsData.get(new TmfFixedArray<String>(fTestName));
         TmfStatisticsTreeNode treeNode1  = fStatsData.get(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes, fEvent1.getType().toString()));
@@ -164,7 +154,7 @@ public class TmfBaseColumnDataProviderTest extends TestCase {
             if (columnData.getHeader().compareTo(LEVEL_COLUMN) == 0) {
                 assertNull("getColumnData", percentProvider);
             } else if (columnData.getHeader().compareTo(EVENTS_COUNT_COLUMN) == 0) {
-                double percentage = (double) treeNode1.getValue().getTotal() / parentNode.getValue().getTotal();
+                double percentage = (double) treeNode1.getValue().nbEvents / parentNode.getValue().nbEvents;
                 assertEquals("getColumnData", percentage, percentProvider.getPercentage(treeNode1));
             }
         }

@@ -64,7 +64,7 @@ public class SSHBase {
 				}
 			}
 
-			password = askPassword(uri.getUserInfo(), uri.getHost());
+			password = askPassword();
 			session.setPassword(password);
 			try {
 				session.connect();
@@ -76,11 +76,11 @@ public class SSHBase {
 		return session;
 	}
 
-	private String askPassword(String user, String host) throws CoreException {
+	private String askPassword() throws CoreException {
 		IWorkbenchWindow w = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		if (w == null)
 			return "";
-		SSHPasswordDialog d = new SSHPasswordDialog(w.getShell(), user, host);
+		SSHPasswordDialog d = new SSHPasswordDialog(w.getShell());
 		if (d.open() == SSHPasswordDialog.OK)
 			return d.getPassword();
 		else
