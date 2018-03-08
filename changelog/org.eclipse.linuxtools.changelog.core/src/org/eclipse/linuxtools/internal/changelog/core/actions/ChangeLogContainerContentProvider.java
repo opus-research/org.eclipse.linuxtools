@@ -38,15 +38,13 @@ public class ChangeLogContainerContentProvider implements ITreeContentProvider {
      * The visual part that is using this content provider is about
      * to be disposed. Deallocate all allocated SWT resources.
      */
-    @Override
-	public void dispose() {
+    public void dispose() {
     }
 
     /*
      * @see org.eclipse.jface.viewers.ITreeContentProvider#getChildren(java.lang.Object)
      */
-    @Override
-	public Object[] getChildren(Object element) {
+    public Object[] getChildren(Object element) {
         if (element instanceof IWorkspace) {
             // check if closed projects should be shown
             IProject[] allProjects = ((IWorkspace) element).getRoot()
@@ -95,16 +93,14 @@ public class ChangeLogContainerContentProvider implements ITreeContentProvider {
     /*
      * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
      */
-    @Override
-	public Object[] getElements(Object element) {
+    public Object[] getElements(Object element) {
         return getChildren(element);
     }
 
     /*
      * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
      */
-    @Override
-	public Object getParent(Object element) {
+    public Object getParent(Object element) {
         if (element instanceof IResource) {
 			return ((IResource) element).getParent();
 		}
@@ -114,22 +110,20 @@ public class ChangeLogContainerContentProvider implements ITreeContentProvider {
     /*
      * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
      */
-    @Override
-	public boolean hasChildren(Object element) {
+    public boolean hasChildren(Object element) {
         return getChildren(element).length > 0;
     }
 
     /*
      * @see org.eclipse.jface.viewers.IContentProvider#inputChanged
      */
-    @Override
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
     }
 
     /**
-     * Specify whether or not to show closed projects in the tree
+     * Specify whether or not to show closed projects in the tree 
      * viewer.  Default is to show closed projects.
-     *
+     * 
      * @param show boolean if false, do not show closed projects in the tree
      */
     public void showClosedProjects(boolean show) {
