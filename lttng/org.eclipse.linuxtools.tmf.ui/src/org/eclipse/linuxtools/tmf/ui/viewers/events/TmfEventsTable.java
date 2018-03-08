@@ -1773,8 +1773,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         if (fPackDone) {
             return;
         }
-        fTable.setRedraw(false);
-
         boolean isLinux = System.getProperty("os.name").contains("Linux") ? true : false; //$NON-NLS-1$ //$NON-NLS-2$
 
         TableColumn tableColumns[] = fTable.getColumns();
@@ -1793,8 +1791,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 column.setWidth(headerWidth);
             }
         }
-
-        fTable.setRedraw(true);
         fPackDone = true;
     }
 
