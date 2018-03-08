@@ -20,7 +20,7 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
-public class STPCompletionProcessor implements IContentAssistProcessor {
+class STPCompletionProcessor implements IContentAssistProcessor {
 
 	private final IContextInformation[] NO_CONTEXTS = new IContextInformation[0];
 	private final char[] PROPOSAL_ACTIVATION_CHARS = new char[] { '.' };
@@ -31,10 +31,8 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	 */
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
 			int offset) {
-		return computeCompletionProposals(viewer.getDocument(), offset);
-	}
 
-	public ICompletionProposal[] computeCompletionProposals(IDocument document, int offset){
+		IDocument document = viewer.getDocument();
 
 		String prefix;
 		int locationOffset =0;
