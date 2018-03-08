@@ -9,7 +9,7 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.ide.structures;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 
 import java.io.File;
 import java.util.HashMap;
@@ -23,13 +23,11 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.FunctionParser;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.ProbeParser;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetParser;
 import org.eclipse.linuxtools.man.parser.ManPage;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
+import org.eclipse.linuxtools.systemtap.ui.ide.structures.TreeSettings;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.PreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 
@@ -67,69 +65,31 @@ public final class TapsetLibrary {
 	public static synchronized String getDocumentation(String element) {
 		String documentation = pages.get(element);
 		if (documentation == null) {
-			System.out
-					.println("TapsetLibrary.getDocumentation() element "
-							+ element);
-			// If the requested element is a probe variable
-			// fetch the documentation for the parent probe then check the map
-			if (element.matches("probe::.*::.*")){ //$NON-NLS-1$
-				String probe = element.split("::")[1]; //$NON-NLS-1$
-				getDocumentation("probe::" + probe); //$NON-NLS-1$
-				return pages.get(element);
-			}
-
-			// Otherwise, get the documentation for the requested element.
 			documentation = (new ManPage(element)).getStrippedPage().toString();
-
-			// If the requested element is a probe and a documentation page was
-			// found for it, parse the documentation for the variables if present.
-			if (!documentation.startsWith("No manual entry for") && //$NON-NLS-1$
-					element.startsWith("probe::")) { //$NON-NLS-1$ //$NON-NLS-2$
-				// If this is a probe parse out the variables
-				String[] sections = documentation.split("VALUES"); //$NON-NLS-1$
-				if (sections.length > 1){
-					// Discard any other sections
-					String variablesString = sections[1].split("CONTEXT|DESCRIPTION|SystemTap Tapset Reference")[0].trim(); //$NON-NLS-1$
-					String[] variables = variablesString.split("\n"); //$NON-NLS-1$
-					int i = 0;
-					if (!variables[0].equals("None")) { //$NON-NLS-1$
-						while ( i < variables.length) {
-							String variableName = variables[i].trim();
-							StringBuilder variableDocumentation = new StringBuilder();
-							i++;
-							while (i < variables.length && !variables[i].isEmpty()){
-								variableDocumentation.append(variables[i].trim());
-								variableDocumentation.append("\n"); //$NON-NLS-1$
-								i++;
-							}
-							System.out
-									.println("TapsetLibrary.getDocumentation()"
-											+ variableName + " " + variableDocumentation);
-							pages.put(element + "::" + variableName, variableDocumentation.toString().trim()); //$NON-NLS-1$
-							i++;
-						}
-					}
-					System.out.println("TapsetLibrary.getDocumentation() variables " + variables);
-				}
-			}
+			pages.put(element, documentation);
 		}
 		return documentation;
 	}
 
 	/**
-	 * Returns the documentation for the given element and caches the result. Use this
-	 * function if the given element is known to be a probe, function, or tapset.
+	 * Returns the documentation for the given possible probe or function but
+	 * will not cache the result. Use this function if the requested element is
+	 * not guaranteed to be a probe or a function. Otherwise use @link
+	 * {@link TapsetLibrary#getDocumentation(String)}
+	 *
 	 * @param element
-	 * @return
+	 * @return documentation for the given probe or null if no man page is found.
 	 * @since 2.0
 	 */
-	public static synchronized String getAndCacheDocumentation(String element){
-		String doc = pages.get(element);
-		if (doc == null){
-			doc = getDocumentation(element);
-			pages.put(element, doc);
+	public static synchronized String getDocumentationNoCache(String element) {
+		String documentation = pages.get(element);
+		if (documentation == null) {
+			documentation = (new ManPage(element)).getStrippedPage().toString();
+			if (documentation.contains("No manual entry")){ //$NON-NLS-1$
+				documentation = null;
+			}
 		}
-		return doc;
+		return documentation;
 	}
 
 	/**
@@ -291,15 +251,6 @@ public final class TapsetLibrary {
 		return true;
 	}
 
-	/**
-	 * Removes the provided listener from the tapsetParser.
-	 * @param listener The listener to be removed from the tapsetParser
-	 */
-	public static void removeUpdateListener(IUpdateListener listener) {
-		functionParser.removeListener(listener);
-	}
-
-
 	private static Job cacheFunctionManpages = new Job(Localization.getString("TapsetLibrary.0")){ //$NON-NLS-1$
 		private boolean cancelled;
 
@@ -308,7 +259,7 @@ public final class TapsetLibrary {
 			TreeNode node = functionParser.getFunctions();
 			int n = node.getChildCount();
 			for (int i = 0; i < n && !this.cancelled; i++) {
-				getAndCacheDocumentation("function::" + (node.getChildAt(i).toString())); //$NON-NLS-1$
+				getDocumentation("function::" + (node.getChildAt(i).toString())); //$NON-NLS-1$
 			}
 
 			return new Status(IStatus.OK, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$;
@@ -327,7 +278,7 @@ public final class TapsetLibrary {
 			TreeNode node = probeParser.getProbes();
 			int n = node.getChildCount();
 			for (int i = 0; i < n; i++) {
-				getAndCacheDocumentation("tapset::" + (node.getChildAt(i).toString())); //$NON-NLS-1$
+				getDocumentation("tapset::" + (node.getChildAt(i).toString())); //$NON-NLS-1$
 				// No need to pre-cache probes; they can be fetched pretty quickly.
 			}
 

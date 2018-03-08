@@ -26,7 +26,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
-import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
 
 public class STPCompletionProcessor implements IContentAssistProcessor, ITextHover {
 
@@ -149,7 +149,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 							null,
 							completionData[i] + " - function", //$NON-NLS-1$
 							null,
-							TapsetLibrary.getAndCacheDocumentation("function::" + completionData[i])); //$NON-NLS-1$
+							TapsetLibrary.getDocumentation("function::" + completionData[i])); //$NON-NLS-1$
 		}
 
 		return result;
@@ -163,16 +163,15 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 		int prefixLength = prefix.length();
 		for (int i = 0; i < completionData.length; i++){
 			int endIndex = completionData[i].indexOf(':');
-			String variableName = completionData[i].substring(prefixLength, endIndex);
 			result[i] = new CompletionProposal(
-							variableName,
+							completionData[i].substring(prefixLength, endIndex),
 							offset,
 							0,
 							endIndex - prefixLength,
 							null,
 							completionData[i] + " - variable", //$NON-NLS-1$
 							null,
-							TapsetLibrary.getAndCacheDocumentation("probe::" + probe + "::" + variableName)); //$NON-NLS-1$ //$NON-NLS-2$
+							null);
 		}
 		return result;
 	}
@@ -224,7 +223,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 							null,
 							completionData[i],
 							null,
-							TapsetLibrary.getAndCacheDocumentation(manPrefix + completionData[i]));
+							TapsetLibrary.getDocumentation(manPrefix + completionData[i]));
 		}
 		return result;
 
@@ -450,30 +449,24 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 		try {
 			String keyword = textViewer.getDocument().get(hoverRegion.getOffset(), hoverRegion.getLength());
 
-			documentation = TapsetLibrary.getDocumentation("function::" + keyword); //$NON-NLS-1$
-			if (!documentation.startsWith("No manual entry for")){ //$NON-NLS-1$
+			documentation = TapsetLibrary.getDocumentationNoCache("function::" + keyword); //$NON-NLS-1$
+			if (documentation != null){
 				return documentation;
 			}
 
-			documentation = TapsetLibrary.getDocumentation("probe::" + keyword); //$NON-NLS-1$
-			if (!documentation.startsWith("No manual entry for")){ //$NON-NLS-1$
+			documentation = TapsetLibrary.getDocumentationNoCache("probe::" + keyword); //$NON-NLS-1$
+			if (documentation != null){
 				return documentation;
 			}
 
-			documentation = TapsetLibrary.getDocumentation("tapset::" + keyword); //$NON-NLS-1$
-			if (!documentation.startsWith("No manual entry for")){ //$NON-NLS-1$
+			documentation = TapsetLibrary.getDocumentationNoCache("tapset::" + keyword); //$NON-NLS-1$
+			if (documentation != null){
 				return documentation;
 			}
 
 			if (keyword.indexOf('.') > 0){
 				keyword = keyword.split("\\.")[0]; //$NON-NLS-1$
-				documentation = TapsetLibrary.getDocumentation("tapset::" + keyword); //$NON-NLS-1$
-			}
-
-			if (textViewer.getDocument().getPartition(hoverRegion.getOffset())
-					.getType() == STPPartitionScanner.STP_PROBE) {
-				String probe = getProbe(textViewer.getDocument(), hoverRegion.getOffset());
-				documentation = TapsetLibrary.getDocumentation("probe::" + probe + "::"+ keyword); //$NON-NLS-1$ //$NON-NLS-2$
+				documentation = TapsetLibrary.getDocumentationNoCache("tapset::" + keyword); //$NON-NLS-1$
 			}
 
 		} catch (BadLocationException e) {
