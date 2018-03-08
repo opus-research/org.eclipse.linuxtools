@@ -81,4 +81,13 @@ public interface ITmfEventField {
      */
     ITmfEventField getField(int index);
 
+    /**
+     * Gets the value of a field recursively in the children of the current field
+     *
+     * @param names Array of field name to recursively get
+     * @return The value of the last requested field
+     * @since 3.0
+     */
+    Object getSubFieldValue(String[] names);
+
 }

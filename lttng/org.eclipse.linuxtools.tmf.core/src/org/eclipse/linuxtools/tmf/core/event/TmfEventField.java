@@ -28,6 +28,7 @@ import java.util.Map;
  *
  * @see ITmfEvent
  * @see ITmfEventType
+ * @since 3.0
  */
 public class TmfEventField implements ITmfEventField {
 
@@ -133,6 +134,21 @@ public class TmfEventField implements ITmfEventField {
             return fFields[index];
         }
         return null;
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public Object getSubFieldValue(final String[] names) {
+        ITmfEventField field = this;
+        for (String name : names) {
+            field = field.getField(name);
+            if (field == null) {
+                return null;
+            }
+        }
+        return field.getValue();
     }
 
     // ------------------------------------------------------------------------
