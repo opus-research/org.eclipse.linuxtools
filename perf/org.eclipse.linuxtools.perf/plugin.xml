@@ -25,15 +25,7 @@
             class="org.eclipse.linuxtools.internal.perf.ui.SourceDisassemblyView"
             icon="icons/symbol.gif"
             id="org.eclipse.linuxtools.perf.ui.SourceDisassemblyView"
-            name="Perf Source Disassembly">
-      </view>
-      <view
-            allowMultiple="true"
-            category="org.eclipse.linuxtools.profiling.ui"
-            class="org.eclipse.linuxtools.internal.perf.ui.StatView"
-            icon="icons/symbol.gif"
-            id="org.eclipse.linuxtools.perf.ui.StatView"
-            name="Perf Statistics">
+            name="Source Disassembly">
       </view>
    </extension>
    <extension
@@ -174,28 +166,13 @@
                style="push">
          </command>
       </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.linuxtools.perf.ui.StatView">
-         <command
-               commandId="org.eclipse.linuxtools.perf.SaveStatData"
-               id="org.eclipse.linuxtools.perf.SaveStatData"
-               label="Save Statistics"
-               style="push">
-         </command>
-      </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
       <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfSaveSessionHandler"
+            defaultHandler="org.eclipse.linuxtools.internal.perf.ui.PerfSaveSessionHandler"
             id="org.eclipse.linuxtools.perf.SaveData"
             name="Save Current Session">
-      </command>
-      <command
-            defaultHandler="org.eclipse.linuxtools.internal.perf.handlers.PerfSaveStatsHandler"
-            id="org.eclipse.linuxtools.perf.SaveStatData"
-            name="Save Statistics">
       </command>
    </extension>   
 </plugin>

@@ -12,7 +12,7 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
 
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.ChartStreamDaemon2;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.ChartStreamDaemon2;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective;
@@ -35,10 +35,6 @@ import org.eclipse.ui.WorkbenchException;
  * @author Ryan Morse
  */
 public class RunScriptChartHandler extends RunScriptHandler {
-
-	public RunScriptChartHandler() {
-		super();
-	}
 
 	@Override
 	protected void scriptConsoleInitialized(ScriptConsole console){

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -29,13 +29,6 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  *
  */
 final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
-
-    private static final String errMsg = "Invalid interval data. Maybe your file is corrupt?"; //$NON-NLS-1$
-
-    /* 'Byte' equivalent for state values types */
-    private static final byte TYPE_NULL = -1;
-    private static final byte TYPE_INTEGER = 0;
-    private static final byte TYPE_STRING = 1;
 
     private final long start;
     private final long end;
@@ -93,20 +86,25 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
         /* Read the 'type' of the value, then react accordingly */
         valueType = buffer.get();
-        valueOrOffset = buffer.getInt();
-        switch (valueType) {
+        if (valueType <= 0) {
+            /* the type of ValueOrOffset is 'value' */
+            valueOrOffset = buffer.getInt();
+            if (valueOrOffset == -1) {
+                /* Null value */
+                value = TmfStateValue.nullValue();
+            } else {
+                /* Normal integer value */
+                value = TmfStateValue.newValueInt(valueOrOffset);
+            }
 
-        case TYPE_NULL:
-            value = TmfStateValue.nullValue();
-            break;
+        } else { // valueType > 0
+            /* the type is 'offset' */
+            valueOrOffset = buffer.getInt();
 
-        case TYPE_INTEGER:
-            /* "ValueOrOffset" is the straight value */
-            value = TmfStateValue.newValueInt(valueOrOffset);
-            break;
-
-        case TYPE_STRING:
-            /* Go read the matching entry in the Strings section of the block */
+            /*
+             * Go read the corresponding entry in the Strings section of the
+             * block
+             */
             buffer.mark();
             buffer.position(valueOrOffset);
 
@@ -126,7 +124,8 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             /* Confirm the 0'ed byte at the end */
             res = buffer.get();
             if (res != 0) {
-                throw new IOException(errMsg);
+                throw new IOException(
+                        "Invalid interval data. Maybe your file is corrupt?"); //$NON-NLS-1$
             }
 
             /*
@@ -134,16 +133,14 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
              * interval)
              */
             buffer.reset();
-            break;
-        default:
-            /* Unknown data, better to not make anything up... */
-            throw new IOException(errMsg);
         }
 
         try {
-            interval = new HTInterval(intervalStart, intervalEnd, attribute, value);
+            interval = new HTInterval(intervalStart, intervalEnd, attribute,
+                    value);
         } catch (TimeRangeException e) {
-            throw new IOException(errMsg);
+            throw new IOException(
+                    "Invalid interval data. Maybe your file is corrupt?"); //$NON-NLS-1$
         }
         return interval;
     }
@@ -169,7 +166,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
         buffer.putLong(start);
         buffer.putLong(end);
         buffer.putInt(attribute);
-        buffer.put(getByteFromType(sv.getType()));
+        buffer.put(sv.getType());
 
         byteArrayToWrite = sv.toByteArray();
 
@@ -313,23 +310,5 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
         sb.append(sv.toString());
 
         return sb.toString();
-    }
-
-    /**
-     * Here we determine how state values "types" are written in the 8-bit
-     * field that indicates the value type in the file.
-     */
-    private static byte getByteFromType(ITmfStateValue.Type type) {
-        switch(type) {
-        case NULL:
-            return TYPE_NULL;
-        case INTEGER:
-            return TYPE_INTEGER;
-        case STRING:
-            return TYPE_STRING;
-        default:
-            /* Should not happen if the switch is fully covered */
-            throw new RuntimeException();
-        }
     }
 }

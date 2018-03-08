@@ -27,8 +27,8 @@ final class IntegerStateValue extends TmfStateValue {
     }
 
     @Override
-    public Type getType() {
-        return Type.INTEGER;
+    public byte getType() {
+        return ITmfStateValue.TYPE_INTEGER;
     }
 
     @Override

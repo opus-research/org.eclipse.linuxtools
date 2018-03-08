@@ -19,12 +19,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.AnnotationModel;
 import org.eclipse.jface.text.source.CompositeRuler;
-import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IChangeRulerColumn;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.ISharedTextColors;
@@ -45,6 +46,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
+import org.eclipse.ui.texteditor.AnnotationPreference;
+import org.eclipse.ui.texteditor.MarkerAnnotationPreferences;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
@@ -55,13 +58,15 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
 	 */
 	public final static String ST_RULER = "STRuler"; //$NON-NLS-1$
 
+    protected STContributedRulerColumn fAbstractSTRulerColumn;
+
     private STColumnSupport fColumnSupport;
 
     private STContributedRulerColumn fColumn;
 
-    private IAnnotationEditorInput fInput;
+    private AbstractSTAnnotatedSourceEditorInput fInput;
 
-    private ISTAnnotationColumn fAnnotatedColumn;
+    private ArrayList<ISTAnnotationColumn> fListColumns;
 
     private STChangeRulerColumn fSTChangeRulerColumn;
 
@@ -75,11 +80,13 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
         STColumnSupport columnSupport = getSTColumnSupport();
         RulerColumnRegistry registry = RulerColumnRegistry.getDefault();
 
-		RulerColumnDescriptor abstractSTColumnDescriptor = registry
-				.getColumnDescriptor(STContributedRulerColumn.ID);
-		columnSupport.addSTColumn((CompositeRuler) getVerticalRuler(),
-				abstractSTColumnDescriptor, fAnnotatedColumn);
+        for (int i = 1; i <= fInput.getColumnCount(); i++) {
+            RulerColumnDescriptor abstractSTColumnDescriptor = registry
+                    .getColumnDescriptor(STContributedRulerColumn.ID);
+            columnSupport.addSTColumn((CompositeRuler) getVerticalRuler(), abstractSTColumnDescriptor,
+                    fListColumns.get(i - 1));
 
+        }
 
         CompositeRuler vr = (CompositeRuler) super.getVerticalRuler();
         for (Iterator<?> iter = vr.getDecoratorIterator(); iter.hasNext();) {
@@ -197,10 +204,15 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
     protected void doSetInput(IEditorInput input) throws CoreException {
         super.doSetInput(input);
 
-        if (input != null && input instanceof IAnnotationEditorInput) {
-            fInput = (IAnnotationEditorInput) input;
-            fAnnotatedColumn = fInput.getColumn();
+        if (input != null && input instanceof AbstractSTAnnotatedSourceEditorInput) {
+            fInput = (AbstractSTAnnotatedSourceEditorInput) input;
+            fListColumns = fInput.getColumns();
         }
+    }
+
+    protected boolean isSTRulerVisible() {
+        IPreferenceStore store = getPreferenceStore();
+        return store != null ? store.getBoolean(ST_RULER) : true;
     }
 
     private static class ToolTipSupport extends DefaultToolTip {
@@ -251,13 +263,21 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
 
     @Override
     protected IOverviewRuler createOverviewRuler(ISharedTextColors sharedColors) {
-        return new STOverviewRuler(getAnnotationAccess(), VERTICAL_RULER_WIDTH, sharedColors);
+        IOverviewRuler ruler = new STOverviewRuler(getAnnotationAccess(), VERTICAL_RULER_WIDTH, sharedColors);
+        MarkerAnnotationPreferences fAnnotationPreferences = getAnnotationPreferences();
+        Iterator<?> e = fAnnotationPreferences.getAnnotationPreferences().iterator();
+        while (e.hasNext()) {
+            AnnotationPreference preference = (AnnotationPreference) e.next();
+            if (preference.contributesToHeader())
+                ruler.addHeaderAnnotationType(preference.getAnnotationType());
+        }
+        return ruler;
 
     }
 
     private void showLinesColored() {
         STOverviewRuler or = (STOverviewRuler) getOverviewRuler();
-        IAnnotationModel am = or.getModel();
+        AnnotationModel am = (AnnotationModel) or.getModel();
         IDocument doc = getSourceViewer().getDocument();
         int lines = doc.getNumberOfLines();
 

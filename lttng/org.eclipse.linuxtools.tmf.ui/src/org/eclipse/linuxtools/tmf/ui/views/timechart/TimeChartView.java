@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2011, 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -79,7 +79,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
     private TimeGraphViewer fViewer;
     private final ArrayList<TimeChartAnalysisEntry> fTimeAnalysisEntries = new ArrayList<TimeChartAnalysisEntry>();
     private final Map<ITmfTrace, TimeChartDecorationProvider> fDecorationProviders = new HashMap<ITmfTrace, TimeChartDecorationProvider>();
-    private final ArrayList<DecorateThread> fDecorateThreads = new ArrayList<DecorateThread>();
+    private ArrayList<DecorateThread> fDecorateThreads;
     private long fStartTime = 0;
     private long fStopTime = Long.MAX_VALUE;
     private boolean fRefreshBusy = false;
@@ -125,6 +125,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
         }
         fViewer.setInput(fTimeAnalysisEntries.toArray(new TimeChartAnalysisEntry[0]));
 
+        fDecorateThreads = new ArrayList<DecorateThread>();
         ColorSettingsManager.addColorSettingsListener(this);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
     }

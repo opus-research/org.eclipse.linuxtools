@@ -145,7 +145,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
             return -1;
         }
 
-        if (this.getType() != Type.INTEGER) {
+        if (this.getType() != 0) { /* 0 = int type */
             throw new StateValueTypeException();
         }
         return (Integer) this.getValue();
@@ -158,7 +158,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
             return "nullValue"; //$NON-NLS-1$
         }
 
-        if (this.getType() != Type.STRING) {
+        if (this.getType() != 1) { /* 1 = string type */
             throw new StateValueTypeException();
         }
         return (String) this.getValue();

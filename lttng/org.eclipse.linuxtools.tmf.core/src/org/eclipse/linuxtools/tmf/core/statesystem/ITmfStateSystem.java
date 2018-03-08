@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -218,19 +218,6 @@ public interface ITmfStateSystem {
      *             If the requested attribute is invalid
      */
     public ITmfStateValue queryOngoingState(int attributeQuark)
-            throws AttributeNotFoundException;
-
-    /**
-     * Get the start time of the current ongoing state, for the specified
-     * attribute.
-     *
-     * @param attribute
-     *            Quark of the attribute
-     * @return The current start time of the ongoing state
-     * @throws AttributeNotFoundException
-     *             If the attribute is invalid
-     */
-    public long getOngoingStartTime(int attribute)
             throws AttributeNotFoundException;
 
     /**

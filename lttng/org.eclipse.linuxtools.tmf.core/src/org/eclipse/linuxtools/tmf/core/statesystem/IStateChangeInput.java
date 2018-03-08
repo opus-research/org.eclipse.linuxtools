@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -106,16 +106,6 @@ public interface IStateChangeInput {
      *            expectedEventType) that has to be processed.
      */
     public void processEvent(ITmfEvent event);
-
-    /**
-     * Provide a non-initialized copy of this state input plugin. You will need
-     * to call {@link #assignTargetStateSystem} on it to assign its target.
-     *
-     * @return A new state change input object, of the same type, but without an
-     *         assigned target state system
-     * @since 2.0
-     */
-    public IStateChangeInput getNewInstance();
 
     /**
      * Indicate to the state history building process that we are done (for now),
