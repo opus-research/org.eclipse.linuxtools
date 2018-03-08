@@ -28,6 +28,14 @@ import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
  */
 public class EventDeclaration implements IEventDeclaration {
 
+    /**
+     * Id of lost event
+     */
+    public static final long LOST_EVENT_ID = -1L;
+    /**
+     * id of event when not set
+     */
+    public static final long UNSET_EVENT_ID = -2L;
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -50,7 +58,7 @@ public class EventDeclaration implements IEventDeclaration {
     /**
      * Event id (can be null if only event in the stream).
      */
-    private Long id = null;
+    private Long id = UNSET_EVENT_ID;
 
     /**
      * Stream to which belongs this event.
@@ -100,7 +108,7 @@ public class EventDeclaration implements IEventDeclaration {
     public synchronized static EventDeclaration getLostEventDeclaration() {
         EventDeclaration lostEvent = new EventDeclaration();
         lostEvent.fields = new StructDeclaration(1);
-        lostEvent.id = -1L;
+        lostEvent.id = LOST_EVENT_ID;
         lostEvent.name = "Lost event"; //$NON-NLS-1$
         return lostEvent;
     }
@@ -218,7 +226,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the id set?
      */
     public boolean idIsSet() {
-        return id != null;
+        return (id != null && id != UNSET_EVENT_ID);
     }
 
     /**
