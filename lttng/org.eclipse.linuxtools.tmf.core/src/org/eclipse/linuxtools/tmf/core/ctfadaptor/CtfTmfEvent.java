@@ -43,7 +43,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public final class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
+public class CtfTmfEvent implements ITmfEvent, IAdaptable, Cloneable {
 
     // ------------------------------------------------------------------------
     // Constants
