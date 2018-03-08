@@ -57,7 +57,7 @@ import com.jcraft.jsch.JSchException;
 
 abstract public class RunScriptBaseAction extends Action implements IWorkbenchWindowActionDelegate {
 
-	protected boolean runLocal = true;
+	protected boolean runLocal = false;
 	protected boolean continueRun = true;
 	protected String fileName = null;
 	protected String tmpfileName = null;
@@ -116,24 +116,14 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
             			if(getRunLocal() == false) {
             				console = ScriptConsole.getInstance(serverfileName);
             				console.run(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
-            				scriptConsoleInitialized(console);
             			} else {
             				console = ScriptConsole.getInstance(fileName);
             				console.runLocally(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
-            				scriptConsoleInitialized(console);
             			}
             		}
             	});
             }
 		}
-	}
-	
-	/**
-	 * Once a console for running the script has been created this
-	 * function is called so that observers can be added for example
-	 * @param console 
-	 */
-	protected void scriptConsoleInitialized(ScriptConsole console){
 	}
 	
 	protected abstract String getFilePath();
@@ -160,7 +150,18 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		}
 		return true;
 	}
-
+	
+	/**
+	 * Called by <code>run(IAction)</code> to generate the command line necessary to run the script.
+	 * @return The arguments to pass to <code>Runtime.exec</code> to start the stap process on this script.
+	 * @see TerminalCommand
+	 * @see Runtime#exec(java.lang.String[], java.lang.String[])
+	 * @deprecated Use {@link RunScriptBaseAction#buildStandardScript()} instead
+	 */
+	protected String[] buildScript() {
+		return buildStandardScript();
+	}
+	
 	/**
 	 * The command line argument generation method used by <code>RunScriptAction</code>. This generates
 	 * a stap command line that includes the tapsets specified in user preferences, a guru mode flag
