@@ -54,7 +54,11 @@ public class ProjectModelTraceTest {
      */
     @After
     public void cleanUp() {
-        ProjectModelTestData.deleteProject(fixture);
+        try {
+            ProjectModelTestData.deleteProject(fixture);
+        } catch (CoreException e) {
+            fail(e.getMessage());
+        }
     }
 
     /**
