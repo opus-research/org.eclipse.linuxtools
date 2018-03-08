@@ -131,20 +131,20 @@ public class CTFTrace implements IDefinitionScope {
     /**
      * Collection of streams contained in the trace.
      */
-    private final HashMap<Long, Stream> streams =  new HashMap<Long, Stream>();
+    private final HashMap<Long, Stream> streams;
 
     /**
      * Collection of environment variables set by the tracer
      */
-    private final HashMap<String, String> environment = new HashMap<String, String>();
+    private final HashMap<String, String> environment;
 
     /**
      * Collection of all the clocks in a system.
      */
-    private final HashMap<String, CTFClock> clocks = new HashMap<String, CTFClock>();
+    private final HashMap<String, CTFClock> clocks;
 
     /** FileChannels to the streams */
-    private final List<FileChannel> streamFileChannels = new LinkedList<FileChannel>();
+    private final List<FileChannel> streamFileChannels;
 
     /** Handlers for the metadata files */
     private final static FileFilter metadataFileFilter = new MetadataFileFilter();
@@ -152,11 +152,11 @@ public class CTFTrace implements IDefinitionScope {
                                                                                          // fieldJavadoc
 
     /** map of all the event types */
-    private final HashMap<Long,HashMap<Long, EventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,EventDeclaration>>();
+    private final HashMap<Long,HashMap<Long, EventDeclaration>> eventDecs;
     /** map of all the event types */
-    private final HashMap<StreamInput,HashMap<Long, EventDefinition>> eventDefs = new HashMap<StreamInput, HashMap<Long,EventDefinition>>();
+    private final HashMap<StreamInput,HashMap<Long, EventDefinition>> eventDefs;
     /** map of all the indexes */
-    private final HashMap<StreamInput, StreamInputPacketIndex> indexes = new HashMap<StreamInput, StreamInputPacketIndex>();
+    private final HashMap<StreamInput, StreamInputPacketIndex> indexes;
 
     /** Callsite helpers */
     private HashMap<String, LinkedList<CTFCallsite>> callsitesByName = new HashMap<String, LinkedList<CTFCallsite>>();
@@ -195,6 +195,12 @@ public class CTFTrace implements IDefinitionScope {
         this.metadata = new Metadata(this);
 
         /* Set up the internal containers for this trace */
+        streams = new HashMap<Long, Stream>();
+        environment = new HashMap<String, String>();
+        clocks = new HashMap<String, CTFClock>();
+        streamFileChannels = new LinkedList<FileChannel>();
+        eventDecs = new HashMap<Long, HashMap<Long, EventDeclaration>>();
+        eventDefs = new HashMap<StreamInput, HashMap<Long, EventDefinition>>();
 
         if (!this.path.isDirectory()) {
             throw new CTFReaderException("Path must be a valid directory"); //$NON-NLS-1$
@@ -213,6 +219,7 @@ public class CTFTrace implements IDefinitionScope {
         /* List files not called metadata and not hidden. */
         File[] files = path.listFiles(metadataFileFilter);
         Arrays.sort(files, metadataComparator);
+        indexes = new HashMap<StreamInput, StreamInputPacketIndex>();
         /* Try to open each file */
         for (File streamFile : files) {
             openStreamInput(streamFile);
