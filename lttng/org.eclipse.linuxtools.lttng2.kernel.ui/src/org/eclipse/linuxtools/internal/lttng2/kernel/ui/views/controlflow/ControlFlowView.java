@@ -41,7 +41,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
@@ -429,16 +428,6 @@ public class ControlFlowView extends TmfView {
     // ------------------------------------------------------------------------
     // Signal handlers
     // ------------------------------------------------------------------------
-    /**
-     * Handler for the trace opened signal.
-     * @param signal the trace opened signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceOpened(TmfTraceOpenedSignal signal) {
-        fTrace = signal.getTrace();
-        loadTrace();
-    }
 
     /**
      * Handler for the trace selected signal
@@ -452,7 +441,21 @@ public class ControlFlowView extends TmfView {
             return;
         }
         fTrace = signal.getTrace();
-        loadTrace();
+
+        synchronized (fEntryListMap) {
+            fEntryList = fEntryListMap.get(fTrace);
+            if (fEntryList == null) {
+                synchronized (fBuildThreadMap) {
+                    BuildThread buildThread = new BuildThread(fTrace);
+                    fBuildThreadMap.put(fTrace, buildThread);
+                    buildThread.start();
+                }
+            } else {
+                fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                refresh();
+            }
+        }
     }
 
     /**
@@ -589,23 +592,6 @@ public class ControlFlowView extends TmfView {
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
-
-    private void loadTrace() {
-        synchronized (fEntryListMap) {
-            fEntryList = fEntryListMap.get(fTrace);
-            if (fEntryList == null) {
-                synchronized (fBuildThreadMap) {
-                    BuildThread buildThread = new BuildThread(fTrace);
-                    fBuildThreadMap.put(fTrace, buildThread);
-                    buildThread.start();
-                }
-            } else {
-                fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                refresh();
-            }
-        }
-    }
 
     private void buildEventList(final ITmfTrace trace, IProgressMonitor monitor) {
         fStartTime = Long.MAX_VALUE;
