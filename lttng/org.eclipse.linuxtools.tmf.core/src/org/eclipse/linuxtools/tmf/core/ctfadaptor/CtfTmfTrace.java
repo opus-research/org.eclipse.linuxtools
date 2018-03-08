@@ -13,6 +13,7 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
+import java.nio.BufferOverflowException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -32,9 +33,9 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
  * The CTf trace handler
@@ -90,9 +91,6 @@ public class CtfTmfTrace extends TmfTrace
         setCacheSize();
 
         super.initTrace(resource, path, eventType);
-
-        @SuppressWarnings("unused")
-        CtfTmfEventType type;
 
         try {
             this.fTrace = new CTFTrace(path);
@@ -160,7 +158,10 @@ public class CtfTmfTrace extends TmfTrace
             temp.dispose();
         } catch (final CTFReaderException e) {
             validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + e.toString()); //$NON-NLS-1$
+        } catch (final BufferOverflowException e){
+            validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + Messages.CtfTmfTrace_BufferOverflowErrorMessage); //$NON-NLS-1$
         }
+
         return validTrace;
     }
 
@@ -169,12 +170,16 @@ public class CtfTmfTrace extends TmfTrace
      *
      * @return null, since the trace has no knowledge of the current location
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getCurrentLocation()
+     * @since 3.0
      */
     @Override
     public ITmfLocation getCurrentLocation() {
         return null;
     }
 
+    /**
+     * @since 3.0
+     */
     @Override
     public double getLocationRatio(ITmfLocation location) {
         final CtfLocation curLocation = (CtfLocation) location;
@@ -194,6 +199,7 @@ public class CtfTmfTrace extends TmfTrace
      * @param location
      *            ITmfLocation<?>
      * @return ITmfContext
+     * @since 3.0
      */
     @Override
     public synchronized ITmfContext seekEvent(final ITmfLocation location) {

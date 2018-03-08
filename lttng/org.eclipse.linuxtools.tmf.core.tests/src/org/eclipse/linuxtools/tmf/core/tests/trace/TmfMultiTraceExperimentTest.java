@@ -39,8 +39,8 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.AfterClass;
@@ -93,12 +93,12 @@ public class TmfMultiTraceExperimentTest {
 
             URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path1), null);
             File test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true);
+            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true, null, null);
             traces[0] = trace1;
 
             location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path2), null);
             test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true);
+            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true, null, null);
             traces[1] = trace2;
 
             return traces;
