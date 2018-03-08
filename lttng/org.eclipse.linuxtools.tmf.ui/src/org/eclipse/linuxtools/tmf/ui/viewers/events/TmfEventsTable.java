@@ -2147,8 +2147,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             // Create a request for one event that will be queued after other ongoing requests. When this request is completed
             // do the work to select the actual event with the timestamp specified in the signal. This procedure prevents
             // the method fTrace.getRank() from interfering and delaying ongoing requests.
-            final TmfDataRequest subRequest = new TmfDataRequest(ITmfEvent.class,
-                    0, 1, TmfDataRequest.DEFAULT_BLOCK_SIZE, ExecutionType.FOREGROUND) {
+            final TmfDataRequest subRequest = new TmfDataRequest(ITmfEvent.class, 0, 1, ExecutionType.FOREGROUND) {
 
                 TmfTimestamp ts = new TmfTimestamp(signal.getCurrentTime());
 
