@@ -9,7 +9,7 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.graphing;
+package org.eclipse.linuxtools.internal.systemtap.ui.graphing.structures;
 
 import java.util.ArrayList;
 
@@ -51,7 +51,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  * This class is used to contain all of the graphing components that can
  * be displayed as individual tabs in a single location.
  * @author Ryan Morse
- * @since 2.0
  */
 public class GraphDisplaySet {
 
@@ -179,7 +178,7 @@ public class GraphDisplaySet {
 	/**
 	 * This class handles switching between tabs and creating new graphs.
 	 * When the user selects the first tab a new dialog is displayed for
-	 * them to select what they want to display for the new graph.
+	 * them to slect what they want to display for the new graph.
 	 */
 	public class ButtonClickListener extends SelectionAdapter {
 		@Override
@@ -198,7 +197,21 @@ public class GraphDisplaySet {
 				GraphData gd = wizard.getGraphData();
 
 				if(null != gd) {
-					addGraph(gd);
+					CTabItem item = new CTabItem(folder, SWT.CLOSE);
+					item.setText(GraphFactory.getGraphName(gd.graphID));
+					GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
+					gc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+					folder.setSelection(item);
+
+					AbstractChartBuilder g = gc.getCanvas();
+					item.setControl(gc);
+
+					if(null != g) {
+						if(null != updater) {
+							updater.addUpdateListener(g);
+						}
+						builders.add(g);
+					}
 				}
 				wizard.dispose();
 				fireTabOpenEvent();
@@ -227,24 +240,6 @@ public class GraphDisplaySet {
 	private void fireTabChangedEvent() {
 		for(int i=0; i<tabListeners.size(); i++) {
 			(tabListeners.get(i)).tabChanged();
-		}
-	}
-
-	public void addGraph(GraphData gd) {
-		CTabItem item = new CTabItem(folder, SWT.CLOSE);
-		item.setText(GraphFactory.getGraphName(gd.graphID));
-		GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
-		gc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		folder.setSelection(item);
-
-		AbstractChartBuilder g = gc.getCanvas();
-		item.setControl(gc);
-
-		if(null != g) {
-			if(null != updater) {
-				updater.addUpdateListener(g);
-			}
-			builders.add(g);
 		}
 	}
 
