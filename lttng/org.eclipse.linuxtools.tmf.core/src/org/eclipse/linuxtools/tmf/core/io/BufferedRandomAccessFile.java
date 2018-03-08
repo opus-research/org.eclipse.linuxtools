@@ -40,7 +40,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
      * Constructor using the default buffer size
      *
      * @param name
-     *            File path. This is passed as-is to the RandomeAccessFile's
+     *            File path. This is passed as-is to the RandomAccessFile's
      *            constructor.
      * @param mode
      *            File open mode ("r", "rw", etc.). This is passed as-is to
@@ -57,7 +57,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
      * Constructor using the default buffer size
      *
      * @param file
-     *            File object. This is passed as-is to the RandomeAccessFile's
+     *            File object. This is passed as-is to the RandomAccessFile's
      *            constructor.
      * @param mode
      *            File open mode ("r", "rw", etc.). This is passed as-is to
@@ -74,7 +74,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
      * Standard constructor.
      *
      * @param name
-     *            File path. This is passed as-is to the RandomeAccessFile's
+     *            File path. This is passed as-is to the RandomAccessFile's
      *            constructor.
      * @param mode
      *            File open mode ("r", "rw", etc.). This is passed as-is to
@@ -96,7 +96,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
      * Standard constructor.
      *
      * @param file
-     *            File object. This is passed as-is to the RandomeAccessFile's
+     *            File object. This is passed as-is to the RandomAccessFile's
      *            constructor.
      * @param mode
      *            File open mode ("r", "rw", etc.). This is passed as-is to
@@ -135,10 +135,10 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
 			buf_pos += len;
 			return len;
 		}
-		for(int i = 0; i < len; i++) {
+		for (int i = 0; i < len; i++) {
 			int c = this.read();
 			if (c != -1) {
-				b[off+i] = (byte) c;
+				b[off + i] = (byte) c;
 			} else {
 				return i;
 			}
@@ -155,7 +155,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
 	@Override
     public void seek(long pos) throws IOException {
 		int n = (int) (real_pos - pos);
-		if(n >= 0 && n <= buf_end) {
+		if (n >= 0 && n <= buf_end) {
 			buf_pos = buf_end - n;
 		} else {
 			super.seek(pos);
