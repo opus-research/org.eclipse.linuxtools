@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,8 +25,8 @@ public class StatData extends AbstractDataManipulator {
 	private int runCount;
 	private String [] events;
 
-	public StatData(String title, File workDir, String prog, String [] args, int runCount, String[] events) {
-		super(title, workDir);
+	public StatData(String title, String prog, String [] args, int runCount, String[] events) {
+		super(title);
 		this.prog = prog;
 		this.args = args;
 		this.runCount = runCount;

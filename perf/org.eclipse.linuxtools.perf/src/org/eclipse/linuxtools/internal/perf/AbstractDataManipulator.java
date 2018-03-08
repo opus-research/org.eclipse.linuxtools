@@ -11,15 +11,11 @@
 package org.eclipse.linuxtools.internal.perf;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
@@ -36,12 +32,10 @@ public abstract class AbstractDataManipulator {
 
 	private String text;
 	private String title;
-	private File workDir;
 	private ILaunch launch;
 
-	AbstractDataManipulator (String title, File workDir) {
+	AbstractDataManipulator (String title) {
 		this.title = title;
-		this.workDir = workDir;
 	}
 
 	public String getPerfData() {
@@ -62,14 +56,7 @@ public abstract class AbstractDataManipulator {
 
 		try {
 
-			Process proc;
-			if (workDir != null) {
-				Path path = new Path(workDir.getAbsolutePath());
-				IFileStore workDirStore = EFS.getLocalFileSystem().getStore(path);
-				proc = RuntimeProcessFactory.getFactory().exec(cmd, null, workDirStore, null);
-			} else {
-				proc = RuntimeProcessFactory.getFactory().exec(cmd, null);
-			}
+			Process proc = RuntimeProcessFactory.getFactory().exec(cmd, null);
 			StringBuffer strBuffData = new StringBuffer();
 			StringBuffer strBuffTmp = new StringBuffer();
 			String line = ""; //$NON-NLS-1$
