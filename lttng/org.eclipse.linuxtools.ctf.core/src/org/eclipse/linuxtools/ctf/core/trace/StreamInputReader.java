@@ -16,7 +16,6 @@ import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 /**
@@ -67,6 +66,7 @@ public class StreamInputReader {
      *
      * @param streamInput
      *            The StreamInput to read.
+     * @since 2.0
      */
     public StreamInputReader(StreamInput streamInput) {
         this.streamInput = streamInput;
@@ -79,6 +79,14 @@ public class StreamInputReader {
          * Make first packet the current one.
          */
         goToNextPacket();
+    }
+
+    /**
+     * Dispose the StreamInputReader
+     * @since 2.0
+     */
+    public void dispose() {
+        packetReader.dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -175,8 +183,6 @@ public class StreamInputReader {
                     .getCurrentPacket();
             if (prevPacket != null) {
                 goToNextPacket();
-                @SuppressWarnings("unused")
-                final StreamInputPacketIndexEntry currentPacket = this.packetReader.getCurrentPacket();
             }
         }
 
@@ -420,4 +426,9 @@ public class StreamInputReader {
         return true;
     }
 
+    @Override
+    public String toString() {
+        // this helps debugging
+        return this.name + ' ' + this.currentEvent.toString();
+    }
 }

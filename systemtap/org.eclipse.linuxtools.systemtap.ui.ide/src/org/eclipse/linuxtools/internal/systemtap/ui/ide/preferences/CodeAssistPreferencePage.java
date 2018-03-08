@@ -11,21 +11,22 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences;
 
-import org.eclipse.jface.preference.*;
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
-import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
 
 
 public class CodeAssistPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	public CodeAssistPreferencePage() {
 		super(GRID);
-		LogManager.logDebug("Start CodeAssistPreferencePage:", this); //$NON-NLS-1$
 		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("CodeAssistPreferencePage.CodeAssistPreferenceDescription"));
-		LogManager.logDebug("End CodeAssistPreferencePage:", this); //$NON-NLS-1$
+		setDescription(Localization.getString("CodeAssistPreferencePage.CodeAssistPreferenceDescription")); //$NON-NLS-1$
 	}
 	
 	/**
@@ -36,40 +37,32 @@ public class CodeAssistPreferencePage extends FieldEditorPreferencePage implemen
 	 */
 	@Override
 	public void createFieldEditors() {
-		LogManager.logDebug("Start createFieldEditors:", this); //$NON-NLS-1$
 		addField(
 			new BooleanFieldEditor(
 				IDEPreferenceConstants.P_USE_CODE_ASSIST,
-				Localization.getString("CodeAssistPreferencePage.UseCodeAssist"),
+				Localization.getString("CodeAssistPreferencePage.UseCodeAssist"), //$NON-NLS-1$
 				getFieldEditorParent()));
 		addField(new RadioGroupFieldEditor(
 				IDEPreferenceConstants.P_COMPLETION,
-				Localization.getString("CodeAssistPreferencePage.HowCodeAdded"),
+				Localization.getString("CodeAssistPreferencePage.HowCodeAdded"), //$NON-NLS-1$
 				1,
 				new String[][] { 
-						{Localization.getString("CodeAssistPreferencePage.Insert"), IDEPreferenceConstants.P_COMPLETION_INSERT },
-						{Localization.getString("CodeAssistPreferencePage.Overwrite"), IDEPreferenceConstants.P_COMPLETION_OVERWRITE }},
+						{Localization.getString("CodeAssistPreferencePage.Insert"), IDEPreferenceConstants.P_COMPLETION_INSERT }, //$NON-NLS-1$
+						{Localization.getString("CodeAssistPreferencePage.Overwrite"), IDEPreferenceConstants.P_COMPLETION_OVERWRITE }}, //$NON-NLS-1$
 				getFieldEditorParent()));
 		addField(
 				new IntegerFieldEditor(
 						IDEPreferenceConstants.P_ACTIVATION_DELAY,
-				Localization.getString("CodeAssistPreferencePage.ActivationDelay"),
+				Localization.getString("CodeAssistPreferencePage.ActivationDelay"), //$NON-NLS-1$
 				getFieldEditorParent()));
 		addField(
 				new StringFieldEditor(
 						IDEPreferenceConstants.P_ACTIVATION_TRIGGER,
-				Localization.getString("CodeAssistPreferencePage.ActivationTrigger"),
+				Localization.getString("CodeAssistPreferencePage.ActivationTrigger"), //$NON-NLS-1$
 				getFieldEditorParent()));
-		LogManager.logDebug("End createFieldEditors", this); //$NON-NLS-1$
 	}
 
 	public void init(IWorkbench workbench) {
-		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
 
-	@Override
-	public void dispose() {
-		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
-		super.dispose();
-	}
 }
