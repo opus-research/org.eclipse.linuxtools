@@ -13,6 +13,8 @@
 package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
@@ -56,6 +58,8 @@ public class StreamInputReader {
 
     private CTFTraceReader parent;
 
+    /** Map of all the event types */
+    private final Map<Long, EventDefinition> eventDefs = new HashMap<Long,EventDefinition>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -163,6 +167,16 @@ public class StreamInputReader {
      */
     StreamInput getStreamInput() {
         return streamInput;
+    }
+
+    /**
+     * Gets an event Declaration hashmap for a given StreamInput
+     *
+     * @return the hashmap with the event definitions
+     * @since 2.1
+     */
+    public Map<Long, EventDefinition> getEventDefs() {
+        return eventDefs;
     }
 
     // ------------------------------------------------------------------------

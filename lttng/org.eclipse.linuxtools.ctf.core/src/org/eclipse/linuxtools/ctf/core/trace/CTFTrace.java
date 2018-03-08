@@ -138,8 +138,7 @@ public class CTFTrace implements IDefinitionScope {
 
     /** map of all the event types */
     private final Map<Long,HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,IEventDeclaration>>();
-    /** map of all the event types */
-    private final Map<StreamInput,HashMap<Long, EventDefinition>> eventDefs = new HashMap<StreamInput, HashMap<Long,EventDefinition>>();
+
     /** map of all the indexes */
     private final Map<StreamInput, StreamInputPacketIndex> indexes = new HashMap<StreamInput, StreamInputPacketIndex>();
 
@@ -276,19 +275,21 @@ public class CTFTrace implements IDefinitionScope {
         return indexes.get(id);
     }
 
+
     /**
      * Gets an event Declaration hashmap for a given StreamInput
-     * @param id the StreamInput
-     * @return the hashmap with the event definitions
+     *
+     * @param id
+     *            the StreamInput
+     * @return null
      * @since 2.0
+     * @deprecated You should be using {@link StreamInputReader#getEventDefs()}
+     *             instead.
      */
+    @Deprecated
     public Map<Long, EventDefinition> getEventDefs(StreamInput id) {
-        if(! eventDefs.containsKey(id)){
-            eventDefs.put(id, new HashMap<Long, EventDefinition>());
-        }
-        return eventDefs.get(id);
+        return null;
     }
-
     /**
      * Get an event by it's ID
      *

@@ -100,7 +100,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
         bitBuffer = new BitBuffer();
         bitBuffer.setByteOrder(streamInputReader.getByteOrder());
 
-        events = streamInputReader.getStreamInput().getStream().getTrace().getEventDefs(streamInputReader.getStreamInput());
+        events = streamInputReader.getEventDefs();
         lostSoFar = 0;
 
         /* Create trace packet header definition. */
