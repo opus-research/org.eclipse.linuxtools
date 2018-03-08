@@ -45,7 +45,7 @@ public class PerfProfileView extends ViewPart {
 	private DrillDownAdapter drillDownAdapter;
 	private Action doubleClickAction;
 	
-	class NameSorter extends ViewerSorter {
+	static class NameSorter extends ViewerSorter {
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			return (((TreeParent) e1).getPercent() <= ((TreeParent) e2)
@@ -74,7 +74,6 @@ public class PerfProfileView extends ViewPart {
 
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.eclipse.linuxtools.internal.perf.viewer");
-		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
@@ -119,17 +118,18 @@ public class PerfProfileView extends ViewPart {
 		drillDownAdapter.addNavigationActions(manager);
 	}
 
-	private void makeActions() {
-		doubleClickAction = new PerfDoubleClickAction(viewer);
-	}
-
 	private void hookDoubleClickAction() {
+		doubleClickAction = new PerfDoubleClickAction(viewer);
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				doubleClickAction.run();
 			}
 		});
+	}
+
+	public TreeViewer getTreeViewer () {
+		return viewer;
 	}
 	
 	@SuppressWarnings("unused")

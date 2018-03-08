@@ -75,12 +75,13 @@ public class RPMBuild {
 	 *            the spec file
 	 * @param outStream
 	 *            The stream to write the output to.
+	 * @return The return code of the build job.
 	 * @throws CoreException
 	 *             If the operation fails.
 	 */
-	public void buildPrep(IResource specFile, OutputStream outStream)
+	public IStatus buildPrep(IResource specFile, OutputStream outStream)
 			throws CoreException {
-		build(specFile, outStream, "-bp"); //$NON-NLS-1$
+		return build(specFile, outStream, "-bp"); //$NON-NLS-1$
 	}
 
 	/**
@@ -204,7 +205,7 @@ public class RPMBuild {
 		} else {
 			command.add(specFile.getLocation().toString());
 			try {
-				return Utils.runCommand(outStream,
+				return Utils.runCommand(outStream, specFile.getProject(),
 						command.toArray(new String[command.size()]));
 			} catch (IOException e) {
 				throw new CoreException(new Status(IStatus.ERROR,

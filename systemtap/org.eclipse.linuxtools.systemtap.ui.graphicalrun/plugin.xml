@@ -2,10 +2,6 @@
 <?eclipse version="3.0"?>
 <plugin>
 	<extension
-		point="org.eclipse.ui.startup">
-	</extension>
-
-	<extension
 		point="org.eclipse.ui.commands">
 		<command
 			name="%command.runChart.name"
@@ -81,7 +77,6 @@
 		</perspectiveExtension>
 		<perspectiveExtension
 			targetID="org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective">
-			<actionSet id="org.eclipse.linuxtools.systemtap.ui.consolelog.StopActionSet"/>
 			<actionSet id="org.eclipse.linuxtools.systemtap.ui.graphicalrun.ParsingActionSet"/>
 			<view
 				ratio="0.60f"

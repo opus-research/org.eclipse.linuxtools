@@ -26,9 +26,9 @@ public class LTTngControlServiceConstants {
     // Version constants
     // ------------------------------------------------------------------------
     /**
-     * Constant for the LTTng toolchain version
+     * Pattern to match the LTTng toolchain version 2.x.y.
      */
-    public final static String LTTNG_MAJOR_VERSION_2_0 = "2.0"; //$NON-NLS-1$
+    public final static Pattern VERSION_2_PATTERN = Pattern.compile("(2\\.\\d+\\.\\d+).*"); //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Command constants
@@ -193,6 +193,15 @@ public class LTTngControlServiceConstants {
      * Command line option for printing the help of a specif command
      */
     public final static String OPTION_HELP = " -h ";  //$NON-NLS-1$
+    /**
+     * Command line option for listing the fields of UST tracepoints
+     */
+    public final static String OPTION_FIELDS = " -f "; //$NON-NLS-1$
+    /**
+     * Command line option for configuring event's filter
+     */
+    public final static String OPTION_FILTER = " --filter "; //$NON-NLS-1$
+
 
     // ------------------------------------------------------------------------
     // Parsing constants
@@ -244,11 +253,11 @@ public class LTTngControlServiceConstants {
     /**
      * Pattern to match for event information (lttng list <session>)
      */
-    public final static Pattern EVENT_PATTERN = Pattern.compile("\\s+(.*)\\s+\\(loglevel:\\s+(.*)\\s+\\(\\d*\\)\\)\\s+\\(type:\\s+(.*)\\)\\s+\\[(enabled|disabled)\\].*"); //$NON-NLS-1$
+    public final static Pattern EVENT_PATTERN = Pattern.compile("\\s+(.*)\\s+\\(loglevel:\\s+(.*)\\s+\\(\\d*\\)\\)\\s+\\(type:\\s+(.*)\\)\\s+\\[(enabled|disabled)\\]\\s*(\\[.*\\]){0,1}.*"); //$NON-NLS-1$
     /**
      * Pattern to match a wildcarded event information (lttng list <session>)
      */
-    public final static Pattern WILDCARD_EVENT_PATTERN = Pattern.compile("\\s+(.*)\\s+\\(type:\\s+(.*)\\)\\s+\\[(enabled|disabled)\\].*"); //$NON-NLS-1$
+    public final static Pattern WILDCARD_EVENT_PATTERN = Pattern.compile("\\s+(.*)\\s+\\(type:\\s+(.*)\\)\\s+\\[(enabled|disabled)\\]\\s*(\\[.*\\]){0,1}.*"); //$NON-NLS-1$
     /**
      * Pattern to match a probe address information (lttng list <session>)
      */
@@ -294,6 +303,11 @@ public class LTTngControlServiceConstants {
      */
     public final static Pattern PROVIDER_EVENT_PATTERN = Pattern.compile("\\s*(.*)\\s+\\(loglevel:\\s+(.*)\\s+\\(\\d*\\)\\)\\s+\\(type:\\s+(.*)\\)"); //$NON-NLS-1$
     /**
+     * Pattern to match event fields
+     */
+    //                                                                 field: content (string)
+    public final static Pattern EVENT_FIELD_PATTERN = Pattern.compile("\\s*(field:)\\s+(.*)\\s+\\((.*)\\)"); //$NON-NLS-1$
+    /**
      * Pattern to match for UST provider information (lttng list -u)
      */
     public final static Pattern UST_PROVIDER_PATTERN = Pattern.compile("\\s*PID\\:\\s+(\\d+)\\s+-\\s+Name\\:\\s+(.*)"); //$NON-NLS-1$
@@ -317,5 +331,8 @@ public class LTTngControlServiceConstants {
      * Pattern to match introduction line of context list.
      */
     public final static Pattern ADD_CONTEXT_HELP_CONTEXTS_END_LINE = Pattern.compile("\\s*Example.*"); //$NON-NLS-1$
-
+    /**
+     * Pattern to match error line if no kernel tracer is available or installed.
+     */
+    public final static Pattern LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN = Pattern.compile("\\s*Error:\\s+Unable\\s+to\\s+list\\s+kernel\\s+events.*"); //$NON-NLS-1$;
 }

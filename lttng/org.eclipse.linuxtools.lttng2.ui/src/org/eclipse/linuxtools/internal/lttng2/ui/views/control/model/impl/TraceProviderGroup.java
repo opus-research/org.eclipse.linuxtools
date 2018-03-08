@@ -79,9 +79,12 @@ public class TraceProviderGroup extends TraceControlComponent {
     public void getProviderFromNode(IProgressMonitor monitor) throws ExecutionException {
 
         List<IBaseEventInfo> eventInfos = getControlService().getKernelProvider(monitor);
-        KernelProviderComponent component = new KernelProviderComponent(Messages.TraceControl_KernelProviderDisplayName, this);
-        addChild(component);
-        component.setEventInfo(eventInfos);
+
+        if (!eventInfos.isEmpty()) {
+            KernelProviderComponent component = new KernelProviderComponent(Messages.TraceControl_KernelProviderDisplayName, this);
+            addChild(component);
+            component.setEventInfo(eventInfos);
+        }
 
         List<IUstProviderInfo> allProviders = getControlService().getUstProvider(monitor);
 
@@ -91,6 +94,23 @@ public class TraceProviderGroup extends TraceControlComponent {
             addChild(ustComponent);
             ustComponent.setUstProvider(ustProviderInfo);
         }
+    }
+
+    /**
+     * Returns whether the kernel provider is available or not
+     * @return <code>true</code> if kernel provide is available or <code>false</code>
+     */
+    public boolean hasKernelProvider() {
+        List<ITraceControlComponent> kernelList = getChildren(KernelProviderComponent.class);
+        return !kernelList.isEmpty();
+    }
+
+    /**
+     * Returns if node supports filtering of events
+     * @return <code>true</code> if node supports filtering else <code>false</code>
+     */
+    public boolean isEventFilteringSupported() {
+        return ((TargetNodeComponent)getParent()).isEventFilteringSupported();
     }
 }
 

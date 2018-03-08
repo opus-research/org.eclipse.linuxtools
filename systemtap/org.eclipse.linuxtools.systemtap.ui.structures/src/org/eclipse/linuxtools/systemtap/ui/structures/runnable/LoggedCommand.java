@@ -34,7 +34,7 @@ public class LoggedCommand extends Command {
 	 * @param prompt The password promt for allowing the user to enter their password.
 	 */
 	public LoggedCommand(String[] cmd, String[] envVars, IPasswordPrompt prompt) {
-		super(cmd, envVars, prompt, 0);
+		this(cmd, envVars, prompt, 0);
 	}
 
 	/**
@@ -76,23 +76,25 @@ public class LoggedCommand extends Command {
 	/**
 	 * Stops the process from running and unregisters the StreamListener
 	 */
+	@Override
 	public synchronized void stop() {
 		if(isRunning()) {
 			super.stop();
-	    	removeInputStreamListener(logger);
+			removeInputStreamListener(logger);
 		}
 	}
-	
+
 	/**
 	 * Dispoes of all internal references in this class.  Nothing should be called
 	 * after dispose.
 	 */
+	@Override
 	public void dispose() {
 		if(!isDisposed()) {
 			super.dispose();	//Do this first to ensure logger reads everything possible
 	    	logger.dispose();
 		}
 	}
-	
+
 	private LoggingStreamDaemon logger;
 }

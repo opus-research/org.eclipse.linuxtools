@@ -11,7 +11,6 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.views;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -26,6 +25,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.CollapseAllHandler;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
 
 
@@ -40,29 +41,30 @@ import org.eclipse.ui.part.ViewPart;
  */
 public abstract class BrowserView extends ViewPart {
 	protected TreeViewer viewer;
+	protected CollapseAllHandler collapseHandler;
 
 	public BrowserView() {
 		super();
 	}
-	
+
 	/**
 	 * Provides an interface for the TreeViewer to interact with the internal TreeNode data structure.
 	 * @author Ryan Morse
 	 *
 	 */
-	class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
+	static class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {}
-		
+
 		public void dispose() {}
-		
+
 		public Object[] getElements(Object parent) {
 			return getChildren(parent);
 		}
-		
+
 		public Object getParent(Object child) {
 			return null;
 		}
-		
+
 		public Object[] getChildren(Object par) {
 			TreeNode parent = ((TreeNode)par);
 
@@ -71,102 +73,110 @@ public abstract class BrowserView extends ViewPart {
 			for(int i=0; i<children.length; i++) {
 				children[i] = parent.getChildAt(i);
 			}
-			
+
 			return children;
 		}
-		
+
 		public boolean hasChildren(Object parent) {
 			return ((TreeNode)parent).getChildCount() > 0;
 		}
 	}
-	
+
 	/**
 	 * Provides the icon and text for each entry in the tapset tree.
 	 * @author Ryan Morse
 	 */
-	class ViewLabelProvider extends LabelProvider {
+	static class ViewLabelProvider extends LabelProvider {
+		@Override
 		public String getText(Object obj) {
 			return obj.toString();
 		}
 
+		@Override
 		public Image getImage(Object obj) {
 			TreeNode treeObj = (TreeNode)obj;
 			Image img;
 			String item = treeObj.getData().toString();
-			
+
 			img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
 			if (treeObj.getChildCount() > 0)
 				img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
 
 			//Kernel Source
-			if(item.endsWith(".c"))
-				img = IDEPlugin.getImageDescriptor("icons/files/file_c.gif").createImage();
-			if(item.endsWith(".h"))
-				img = IDEPlugin.getImageDescriptor("icons/files/file_h.gif").createImage();
-			
+			if(item.endsWith(".c")) //$NON-NLS-1$
+				img = IDEPlugin.getImageDescriptor("icons/files/file_c.gif").createImage(); //$NON-NLS-1$
+			if(item.endsWith(".h")) //$NON-NLS-1$
+				img = IDEPlugin.getImageDescriptor("icons/files/file_h.gif").createImage(); //$NON-NLS-1$
+
 			//Functions
-			if(item.endsWith(")") && !item.endsWith("\")")) {
-				item = item.substring(0, item.indexOf("(")).trim();
-				if(item.endsWith(":long"))
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage();
-				else if(item.endsWith(":string"))
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage();
+			if(item.endsWith(")") && !item.endsWith("\")")) { //$NON-NLS-1$ //$NON-NLS-2$
+				item = item.substring(0, item.indexOf("(")).trim(); //$NON-NLS-1$
+				if(item.endsWith(":long")) //$NON-NLS-1$
+					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
+				else if(item.endsWith(":string")) //$NON-NLS-1$
+					img = IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage(); //$NON-NLS-1$
 				else //if(item.endsWith(":unknown"))
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_void.gif").createImage();
+					img = IDEPlugin.getImageDescriptor("icons/vars/var_void.gif").createImage(); //$NON-NLS-1$
 			} else {
 				//Probes
-				if(item.startsWith("probe"))
-					img = IDEPlugin.getImageDescriptor("icons/misc/probe_obj.gif").createImage();
-				
+				if(item.startsWith("probe")) //$NON-NLS-1$
+					img = IDEPlugin.getImageDescriptor("icons/misc/probe_obj.gif").createImage(); //$NON-NLS-1$
+
 				//Probe variables
-				if(item.endsWith(":long"))
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage();
-				else if(item.endsWith(":string"))
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage();
-				else if(item.endsWith(":unknown"))
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_unk.gif").createImage();
+				if(item.endsWith(":long")) //$NON-NLS-1$
+					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
+				else if(item.endsWith(":string")) //$NON-NLS-1$
+					img = IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage(); //$NON-NLS-1$
+				else if(item.endsWith(":unknown")) //$NON-NLS-1$
+					img = IDEPlugin.getImageDescriptor("icons/vars/var_unk.gif").createImage(); //$NON-NLS-1$
+				else
+					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
 			}
 
 			return img;
 		}
-	}	
-	
+	}
+
+	@Override
 	public void createPartControl(Composite parent) {
 		parent.getShell().setCursor(new Cursor(parent.getShell().getDisplay(), SWT.CURSOR_WAIT));
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
+		IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+		collapseHandler = new CollapseAllHandler(getViewer());
+		handlerService.activateHandler(CollapseAllHandler.COMMAND_ID, collapseHandler);
 		RecentFileMenuManager.getInstance().registerActionBar(getViewSite().getActionBars());
 	}
-	
+
 	public TreeViewer getViewer() {
 		return viewer;
 	}
 
+	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
-	
+
+	@Override
 	public void dispose() {
 		super.dispose();
 		viewer = null;
+		if(collapseHandler != null) {
+			collapseHandler.dispose();
+		}
 	}
-	
+
 	abstract void refresh();
-	
+
 	protected class ViewUpdater implements IUpdateListener {
 		public void handleUpdateEvent() {
-			try {
 			viewer.getControl().getDisplay().asyncExec(new Runnable() {
 				public void run() {
 					refresh();
 				}
 			});
-			}catch(Exception e)
-			{
-				//TO FIX: BUG 315988
-			}
 		}
 	}
 }

@@ -41,7 +41,7 @@ public class SystemTapErrorHandler {
              .getString("SystemTapErrorHandler.ErrorMessage") + //$NON-NLS-1$
              Messages.getString("SystemTapErrorHandler.ErrorMessage1")); //$NON-NLS-1$
 
-        logContents = new StringBuilder(); //$NON-NLS-1$
+        logContents = new StringBuilder();
     }
 
     /**
@@ -63,8 +63,9 @@ public class SystemTapErrorHandler {
             for (String message : errorsList) {
                 buff = new BufferedReader(new FileReader(file));
                 while ((line = buff.readLine()) != null) {
-                    if (m != null && m.isCanceled())
+                    if (m != null && m.isCanceled()) {
                         return;
+                    }
                     int index = line.indexOf('=');
                     Pattern pat = Pattern.compile(line.substring(0, index),Pattern.DOTALL);
                     Matcher matcher = pat.matcher(message);
@@ -125,8 +126,9 @@ public class SystemTapErrorHandler {
         while ((line = br.readLine()) != null) {
             counter++;
             builder.append(line + "\n"); //$NON-NLS-1$
-            if (m != null && m.isCanceled())
+            if (m != null && m.isCanceled()) {
                 return;
+            }
             if (counter == LINE_LIMIT) {
                 handle(m, builder.toString());
                 builder = new StringBuilder();
@@ -158,7 +160,7 @@ public class SystemTapErrorHandler {
     	IStatus status = new Status(IStatus.ERROR,CallgraphCorePlugin.PLUGIN_ID,logContents.toString());
     	CallgraphCorePlugin.getDefault().getLog().log(status);
     	
-        logContents = new StringBuilder(); //$NON-NLS-1$
+        logContents = new StringBuilder();
     }
    
     /**

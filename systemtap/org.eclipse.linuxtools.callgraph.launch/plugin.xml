@@ -14,7 +14,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.internal.callgraph.launch.SystemTapLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.callgraph.launch.systemtapLaunch"
-            modes="profile"
+            modes="linuxtools"
             name="%launchConfigurationType.name.0"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
@@ -42,7 +42,7 @@
             id="org.eclipse.linuxtools.systemtap.quicklaunchStapGraph1"
             icon="icons/bar_graph.png"
             label="%launch.name"
-            modes="profile">
+            modes="linuxtools">
          <contextualLaunch>
             <enablement>
                <with
@@ -91,6 +91,20 @@
           icon="icons/bar_graph.png"
           id="org.eclipse.linuxtools.callgraph.launch.systemtapLaunchImage">
     </launchConfigurationTypeImage>
+ </extension>
+ <extension
+       point="org.eclipse.linuxtools.profiling.launch.launchProvider">
+    <provider
+          delegate="org.eclipse.linuxtools.internal.callgraph.launch.SystemTapLaunchConfigurationDelegate"
+          description="%callgraphLaunchConfiguration.description"
+          id="org.eclipse.linuxtools.callgraph.launch.provider"
+          information="%callgraphLaunchConfiguration.information"
+          name="%callgraphLaunchConfiguration.name.0"
+          priority="3"
+          shortcut="org.eclipse.linuxtools.internal.callgraph.launch.LaunchStapGraph"
+          tabgroup="org.eclipse.linuxtools.internal.callgraph.launch.SystemTapLaunchConfigurationTabGroup"
+          type="timing">
+    </provider>
  </extension>
    
 

@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -13,7 +13,7 @@
 package org.eclipse.linuxtools.tmf.core.tests;
 
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.linuxtools.internal.tmf.core.Tracer;
+import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -29,11 +29,12 @@ public class TmfCoreTestPlugin extends Plugin {
     // ------------------------------------------------------------------------
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.tmf.tests";
+	@SuppressWarnings("javadoc")
+    public static final String PLUGIN_ID = "org.eclipse.linuxtools.tmf.tests";
 
 	// The shared instance
 	private static TmfCoreTestPlugin fPlugin;
-	
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -71,12 +72,12 @@ public class TmfCoreTestPlugin extends Plugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		setDefault(this);
-		Tracer.init();
+		TmfCoreTracer.init();
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		Tracer.stop();
+		TmfCoreTracer.stop();
 		setDefault(null);
 		super.stop(context);
 	}

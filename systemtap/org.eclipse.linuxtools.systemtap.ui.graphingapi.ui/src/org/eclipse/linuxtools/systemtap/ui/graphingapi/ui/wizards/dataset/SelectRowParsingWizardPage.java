@@ -34,6 +34,7 @@ public class SelectRowParsingWizardPage extends ParsingWizardPage {
 		setTitle(Localization.getString("SelectRowParsingWizardPage.SelectRowDataSetParsing"));
 	}
 	
+	@Override
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 
@@ -43,6 +44,7 @@ public class SelectRowParsingWizardPage extends ParsingWizardPage {
 		setControl(comp);
 	}
 
+	@Override
 	protected boolean readParsingExpression() {
 		if(null == wizard.metaFile && !wizard.openFile())
 			return false;
@@ -94,21 +96,23 @@ public class SelectRowParsingWizardPage extends ParsingWizardPage {
 		return true;
 	}
 	
+	@Override
 	protected void copyExisting(IMemento oldMeta, IMemento newMeta) {
 		IMemento[] children = oldMeta.getChildren(IDataSetParser.XMLColumn);
 		IMemento child;
-		for(int j=0; j<children.length; j++) {
+		for(IMemento memento :children) {
 			child = newMeta.createChild(IDataSetParser.XMLColumn);
-			child.putString(IDataSetParser.XMLname, children[j].getString(IDataSetParser.XMLname));
+			child.putString(IDataSetParser.XMLname, memento.getString(IDataSetParser.XMLname));
 		}
 		children = oldMeta.getChildren(IDataSetParser.XMLSeries);
-		for(int j=0; j<children.length; j++) {
+		for(IMemento memento :children) {
 			child = newMeta.createChild(IDataSetParser.XMLSeries);
-			child.putString(IDataSetParser.XMLparsingExpression, children[j].getString(IDataSetParser.XMLparsingExpression));
-			child.putString(IDataSetParser.XMLparsingSpacer, children[j].getString(IDataSetParser.XMLparsingSpacer));
+			child.putString(IDataSetParser.XMLparsingExpression, memento.getString(IDataSetParser.XMLparsingExpression));
+			child.putString(IDataSetParser.XMLparsingSpacer, memento.getString(IDataSetParser.XMLparsingSpacer));
 		}
 	}
 	
+	@Override
 	public boolean checkComplete() {
 		if(super.checkComplete()) {
 			try {
@@ -122,6 +126,7 @@ public class SelectRowParsingWizardPage extends ParsingWizardPage {
 		return false;
 	}
 	
+	@Override
 	public void dispose() {
 		super.dispose();
 	}

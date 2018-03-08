@@ -100,9 +100,9 @@ public class AssignEventHandler extends BaseControlViewHandler {
                         TraceChannelComponent channel = dialog.getChannel();
                         if (channel == null) {
                             // enable events on default channel (which will be created by lttng-tools)
-                            dialog.getSession().enableEvents(eventNames, param.isKernel(), monitor);
+                            dialog.getSession().enableEvents(eventNames, param.isKernel(), dialog.getFilterExpression(), monitor);
                         } else {
-                            channel.enableEvents(eventNames, monitor);
+                            channel.enableEvents(eventNames, dialog.getFilterExpression(), monitor);
                         }
 
                     } catch (ExecutionException e) {
@@ -184,6 +184,12 @@ public class AssignEventHandler extends BaseControlViewHandler {
         }
 
         boolean isEnabled = ((!events.isEmpty()) && (sessions != null) && (sessions.length > 0));
+
+        // To avoid compiler warnings check for null even if isKernel is always not null when used below
+        if (isKernel == null) {
+            return false;
+        }
+
         fLock.lock();
         try {
             fParam = null;

@@ -11,47 +11,42 @@
 
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.tests.structures;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.NumberType;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class NumberTypeTest extends TestCase {
-	public NumberTypeTest(String name) {
-		super(name);
-	}
-
-	protected void setUp() throws Exception {
-		super.setUp();
-	}
-
+public class NumberTypeTest {
+	@Test
 	public void testGetNumber() {
-		Number n = NumberType.getNumber(new Integer(3), 3.2);
+		Number n = NumberType.getNumber(3, 3.2);
 		assertTrue(n instanceof Integer);
 		assertEquals(3, n.intValue());
 
-		n = NumberType.getNumber(new Double(3), 3.2);
+		n = NumberType.getNumber(3d, 3.2);
 		assertTrue(n instanceof Double);
 		assertEquals(3.2, n.doubleValue(), 0.0);
 
-		n = NumberType.getNumber(new Float(3), 3.2);
+		n = NumberType.getNumber(3f, 3.2);
 		assertTrue(n instanceof Float);
 		assertEquals(3.2, n.floatValue(), 0.0001);
 
-		n = NumberType.getNumber(new Long(3), 3.2);
+		n = NumberType.getNumber(3L, 3.2);
 		assertTrue(n instanceof Long);
 		assertEquals(3, n.longValue());
 
-		n = NumberType.getNumber(new Byte((byte)3), 3.2);
+		n = NumberType.getNumber((byte)3, 3.2);
 		assertTrue(n instanceof Byte);
 		assertEquals(3, n.byteValue());
 
-		n = NumberType.getNumber(new Short((short)3), 3.2);
+		n = NumberType.getNumber((short)3, 3.2);
 		assertTrue(n instanceof Short);
 		assertEquals(3, n.shortValue());
 	}
-	
+	@Test
 	public void testObj2num() {
-		Object[] obj = new Object[] {new Integer(3), new Double(2.3), new Float(4.2)};
+		Object[] obj = new Object[] {3, 2.3d, 4.2f};
 		Number[] num = NumberType.obj2num(obj);
 		
 		assertEquals(0, NumberType.obj2num("a").intValue());
@@ -63,14 +58,11 @@ public class NumberTypeTest extends TestCase {
 		assertEquals(2.3, num[1].doubleValue(), 0.00001);
 		assertEquals(4.2, num[2].doubleValue(), 0.00001);
 	}
-	
+	@Test
 	public void testCleanObj2Num() {
 		assertEquals(3, NumberType.cleanObj2Num("3").intValue());
 		assertEquals(3.2, NumberType.cleanObj2Num("3.2").doubleValue(), 0.00001);
 		assertEquals(3, NumberType.cleanObj2Num(new Integer(3)).intValue());
 	}
 	
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
 }

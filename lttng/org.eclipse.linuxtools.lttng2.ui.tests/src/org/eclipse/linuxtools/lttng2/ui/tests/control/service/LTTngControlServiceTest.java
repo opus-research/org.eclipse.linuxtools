@@ -28,6 +28,7 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IDomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
+import org.eclipse.linuxtools.internal.lttng2.core.control.model.IFieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IUstProviderInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType;
@@ -62,8 +63,11 @@ public class LTTngControlServiceTest extends TestCase {
     private static final String SCEN_GET_SESSION_GARBAGE_OUT = "GetSessionGarbageOut";
     private static final String SCEN_GET_SESSION1 = "GetSession1";
     private static final String SCEN_GET_KERNEL_PROVIDER1 = "GetKernelProvider1";
+    private static final String SCEN_LIST_WITH_NO_KERNEL1 = "ListWithNoKernel1";
+    private static final String SCEN_LIST_WITH_NO_KERNEL2 = "ListWithNoKernel2";
     private static final String SCEN_GET_UST_PROVIDER1 = "GetUstProvider1";
     private static final String SCEN_GET_UST_PROVIDER2 = "GetUstProvider2";
+    private static final String SCEN_GET_UST_PROVIDER3 = "GetUstProvider3";
     private static final String SCEN_CREATE_SESSION1 = "CreateSession1";
     private static final String SCEN_CREATE_SESSION_WITH_PROMPT = "CreateSessionWithPrompt";
     private static final String SCEN_CREATE_SESSION_VARIANTS = "CreateSessionVariants";
@@ -129,7 +133,7 @@ public class LTTngControlServiceTest extends TestCase {
             fShell.setScenario(SCEN_LTTNG_VERSION);
             ILttngControlService service = LTTngControlServiceFactory.getInstance().getLttngControlService(fShell);
             assertNotNull(service);
-            assertEquals("2.0.0", service.getVersion());
+            assertEquals("2.1.0", service.getVersion());
         } catch (ExecutionException e) {
             fail("Exeption thrown " + e);
         }
@@ -145,7 +149,7 @@ public class LTTngControlServiceTest extends TestCase {
             fail("Exeption thrown " + e);
         }
     }
-    
+
     public void testUnsupportedVersion() {
         try {
             fShell.setScenario(SCEN_LTTNG_UNSUPPORTED_VERSION);
@@ -375,6 +379,35 @@ public class LTTngControlServiceTest extends TestCase {
         }
     }
 
+    public void testGetKernelProviderNoKernel1() {
+        try {
+            fShell.setScenario(SCEN_LIST_WITH_NO_KERNEL1);
+            List<IBaseEventInfo> events = fService.getKernelProvider(new NullProgressMonitor());
+
+            // Verify event info
+            assertNotNull(events);
+            assertEquals(0, events.size());
+
+        } catch (ExecutionException e) {
+            fail(e.toString());
+        }
+    }
+
+    public void testGetKernelProviderNoKernel2() {
+        try {
+            fShell.setScenario(SCEN_LIST_WITH_NO_KERNEL2);
+            List<IBaseEventInfo> events = fService.getKernelProvider(new NullProgressMonitor());
+
+            // Verify event info
+            assertNotNull(events);
+            assertEquals(0, events.size());
+
+        } catch (ExecutionException e) {
+            fail(e.toString());
+        }
+    }
+
+
     public void testGetUstProvider() {
         try {
             fShell.setScenario(SCEN_GET_UST_PROVIDER1);
@@ -442,6 +475,82 @@ public class LTTngControlServiceTest extends TestCase {
         }
     }
 
+    public void testGetUstProvider3() {
+        try {
+            fShell.setScenario(SCEN_GET_UST_PROVIDER3);
+            // Set version
+            ((LTTngControlService)fService).setVersion("2.1.0");
+            List<IUstProviderInfo> providers = fService.getUstProvider();
+
+            // Check all providers
+            assertNotNull(providers);
+            assertEquals(2, providers.size());
+
+            //Verify first provider
+            assertEquals("/home/user/git/lttng-ust/tests/hello.cxx/.libs/lt-hello", providers.get(0).getName());
+            assertEquals(9379, providers.get(0).getPid());
+
+            // Verify event info
+            IBaseEventInfo[] events = providers.get(0).getEvents();
+            assertNotNull(events);
+            assertEquals(2, events.length);
+
+            IBaseEventInfo baseEventInfo = events[0];
+            assertNotNull(baseEventInfo);
+            IFieldInfo[] fields = baseEventInfo.getFields();
+            assertNotNull(fields);
+            assertEquals(0, fields.length);
+
+            baseEventInfo = events[1];
+            fields = baseEventInfo.getFields();
+            assertNotNull(fields);
+            assertEquals(3, fields.length);
+            assertEquals("doublefield", fields[0].getName());
+            assertEquals("float", fields[0].getFieldType());
+
+            assertEquals("floatfield", fields[1].getName());
+            assertEquals("float", fields[1].getFieldType());
+
+            assertEquals("stringfield", fields[2].getName());
+            assertEquals("string", fields[2].getFieldType());
+
+            //Verify second provider
+            assertEquals("/home/user/git/lttng-ust/tests/hello.cxx/.libs/lt-hello", providers.get(1).getName());
+            assertEquals(4852, providers.get(1).getPid());
+
+            // Verify event info
+            events = providers.get(1).getEvents();
+            assertNotNull(events);
+            assertEquals(2, events.length);
+
+            baseEventInfo = events[0];
+            assertNotNull(baseEventInfo);
+            fields = baseEventInfo.getFields();
+            assertNotNull(fields);
+            assertEquals(0, fields.length);
+
+            baseEventInfo = events[1];
+            fields = baseEventInfo.getFields();
+            assertNotNull(fields);
+            assertEquals(3, fields.length);
+
+            assertEquals("doublefield", fields[0].getName());
+            assertEquals("float", fields[0].getFieldType());
+
+            assertEquals("floatfield", fields[1].getName());
+            assertEquals("float", fields[1].getFieldType());
+
+            assertEquals("stringfield", fields[2].getName());
+            assertEquals("string", fields[2].getFieldType());
+
+            // Reset version
+            ((LTTngControlService)fService).setVersion("2.0.0");
+
+        } catch (ExecutionException e) {
+            fail(e.toString());
+        }
+    }
+
     public void testCreateSession() {
         try {
             fShell.setScenario(SCEN_CREATE_SESSION1);
@@ -459,7 +568,7 @@ public class LTTngControlServiceTest extends TestCase {
 
     public void testCreateSessionWithPrompt() {
         try {
-            // First line has the shell prompt before the command output 
+            // First line has the shell prompt before the command output
             // This can happen in a real application if the command line is not echoed by the shell.
             fShell.setScenario(SCEN_CREATE_SESSION_WITH_PROMPT);
 
@@ -475,7 +584,7 @@ public class LTTngControlServiceTest extends TestCase {
         }
     }
 
-    
+
     public void testCreateSessionVariants() {
 
         fShell.setScenario(SCEN_CREATE_SESSION_VARIANTS);
@@ -642,21 +751,26 @@ public class LTTngControlServiceTest extends TestCase {
             list.add(eventName1);
             list.add(eventName2);
             fShell.setScenario(SCEN_EVENT_HANDLING);
-            fService.enableEvents(sessionName, null, list, true, new NullProgressMonitor());
+            fService.enableEvents(sessionName, null, list, true, null, new NullProgressMonitor());
 
             // 2) session name, channel=mychannel, event name= null, kernel
             String channelName = "mychannel";
-            fService.enableEvents(sessionName, channelName, null, true, new NullProgressMonitor());
+            fService.enableEvents(sessionName, channelName, null, true, null, new NullProgressMonitor());
 
-            // 3) session name, channel=mychannel, 1 event name, ust
+            // 3) session name, channel=mychannel, 1 event name, ust, no filter
             String ustEventName = "ust_tests_hello:tptest_sighandler";
             list.clear();
             list.add(ustEventName);
-            fService.enableEvents(sessionName, channelName, list, false, new NullProgressMonitor());
+            fService.enableEvents(sessionName, channelName, list, false, null, new NullProgressMonitor());
 
-            // 4) session name, channel = mychannel, no event name, ust
+            // 4) session name, channel = mychannel, no event name, ust, with filter
+            fService.enableEvents(sessionName, channelName, list, false, "intfield==10", new NullProgressMonitor());
+
+            // 5) session name, channel = mychannel, no event name, ust, no filter
             list.clear();
-            fService.enableEvents(sessionName, channelName, list, false, new NullProgressMonitor());
+            fService.enableEvents(sessionName, channelName, list, false, null, new NullProgressMonitor());
+
+            // TODO add test with filters
 
         } catch (ExecutionException e) {
             fail(e.toString());
@@ -716,10 +830,12 @@ public class LTTngControlServiceTest extends TestCase {
             fShell.setScenario(SCEN_EVENT_HANDLING);
 
             // 1) session name, channel = null, event name, loglevel-only, TRACE_DEBUG
-            fService.enableLogLevel(sessionName, null, eventName4, LogLevelType.LOGLEVEL_ONLY, TraceLogLevel.TRACE_DEBUG, new NullProgressMonitor());
+            fService.enableLogLevel(sessionName, null, eventName4, LogLevelType.LOGLEVEL_ONLY, TraceLogLevel.TRACE_DEBUG, null, new NullProgressMonitor());
 
             // 2) session name, channel = mychannel, null, loglevel, TRACE_DEBUG_FUNCTION
-            fService.enableLogLevel(sessionName, channelName, eventName5, LogLevelType.LOGLEVEL, TraceLogLevel.TRACE_DEBUG_FUNCTION, new NullProgressMonitor());
+            fService.enableLogLevel(sessionName, channelName, eventName5, LogLevelType.LOGLEVEL, TraceLogLevel.TRACE_DEBUG_FUNCTION, null, new NullProgressMonitor());
+
+            // TODO add test with filters
 
         } catch (ExecutionException e) {
             fail(e.toString());
