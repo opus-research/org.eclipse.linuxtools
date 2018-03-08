@@ -280,11 +280,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
         return;
     }
 
-    /**
-     * Method getStateSystem.
-     *
-     * @return IStateSystemQuerier
-     */
+    @Override
     public IStateSystemQuerier getStateSystem() {
         return this.ss;
     }
