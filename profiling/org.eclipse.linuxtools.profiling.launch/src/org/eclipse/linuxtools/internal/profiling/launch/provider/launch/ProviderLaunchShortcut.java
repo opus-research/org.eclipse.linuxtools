@@ -40,7 +40,6 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 	// Launch configuration type id.
 	private String launchConfigId;
 
-	@Override
 	public void setInitializationData(IConfigurationElement config,
 			String propertyName, Object data) {
 		Map<String, String> parameters = (Map<String, String>) data;
@@ -169,53 +168,43 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 		 */
 		ILaunchConfigurationDialog dialog  = new ILaunchConfigurationDialog() {
 
-			@Override
 			public void run(boolean fork, boolean cancelable,
 					IRunnableWithProgress runnable) {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void updateMessage() {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void updateButtons() {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void setName(String name) {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void setActiveTab(int index) {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public void setActiveTab(ILaunchConfigurationTab tab) {
 				throw new UnsupportedOperationException ();
 			}
 
-			@Override
 			public ILaunchConfigurationTab[] getTabs() {
 				return null;
 			}
 
-			@Override
 			public String getMode() {
 				return null;
 			}
 
-			@Override
 			public ILaunchConfigurationTab getActiveTab() {
 				return null;
 			}
 
-			@Override
 			public String generateName(String name) {
 				if (name == null) {
 					name = ""; //$NON-NLS-1$
