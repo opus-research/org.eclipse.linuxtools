@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,13 +8,11 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *   Matthew Khouzam - Changed to LTTngKernelTrace from ctfKernelTrace
  ******************************************************************************/
 
 package org.eclipse.linuxtools.lttng2.kernel.core.trace;
 
 import java.io.File;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -35,10 +33,8 @@ import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
  *
  * @version 1.0
  * @author Alexandre Montplaisir
- * @author Matthew Khouzam
- * @since 2.0
  */
-public class LttngKernelTrace extends CtfTmfTrace {
+public class CtfKernelTrace extends CtfTmfTrace {
 
     /**
      * The file name of the History Tree
@@ -47,7 +43,6 @@ public class LttngKernelTrace extends CtfTmfTrace {
 
     /**
      * ID of the state system we will build
-     *
      * @since 2.0
      * */
     public static final String STATE_ID = "org.eclipse.linuxtools.lttng2.kernel"; //$NON-NLS-1$
@@ -55,18 +50,26 @@ public class LttngKernelTrace extends CtfTmfTrace {
     /**
      * Default constructor
      */
-    public LttngKernelTrace() {
+    public CtfKernelTrace() {
         super();
     }
 
     @Override
     public boolean validate(final IProject project, final String path) {
-        /* Make sure the domain is "kernel" in the trace's env vars */
-        final Map<String, String> environmentSetup = getEnvironmentSetup(path);
-        if (environmentSetup == null) {
+        CTFTrace temp;
+        /*
+         * Make sure the trace is openable as a CTF trace. We do this here
+         * instead of calling super.validate() to keep the reference to "temp".
+         */
+        try {
+            temp = new CTFTrace(path);
+        } catch (CTFReaderException e) {
             return false;
         }
-        String dom = environmentSetup.get("domain"); //$NON-NLS-1$
+
+        /* Make sure the domain is "kernel" in the trace's env vars */
+        String dom = temp.getEnvironment().get("domain"); //$NON-NLS-1$
+        temp.dispose();
         if (dom != null && dom.equals("\"kernel\"")) { //$NON-NLS-1$
             return true;
         }

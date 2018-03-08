@@ -11,9 +11,6 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
@@ -122,34 +119,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     }
 
     /**
-     * Helper function to get the environment variables from a trace. This
-     * proves that the metadata parsed and the first events were read.
-     *
-     * @param path
-     *            the path of the trace directory
-     * @return the map, either empty or not, or null if the trace failed
-     * @since 2.0
-     */
-    protected Map<String, String> getEnvironmentSetup(final String path){
-        CTFTrace temp;
-        /*
-         * Make sure the trace is openable as a CTF trace. We do this here
-         * instead of calling super.validate() to keep the reference to "temp".
-         */
-        try {
-            temp = new CTFTrace(path);
-        } catch (CTFReaderException e) {
-            return null;
-        }
-
-        /* Make sure the domain is "kernel" in the trace's env vars */
-        if( temp.getEnvironment() != null ) {
-            return temp.getEnvironment();
-        }
-        return new HashMap<String, String>();
-    }
-
-    /**
      * Method validate.
      * @param project IProject
      * @param path String
@@ -158,11 +127,15 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
      */
     @Override
     public boolean validate(final IProject project, final String path) {
-        Map<String, String> temp = getEnvironmentSetup(path);
-        if(temp!= null) {
-            return true;
+        try {
+            final CTFTrace temp = new CTFTrace(path);
+            boolean valid = temp.majortIsSet(); // random test
+            temp.dispose();
+            return valid;
+        } catch (final CTFReaderException e) {
+            /* Nope, not a CTF trace we can read */
+            return false;
         }
-        return false;
     }
 
     /**
@@ -245,6 +218,12 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
         return context;
     }
 
+    /**
+     * Method readNextEvent.
+     * @param context ITmfContext
+     * @return CtfTmfEvent
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getNext(ITmfContext)
+     */
     @Override
     public synchronized CtfTmfEvent getNext(final ITmfContext context) {
         if (fTrace == null) {
