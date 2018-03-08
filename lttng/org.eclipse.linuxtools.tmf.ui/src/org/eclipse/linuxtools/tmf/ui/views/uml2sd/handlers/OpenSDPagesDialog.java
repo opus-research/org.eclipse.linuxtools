@@ -18,7 +18,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.PagesDialog;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDAdvancedPagingProvider;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 
 /**
  * Action class implementation for paging.
@@ -63,7 +63,7 @@ public class OpenSDPagesDialog extends Action {
      *            The provider
      */
     public OpenSDPagesDialog(SDView view, ISDAdvancedPagingProvider provider) {
-        super(Messages.SequenceDiagram_Pages);
+        super(SDMessages._44);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_GOTO_PAGE));
         setId(ID);
         fView = view;
