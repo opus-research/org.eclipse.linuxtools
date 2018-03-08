@@ -34,18 +34,18 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.StapErrorParser;
 import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.PasswordPrompt;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 
-
-
 /**
  * This <code>Action</code> is used to run a SystemTap script that is currently open in the editor.
- * @author Ryan Morse
+ * Contributors:
+ *    Ryan Morse - Original author.
+ *    Red Hat Inc. - Copied most code from RunScriptAction here and made it into
+ *                   base class for run actions. 
  * @since 1.2
  */
 
@@ -67,12 +67,10 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 	}
 
 	public void dispose() {
-		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		fWindow= null;
 	}
 
 	public void init(IWorkbenchWindow window) {
-		LogManager.logInfo("Initializing fWindow: "+ window, this); //$NON-NLS-1$
 		fWindow= window;
 	}
 
@@ -94,7 +92,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 				 
 					ScpClient scpclient = new ScpClient();
 					serverfileName = fileName.substring(fileName.lastIndexOf('/')+1);
-					tmpfileName="/tmp/"+ serverfileName;
+					tmpfileName="/tmp/"+ serverfileName; //$NON-NLS-1$
 					 scpclient.transfer(fileName,tmpfileName);
 			        }catch(Exception e){e.printStackTrace();}
 			}
@@ -111,8 +109,6 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
                 console.run(script, envVars, new PasswordPrompt(IDESessionSettings.password), new StapErrorParser());
             }
 		}
-		
-		LogManager.logDebug("End run:", this); //$NON-NLS-1$
 	}
 	
 	protected abstract String getFilePath();
@@ -133,8 +129,8 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		if(0 == IDESessionSettings.tapsetLocation.trim().length())
 			TapsetLibrary.getTapsetLocation(IDEPlugin.getDefault().getPreferenceStore());
 		if(fileName.contains(IDESessionSettings.tapsetLocation)) {
-			String msg = MessageFormat.format(Localization.getString("RunScriptAction.TapsetDirectoryRun"),(Object []) null);
-			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("RunScriptAction.Error"), msg);
+			String msg = MessageFormat.format(Localization.getString("RunScriptAction.TapsetDirectoryRun"),(Object []) null); //$NON-NLS-1$
+			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("RunScriptAction.Error"), msg); //$NON-NLS-1$
 			return false;
 		}
 		return true;
@@ -227,9 +223,9 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 			if(imbedded)
 				return true;
 		} catch (FileNotFoundException fnfe) {
-			LogManager.logCritical("FileNotFoundException run: " + fnfe.getMessage(), this); //$NON-NLS-1$
+			fnfe.printStackTrace();
 		} catch (IOException ie) {
-			LogManager.logCritical("IOException run: " + ie.getMessage(), this); //$NON-NLS-1$
+			ie.printStackTrace();
 		}
 		return false;
 	}
@@ -270,7 +266,7 @@ abstract public class RunScriptBaseAction extends Action implements IWorkbenchWi
 		for(int i=0; i< cmdList.size(); i++) {
 			script[i+1] = cmdList.get(i).toString();
 		}
-		script[script.length-3]="-m";
+		script[script.length-3]="-m"; //$NON-NLS-1$
 
 		String modname;
 		if(getRunLocal() == false) {
