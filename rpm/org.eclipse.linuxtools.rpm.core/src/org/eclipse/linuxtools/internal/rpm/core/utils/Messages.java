@@ -19,6 +19,7 @@ public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.rpm.core.utils.messages"; //$NON-NLS-1$
 	/** Download + name  message	 */
 	public static String DownloadJob_0;
+	public static String specfile_not_found;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
