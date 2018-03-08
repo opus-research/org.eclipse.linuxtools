@@ -1,4 +1,3 @@
-
 /*****************************************************************************
  * Copyright (c) 2007, 2008 Intel Corporation, 2009, 2010, 2011, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
@@ -33,7 +32,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphScale;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphTooltipHandler;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -91,8 +89,9 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     ArrayList<ITimeGraphTimeListener> fTimeListeners = new ArrayList<ITimeGraphTimeListener>();
     ArrayList<ITimeGraphRangeListener> fRangeListeners = new ArrayList<ITimeGraphRangeListener>();
 
-    // Time format, using Epoch reference, Relative time format(default) or Number
-    private TimeFormat timeFormat = TimeFormat.RELATIVE;
+    // Calender Time format, using Epoch reference or Relative time
+    // format(default
+    private boolean calendarTimeFormat = false;
     private int borderWidth = 0;
     private int timeScaleHeight = 22;
 
@@ -898,26 +897,19 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         _time1_extSynch = _time1;
     }
 
+    /**
+     * Set the calendar format
+     *
+     * @param toAbsoluteCaltime
+     *            True for absolute time, false for relative
+     */
+    public void setTimeCalendarFormat(boolean toAbsoluteCaltime) {
+        calendarTimeFormat = toAbsoluteCaltime;
+    }
+
     @Override
-    @Deprecated
     public boolean isCalendarFormat() {
-        return timeFormat == TimeFormat.CALENDAR;
-    }
-
-    /**
-     * @since 2.0
-     */
-    @Override
-    public TimeFormat getTimeFormat() {
-        return timeFormat;
-    }
-
-    /**
-     * @param tf the {@link TimeFormat} used to display timestamps
-     * @since 2.0
-     */
-    public void setTimeFormat(TimeFormat tf) {
-        this.timeFormat = tf;
+        return calendarTimeFormat;
     }
 
     /**
@@ -1050,6 +1042,30 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      */
     TimeGraphScale getTimeGraphScale() {
         return _timeScaleCtrl;
+    }
+
+    /**
+     * Return the x coordinate corresponding to a time
+     *
+     * @param time the time
+     * @return the x coordinate corresponding to the time
+     *
+     * @since 2.0
+     */
+    public int getXForTime(long time) {
+        return _stateCtrl.getXForTime(time);
+    }
+
+    /**
+     * Return the time corresponding to an x coordinate
+     *
+     * @param x the x coordinate
+     * @return the time corresponding to the x coordinate
+     *
+     * @since 2.0
+     */
+    public long getTimeAtX(int x) {
+        return _stateCtrl.getTimeAtX(x);
     }
 
     /**
