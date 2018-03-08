@@ -48,11 +48,6 @@ public abstract class StateSystemManager extends TmfComponent {
      *            The IStateChangeInput to use for building the history file. It
      *            may be required even if we are opening an already-existing
      *            history (ie, for partial histories).
-     * @param id
-     *            The ID, or name, to give to the state system we will build.
-     *            The signal that when be sent when the construction is finished
-     *            will carry this ID. It has no effect if the file already
-     *            exists.
      * @param buildManually
      *            If false, the construction will wait for a signal before
      *            starting. If true, it will build everything right now and
@@ -62,12 +57,11 @@ public abstract class StateSystemManager extends TmfComponent {
      * @throws TmfTraceException
      *             If there was a problem reading or writing one of the files.
      *             See the contents of this exception for more info.
-     * @since 2.0
      */
-    public static ITmfStateSystem loadStateHistory(File htFile,
-            IStateChangeInput htInput, String id, boolean buildManually)
+    public static IStateSystemQuerier loadStateHistory(File htFile,
+            IStateChangeInput htInput, boolean buildManually)
             throws TmfTraceException {
-        ITmfStateSystem ss;
+        IStateSystemQuerier ss;
         IStateHistoryBackend htBackend;
 
         /* If the target file already exists, do not rebuild it uselessly */
@@ -97,7 +91,7 @@ public abstract class StateSystemManager extends TmfComponent {
         try {
             htBackend = new ThreadedHistoryTreeBackend(htFile,
                     htInput.getStartTime(), QUEUE_SIZE);
-            builder = new HistoryBuilder(htInput, htBackend, id, buildManually);
+            builder = new HistoryBuilder(htInput, htBackend, buildManually);
         } catch (IOException e) {
             /*
              * If it fails here however, it means there was a problem writing to
