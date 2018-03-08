@@ -444,7 +444,7 @@ public class CtfTmfTrace extends TmfTrace
         } catch (CTFReaderException e) {
             Activator.logError(e.getMessage(), e);
         }
-        return CtfIterator.getNullIterator();
+        return null;
     }
 
     // ------------------------------------------------------------------------
