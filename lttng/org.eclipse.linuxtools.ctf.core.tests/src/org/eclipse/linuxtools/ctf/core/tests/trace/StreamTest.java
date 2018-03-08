@@ -7,14 +7,13 @@ import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.TestParams;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
-import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 import org.junit.After;
 import org.junit.Before;
@@ -133,7 +132,7 @@ public class StreamTest {
      */
     @Test
     public void testGetEvents() {
-        HashMap<Long, IEventDeclaration> result = fixture.getEvents();
+        HashMap<Long, EventDeclaration> result = fixture.getEvents();
         assertNotNull(result);
     }
 
