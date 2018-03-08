@@ -1,32 +1,26 @@
 /*******************************************************************************
- * Copyright (c) 20109 Red Hat, Inc.
+ * Copyright (c) 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.rpm.speceditor.rcp;
+
+package org.eclipse.linuxtools.internal.systemtap.ui.graphing.views;
 
 import org.eclipse.osgi.util.NLS;
 
-public final class RPMMessages extends NLS {
-	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.rpm.speceditor.rcp.RPMMessages"; //$NON-NLS-1$
-	public static String CannotOpen;
-	public static String InitialOpen;
-	public static String OpenFile;
-	public static String NullFile;
-	public static String Problem;
-	public static String EditorTitle;
-	
+public class Messages extends NLS {
+	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.systemtap.ui.graphing.views.messages"; //$NON-NLS-1$
+	public static String GraphSelectorEditor_graphsEditorTitle;
 	static {
 		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, RPMMessages.class);
+		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
 	}
 
-	private RPMMessages() {
-		super();
+	private Messages() {
 	}
 }
