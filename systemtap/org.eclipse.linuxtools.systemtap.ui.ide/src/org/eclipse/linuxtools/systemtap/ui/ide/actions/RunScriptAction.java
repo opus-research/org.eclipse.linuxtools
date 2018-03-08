@@ -15,9 +15,6 @@ import java.text.MessageFormat;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.dialogs.SelectServerDialog;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.swt.layout.FillLayout;
@@ -35,26 +32,10 @@ import org.eclipse.ui.ide.ResourceUtil;
 public class RunScriptAction extends RunScriptBaseAction {
 
 	/**
-	 * The main body of this event. Starts by making sure the current editor is valid to run,
-	 * then builds the command line arguments for stap and retrieves the environment variables.
-	 * Finally, it gets an instance of <code>ScriptConsole</code> to run the script.
-	 */
-	@Override
-	public void run() {
-		LogManager.logDebug("Start run:", this); //$NON-NLS-1$
-		continueRun = true;
-
-		if(getRunLocal() == false && ConsoleLogPlugin.getDefault().getPreferenceStore().getBoolean(ConsoleLogPreferenceConstants.REMEMBER_SERVER)!=true &&
-			new SelectServerDialog(fWindow.getShell()).open() == false)
-			return;
-		
-		super.run();
-	}
-	
-	/**
 	 * Returns the path of the current editor in the window this action is associated with.
 	 * @return The string representation of the path of the current file.
 	 */
+	@Override
 	protected String getFilePath() {
 		IEditorPart ed = fWindow.getActivePage().getActiveEditor();
 		if(ed.getEditorInput() instanceof PathEditorInput)
@@ -69,6 +50,7 @@ public class RunScriptAction extends RunScriptBaseAction {
 	 * used as an argument to stap (as opposed to an unsaved buffer).
 	 * @return True if the file is valid.
 	 */
+	@Override
 	protected boolean isValid() {
 		IEditorPart ed = fWindow.getActivePage().getActiveEditor();
 

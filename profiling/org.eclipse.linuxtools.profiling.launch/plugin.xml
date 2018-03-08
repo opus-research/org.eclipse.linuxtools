@@ -3,6 +3,8 @@
 <plugin>
    <extension-point id="RemoteProxyManager" name="Remote Proxy Manager" schema="schema/RemoteProxyManager.exsd"/>
    <extension-point id="launchProvider" name="Launch Provider" schema="schema/org.eclipse.linuxtools.profiling.launch.provider.exsd"/>
+   <extension-point id="RemoteResourceSelectorProxy" name="Remote Resource Selector Proxy" schema="schema/RemoteResourceSelectorProxy.exsd"/>
+   <extension-point id="RemoteProxyNatureMapping" name="RemoteProxyNatureMapping" schema="schema/RemoteProxyNatureMapping.exsd"/>
 
    <extension
          point="org.eclipse.ui.preferencePages">
@@ -21,7 +23,7 @@
             icon="icons/time_obj.gif"
             id="org.eclipse.linuxtools.profiling.provider.TimingLaunchShortcut"
             label="%shortcut.label"
-            modes="profile"
+            modes="linuxtools"
             path="/linuxtools/category">
             <class class="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchShortcut">
                <parameter 
@@ -90,7 +92,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.provider.TimingLaunchConfigurationType"
-            modes="profile"
+            modes="linuxtools"
             name="%launchConfigurationType.name"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
@@ -118,7 +120,7 @@
             icon="icons/memory_view.gif"
             id="org.eclipse.linuxtools.profiling.provider.MemoryLaunchShortcut"
             label="%shortcut.label.0"
-            modes="profile"
+            modes="linuxtools"
             path="/linuxtools/category">
             <class class="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchShortcut">
                <parameter 
@@ -187,7 +189,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.provider.MemoryLaunchConfigurationType"
-            modes="profile"
+            modes="linuxtools"
             name="%launchConfigurationType.name.0"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
@@ -215,7 +217,7 @@
             icon="icons/toggle.gif"
             id="org.eclipse.linuxtools.profiling.provider.CoverageLaunchShortcut"
             label="%shortcut.label.1"
-            modes="profile"
+            modes="linuxtools"
             path="/linuxtools/category">
             <class class="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchShortcut">
                <parameter 
@@ -284,7 +286,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.provider.CoverageLaunchConfigurationType"
-            modes="profile"
+            modes="linuxtools"
             name="%launchConfigurationType.name.1"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
@@ -335,6 +337,12 @@
             class="org.eclipse.linuxtools.internal.profiling.launch.provider.ProfilingPropertyPage"
             id="org.eclipse.linuxtools.profiling.launch.provider.properties.page"
             name="%page.name">
+            <filter
+               name="projectNature"
+               value="org.eclipse.cdt.core.cnature" />
+            <enabledWhen>
+              <adapt type="org.eclipse.core.resources.IProject" />
+         </enabledWhen>
       </page>
    </extension>
    <extension
@@ -346,9 +354,6 @@
             parent="org.eclipse.linuxtools.internal.profiling.launch.provider.ProfilingPropertyPage"
             weight="010">
       </tab>
-   </extension>
-   <extension
-         point="org.eclipse.cdt.ui.cPropertyTab">
       <tab
             class="org.eclipse.linuxtools.internal.profiling.launch.provider.MemoryPropertyTab"
             icon="icons/memory_view.gif"
@@ -356,9 +361,6 @@
             parent="org.eclipse.linuxtools.internal.profiling.launch.provider.ProfilingPropertyPage"
             weight="011">
       </tab>
-   </extension>
-   <extension
-         point="org.eclipse.cdt.ui.cPropertyTab">
       <tab
             class="org.eclipse.linuxtools.internal.profiling.launch.provider.CoveragePropertyTab"
             icon="icons/toggle.gif"
@@ -366,5 +368,154 @@
             parent="org.eclipse.linuxtools.internal.profiling.launch.provider.ProfilingPropertyPage"
             weight="012">
       </tab>
+   </extension>
+   <extension
+         point="org.eclipse.linuxtools.profiling.launch.RemoteResourceSelectorProxy">
+      <resourceSelectorProxy
+            class="org.eclipse.linuxtools.profiling.launch.ui.LocalResourceSelectorProxy"
+            isDefault="true"
+            scheme="local"
+            schemeLabel="Local">
+      </resourceSelectorProxy>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            id="org.eclipse.linuxtools.profiling.launch.menu"
+            objectClass="org.eclipse.core.resources.IResource">
+         <action
+               class="org.eclipse.linuxtools.internal.profiling.launch.ProfileContextualLaunchAction"
+               enablesFor="+"
+               id="org.eclipse.linuxtools.profiling.launch.submenu"
+               label="Profiling Tools"
+               menubarPath="additions"
+               style="pulldown">
+         </action>
+      </objectContribution>
+   </extension>
+      <extension
+         point="org.eclipse.debug.ui.launchGroups">
+      <launchGroup
+            bannerImage="icons/profile_wiz.png"
+            id="org.eclipse.debug.ui.launchGroup.profilee"
+            image="icons/time_obj.gif"
+            label="Profiling Tools"
+            mode="linuxtools"
+            title="Profiling Tools">
+      </launchGroup>
+   </extension>
+      <extension
+            point="org.eclipse.debug.core.launchModes">
+         <launchMode
+               label="Profile"
+               launchAsLabel="Linux Profiling Tools"
+               mode="linuxtools">
+         </launchMode>
+      </extension>
+   <extension point="org.eclipse.debug.core.launchDelegates">
+      <launchDelegate
+            id="org.eclipse.linuxtools.profiling.launch.profilingDelegate"
+            type="org.eclipse.cdt.launch.applicationLaunchType"
+            modes="profile"
+            delegate="org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderLaunchConfigurationDelegate"
+            name="ProfilingDelegate"
+            delegateDescription="%launchDelegate.localApplication.description"
+            sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
+            sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
+      </launchDelegate>
+     </extension>
+      <extension
+            point="org.eclipse.debug.ui.launchConfigurationTabs">
+       <!-- Profiling launch tabs-->
+      <tab
+            id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.mainTab"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
+            name="Main"
+            class="org.eclipse.cdt.launch.ui.CMainTab">
+        <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
+      </tab>
+      <tab
+            id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.argumentsTab"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
+            name="Arguments"
+            class="org.eclipse.cdt.launch.ui.CArgumentsTab">
+        <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
+        <placement after="org.eclipse.cdt.cdi.launch.mainTab"/>
+      </tab>
+      <tab
+            id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.environmentTab"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
+            name="Environment"
+            class="org.eclipse.debug.ui.EnvironmentTab">
+        <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
+        <placement after="org.eclipse.cdt.cdi.launch.argumentsTab"/>
+      </tab>
+      <tab
+            id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.commonTab"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
+            name="Common"
+            class="org.eclipse.debug.ui.CommonTab">
+        <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
+        <placement after="org.eclipse.debug.ui.environmentTab"/>
+      </tab>
+      <tab
+            id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.profilingTab"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
+            name="Profiler"
+            class="org.eclipse.linuxtools.internal.profiling.launch.CProfilingOptionsTab">
+        <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
+        <placement after="org.eclipse.debug.ui.commonTab"/>
+      </tab> 
+      </extension>
+      <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="org.eclipse.cdt.launch.applicationLaunchType"
+            class="org.eclipse.linuxtools.profiling.launch.PlaceHolderLaunchConfigurationTabGroup"
+            id="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup">
+         <launchMode mode="profile"/>
+      </launchConfigurationTabGroup>
+      </extension>
+         <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            label="%localCApplication.label.0"
+            icon="icons/time_obj.gif"
+            modes="profile"
+            class="org.eclipse.linuxtools.internal.profiling.launch.CApplicationLaunchShortcut"
+            id="org.eclipse.linuxtools.profiling.launch.localCShortcut">
+         <contextualLaunch>
+           <enablement>
+             <with variable="selection">
+               <count value="1"/>
+               <iterate>
+                   <or>
+                     <instanceof value="org.eclipse.cdt.core.model.IBinary"/>
+                     <instanceof value="org.eclipse.cdt.core.model.ICProject"/>
+                     <test
+                           forcePluginActivation="true"
+                           property="org.eclipse.cdt.launch.isExecutable"/>
+                     <test
+                           forcePluginActivation="true"
+                           property="org.eclipse.cdt.launch.isCProject"/>
+                     <and>
+                       <instanceof value="org.eclipse.ui.IFileEditorInput"/>
+                       <adapt type="org.eclipse.core.resources.IResource">
+                         <adapt type="org.eclipse.cdt.core.model.ICElement"/>
+                       </adapt>
+                     </and>
+                   </or>
+               </iterate>
+             </with>
+           </enablement>
+         </contextualLaunch>
+         <description
+             mode="profile"
+             description="Profiles a local C/C++ application"/>
+         <configurationType
+               id="org.eclipse.cdt.launch.applicationLaunchType">
+         </configurationType>
+	</shortcut>
    </extension>
 </plugin>
