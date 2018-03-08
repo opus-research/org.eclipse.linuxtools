@@ -43,7 +43,6 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
@@ -86,11 +85,6 @@ public class ControlFlowView extends TmfView {
      * View ID.
      */
     public static final String ID = "org.eclipse.linuxtools.lttng2.kernel.ui.views.controlflow"; //$NON-NLS-1$
-
-    /**
-     * Initial time range
-     */
-    private static final long INITIAL_WINDOW_OFFSET = (1L * 100  * 1000 * 1000); // .1sec
 
     private static final String PROCESS_COLUMN    = Messages.ControlFlowView_processColumn;
     private static final String TID_COLUMN        = Messages.ControlFlowView_tidColumn;
@@ -455,7 +449,7 @@ public class ControlFlowView extends TmfView {
             } else {
                 fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                refresh(INITIAL_WINDOW_OFFSET);
+                refresh();
             }
         }
     }
@@ -483,7 +477,7 @@ public class ControlFlowView extends TmfView {
             if (fZoomThread != null) {
                 fZoomThread.cancel();
             }
-            refresh(INITIAL_WINDOW_OFFSET);
+            refresh();
         }
     }
 
@@ -595,14 +589,6 @@ public class ControlFlowView extends TmfView {
         });
     }
 
-    /**
-     * @param signal the format of the timestamps was updated.
-     */
-    @TmfSignalHandler
-    public void updateTimeFormat( final TmfTimestampFormatUpdateSignal signal){
-        this.fTimeGraphCombo.refresh();
-    }
-
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
@@ -701,7 +687,7 @@ public class ControlFlowView extends TmfView {
                 fEntryListMap.put(trace, (ArrayList<ControlFlowEntry>) rootList.clone());
             }
             if (trace == fTrace) {
-                refresh(INITIAL_WINDOW_OFFSET);
+                refresh();
             }
         }
         for (ControlFlowEntry entry : rootList) {
@@ -797,7 +783,7 @@ public class ControlFlowView extends TmfView {
         return eventList;
     }
 
-    private void refresh(final long windowRange) {
+    private void refresh() {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -816,17 +802,19 @@ public class ControlFlowView extends TmfView {
                 fTimeGraphCombo.setInput(entries);
                 fTimeGraphCombo.getTimeGraphViewer().setTimeBounds(fStartTime, fEndTime);
 
-                long endTime = fStartTime + windowRange;
+                long timestamp = fTrace == null ? 0 : fTrace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                long startTime = fTrace == null ? 0 : fTrace.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                long endTime = fTrace == null ? 0 : fTrace.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                startTime = Math.max(startTime, fStartTime);
+                endTime = Math.min(endTime, fEndTime);
+                fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(timestamp, false);
+                fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
 
-                if (fEndTime < endTime) {
-                    endTime = fEndTime;
-                }
-                fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(fStartTime, endTime);
                 for (TreeColumn column : fTimeGraphCombo.getTreeViewer().getTree().getColumns()) {
                     column.pack();
                 }
 
-                startZoomThread(fStartTime, endTime);
+                startZoomThread(startTime, endTime);
             }
         });
     }
