@@ -8,18 +8,18 @@
  * Contributors:
  *    Red Hat - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.rpm.ui.editor.actions;
+package org.eclipse.linuxtools.internal.rpm.ui.handlers;
 
-import org.eclipse.linuxtools.internal.rpm.ui.editor.BuildType;
+import org.eclipse.linuxtools.internal.rpm.ui.BuildType;
 
 /**
- * Build Source RPM.
+ * Build Binary RPM.
  *
  * @since 1.0.0
  */
-public class SpecfileEditorBuildSRPMDelegate extends AbstractSpecfileEditorBuildDelegate {
+public class SpecfileEditorBuildRPMSDelegate extends AbstractSpecfileEditorBuildDelegate {
 	@Override
 	protected BuildType getBuildType() {
-		return BuildType.SOURCE;
+		return BuildType.BINARY;
 	}
 }
