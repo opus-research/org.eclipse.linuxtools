@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,7 +17,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -77,15 +76,7 @@ public class TmfEnvironmentView extends TmfView {
             return;
         }
 
-        ITmfTrace[] traces;
-        if (fTrace instanceof TmfExperiment) {
-            TmfExperiment experiment = (TmfExperiment) fTrace;
-            traces = experiment.getTraces();
-        } else {
-            traces = new ITmfTrace[] { fTrace };
-        }
-
-        for (ITmfTrace trace : traces) {
+        for (ITmfTrace trace : fTraceManager.getActiveTraceSet()) {
             if (trace instanceof CtfTmfTrace) {
                 TreeItem item = new TreeItem(fTree, SWT.NONE);
                 item.setText(0, trace.getName());
@@ -108,9 +99,6 @@ public class TmfEnvironmentView extends TmfView {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-     */
     @Override
     public void setFocus() {
         fTree.setFocus();
