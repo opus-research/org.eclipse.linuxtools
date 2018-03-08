@@ -65,7 +65,6 @@ public class CProjectHelper {
 	public final static String PLUGIN_ID = "org.eclipse.linuxtools.profiling.tests"; //$NON-NLS-1$
 
 	private final static IOverwriteQuery OVERWRITE_QUERY= new IOverwriteQuery() {
-		@Override
 		public String queryOverwrite(String file) {
 			return ALL;
 		}
@@ -83,7 +82,6 @@ public class CProjectHelper {
 		final ICProject newProject[] = new ICProject[1];
 		ws.run(new IWorkspaceRunnable() {
 
-			@Override
 			public void run(IProgressMonitor monitor) throws CoreException {
 				IWorkspaceRoot root = ws.getRoot();
 				IProject project = root.getProject(projectName);
@@ -147,7 +145,6 @@ public class CProjectHelper {
 		final ICProject newProject[] = new ICProject[1];
 		ws.run(new IWorkspaceRunnable() {
 
-			@Override
 			public void run(IProgressMonitor monitor) throws CoreException {
 				ICProject cproject = createCProject2(projectName, binFolderName);
 				if (!cproject.getProject().hasNature(CCProjectNature.CC_NATURE_ID)) {

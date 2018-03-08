@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.core.tests.statistics;
 import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.tmf.core.statistics.TmfEventsStatistics;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.BeforeClass;
 
 /**
@@ -29,7 +30,7 @@ public class TmfEventsStatisticsTest extends TmfStatisticsTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        assumeTrue(testTrace.exists());
-        backend = new TmfEventsStatistics(testTrace.getTrace());
+        assumeTrue(CtfTmfTestTraces.tracesExist());
+        backend = new TmfEventsStatistics(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
     }
 }
