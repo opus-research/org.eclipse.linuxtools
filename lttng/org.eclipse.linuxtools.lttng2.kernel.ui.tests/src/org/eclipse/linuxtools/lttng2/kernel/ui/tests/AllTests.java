@@ -13,7 +13,6 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.ui.tests;
 
-import org.eclipse.linuxtools.lttng2.kernel.ui.tests.smoketest.ImportAndReadKernelSmokeTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -23,7 +22,6 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     ActivatorTest.class,
-    ImportAndReadKernelSmokeTest.class
 })
 public class AllTests {
 
