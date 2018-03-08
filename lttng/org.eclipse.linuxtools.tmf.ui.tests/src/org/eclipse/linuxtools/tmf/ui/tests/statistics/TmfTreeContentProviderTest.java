@@ -1,13 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2011 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial design and implementation
+ *   Mathieu Denis (mathieu.denis@polymtl.ca)  - Initial design and implementation
  *   Bernd Hufmann - Fixed warnings
  *******************************************************************************/
 
@@ -44,7 +44,7 @@ public class TmfTreeContentProviderTest extends TestCase {
     private final String fContext = "UnitTest";
     private final String fTypeId1 = "Some type1";
     private final String fTypeId2 = "Some type2";
-
+ 
     private final String fLabel0 = "label1";
     private final String fLabel1 = "label2";
     private final String[] fLabels = new String[] { fLabel0, fLabel1 };
@@ -144,10 +144,10 @@ public class TmfTreeContentProviderTest extends TestCase {
     public void testHasChildren() {
         Boolean hasChildren = treeProvider.hasChildren(fStatsData.getOrCreate(AbsTmfStatisticsTree.ROOT));
         assertTrue("hasChildren", hasChildren);
-
+        
         hasChildren = treeProvider.hasChildren(fStatsData.getOrCreate(new TmfFixedArray<String>(fTestName)));
         assertTrue("hasChildren", hasChildren);
-
+        
         hasChildren = treeProvider.hasChildren(fStatsData.getOrCreate(new TmfFixedArray<String>(fTestName, Messages.TmfStatisticsData_EventTypes)));
         assertTrue("hasChildren", hasChildren);
 

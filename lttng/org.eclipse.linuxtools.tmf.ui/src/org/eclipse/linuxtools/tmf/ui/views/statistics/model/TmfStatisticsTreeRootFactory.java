@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API
+ *   Mathieu Denis      (mathieu.denis@polymtl.ca)  - Initial API
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
@@ -18,8 +18,8 @@ import java.util.Map;
 /**
  * Factory class to create and store TMF statistic trees.
  *
- * Based on a given tree node ID a TMF statistic tree is stored internally. A
- * root node is created for each tree. Using the tree node ID the statistics
+ * Based on a given tree node ID a TMF statistic tree is stored internally.
+ * A root node is created for each tree. Using the tree node ID the statistics
  * tree can be retrieved.
  *
  * @version 1.0
