@@ -10,32 +10,43 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.ui;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.compare.CompareConfiguration;
+import org.eclipse.compare.CompareUI;
+import org.eclipse.compare.IEncodedStreamContentAccessor;
+import org.eclipse.compare.ResourceNode;
+import org.eclipse.compare.structuremergeviewer.ICompareInput;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.linuxtools.internal.perf.IPerfData;
-import org.eclipse.linuxtools.internal.perf.PerfPlugin;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.linuxtools.internal.perf.ReportComparisonData;
+import org.eclipse.linuxtools.internal.perf.handlers.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.ViewPart;
 
 /**
  * A view part to display perf comparison reports.
  */
-public class ReportComparisonView extends ViewPart {
+public class ReportComparisonView extends Viewer {
 
 	// Color values constants
 	private static final Color BLACK = new Color(Display.getDefault(), 0, 0, 0);
@@ -47,25 +58,21 @@ public class ReportComparisonView extends ViewPart {
 	// Regex for a generic entry in a perf comparison report.
 	private static final String DIFF_ENTRY = "\\s+(\\d+(\\.\\d+)?)\\%\\s+([\\+\\-]?\\d+(\\.\\d+)?)\\%.*"; //$NON-NLS-1$
 
-	// Secondary view id.
-	private static int SECONDARY_ID = 0;
+	private Composite fComposite;
+	private ICompareInput fInput;
 
 	// Comparison result.
 	private StyledText result;
 
-	@Override
-	public void createPartControl(Composite parent) {
-		parent.setLayoutData(new GridLayout(1, true));
+	public ReportComparisonView (Composite parent, CompareConfiguration config) {
+		fComposite = new Composite (parent, SWT.NONE);
+		fComposite.setLayout(new GridLayout(1, true));
+		fComposite.setData(CompareUI.COMPARE_VIEWER_TITLE, Messages.ReportComparisonView_label);
 
-		result = new StyledText(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+		result = new StyledText(fComposite, SWT.V_SCROLL | SWT.H_SCROLL);
+		result.setAlwaysShowScrollBars(false);
+		result.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		result.setEditable(false);
-
-		IPerfData data = PerfPlugin.getDefault().getReportDiffData();
-		if (data != null) {
-			//setStyledText(data.getPerfData());
-			setStyledText(data.getPerfData());
-			setContentDescription(data.getTitle());
-		}
 	}
 
 	/**
@@ -114,33 +121,81 @@ public class ReportComparisonView extends ViewPart {
 	}
 
 	@Override
-	public void setFocus() {
-		return;
-
+	public Control getControl() {
+		return fComposite;
 	}
 
-	/**
-	 * Refresh this view.
-	 */
-	public static void refreshView() {
-		Display.getDefault().syncExec(new Runnable() {
+	@Override
+	public Object getInput() {
+		return fInput;
+	}
 
-			@Override
-			public void run() {
-				try {
-					PlatformUI
-							.getWorkbench()
-							.getActiveWorkbenchWindow()
-							.getActivePage()
-							.showView(PerfPlugin.REPORT_DIFF_VIEW_ID,
-									Integer.toString(SECONDARY_ID++),
-									IWorkbenchPage.VIEW_CREATE);
-				} catch (PartInitException e) {
-					IStatus status = new Status(IStatus.ERROR,
-							PerfPlugin.PLUGIN_ID, e.getMessage(), e);
-					PerfPlugin.getDefault().getLog().log(status);
-				}
+	@Override
+	public ISelection getSelection() {
+		return null;
+	}
+
+	@Override
+	public void refresh() {
+	}
+
+	@Override
+	public void setInput(Object input) {
+		if (input instanceof ICompareInput) {
+			fInput = (ICompareInput) input;
+
+			// get corresponding files
+			IPath oldDatum;
+			IPath newDatum;
+			IProject proj = null;
+
+			if (fInput.getLeft() instanceof ResourceNode) {
+				ResourceNode left = (ResourceNode) fInput.getLeft();
+				IResource oldData = left.getResource();
+				oldDatum = oldData.getLocation();
+				proj = oldData.getProject();
+			} else {
+				IEncodedStreamContentAccessor lStream = (IEncodedStreamContentAccessor) fInput.getLeft();
+				oldDatum = generateTempFile(lStream);
 			}
-		});
+
+			if (fInput.getRight() instanceof ResourceNode) {
+				ResourceNode right = (ResourceNode) fInput.getRight();
+				IResource newData = right.getResource();
+				newDatum = newData.getLocation();
+				proj = newData.getProject();
+			} else {
+				IEncodedStreamContentAccessor rStream = (IEncodedStreamContentAccessor) fInput.getRight();
+				newDatum = generateTempFile(rStream);
+			}
+
+			String title = MessageFormat.format(Messages.ContentDescription_0,
+					new Object[] { oldDatum.toFile().getName(), newDatum.toFile().getName() });
+
+			// create comparison data and run comparison.
+			ReportComparisonData diffData = new ReportComparisonData(title, oldDatum, newDatum, proj);
+			diffData.parse();
+
+			setStyledText(diffData.getPerfData());
+		}
+
+		fComposite.layout();
+	}
+
+	@Override
+	public void setSelection(ISelection selection, boolean reveal) {
+	}
+
+	private IPath generateTempFile(IEncodedStreamContentAccessor stream) {
+		try {
+			Path tmpFile = Files.createTempFile("perf-report-", ".data"); //$NON-NLS-1$ //$NON-NLS-2$
+			tmpFile.toFile().delete();
+			Files.copy(stream.getContents(), tmpFile);
+			return new org.eclipse.core.runtime.Path(tmpFile.toString());
+		} catch (IOException e) {
+			return null;
+		} catch (CoreException e) {
+			return null;
+		}
 	}
 }
