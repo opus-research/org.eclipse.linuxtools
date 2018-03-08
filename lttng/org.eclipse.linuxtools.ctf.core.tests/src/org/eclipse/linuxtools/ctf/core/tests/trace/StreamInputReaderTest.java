@@ -103,6 +103,15 @@ public class StreamInputReaderTest {
     }
 
     /**
+     * Run the int getCPU() method test.
+     */
+    @Test
+    public void testGetCPU() {
+        int result = fixture.getCPU();
+        assertEquals(0, result);
+    }
+
+    /**
      * Run the EventDefinition getCurrentEvent() method test.
      */
     @Test
@@ -136,7 +145,7 @@ public class StreamInputReaderTest {
     public void testGoToLastEvent1() {
         final long endTimestamp = goToEnd();
         final long endTime = 4287422460315L;
-        assertEquals(endTime, endTimestamp);
+        assertEquals(endTime , endTimestamp  );
     }
 
     /**
@@ -149,7 +158,7 @@ public class StreamInputReaderTest {
             timestamp = fixture.getCurrentEvent().getTimestamp();
         }
         long endTimestamp = goToEnd();
-        assertEquals(0, timestamp - endTimestamp);
+        assertEquals(0 , timestamp- endTimestamp );
     }
 
     private long goToEnd() {
