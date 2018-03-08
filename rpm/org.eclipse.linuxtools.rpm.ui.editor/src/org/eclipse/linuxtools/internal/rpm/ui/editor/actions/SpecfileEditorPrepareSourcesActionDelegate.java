@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Red Hat - initial API and implementation
- *    Neil Guzman - prepare/download sources implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpm.ui.editor.actions;
 
