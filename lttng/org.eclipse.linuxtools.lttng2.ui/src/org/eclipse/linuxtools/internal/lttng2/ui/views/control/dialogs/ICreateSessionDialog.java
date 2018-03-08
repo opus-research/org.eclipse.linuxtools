@@ -77,6 +77,16 @@ public interface ICreateSessionDialog {
      */
     public String getDataUrl();
 
+    /**
+     * @return for not activating a consumer for this session
+     */
+    public boolean isNoConsumer();
+
+    /**
+     * @return for disabling a consumer for this session
+     */
+    public boolean isDisableConsumer();
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------

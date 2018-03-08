@@ -247,8 +247,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
             output.append(super.toString());
             output.append(",State=");
             output.append(fState);
-            output.append(",isStreamedTrace=");
-            output.append(fIsStreamedTrace);
             output.append(",Domains=");
             for (Iterator<IDomainInfo> iterator = fDomains.iterator(); iterator.hasNext();) {
                 IDomainInfo domain = iterator.next();
