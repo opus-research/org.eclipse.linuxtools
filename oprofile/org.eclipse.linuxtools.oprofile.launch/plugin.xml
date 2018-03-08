@@ -129,12 +129,9 @@
    <extension
          point="org.eclipse.linuxtools.profiling.launch.launchProvider">
       <provider
-            default="false"
             delegate="org.eclipse.linuxtools.internal.oprofile.launch.launching.OprofileLaunchConfigurationDelegate"
-            description="%oprofileLaunchConfiguration.description"
             id="org.eclipse.linuxtools.oprofile.launch.provider"
-            information="%oprofileLaunchConfiguration.information"
-            name="%oprofileLaunchConfiguration.name.0"
+            name="Oprofile"
             priority="2"
             shortcut="org.eclipse.linuxtools.internal.oprofile.launch.launching.OprofileLaunchShortcut"
             tabgroup="org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileLaunchConfigurationTabGroup"
