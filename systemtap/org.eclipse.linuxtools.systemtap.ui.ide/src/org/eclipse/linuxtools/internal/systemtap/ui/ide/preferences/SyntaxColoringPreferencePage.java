@@ -30,7 +30,6 @@ public class SyntaxColoringPreferencePage extends PreferencePage implements IWor
 		setDescription(Localization.getString("SyntaxColoringPreferencePage.SyntaxColoringOptions")); //$NON-NLS-1$
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 	}
 

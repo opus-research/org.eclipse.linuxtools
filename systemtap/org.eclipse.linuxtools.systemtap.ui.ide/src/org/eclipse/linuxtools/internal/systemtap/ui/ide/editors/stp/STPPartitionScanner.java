@@ -37,12 +37,10 @@ public class STPPartitionScanner extends RuleBasedPartitionScanner {
 	 * Detect empty comments
 	 */
 	static class EmptyCommentDetector implements IWordDetector {
-		@Override
 		public boolean isWordStart(char c) {
 			return (c == '/');
 		}
 
-		@Override
 		public boolean isWordPart(char c) {
 			return (c == '*' || c == '/');
 		}
@@ -61,12 +59,10 @@ public class STPPartitionScanner extends RuleBasedPartitionScanner {
 			addWord("/**/", fSuccessToken); //$NON-NLS-1$
 		}
 
-		@Override
 		public IToken evaluate(ICharacterScanner scanner, boolean resume) {
 			return evaluate(scanner);
 		}
 
-		@Override
 		public IToken getSuccessToken() {
 			return fSuccessToken;
 		}
