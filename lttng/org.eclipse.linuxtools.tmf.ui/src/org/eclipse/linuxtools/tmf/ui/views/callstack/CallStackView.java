@@ -13,7 +13,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -85,7 +84,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 
@@ -153,9 +151,6 @@ public class CallStackView extends TmfView {
     // The trace to build thread hash map
     private final Map<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<ITmfTrace, BuildThread>();
 
-    /** The map to map function addresses to function names */
-    private Map<String, String> fNameMapping;
-
     // The start time
     private long fStartTime;
 
@@ -176,9 +171,6 @@ public class CallStackView extends TmfView {
 
     // The previous item action
     private Action fPreviousItemAction;
-
-    /** The action to import a function-name mapping file */
-    private Action fImportMappingAction;
 
     // The zoom thread
     private ZoomThread fZoomThread;
@@ -496,7 +488,7 @@ public class CallStackView extends TmfView {
         fTimeGraphCombo.getTreeViewer().getTree().getColumn(3).setWidth(COLUMN_WIDTHS[3]);
         fTimeGraphCombo.getTreeViewer().getTree().getColumn(4).setWidth(COLUMN_WIDTHS[4]);
 
-        fTimeGraphCombo.setTimeGraphProvider(new CallStackPresentationProvider(this));
+        fTimeGraphCombo.setTimeGraphProvider(new CallStackPresentationProvider());
         fTimeGraphCombo.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
 
         fTimeGraphCombo.getTimeGraphViewer().addRangeListener(new ITimeGraphRangeListener() {
@@ -579,7 +571,7 @@ public class CallStackView extends TmfView {
 
         // View Action Handling
         makeActions();
-        contributeToActionBars(parent);
+        contributeToActionBars();
 
         IEditorPart editor = getSite().getPage().getActiveEditor();
         if (editor instanceof ITmfTraceEditor) {
@@ -751,7 +743,6 @@ public class CallStackView extends TmfView {
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
-
     private void loadTrace() {
         synchronized (fEntryListMap) {
             fEntryList = fEntryListMap.get(fTrace);
@@ -920,8 +911,7 @@ public class CallStackView extends TmfView {
                     String name = ""; //$NON-NLS-1$
                     try {
                         if (nameValue.getType() == Type.STRING) {
-                            String address = nameValue.unboxStr();
-                            name = getFunctionName(address);
+                            name = nameValue.unboxStr();
                         } else if (nameValue.getType() == Type.INTEGER) {
                             name = "0x" + Integer.toHexString(nameValue.unboxInt()); //$NON-NLS-1$
                         } else if (nameValue.getType() == Type.LONG) {
@@ -1024,9 +1014,9 @@ public class CallStackView extends TmfView {
         fNextItemAction.setToolTipText(Messages.TmfTimeGraphViewer_NextItemActionToolTipText);
     }
 
-    private void contributeToActionBars(Composite parent) {
+    private void contributeToActionBars() {
         IActionBars bars = getViewSite().getActionBars();
-        fillLocalToolBar(bars.getToolBarManager(), parent);
+        fillLocalToolBar(bars.getToolBarManager());
 
         // Create pin action
         contributePinActionToToolBar();
@@ -1048,8 +1038,7 @@ public class CallStackView extends TmfView {
         });
     }
 
-    private void fillLocalToolBar(IToolBarManager manager, Composite parent) {
-        manager.add(getImportMappingAction(parent));
+    private void fillLocalToolBar(IToolBarManager manager) {
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());
         manager.add(getPreviousEventAction());
         manager.add(getNextEventAction());
@@ -1159,55 +1148,6 @@ public class CallStackView extends TmfView {
         }
 
         return fPrevEventAction;
-    }
-
-    // ------------------------------------------------------------------------
-    // Methods related to function name mapping
-    // ------------------------------------------------------------------------
-
-    /**
-     * Toolbar icon to import the function address-to-name mapping file.
-     */
-    private Action getImportMappingAction(final Composite parent) {
-        if (fImportMappingAction != null) {
-            return fImportMappingAction;
-        }
-        fImportMappingAction = new Action() {
-            @Override
-            public void run() {
-                FileDialog dialog = new FileDialog(parent.getShell());
-                dialog.setText(Messages.CallStackView_ImportMappingDialogTitle);
-                String filePath = dialog.open();
-                if (filePath == null) {
-                    /* No file was selected, don't change anything */
-                    return;
-                }
-                fNameMapping = FunctionNameMapper.mapFromNmTextFile(new File(filePath));
-
-                /* Refresh the time graph and the list of entries */
-                buildThreadList(fTrace, new NullProgressMonitor());
-                redraw();
-            }
-        };
-
-        fImportMappingAction.setText(Messages.CallStackView_ImportMappingButtonText);
-        fImportMappingAction.setToolTipText(Messages.CallStackView_ImportMappingButtonTooltip);
-        fImportMappingAction.setImageDescriptor(null);
-
-        return fImportMappingAction;
-    }
-
-    String getFunctionName(String address) {
-        if (fNameMapping == null) {
-            /* No mapping available, just print the addresses */
-            return address;
-        }
-        String ret = fNameMapping.get(address);
-        if (ret == null) {
-            /* We didn't find this address in the mapping file, just use the address */
-            return address;
-        }
-        return ret;
     }
 
 }
