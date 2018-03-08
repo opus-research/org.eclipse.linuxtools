@@ -34,6 +34,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfPersistentlyIndexable;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
@@ -89,7 +90,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
     public TmfTraceStub(final String path,
             final int cacheSize,
             final long interval) throws TmfTraceException {
-        super(null, ITmfEvent.class, path, cacheSize, interval, null);
+        super(null, ITmfEvent.class, path, cacheSize, interval, null, null);
         setupTrace(path);
         setParser(new TmfEventParserStub(this));
     }
@@ -104,6 +105,8 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
      *            The cache size
      * @param waitForCompletion
      *            Do we block the caller until the trace is indexed, or not.
+     * @param indexer
+     *            The trace indexer to use
      * @param parser
      *            The trace parser. If left 'null', it will use a
      *            {@link TmfEventParserStub}.
@@ -113,8 +116,9 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
     public TmfTraceStub(final String path,
             final int cacheSize,
             final boolean waitForCompletion,
+            final ITmfTraceIndexer indexer,
             final ITmfEventParser parser) throws TmfTraceException {
-        super(null, ITmfEvent.class, path, cacheSize, 0, null);
+        super(null, ITmfEvent.class, path, cacheSize, 0, indexer, null);
         setupTrace(path);
         setParser((parser != null) ? parser : new TmfEventParserStub(this));
         if (waitForCompletion) {
