@@ -12,18 +12,13 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
 import java.util.LinkedList;
-import java.util.List;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptChartHandler;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptHandler;
@@ -34,35 +29,10 @@ import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
 
-public class SystemTapScriptLaunchConfigurationDelegate extends
-		LaunchConfigurationDelegate {
+public class SystemTapScriptLaunchConfigurationDelegate implements
+		ILaunchConfigurationDelegate {
 
 	static final String CONFIGURATION_TYPE = "org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType"; //$NON-NLS-1$
-
-	private IProject[] scriptProject;
-
-	/**
-	 * Keep a reference to the target running script's parent project, so only that project
-	 * will be saved when the script is run.
-	 */
-    @Override
-    protected IProject[] getBuildOrder(ILaunchConfiguration configuration, String mode) {
-        return scriptProject;
-    }
-
-	@Override
-	public boolean preLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
-		// Find the parent project of the target script.
-		IPath path = Path.fromOSString(configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.SCRIPT_PATH_ATTR, (String)null));
-		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
-		scriptProject = file == null ? null : new IProject[]{file.getProject()};
-
-		// Only save the target script's project if a project is found.
-		if (scriptProject != null) {
-			return super.preLaunchCheck(configuration, mode, monitor);
-		}
-		return true;
-	}
 
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
@@ -73,15 +43,11 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 		RunScriptHandler action;
 
 		boolean runWithChart = configuration.getAttribute(SystemTapScriptGraphOptionsTab.RUN_WITH_CHART, false);
-		// If runWithChart is true there must be at least one graph, but this isn't guaranteed
-		// to be true for outdated Launch Configurations. So for safety, make sure there are graphs.
-		int numGraphs = configuration.getAttribute(SystemTapScriptGraphOptionsTab.NUMBER_OF_REGEXS, 0);
-		if (runWithChart && numGraphs > 0){
-			List<IDataSetParser> parsers = SystemTapScriptGraphOptionsTab.createDatasetParsers(configuration);
-			List<IDataSet> dataSets = SystemTapScriptGraphOptionsTab.createDataset(configuration);
-			List<String> names = SystemTapScriptGraphOptionsTab.createDatasetNames(configuration);
-			List<LinkedList<GraphData>> graphs = SystemTapScriptGraphOptionsTab.createGraphsFromConfiguration(configuration);
-			action = new RunScriptChartHandler(parsers, dataSets, names, graphs);
+		if (runWithChart){
+			IDataSet dataSet = SystemTapScriptGraphOptionsTab.createDataset(configuration);
+			IDataSetParser parser = SystemTapScriptGraphOptionsTab.createDatasetParser(configuration);
+			LinkedList<GraphData> graphs = SystemTapScriptGraphOptionsTab.createGraphsFromConfiguration(configuration);
+			action = new RunScriptChartHandler(parser, dataSet, graphs);
 		}else{
 			action = new RunScriptHandler();
 		}

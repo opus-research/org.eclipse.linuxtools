@@ -16,8 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -66,7 +65,7 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
     private final TracePackageTraceElement[] fTraceExportElements;
     private final boolean fUseCompression;
     private final boolean fUseTar;
-    private final Set<IResource> fResources;
+    private final List<IResource> fResources;
     private IFolder fExportFolder;
 
     /**
@@ -86,7 +85,7 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
         fTraceExportElements = traceExportElements;
         fUseCompression = useCompression;
         fUseTar = useTar;
-        fResources = new HashSet<IResource>();
+        fResources = new ArrayList<IResource>();
     }
 
     /**
@@ -111,10 +110,6 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
             Node tmfNode = doc.appendChild(createElement);
 
             for (TracePackageTraceElement tracePackageElement : fTraceExportElements) {
-                if (!isFilesChecked(tracePackageElement)) {
-                    continue;
-                }
-
                 exportTrace(progressMonitor, tmfNode, tracePackageElement);
             }
 
@@ -273,7 +268,7 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
     }
 
     private IStatus exportToArchive(IProgressMonitor monitor, int totalWork) throws InvocationTargetException, InterruptedException {
-        ArchiveFileExportOperation op = new ArchiveFileExportOperation(new ArrayList<IResource>(fResources), getFileName());
+        ArchiveFileExportOperation op = new ArchiveFileExportOperation(fResources, getFileName());
         op.setCreateLeadupStructure(false);
         op.setUseCompression(fUseCompression);
         op.setUseTarFormat(fUseTar);
