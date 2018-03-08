@@ -89,10 +89,8 @@ public class ProjectModelTestData {
      *
      * @param project
      *            Project to delete
-     * @throws CoreException
-     *             Thrown by the resource deletion
      */
-    public static void deleteProject(TmfProjectElement project) throws CoreException {
+    public static void deleteProject(TmfProjectElement project) {
         /* Delete experiments */
         for (ITmfProjectModelElement element : project.getExperimentsFolder().getChildren()) {
             if (element instanceof TmfExperimentElement) {
@@ -109,7 +107,11 @@ public class ProjectModelTestData {
                 }
 
                 /* Finally, delete the experiment */
-                resource.delete(true, null);
+                try {
+                    resource.delete(true, null);
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -129,12 +131,20 @@ public class ProjectModelTestData {
                 }
 
                 /* Finally, delete the trace */
-                resource.delete(true, new NullProgressMonitor());
+                try {
+                    resource.delete(true, new NullProgressMonitor());
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         /* Delete the project itself */
-        project.getResource().delete(true, null);
+        try {
+            project.getResource().delete(true, null);
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
