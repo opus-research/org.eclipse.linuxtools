@@ -61,7 +61,7 @@ public interface IEventDeclaration {
      *
      * @return The EventDeclaration ID
      */
-    public long getId();
+    public Long getId();
 
     /**
      * Gets the {@link Stream} of an event declaration

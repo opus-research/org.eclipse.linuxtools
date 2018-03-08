@@ -28,14 +28,6 @@ import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
  */
 public class EventDeclaration implements IEventDeclaration {
 
-    /**
-     * Id of lost event
-     */
-    public static final long LOST_EVENT_ID = -1L;
-    /**
-     * id of event when not set
-     */
-    public static final long UNSET_EVENT_ID = -2L;
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -58,7 +50,7 @@ public class EventDeclaration implements IEventDeclaration {
     /**
      * Event id (can be null if only event in the stream).
      */
-    private long id = UNSET_EVENT_ID;
+    private Long id = null;
 
     /**
      * Stream to which belongs this event.
@@ -108,7 +100,7 @@ public class EventDeclaration implements IEventDeclaration {
     public synchronized static EventDeclaration getLostEventDeclaration() {
         EventDeclaration lostEvent = new EventDeclaration();
         lostEvent.fields = new StructDeclaration(1);
-        lostEvent.id = LOST_EVENT_ID;
+        lostEvent.id = -1L;
         lostEvent.name = "Lost event"; //$NON-NLS-1$
         return lostEvent;
     }
@@ -173,7 +165,7 @@ public class EventDeclaration implements IEventDeclaration {
     }
 
     @Override
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -226,7 +218,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the id set?
      */
     public boolean idIsSet() {
-        return (id != UNSET_EVENT_ID);
+        return id != null;
     }
 
     /**
@@ -306,7 +298,11 @@ public class EventDeclaration implements IEventDeclaration {
         } else if (!fields.equals(other.fields)) {
             return false;
         }
-        if (!(id == other.id)) {
+        if (id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else if (!id.equals(other.id)) {
             return false;
         }
         if (name == null) {
@@ -333,9 +329,10 @@ public class EventDeclaration implements IEventDeclaration {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((context == null) ? 0 : context.hashCode());
+        result = (prime * result)
+                + ((context == null) ? 0 : context.hashCode());
         result = (prime * result) + ((fields == null) ? 0 : fields.hashCode());
-        result = (prime * result) + Long.valueOf(id).hashCode();
+        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
         result = (prime * result) + ((name == null) ? 0 : name.hashCode());
         result = (prime * result) + ((stream == null) ? 0 : stream.hashCode());
         result = (prime * result) + customAttributes.hashCode();
