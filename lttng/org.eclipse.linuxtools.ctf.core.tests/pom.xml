@@ -48,8 +48,8 @@
                 <tasks>
                   <echo message="prepare phase" />
                   <!-- Download traces -->
-                  <get src="http://lttng.org/files/samples/sample-ctf-trace-20120412.tar.bz2" dest="traces/sample-ctf-trace-20120412.tar.bz2"/>
-                  <get src="http://www.dorsal.polymtl.ca/~alexmont/data/trace2.tar.bz2" dest="traces/trace2.tar.bz2"/>
+                  <get src="http://lttng.org/files/samples/sample-ctf-trace-20120412.tar.bz2" dest="traces/sample-ctf-trace-20120412.tar.bz2" verbose="on"/>
+                  <get src="http://www.dorsal.polymtl.ca/~alexmont/data/trace2.tar.bz2" dest="traces/trace2.tar.bz2" verbose="on"/>
 
                   <!-- Unzip Traces -->
                   <bunzip2 src="traces/sample-ctf-trace-20120412.tar.bz2" dest="traces/" />
