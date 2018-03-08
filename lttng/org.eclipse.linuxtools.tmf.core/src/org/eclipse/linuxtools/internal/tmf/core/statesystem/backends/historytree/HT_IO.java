@@ -120,18 +120,6 @@ class HT_IO {
         try {
             seekFCToNodePos(fcIn, seqNumber);
             readNode = HTNode.readNode(tree, fcIn);
-            /* Read and merge all extensions */
-            if (readNode instanceof CoreNode) {
-                CoreNode baseNode = (CoreNode) readNode;
-                int extension = baseNode.getExtensionSequenceNumber();
-                if (extension != -1) {
-                    HTNode extensionNode = readNodeFromDisk(extension);
-                    readNode.merge(extensionNode);
-                    if (extensionNode instanceof CoreNode) {
-                        baseNode.copyChildren((CoreNode) extensionNode);
-                    }
-                }
-            }
             return readNode;
         } catch (ClosedChannelException e) {
             throw e;

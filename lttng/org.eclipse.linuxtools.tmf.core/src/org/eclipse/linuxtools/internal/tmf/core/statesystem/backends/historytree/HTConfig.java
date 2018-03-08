@@ -23,12 +23,10 @@ final class HTConfig {
 
     private static final int DEFAULT_BLOCKSIZE = 64 * 1024;
     private static final int DEFAULT_MAXCHILDREN = 50;
-    private static final int DEFAULT_MINCHILDREN = 3;
 
     private final File stateFile;
     private final int blockSize;
     private final int maxChildren;
-    private final int minChildren;
     private final int providerVersion;
     private final long treeStart;
 
@@ -37,7 +35,6 @@ final class HTConfig {
         this.stateFile = newStateFile;
         this.blockSize = blockSize;
         this.maxChildren = maxChildren;
-        this.minChildren = DEFAULT_MINCHILDREN;
         this.providerVersion = providerVersion;
         this.treeStart = startTime;
     }
@@ -66,10 +63,6 @@ final class HTConfig {
 
     public int getMaxChildren() {
         return maxChildren;
-    }
-
-    public int getMinChildren() {
-        return minChildren;
     }
 
     public int getProviderVersion() {

@@ -40,7 +40,7 @@ class CoreNode extends HTNode {
     private long[] childStart;
 
     /** Seq number of this node's extension. -1 if none */
-    private int extension = -1;
+    private int extension;
 
     /**
      * Initial constructor. Use this to initialize a new EMPTY node.
@@ -142,10 +142,6 @@ class CoreNode extends HTNode {
         return extension;
     }
 
-    void setExtensionSequenceNumber(int extension) {
-        this.extension = extension;
-    }
-
     /**
      * Tell this node that it has a new child (Congrats!)
      *
@@ -158,14 +154,6 @@ class CoreNode extends HTNode {
         this.children[nbChildren] = childNode.getSequenceNumber();
         this.childStart[nbChildren] = childNode.getNodeStart();
         this.nbChildren++;
-    }
-
-    void copyChildren(CoreNode node) {
-        for (int i = 0; i < node.nbChildren; i++) {
-            this.children[i] = node.children[i];
-            this.childStart[i] = node.childStart[i];
-        }
-        this.nbChildren = node.nbChildren;
     }
 
     @Override
