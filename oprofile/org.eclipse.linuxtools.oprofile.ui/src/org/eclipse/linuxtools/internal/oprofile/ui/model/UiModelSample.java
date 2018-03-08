@@ -70,15 +70,15 @@ public class UiModelSample implements IUiModelElement {
 	}
 
 	/**
-	 * Return null because this element does not have children
-	 * @return null
+	 * Returns this element children
+	 * @return An array of IUiModelElements
 	 */
 	public IUiModelElement[] getChildren() {
 		return null;
 	}
 	/**
-	 * Returns false because this is the bottom level element
-	 * @return false
+	 * Returns if the element has any children.
+	 * @return true if the element has children, false otherwise
 	 */
 	public boolean hasChildren() {
 		return false;		//bottom level element
