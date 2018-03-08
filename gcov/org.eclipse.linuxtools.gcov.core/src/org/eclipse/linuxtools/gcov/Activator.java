@@ -8,7 +8,7 @@
  * Contributors:
  *    Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.gcov;
+package org.eclipse.linuxtools.gcov;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
