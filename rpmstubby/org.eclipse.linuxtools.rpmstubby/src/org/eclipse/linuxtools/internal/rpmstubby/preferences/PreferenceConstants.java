@@ -1,20 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2006 IBM Corporation.
+ * Copyright (c) 2007 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
+ *    Alphonse Van Assche - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.systemtap.ui.graphing.preferences;
+package org.eclipse.linuxtools.internal.rpmstubby.preferences;
 
-public class GraphingPreferenceConstants {
-
-	//graphing
-	public static final String P_GRAPH_UPDATE_DELAY = "GraphUpdateDelay";
-	
-
+/**
+ * Constant definitions for stubby plug-in preferences.
+ */
+public class PreferenceConstants {
 }
