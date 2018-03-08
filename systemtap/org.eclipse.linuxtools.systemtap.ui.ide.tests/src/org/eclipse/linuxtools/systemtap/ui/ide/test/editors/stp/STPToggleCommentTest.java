@@ -19,7 +19,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.ToggleCommentHandler;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPDocumentProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -52,20 +51,6 @@ public class STPToggleCommentTest {
 		document =  new Document(stpScript);
 	}
 
-	private static class MockSTPDocumentProvider extends STPDocumentProvider{
-		private IDocument document;
-
-		MockSTPDocumentProvider(IDocument document){
-			this.document = document;
-			this.setupDocument(document);
-		}
-
-		@Override
-		protected IDocument createDocument(Object element) {
-			return document;
-		}
-	}
-	
 	@Test
 	public void getFirstCompleteLineOfRegionTest() {
 		IRegion scriptRegion;
@@ -97,15 +82,13 @@ public class STPToggleCommentTest {
 
 	@Test
 	public void isBlockCommentedTest() {
-		MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(stpScript));
-		IDocument document = provider.createDocument(null);
+		IDocument document = new Document(stpScript);
+		String curLine;
+		for (int i = 0; i < PARTITIONED_SCRIPT.length; i++) {
+			curLine = PARTITIONED_SCRIPT[i];
 
-		int i = 0;
-		for( String scriptLine : PARTITIONED_SCRIPT){
 			// for the purposes of this test, commented blocks start with "//"
-			assertEquals(scriptLine.startsWith("//"), cmdHandler.isBlockCommented(i, i, "//", document));
-
-			i++;
+			assertEquals(curLine.startsWith("//"), cmdHandler.isBlockCommented(i, i, "//", document));
 		}
 	}
 
@@ -118,6 +101,7 @@ public class STPToggleCommentTest {
 			int offset = stpScript.indexOf(scriptLine, curPos);
 
 			ITextSelection selection = new MockTextSelection(offset, lineLength, i, i, scriptLine);
+			IDocument document = new Document(stpScript);
 			IRegion actualRegion = cmdHandler.getTextBlockFromSelection( selection, document);
 			IRegion expectedRegion = new Region(offset, lineLength);
 			assertEquals(scriptLine + " :", expectedRegion, actualRegion);
@@ -134,9 +118,9 @@ public class STPToggleCommentTest {
 		for (String scriptLine : PARTITIONED_SCRIPT) {
 			int lineLength = scriptLine.length();
 			int offset = stpScript.indexOf(scriptLine, curPos);
+
 			ITextSelection selection = new MockTextSelection(offset, lineLength, i, i, scriptLine);
-			MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(stpScript));
-			IDocument document = provider.createDocument(null);
+			IDocument document = new Document(stpScript);
 
 			// for the purposes of this test, commented blocks start with "//"
 			assertEquals(scriptLine.startsWith("//"), cmdHandler.isSelectionCommented(selection, document));
