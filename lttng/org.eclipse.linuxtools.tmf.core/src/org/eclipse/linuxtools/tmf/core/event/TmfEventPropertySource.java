@@ -117,8 +117,8 @@ public class TmfEventPropertySource implements IPropertySource {
 
         @Override
         public IPropertyDescriptor[] getPropertyDescriptors() {
-            List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>(fContent.getFields().length);
-            for (ITmfEventField field : fContent.getFields()) {
+            List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>(fContent.getFields().size());
+            for (ITmfEventField field : fContent.getFields().values()) {
                 if (field != null) {
                     descriptors.add(new PropertyDescriptor(field, field.getName()));
                 }
@@ -129,7 +129,7 @@ public class TmfEventPropertySource implements IPropertySource {
         @Override
         public Object getPropertyValue(Object id) {
             ITmfEventField field = (ITmfEventField) id;
-            if (field.getFields() != null && field.getFields().length > 0) {
+            if (field.getFields() != null && field.getFields().size() > 0) {
                 return new ContentPropertySource(field);
             }
             return field.getFormattedValue();
