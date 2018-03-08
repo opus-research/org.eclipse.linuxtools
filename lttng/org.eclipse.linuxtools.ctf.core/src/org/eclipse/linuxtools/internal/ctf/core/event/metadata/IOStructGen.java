@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,16 +135,18 @@ public class IOStructGen {
         List<CommonTree> declarations = new ArrayList<CommonTree>();
         List<CommonTree> environments = new ArrayList<CommonTree>();
         List<CommonTree> clocks = new ArrayList<CommonTree>();
+        List<CommonTree> callsites = new ArrayList<CommonTree>();
         /* Create a new declaration scope with no parent. */
         pushScope();
 
         try {
             for (CommonTree child : children) {
+                final int type = child.getType();
                 if (DEBUG_) {
                     out.write(child.toString()
-                            + " -> " + child.getType() + '\n'); //$NON-NLS-1$
+                            + " -> " + type + '\n'); //$NON-NLS-1$
                 }
-                switch (child.getType()) {
+                switch (type) {
                 case CTFParser.DECLARATION:
                     declarations.add(child);
                     break;
@@ -165,6 +168,9 @@ public class IOStructGen {
                     break;
                 case CTFParser.ENV:
                     environments.add(child);
+                    break;
+                case CTFParser.CALLSITE:
+                    callsites.add(child);
                     break;
                 default:
                     childTypeError(child);
@@ -196,6 +202,12 @@ public class IOStructGen {
             }
             for (CommonTree clock : clocks) {
                 parseClock(clock);
+            }
+            if (DEBUG_) {
+                out.write("Callsites\n"); //$NON-NLS-1$
+            }
+            for (CommonTree callsite : callsites) {
+                parseCallsite(callsite);
             }
 
             if (DEBUG_) {
@@ -237,6 +249,35 @@ public class IOStructGen {
             e.printStackTrace();
         }
         popScope();
+    }
+
+    private void parseCallsite(CommonTree callsite) {
+
+        List<CommonTree> children = callsite.getChildren();
+        String name = null;
+        String func_name = null;
+        long line_number = -1;
+        long ip = -1;
+        String file_name = null;
+
+        for (CommonTree child : children) {
+            String left;
+            final String regex = "^\"|\"$"; //$NON-NLS-1$
+            final String nullString = ""; //$NON-NLS-1$
+            left = child.getChild(0).getChild(0).getChild(0).getText();
+            if (left.equals("name")) { //$NON-NLS-1$
+                name = child.getChild(1).getChild(0).getChild(0).getText().replaceAll(regex, nullString);
+            } else if (left.equals("func")) { //$NON-NLS-1$
+                func_name = child.getChild(1).getChild(0).getChild(0).getText().replaceAll(regex, nullString);
+            } else if (left.equals("ip")) { //$NON-NLS-1$
+                ip = Long.parseLong(child.getChild(1).getChild(0).getChild(0).getText().substring(2),16); // trim the 0x
+            } else if (left.equals("file")) { //$NON-NLS-1$
+                file_name = child.getChild(1).getChild(0).getChild(0).getText().replaceAll(regex, nullString);
+            } else if (left.equals("line")) { //$NON-NLS-1$
+                line_number = Long.parseLong(child.getChild(1).getChild(0).getChild(0).getText());
+            }
+        }
+        trace.addCallsite(name, func_name, ip,file_name, line_number);
     }
 
     private void parseEnvironment(CommonTree environment) {
