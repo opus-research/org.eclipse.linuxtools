@@ -706,7 +706,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                 statTree.resetTimeRangeValue();
             }
 
-            for (final ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
+            for (final ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
                 if (!isListeningTo(aTrace)) {
                     continue;
                 }

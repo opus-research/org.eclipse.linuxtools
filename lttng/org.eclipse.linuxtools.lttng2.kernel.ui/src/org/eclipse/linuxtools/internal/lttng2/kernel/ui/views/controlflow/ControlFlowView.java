@@ -48,6 +48,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphRangeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphSelectionListener;
@@ -596,7 +597,7 @@ public class ControlFlowView extends TmfView {
         fStartTime = Long.MAX_VALUE;
         fEndTime = Long.MIN_VALUE;
         ArrayList<ControlFlowEntry> rootList = new ArrayList<ControlFlowEntry>();
-        for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
+        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
             if (monitor.isCanceled()) {
                 return;
             }
