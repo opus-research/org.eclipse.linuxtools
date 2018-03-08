@@ -75,8 +75,7 @@ public class ErrorView extends ViewPart {
 	 * Clears the entire table of error messages.
 	 */
 	public void clear() {
-		if(null != table)
-			table.clear();
+		table.clear();
 	}
 	
 	public void setFocus() {}
