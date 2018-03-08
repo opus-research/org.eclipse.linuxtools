@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
+import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
+
 /**
  * A state value containing a long integer (8 bytes).
  *
@@ -44,5 +46,30 @@ final class LongStateValue extends TmfStateValue {
     @Override
     public String toString() {
         return String.format("%3d", valueLong); //$NON-NLS-1$
+    }
+
+    @Override
+    public int compareTo(ITmfStateValue value) {
+        if (value.getType() == Type.NULL) {
+            return 0;
+        }
+        try {
+            return Long.valueOf(this.unboxLong()).compareTo(Long.valueOf(value.unboxLong()));
+        } catch (StateValueTypeException e) {
+            return 0;
+        }
+    }
+
+    @Override
+    public ITmfStateValue add(ITmfStateValue val) throws StateValueTypeException {
+        if (val.getType() == Type.NULL) {
+            throw new StateValueTypeException();
+        }
+        return TmfStateValue.newValueLong(valueLong + val.unboxLong());
+    }
+
+    @Override
+    public ITmfStateValue increment() throws StateValueTypeException {
+        return TmfStateValue.newValueLong(valueLong + 1);
     }
 }
