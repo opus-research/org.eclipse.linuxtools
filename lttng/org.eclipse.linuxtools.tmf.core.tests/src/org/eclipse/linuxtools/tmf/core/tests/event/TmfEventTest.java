@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,22 +9,16 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adjusted for new Event Model
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+
+import junit.framework.TestCase;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -32,6 +26,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
@@ -39,15 +34,13 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfEventStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
-import org.junit.Test;
 
 /**
  * Test suite for the TmfEvent class.
  */
-@SuppressWarnings({"nls", "javadoc"})
-public class TmfEventTest {
+@SuppressWarnings("nls")
+public class TmfEventTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Variables
@@ -71,7 +64,7 @@ public class TmfEventTest {
     private final ITmfEventField fContent1 = new TmfEventField(fRawContent1, fFields1);
     private final TmfTimestamp fTimestamp1 = new TmfTimestamp(12345, 2, 5);
     private final String fReference1 = "Some reference";
-    private final ITmfEvent fEvent1 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+    private final ITmfEvent fEvent1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
 
     private final Object fValue2a = "Another string";
     private final Object fValue2b = Integer.valueOf(-4);
@@ -82,9 +75,30 @@ public class TmfEventTest {
     private final ITmfEventField fContent2 = new TmfEventField(fRawContent2, fFields2);
     private final TmfTimestamp fTimestamp2 = new TmfTimestamp(12350, 2, 5);
     private final String fReference2 = "Some other reference";
-    private final ITmfEvent fEvent2 = new TmfEventStub(null, 1, fTimestamp2, fSource, fType, fContent2, fReference2);
+    private final ITmfEvent fEvent2 = new TmfEvent(null, 1, fTimestamp2, fSource, fType, fContent2, fReference2);
 
     private final String fTracePath = "testfiles" + File.separator + "A-Test-10K";
+
+    // ------------------------------------------------------------------------
+    // Housekeeping
+    // ------------------------------------------------------------------------
+
+    /**
+     * @param name the test name
+     */
+    public TmfEventTest(final String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 
     // ------------------------------------------------------------------------
     // Helper functions
@@ -114,9 +128,11 @@ public class TmfEventTest {
     // Constructors
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testDefaultConstructor() {
-        final ITmfEvent event = new TmfEventStub();
+        final ITmfEvent event = new TmfEvent();
         assertNull("getTrace", event.getTrace());
         assertEquals("getRank", ITmfContext.UNKNOWN_RANK, event.getRank());
         assertNull("getTimestamp", event.getTimestamp());
@@ -126,7 +142,9 @@ public class TmfEventTest {
         assertNull("getReference", event.getReference());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testFullConstructor() {
         assertNull("getTrace", fEvent1.getTrace());
         assertEquals("getRank", 0, fEvent1.getRank());
@@ -145,9 +163,11 @@ public class TmfEventTest {
         assertEquals("getReference", fReference2, fEvent2.getReference());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNoRankConstructor() {
-        final ITmfEvent event = new TmfEventStub(null, fTimestamp1, fSource, fType, fContent1, fReference1);
+        final ITmfEvent event = new TmfEvent(null, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertNull("getTrace", event.getTrace());
         assertEquals("getRank", ITmfContext.UNKNOWN_RANK, event.getRank());
         assertEquals("getTimestamp", fTimestamp1, event.getTimestamp());
@@ -157,10 +177,12 @@ public class TmfEventTest {
         assertEquals("getReference", fReference1, event.getReference());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testConstructorWithTrace() {
         final ITmfTrace trace = openTrace();
-        final ITmfEvent event = new TmfEventStub(trace, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        final ITmfEvent event = new TmfEvent(trace, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertNotNull("getTrace", event.getTrace());
         assertEquals("getRank", 0, event.getRank());
         assertEquals("getTimestamp", fTimestamp1, event.getTimestamp());
@@ -171,9 +193,11 @@ public class TmfEventTest {
         trace.dispose();
     }
 
-    @Test
+    /**
+     *
+     */
     public void testTmfEventCopy() {
-        final ITmfEvent event = new TmfEventStub(fEvent1);
+        final ITmfEvent event = new TmfEvent(fEvent1);
         assertNull("getTrace", event.getTrace());
         assertEquals("getRank", 0, event.getRank());
         assertEquals("getTimestamp", fTimestamp1, event.getTimestamp());
@@ -183,10 +207,12 @@ public class TmfEventTest {
         assertEquals("getReference", fReference1, event.getReference());
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEventCopy2() {
         try {
-            new TmfEventStub(null);
+            new TmfEvent(null);
             fail("null copy");
         } catch (final IllegalArgumentException e) {
             // Success
@@ -197,7 +223,7 @@ public class TmfEventTest {
     // Setters
     // ------------------------------------------------------------------------
 
-    private static class TestEvent extends TmfEventStub {
+    private static class TestEvent extends TmfEvent {
 
         public TestEvent(final ITmfEvent event) {
             super(event);
@@ -386,18 +412,20 @@ public class TmfEventTest {
     // hashCode
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testHashCode() {
-        ITmfEvent event1 = new TmfEventStub();
-        ITmfEvent event2 = new TmfEventStub();
+        ITmfEvent event1 = new TmfEvent();
+        ITmfEvent event2 = new TmfEvent();
 
         assertTrue("hashCode", event1.hashCode() == event2.hashCode());
 
         final ITmfTrace trace = openTrace();
-        event1 = new TmfEventStub(trace, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
-        event2 = new TmfEventStub(trace, 1, fTimestamp2, fSource, fType, fContent2, fReference2);
-        final ITmfEvent event1b = new TmfEventStub(event1);
-        final ITmfEvent event2b = new TmfEventStub(event2);
+        event1 = new TmfEvent(trace, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        event2 = new TmfEvent(trace, 1, fTimestamp2, fSource, fType, fContent2, fReference2);
+        final ITmfEvent event1b = new TmfEvent(event1);
+        final ITmfEvent event2b = new TmfEvent(event2);
 
         assertTrue("hashCode", event1.hashCode() == event1b.hashCode());
         assertTrue("hashCode", event2.hashCode() == event2b.hashCode());
@@ -412,7 +440,9 @@ public class TmfEventTest {
     // equals
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsReflexivity() {
         assertTrue("equals", fEvent1.equals(fEvent1));
         assertTrue("equals", fEvent2.equals(fEvent2));
@@ -421,10 +451,12 @@ public class TmfEventTest {
         assertFalse("equals", fEvent2.equals(fEvent1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsSymmetry() {
-        final ITmfEvent event1 = new TmfEventStub(fEvent1);
-        final ITmfEvent event2 = new TmfEventStub(fEvent2);
+        final ITmfEvent event1 = new TmfEvent(fEvent1);
+        final ITmfEvent event2 = new TmfEvent(fEvent2);
 
         assertTrue("equals", event1.equals(fEvent1));
         assertTrue("equals", fEvent1.equals(event1));
@@ -433,44 +465,52 @@ public class TmfEventTest {
         assertTrue("equals", fEvent2.equals(event2));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsTransivity() {
-        final ITmfEvent event1 = new TmfEventStub(fEvent1);
-        final ITmfEvent event2 = new TmfEventStub(fEvent1);
-        final ITmfEvent event3 = new TmfEventStub(fEvent1);
+        final ITmfEvent event1 = new TmfEvent(fEvent1);
+        final ITmfEvent event2 = new TmfEvent(fEvent1);
+        final ITmfEvent event3 = new TmfEvent(fEvent1);
 
         assertTrue("equals", event1.equals(event2));
         assertTrue("equals", event2.equals(event3));
         assertTrue("equals", event1.equals(event3));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testEqualsNull() {
         assertFalse("equals", fEvent1.equals(null));
         assertFalse("equals", fEvent2.equals(null));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualClasses() {
         assertFalse("equals", fEvent1.equals(fEvent1.getType()));
         assertFalse("equals", fEvent1.equals(null));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualTraces() {
         final ITmfTrace trace1 = openTrace();
         final ITmfTrace trace2 = openTrace();
 
-        final ITmfEvent event1 = new TmfEventStub(trace1, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
-        ITmfEvent event2 = new TmfEventStub(trace1,  0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        final ITmfEvent event1 = new TmfEvent(trace1, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        ITmfEvent event2 = new TmfEvent(trace1,  0, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertTrue("equals", event1.equals(event2));
         assertTrue("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null,  0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        event2 = new TmfEvent(null,  0, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(trace2,  0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        event2 = new TmfEvent(trace2,  0, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
 
@@ -478,54 +518,62 @@ public class TmfEventTest {
         trace2.dispose();
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualRanks() {
-        final ITmfEvent event1 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
-        ITmfEvent event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        final ITmfEvent event1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        ITmfEvent event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertTrue("equals", event1.equals(event2));
         assertTrue("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 1, fTimestamp1, fSource, fType, fContent1, fReference1);
+        event2 = new TmfEvent(null, 1, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualTimestamps() {
-        final ITmfEvent event1 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
-        ITmfEvent event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        final ITmfEvent event1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        ITmfEvent event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertTrue("equals", event1.equals(event2));
         assertTrue("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 0, fTimestamp2, fSource, fType, fContent1, fReference1);
+        event2 = new TmfEvent(null, 0, fTimestamp2, fSource, fType, fContent1, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 0, null, fSource, fType, fContent1, fReference1);
+        event2 = new TmfEvent(null, 0, null, fSource, fType, fContent1, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualSources() {
-        final ITmfEvent event1 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
-        ITmfEvent event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        final ITmfEvent event1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        ITmfEvent event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertTrue("equals", event1.equals(event2));
         assertTrue("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 0, fTimestamp1, fSource + "x", fType, fContent1, fReference1);
+        event2 = new TmfEvent(null, 0, fTimestamp1, fSource + "x", fType, fContent1, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 0, fTimestamp1, null, fType, fContent1, fReference1);
+        event2 = new TmfEvent(null, 0, fTimestamp1, null, fType, fContent1, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualTypes() {
-        final ITmfEvent event1 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
-        ITmfEvent event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType,  fContent1, fReference1);
+        final ITmfEvent event1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        ITmfEvent event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType,  fContent1, fReference1);
         assertTrue("equals", event1.equals(event2));
         assertTrue("equals", event2.equals(event1));
 
@@ -533,43 +581,47 @@ public class TmfEventTest {
         final String[] labels = new String[] { fLabel2, fLabel1 };
         final TmfEventType newType = new TmfEventType(fContext, typeId, TmfEventField.makeRoot(labels));
 
-        event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, newType, fContent1, fReference1);
+        event2 = new TmfEvent(null, 0, fTimestamp1, fSource, newType, fContent1, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, null, fContent1, fReference1);
+        event2 = new TmfEvent(null, 0, fTimestamp1, fSource, null, fContent1, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualContents() {
-        final ITmfEvent event1 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
-        ITmfEvent event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        final ITmfEvent event1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        ITmfEvent event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertTrue("equals", event1.equals(event2));
         assertTrue("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent2, fReference1);
+        event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent2, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, null, fReference1);
+        event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, null, fReference1);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
     }
 
-    @Test
+    /**
+     *
+     */
     public void testNonEqualReferences() {
-        final ITmfEvent event1 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
-        ITmfEvent event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        final ITmfEvent event1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        ITmfEvent event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
         assertTrue("equals", event1.equals(event2));
         assertTrue("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, fReference2);
+        event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference2);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
 
-        event2 = new TmfEventStub(null, 0, fTimestamp1, fSource, fType, fContent1, null);
+        event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, null);
         assertFalse("equals", event1.equals(event2));
         assertFalse("equals", event2.equals(event1));
     }
@@ -578,13 +630,15 @@ public class TmfEventTest {
     // toString
     // ------------------------------------------------------------------------
 
-    @Test
+    /**
+     *
+     */
     public void testToString() {
-        final String expected1 = "TmfEventStub [fTimestamp=" + fTimestamp1 + ", fTrace=null, fRank=0, fSource=" + fSource
+        final String expected1 = "TmfEvent [fTimestamp=" + fTimestamp1 + ", fTrace=null, fRank=0, fSource=" + fSource
                 + ", fType=" + fType + ", fContent=" + fContent1 + ", fReference=" + fReference1 + "]";
         assertEquals("toString", expected1, fEvent1.toString());
 
-        final String expected2 = "TmfEventStub [fTimestamp=" + fTimestamp2 + ", fTrace=null, fRank=1, fSource=" + fSource
+        final String expected2 = "TmfEvent [fTimestamp=" + fTimestamp2 + ", fTrace=null, fRank=1, fSource=" + fSource
                 + ", fType=" + fType + ", fContent=" + fContent2 + ", fReference=" + fReference2 + "]";
         assertEquals("toString", expected2, fEvent2.toString());
     }
