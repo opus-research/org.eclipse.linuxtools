@@ -1,4 +1,3 @@
-
 /*****************************************************************************
  * Copyright (c) 2007, 2008 Intel Corporation, 2009, 2010, 2011, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
@@ -92,7 +91,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     // Calender Time format, using Epoch reference or Relative time
     // format(default
     private boolean calendarTimeFormat = false;
-    private boolean cycleFormat = false;
     private int borderWidth = 0;
     private int timeScaleHeight = 22;
 
@@ -908,24 +906,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     @Override
     public boolean isCalendarFormat() {
         return calendarTimeFormat;
-    }
-
-    /**
-     * Set the cycle format
-     *
-     * @param cycle True for time as cycle, false for time
-     * @since 1.2
-     */
-    public void setCycleFormat(boolean cycle) {
-        this.cycleFormat = cycle;
-    }
-
-    /**
-     * @since 1.2
-     */
-    @Override
-    public boolean isCycleFormat() {
-        return cycleFormat;
     }
 
     /**

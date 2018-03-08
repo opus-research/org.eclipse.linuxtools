@@ -1,4 +1,3 @@
-
 /*****************************************************************************
  * Copyright (c) 2007 Intel Corporation, 2010, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
@@ -137,10 +136,4 @@ public interface ITimeDataProvider {
      * @return If the calendar format is absolute (true) or relative (false)
      */
     boolean isCalendarFormat();
-
-    /**
-     * @return If the time is a cycle,step,tick... or a real time
-     * @since 1.2
-     */
-    boolean isCycleFormat();
 }
