@@ -93,7 +93,7 @@ public class TmfCheckpointIndexTest {
 
     private class TestTrace extends TmfTraceStub {
         public TestTrace(String path, int blockSize) throws TmfTraceException {
-            super(path, blockSize, false, null, null);
+            super(path, blockSize);
             setIndexer(new TestIndexer(this));
         }
         @Override
