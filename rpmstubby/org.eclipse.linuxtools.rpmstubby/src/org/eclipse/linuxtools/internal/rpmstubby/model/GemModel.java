@@ -40,11 +40,11 @@ public class GemModel {
 	 * Options in the gemspec file that are supposed to only have 1 value
 	 *
 	 */
-	private static final String[] SINGLE_VALUES = { CommonMetaData.DESCRIPTION,
+	private static final String[] singleValues = { CommonMetaData.DESCRIPTION,
 			CommonMetaData.NAME, CommonMetaData.VERSION,
 			CommonMetaData.LICENSE, SUMMARY, RUBYGEMS_VERSION, HOMEPAGE };
 
-	private RubyGemParser rubyGemParser;
+	private RubyGemParser rbyGemParser;
 
 	/**
 	 * Ruby gemspec file
@@ -54,7 +54,7 @@ public class GemModel {
 	 */
 	public GemModel(IFile file) {
 		try {
-			rubyGemParser = new RubyGemParser(file);
+			rbyGemParser = new RubyGemParser(file);
 		} catch (IOException e) {
 			StubbyLog.logError(e);
 		} catch (CoreException e) {
@@ -71,11 +71,11 @@ public class GemModel {
 	 * @return The value of the option
 	 */
 	private String getValue(String attr) {
-		List<String> list = rubyGemParser.getValueList(attr);
+		List<String> list = getValueList(attr);
 		String rc = "";
 		boolean single = false;
 
-		for (String str : SINGLE_VALUES) {
+		for (String str : singleValues) {
 			if (str.equals(attr)) {
 				single = true;
 				break;
@@ -92,6 +92,18 @@ public class GemModel {
 	}
 
 	/**
+	 * Get the list of values from one of the gemspec attributes that stores a list
+	 * of strings
+	 *
+	 * @param attr
+	 *            The gemspec attribute to get value of
+	 * @return The list of values of the option
+	 */
+	private List<String> getValueList(String option) {
+		return rbyGemParser.getValueList(option);
+	}
+
+	/**
 	 * Get the install requires in the gemspec file
 	 *
 	 * @param key
@@ -100,11 +112,12 @@ public class GemModel {
 	 */
 	public List<String> getDependencies(String key) {
 		List<String> rc = new ArrayList<String>();
-		List<String> temp = rubyGemParser.getValueList(key);
+		List<String> temp = getValueList(key);
 
 		if (!temp.isEmpty()) {
-			for (String tmp : temp) {
-				rc.add(tmp
+			for (int i = 0; i < temp.size(); i++) {
+				rc.add(temp
+						.get(i)
 						.replaceFirst("(?:%q|%Q)(?:([\\W])([^\\W]+)[\\W])",
 								"$2").replaceAll("(\"|'|\\[|\\])", "")
 						.replaceAll(",", ""));
@@ -213,7 +226,7 @@ public class GemModel {
 	 */
 	public String getLicense() {
 		String license = getValue("license");
-		List<String> list = rubyGemParser.getValueList("licenses");
+		List<String> list = getValueList("licenses");
 
 		if (license.equals(FIX_ME) && !list.isEmpty()) {
 			license = "";
@@ -252,11 +265,12 @@ public class GemModel {
 	 */
 	public List<String> getRequirePaths() {
 		List<String> rc = new ArrayList<String>();
-		List<String> temp = rubyGemParser.getValueList(REQUIRE_PATHS);
+		List<String> temp = getValueList(REQUIRE_PATHS);
 
 		if (!temp.isEmpty()) {
-			for (String tmp : temp) {
-				rc.add(tmp
+			for (int i = 0; i < temp.size(); i++) {
+				rc.add(temp
+						.get(i)
 						.replaceFirst("(?:%q|%Q)(?:([\\W])([^\\W]+)[\\W])",
 								"$2").replaceAll("(\"|'|\\[|\\])", "")
 						.replaceAll(",", ""));
