@@ -25,7 +25,6 @@ import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ILineRange;
 import org.eclipse.jface.text.source.IVerticalRulerColumn;
-import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.hyperlink.ISTAnnotationHyperlink;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeEvent;
@@ -36,7 +35,6 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
@@ -124,13 +122,7 @@ public class STRulerColumn implements IVerticalRulerColumn {
         @Override
         public void mouseDown(MouseEvent event) {
             fParentRuler.setLocationOfLastMouseButtonActivity(event.x, event.y);
-            int newLine = fParentRuler.toDocumentLineNumber(event.y) + 1;
-            if (annotationColumn instanceof ISTAnnotationHyperlink) {
-                ISTAnnotationHyperlink ahp = (ISTAnnotationHyperlink) annotationColumn;
-                if (ahp.isAnnotationHyperlink(newLine) && !annotationColumn.getAnnotation(newLine).trim().isEmpty()) {
-                    ahp.handleHyperlink(newLine);
-                }
-            } else if (event.button == 1) { // see bug 45700
+            if (event.button == 1) { // see bug 45700
                 startSelecting();
             }
         }
@@ -151,16 +143,6 @@ public class STRulerColumn implements IVerticalRulerColumn {
         @Override
         public void mouseMove(MouseEvent event) {
             int newLine = fParentRuler.toDocumentLineNumber(event.y) + 1;
-            if (annotationColumn instanceof ISTAnnotationHyperlink) {
-                Cursor cursor;
-                if (((ISTAnnotationHyperlink) annotationColumn).isAnnotationHyperlink(newLine)
-                        && !annotationColumn.getAnnotation(newLine).trim().isEmpty()) {
-                    cursor = event.display.getSystemCursor(SWT.CURSOR_HAND);
-                } else {
-                    cursor = event.display.getSystemCursor(SWT.CURSOR_ARROW);
-                }
-                fCanvas.setCursor(cursor);
-            }
             if (fIsListeningForMove && !autoScroll(event)) {
                 expandSelection(newLine);
             }
@@ -730,19 +712,13 @@ public class STRulerColumn implements IVerticalRulerColumn {
      * @since 3.0
      */
     protected void paintLine(int line, int y, int lineheight, GC gc, Display display) {
-        int widgetLine = JFaceTextUtil.modelLineToWidgetLine(fParentRuler.getTextViewer(), line);
-        int indentation = fCachedNumberOfDigits;
+		int widgetLine = JFaceTextUtil.modelLineToWidgetLine(
+				fParentRuler.getTextViewer(), line);
+		int indentation = fCachedNumberOfDigits;
 
-        if (annotationColumn instanceof ISTAnnotationHyperlink) {
-            ISTAnnotationHyperlink ah = (ISTAnnotationHyperlink) annotationColumn;
-            if (ah.isAnnotationHyperlink(widgetLine)) {
-                paintHyperLink(line, y, indentation, lineheight, gc, display);
-            }
-        } else {
-            int baselineBias = getBaselineBias(gc, widgetLine);
-            String s = annotationColumn.getAnnotation(widgetLine);
-            gc.drawString(s, indentation, y + baselineBias, true);
-        }
+		int baselineBias = getBaselineBias(gc, widgetLine);
+		String s = annotationColumn.getAnnotation(widgetLine);
+		gc.drawString(s, indentation, y + baselineBias, true);
     }
 
     /**
