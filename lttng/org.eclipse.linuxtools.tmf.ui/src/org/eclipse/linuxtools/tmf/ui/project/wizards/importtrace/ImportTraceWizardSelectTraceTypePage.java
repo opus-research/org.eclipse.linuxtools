@@ -74,8 +74,6 @@ public class ImportTraceWizardSelectTraceTypePage extends AbstractImportTraceWiz
 
         final ICheckStateListener listener = new TraceTypeCheckListener();
 
-        setTitle(Messages.ImportTraceWizardSelectTraceTypePage_title);
-
         fTreeView = new CheckboxTreeViewer(control, SWT.BORDER);
         fTreeView.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         fTreeView.setContentProvider(fProvider);
@@ -95,7 +93,7 @@ public class ImportTraceWizardSelectTraceTypePage extends AbstractImportTraceWiz
         buttonArea.setLayout(new GridLayout(2, false));
 
         Button selectAll = new Button(buttonArea, SWT.NONE);
-        selectAll.setText(Messages.ImportTraceWizard_selectAll);
+        selectAll.setText(Messages.ImportTraceWizardSelectAll);
         selectAll.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
         selectAll.addListener(SWT.Selection, new Listener() {
             @Override
@@ -109,7 +107,7 @@ public class ImportTraceWizardSelectTraceTypePage extends AbstractImportTraceWiz
         });
 
         Button selectNone = new Button(buttonArea, SWT.NONE);
-        selectNone.setText(Messages.ImportTraceWizardPage_selectNone);
+        selectNone.setText(Messages.ImportTraceWizardPageSelectNone);
         selectNone.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
         selectNone.addListener(SWT.Selection, new Listener() {
             @Override
@@ -139,7 +137,7 @@ public class ImportTraceWizardSelectTraceTypePage extends AbstractImportTraceWiz
         }
         ((BatchImportTraceWizard) getWizard()).setTraceTypesToScan(tracesToScan);
         if (tracesToScan.isEmpty()) {
-            setErrorMessage(Messages.ImportTraceWizardPage_selectHint);
+            setErrorMessage(Messages.ImportTraceWizardPageSelectHint);
         } else {
             setErrorMessage(null);
         }

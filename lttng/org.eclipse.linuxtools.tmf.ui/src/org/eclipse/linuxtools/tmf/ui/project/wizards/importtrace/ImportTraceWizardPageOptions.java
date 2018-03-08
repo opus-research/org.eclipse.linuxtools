@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -33,14 +34,13 @@ import org.eclipse.ui.IWorkbench;
 /**
  * This page selects the project to import to.
  *
- *
  * @author Matthew Khouzam
  * @since 2.0
  */
 public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage {
 
     private List fProjects;
-    final private Map<String, IProject> fProjectsMap = new LinkedHashMap<String, IProject>();
+    private final Map<String, IProject> fProjectsMap = new LinkedHashMap<String, IProject>();
 
     /**
      * Import page that tells where the trace will go
@@ -59,8 +59,8 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
     public void createControl(Composite parent) {
         super.createControl(parent);
         IFolder originalFolder = getBatchWizard().getTargetFolder();
-        IProject proj= null;
-        if( originalFolder != null ) {
+        IProject proj = null;
+        if (originalFolder != null) {
             proj = originalFolder.getProject();
         }
 
@@ -81,13 +81,14 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
                     fProjects.add(name);
                 }
             } catch (CoreException e) {
+                // TODO: add a logger to activator and then log it
             }
         }
 
         fProjects.getSelection();
         fProjects.addSelectionListener(new SelectionListener() {
 
-            final static String TRACE = "Traces"; //$NON-NLS-1$
+            static final String TRACE = "Traces"; //$NON-NLS-1$
 
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -105,14 +106,12 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
                 ImportTraceWizardPageOptions.this.setErrorMessage(null);
             }
         });
-        if( proj != null ){
-            getBatchWizard().setTraceFolder(originalFolder);
+        if (proj != null) {
             fProjects.setSelection(fProjects.indexOf(proj.getName()));
             this.setErrorMessage(null);
-        }else{
-            this.setErrorMessage(Messages.ImportTraceWizardPageOptions_noProjectSelected);
+        } else {
+            this.setErrorMessage(Messages.Shared_selectProject);
         }
-        this.setTitle(Messages.ImportTraceWizardPageOptions_title);
     }
 
 }
