@@ -159,7 +159,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         getBatchWizard().setTracesToScan(fTracesToScan);
         getBatchWizard().setTraceFolder(fTargetFolder);
         fRunnable.schedule();
-        setErrorMessage(Messages.ImportTraceWizardScanPageSelectAtleastOne);
+        setErrorMessage(Messages.ImportTraceWizardScanPage_SelectAtleastOne);
     }
 
     private void init() {
@@ -328,9 +328,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
             }
             getBatchWizard().updateConflicts();
             if (getBatchWizard().hasConflicts()) {
-                setErrorMessage(Messages.ImportTraceWizardScanPageRenameError);
+                setErrorMessage(Messages.ImportTraceWizardScanPage_renameError);
             } else if (!getBatchWizard().hasTracesToImport()) {
-                setErrorMessage(Messages.ImportTraceWizardScanPageSelectAtleastOne);
+                setErrorMessage(Messages.ImportTraceWizardScanPage_SelectAtleastOne);
             } else {
                 setErrorMessage(null);
             }
@@ -372,7 +372,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                 @Override
                 public void run() {
                     fMonitor = SubMonitor.convert(getMonitor());
-                    getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
+                    getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + ' ');
                     ((SubMonitor) getMonitor()).setWorkRemaining(IProgressMonitor.UNKNOWN);
                 }
             });
@@ -386,8 +386,8 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         @Override
                         public void run() {
                             if (!control.isDisposed()) {
-                                getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
-                                getMonitor().subTask(Messages.ImportTraceWizardPageScanDone);
+                                getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + ' ');
+                                getMonitor().subTask(Messages.ImportTraceWizardPageScan_done);
                             }
                         }
                     });
@@ -412,7 +412,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                                 @Override
                                 public void run() {
                                     if (!control.isDisposed()) {
-                                        getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
+                                        getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + ' ');
                                         getMonitor().subTask(traceToScan.getTraceToScan());
                                         getMonitor().worked(1);
                                     }
