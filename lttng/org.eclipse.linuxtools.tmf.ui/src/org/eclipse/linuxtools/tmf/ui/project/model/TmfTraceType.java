@@ -382,7 +382,6 @@ public final class TmfTraceType {
      */
 
     public List<TraceTypeHelper> getTraceTypes(String category) {
-        init();
         List<TraceTypeHelper> traceNames = new ArrayList<TraceTypeHelper>();
         for (String key : fTraceTypes.keySet()) {
             final String categoryName = fTraceTypes.get(key).getCategoryName();
