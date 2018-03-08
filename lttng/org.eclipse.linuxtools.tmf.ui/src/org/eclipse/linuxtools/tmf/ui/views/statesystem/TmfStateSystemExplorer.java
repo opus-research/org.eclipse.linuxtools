@@ -7,9 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Florian Wininger - Initial API and implementation
- *     Alexandre Montplaisir - Refactoring, performance tweaks
- *     Marc-Andre Laperle - Add time zone preference
+ *   Florian Wininger - Initial API and implementation
+ *   Alexandre Montplaisir - Refactoring, performance tweaks
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statesystem;
@@ -25,7 +24,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
@@ -33,6 +31,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -137,7 +136,7 @@ public class TmfStateSystemExplorer extends TmfView {
             }
         });
 
-        for (final ITmfTrace currentTrace : fTraceManager.getActiveTraceSet()) {
+        for (final ITmfTrace currentTrace : TmfTraceManager.getTraceSet(fTrace)) {
             /*
              * We will first do all the queries for this trace, then update that
              * sub-tree in the UI thread.
@@ -230,7 +229,7 @@ public class TmfStateSystemExplorer extends TmfView {
      * column as-is, but update the values to the ones at a new timestamp.
      */
     private synchronized void updateTable() {
-        ITmfTrace[] traces = fTraceManager.getActiveTraceSet();
+        ITmfTrace[] traces = TmfTraceManager.getTraceSet(fTrace);
         long ts = fCurrentTimestamp;
 
         /* For each trace... */
@@ -433,23 +432,6 @@ public class TmfStateSystemExplorer extends TmfView {
             public void run() {
                 ITmfTimestamp currentTime = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
                 fCurrentTimestamp = currentTime.getValue();
-                updateTable();
-            }
-        };
-        thread.start();
-    }
-
-    /**
-     * Update the display to use the updated timestamp format
-     *
-     * @param signal the incoming signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void timestampFormatUpdated(TmfTimestampFormatUpdateSignal signal) {
-        Thread thread = new Thread("State system visualizer update") { //$NON-NLS-1$
-            @Override
-            public void run() {
                 updateTable();
             }
         };

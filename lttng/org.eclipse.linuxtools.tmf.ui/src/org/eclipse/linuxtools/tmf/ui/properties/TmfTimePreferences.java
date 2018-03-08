@@ -7,13 +7,10 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Francois Chouinard - Initial API and implementation
- *     Marc-Andre Laperle - Add time zone preference
+ *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.properties;
-
-import java.util.TimeZone;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
@@ -38,7 +35,6 @@ public class TmfTimePreferences {
     static final String TIME_FORMAT_PREF = "org.eclipse.linuxtools.tmf.ui.prefs.time.format"; //$NON-NLS-1$
     static final String DATIME = TIME_FORMAT_PREF + ".datime";   //$NON-NLS-1$
     static final String SUBSEC = TIME_FORMAT_PREF + ".subsec";   //$NON-NLS-1$
-    static final String TIME_ZONE = TIME_FORMAT_PREF + ".timezone"; //$NON-NLS-1$
 
     static final String DATE_DELIMITER = TIME_FORMAT_PREF + ".date.delimiter";   //$NON-NLS-1$
     static final String TIME_DELIMITER = TIME_FORMAT_PREF + ".time.delimiter";   //$NON-NLS-1$
@@ -103,7 +99,6 @@ public class TmfTimePreferences {
         fPreferenceStore.setDefault(TmfTimePreferences.DATE_DELIMITER, DELIMITER_DASH);
         fPreferenceStore.setDefault(TmfTimePreferences.TIME_DELIMITER, DELIMITER_COLON);
         fPreferenceStore.setDefault(TmfTimePreferences.SSEC_DELIMITER, DELIMITER_SPACE);
-        fPreferenceStore.setDefault(TmfTimePreferences.TIME_ZONE, TimeZone.getDefault().getID());
 
         // Create the singleton and initialize format preferences
         getInstance();
@@ -128,7 +123,7 @@ public class TmfTimePreferences {
      */
     private TmfTimePreferences() {
         initPatterns();
-        setTimePattern(fTimestampPattern, getTimeZone());
+        setTimePattern(fTimestampPattern);
     }
 
     // ------------------------------------------------------------------------
@@ -143,14 +138,13 @@ public class TmfTimePreferences {
     }
 
     /**
-     * Sets the timestamp, timezone and updates TmfTimestampFormat
+     * Sets the timestamp pattern and updates TmfTimestampFormat
      *
      * @param timePattern the new timestamp pattern
-     * @param timeZone the new time zone
      */
-    static void setTimePattern(String timePattern, TimeZone timeZone) {
+    static void setTimePattern(String timePattern) {
         fTimestampPattern = timePattern;
-        TmfTimestampFormat.setDefaultTimeFormat(fTimestampPattern, timeZone);
+        TmfTimestampFormat.setDefaultTimeFormat(fTimestampPattern);
         TmfTimestampFormat.setDefaultIntervalFormat(fIntervalPattern);
     }
 
@@ -203,14 +197,6 @@ public class TmfTimePreferences {
      */
     void setSSecFormat(String pattern) {
         fSSecFormat = pattern;
-    }
-
-    /**
-     * Get the time zone
-     * @return the time zone
-     */
-    public TimeZone getTimeZone(){
-        return TimeZone.getTimeZone(fPreferenceStore.getString(TIME_ZONE));
     }
 
     // ------------------------------------------------------------------------
