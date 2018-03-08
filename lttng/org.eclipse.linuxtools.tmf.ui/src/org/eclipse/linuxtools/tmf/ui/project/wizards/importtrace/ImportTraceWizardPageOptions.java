@@ -66,12 +66,10 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
         optionPane.setLayout(new GridLayout());
         optionPane.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, true));
 
-
         IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
 
-        fProjects = new List(optionPane, SWT.V_SCROLL);
+        fProjects = new List(optionPane, SWT.NONE);
         fProjects.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
 
         for (IProject project : projects) {
             try {
