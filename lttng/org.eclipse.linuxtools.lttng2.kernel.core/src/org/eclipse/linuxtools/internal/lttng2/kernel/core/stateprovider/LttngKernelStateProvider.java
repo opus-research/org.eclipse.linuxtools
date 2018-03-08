@@ -417,14 +417,8 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
                  * run. Assign it to the "wait for cpu" state.
                  */
                 quark = ss.getQuarkRelativeAndAdd(threadNode, Attributes.STATUS);
-
-                int status = ss.queryOngoingState(quark).unboxInt();
-
-                if (status != StateValues.PROCESS_STATUS_RUN_SYSCALL &&
-                    status != StateValues.PROCESS_STATUS_RUN_USERMODE) {
-                    value = StateValues.PROCESS_STATUS_WAIT_FOR_CPU_VALUE;
-                    ss.modifyAttribute(ts, value, quark);
-                }
+                value = StateValues.PROCESS_STATUS_WAIT_FOR_CPU_VALUE;
+                ss.modifyAttribute(ts, value, quark);
             }
                 break;
 
