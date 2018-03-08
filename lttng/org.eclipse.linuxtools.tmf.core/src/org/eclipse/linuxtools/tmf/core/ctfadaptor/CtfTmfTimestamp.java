@@ -47,23 +47,33 @@ public class CtfTmfTimestamp extends TmfTimestamp {
         SECONDS
     }
 
-    private TimestampType type;
+    private final TimestampType type;
 
     /**
-     * Constructor for CtfTmfTimestamp.
-     * @param timestamp long
+     * Constructor without specifying the timestamp type. The NANOS type is used
+     * by default.
+     *
+     * @param timestamp
+     *            The value of the timestamp
      */
     public CtfTmfTimestamp(long timestamp) {
         super(timestamp, -9, 0);
-        type = TimestampType.DAY;
+        this.type = TimestampType.NANOS;
     }
 
     /**
-     * Method setType.
-     * @param value TimestampType
+     * Constructor for CtfTmfTimestamp.
+     *
+     * @param timestamp
+     *            The value of the timestamp
+     * @param type
+     *            How to display this timestamp. If null, then the NANOS type is
+     *            used by default.
+     * @since 2.0
      */
-    public void setType(TimestampType value) {
-        type = value;
+    public CtfTmfTimestamp(long timestamp, TimestampType type) {
+        super(timestamp, -9, 0);
+        this.type = (type == null ? TimestampType.NANOS : type);
     }
 
     /**
@@ -96,13 +106,15 @@ public class CtfTmfTimestamp extends TmfTimestamp {
         for (int i = 0; i < diff; i++) {
             value *= 10;
         }
-        CtfTmfTimestamp retVal = new CtfTmfTimestamp(value);
+
+        TimestampType tsType;
         if (value > 100000000) {
-            retVal.type = TimestampType.SECONDS;
+            tsType = TimestampType.SECONDS;
         } else {
-            retVal.type = TimestampType.NANOS;
+            tsType = TimestampType.NANOS;
         }
-        return retVal;
+
+        return new CtfTmfTimestamp(value, tsType);
     }
 
     /*

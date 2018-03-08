@@ -51,8 +51,7 @@ public class CtfTmfTimestampTest {
      */
     @Before
     public void setUp() {
-        fixture = new CtfTmfTimestamp(1L);
-        fixture.setType(CtfTmfTimestamp.TimestampType.DAY);
+        fixture = new CtfTmfTimestamp(1L, CtfTmfTimestamp.TimestampType.DAY);
     }
 
     /**
@@ -71,8 +70,7 @@ public class CtfTmfTimestampTest {
     public void testCtfTmfTimestamp() {
         long timestamp = 1L;
 
-        CtfTmfTimestamp result = new CtfTmfTimestamp(timestamp);
-        result.setType(TimestampType.NANOS);
+        CtfTmfTimestamp result = new CtfTmfTimestamp(timestamp, TimestampType.NANOS);
 
         assertNotNull(result);
         assertEquals("1 ns", result.toString()); //$NON-NLS-1$
@@ -87,8 +85,7 @@ public class CtfTmfTimestampTest {
      */
     @Test
     public void testEquals_same() {
-        CtfTmfTimestamp obj = new CtfTmfTimestamp(1L);
-        obj.setType(CtfTmfTimestamp.TimestampType.DAY);
+        CtfTmfTimestamp obj = new CtfTmfTimestamp(1L, CtfTmfTimestamp.TimestampType.DAY);
 
         boolean result = fixture.equals(obj);
         assertTrue(result);
@@ -142,31 +139,13 @@ public class CtfTmfTimestampTest {
     }
 
     /**
-     * Run the int hashCode() method test.
-     */
-    @Test
-    public void testHashCode_nullType() {
-        fixture.setType(null);
-        int result = fixture.hashCode();
-        assertEquals(944663, result);
-    }
-
-    /**
-     * Run the void setType(TimestampType) method test.
-     */
-    @Test
-    public void testSetType() {
-        CtfTmfTimestamp.TimestampType value = CtfTmfTimestamp.TimestampType.DAY;
-        fixture.setType(value);
-    }
-
-    /**
      * Run the String toString() method test.
      */
     @Test
     public void testToString_ns() {
-        fixture.setType(CtfTmfTimestamp.TimestampType.NANOS);
-        String result = fixture.toString();
+        CtfTmfTimestamp fixture2 = new CtfTmfTimestamp(fixture.getValue(),
+                CtfTmfTimestamp.TimestampType.NANOS);
+        String result = fixture2.toString();
         assertEquals("1 ns", result); //$NON-NLS-1$
     }
 
@@ -175,8 +154,9 @@ public class CtfTmfTimestampTest {
      */
     @Test
     public void testToString_s() {
-        fixture.setType(CtfTmfTimestamp.TimestampType.SECONDS);
-        String result = fixture.toString();
+        CtfTmfTimestamp fixture2 = new CtfTmfTimestamp(fixture.getValue(),
+                CtfTmfTimestamp.TimestampType.SECONDS);
+        String result = fixture2.toString();
         assertEquals("1.0E-9 s", result); //$NON-NLS-1$
     }
 
@@ -194,8 +174,9 @@ public class CtfTmfTimestampTest {
      */
     @Test
     public void testToString_full() {
-        fixture.setType(CtfTmfTimestamp.TimestampType.FULL_DATE);
-        String result = fixture.toString();
+        CtfTmfTimestamp fixture2 = new CtfTmfTimestamp(fixture.getValue(),
+                CtfTmfTimestamp.TimestampType.FULL_DATE);
+        String result = fixture2.toString();
         assertEquals("1969-12-31 19:00:00.000000001", result); //$NON-NLS-1$
     }
 }
