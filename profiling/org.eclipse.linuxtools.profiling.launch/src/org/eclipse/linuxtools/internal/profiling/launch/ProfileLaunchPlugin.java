@@ -21,6 +21,9 @@ public class ProfileLaunchPlugin extends AbstractUIPlugin {
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.eclipse.linuxtools.profiling.launch"; //$NON-NLS-1$
 
+	// The launch mode this plug-in supports
+	public static final String LAUNCH_MODE = "linuxtools"; //$NON-NLS-1$
+
 	// The shared instance
 	private static ProfileLaunchPlugin plugin;
 
