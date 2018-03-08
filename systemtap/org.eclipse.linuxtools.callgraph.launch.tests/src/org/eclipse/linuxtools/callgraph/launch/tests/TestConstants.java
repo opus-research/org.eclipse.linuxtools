@@ -4,17 +4,12 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
- *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
+ *     Red Hat - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.oprofile.launch.tests;
+package org.eclipse.linuxtools.callgraph.launch.tests;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-	TestLaunching.class, TestManualLaunching.class, TestSetup.class, TestLaunchingExternalProject.class, TestDummy.class
-})
-public class AllLaunchTests {
+public class TestConstants {
+	public static boolean canRunStap = false;
 }
