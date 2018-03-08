@@ -12,8 +12,6 @@ package org.eclipse.linuxtools.internal.perf.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -23,8 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.eclipse.linuxtools.internal.perf.BaseDataManipulator;
-import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.StatComparisonData;
 import org.eclipse.linuxtools.internal.perf.model.PMStatEntry;
 import org.junit.Before;
@@ -35,7 +31,7 @@ public class StatsComparisonTest {
 	PMStatEntry statEntry2;
 	PMStatEntry statEntry3;
 	PMStatEntry statEntry4;
-	public static final String STAT_RES = "resources/stat-data/";
+	private static final String STAT_RES = "resources/stat-data/";
 
 	@Before
 	public void setUp() {
@@ -135,47 +131,6 @@ public class StatsComparisonTest {
 	}
 
 	@Test
-	public void testStatDataComparisonFieldGetters() {
-		File oldStatData = new File(STAT_RES + "perf_old.stat");
-		File newStatData = new File(STAT_RES + "perf_new.stat");
-		String dataTitle = "title";
-		StatComparisonData diffData = new StatComparisonData(dataTitle,
-				oldStatData, newStatData);
-
-		assertEquals(dataTitle, diffData.getTitle());
-		assertEquals("", diffData.getPerfData());
-		assertNotNull(diffData.getDataID());
-		assertEquals(oldStatData.getPath(), diffData.getOldDataPath());
-		assertEquals(newStatData.getPath(), diffData.getNewDataPath());
-		assertEquals(oldStatData.getPath() + diffData.getDataID(),diffData.getOldDataID());
-		assertEquals(newStatData.getPath() + diffData.getDataID(),diffData.getNewDataID());
-	}
-
-	@Test
-	public void testStatDataComparisonCaching() {
-		File oldStatData = new File(STAT_RES + "perf_old.stat");
-		File newStatData = new File(STAT_RES + "perf_new.stat");
-		StatComparisonData diffData = new StatComparisonData("title",
-				oldStatData, newStatData);
-		diffData.cacheData();
-
-		PerfPlugin plugin = PerfPlugin.getDefault();
-		BaseDataManipulator dataMan = new BaseDataManipulator();
-
-		// check data was cached
-		assertEquals(dataMan.fileToString(oldStatData),
-				plugin.getCachedData(diffData.getOldDataID()));
-		assertEquals(dataMan.fileToString(newStatData),
-				plugin.getCachedData(diffData.getNewDataID()));
-
-		diffData.clearCachedData();
-
-		// check cached data was cleared
-		assertNull(plugin.getCachedData(diffData.getOldDataID()));
-		assertNull(plugin.getCachedData(diffData.getNewDataID()));
-	}
-
-	@Test
 	public void testStatDataComparison() {
 		File oldStatData = new File(STAT_RES + "perf_old.stat");
 		File newStatData = new File(STAT_RES + "perf_new.stat");
@@ -220,7 +175,7 @@ public class StatsComparisonTest {
 				oldStatData, newStatData);
 
 		diffData.runComparison();
-		String actualResult = diffData.getPerfData();
+		String actualResult = diffData.getResult();
 		String[] actualResultLines = actualResult.split("\n");
 
 		String curLine;

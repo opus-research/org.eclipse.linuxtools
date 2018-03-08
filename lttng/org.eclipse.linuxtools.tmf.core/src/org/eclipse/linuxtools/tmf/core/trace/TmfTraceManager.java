@@ -12,15 +12,9 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import java.io.File;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -120,15 +114,6 @@ public final class TmfTraceManager {
         return getTraceSet(trace);
     }
 
-    /**
-     * Get the currently-opened traces, as an unmodifiable set.
-     *
-     * @return A set containing the opened traces
-     */
-    public synchronized Set<ITmfTrace> getOpenedTraces() {
-        return Collections.unmodifiableSet(fTraces.keySet());
-    }
-
     private TmfTraceContext getCurrentTraceContext() {
         TmfTraceContext curCtx = fTraces.get(fCurrentTrace);
         if (curCtx == null) {
@@ -137,10 +122,6 @@ public final class TmfTraceManager {
         }
         return curCtx;
     }
-
-    // ------------------------------------------------------------------------
-    // Public utility methods
-    // ------------------------------------------------------------------------
 
     /**
      * Get the trace set of a given trace. For a standard trace, this is simply
@@ -160,32 +141,6 @@ public final class TmfTraceManager {
             return exp.getTraces();
         }
         return new ITmfTrace[] { trace };
-    }
-
-    /**
-     * Return the path (as a string) to the directory for supplementary files to
-     * use with a given trace. If no supplementary file directory has been
-     * configured, a temporary directory based on the trace's name will be
-     * provided.
-     *
-     * @param trace
-     *            The trace
-     * @return The path to the supplementary file directory (trailing slash is
-     *         INCLUDED!)
-     */
-    public static String getSupplementaryFileDir(ITmfTrace trace) {
-        IResource resource = trace.getResource();
-        if (resource == null) {
-            return getTemporaryDir(trace);
-        }
-
-        String supplDir = null;
-        try {
-            supplDir = resource.getPersistentProperty(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER);
-        } catch (CoreException e) {
-            return getTemporaryDir(trace);
-        }
-        return supplDir + File.separator;
     }
 
     // ------------------------------------------------------------------------
@@ -312,7 +267,7 @@ public final class TmfTraceManager {
     }
 
     // ------------------------------------------------------------------------
-    // Private utility methods
+    // Utility methods
     // ------------------------------------------------------------------------
 
     /**
@@ -361,15 +316,5 @@ public final class TmfTraceManager {
             }
         }
         return new TmfTimeRange(start, end);
-    }
-
-    /**
-     * Get a temporary directory based on a trace's name
-     */
-    private static String getTemporaryDir(ITmfTrace trace) {
-        return System.getProperty("java.io.tmpdir") + //$NON-NLS-1$
-            File.separator +
-            trace.getName() +
-            File.separator;
     }
 }

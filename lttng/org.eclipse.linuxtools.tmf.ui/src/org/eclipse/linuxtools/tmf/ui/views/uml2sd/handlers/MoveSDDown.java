@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
 
@@ -22,7 +23,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
  * @author sveyrier
  *
  */
-public class MoveSDDown extends BaseSDAction {
+public class MoveSDDown extends Action {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -30,7 +31,15 @@ public class MoveSDDown extends BaseSDAction {
     /**
      * The action ID.
      */
-    public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.MoveSDDown"; //$NON-NLS-1$
+    public final static String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.MoveSDDown"; //$NON-NLS-1$
+
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+    /**
+     * The sequence diagram view reference.
+     */
+    protected SDView fView = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -48,23 +57,34 @@ public class MoveSDDown extends BaseSDAction {
      * @param view a sequence diagram view reference
      */
     public MoveSDDown(SDView view) {
-        super(view);
+        super();
         setId(ID);
         setActionDefinitionId(ID);
+        fView = view;
     }
 
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
+
     @Override
     public void run() {
-        if (getView() == null) {
+        if (fView == null) {
             return;
         }
 
-        SDWidget viewer = getView().getSDWidget();
+        SDWidget viewer = fView.getSDWidget();
         if (viewer != null) {
             viewer.scrollBy(0, +viewer.getVisibleHeight());
         }
+    }
+
+    /**
+     * Sets the active SD view.
+     *
+     * @param view The SD view.
+     */
+    public void setView(SDView view) {
+        fView = view;
     }
 }
