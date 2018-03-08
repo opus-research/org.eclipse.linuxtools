@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.tmf.core.statevalue;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 
+
 /**
  * This is the wrapper class that exposes the different types of 'state values'
  * available to use in the State System.
@@ -22,7 +23,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  * example, we can save numerical values as integers instead of arrays of
  * 1-digit characters.
  *
- * The available types are Int, Long, Double and String.
+ * For now the two available types are either int or String.
  *
  * @version 1.0
  * @author Alexandre Montplaisir
@@ -76,10 +77,6 @@ public abstract class TmfStateValue implements ITmfStateValue {
         return this.getValue().hashCode();
     }
 
-    // ------------------------------------------------------------------------
-    // Factory methods to instantiate new state values
-    // ------------------------------------------------------------------------
-
     /*
      * Since all "null state values" are the same, we only need one copy in
      * memory.
@@ -98,8 +95,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
     /**
      * Factory constructor for Integer state values
      *
-     * @param intValue
-     *            The integer value to contain
+     * @param intValue The integer value to contain
      * @return The newly-created TmfStateValue object
      */
     public static TmfStateValue newValueInt(int intValue) {
@@ -110,11 +106,23 @@ public abstract class TmfStateValue implements ITmfStateValue {
     }
 
     /**
+     * Factory constructor for String state values
+     *
+     * @param strValue The string value to contain
+     * @return The newly-create TmfStateValue object
+     */
+    public static TmfStateValue newValueString(String strValue) {
+        if (strValue == null) {
+            return nullValue();
+        }
+        return new StringStateValue(strValue);
+    }
+
+    /**
      * Factory constructor for Long state values
      *
-     * @param longValue
-     *            The long value to contain
-     * @return The newly-created TmfStateValue object
+     * @param longValue The long value to contain
+     * @return The newly-create TmfStateValue object
      * @since 2.0
      */
     public static TmfStateValue newValueLong(long longValue) {
@@ -124,61 +132,45 @@ public abstract class TmfStateValue implements ITmfStateValue {
         return new LongStateValue(longValue);
     }
 
-    /**
-     * Factory constructor for Double state values
-     *
-     * @param value
-     *            The double value to contain
-     * @return The newly-created TmfStateValue object
-     */
-    public static TmfStateValue newValueDouble(double value) {
-        if (value == Double.NaN) {
-            return nullValue();
-        }
-        return new DoubleStateValue(value);
-    }
-
-    /**
-     * Factory constructor for String state values
-     *
-     * @param strValue
-     *            The string value to contain
-     * @return The newly-created TmfStateValue object
-     */
-    public static TmfStateValue newValueString(String strValue) {
-        if (strValue == null) {
-            return nullValue();
-        }
-        return new StringStateValue(strValue);
-    }
-
-    // ------------------------------------------------------------------------
-    // Default unboxing methods.
-    // Subclasses can override those for the types they support.
-    // ------------------------------------------------------------------------
-
-    private String unboxErrMsg(String targetType) {
-        return "Type " + getClass().getSimpleName() + //$NON-NLS-1$
-                " cannot be unboxed into a " + targetType + " value."; //$NON-NLS-1$ //$NON-NLS-2$
-    }
-
     @Override
     public int unboxInt() throws StateValueTypeException {
-        throw new StateValueTypeException(unboxErrMsg("Int")); //$NON-NLS-1$
-    }
+        if (this.isNull()) {
+            /* Int value expected, return "-1" instead */
+            return -1;
+        }
 
-    @Override
-    public long unboxLong() throws StateValueTypeException {
-        throw new StateValueTypeException(unboxErrMsg("Long")); //$NON-NLS-1$
-    }
-
-    @Override
-    public double unboxDouble() throws StateValueTypeException {
-        throw new StateValueTypeException(unboxErrMsg("Double")); //$NON-NLS-1$
+        if (this.getType() != Type.INTEGER) {
+            throw new StateValueTypeException();
+        }
+        return (Integer) this.getValue();
     }
 
     @Override
     public String unboxStr() throws StateValueTypeException {
-        throw new StateValueTypeException(unboxErrMsg("String")); //$NON-NLS-1$
+        if (this.isNull()) {
+            /* String value expected, return "nullValue" instead */
+            return "nullValue"; //$NON-NLS-1$
+        }
+
+        if (this.getType() != Type.STRING) {
+            throw new StateValueTypeException();
+        }
+        return (String) this.getValue();
+    }
+
+    /**
+     * @since 2.0
+     */
+    @Override
+    public long unboxLong() throws StateValueTypeException {
+        if (this.isNull()) {
+            /* Long value expected, return "-1" instead */
+            return -1;
+        }
+
+        if (this.getType() != Type.LONG) {
+            throw new StateValueTypeException();
+        }
+        return (Long) this.getValue();
     }
 }

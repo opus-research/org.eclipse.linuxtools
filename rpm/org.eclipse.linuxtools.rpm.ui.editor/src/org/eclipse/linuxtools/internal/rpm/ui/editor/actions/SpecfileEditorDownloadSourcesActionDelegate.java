@@ -39,7 +39,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public class SpecfileEditorDownloadSourcesActionDelegate extends AbstractHandler {
 
-	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final Shell shell =  HandlerUtil.getActiveShellChecked(event);
 		final SpecfileParser specparser = new SpecfileParser();
