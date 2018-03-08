@@ -87,7 +87,7 @@ public class CallGraphContentProvider implements ITreeContentProvider {
 	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
 	 */
 	@Override
-	public TreeElement getParent(Object element) {
+	public Object getParent(Object element) {
 		TreeElement cge = (TreeElement) element;
 		if (cge instanceof HistFunction) {
 			return cge.getParent().getParent();
