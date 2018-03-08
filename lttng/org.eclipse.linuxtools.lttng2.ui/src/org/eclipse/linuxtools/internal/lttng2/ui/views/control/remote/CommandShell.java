@@ -92,7 +92,10 @@ public class CommandShell implements ICommandShell {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandShell#connect()
+     */
     @Override
     public void connect() throws ExecutionException {
         IShellService shellService = fProxy.getShellService();
@@ -108,6 +111,10 @@ public class CommandShell implements ICommandShell {
         fIsConnected = true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandShell#disconnect()
+     */
     @Override
     public void disconnect() {
         fIsConnected = false;
@@ -119,11 +126,19 @@ public class CommandShell implements ICommandShell {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandShell#executeCommand(java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
+     */
     @Override
     public ICommandResult executeCommand(String command, IProgressMonitor monitor) throws ExecutionException {
         return executeCommand(command, monitor, true);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ICommandShell#executeCommand(java.lang.String, org.eclipse.core.runtime.IProgressMonitor, boolean)
+     */
     @Override
     public ICommandResult executeCommand(final String command, final IProgressMonitor monitor, final boolean checkReturnValue) throws ExecutionException {
         if (fIsConnected) {

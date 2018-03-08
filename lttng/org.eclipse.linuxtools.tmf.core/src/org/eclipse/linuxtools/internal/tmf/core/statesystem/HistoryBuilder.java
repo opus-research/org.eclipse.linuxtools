@@ -24,14 +24,14 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
- * This is the high-level wrapper around the State History and its provider and
+ * This is the high-level wrapper around the State History and its input and
  * storage plugins. Just create the object using the constructor then .run()
  *
  * You can use one HistoryBuilder and it will instantiate everything underneath.
@@ -43,20 +43,20 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  */
 public class HistoryBuilder extends TmfComponent {
 
-    private final ITmfStateProvider sp;
+    private final IStateChangeInput sci;
     private final StateSystem ss;
     private final IStateHistoryBackend hb;
     private boolean started = true; /* Don't handle signals until we're ready */
 
     /**
-     * Instantiate a new HistoryBuilder helper. The provider -> ss -> backend
+     * Instantiate a new HistoryBuilder helper. The input -> ss -> backend
      * relationships should have been set up already.
      *
-     * @param stateProvider
-     *            The state provider plugin to use
+     * @param stateChangeInput
+     *            The input plugin to use
      * @param ss
      *            The state system object that will receive the state changes
-     *            from the provider
+     *            from the input
      * @param backend
      *            The back-end storage to use, which will receive the intervals
      *            from the ss
@@ -66,17 +66,17 @@ public class HistoryBuilder extends TmfComponent {
      *            construction is done. False (out-of-band) means we will start
      *            listening for the signal and return immediately.
      */
-    public HistoryBuilder(ITmfStateProvider stateProvider, StateSystem ss,
+    public HistoryBuilder(IStateChangeInput stateChangeInput, StateSystem ss,
             IStateHistoryBackend backend, boolean buildManually) {
-        if (stateProvider == null || backend == null || ss == null) {
+        if (stateChangeInput == null || backend == null || ss == null) {
             throw new IllegalArgumentException();
         }
-        if (stateProvider.getAssignedStateSystem() != ss) {
-            /* Logic check to make sure the provider is setup properly */
+        if (stateChangeInput.getAssignedStateSystem() != ss) {
+            /* Logic check to make sure the input is setup properly */
             throw new RuntimeException();
         }
 
-        sp = stateProvider;
+        sci = stateChangeInput;
         hb = backend;
         this.ss = ss;
 
@@ -134,7 +134,7 @@ public class HistoryBuilder extends TmfComponent {
 
         /* Send the request to the trace here, since there is probably no
          * experiment. */
-        sp.getTrace().sendRequest(request);
+        sci.getTrace().sendRequest(request);
         try {
             request.waitForCompletion();
         } catch (InterruptedException e) {
@@ -165,7 +165,7 @@ public class HistoryBuilder extends TmfComponent {
         ITmfTrace sender = signal.getTrace();
         ITmfTrace target = null;
         for (ITmfTrace trace : sender.getTraces()) {
-            if (trace == sp.getTrace()) {
+            if (trace == sci.getTrace()) {
                 target = trace;
                 break;
             }
@@ -196,7 +196,7 @@ public class HistoryBuilder extends TmfComponent {
          */
         boolean found = false;
         for (ITmfTrace trace : signal.getTrace().getTraces()) {
-            if (trace == sp.getTrace()) {
+            if (trace == sci.getTrace()) {
                 found = true;
                 break;
             }
@@ -211,13 +211,13 @@ public class HistoryBuilder extends TmfComponent {
     // Methods reserved for the request object below
     // ------------------------------------------------------------------------
 
-    /** Get the state provider object */
-    ITmfStateProvider getStateProvider() {
-        return sp;
+    /** Get the input plugin object */
+    IStateChangeInput getInputPlugin() {
+        return sci;
     }
 
     void close(boolean deleteFiles) {
-        sp.dispose();
+        sci.dispose();
         if (deleteFiles) {
             hb.removeFiles();
         }
@@ -231,17 +231,17 @@ class StateSystemBuildRequest extends TmfEventRequest {
     private final static int chunkSize = 50000;
 
     private final HistoryBuilder builder;
-    private final ITmfStateProvider sci;
+    private final IStateChangeInput sci;
     private final ITmfTrace trace;
 
     StateSystemBuildRequest(HistoryBuilder builder) {
-        super(builder.getStateProvider().getExpectedEventType(),
+        super(builder.getInputPlugin().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
                 TmfDataRequest.ALL_DATA,
                 chunkSize,
                 ITmfDataRequest.ExecutionType.BACKGROUND);
         this.builder = builder;
-        this.sci = builder.getStateProvider();
+        this.sci = builder.getInputPlugin();
         this.trace = sci.getTrace();
     }
 

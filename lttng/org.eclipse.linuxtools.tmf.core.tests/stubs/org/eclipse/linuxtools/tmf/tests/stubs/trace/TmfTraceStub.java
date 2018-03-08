@@ -20,9 +20,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -93,7 +90,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
     public TmfTraceStub(final String path, final int cacheSize, final long interval) throws TmfTraceException {
         super(null, ITmfEvent.class, path, cacheSize, interval, null, null);
         try {
-            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
+            fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -127,14 +124,12 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
     public TmfTraceStub(final String path, final int cacheSize, final boolean waitForCompletion) throws TmfTraceException {
         super(null, ITmfEvent.class, path, cacheSize, 0, null, null);
         try {
-            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
+            fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
         setParser(new TmfEventParserStub(this));
-        if (waitForCompletion) {
-            indexTrace(true);
-        }
+        indexTrace(waitForCompletion);
     }
 
     /**
@@ -146,7 +141,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
     public TmfTraceStub(final IResource resource,  final String path, final int cacheSize, final boolean waitForCompletion) throws TmfTraceException {
         super(resource, ITmfEvent.class, path, cacheSize, 0, null, null);
         try {
-            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
+            fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -164,7 +159,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
             final ITmfEventParser parser, final ITmfTraceIndexer indexer) throws TmfTraceException {
         super(null, ITmfEvent.class, path, cacheSize, 0, indexer, null);
         try {
-            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
+            fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -177,7 +172,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
     public TmfTraceStub(final TmfTraceStub trace) throws TmfTraceException {
         super(trace);
         try {
-            fTrace = new RandomAccessFile(getPath(), "r"); //$NON-NLS-1$
+            fTrace = new RandomAccessFile(getPath(), "r");
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -187,7 +182,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
         try {
-            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
+            fTrace = new RandomAccessFile(path, "r");
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -366,12 +361,12 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
         super.dispose();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(org.eclipse.core.resources.IProject, java.lang.String)
+     */
     @Override
-    public IStatus validate(IProject project, String path) {
-        if (fileExists(path)) {
-            return Status.OK_STATUS;
-        }
-        return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "File does not exist: " + path);
+    public boolean validate(IProject project, String path) {
+        return fileExists(path);
     }
 
 }

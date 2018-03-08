@@ -60,6 +60,11 @@ public class TmfTraceUpdatedSignal extends TmfSignal {
         return fTimeRange;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {
