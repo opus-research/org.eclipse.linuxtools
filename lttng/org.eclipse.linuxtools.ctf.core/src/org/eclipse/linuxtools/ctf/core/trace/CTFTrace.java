@@ -64,8 +64,6 @@ public class CTFTrace implements IDefinitionScope {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private static final String FREQ = "freq"; //$NON-NLS-1$
-
     private static final String OFFSET = "offset"; //$NON-NLS-1$
 
 
@@ -691,9 +689,7 @@ public class CTFTrace implements IDefinitionScope {
     }
 
     private CTFClock singleClock;
-    private long singleOffset = 0;
-    private double singleScale = 1.0;
-    private double antiScale = 1.0;
+    private long singleOffset;
 
     /**
      * gets the clock if there is only one. (this is 100% of the use cases as of June 2012)
@@ -707,10 +703,6 @@ public class CTFTrace implements IDefinitionScope {
                     singleOffset = (Long) getClock().getProperty(OFFSET);
                 } else {
                     singleClock.addAttribute(OFFSET, 0);
-                }
-                if(singleClock.getProperty(FREQ) != null) {
-                    singleScale = 1000000000.0/((Long)singleClock.getProperty(FREQ)).doubleValue();
-                    antiScale = 1.0 / singleScale;
                 }
             }
             return singleClock;
@@ -727,45 +719,6 @@ public class CTFTrace implements IDefinitionScope {
             return 0;
         }
         return singleOffset;
-    }
-
-    /**
-     * gets the time offset of a clock with respect to UTC in nanoseconds
-     * @return the time offset of a clock with respect to UTC in nanoseconds
-     */
-    public final double getTimeScale() {
-        if (getClock() == null) {
-            return 1.0;
-        }
-        return singleScale;
-    }
-
-    /**
-     *
-     * @return
-     */
-    private  final double getInverseTimeScale() {
-        if (getClock() == null) {
-            return 1.0;
-        }
-        return antiScale;
-    }
-    /**
-     * @param cycles clock cycles since boot
-     * @return time in nanoseconds UTC offset
-     */
-    public long timestampCyclesToNanos(long cycles){
-        long retVal = cycles + getOffset();
-        return (long)(retVal *  getTimeScale());
-    }
-
-    /**
-     * @param nanos time in nanoseconds UTC offset
-     * @return clock cycles since boot.
-     */
-    public long timestampNanoToCycles(long nanos){
-        long retVal = (long) (nanos * getInverseTimeScale());
-        return retVal -  getOffset();
     }
 
     /**
