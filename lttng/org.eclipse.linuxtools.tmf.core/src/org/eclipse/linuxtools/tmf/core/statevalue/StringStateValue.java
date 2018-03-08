@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
+import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
+
 /**
  * A state value containing a variable-sized string
  *
@@ -23,7 +25,10 @@ final class StringStateValue extends TmfStateValue {
     private final String valueStr;
 
     public StringStateValue(String valueAsString) {
-        assert (valueAsString != null);
+        if (valueAsString == null) {
+            /* Should not happen, see factory methods in TmfStateValue */
+            throw new IllegalArgumentException();
+        }
         this.valueStr = valueAsString;
     }
 
@@ -44,6 +49,25 @@ final class StringStateValue extends TmfStateValue {
 
     @Override
     public String toString() {
+        return valueStr;
+    }
+
+    // ------------------------------------------------------------------------
+    // Unboxing methods
+    // ------------------------------------------------------------------------
+
+    @Override
+    public int unboxInt() throws StateValueTypeException {
+        throw new StateValueTypeException("Trying to unbox String value as an Int"); //$NON-NLS-1$
+    }
+
+    @Override
+    public long unboxLong() throws StateValueTypeException {
+        throw new StateValueTypeException("Trying to unbox String value as a Long"); //$NON-NLS-1$
+    }
+
+    @Override
+    public String unboxStr() {
         return valueStr;
     }
 }

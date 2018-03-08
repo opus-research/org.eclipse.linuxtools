@@ -66,15 +66,6 @@ public interface ITmfStateValue {
     int unboxInt() throws StateValueTypeException;
 
     /**
-     * Read the contained value as a String
-     *
-     * @return The String contained in the state value
-     * @throws StateValueTypeException
-     *             If the contained value cannot be read as a String
-     */
-    String unboxStr() throws StateValueTypeException;
-
-    /**
      * Read the contained value as a 'long' primitive
      *
      * @return The long contained in the state value
@@ -83,4 +74,13 @@ public interface ITmfStateValue {
      * @since 2.0
      */
     long unboxLong() throws StateValueTypeException;
+
+    /**
+     * Read the contained value as a String
+     *
+     * @return The String contained in the state value
+     * @throws StateValueTypeException
+     *             If the contained value cannot be read as a String
+     */
+    String unboxStr() throws StateValueTypeException;
 }
