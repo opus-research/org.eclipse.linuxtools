@@ -18,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,7 +41,11 @@ public class BitBufferTest {
         fixture = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
         fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
         fixture.setByteBuffer(ByteBuffer.allocate(0));
-        fixture.position(1);
+        try {
+            fixture.position(1);
+        } catch (CTFReaderException e) {
+            // won't happen
+        }
     }
 
     /**
@@ -150,9 +155,12 @@ public class BitBufferTest {
 
     /**
      * Run the void position(int) method test.
+     *
+     * @throws CTFReaderException
+     *             out of bounds? won't happen
      */
     @Test
-    public void testSetPosition() {
+    public void testSetPosition() throws CTFReaderException {
         int newPosition = 1;
         fixture.position(newPosition);
     }

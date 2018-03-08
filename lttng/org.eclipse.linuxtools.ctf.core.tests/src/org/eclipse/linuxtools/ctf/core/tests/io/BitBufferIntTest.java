@@ -34,19 +34,22 @@ public class BitBufferIntTest {
 
     /**
      * Perform pre-test initialization.
+     *
+     * @throws CTFReaderException
+     *             Out of bounds, won't happen
      */
     @Before
-    public void setUp() {
+    public void setUp() throws CTFReaderException {
         fixture = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
         fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
         createBuffer(fixture);
     }
 
-    private static void createBuffer(final BitBuffer fixture) {
+    private static void createBuffer(final BitBuffer fixture) throws CTFReaderException {
         createBuffer(fixture, 16);
     }
 
-    private static void createBuffer(final BitBuffer fixture, final int j) {
+    private static void createBuffer(final BitBuffer fixture, final int j) throws CTFReaderException {
         final byte[] bytes = new byte[j];
         for (int i = 0; i < j; i++) {
             bytes[i] = (byte) (i % 0xff);
