@@ -28,7 +28,6 @@ public class MultiValidator implements IInputValidator {
 	 * 
 	 * @return The return message.
 	 */
-	@Override
 	public String isValid(String s) {
 		String message = null;
 		for(int i=0; i<validators.size(); i++) {

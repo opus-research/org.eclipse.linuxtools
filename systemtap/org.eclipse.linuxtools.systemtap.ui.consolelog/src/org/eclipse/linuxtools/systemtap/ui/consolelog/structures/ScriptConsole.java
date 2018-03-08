@@ -164,7 +164,6 @@ public class ScriptConsole extends IOConsole {
 	public void run(String[] command, String[] envVars, IErrorParser errorParser) {
 	    cmd = new ScpExec(command);
 		this.stopCommand = new Runnable() {
-			@Override
 			public void run() {
 				ScpExec stop = new ScpExec(new String[]{getStopString()});
 				stop.start();
@@ -184,7 +183,6 @@ public class ScriptConsole extends IOConsole {
 	public void runLocally(String[] command, String[] envVars, IErrorParser errorParser) {
 		cmd = new LoggedCommand(command, envVars);
 		this.stopCommand = new Runnable() {
-			@Override
 			public void run() {
 				try {
 					RuntimeProcessFactory.getFactory().exec(getStopString(), null, null);

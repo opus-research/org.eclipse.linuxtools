@@ -85,7 +85,6 @@ public class StapNewWizard extends Wizard implements INewWizard {
 		final String containerName = page.getContainerName();
 		final String fileName = page.getFileName();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
-			@Override
 			public void run(IProgressMonitor monitor) throws InvocationTargetException {
 				try {
 					doFinish(containerName, fileName, monitor);
@@ -126,7 +125,6 @@ public class StapNewWizard extends Wizard implements INewWizard {
 		monitor.worked(1);
 		monitor.setTaskName(resourceBundle.getString("StapNewWizard.SetTask")); //$NON-NLS-1$
 		getShell().getDisplay().asyncExec(new Runnable() {
-			@Override
 			public void run() {
 				try {
 					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getWorkbench()
@@ -145,7 +143,6 @@ public class StapNewWizard extends Wizard implements INewWizard {
 	 * we can initialize from it.
 	 * @see INewWizard#init(IWorkbench, IStructuredSelection)
 	 */
-	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.selection = selection;
 	}

@@ -25,7 +25,6 @@ public abstract class FilterWizardPage extends WizardPage {
 		setTitle(title);
 	}
 
-	@Override
 	public void createControl(Composite parent) {
 		wizard = (SelectFilterWizard)super.getWizard();
 	}
@@ -52,7 +51,6 @@ public abstract class FilterWizardPage extends WizardPage {
 	};
 
 	protected final ModifyListener modifyListener = new ModifyListener() {
-		@Override
 		public void modifyText(ModifyEvent e) {
 			createFilter();
 			wizard.getContainer().updateButtons();

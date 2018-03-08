@@ -62,7 +62,6 @@ public class CodeAssistPreferencePage extends FieldEditorPreferencePage implemen
 				getFieldEditorParent()));
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 	}
 
