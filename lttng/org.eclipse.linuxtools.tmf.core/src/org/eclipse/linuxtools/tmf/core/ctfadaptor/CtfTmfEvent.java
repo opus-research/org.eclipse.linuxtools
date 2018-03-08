@@ -217,6 +217,7 @@ public final class CtfTmfEvent extends TmfEvent implements ITmfSourceLookup, ITm
         return getCustomAttribute(CtfConstants.MODEL_URI_KEY);
     }
 
+
     /**
      * @since 2.0
      */
