@@ -1,41 +1,35 @@
 /*******************************************************************************
- * Copyright (c) 2011 IBM Corporation
+ * Copyright (c) 2008 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Daniel H Barboza <danielhb@br.ibm.com> - initial API and implementation
- *******************************************************************************/
-
-package org.eclipse.linuxtools.internal.valgrind.helgrind;
+ *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
+ *******************************************************************************/ 
+package org.eclipse.linuxtools.internal.valgrind.core;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-/**
- * The activator class controls the plug-in life cycle
- */
-public class HelgrindPlugin extends AbstractUIPlugin {
+public class ValgrindPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.valgrind.helgrind"; //$NON-NLS-1$
+	public static final String PLUGIN_ID = PluginConstants.CORE_PLUGIN_ID;
 
 	// The shared instance
-	private static HelgrindPlugin plugin;
-	
-	public static final String TOOL_ID = "org.eclipse.linuxtools.valgrind.launch.helgrind";
+	private static ValgrindPlugin plugin;
 	
 	/**
 	 * The constructor
 	 */
-	public HelgrindPlugin() {
+	public ValgrindPlugin() {
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+	 * @see org.eclipse.core.runtime.Plugins#start(org.osgi.framework.BundleContext)
 	 */
 	@Override
 	public void start(BundleContext context) throws Exception {
@@ -45,7 +39,7 @@ public class HelgrindPlugin extends AbstractUIPlugin {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+	 * @see org.eclipse.core.runtime.Plugin#stop(org.osgi.framework.BundleContext)
 	 */
 	@Override
 	public void stop(BundleContext context) throws Exception {
@@ -58,7 +52,7 @@ public class HelgrindPlugin extends AbstractUIPlugin {
 	 *
 	 * @return the shared instance
 	 */
-	public static HelgrindPlugin getDefault() {
+	public static ValgrindPlugin getDefault() {
 		return plugin;
 	}
 
