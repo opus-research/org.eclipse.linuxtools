@@ -230,7 +230,7 @@ public class TmfStatisticsViewer extends TmfViewer {
         cancelOngoingRequest(fRequestRange);
         cancelOngoingRequest(fRequest);
 
-        // Clean the model for this viewer
+        // Clean the model
         TmfStatisticsTreeRootFactory.removeStatTreeRoot(getTreeID());
     }
 

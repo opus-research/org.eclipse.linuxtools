@@ -28,6 +28,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.viewers.ITmfViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeRootFactory;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.tabsview.TmfViewerFolder;
 import org.eclipse.swt.SWT;
@@ -192,6 +193,8 @@ public class TmfStatisticsView extends TmfView {
     public void dispose() {
         super.dispose();
         fStatsViewers.dispose();
+        // clean the model
+        TmfStatisticsTreeRootFactory.removeAll();
     }
 
     /*
@@ -225,19 +228,12 @@ public class TmfStatisticsView extends TmfView {
         Composite folder = fStatsViewers.getParentFolder();
 
         // Instantiation of the global viewer
-        TmfStatisticsViewer globalViewer;
-        try {
-            globalViewer = getGlobalViewerClass().newInstance();
-        } catch (InstantiationException e) {
-            Activator.getDefault().logError("Statistics: cannot instantiate the global viewer!"); //$NON-NLS-1$
-            return;
-        } catch (IllegalAccessException e) {
-            Activator.getDefault().logError("Statistics: cannot instantiate the global viewer!"); //$NON-NLS-1$
-            return;
-        }
+        TmfStatisticsViewer globalViewer = getGlobalViewer();
         if (fExperiment != null) {
-            // Shows the name of the experiment in the global tab
-            globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
+            if (globalViewer != null) {
+                // Shows the name of the experiment in the global tab
+                globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
+            }
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
 
             String traceName;
@@ -258,8 +254,10 @@ public class TmfStatisticsView extends TmfView {
                 }
             }
         } else {
-            // There is no experiment selected. Shows an empty global tab
-            globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fExperiment);
+            if (globalViewer != null) {
+                // There is no experiment selected. Shows an empty global tab
+                globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fExperiment);
+            }
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
         }
         // Makes the global viewer visible
@@ -288,7 +286,7 @@ public class TmfStatisticsView extends TmfView {
      * @return The class to use to instantiate the global statistics viewer
      * @since 2.0
      */
-    protected Class<? extends TmfStatisticsViewer> getGlobalViewerClass() {
-        return TmfStatisticsViewer.class;
+    protected TmfStatisticsViewer getGlobalViewer() {
+        return new TmfStatisticsViewer();
     }
 }
