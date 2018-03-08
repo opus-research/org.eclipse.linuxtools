@@ -45,16 +45,38 @@ public class SelectTraceTypeContributionItem extends CompoundContributionItem {
     //private static final ImageDescriptor SELECTED_ICON = ImageDescriptor.createFromImage(TmfUiPlugin.getDefault().getImageFromPath("icons/elcl16/bullet.gif")); //$NON-NLS-1$
     private static final ImageDescriptor SELECTED_ICON = Activator.getDefault().getImageDescripterFromPath(
             "icons/elcl16/bullet.gif"); //$NON-NLS-1$
-    private static final String BUNDLE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.bundle"; //$NON-NLS-1$
-    private static final String TYPE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.type"; //$NON-NLS-1$
-    private static final String ICON_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.icon"; //$NON-NLS-1$
-    private static final String SELECT_TRACE_TYPE_COMMAND_ID = "org.eclipse.linuxtools.tmf.ui.command.select_trace_type"; //$NON-NLS-1$
+    private static final String BUNDLE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.project.trace.select_trace_type.bundle"; //$NON-NLS-1$
+    private static final String TYPE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.project.trace.select_trace_type.type"; //$NON-NLS-1$
+    private static final String ICON_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.project.trace.select_trace_type.icon"; //$NON-NLS-1$
+    private static final String SELECT_TRACE_TYPE_COMMAND_ID = "org.eclipse.linuxtools.tmf.ui.command.project.trace.select_trace_type"; //$NON-NLS-1$
     private static final String CUSTOM_TXT_CATEGORY = "Custom Text"; //$NON-NLS-1$
     private static final String CUSTOM_XML_CATEGORY = "Custom XML"; //$NON-NLS-1$
     private static final String DEFAULT_TRACE_ICON_PATH = "icons/elcl16/trace.gif"; //$NON-NLS-1$
 
     @Override
     protected IContributionItem[] getContributionItems() {
+        List<IContributionItem> list = new LinkedList<IContributionItem>();
+
+        Map<String, MenuManager> categoriesMap = new HashMap<String, MenuManager>();
+        IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(
+                TmfTraceType.TMF_TRACE_TYPE_ID);
+        for (IConfigurationElement ce : config) {
+            if (ce.getName().equals(TmfTraceType.CATEGORY_ELEM)) {
+                MenuManager subMenu = new MenuManager(ce.getAttribute(TmfTraceType.NAME_ATTR));
+                categoriesMap.put(ce.getAttribute(TmfTraceType.ID_ATTR), subMenu);
+                list.add(subMenu);
+            }
+        }
+        if (CustomTxtTraceDefinition.loadAll().length > 0) {
+            MenuManager subMenu = new MenuManager(CUSTOM_TXT_CATEGORY);
+            categoriesMap.put(CUSTOM_TXT_CATEGORY, subMenu);
+            list.add(subMenu);
+        }
+        if (CustomXmlTraceDefinition.loadAll().length > 0) {
+            MenuManager subMenu = new MenuManager(CUSTOM_XML_CATEGORY);
+            categoriesMap.put(CUSTOM_XML_CATEGORY, subMenu);
+            list.add(subMenu);
+        }
 
         Set<String> selectedTraceTypes = new HashSet<String>();
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -67,35 +89,6 @@ public class SelectTraceTypeContributionItem extends CompoundContributionItem {
                     selectedTraceTypes.add(trace.getTraceType());
                 }
             }
-        }
-
-        List<IContributionItem> list = new LinkedList<IContributionItem>();
-
-        Map<String, MenuManager> categoriesMap = new HashMap<String, MenuManager>();
-        IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(
-                TmfTraceType.TMF_TRACE_TYPE_ID);
-        for (IConfigurationElement ce : config) {
-            if (ce.getName().equals(TmfTraceType.CATEGORY_ELEM)) {
-                String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                ImageDescriptor icon = isSelectedCategory(categoryId, config, selectedTraceTypes) ? SELECTED_ICON : null;
-                MenuManager subMenu = new MenuManager(ce.getAttribute(TmfTraceType.NAME_ATTR), icon, null);
-                categoriesMap.put(categoryId, subMenu);
-                list.add(subMenu);
-            }
-        }
-        CustomTxtTraceDefinition[] customTxtTraceDefinitions = CustomTxtTraceDefinition.loadAll();
-        if (customTxtTraceDefinitions.length > 0) {
-            ImageDescriptor icon = isSelectedCategory(customTxtTraceDefinitions, selectedTraceTypes) ? SELECTED_ICON : null;
-            MenuManager subMenu = new MenuManager(CUSTOM_TXT_CATEGORY, icon, null);
-            categoriesMap.put(CUSTOM_TXT_CATEGORY, subMenu);
-            list.add(subMenu);
-        }
-        CustomXmlTraceDefinition[] customXmlTraceDefinitions = CustomXmlTraceDefinition.loadAll();
-        if (customXmlTraceDefinitions.length > 0) {
-            ImageDescriptor icon = isSelectedCategory(customXmlTraceDefinitions, selectedTraceTypes) ? SELECTED_ICON : null;
-            MenuManager subMenu = new MenuManager(CUSTOM_XML_CATEGORY, icon, null);
-            categoriesMap.put(CUSTOM_XML_CATEGORY, subMenu);
-            list.add(subMenu);
         }
 
         for (IConfigurationElement ce : config) {
@@ -112,7 +105,7 @@ public class SelectTraceTypeContributionItem extends CompoundContributionItem {
         }
 
         // add the custom trace types
-        for (CustomTxtTraceDefinition def : customTxtTraceDefinitions) {
+        for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
             String traceBundle = Activator.getDefault().getBundle().getSymbolicName();
             String traceTypeId = CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
             String traceIcon = DEFAULT_TRACE_ICON_PATH;
@@ -122,7 +115,7 @@ public class SelectTraceTypeContributionItem extends CompoundContributionItem {
 
             addContributionItem(list, traceBundle, traceTypeId, traceIcon, label, selected, subMenu);
         }
-        for (CustomXmlTraceDefinition def : customXmlTraceDefinitions) {
+        for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
             String traceBundle = Activator.getDefault().getBundle().getSymbolicName();
             String traceTypeId = CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
             String traceIcon = DEFAULT_TRACE_ICON_PATH;
@@ -170,39 +163,5 @@ public class SelectTraceTypeContributionItem extends CompoundContributionItem {
         } else {
             list.add(new CommandContributionItem(param));
         }
-    }
-
-    private static boolean isSelectedCategory(String categoryId, IConfigurationElement[] config, Set<String> selectedTraceTypes) {
-        for (IConfigurationElement ce : config) {
-            if (ce.getName().equals(TmfTraceType.TYPE_ELEM)) {
-                String traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                if (selectedTraceTypes.contains(traceTypeId)) {
-                    if (categoryId.equals(ce.getAttribute(TmfTraceType.CATEGORY_ATTR))) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private static boolean isSelectedCategory(CustomTxtTraceDefinition[] customTxtTraceDefinitions, Set<String> selectedTraceTypes) {
-        for (CustomTxtTraceDefinition def : customTxtTraceDefinitions) {
-            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
-            if (selectedTraceTypes.contains(traceTypeId)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isSelectedCategory(CustomXmlTraceDefinition[] customXmlTraceDefinitions, Set<String> selectedTraceTypes) {
-        for (CustomXmlTraceDefinition def : customXmlTraceDefinitions) {
-            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
-            if (selectedTraceTypes.contains(traceTypeId)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

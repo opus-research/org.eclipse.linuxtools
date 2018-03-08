@@ -236,9 +236,8 @@ public class LTTngControlService implements ILttngControlService {
             // Error: Unable to list kernel events
             // or:
             // Error: Unable to list kernel events
-            //
 
-            if ((result.getOutput().length > 0) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[0]).matches()) ||
+            if ((result.getOutput().length == 1) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[0]).matches()) ||
                ((result.getOutput().length > 1) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[1]).matches()))) {
                 return events;
             }
@@ -1170,7 +1169,6 @@ public class LTTngControlService implements ILttngControlService {
      *            - a progress monitor
      * @return the command result
      * @throws ExecutionException
-     *             If the command fails
      */
     protected ICommandResult executeCommand(String command,
             IProgressMonitor monitor) throws ExecutionException {
