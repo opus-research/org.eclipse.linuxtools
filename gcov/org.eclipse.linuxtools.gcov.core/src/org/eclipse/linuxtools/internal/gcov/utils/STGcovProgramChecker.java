@@ -72,7 +72,7 @@ public class STGcovProgramChecker implements STNMSymbolsHandler {
 
 	@Override
 	public void foundTextSymbol(String symbol, String address) {
-		if ("gcov_read_words".equals(symbol) || "_gcov_read_words".equals(symbol))  //$NON-NLS-1$//$NON-NLS-2$
+		if ("gcov_read_words".equals(symbol) || "_gcov_read_words".equals(symbol))
 		{
 			gcovFound = true;
 		}
