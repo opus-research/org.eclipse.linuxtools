@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2013 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ *     Red Hat - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.threadprofiler;
 
 import java.util.ArrayList;
@@ -15,7 +25,7 @@ import org.eclipse.linuxtools.internal.threadprofiler.graphs.MultiGraph;
 import org.eclipse.linuxtools.internal.threadprofiler.graphs.ThreadGraph;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
@@ -214,22 +224,11 @@ public class ThreadProfilerView extends SystemTapView {
 //    	graphCanvas.setLayoutData(gd);
     	graphGC = new GC(graphCanvas);
 
-		graphCanvas.addMouseListener(new MouseListener() {
-
+		graphCanvas.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
 				updateMethod();
 			}
-
-			@Override
-			public void mouseDown(MouseEvent e) {
-				System.out.println("LOCATION: " + e.x + "," + e.y);
-			}
-
-			@Override
-			public void mouseUp(MouseEvent e) {
-			}
-		
 		});
 		
 	    graphCanvas.addPaintListener(new PaintListener() {

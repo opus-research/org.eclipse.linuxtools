@@ -23,16 +23,15 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 
 /**
  * Parser implementation for Uml2SD Test Traces.
  *
  */
-public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
+public class TmfUml2SDTestTrace implements ITmfEventParser {
 
-    ITmfTrace<TmfEvent> fEventStream;
+    ITmfTrace fEventStream;
 
     /**
      * Default Constructor
@@ -44,14 +43,14 @@ public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
      * Constructor
      * @param eventStream ITmfTrace implementation
      */
-    public TmfUml2SDTestTrace(ITmfTrace<TmfEvent> eventStream) {
+    public TmfUml2SDTestTrace(ITmfTrace eventStream) {
         fEventStream = eventStream;
     }
 
     /**
      * @param eventStream ITmfTrace implementation to set
      */
-    public void setTrace(ITmfTrace<TmfEvent> eventStream) {
+    public void setTrace(ITmfTrace eventStream) {
         fEventStream = eventStream;
     }
 
@@ -70,7 +69,7 @@ public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
 
         long location = 0;
         if (context != null) {
-            location = ((TmfLocation<Long>) (context.getLocation())).getLocation();
+            location = (Long) context.getLocation().getLocationInfo();
         }
 
         try {
@@ -101,7 +100,7 @@ public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
             fields[2] = new TmfEventField("signal", signal);
 
             ITmfEventField tmfContent = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content, fields);
-            TmfEvent tmfEvent = new TmfEvent(fEventStream, new TmfTimestamp(ts, -9), source, tmfEventType, tmfContent, reference);
+            TmfEvent tmfEvent = new TmfEvent(fEventStream, context.getRank(), new TmfTimestamp(ts, -9), source, tmfEventType, tmfContent, reference);
 
             return tmfEvent;
         } catch (final EOFException e) {

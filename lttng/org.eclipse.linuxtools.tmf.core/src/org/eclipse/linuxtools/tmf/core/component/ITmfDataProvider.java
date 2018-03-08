@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Ericsson
+ * Copyright (c) 2009, 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,29 +13,28 @@
 package org.eclipse.linuxtools.tmf.core.component;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfRequest;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
  * This is the interface of the data providers in TMF. Data providers have the
  * capability of handling data requests.
  *
- * @param <T> The provider event type
- *
- * @version 1.0
  * @author Francois Chouinard
+ * @version 2.0
+ * @since 2.0
  *
  * @see TmfDataProvider
  * @see TmfEventProvider
  */
-public interface ITmfDataProvider<T extends ITmfEvent> extends ITmfComponent {
+public interface ITmfDataProvider extends ITmfComponent {
 
     /**
      * Queue the request for processing.
      *
      * @param request The request to process
      */
-    public void sendRequest(ITmfDataRequest<T> request);
+    public void sendRequest(ITmfRequest request);
 
     /**
      * Queue the coalesced requests.
@@ -60,5 +59,6 @@ public interface ITmfDataProvider<T extends ITmfEvent> extends ITmfComponent {
      * @param context the trace read context (updated)
      * @return the event referred to by context
      */
-    public T getNext(ITmfContext context);
+    public ITmfEvent getNext(ITmfContext context);
+
 }
