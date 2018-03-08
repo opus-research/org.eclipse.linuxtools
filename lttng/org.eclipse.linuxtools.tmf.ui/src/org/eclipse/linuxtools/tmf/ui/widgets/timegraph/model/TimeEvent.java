@@ -13,15 +13,13 @@
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
 
-import org.eclipse.linuxtools.tmf.core.util.Pair;
-
 /**
  * Generic TimeEvent implementation
  *
  * @version 1.0
  * @author Patrick Tasse
  */
-public class TimeEvent implements ITimeEvent2 {
+public class TimeEvent implements ITimeEvent {
 
     /** TimeGraphEntry matching this time event */
     protected ITimeGraphEntry fEntry;
@@ -110,29 +108,8 @@ public class TimeEvent implements ITimeEvent2 {
         return fDuration;
     }
 
-    /**
-     * Split an event in two at the specified time. If the time is smaller or
-     * equal to the event's start, the first split event is null. If the time is
-     * greater or equal to the event's end, the second split event is null.
-     * <p>
-     * Subclasses should re-implement this method
-     *
-     * @since 2.1
-     */
-    @Override
-    public Pair<ITimeEvent, ITimeEvent> split(long time) {
-        Pair<ITimeEvent, ITimeEvent> pair = new Pair<ITimeEvent, ITimeEvent>();
-        if (time > fTime) {
-            pair.setFirst(new TimeEvent(fEntry, fTime, Math.min(fDuration, time - fTime), fValue));
-        }
-        if (time < fTime + fDuration) {
-            pair.setSecond(new TimeEvent(fEntry, Math.max(fTime, time), fDuration - Math.max(0, time - fTime), fValue));
-        }
-        return pair;
-    }
-
     @Override
     public String toString() {
-        return "TimeEvent start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + " value=" + (hasValue() ? fValue : "N/A"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+        return getClass().getSimpleName() + " start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + (hasValue() ? (" value=" + fValue) : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 }

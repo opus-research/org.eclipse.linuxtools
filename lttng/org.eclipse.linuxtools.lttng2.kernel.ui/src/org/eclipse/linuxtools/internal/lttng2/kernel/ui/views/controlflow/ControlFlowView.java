@@ -30,7 +30,6 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
@@ -171,13 +170,13 @@ public class ControlFlowView extends AbstractTimeGraphView {
         setStartTime(Long.MAX_VALUE);
         setEndTime(Long.MIN_VALUE);
 
-        ArrayList<ControlFlowEntry> rootList = new ArrayList<ControlFlowEntry>();
-        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
+        ArrayList<TimeGraphEntry> rootList = new ArrayList<TimeGraphEntry>();
+        for (ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
             if (monitor.isCanceled()) {
                 return;
             }
             if (aTrace instanceof LttngKernelTrace) {
-                ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
+                ArrayList<TimeGraphEntry> entryList = new ArrayList<TimeGraphEntry>();
                 LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
                 ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
                 if (!ssq.waitUntilBuilt()) {
@@ -215,7 +214,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
                         if (monitor.isCanceled()) {
                             return;
                         }
-                        ControlFlowEntry entry = null;
+                        TimeGraphEntry entry = null;
                         for (ITmfStateInterval execNameInterval : execNameIntervals) {
                             if (monitor.isCanceled()) {
                                 return;
@@ -262,20 +261,22 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 refresh();
             }
         }
-        for (ControlFlowEntry entry : rootList) {
+        for (TimeGraphEntry entry : rootList) {
             if (monitor.isCanceled()) {
                 return;
             }
-            buildStatusEvents(entry.getTrace(), entry, monitor);
+            buildStatusEvents(trace, entry, monitor);
         }
     }
 
-    private static void buildTree(ArrayList<ControlFlowEntry> entryList,
-            ArrayList<ControlFlowEntry> rootList) {
-        for (ControlFlowEntry entry : entryList) {
+    private static void buildTree(ArrayList<TimeGraphEntry> entryList,
+            ArrayList<TimeGraphEntry> rootList) {
+        for (TimeGraphEntry listentry : entryList) {
+            ControlFlowEntry entry = (ControlFlowEntry) listentry;
             boolean root = true;
             if (entry.getParentThreadId() > 0) {
-                for (ControlFlowEntry parent : entryList) {
+                for (TimeGraphEntry parententry : entryList) {
+                    ControlFlowEntry parent = (ControlFlowEntry) parententry;
                     if (parent.getThreadId() == entry.getParentThreadId() &&
                             entry.getStartTime() >= parent.getStartTime() &&
                             entry.getStartTime() <= parent.getEndTime()) {
@@ -291,7 +292,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
         }
     }
 
-    private void buildStatusEvents(ITmfTrace trace, ControlFlowEntry entry, IProgressMonitor monitor) {
+    private void buildStatusEvents(ITmfTrace trace, TimeGraphEntry entry, IProgressMonitor monitor) {
         ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
 
         long start = ssq.getStartTime();
@@ -309,7 +310,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
             if (monitor.isCanceled()) {
                 return;
             }
-            buildStatusEvents(trace, (ControlFlowEntry) child, monitor);
+            buildStatusEvents(trace, (TimeGraphEntry) child, monitor);
         }
     }
 
