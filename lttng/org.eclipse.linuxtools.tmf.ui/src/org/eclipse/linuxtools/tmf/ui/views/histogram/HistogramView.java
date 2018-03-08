@@ -36,8 +36,11 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -88,6 +91,7 @@ public class HistogramView extends TmfView {
     // Time controls
     private HistogramTextControl fCurrentEventTimeControl;
     private HistogramTextControl fTimeSpanControl;
+    private Button checkboxButton;
 
     // Histogram/request for the full trace range
     private static FullTraceHistogram fFullTraceHistogram;
@@ -193,6 +197,35 @@ public class HistogramView extends TmfView {
         fTimeSpanControl = new HistogramTimeRangeControl(this, controlsComposite, windowSpanLabel, 0L);
         fTimeSpanControl.setLayoutData(gridData);
         fTimeSpanControl.setValue(Long.MIN_VALUE);
+
+        // Show lost events checkbox
+        gridData = new GridData();
+        gridData.horizontalAlignment = SWT.LEFT;
+        gridData.verticalAlignment = SWT.CENTER;
+        checkboxButton = new Button(controlsComposite, SWT.CHECK);
+        checkboxButton.setLayoutData(gridData);
+        checkboxButton.setText(Messages.Histogram_showlostevents);
+        checkboxButton.setToolTipText(Messages.Histogram_showlostevents);
+        checkboxButton.setSelection(false);
+        checkboxButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                if (checkboxButton.getSelection()) {
+                    HistogramScaledData.showLostEvents = true;
+                } else {
+                    HistogramScaledData.showLostEvents = false;
+                }
+                long maxNbEvents = HistogramScaledData.showLostEvents ? fFullTraceHistogram.fScaledData.fmaxCombinedValue : fFullTraceHistogram.fScaledData.fMaxValue;
+                fFullTraceHistogram.getfMaxNbEventsText().setText(Long.toString(maxNbEvents));
+                fFullTraceHistogram.getfMaxNbEventsText().getParent().layout();
+                fFullTraceHistogram.fCanvas.redraw();
+                maxNbEvents = HistogramScaledData.showLostEvents ? fTimeRangeHistogram.fScaledData.fmaxCombinedValue : fTimeRangeHistogram.fScaledData.fMaxValue;
+                fTimeRangeHistogram.getfMaxNbEventsText().setText(Long.toString(maxNbEvents));
+                fTimeRangeHistogram.getfMaxNbEventsText().getParent().layout();
+                fTimeRangeHistogram.fCanvas.redraw();
+            }
+        });
 
         // --------------------------------------------------------------------
         // Time range histogram

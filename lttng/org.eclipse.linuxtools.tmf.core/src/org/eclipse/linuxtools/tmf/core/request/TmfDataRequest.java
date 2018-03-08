@@ -104,6 +104,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
     /** The number of reads so far */
     private int fNbRead;
 
+
     private final CountDownLatch startedLatch = new CountDownLatch(1);
     private final CountDownLatch completedLatch = new CountDownLatch(1);
     private boolean fRequestRunning;

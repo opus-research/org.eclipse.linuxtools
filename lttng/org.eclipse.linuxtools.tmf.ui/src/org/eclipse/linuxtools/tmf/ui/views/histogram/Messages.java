@@ -31,6 +31,11 @@ public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.views.histogram.messages"; //$NON-NLS-1$
 
 	/**
+     * @since 3.0
+     */
+	public static String Histogram_showlostevents;
+
+    /**
 	 * The label for the current event time
 	 */
 	public static String HistogramView_currentEventLabel;

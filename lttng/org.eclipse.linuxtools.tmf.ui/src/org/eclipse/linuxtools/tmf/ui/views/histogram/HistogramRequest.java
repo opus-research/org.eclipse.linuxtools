@@ -16,17 +16,19 @@
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
- * Class to request events for given time range from a trace to fill a HistogramDataModel and HistogramView.
+ * Class to request events for given time range from a trace to fill a
+ * HistogramDataModel and HistogramView.
  *
  * @version 1.0
  * @author Francois Chouinard
- * <p>
+ *         <p>
  */
 public class HistogramRequest extends TmfEventRequest {
 
@@ -38,6 +40,13 @@ public class HistogramRequest extends TmfEventRequest {
      * The histogram data model to fill.
      */
     protected final HistogramDataModel fHistogram;
+
+    /**
+     * Name of the field in lost events indicating how many actual events were
+     * lost
+     */
+    static final String LOST_EVENTS_FIELD = "Lost events"; //$NON-NLS-1$
+
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -75,20 +84,29 @@ public class HistogramRequest extends TmfEventRequest {
     /**
      * Handle the event from the trace by updating the histogram data model.
      *
-     * @param event a event from the trace
+     * @param event
+     *            a event from the trace
      * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
      */
     @Override
     public void handleData(ITmfEvent event) {
         super.handleData(event);
         if (event != null) {
-            long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-            fHistogram.countEvent(getNbRead(), timestamp);
+            if (!(event instanceof ITmfLostEvent)) {
+                long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                fHistogram.countEvent(getNbRead(), timestamp);
+
+            } else { /* handle lost event */
+                ITmfLostEvent lostEvents = (ITmfLostEvent) event;
+                /* clear the old data when it is a new request */
+                fHistogram.addLostEvents(lostEvents.getTimeRange(), (int)lostEvents.getNbLostEvents());
+            }
         }
     }
 
     /**
-     * Complete the request. It also notifies the histogram model about the completion.
+     * Complete the request. It also notifies the histogram model about the
+     * completion.
      *
      * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleCompleted()
      */
