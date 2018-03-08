@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,14 +8,10 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
-
 package org.eclipse.linuxtools.tmf.core.tests.uml2sd;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
@@ -26,13 +22,14 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.uml2sd.TmfAsyncSequenceDiagramEvent;
 
-import org.junit.Test;
-
 /**
- * TmfAsyncSequenceDiagramEventTest
+ * <b><u>TmfAsyncSequenceDiagramEventTest</u></b>
+ * <p>
+ * Implement me. Please.
+ * <p>
  */
-@SuppressWarnings("nls")
-public class TmfAsyncSequenceDiagramEventTest {
+@SuppressWarnings({"nls","javadoc"})
+public class TmfAsyncSequenceDiagramEventTest extends TestCase {
 
     private final String fContext = ITmfEventType.DEFAULT_CONTEXT_ID;
     private final String fTypeId  = "Some type";
@@ -51,9 +48,7 @@ public class TmfAsyncSequenceDiagramEventTest {
     private final TmfEventField fContent1;
     private final TmfEventField fContent2;
 
-    /**
-     * Constructor for the test case
-     */
+
     public TmfAsyncSequenceDiagramEventTest() {
         fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content");
         fEvent1 = new TmfEvent(null, fTimestamp1, fSource, fType, fContent1, fReference);
@@ -62,10 +57,14 @@ public class TmfAsyncSequenceDiagramEventTest {
         fEvent2 = new TmfEvent(null, fTimestamp2, fSource, fType, fContent2, fReference);
     }
 
-    /**
-     * Main test
-     */
-    @Test
+    @Override
+    public void setUp() throws Exception {
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+    }
+
     public void testTmfAsyncSequenceDiagramEvent() {
         TmfAsyncSequenceDiagramEvent event = null;
 
