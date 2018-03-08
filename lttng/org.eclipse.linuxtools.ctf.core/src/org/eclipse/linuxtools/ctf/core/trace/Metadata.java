@@ -54,12 +54,12 @@ public class Metadata {
     /**
      * Name of the metadata file in the trace directory
      */
-    private static final String METADATA_FILENAME = "metadata"; //$NON-NLS-1$
+    final static String METADATA_FILENAME = "metadata"; //$NON-NLS-1$
 
     /**
      * Size of the metadata packet header, in bytes, computed by hand.
      */
-    private static final int METADATA_PACKET_HEADER_SIZE = 37;
+    final static int METADATA_PACKET_HEADER_SIZE = 37;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -221,9 +221,12 @@ public class Metadata {
         CTFLexer ctfLexer = new CTFLexer(antlrStream);
         CommonTokenStream tokens = new CommonTokenStream(ctfLexer);
         CTFParser ctfParser = new CTFParser(tokens, false);
+        parse_return ret;
 
-        parse_return pr = ctfParser.parse();
-        return (CommonTree) pr.getTree();
+        ret = ctfParser.parse();
+
+        CommonTree tree = (CommonTree) ret.getTree();
+        return tree;
     }
 
     /**
@@ -248,7 +251,7 @@ public class Metadata {
         try {
             metadataFileChannel.read(magicByteBuffer, 0);
         } catch (IOException e) {
-            throw new CTFReaderException("Unable to read metadata file channel.", e); //$NON-NLS-1$
+            throw new CTFReaderException("Unable to read metadata file channel."); //$NON-NLS-1$
         }
 
         /* Get the first int from the file */
@@ -295,7 +298,7 @@ public class Metadata {
         try {
             nbBytesRead = metadataFileChannel.read(headerByteBuffer);
         } catch (IOException e) {
-            throw new CTFReaderException("Error reading the metadata header.", e); //$NON-NLS-1$
+            throw new CTFReaderException("Error reading the metadata header."); //$NON-NLS-1$
         }
 
         /* Return null if EOF */
@@ -332,7 +335,7 @@ public class Metadata {
 
         /* Check UUID */
         UUID uuid = Utils.makeUUID(header.uuid);
-        if (!trace.uuidIsSet()) {
+        if (!trace.UUIDIsSet()) {
             trace.setUUID(uuid);
         } else {
             if (!trace.getUUID().equals(uuid)) {
@@ -353,7 +356,7 @@ public class Metadata {
         try {
             metadataFileChannel.read(payloadByteBuffer);
         } catch (IOException e) {
-            throw new CTFReaderException("Error reading metadata packet payload.", e); //$NON-NLS-1$
+            throw new CTFReaderException("Error reading metadata packet payload."); //$NON-NLS-1$
         }
         payloadByteBuffer.rewind();
 
@@ -370,7 +373,7 @@ public class Metadata {
         return header;
     }
 
-    private static class MetadataPacketHeader {
+    static class MetadataPacketHeader {
 
         public int magic;
         public byte uuid[] = new byte[16];

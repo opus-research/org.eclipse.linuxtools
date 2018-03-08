@@ -97,7 +97,7 @@ public class EventDeclaration implements IEventDeclaration {
      *
      * @return the lost event
      */
-    public static synchronized EventDeclaration getLostEventDeclaration() {
+    public synchronized static EventDeclaration getLostEventDeclaration() {
         EventDeclaration lostEvent = new EventDeclaration();
         lostEvent.fields = new StructDeclaration(1);
         lostEvent.id = -1L;
