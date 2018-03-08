@@ -438,6 +438,7 @@ public class PerfCore {
 		String items[];
 		float percent;
 
+		Process p = null;
 		int samples;
 		String comm,dso,symbol;
 		boolean kernelFlag;
@@ -533,8 +534,51 @@ public class PerfCore {
 		boolean hasProfileData = invisibleRoot.getChildren().length != 0;
 
 		if (SourceLineNumbers) {
-			parseSourceLines(invisibleRoot, config, monitor, workingDir, OldPerfVersion, Kernel_SourceLineNumbers, perfDataLoc, project, print);
-			spitStream(error,"Perf Annotate", print);
+			for (TreeParent ev : invisibleRoot.getChildren()) {
+				if (!(ev instanceof PMEvent)) continue;
+				for (TreeParent cmd : ev.getChildren()) {
+					if (!(cmd instanceof PMCommand)) continue;
+					for (TreeParent d : cmd.getChildren()) {
+						if (!(d instanceof PMDso)) continue;					
+						currentDso = (PMDso)d;
+						if ((!Kernel_SourceLineNumbers) && currentDso.isKernelDso()) continue;
+						for (TreeParent s : currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren()) {
+							if (!(s instanceof PMSymbol)) continue;
+
+							if (monitor != null && monitor.isCanceled()) {
+								return;
+							}
+
+
+							currentSym = (PMSymbol)s;
+							String[] annotateCmd;
+							if (workingDir == null) {
+								annotateCmd = getAnnotateString(config, currentDso.getName(), currentSym.getName().substring(4), perfDataLoc, OldPerfVersion);
+							} else {
+								String perfDefaultDataLoc = workingDir + "/" + PerfPlugin.PERF_DEFAULT_DATA;
+								annotateCmd = getAnnotateString(config, currentDso.getName(), currentSym.getName().substring(4), perfDefaultDataLoc, OldPerfVersion);
+							}
+
+							try {
+								if(project==null) p = Runtime.getRuntime().exec(annotateCmd);
+								else p = RuntimeProcessFactory.getFactory().exec(annotateCmd, project);
+								input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+								error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+
+							PerfCore.parseAnnotation(monitor, input,
+									workingDir, currentDso, currentSym);
+						}
+
+						if (currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren().length == 0) {
+							currentDso.removeChild(currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols));
+						}
+						spitStream(error,"Perf Annotate", print);
+					}
+				}
+			}
 		}
 
 		if (print != null) {
@@ -542,69 +586,6 @@ public class PerfCore {
 				print.println("Profile data loaded into Perf Profile View.");
 			} else {
 				print.println("No profile data generated to be displayed.");
-			}
-		}
-	}
-
-	/**
-	 * Parse source lines from profile data.
-	 *
-	 * @param treeElement model root
-	 * @param config launch configuration
-	 * @param monitor progress monitor
-	 * @param workingDir current working directory
-	 * @param OldPerfVersion using old perf version
-	 * @param perfDataLoc profile data location
-	 * @param project current project
-	 * @param print print stream
-	 * @param Kernel_SourceLineNumbers obtain kernel source lines
-	 */
-	public static void parseSourceLines(TreeParent treeElement,
-			ILaunchConfiguration config, IProgressMonitor monitor,
-			IPath workingDir, boolean OldPerfVersion,
-			boolean Kernel_SourceLineNumbers, String perfDataLoc,
-			IProject project, PrintStream print) {
-
-		PMDso currentDso = null;
-		PMSymbol currentSym = null;
-		BufferedReader input = null;
-		if(treeElement instanceof PMDso){
-			currentDso = (PMDso)treeElement;
-			if ((!Kernel_SourceLineNumbers) && currentDso.isKernelDso()) { return; }
-			for (TreeParent s : currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren()) {
-				if (!(s instanceof PMSymbol)) {
-					continue;
-				}
-
-				if (monitor != null && monitor.isCanceled()) {
-					return;
-				}
-
-				currentSym = (PMSymbol)s;
-				String[] annotateCmd;
-				if (workingDir == null) {
-					annotateCmd = getAnnotateString(config, currentDso.getName(), currentSym.getName().substring(4), perfDataLoc, OldPerfVersion);
-				} else {
-					String perfDefaultDataLoc = workingDir + "/" + PerfPlugin.PERF_DEFAULT_DATA;
-					annotateCmd = getAnnotateString(config, currentDso.getName(), currentSym.getName().substring(4), perfDefaultDataLoc, OldPerfVersion);
-				}
-
-				try {
-					Process p = project == null ? Runtime.getRuntime().exec(annotateCmd) : RuntimeProcessFactory.getFactory().exec(annotateCmd, project);
-					input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				parseAnnotation(monitor, input, workingDir, currentDso, currentSym);
-			}
-
-			if (currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren().length == 0) {
-				currentDso.removeChild(currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols));
-			}
-		} else {
-			for (TreeParent child : treeElement.getChildren()) {
-				parseSourceLines(child, config, monitor, workingDir, OldPerfVersion, Kernel_SourceLineNumbers, perfDataLoc, project, print);
 			}
 		}
 	}
