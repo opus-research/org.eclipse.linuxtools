@@ -70,7 +70,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * The Control Flow view main object
@@ -86,11 +85,6 @@ public class ControlFlowView extends TmfView {
      * View ID.
      */
     public static final String ID = "org.eclipse.linuxtools.lttng2.kernel.ui.views.controlflow"; //$NON-NLS-1$
-
-    /**
-     * Initial time range
-     */
-    private static final long INITIAL_WINDOW_OFFSET = (1L * 100  * 1000 * 1000); // .1sec
 
     private static final String PROCESS_COLUMN    = Messages.ControlFlowView_processColumn;
     private static final String TID_COLUMN        = Messages.ControlFlowView_tidColumn;
@@ -410,7 +404,7 @@ public class ControlFlowView extends TmfView {
         makeActions();
         contributeToActionBars();
 
-        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        IEditorPart editor = getSite().getPage().getActiveEditor();
         if (editor instanceof ITmfTraceEditor) {
             ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
             if (trace != null) {
@@ -455,7 +449,7 @@ public class ControlFlowView extends TmfView {
             } else {
                 fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                refresh(INITIAL_WINDOW_OFFSET);
+                refresh();
             }
         }
     }
@@ -483,7 +477,7 @@ public class ControlFlowView extends TmfView {
             if (fZoomThread != null) {
                 fZoomThread.cancel();
             }
-            refresh(INITIAL_WINDOW_OFFSET);
+            refresh();
         }
     }
 
@@ -514,7 +508,7 @@ public class ControlFlowView extends TmfView {
             }
             if (trace instanceof CtfKernelTrace) {
                 CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;
-                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem();
                 if (time >= ssq.getStartTime() && time <= ssq.getCurrentEndTime()) {
                     List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD);  //$NON-NLS-1$
                     for (int currentThreadQuark : currentThreadQuarks) {
@@ -617,7 +611,7 @@ public class ControlFlowView extends TmfView {
             if (aTrace instanceof CtfKernelTrace) {
                 ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
                 CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) aTrace;
-                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem();
                 if (!ssq.waitUntilBuilt()) {
                     return;
                 }
@@ -693,7 +687,7 @@ public class ControlFlowView extends TmfView {
                 fEntryListMap.put(trace, (ArrayList<ControlFlowEntry>) rootList.clone());
             }
             if (trace == fTrace) {
-                refresh(INITIAL_WINDOW_OFFSET);
+                refresh();
             }
         }
         for (ControlFlowEntry entry : rootList) {
@@ -726,7 +720,7 @@ public class ControlFlowView extends TmfView {
     }
 
     private void buildStatusEvents(ITmfTrace trace, ControlFlowEntry entry, IProgressMonitor monitor) {
-        ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
+        ITmfStateSystem ssq = entry.getTrace().getStateSystem();
         long start = ssq.getStartTime();
         long end = ssq.getCurrentEndTime() + 1;
         long resolution = Math.max(1, (end - start) / fDisplayWidth);
@@ -754,7 +748,7 @@ public class ControlFlowView extends TmfView {
         if (endTime <= startTime) {
             return null;
         }
-        ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
+        ITmfStateSystem ssq = entry.getTrace().getStateSystem();
         List<ITimeEvent> eventList = null;
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
@@ -789,7 +783,7 @@ public class ControlFlowView extends TmfView {
         return eventList;
     }
 
-    private void refresh(final long windowRange) {
+    private void refresh() {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -808,17 +802,19 @@ public class ControlFlowView extends TmfView {
                 fTimeGraphCombo.setInput(entries);
                 fTimeGraphCombo.getTimeGraphViewer().setTimeBounds(fStartTime, fEndTime);
 
-                long endTime = fStartTime + windowRange;
+                long timestamp = fTrace == null ? 0 : fTrace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                long startTime = fTrace == null ? 0 : fTrace.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                long endTime = fTrace == null ? 0 : fTrace.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                startTime = Math.max(startTime, fStartTime);
+                endTime = Math.min(endTime, fEndTime);
+                fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(timestamp, false);
+                fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
 
-                if (fEndTime < endTime) {
-                    endTime = fEndTime;
-                }
-                fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(fStartTime, endTime);
                 for (TreeColumn column : fTimeGraphCombo.getTreeViewer().getTree().getColumns()) {
                     column.pack();
                 }
 
-                startZoomThread(fStartTime, endTime);
+                startZoomThread(startTime, endTime);
             }
         });
     }

@@ -115,10 +115,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      * Maximum number of messages per page.
      */
     protected final static int MAX_NUM_OF_MSG = 10000;
-    /**
-     * Initial time range window.
-     */
-    protected final static long INITIAL_WINDOW_OFFSET = (1L * 100  * 1000 * 1000); // .1sec
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -142,10 +138,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      * Flag whether the time range signal was sent by this loader class or not
      */
     volatile protected boolean fIsSignalSent = false;
-    /**
-     * The initial request window size.
-     */
-    volatile protected long fInitialWindow = INITIAL_WINDOW_OFFSET;
 
     // The view and event attributes
     /**
@@ -468,8 +460,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         try {
             if ((signal.getSource() != this) && (fFrame != null) && !fIsSignalSent && (fCheckPoints.size() > 0)) {
                 TmfTimeRange newTimeRange = signal.getCurrentRange();
-                ITmfTimestamp delta = newTimeRange.getEndTime().getDelta(newTimeRange.getStartTime());
-                fInitialWindow = delta.getValue();
 
                 fIsSelect = false;
                 fCurrentTime = newTimeRange.getStartTime();
@@ -499,7 +489,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
             resetLoader();
 
-            IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+            IEditorPart editor = fView.getSite().getPage().getActiveEditor();
             if (editor instanceof ITmfTraceEditor) {
                 ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
                 if (trace != null) {
@@ -534,6 +524,15 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
            if (window != null) {
                window.getSelectionService().removePostSelectionListener(this);
            }
+
+           if (fIndexRequest != null) {
+               if (!fIndexRequest.isCompleted()) {
+                   fIndexRequest.cancel();
+               }
+               fIndexRequest = null;
+           }
+           cancelOngoingRequests();
+
            fView.setSDFindProvider(null);
            fView.setSDPagingProvider(null);
            fView.setSDFilterProvider(null);
@@ -904,7 +903,6 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             fCurrentFindIndex = 0;
             fFindCriteria = null;
             fFindResults = null;
-            fInitialWindow = INITIAL_WINDOW_OFFSET;
             fView.setFrameSync(new Frame());
             fFrame = null;
         }
@@ -1231,7 +1229,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     protected TmfTimeRange getSignalTimeRange(ITmfTimestamp startTime) {
         fLock.lock();
         try {
-            TmfTimestamp initialEndOfWindow = new TmfTimestamp(startTime.getValue() + fInitialWindow, startTime.getScale(), startTime.getPrecision());
+            long offset = fTrace == null ? 0 : fTrace.getCurrentRange().getEndTime().getDelta(fTrace.getCurrentRange().getStartTime()).normalize(0, startTime.getScale()).getValue();
+            TmfTimestamp initialEndOfWindow = new TmfTimestamp(startTime.getValue() + offset, startTime.getScale(), startTime.getPrecision());
             return new TmfTimeRange(startTime, initialEndOfWindow);
         }
         finally {
@@ -1501,6 +1500,9 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
      */
     protected static class IndexingJob extends Job {
 
+        /**
+         * @param name The job name
+         */
         public IndexingJob(String name) {
             super(name);
         }

@@ -60,7 +60,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * Main implementation for the LTTng 2.0 kernel Resource view
@@ -75,9 +74,6 @@ public class ResourcesView extends TmfView {
 
     /** View ID. */
     public static final String ID = "org.eclipse.linuxtools.lttng2.kernel.ui.views.resources"; //$NON-NLS-1$
-
-    /** Initial time range */
-    private static final long INITIAL_WINDOW_OFFSET = (1L * 100  * 1000 * 1000); // .1sec
 
     /**
      * Redraw state enum
@@ -272,7 +268,7 @@ public class ResourcesView extends TmfView {
             }
             long resolution = Math.max(1, (fZoomEndTime - fZoomStartTime) / fDisplayWidth);
             for (TraceEntry traceEntry : fZoomEntryList) {
-                if (!traceEntry.fKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID).waitUntilBuilt()) {
+                if (!traceEntry.fKernelTrace.getStateSystem().waitUntilBuilt()) {
                     return;
                 }
                 for (ITimeGraphEntry child : traceEntry.getChildren()) {
@@ -349,7 +345,7 @@ public class ResourcesView extends TmfView {
         makeActions();
         contributeToActionBars();
 
-        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        IEditorPart editor = getSite().getPage().getActiveEditor();
         if (editor instanceof ITmfTraceEditor) {
             ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
             if (trace != null) {
@@ -394,7 +390,7 @@ public class ResourcesView extends TmfView {
             } else {
                 fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                refresh(INITIAL_WINDOW_OFFSET);
+                refresh();
             }
         }
     }
@@ -422,7 +418,7 @@ public class ResourcesView extends TmfView {
             if (fZoomThread != null) {
                 fZoomThread.cancel();
             }
-            refresh(INITIAL_WINDOW_OFFSET);
+            refresh();
         }
     }
 
@@ -498,7 +494,7 @@ public class ResourcesView extends TmfView {
             }
             if (aTrace instanceof CtfKernelTrace) {
                 CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) aTrace;
-                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystem();
                 if (!ssq.waitUntilBuilt()) {
                     return;
                 }
@@ -541,14 +537,14 @@ public class ResourcesView extends TmfView {
             fEntryListMap.put(trace, (ArrayList<TraceEntry>) entryList.clone());
         }
         if (trace == fTrace) {
-            refresh(INITIAL_WINDOW_OFFSET);
+            refresh();
         }
         for (TraceEntry traceEntry : entryList) {
             if (monitor.isCanceled()) {
                 return;
             }
             CtfKernelTrace ctfKernelTrace = traceEntry.getTrace();
-            ITmfStateSystem ssq = ctfKernelTrace.getStateSystem(CtfKernelTrace.STATE_ID);
+            ITmfStateSystem ssq = ctfKernelTrace.getStateSystem();
             long startTime = ssq.getStartTime();
             long endTime = ssq.getCurrentEndTime() + 1;
             long resolution = (endTime - startTime) / fDisplayWidth;
@@ -563,7 +559,7 @@ public class ResourcesView extends TmfView {
     private static List<ITimeEvent> getEventList(ResourcesEntry entry,
             long startTime, long endTime, long resolution, boolean includeNull,
             IProgressMonitor monitor) {
-        ITmfStateSystem ssq = entry.getTrace().getStateSystem(CtfKernelTrace.STATE_ID);
+        ITmfStateSystem ssq = entry.getTrace().getStateSystem();
         startTime = Math.max(startTime, ssq.getStartTime());
         endTime = Math.min(endTime, ssq.getCurrentEndTime() + 1);
         if (endTime <= startTime) {
@@ -660,7 +656,7 @@ public class ResourcesView extends TmfView {
         return eventList;
     }
 
-    private void refresh(final long windowRange) {
+    private void refresh() {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -680,14 +676,15 @@ public class ResourcesView extends TmfView {
                     fTimeGraphViewer.setInput(entries);
                     fTimeGraphViewer.setTimeBounds(fStartTime, fEndTime);
 
-                    long endTime = fStartTime + windowRange;
+                    long timestamp = fTrace == null ? 0 : fTrace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                    long startTime = fTrace == null ? 0 : fTrace.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                    long endTime = fTrace == null ? 0 : fTrace.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                    startTime = Math.max(startTime, fStartTime);
+                    endTime = Math.min(endTime, fEndTime);
+                    fTimeGraphViewer.setSelectedTime(timestamp, false);
+                    fTimeGraphViewer.setStartFinishTime(startTime, endTime);
 
-                    if (fEndTime < endTime) {
-                        endTime = fEndTime;
-                    }
-                    fTimeGraphViewer.setStartFinishTime(fStartTime, endTime);
-
-                    startZoomThread(fStartTime, endTime);
+                    startZoomThread(startTime, endTime);
                 }
             }
         });
