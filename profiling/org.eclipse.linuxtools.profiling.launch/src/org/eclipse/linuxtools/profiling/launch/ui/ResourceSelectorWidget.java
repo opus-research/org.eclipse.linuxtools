@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
 import org.eclipse.osgi.util.TextProcessor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -87,11 +88,11 @@ public class ResourceSelectorWidget {
 				break;
 			}
 			default:
-				Activator.log(IStatus.ERROR, ResourceSelectorWidgetMessages.ResourceSelectorWidget_unrecognized_resourceType);
+				ProfileLaunchPlugin.log(IStatus.ERROR, ResourceSelectorWidgetMessages.ResourceSelectorWidget_unrecognized_resourceType);
 				return;
 			}
 		} else {
-			Activator.log(IStatus.ERROR, ResourceSelectorWidgetMessages.ResourceSelectorWidget_getSelectorProxy_returned_null);
+			ProfileLaunchPlugin.log(IStatus.ERROR, ResourceSelectorWidgetMessages.ResourceSelectorWidget_getSelectorProxy_returned_null);
 		}
 
 		if (selectedResource != null) {
@@ -186,7 +187,6 @@ public class ResourceSelectorWidget {
 		browseButton = new Button(browserComp, SWT.PUSH);
 		browseButton.setText(BROWSE_LABEL);
 		browseButton.addSelectionListener(new SelectionAdapter() {
-			@Override
 			public void widgetSelected(SelectionEvent event) {
 				handleURIBrowseButtonPressed();
 			}
@@ -198,7 +198,6 @@ public class ResourceSelectorWidget {
 			 *
 			 * @see org.eclipse.swt.events.ModifyListener#modifyText(org.eclipse.swt.events.ModifyEvent)
 			 */
-			@Override
 			public void modifyText(ModifyEvent e) {
 				updateFilesystemSelector(uriField.getText());
 			}
