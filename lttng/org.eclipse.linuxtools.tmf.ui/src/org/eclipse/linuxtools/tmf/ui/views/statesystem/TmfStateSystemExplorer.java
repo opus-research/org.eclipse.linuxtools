@@ -16,17 +16,14 @@
 package org.eclipse.linuxtools.tmf.ui.views.statesystem;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -39,7 +36,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -192,38 +188,6 @@ public class TmfStateSystemExplorer extends TmfView {
                 }
             }
 
-            final Map<String, ITmfStateSystem> allss = new HashMap<String, ITmfStateSystem>();
-            allss.putAll(sss);
-            List<IAnalysisModule> modules = currentTrace.getAnalysisModules(TmfStateSystemAnalysisModule.class);
-            for (IAnalysisModule module : modules) {
-                if (module instanceof TmfStateSystemAnalysisModule) {
-                    TmfStateSystemAnalysisModule ssmodule = (TmfStateSystemAnalysisModule) module;
-                    ssmodule.schedule();
-                    /**
-                     * FIXME: This executes the modules sequentially. That can be
-                     * done in parallel, also with the non-module state systems,
-                     * but those are assumed to have started their build when
-                     * the trace opened.
-                     */
-                    if (module.waitForCompletion(new NullProgressMonitor())) {
-                        ITmfStateSystem ss = ssmodule.getStateSystem();
-                        allss.put(module.getName(), ss);
-                        if (ts == -1 || ts < ss.getStartTime() || ts > ss.getCurrentEndTime()) {
-                            ts = ss.getStartTime();
-                        }
-                        try {
-                            fullStates.put(module.getName(), ss.queryFullState(ts));
-                        } catch (TimeRangeException e) {
-                            /* We already checked the limits ourselves */
-                            throw new RuntimeException();
-                        } catch (StateSystemDisposedException e) {
-                            /* Probably shutting down, cancel and return */
-                            return;
-                        }
-                    }
-                }
-            }
-
             /* Update the table (in the UI thread) */
             fTree.getDisplay().asyncExec(new Runnable() {
                 @Override
@@ -231,7 +195,7 @@ public class TmfStateSystemExplorer extends TmfView {
                     TreeItem traceRoot = new TreeItem(fTree, SWT.NONE);
                     traceRoot.setText(ATTRIBUTE_NAME_COL, currentTrace.getName());
 
-                    for (Map.Entry<String, ITmfStateSystem> entry : allss.entrySet()) {
+                    for (Map.Entry<String, ITmfStateSystem> entry : sss.entrySet()) {
                         String ssName = entry.getKey();
                         ITmfStateSystem ss = entry.getValue();
                         List<ITmfStateInterval> fullState = fullStates.get(ssName);
@@ -303,22 +267,10 @@ public class TmfStateSystemExplorer extends TmfView {
         /* For each trace... */
         for (int traceNb = 0; traceNb < traces.length; traceNb++) {
             Map<String, ITmfStateSystem> sss = traces[traceNb].getStateSystems();
-            Map<String, ITmfStateSystem> allss = new HashMap<String, ITmfStateSystem>();
-            allss.putAll(sss);
-            List<IAnalysisModule> modulesss = traces[traceNb].getAnalysisModules(TmfStateSystemAnalysisModule.class);
-            for (IAnalysisModule module : modulesss) {
-                if (module instanceof TmfStateSystemAnalysisModule) {
-                    TmfStateSystemAnalysisModule ssmodule = (TmfStateSystemAnalysisModule) module;
-                        ITmfStateSystem ss = ssmodule.getStateSystem();
-                        if (ss != null) {
-                            allss.put(module.getName(), ss);
-                        }
-                }
-            }
 
             /* For each state system associated with this trace... */
             int ssNb = 0;
-            for (Map.Entry<String, ITmfStateSystem> entry : allss.entrySet()) {
+            for (Map.Entry<String, ITmfStateSystem> entry : sss.entrySet()) {
                 /*
                  * Even though we only use the value, it just feels safer to
                  * iterate the same way as before to keep the order the same.
@@ -404,10 +356,6 @@ public class TmfStateSystemExplorer extends TmfView {
             case LONG:
                 value = String.valueOf(state.unboxLong());
                 item.setText(TYPE_COL, Messages.TypeLong);
-                break;
-            case DOUBLE:
-                value = String.valueOf(state.unboxDouble());
-                item.setText(TYPE_COL, Messages.TypeDouble);
                 break;
             case STRING:
                 value = state.unboxStr();
@@ -555,7 +503,7 @@ public class TmfStateSystemExplorer extends TmfView {
         };
         thread.start();
     }
-
+    
     /**
      * Update the display to use the updated timestamp format
      *
