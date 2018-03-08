@@ -34,7 +34,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	/**
 	 * Creates hyperlink for the following file name, region and file whether
 	 * the file name is found.
-	 * 
+	 *
 	 * @param original
 	 *            The file where the reference to this file name is.
 	 * @param fileName
@@ -60,7 +60,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkText()
 	 */
 	public String getHyperlinkText() {
-		return Messages.SourcesFileHyperlink_1 + ' ' + fileName;
+		return NLS.bind(Messages.SourcesFileHyperlink_1, fileName);
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	/**
 	 * Tries to open the given file name looking for it in the current directory
 	 * and in ../SOURCES.
-	 * 
+	 *
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#open()
 	 */
 	public void open() {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2013 Red Hat, Inc.
+ * Copyright (c) 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,27 +10,23 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink;
 
-import org.eclipse.core.resources.IContainer;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.browser.IWebBrowser;
+import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 
 /**
- * Hyperlink implementation for the source and patch files in a srpm. Note: This
- * implementation assumes two filesystem layouts where it looks for files. 1.
- * Exploder srpm - Spec file and sources in one directory. 2. Rpmbuild structure
- * - Assumes that the edited spec file is in a SPECS folder and looks for
- * sources in ../SOURCES.
+ * Open in a browser implementation for the hyperlinks.
  */
-public class SourcesFileHyperlink implements IHyperlink {
+public class SourcesFileBrowserHyperlink implements IHyperlink {
 
 	String fileName;
 	IFile original;
@@ -44,7 +40,7 @@ public class SourcesFileHyperlink implements IHyperlink {
 	 * @param fileName The name of the file to open.
 	 * @param region The hyperlink region.
 	 */
-	public SourcesFileHyperlink(IFile original, String fileName, IRegion region) {
+	public SourcesFileBrowserHyperlink(IFile original, String fileName, IRegion region) {
 		this.fileName = fileName;
 		this.original = original;
 		this.region = region;
@@ -61,7 +57,7 @@ public class SourcesFileHyperlink implements IHyperlink {
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkText()
 	 */
 	public String getHyperlinkText() {
-		return NLS.bind(Messages.SourcesFileHyperlink_0, fileName);
+		return NLS.bind(Messages.SourcesFileHyperlink_3, fileName);
 	}
 
 	/**
@@ -72,25 +68,23 @@ public class SourcesFileHyperlink implements IHyperlink {
 	}
 
 	/**
-	 * Tries to open the given file name looking for it in the current directory
-	 * and in ../SOURCES.
+	 * Tries to open the url with the eclipse internal browser.
 	 *
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#open()
 	 */
 	public void open() {
-		IContainer container = original.getParent();
-		IResource resourceToOpen = container.findMember(fileName);
-		if (resourceToOpen == null) {
-			IResource sourcesFolder = container.getParent().findMember(
-					"SOURCES"); //$NON-NLS-1$
-			resourceToOpen = ((IFolder) sourcesFolder).getFile(fileName);
-		}
-		IWorkbenchPage page = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage();
 		try {
-			if (resourceToOpen.getType() == IResource.FILE) {
-				IDE.openEditor(page, (IFile) resourceToOpen);
-			}
+			IWebBrowser browser = PlatformUI
+					.getWorkbench()
+					.getBrowserSupport()
+					.createBrowser(
+							IWorkbenchBrowserSupport.NAVIGATION_BAR
+									| IWorkbenchBrowserSupport.LOCATION_BAR
+									| IWorkbenchBrowserSupport.STATUS,
+							"rpm_open", null, null); //$NON-NLS-1$
+			browser.openURL(new URL(fileName));
+		} catch (MalformedURLException e) {
+			SpecfileLog.logError(e);
 		} catch (PartInitException e) {
 			SpecfileLog.logError(e);
 		}
