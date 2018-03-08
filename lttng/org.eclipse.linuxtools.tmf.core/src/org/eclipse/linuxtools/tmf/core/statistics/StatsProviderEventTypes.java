@@ -13,14 +13,12 @@
 
 package org.eclipse.linuxtools.tmf.core.statistics;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics.Attributes;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -62,7 +60,7 @@ class StatsProviderEventTypes extends AbstractTmfStateProvider {
      * @param trace
      *            The trace for which we build this state system
      */
-    public StatsProviderEventTypes(@NonNull ITmfTrace trace) {
+    public StatsProviderEventTypes(ITmfTrace trace) {
         super(trace, ITmfEvent.class ,"TMF Statistics, events per type"); //$NON-NLS-1$
     }
 
@@ -72,13 +70,12 @@ class StatsProviderEventTypes extends AbstractTmfStateProvider {
     }
 
     @Override
-    public @NonNull StatsProviderEventTypes getNewInstance() {
+    public StatsProviderEventTypes getNewInstance() {
         return new StatsProviderEventTypes(this.getTrace());
     }
 
     @Override
-    protected void eventHandle(@NonNull ITmfEvent event) {
-        final ITmfStateSystemBuilder ssb = getSSBuilder();
+    protected void eventHandle(ITmfEvent event) {
         int quark;
 
         /* Since this can be used for any trace types, normalize all the
@@ -91,28 +88,28 @@ class StatsProviderEventTypes extends AbstractTmfStateProvider {
             /* Special handling for lost events */
             if (event instanceof ITmfLostEvent) {
                 ITmfLostEvent le = (ITmfLostEvent) event;
-                quark = ssb.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
+                quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
 
-                int curVal = ssb.queryOngoingState(quark).unboxInt();
+                int curVal = ss.queryOngoingState(quark).unboxInt();
                 if (curVal == -1) {
                     curVal = 0;
                 }
 
                 TmfStateValue value = TmfStateValue.newValueInt((int) (curVal + le.getNbLostEvents()));
-                ssb.modifyAttribute(ts, value, quark);
+                ss.modifyAttribute(ts, value, quark);
                 return;
             }
 
             /* Number of events of each type, globally */
-            quark = ssb.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
-            ssb.incrementAttribute(ts, quark);
+            quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
+            ss.incrementAttribute(ts, quark);
 
 //            /* Number of events per CPU */
-//            quark = ssb.getQuarkRelativeAndAdd(currentCPUNode, Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
+//            quark = ss.getQuarkRelativeAndAdd(currentCPUNode, Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
 //            ss.incrementAttribute(ts, quark);
 //
 //            /* Number of events per process */
-//            quark = ssb.getQuarkRelativeAndAdd(currentThreadNode, Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
+//            quark = ss.getQuarkRelativeAndAdd(currentThreadNode, Attributes.STATISTICS, Attributes.EVENT_TYPES, eventName);
 //            ss.incrementAttribute(ts, quark);
 
         } catch (StateValueTypeException e) {

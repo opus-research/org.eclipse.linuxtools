@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.internal.tmf.core.statesystem;
 
 import java.io.IOException;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -70,6 +69,9 @@ public class HistoryBuilder extends TmfComponent {
      */
     public HistoryBuilder(ITmfStateProvider stateProvider, StateSystem ss,
             IStateHistoryBackend backend, boolean buildManually) {
+        if (stateProvider == null || backend == null || ss == null) {
+            throw new IllegalArgumentException();
+        }
         if (stateProvider.getAssignedStateSystem() != ss) {
             /* Logic check to make sure the provider is setup properly */
             throw new IllegalArgumentException();
@@ -189,7 +191,7 @@ public class HistoryBuilder extends TmfComponent {
      * Check if this signal is for this trace, or for an experiment containing
      * this trace.
      */
-    private boolean signalIsForUs(@Nullable ITmfTrace sender) {
+    private boolean signalIsForUs(ITmfTrace sender) {
         if (sender instanceof TmfExperiment) {
             /* Yeah doing a lazy instanceof check here, but it's a special case! */
             TmfExperiment exp = (TmfExperiment) sender;
@@ -243,7 +245,7 @@ class StateSystemBuildRequest extends TmfEventRequest {
     }
 
     @Override
-    public void handleData(final @Nullable ITmfEvent event) {
+    public void handleData(final ITmfEvent event) {
         super.handleData(event);
         if (event != null && event.getTrace() == trace) {
             sci.processEvent(event);

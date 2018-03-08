@@ -12,13 +12,11 @@
 
 package org.eclipse.linuxtools.tmf.core.callstack;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -96,21 +94,19 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
 
     @Override
     protected void eventHandle(ITmfEvent event) {
-        final ITmfStateSystemBuilder ss2 = getSSBuilder();
-
         String functionEntryName = functionEntry(event);
         try {
             if (functionEntryName != null) {
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 String thread = threadName(event);
-                int quark = ss2.getQuarkAbsoluteAndAdd(THREADS, thread, CALL_STACK);
+                int quark = ss.getQuarkAbsoluteAndAdd(THREADS, thread, CALL_STACK);
                 ITmfStateValue value = TmfStateValue.newValueString(functionEntryName);
-                ss2.pushAttribute(timestamp, value, quark);
+                ss.pushAttribute(timestamp, value, quark);
             } else if (functionExit(event) != null) {
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 String thread = threadName(event);
-                int quark = ss2.getQuarkAbsoluteAndAdd(THREADS, thread, CALL_STACK);
-                ss2.popAttribute(timestamp, quark);
+                int quark = ss.getQuarkAbsoluteAndAdd(THREADS, thread, CALL_STACK);
+                ss.popAttribute(timestamp, quark);
             }
         } catch (TimeRangeException e) {
             e.printStackTrace();
@@ -126,14 +122,14 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
      * @param event an event to check for function entry
      * @return the function name for a function entry, or null otherwise.
      */
-    public abstract @Nullable String functionEntry(ITmfEvent event);
+    public abstract String functionEntry(ITmfEvent event);
 
     /**
      * Check an event for function exit
      * @param event an event to check for function exit
      * @return the function name or UNDEFINED for a function exit, or null otherwise.
      */
-    public abstract @Nullable String functionExit(ITmfEvent event);
+    public abstract String functionExit(ITmfEvent event);
 
     /**
      * Return the thread name for a function entry or exit event

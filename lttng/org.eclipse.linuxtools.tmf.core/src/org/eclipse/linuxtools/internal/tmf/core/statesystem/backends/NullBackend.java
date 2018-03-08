@@ -17,7 +17,6 @@ import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 
@@ -61,12 +60,12 @@ public class NullBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public @Nullable FileInputStream supplyAttributeTreeReader() {
+    public FileInputStream supplyAttributeTreeReader() {
         return null;
     }
 
     @Override
-    public @Nullable File supplyAttributeTreeWriterFile() {
+    public File supplyAttributeTreeWriterFile() {
         return null;
     }
 
@@ -102,7 +101,7 @@ public class NullBackend implements IStateHistoryBackend {
     @Override
     public ITmfStateInterval doSingularQuery(long t, int attributeQuark) {
         /* Cannot do past queries */
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     /**

@@ -33,7 +33,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
         implements Runnable {
 
-    private final BlockingQueue<HTInterval> intervalQueue;
+    private BlockingQueue<HTInterval> intervalQueue;
     private final Thread shtThread;
 
     /**
@@ -172,6 +172,10 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
 
     @Override
     public void run() {
+        if (intervalQueue == null) {
+            Activator.logError("Cannot start the storage backend without its interval queue."); //$NON-NLS-1$
+            return;
+        }
         HTInterval currentInterval;
         try {
             currentInterval = intervalQueue.take();
