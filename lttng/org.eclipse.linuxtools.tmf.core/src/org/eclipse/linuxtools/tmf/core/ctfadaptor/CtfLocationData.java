@@ -10,13 +10,15 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocationData;
+
 /**
  * CtfLocationData, the data in a CTF location.
  *
  * @author Matthew Khouzam
  * @since 2.0
  */
-public class CtfLocationData implements Comparable<CtfLocationData> {
+public class CtfLocationData implements ITmfLocationData {
 
     private final long timestamp;
     private final long index;
@@ -98,20 +100,35 @@ public class CtfLocationData implements Comparable<CtfLocationData> {
     }
 
     @Override
-    public int compareTo(CtfLocationData other) {
-        if (this.timestamp > other.getTimestamp()) {
-            return 1;
+    public int compareTo(ITmfLocationData other) {
+        if (other instanceof CtfLocationData) {
+            CtfLocationData o = (CtfLocationData) other;
+            if (this.timestamp > o.getTimestamp()) {
+                return 1;
+            }
+            if (this.timestamp < o.getTimestamp()) {
+                return -1;
+            }
+            if (this.index > o.getIndex()) {
+                return 1;
+            }
+            if (this.index < o.getIndex()) {
+                return -1;
+            }
         }
-        if (this.timestamp < other.getTimestamp()) {
-            return -1;
-        }
-        if (this.index > other.getIndex()) {
-            return 1;
-        }
-        if (this.index < other.getIndex()) {
-            return -1;
-        }
+
         return 0;
+    }
+
+    @Override
+    public CtfLocationData clone() {
+        CtfLocationData clone = null;
+        try {
+            clone = (CtfLocationData) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return clone;
     }
 
 }

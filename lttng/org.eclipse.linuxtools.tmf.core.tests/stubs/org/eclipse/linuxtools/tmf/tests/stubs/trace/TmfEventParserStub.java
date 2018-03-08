@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 
 /**
  * <b><u>TmfEventParserStub</u></b>
@@ -82,8 +82,8 @@ public class TmfEventParserStub implements ITmfEventParser {
         // no need to use synchronized since it's already cover by the calling method
 
         long location = 0;
-        if (context != null && context.getLocation() != null) {
-            location = ((TmfLocation<Long>) (context.getLocation())).getLocationData();
+        if (context != null && context.getLocation() instanceof TmfLongLocation) {
+            location = ((TmfLongLocation) context.getLocation()).getLongValue();
             try {
                 stream.seek(location);
 
