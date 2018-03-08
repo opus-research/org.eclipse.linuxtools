@@ -64,8 +64,6 @@ public class StubbyEggGenerator extends AbstractGenerator {
 		buffer.append("URL:            " + model.getURL() + "\n");
 		buffer.append("Source0:        #FIXME\n\n");
 
-		buffer.append("BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)" + "\n\n");
-
 		buffer.append("BuildArch:      noarch\n");
 		generateRequires(buffer);
 		buffer.append("\n%description\n" + model.getDescription() + "\n\n");
@@ -74,7 +72,6 @@ public class StubbyEggGenerator extends AbstractGenerator {
 		generatePrepSection(buffer);
 		generateBuildSection(buffer);
 		generateInstallSection(buffer);
-		generateCleanSection(buffer);
 		generateFilesSections(buffer);
 		generateChangelog(buffer);
 
@@ -166,7 +163,6 @@ public class StubbyEggGenerator extends AbstractGenerator {
 	 */
 	private void generateInstallSection(StringBuilder buffer) {
 		buffer.append("%install\n");
-		buffer.append("rm -rf %{buildroot}\n\n");
 
 		buffer.append("%if 0%{?with_python3}\n");
 		buffer.append("pushd %{py3dir}\n");
@@ -175,16 +171,6 @@ public class StubbyEggGenerator extends AbstractGenerator {
 		buffer.append("%endif # with_python3\n\n");
 
 		buffer.append("%{__python} setup.py install --skip-build --root %{buildroot}\n\n\n");
-	}
-
-	/**
-	 * Generate clean
-	 *
-	 * @param buffer Buffer to write content to
-	 */
-	private void generateCleanSection(StringBuilder buffer) {
-		buffer.append("%clean\n");
-		buffer.append("rm -rf %{buildroot}\n\n\n");
 	}
 
 	/**

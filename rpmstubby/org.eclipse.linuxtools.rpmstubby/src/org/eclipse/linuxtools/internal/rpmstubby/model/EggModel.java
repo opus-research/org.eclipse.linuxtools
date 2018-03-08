@@ -74,6 +74,7 @@ public class EggModel {
 	/**
 	 * Get the value from one of the setup options.
 	 * If the value is empty, it will return #FIXME
+	 * It will also return #FIX_ME if it looks like a function
 	 *
 	 * @param option The option from the setup(...) function to get value of
 	 * @return The value of the option
@@ -81,8 +82,9 @@ public class EggModel {
 	private String getValue(String option) {
 		String str = pyEggParser.getValue(option);
 
-		if (str.isEmpty())
+		if (str.isEmpty() || pyEggParser.checkFunction(str)) {
 			str = FIX_ME;
+		}
 
 		return str;
 	}
@@ -110,8 +112,9 @@ public class EggModel {
 		List<String> list = getValueList(CLASSIFIERS);
 
 		for (String str : list) {
-			if (str.toLowerCase().contains(keyword))
+			if (str.toLowerCase().contains(keyword)) {
 				rc = str;
+			}
 		}
 
 		return rc;
@@ -152,8 +155,9 @@ public class EggModel {
 	public String getVersion() {
 		String version = getValue(CommonMetaData.VERSION);
 
-		if (!hasDigits(version))
+		if (!hasDigits(version)) {
 			version = "1 " + FIX_ME;
+		}
 
 		return version;
 	}
@@ -187,14 +191,17 @@ public class EggModel {
 		String rawLicense = getClassifiersList(CommonMetaData.LICENSE).toLowerCase();
 		String license = "";
 
-		for (String valid : validLicenses)
-			if (rawLicense.contains(valid.toLowerCase()))
+		for (String valid : validLicenses) {
+			if (rawLicense.contains(valid.toLowerCase())) {
 					license += valid + ", ";
+			}
+		}
 
-		if (!license.isEmpty())
+		if (!license.isEmpty()) {
 			license = license.substring(0, license.length()-2);
-		else
+		} else {
 			license = FIX_ME;
+		}
 
 		return license;
 	}
