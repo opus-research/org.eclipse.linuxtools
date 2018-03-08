@@ -35,7 +35,7 @@
             formatoutput="true"
             helpPrefix="doc">
             <fileset dir="doc">
-                <include name="User-Guide.mediawiki" />
+                <include name="Developer-Guide.mediawiki" />
             </fileset>
             <stylesheet url="book.css" />
         </wikitext-to-eclipse-help>
