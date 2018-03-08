@@ -32,6 +32,8 @@ public class Messages extends NLS {
     public static String DeleteExperimentHandler_Message;
     public static String DeleteExperimentHandler_Error;
 
+    public static String SelectElementTypeContributionItem_ElementSelection;
+
     public static String SelectTraceTypeHandler_ErrorSelectingTrace;
     public static String SelectTraceTypeHandler_Title;
     public static String SelectTraceTypeHandler_TraceFailedValidation;

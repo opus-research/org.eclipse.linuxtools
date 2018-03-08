@@ -12,6 +12,7 @@
  *   Patrick Tasse - Updated for removal of context clone
  *   Patrick Tasse - Updated for ranks in experiment location
  *   Geneviève Bastien - Added support of experiment synchronization
+ *                       Added the initExperiment method and default constructor
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -94,6 +95,16 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     // ------------------------------------------------------------------------
 
     /**
+     * Default constructor
+     * @since 2.1
+     */
+    public TmfExperiment() {
+        super();
+    }
+
+    /**
+     * Constructor with parameters
+     *
      * @param type
      *            the event type
      * @param id
@@ -151,25 +162,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      *            the resource associated to the experiment
      */
     public TmfExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
-        setCacheSize(indexPageSize);
-        setStreamingInterval(0);
-        setIndexer(new TmfCheckpointIndexer(this, indexPageSize));
-        setParser(this);
-        try {
-            super.initialize(resource, path, type);
-        } catch (TmfTraceException e) {
-            e.printStackTrace();
-        }
-
-        fTraces = traces;
-
-        if (resource != null) {
-            try {
-                this.synchronizeTraces();
-            } catch (TmfTraceException e) {
-                Activator.logError("Error synchronizing experiment", e); //$NON-NLS-1$
-            }
-        }
+        initExperiment(type, path, traces, indexPageSize, resource);
     }
 
     /**
@@ -196,8 +189,42 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
     // ITmfTrace - Initializers
     // ------------------------------------------------------------------------
 
-    @Override
-    public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) {
+    /**
+     * Initialization of an experiment, taking the type, path, traces,
+     * indexPageSize and resource
+     *
+     * @param type
+     *            the event type
+     * @param path
+     *            the experiment path
+     * @param traces
+     *            the experiment set of traces
+     * @param indexPageSize
+     *            the experiment index page size
+     * @param resource
+     *            the resource associated to the experiment
+     * @since 2.1
+     */
+    public void initExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
+        setCacheSize(indexPageSize);
+        setStreamingInterval(0);
+        setIndexer(new TmfCheckpointIndexer(this, indexPageSize));
+        setParser(this);
+        try {
+            super.initialize(resource, path, type);
+        } catch (TmfTraceException e) {
+            e.printStackTrace();
+        }
+
+        fTraces = traces;
+
+        if (resource != null) {
+            try {
+                this.synchronizeTraces();
+            } catch (TmfTraceException e) {
+                Activator.logError("Error synchronizing experiment", e); //$NON-NLS-1$
+            }
+        }
     }
 
     /**

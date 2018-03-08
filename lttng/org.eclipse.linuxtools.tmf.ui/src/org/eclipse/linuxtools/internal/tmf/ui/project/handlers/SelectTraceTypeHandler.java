@@ -34,6 +34,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfCommonProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
@@ -95,7 +96,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
             Iterator<Object> iterator = fSelection.iterator();
             while (iterator.hasNext()) {
                 Object element = iterator.next();
-                if (!(element instanceof TmfTraceElement)) {
+                if (!(element instanceof TmfCommonProjectElement)) {
                     return false;
                 }
             }
@@ -120,8 +121,10 @@ public class SelectTraceTypeHandler extends AbstractHandler {
         List<IStatus> statuses = new ArrayList<IStatus>();
         boolean ok = true;
         for (Object element : fSelection.toList()) {
-            TmfTraceElement trace = (TmfTraceElement) element;
-            trace = trace.getElementUnderTraceFolder();
+            TmfCommonProjectElement trace = (TmfCommonProjectElement) element;
+            if (trace instanceof TmfTraceElement) {
+                trace = ((TmfTraceElement) trace).getElementUnderTraceFolder();
+            }
             IResource resource = trace.getResource();
             if (resource != null) {
                 try {
@@ -165,7 +168,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
         return null;
     }
 
-    private static IStatus propagateProperties(TmfTraceElement trace,
+    private static IStatus propagateProperties(TmfCommonProjectElement trace,
             String bundleName, String traceType, String iconUrl)
             throws CoreException {
 
@@ -211,7 +214,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
         resource.setPersistentProperty(TmfCommonConstants.TRACEICON, iconUrl);
     }
 
-    private static IStatus validateTraceType(TmfTraceElement trace) {
+    private static IStatus validateTraceType(TmfCommonProjectElement trace) {
         IProject project = trace.getProject().getResource();
         ITmfTrace tmfTrace = null;
         IStatus validate = null;

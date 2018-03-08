@@ -618,7 +618,7 @@
                mnemonic="%command.select_trace_type.mnemonic"
                tooltip="%command.select_trace_type.description">
             <dynamic
-                  class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectTraceTypeContributionItem"
+                  class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectElementTypeContributionItem"
                   id="org.eclipse.linuxtools.tmf.ui.command.select_trace_type.dynamic">
             </dynamic>
             <separator
@@ -637,9 +637,31 @@
                   <iterate
                         ifEmpty="false"
                         operator="and">
-                     <instanceof
-                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
-                     </instanceof>
+                      <instanceof
+                            value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
+                      </instanceof>     
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </menu>
+         <menu
+               label="%command.select_experiment_type"
+               mnemonic="%command.select_experiment_type.mnemonic"
+               tooltip="%command.select_experiment_type.description">
+            <dynamic
+                  class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectElementTypeContributionItem"
+                  id="org.eclipse.linuxtools.tmf.ui.command.select_trace_type.dynamic">
+            </dynamic>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                      <instanceof
+                            value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                      </instanceof>      
                   </iterate>
                </with>
             </visibleWhen>
@@ -763,6 +785,27 @@
          <commandParameter
                id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.icon"
                name="%commands.trace.select_trace_type.icon"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            description="%command.select_experiment_type.description"
+            id="org.eclipse.linuxtools.tmf.ui.command.select_experiment_type"
+            name="%command.select_experiment_type">
+         <commandParameter
+               id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_experiment_type.bundle"
+               name="%commands.trace.select_experiment_type.bundle"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_experiment_type.type"
+               name="%commands.trace.select_experiment_type.type"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="org.eclipse.linuxtools.tmf.ui.commandparameter.select_experiment_type.icon"
+               name="%commands.trace.select_experiment_type.icon"
                optional="false">
          </commandParameter>
       </command>
@@ -1079,9 +1122,14 @@
             <iterate
                   ifEmpty="false"
                   operator="and">
-               <instanceof
+               <or>
+                  <instanceof
                      value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
-               </instanceof>
+                  </instanceof>
+                  <instanceof
+                     value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
+                  </instanceof>
+               </or>
             </iterate>
          </activeWhen>
       </handler>
@@ -1289,6 +1337,12 @@
             name="%tracetype.type.ctf"
             trace_type="org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace">
       </type>
+      <experiment
+            icon="icons/elcl16/experiment.gif"
+            id="org.eclipse.linuxtools.tmf.ui.experimenttype.generic"
+            name="Generic Experiment"
+            experiment_type="org.eclipse.linuxtools.tmf.core.trace.TmfExperiment">
+      </experiment>  
    </extension>
    <extension
          point="org.eclipse.ui.navigator.linkHelper">
