@@ -17,18 +17,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-
 /**
  * An entry for use in the time graph views
  *
  * @since 2.1
  */
 public class TimeGraphEntry implements ITimeGraphEntry {
-
-    /** Id field that may be used by views, so they don't have to extend this class if they don't need to */
-    private final int fEntryId;
-    private final ITmfTrace fTrace;
 
     /** Entry's parent */
     private TimeGraphEntry fParent = null;
@@ -40,27 +34,20 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     private String fName;
     private long fStartTime = -1;
     private long fEndTime = -1;
-    private List<ITimeEvent> fEventList = new ArrayList<ITimeEvent>();
+    private List<ITimeEvent> fEventList = null;
     private List<ITimeEvent> fZoomedEventList = null;
 
     /**
      * Constructor
      *
-     * @param entryid
-     *            Some id attribute for the entry whose state is shown on this
-     *            row
-     * @param trace
-     *            The trace on which we are working
      * @param name
-     *            The exec_name of this entry
+     *            The name of this entry
      * @param startTime
-     *            The start time of this process's lifetime
+     *            The start time of this entry
      * @param endTime
-     *            The end time of this process
+     *            The end time of this entry
      */
-    public TimeGraphEntry(int entryid, ITmfTrace trace, String name, long startTime, long endTime) {
-        fEntryId = entryid;
-        fTrace = trace;
+    public TimeGraphEntry(String name, long startTime, long endTime) {
         fName = name;
         fStartTime = startTime;
         fEndTime = endTime;
@@ -141,30 +128,16 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     }
 
     /**
-     * Get the id of this entry
-     *
-     * @return The entry id
-     */
-    public int getEntryId() {
-        return fEntryId;
-    }
-
-    /**
-     * Get the trace object
-     *
-     * @return The trace
-     */
-    public ITmfTrace getTrace() {
-        return fTrace;
-    }
-
-    /**
-     * Add an event to this process's timeline
+     * Add an event to this entry's event list. If necessary, update the start
+     * and end time of the entry.
      *
      * @param event
      *            The time event
      */
     public void addEvent(ITimeEvent event) {
+        if (fEventList == null) {
+            fEventList = new ArrayList<ITimeEvent>();
+        }
         long start = event.getTime();
         long end = start + event.getDuration();
         synchronized (fEventList) {
@@ -181,40 +154,25 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     /**
      * Set the general event list of this entry.
      *
-     * Creates a copy of the list to avoid the caller still modifying the list
-     *
      * @param eventList
      *            The list of time events
      */
     public void setEventList(List<ITimeEvent> eventList) {
-        if (eventList != null) {
-            fEventList = new ArrayList<ITimeEvent>(eventList);
-        } else {
-            // the event list should never be null
-            fEventList = new ArrayList<ITimeEvent>();
-        }
+        fEventList = eventList;
     }
 
     /**
      * Set the zoomed event list of this entry.
      *
-     * Creates a copy of the list to avoid the caller still modifying the list
-     *
      * @param eventList
      *            The list of time events
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
-        if (eventList != null) {
-            fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
-        } else {
-            // the zoomed event list can be null
-            fZoomedEventList = null;
-        }
+        fZoomedEventList = eventList;
     }
 
     /**
-     * Add a child entry to this one (to show relationships between processes as
-     * a tree)
+     * Add a child entry to this one
      *
      * @param child
      *            The child entry
