@@ -7,9 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Bernd Hufmann - Initial API and implementation
- *     Patrick Tasse - Close editors to release resources
- *     Marc-Andre Laperle - Fix NPE (Bug 416574)
+ *   Bernd Hufmann - Initial API and implementation
+ *   Patrick Tasse - Close editors to release resources
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -17,9 +16,7 @@ package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -83,9 +80,6 @@ public class DeleteExperimentSupplementaryFilesHandler extends AbstractHandler {
                 TmfExperimentElement experiment = (TmfExperimentElement) element;
 
                 IResource[] resources = experiment.getSupplementaryResources();
-                // Set to know which resources belong to the experiment
-                Set<IResource> experimentResources = new HashSet<IResource>(Arrays.asList(resources));
-
                 resourcesList.addAll(Arrays.asList(resources));
 
                 // Map to know which trace to close for each resource
@@ -115,12 +109,7 @@ public class DeleteExperimentSupplementaryFilesHandler extends AbstractHandler {
 
                 // Delete the selected resources
                 for (IResource resource : resourcesToDelete) {
-                    if (experimentResources.contains(resource)) {
-                        experiment.closeEditors();
-                    } else {
-                        traceMap.get(resource).closeEditors();
-                    }
-
+                    traceMap.get(resource).closeEditors();
                     try {
                         resource.delete(true, new NullProgressMonitor());
                     } catch (CoreException e) {
