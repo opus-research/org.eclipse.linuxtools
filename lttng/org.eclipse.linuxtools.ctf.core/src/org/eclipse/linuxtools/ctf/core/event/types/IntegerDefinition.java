@@ -34,6 +34,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
     private final IntegerDeclaration declaration;
     private long value;
+    private final long mask, flippedMask;
 
     // ------------------------------------------------------------------------
     // Contructors
@@ -49,6 +50,8 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
             IDefinitionScope definitionScope, String fieldName) {
         super(definitionScope, fieldName);
         this.declaration = declaration;
+        this.mask = declaration.getAlignment() - 1;
+        this.flippedMask = ~mask;
     }
 
     // ------------------------------------------------------------------------
@@ -94,7 +97,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     public void read(BitBuffer input) {
         final long longNegBit = 0x0000000080000000L;
         /* Offset the buffer position wrt the current alignment */
-        alignRead(input, this.declaration);
+        alignRead(input, mask, flippedMask);
 
         boolean signed = declaration.isSigned();
         int length = declaration.getLength();

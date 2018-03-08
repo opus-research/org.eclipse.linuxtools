@@ -38,6 +38,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
 
     private final StructDeclaration declaration;
     private final Map<String, Definition> definitions = new LinkedHashMap<String, Definition>();
+    private final long mask, flippedMask;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -58,6 +59,8 @@ public class StructDefinition extends Definition implements IDefinitionScope {
         super(definitionScope, structFieldName);
 
         this.declaration = declaration;
+        this.mask = declaration.getAlignment() - 1;
+        this.flippedMask = ~mask;
 
         for (String fName : declaration.getFieldsList()) {
             IDeclaration fieldDecl = declaration.getFields().get(fName);
@@ -91,7 +94,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
 
     @Override
     public void read(BitBuffer input) {
-        alignRead(input, this.declaration);
+        alignRead(input, mask, flippedMask);
         final List<String> fieldList = declaration.getFieldsList();
         for (String fName : fieldList) {
             Definition def = definitions.get(fName);
@@ -169,8 +172,8 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a string in a struct. if the name returns a non-string (like
-     * an int) than the method returns null
+     * Lookup a string in a struct. if the name returns a non-string (like an
+     * int) than the method returns null
      *
      * @param name
      *            the name of the string
@@ -183,8 +186,8 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a struct in a struct. if the name returns a non-struct (like
-     * an int) than the method returns null
+     * Lookup a struct in a struct. if the name returns a non-struct (like an
+     * int) than the method returns null
      *
      * @param name
      *            the name of the struct
@@ -197,8 +200,8 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a variant in a struct. if the name returns a non-variant (like
-     * an int) than the method returns null
+     * Lookup a variant in a struct. if the name returns a non-variant (like an
+     * int) than the method returns null
      *
      * @param name
      *            the name of the variant
