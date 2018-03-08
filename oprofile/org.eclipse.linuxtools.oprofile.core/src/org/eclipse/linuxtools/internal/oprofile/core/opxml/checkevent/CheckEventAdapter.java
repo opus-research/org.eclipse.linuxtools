@@ -19,7 +19,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.AbstractDataAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.EventIdCache;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.info.InfoAdapter;
@@ -129,8 +128,8 @@ public class CheckEventAdapter extends AbstractDataAdapter {
 	}
 
 	/**
-	 * Check if the system path at which the counter is defined exists
-	 * @return true if the system path corresponding to the counter exists, and false otherwise.
+	 * Check if /dev/oprofile/N exists where N is the counter selected
+	 * @return true if /dev/oprofile/N exists, and false otherwise.
 	 */
 	private boolean isValidCounter() {
 		/*
@@ -138,22 +137,17 @@ public class CheckEventAdapter extends AbstractDataAdapter {
 		 * hard-coded in a list. This method may not be entirely correct,
 		 * although much simpler.
 		 */
-
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-			IRemoteFileProxy proxy = null;
-			try {
-				proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
-			} catch (CoreException e) {
-				e.printStackTrace();
-			}
-			for (String path : InfoAdapter.COUNTER_PATHS) {
-				IFileStore fileStore = proxy.getResource(path + cpuCounter);
-				if (fileStore.fetchInfo().exists()){
-					return true;
-				}
-			}
+		IRemoteFileProxy proxy = null;
+		try {
+			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
+		} catch (CoreException e) {
+			e.printStackTrace();
 		}
-		return false;
+		IFileStore fileStore = proxy.getResource(InfoAdapter.DEV_OPROFILE + cpuCounter);
+		if (! fileStore.fetchInfo().exists()){
+			return false;
+		}
+		return true;
 	}
 
 	private void createXML() {

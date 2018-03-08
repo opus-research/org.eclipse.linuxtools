@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.AbstractDataAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.EventIdCache;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
@@ -84,7 +83,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 	public static final String CPUTYPE = DEV_OPROFILE + "cpu_type"; //$NON-NLS-1$
 	public static final String OP_SHARE = "/usr/share/oprofile/"; //$NON-NLS-1$
 	public static final String EVENTS = "events"; //$NON-NLS-1$
-	public static final String [] COUNTER_PATHS = new String [] { DEV_OPROFILE, DEV_OPROFILE + "stats/cpu" }; //$NON-NLS-1$
 	
 	public static final String SAMPLE_DIR_VAL = "/var/lib/oprofile/samples/"; //$NON-NLS-1$
 	public static final String LOCK_FILE_VAL = "/var/lib/oprofile/lock"; //$NON-NLS-1$
@@ -332,34 +330,15 @@ public class InfoAdapter extends AbstractDataAdapter{
 		 * hard-coded in a list. This method may not be entirely correct,
 		 * although much simpler.
 		 */
-
-		/*
-		 * Returning 1 for operf since it multiplexes the events through the counters
-		 * and it is not possible to read data from opcontrol /dev dir if the opcontrol
-		 * module was not initialized.
-		 * TODO: Make possible to select more than one event in a tab.
-		 */
-
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
-			return 1;
-		}
 		try {
 			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-
-		boolean exists = false;
 		final int MAXCPUS = Integer.MAX_VALUE;
 		for (int i = 0; i < MAXCPUS; i++){
-			exists = false;
-			for (String path : COUNTER_PATHS) {
-				IFileStore fileStore = proxy.getResource(path + i);
-				if(fileStore.fetchInfo().exists()){
-					exists = true;
-				}
-			}
-			if (!exists) {
+			IFileStore fileStore = proxy.getResource(DEV_OPROFILE + i);
+			if(!fileStore.fetchInfo().exists()){
 				return i;
 			}
 		}

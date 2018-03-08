@@ -6,9 +6,7 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *   Matthew Khouzam - Initial API and implementation
- *   Simon Delisle - Remove the iterator in dispose()
+ * Contributors: Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -139,7 +137,7 @@ public class CtfTmfContext implements ITmfContext {
 
     @Override
     public void dispose() {
-        CtfIteratorManager.removeIterator(fTrace, this);
+        // do nothing
     }
 
     /**
