@@ -266,16 +266,6 @@ public class ColorsView extends TmfView {
         manager.add(fImportAction);
     }
 
-    @Override
-    protected void loadTrace() {
-        /* Do nothing, view is not specific to one trace */
-    }
-
-    @Override
-    protected void closeTrace() {
-        /* Do nothing, view is not specific to one trace */
-    }
-
     private class AddAction extends Action {
         @Override
         public void run() {

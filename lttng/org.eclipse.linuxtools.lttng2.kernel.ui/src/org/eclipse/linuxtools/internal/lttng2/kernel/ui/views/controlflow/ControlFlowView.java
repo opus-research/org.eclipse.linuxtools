@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
- *   Bernd Hufmann - Updated signal handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow;
@@ -41,6 +40,7 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
@@ -115,6 +115,9 @@ public class ControlFlowView extends TmfView {
 
     // The timegraph combo
     private TimeGraphCombo fTimeGraphCombo;
+
+    // The selected trace
+    private ITmfTrace fTrace;
 
     // The timegraph entry list
     private ArrayList<ControlFlowEntry> fEntryList;
@@ -427,6 +430,62 @@ public class ControlFlowView extends TmfView {
     // ------------------------------------------------------------------------
 
     /**
+     * Handler for the trace selected signal
+     *
+     * @param signal
+     *            The signal that's received
+     */
+    @TmfSignalHandler
+    public void traceSelected(final TmfTraceSelectedSignal signal) {
+        if (signal.getTrace() == fTrace) {
+            return;
+        }
+        fTrace = signal.getTrace();
+
+        synchronized (fEntryListMap) {
+            fEntryList = fEntryListMap.get(fTrace);
+            if (fEntryList == null) {
+                synchronized (fBuildThreadMap) {
+                    BuildThread buildThread = new BuildThread(fTrace);
+                    fBuildThreadMap.put(fTrace, buildThread);
+                    buildThread.start();
+                }
+            } else {
+                fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                refresh();
+            }
+        }
+    }
+
+    /**
+     * Trace is closed: clear the data structures and the view
+     *
+     * @param signal the signal received
+     */
+    @TmfSignalHandler
+    public void traceClosed(final TmfTraceClosedSignal signal) {
+        synchronized (fBuildThreadMap) {
+            BuildThread buildThread = fBuildThreadMap.remove(signal.getTrace());
+            if (buildThread != null) {
+                buildThread.cancel();
+            }
+        }
+        synchronized (fEntryListMap) {
+            fEntryListMap.remove(signal.getTrace());
+        }
+        if (signal.getTrace() == fTrace) {
+            fTrace = null;
+            fStartTime = 0;
+            fEndTime = 0;
+            if (fZoomThread != null) {
+                fZoomThread.cancel();
+            }
+            refresh();
+        }
+    }
+
+    /**
      * Handler for the synch signal
      *
      * @param signal
@@ -533,44 +592,6 @@ public class ControlFlowView extends TmfView {
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
-
-    @Override
-    protected void loadTrace() {
-        synchronized (fEntryListMap) {
-            fEntryList = fEntryListMap.get(fTrace);
-            if (fEntryList == null) {
-                synchronized (fBuildThreadMap) {
-                    BuildThread buildThread = new BuildThread(fTrace);
-                    fBuildThreadMap.put(fTrace, buildThread);
-                    buildThread.start();
-                }
-            } else {
-                fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                refresh();
-            }
-        }
-    }
-
-    @Override
-    protected void closeTrace() {
-        synchronized (fBuildThreadMap) {
-            BuildThread buildThread = fBuildThreadMap.remove(fTrace);
-            if (buildThread != null) {
-                buildThread.cancel();
-            }
-        }
-        synchronized (fEntryListMap) {
-            fEntryListMap.remove(fTrace);
-        }
-
-        fStartTime = 0;
-        fEndTime = 0;
-        if (fZoomThread != null) {
-            fZoomThread.cancel();
-        }
-        refresh();
-    }
 
     private void buildEventList(final ITmfTrace trace, IProgressMonitor monitor) {
         fStartTime = Long.MAX_VALUE;
