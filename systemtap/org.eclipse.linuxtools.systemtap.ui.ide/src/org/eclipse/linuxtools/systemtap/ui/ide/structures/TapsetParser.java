@@ -15,25 +15,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeDefinitionNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * Runs stap -vp1 & stap -up2 in order to get all of the probes/functions
@@ -213,10 +208,7 @@ public class TapsetParser implements Runnable {
 			else
 				uri = new URI(Path.ROOT.toOSString());
 			IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(uri);
-			Process process = launcher.execute(new Path("stap"), args, null, null, null); //$NON-NLS-1$
-			if(process == null){
-				displayError(Messages.TapsetParser_CannotRunStapTitle, Messages.TapsetParser_CannotRunStapMessage);
-			}
+			launcher.execute(new Path("stap"), args, null, null, null); //$NON-NLS-1$
 			launcher.waitAndRead(str, strErr, new NullProgressMonitor());
 		} catch (URISyntaxException e) {
 			LogManager.logCritical("URISyntaxException runStap: " + e.getMessage(), this); //$NON-NLS-1$
@@ -470,15 +462,6 @@ public class TapsetParser implements Runnable {
 		}
 	}
 	
-	private void displayError(final String title, final String error){
-    	Display.getDefault().asyncExec(new Runnable() {
-    		public void run() {
-    			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-    			MessageDialog.openWarning(window.getShell(), title, error);
-    		}
-    	});
-	}
-
 	private boolean stopped = true;
 	private boolean disposed = true;
 	private boolean successfulFinish = false;
