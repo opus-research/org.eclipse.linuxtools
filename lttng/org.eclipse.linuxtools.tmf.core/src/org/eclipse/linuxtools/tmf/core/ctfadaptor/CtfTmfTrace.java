@@ -89,13 +89,13 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
             CtfIteratorManager.addTrace(this);
             CtfTmfLightweightContext ctx;
             /* Set the start and (current) end times for this trace */
-            ctx = (CtfTmfLightweightContext) seekEvent(0L);
-            CtfTmfEvent event = getNext(ctx);
+            ctx = new CtfTmfLightweightContext(this);
+            ctx.setLocation(new CtfLocation(0L));
             if(ctx.getLocation().equals(CtfIterator.NULL_LOCATION)) {
                 /* Handle the case where the trace is empty */
                 this.setStartTime(TmfTimestamp.BIG_BANG);
             } else {
-                final ITmfTimestamp curTime = event.getTimestamp();
+                final ITmfTimestamp curTime = ctx.getCurrentEvent().getTimestamp();
                 this.setStartTime(curTime);
                 this.setEndTime(curTime);
             }
@@ -206,12 +206,12 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
          * by rank for now.
          */
         if (currentLocation == null) {
-            currentLocation = new CtfLocation(new CtfLocationData(0L, 0L));
+            currentLocation = new CtfLocation(0L);
             context.setRank(0);
         }
         if (currentLocation.getLocation() == CtfLocation.INVALID_LOCATION) {
             ((CtfTmfTimestamp) getEndTime()).setType(TimestampType.NANOS);
-            currentLocation.setLocation(getEndTime().getValue() + 1, 0L);
+            currentLocation.setLocation(getEndTime().getValue() + 1);
         }
         context.setLocation(currentLocation);
         if(context.getRank() != 0) {

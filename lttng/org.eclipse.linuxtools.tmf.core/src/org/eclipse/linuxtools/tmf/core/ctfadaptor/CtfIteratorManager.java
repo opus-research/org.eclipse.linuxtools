@@ -142,8 +142,7 @@ class CtfTraceManager {
                  */
                 retVal = replaceRandomElement(context);
             }
-            final CtfLocationData location = (CtfLocationData) context.getLocation().getLocation();
-            retVal.seek( location);
+            retVal.seek((Long) context.getLocation().getLocation());
         }
         return retVal;
     }
