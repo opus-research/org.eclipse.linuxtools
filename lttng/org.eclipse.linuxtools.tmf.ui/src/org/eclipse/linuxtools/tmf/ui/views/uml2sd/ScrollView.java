@@ -454,11 +454,7 @@ public class ScrollView extends Composite {
 
     @Override
     public Rectangle getClientArea() {
-        Rectangle area = fViewControl.getClientArea();
-        /* Clamp the size of the returned area to 1x1 minimum */
-        area.width = Math.max(area.width, 1);
-        area.height = Math.max(area.height, 1);
-        return area;
+        return fViewControl.getClientArea();
     }
 
     @Override
