@@ -21,13 +21,13 @@ package org.eclipse.linuxtools.tmf.core.trace;
  * @version 2.0
  * @author Francois Chouinard
  */
-public abstract class TmfLocation implements ITmfLocation {
+public abstract class TmfLocation implements ITmfLocation, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final Comparable<?> fLocationInfo;
+    private Comparable<?> fLocationInfo;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -73,6 +73,32 @@ public abstract class TmfLocation implements ITmfLocation {
     public Comparable<?> getLocationInfo() {
         return fLocationInfo;
     }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfLocation clone() {
+        TmfLocation clone = null;
+        try {
+            clone = (TmfLocation) super.clone();
+            clone.fLocationInfo = cloneLocationInfo();
+        } catch (CloneNotSupportedException e) {
+        }
+        return clone;
+    }
+
+    /**
+     * Delegate to the locationInfo cloning to the subclasses
+     *
+     * @return the locationInfo clone
+     * @since 2.0
+     */
+    protected abstract Comparable<?> cloneLocationInfo();
 
     // ------------------------------------------------------------------------
     // Object

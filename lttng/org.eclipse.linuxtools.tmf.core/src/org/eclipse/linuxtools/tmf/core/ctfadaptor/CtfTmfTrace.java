@@ -212,13 +212,13 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
         }
         if (currentLocation.getLocationInfo() == CtfLocation.INVALID_LOCATION) {
             ((CtfTmfTimestamp) getEndTime()).setType(TimestampType.NANOS);
-            currentLocation = new CtfLocation(getEndTime().getValue() + 1, 0L);
+            currentLocation.setLocation(getEndTime().getValue() + 1, 0L);
         }
         context.setLocation(currentLocation);
         if (location == null) {
             CtfTmfEvent event = getIterator(this, context).getCurrentEvent();
             if (event != null) {
-                currentLocation = new CtfLocation(event.getTimestamp().getValue(), 0);
+                currentLocation.setLocation(event.getTimestamp().getValue(), 0);
             }
         }
         if(context.getRank() != 0) {
@@ -281,9 +281,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
         return;
     }
 
-    /**
-     * @since 2.0
-     */
     @Override
     public ITmfStateSystem getStateSystem() {
         return this.ss;

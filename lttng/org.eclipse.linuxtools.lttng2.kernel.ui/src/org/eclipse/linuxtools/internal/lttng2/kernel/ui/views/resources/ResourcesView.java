@@ -154,8 +154,8 @@ public class ResourcesView extends TmfView {
         }
 
         @Override
-        public List<ResourcesEntry> getChildren() {
-            return fChildren;
+        public ResourcesEntry[] getChildren() {
+            return fChildren.toArray(new ResourcesEntry[0]);
         }
 
         @Override

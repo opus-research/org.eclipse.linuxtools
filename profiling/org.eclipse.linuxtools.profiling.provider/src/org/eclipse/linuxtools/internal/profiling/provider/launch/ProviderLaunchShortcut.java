@@ -10,52 +10,21 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.profiling.provider.launch;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.cdt.core.model.IBinary;
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.linuxtools.internal.profiling.provider.ProviderProfileConstants;
+import org.eclipse.linuxtools.internal.profiling.provider.ProviderOptionsTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
-public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IExecutableExtension {
-
-	// Profiling type.
-	private String type;
-
-	// Launch configuration type id.
-	private String launchConfigId;
-
-	public void setInitializationData(IConfigurationElement config,
-			String propertyName, Object data) {
-		Map<String, String> parameters = (Map<String, String>) data;
-		String profilingType = parameters
-				.get(ProviderProfileConstants.INIT_DATA_TYPE_KEY);
-		String configId = parameters
-				.get(ProviderProfileConstants.INIT_DATA_CONFIG_ID_KEY);
-
-		if (profilingType == null) {
-			profilingType = "";
-		}
-		if (configId == null) {
-			configId = "";
-		}
-
-		setLaunchConfigID(configId);
-		setProfilingType(profilingType);
-	}
+public abstract class ProviderLaunchShortcut extends ProfileLaunchShortcut {
 
 	@Override
 	protected ILaunchConfigurationType getLaunchConfigType() {
@@ -64,20 +33,12 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 
 	@Override
 	protected ILaunchConfiguration findLaunchConfiguration(IBinary bin, String mode) {
-		String type = getProfilingType();
-
-		// check that there exists a provider for the given profiling type
-		if (ProviderLaunchConfigurationDelegate.getProviderIdToRun(type) == null) {
-			handleFail(Messages.ProviderLaunchShortcut_0 + " " + type);
-			return null;
-		}
-
 		// create a launch configuration based on the shortcut
 		ILaunchConfiguration config = createConfiguration(bin, false);
 		boolean exists = false;
 
 		try {
-			for (ILaunchConfiguration cfg : getLaunchManager().getLaunchConfigurations(getLaunchConfigType())){
+			for (ILaunchConfiguration cfg : getLaunchManager().getLaunchConfigurations()){
 				if (areEqual(config, cfg)){
 					exists = true;
 				}
@@ -104,10 +65,8 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 			ILaunchConfiguration cfg2) {
 
 		// We don't care about these attributes.
-		final List<String> IGNORED_ATTRS = Arrays.asList(new String [] {
-						ICDTLaunchConfigurationConstants.ATTR_BUILD_BEFORE_LAUNCH,
-						ICDTLaunchConfigurationConstants.ATTR_COREFILE_PATH,
-						IDebugUIConstants.ATTR_CAPTURE_IN_CONSOLE });
+		final String BUILD_BEFORE_LAUNCH = "org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR";
+		final String IN_CONSOLE = "org.eclipse.debug.ui.ATTR_CONSOLE_OUTPUT_ON";
 
 		try {
 			Map<?, ?> attrs1 = cfg1.getAttributes();
@@ -115,14 +74,16 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 
 			for (Object key1 : attrs1.keySet()) {
 				if (! attrs2.containsKey(key1)
-						&& ! IGNORED_ATTRS.contains(key1.toString())) {
+						&& ! key1.toString().equals(BUILD_BEFORE_LAUNCH)
+						&& ! key1.toString().equals(IN_CONSOLE)) {
 					return false;
 				}
 			}
 
 			for (Object key2 : attrs2.keySet()) {
 				if (! attrs1.containsKey(key2)
-						&& ! IGNORED_ATTRS.contains(key2.toString())) {
+						&& ! key2.toString().equals(BUILD_BEFORE_LAUNCH)
+						&& ! key2.toString().equals(IN_CONSOLE)) {
 					return false;
 				}
 			}
@@ -220,25 +181,7 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 		// set attributes related to the specific profiling shortcut configuration.
 		shortcut.setDefaultProfileLaunchShortcutAttributes(wc);
 
-		wc.setAttribute(ProviderProfileConstants.PROVIDER_CONFIG_ATT,
-				providerId);
-	}
-
-	/**
-	 * Get name of profiling type that used for this tab.
-	 *
-	 * @return String profiling name.
-	 */
-	private void setProfilingType(String profilingType) {
-		type = profilingType;
-	}
-	/**
-	 * Set launch configuration type id.
-	 *
-	 * @param configId String configuration type id.
-	 */
-	private void setLaunchConfigID(String configId) {
-		launchConfigId = configId;
+		wc.setAttribute(ProviderOptionsTab.PROVIDER_CONFIG_ATT, providerId);
 	}
 
 	/**
@@ -246,12 +189,8 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 	 *
 	 * @return String profiling type this plug-in supports.
 	 */
-	private String getLaunchConfigID() {
-		return launchConfigId;
-	}
+	protected abstract String getLaunchConfigID();
 
-	public String getProfilingType() {
-		return type;
-	}
+	public abstract String getProfilingType();
 
 }

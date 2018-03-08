@@ -420,7 +420,7 @@ public class TmfRawEventViewer extends Composite implements ControlListener, Sel
                     int index = 0;
                     long rank = 0;
                     while (!context.getLocation().equals(endLocation)) {
-                        location = context.getLocation();
+                        location = context.getLocation().clone();
                         ITmfEvent event = fTrace.getNext(context);
                         if (event == null) {
                         	break;
@@ -473,7 +473,7 @@ public class TmfRawEventViewer extends Composite implements ControlListener, Sel
 	            }
 	        }
             long rank = fBottomContext.getRank();
-            ITmfLocation location = fBottomContext.getLocation() != null ? fBottomContext.getLocation() : null;
+            ITmfLocation location = fBottomContext.getLocation() != null ? fBottomContext.getLocation().clone() : null;
             ITmfEvent event = fTrace.getNext(fBottomContext);
             if (event == null) {
                 break;

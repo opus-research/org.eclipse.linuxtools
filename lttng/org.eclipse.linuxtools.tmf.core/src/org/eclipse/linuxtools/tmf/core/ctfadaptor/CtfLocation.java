@@ -21,9 +21,9 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  * @version 1.0
  * @author Matthew Khouzam
  */
-public final class CtfLocation implements ITmfLocation {
+public class CtfLocation implements ITmfLocation, Cloneable {
 
-    private final CtfLocationData fLocation;
+    private CtfLocationData fLocation;
 
     /**
      * An invalid location
@@ -36,8 +36,8 @@ public final class CtfLocation implements ITmfLocation {
      * @param timestamp
      *            The timestamp of this location
      */
-    public CtfLocation(final ITmfTimestamp timestamp) {
-        this(timestamp.getValue(), 0);
+    public CtfLocation(ITmfTimestamp timestamp) {
+        setLocation(new CtfLocationData(timestamp.getValue(), 0));
     }
 
     /**
@@ -49,8 +49,30 @@ public final class CtfLocation implements ITmfLocation {
      *            The index of this location for this timestamp
      * @since 2.0
      */
-    public CtfLocation(final ITmfTimestamp timestamp, long index) {
-        this(timestamp.getValue(), index);
+    public CtfLocation(ITmfTimestamp timestamp, long index) {
+        setLocation(new CtfLocationData(timestamp.getValue(), index));
+    }
+
+    /**
+     * Copy constructor
+     *
+     * @param location
+     *            Other location to copy
+     * @since 2.0
+     */
+    public CtfLocation(CtfLocationData location) {
+        setLocation(location);
+    }
+
+    /**
+     * Move this location to another location's position.
+     *
+     * @param location
+     *            The location to seek to
+     * @since 2.0
+     */
+    public void setLocation(CtfLocationData location) {
+        this.fLocation = location;
     }
 
     /**
@@ -62,20 +84,10 @@ public final class CtfLocation implements ITmfLocation {
      *            The new index
      * @since 2.0
      */
-    public CtfLocation(final long timestampValue, final long index) {
-       this(new CtfLocationData(timestampValue, index));
+    public void setLocation(long timestampValue, long index) {
+       this.fLocation = new CtfLocationData(timestampValue, index);
     }
 
-    /**
-     * Copy constructor
-     *
-     * @param location
-     *            Other location to copy
-     * @since 2.0
-     */
-    public CtfLocation(final CtfLocationData location) {
-        fLocation = location;
-    }
 
     /**
      * Get the Location Data of this location
@@ -142,5 +154,6 @@ public final class CtfLocation implements ITmfLocation {
         }
         return "CtfLocation: " + getLocationInfo().toString(); //$NON-NLS-1$
     }
+
 
 }

@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
  * @author Francois Chouinard
  * @since 2.0
  */
-public final class TmfTimestampLocation extends TmfLocation {
+public class TmfTimestampLocation extends TmfLocation {
 
     /**
      * The normal constructor
@@ -47,6 +47,22 @@ public final class TmfTimestampLocation extends TmfLocation {
     @Override
     public ITmfTimestamp getLocationInfo() {
         return (ITmfTimestamp) super.getLocationInfo();
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfLocation#clone()
+     */
+    @Override
+    public TmfTimestampLocation clone() {
+        return (TmfTimestampLocation) super.clone();
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfLocation#cloneValue()
+     */
+    @Override
+    protected ITmfTimestamp cloneLocationInfo() {
+        return getLocationInfo().clone();
     }
 
 }

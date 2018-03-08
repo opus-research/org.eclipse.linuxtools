@@ -228,7 +228,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         }
         super.init(traceName, type);
 
-        buildStatistics();
+        /*
+         * Initialize the statistics provider, but only if a Resource has been
+         * set (so we don't build it for experiments, for unit tests, etc.)
+         */
+        fStatistics = (fResource == null ? null : new TmfStatistics(this) );
     }
 
     /**
@@ -249,20 +253,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     protected void indexTrace(boolean waitForCompletion) {
         getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, waitForCompletion);
-    }
-
-    /**
-     * The default implementation of TmfTrace uses a TmfStatistics backend.
-     * Override this if you want to specify another type (or none at all).
-     *
-     * @since 2.0
-     */
-    protected void buildStatistics() throws TmfTraceException {
-        /*
-         * Initialize the statistics provider, but only if a Resource has been
-         * set (so we don't build it for experiments, for unit tests, etc.)
-         */
-        fStatistics = (fResource == null ? null : new TmfStatistics(this) );
     }
 
     /**

@@ -339,9 +339,6 @@ public class TmfEventsCache {
                         if (event != null) {
                             if (((fFilter == null) || fFilter.matches(event)) && (skipCount-- <= 0)) {
                                 synchronized (TmfEventsCache.this) {
-                                    if (monitor.isCanceled()) {
-                                        return;
-                                    }
                                     fCache[count] = new CachedEvent(event.clone(), rank);
                                     count++;
                                     fCacheEndIndex++;

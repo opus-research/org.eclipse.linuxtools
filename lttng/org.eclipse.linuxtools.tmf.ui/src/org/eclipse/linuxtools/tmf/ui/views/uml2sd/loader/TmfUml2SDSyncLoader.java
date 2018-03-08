@@ -59,7 +59,6 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressConstants;
 
@@ -510,11 +509,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
        super.dispose();
        fLock.lock();
        try {
-           IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-           // During Eclipse shutdown the active workbench window is null
-           if (window != null) {
-               window.getSelectionService().removePostSelectionListener(this);
-           }
+           PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().removePostSelectionListener(this);
            fView.setSDFindProvider(null);
            fView.setSDPagingProvider(null);
            fView.setSDFilterProvider(null);
