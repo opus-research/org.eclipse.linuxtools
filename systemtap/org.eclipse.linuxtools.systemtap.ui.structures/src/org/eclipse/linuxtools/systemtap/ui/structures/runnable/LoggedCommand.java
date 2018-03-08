@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.systemtap.ui.structures.runnable;
 
 import java.io.File;
 
+import org.eclipse.linuxtools.systemtap.ui.structures.IPasswordPrompt;
 import org.eclipse.linuxtools.systemtap.ui.structures.LoggingStreamDaemon;
 
 
@@ -23,6 +24,18 @@ import org.eclipse.linuxtools.systemtap.ui.structures.LoggingStreamDaemon;
  * @author Ryan Morse
  */
 public class LoggedCommand extends Command {
+	/**
+	 * Spawns the new thread that this class will run in.  From the Runnable
+	 * interface spawning the new thread automatically calls the run() method.
+	 * This must be called by the implementing class in order to start the
+	 * StreamGobbler.
+	 * @param cmd The entire command to run
+	 * @param envVars List of all environment variables to use
+	 * @param prompt The password promt for allowing the user to enter their password.
+	 */
+	public LoggedCommand(String[] cmd, String[] envVars, IPasswordPrompt prompt) {
+		this(cmd, envVars, prompt, 0);
+	}
 
 	/**
 	 * Spawns the new thread that this class will run in.  From the Runnable
@@ -31,16 +44,15 @@ public class LoggedCommand extends Command {
 	 * StreamGobbler.
 	 * @param cmd The entire command to run
 	 * @param envVars List of all environment variables to use
-	 * @param prompt The password prompt for allowing the user to enter their password.
+	 * @param prompt The password promt for allowing the user to enter their password.
 	 * @param monitorDelay the time between checking to see if the process finished
-	 * @since 2.0
-	 */
-	public LoggedCommand(String[] cmd, String[] envVars) {
-		super(cmd, envVars);
+	 */	
+	public LoggedCommand(String[] cmd, String[] envVars, IPasswordPrompt prompt, int monitorDelay) {
+		super(cmd, envVars, prompt, monitorDelay);
 		logger = new LoggingStreamDaemon();
 		addInputStreamListener(logger);
 	}
-
+	
 	/**
 	 * Gets all of the output from the input stream.
 	 * @return String containing the entire output from the input stream.
@@ -51,9 +63,9 @@ public class LoggedCommand extends Command {
 		else
 			return null;
 	}
-
+	
 	/**
-	 * Saves the input stream data to a permanent file.  Any new data on the
+	 * Saves the input stream data to a premanent file.  Any new data on the
 	 * stream will automatically be saved to the file.
 	 * @param file The file to save the InputStream to.
 	 */
@@ -68,12 +80,12 @@ public class LoggedCommand extends Command {
 	public synchronized void stop() {
 		if(isRunning()) {
 			super.stop();
-			removeInputStreamListener(logger);
+	    	removeInputStreamListener(logger);
 		}
 	}
 
 	/**
-	 * Disposes of all internal references in this class.  Nothing should be called
+	 * Dispoes of all internal references in this class.  Nothing should be called
 	 * after dispose.
 	 */
 	@Override

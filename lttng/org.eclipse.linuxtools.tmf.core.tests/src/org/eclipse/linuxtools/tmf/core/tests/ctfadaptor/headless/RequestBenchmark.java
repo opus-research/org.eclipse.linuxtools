@@ -18,8 +18,8 @@ import java.util.Vector;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
@@ -83,8 +83,8 @@ public class RequestBenchmark extends TmfEventRequest {
     }
 
     @Override
-    public void handleData(final ITmfEvent event) {
-        super.handleData(event);
+    public synchronized void handleEvent(final ITmfEvent event) {
+        super.handleEvent(event);
         nbEvent++;
 
     }
@@ -92,7 +92,7 @@ public class RequestBenchmark extends TmfEventRequest {
     static long prev;
     static long done = 0;
     @Override
-    public void handleCompleted() {
+    public synchronized void handleCompleted() {
         final long next = System.nanoTime();
         double val = next - prev;
         final int nbEvent2 = nbEvent;

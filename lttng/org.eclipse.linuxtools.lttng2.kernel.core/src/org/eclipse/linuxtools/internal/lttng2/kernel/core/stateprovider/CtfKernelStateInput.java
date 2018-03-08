@@ -40,12 +40,6 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  */
 public class CtfKernelStateInput extends AbstractStateChangeInput {
 
-    /**
-     * Version number of this state provider. Please bump this if you modify the
-     * contents of the generated state history in some way.
-     */
-    private static final int VERSION = 0;
-
     /* Event names HashMap. TODO: This can be discarded once we move to Java 7 */
     private final HashMap<String, Integer> knownEventNames;
 
@@ -65,11 +59,6 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
     public CtfKernelStateInput(CtfTmfTrace trace) {
         super(trace, CtfTmfEvent.class, "LTTng Kernel"); //$NON-NLS-1$
         knownEventNames = fillEventNames();
-    }
-
-    @Override
-    public int getVersion() {
-        return VERSION;
     }
 
     @Override
@@ -235,7 +224,7 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
              */
             {
                 Integer prevTid = ((Long) content.getField(LttngStrings.PREV_TID).getValue()).intValue();
-                Long prevState = (Long) content.getField(LttngStrings.PREV_STATE).getValue();
+                //Long prevState = (Long) content.getField(LttngStrings.PREV_STATE).getValue();
                 String nextProcessName = (String) content.getField(LttngStrings.NEXT_COMM).getValue();
                 Integer nextTid = ((Long) content.getField(LttngStrings.NEXT_TID).getValue()).intValue();
 
@@ -244,11 +233,7 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
 
                 /* Set the status of the process that got scheduled out. */
                 quark = ss.getQuarkRelativeAndAdd(formerThreadNode, Attributes.STATUS);
-                if (prevState != 0) {
-                    value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_WAIT_BLOCKED);
-                } else {
-                    value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_WAIT_FOR_CPU);
-                }
+                value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_WAIT);
                 ss.modifyAttribute(ts, value, quark);
 
                 /* Set the status of the new scheduled process */
@@ -322,7 +307,7 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
 
                 /* Set the new process' status */
                 quark = ss.getQuarkRelativeAndAdd(childTidNode, Attributes.STATUS);
-                value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_WAIT_FOR_CPU);
+                value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_WAIT);
                 ss.modifyAttribute(ts, value, quark);
 
                 /* Set the process' syscall name, to be the same as the parent's */
@@ -389,11 +374,9 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
                 /* Set the process' status */
                 quark = ss.getQuarkRelativeAndAdd(curThreadNode, Attributes.STATUS);
                 if (ss.queryOngoingState(quark).isNull()) {
-                     /* "2" here means "WAIT_FOR_CPU", and "5" "WAIT_BLOCKED" in the LTTng kernel. */
-                    if (status == 2) {
-                        value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_WAIT_FOR_CPU);
-                    } else if (status == 5) {
-                        value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_WAIT_BLOCKED);
+                    /*"5" here means "LTTNG_WAIT" in the LTTng kernel tracer */
+                    if (status == 5) {
+                        value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_WAIT);
                     } else {
                         value = TmfStateValue.newValueInt(StateValues.PROCESS_STATUS_UNKNOWN);
                     }

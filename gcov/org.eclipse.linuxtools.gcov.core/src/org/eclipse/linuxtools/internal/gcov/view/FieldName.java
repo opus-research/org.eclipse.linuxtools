@@ -13,9 +13,10 @@ package org.eclipse.linuxtools.internal.gcov.view;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField;
 import org.eclipse.linuxtools.internal.gcov.model.TreeElement;
 
+
 public class FieldName extends AbstractSTDataViewersField {
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderText()
 	 */
@@ -30,31 +31,25 @@ public class FieldName extends AbstractSTDataViewersField {
 	 */
 	@Override
 	public String getValue(Object obj) {
-	    if (obj instanceof TreeElement) {
-	        TreeElement e = (TreeElement) obj;
-	        String nm = e.getName();
-	        nm = nm.substring(nm.lastIndexOf('/')+1);
-	        nm = nm.substring(nm.lastIndexOf('\\')+1);
-	        return nm;
-	    }
-	    return ""; //$NON-NLS-1$
+		TreeElement e = (TreeElement) obj;
+		String nm = e.getName();
+		nm = nm.substring(nm.lastIndexOf('/')+1);
+		nm = nm.substring(nm.lastIndexOf('\\')+1);
+		return nm;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField#getToolTipText(java.lang.Object)
 	 */
 	@Override
 	public String getToolTipText(Object element) {
-        if (element instanceof TreeElement) {
-            TreeElement elem = (TreeElement) element;
-            String s = elem.getName();
-            return s;
-        }
-        return ""; //$NON-NLS-1$
+		TreeElement elem = (TreeElement) element;
+		String s = elem.getName();
+		return s;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#compare(java.lang.Object, java.lang.Object)
 	 */

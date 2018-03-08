@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers;
 
@@ -101,9 +100,9 @@ public class AssignEventHandler extends BaseControlViewHandler {
                         TraceChannelComponent channel = dialog.getChannel();
                         if (channel == null) {
                             // enable events on default channel (which will be created by lttng-tools)
-                            dialog.getSession().enableEvents(eventNames, param.isKernel(), dialog.getFilterExpression(), monitor);
+                            dialog.getSession().enableEvents(eventNames, param.isKernel(), monitor);
                         } else {
-                            channel.enableEvents(eventNames, dialog.getFilterExpression(), monitor);
+                            channel.enableEvents(eventNames, monitor);
                         }
 
                     } catch (ExecutionException e) {

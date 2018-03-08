@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2008 Intel Corporation, 2009, 2010, 2011, 2012, 2013 Ericsson.
+ * Copyright (c) 2007, 2008 Intel Corporation, 2009, 2010, 2011, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,7 +25,6 @@ import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTreeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
@@ -115,7 +114,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
     private final List<MenuDetectListener> _timeEventMenuListeners = new ArrayList<MenuDetectListener>();
     private final Cursor _dragCursor3;
     private final Cursor _WaitCursor;
-    private final List<ViewerFilter> _filters = new ArrayList<ViewerFilter>();
 
     // Vertical formatting formatting for the state control view
     private final boolean _visibleVerticalScroll = true;
@@ -1253,11 +1251,11 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
                         gc.drawPoint(stateRect.x, stateRect.y - 2);
                         stateRect.x += 1;
                     }
-                }
-                boolean timeSelected = selectedTime >= event.getTime() && selectedTime < event.getTime() + event.getDuration();
-                if (drawState(_colors, event, stateRect, gc, selected, timeSelected)) {
+                } else {
                     lastX = x;
                 }
+                boolean timeSelected = selectedTime >= event.getTime() && selectedTime < event.getTime() + event.getDuration();
+                drawState(_colors, event, stateRect, gc, selected, timeSelected);
             }
         }
         fTimeGraphProvider.postDrawEntry(entry, rect, gc);
@@ -1379,30 +1377,17 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
      *            highlighted)
      * @param timeSelected
      *            Is the timestamp currently selected
-     * @return true if the state was drawn
-     * @since 2.0
      */
-    protected boolean drawState(TimeGraphColorScheme colors, ITimeEvent event,
+    protected void drawState(TimeGraphColorScheme colors, ITimeEvent event,
             Rectangle rect, GC gc, boolean selected, boolean timeSelected) {
 
         int colorIdx = fTimeGraphProvider.getStateTableIndex(event);
-        if (colorIdx < 0 && colorIdx != ITimeGraphPresentationProvider.TRANSPARENT) {
-            return false;
+        if (colorIdx < 0) {
+            return;
         }
         boolean visible = rect.width == 0 ? false : true;
 
         if (visible) {
-            if (colorIdx == ITimeGraphPresentationProvider.TRANSPARENT) {
-                // Only draw the top and bottom borders
-                gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-                gc.drawLine(rect.x, rect.y, rect.x + rect.width - 1, rect.y);
-                gc.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width - 1, rect.y + rect.height - 1);
-                if (rect.width == 1) {
-                    gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-                    gc.drawPoint(rect.x, rect.y - 2);
-                }
-                return false;
-            }
             Color stateColor = null;
             if (colorIdx < fEventColorMap.length) {
                 stateColor = fEventColorMap[colorIdx];
@@ -1423,15 +1408,38 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
             // draw bounds
             if (!reallySelected) {
                 // Draw the top and bottom borders i.e. no side borders
+                // top
                 gc.drawLine(rect.x, rect.y, rect.x + rect.width - 1, rect.y);
+                // bottom
                 gc.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width - 1, rect.y + rect.height - 1);
             }
         } else {
             gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
             gc.drawPoint(rect.x, rect.y - 2);
+            /*
+            // selected rectangle area is not visible but can be represented
+            // with a broken vertical line of specified width.
+            int width = 1;
+            rect.width = width;
+            gc.setForeground(stateColor);
+            int s = gc.getLineStyle();
+            int w = gc.getLineWidth();
+            gc.setLineStyle(SWT.LINE_DOT);
+            gc.setLineWidth(width);
+            // Trace.debug("Rectangle not visible, drawing vertical line with: "
+            // + rect.x + "," + rect.y + "," + rect.x + "," + rect.y
+            // + rect.height);
+            gc.drawLine(rect.x, rect.y, rect.x, rect.y + rect.height - 1);
+            gc.setLineStyle(s);
+            gc.setLineWidth(w);
+            if (!timeSelected) {
+                gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+                gc.drawPoint(rect.x, rect.y);
+                gc.drawPoint(rect.x, rect.y + rect.height - 1);
+            }
+            */
         }
         fTimeGraphProvider.postDrawEvent(event, rect, gc);
-        return visible;
     }
 
     /**
@@ -1971,24 +1979,6 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
 
     }
 
-    /**
-     * @param filter The filter object to be attached to the view
-     * @since 2.0
-     */
-    public void addFilter(ViewerFilter filter) {
-        if (!_filters.contains(filter)) {
-            _filters.add(filter);
-        }
-    }
-
-    /**
-     * @param filter The filter object to be attached to the view
-     * @since 2.0
-     */
-    public void removeFilter(ViewerFilter filter) {
-        _filters.remove(filter);
-    }
-
     private class ItemData {
         public Item[] _expandedItems = new Item[0];
         public Item[] _items = new Item[0];
@@ -2068,20 +2058,10 @@ public class TimeGraphControl extends TimeGraphBaseControl implements FocusListe
         }
 
         private void refreshExpanded(List<Item> expandedItemList, Item item) {
-            // Check for filters
-            boolean display = true;
-            for (ViewerFilter filter : _filters) {
-                if (!filter.select(null, item._trace.getParent(), item._trace)) {
-                    display = false;
-                    break;
-                }
-            }
-            if (display) {
-                expandedItemList.add(item);
-                if (item._hasChildren && item._expanded) {
-                    for (Item child : item.children) {
-                        refreshExpanded(expandedItemList, child);
-                    }
+            expandedItemList.add(item);
+            if (item._hasChildren && item._expanded) {
+                for (Item child : item.children) {
+                    refreshExpanded(expandedItemList, child);
                 }
             }
         }

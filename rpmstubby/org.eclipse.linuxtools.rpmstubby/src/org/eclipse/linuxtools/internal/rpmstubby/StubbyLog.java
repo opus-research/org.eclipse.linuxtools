@@ -18,15 +18,11 @@ import org.eclipse.core.runtime.Status;
 /**
  * The logger of convenience for the Specfile Plug-In.
  */
-public final class StubbyLog {
-
-	private StubbyLog() {
-		//don't allow instantiation
-	}
-
+public class StubbyLog {
+	
    /**
     * Log the specified information.
-    *
+    * 
     * @param message A human-readable message, localized to the
     *           current locale.
     */
@@ -36,7 +32,7 @@ public final class StubbyLog {
 
    /**
     * Log the specified error.
-    *
+    * 
     * @param exception A low-level exception.
     */
    public static void logError(Throwable exception) {
@@ -45,7 +41,7 @@ public final class StubbyLog {
 
    /**
     * Log the specified error.
-    *
+    * 
     * @param message A human-readable message, localized to the
     *           current locale.
     * @param exception A low-level exception, or <code>null</code>
@@ -57,7 +53,7 @@ public final class StubbyLog {
 
    /**
     * Log the specified information.
-    *
+    * 
     * @param severity The severity; one of the following:
     *           <code>IStatus.OK</code>,
     *           <code>IStatus.ERROR</code>,
@@ -78,7 +74,7 @@ public final class StubbyLog {
 
    /**
     * Create a status object representing the specified information.
-    *
+    * 
     * @param severity The severity; one of the following:
     *           <code>IStatus.OK</code>,
     *           <code>IStatus.ERROR</code>,
@@ -101,7 +97,7 @@ public final class StubbyLog {
 
    /**
     * Log the given status.
-    *
+    * 
     * @param status The status to log.
     */
    public static void log(IStatus status) {

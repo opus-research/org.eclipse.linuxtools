@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.systemtap.ui.graphing;
 
 import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
@@ -26,8 +27,9 @@ import org.eclipse.ui.IPerspectiveFactory;
 public class GraphingPerspective implements IPerspectiveFactory {
 	public static String ID = "org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective"; //$NON-NLS-1$
 
-	@Override
 	public void createInitialLayout(IPageLayout layout) {
+		LogManager.logDebug("Start createInitialLayout: layout-" + layout, this); //$NON-NLS-1$
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 		String editorArea = layout.getEditorArea();
 		layout.setEditorAreaVisible(false);
 		
@@ -40,5 +42,7 @@ public class GraphingPerspective implements IPerspectiveFactory {
 
 		//Add a link to the perspective in the MainMenu.  Window->Open Perspective
 		layout.addPerspectiveShortcut(ID);
+		
+		LogManager.logDebug("End createInitialLayout:", this); //$NON-NLS-1$
 	}
 }

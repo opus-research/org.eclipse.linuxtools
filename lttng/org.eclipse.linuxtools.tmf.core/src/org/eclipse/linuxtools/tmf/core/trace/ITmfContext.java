@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Trace Model 1.0
- *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -80,5 +79,10 @@ public interface ITmfContext {
      * Cleanup hook
      */
     public void dispose();
+
+    /**
+     * @return a clone of the context
+     */
+    public ITmfContext clone();
 
 }

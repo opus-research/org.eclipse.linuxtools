@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2012-2013 Red Hat, Inc.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Red Hat - initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.systemtap.ui.ide.test.editors.stp;
 
 import static org.junit.Assert.assertNotNull;
@@ -24,6 +13,8 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPCompletionProcessor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPDocumentProvider;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
+import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
+import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.junit.Test;
 
@@ -56,6 +47,14 @@ public class STPCompletionProcessorTest {
 		public MockSTPEditor(IDocument document) {
 			super();
 			setDocumentProvider(new MockSTPDocumentProvider(document));
+		}
+	}
+
+	private static class MyUpdateListener implements IUpdateListener {
+		public void handleUpdateEvent() {
+			synchronized (this) {
+				this.notifyAll();
+			}
 		}
 	}
 
@@ -125,30 +124,6 @@ public class STPCompletionProcessorTest {
 	}
 
 	@Test
-	public void testEndProbeCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
-
-		Document testDocument = new Document(TEST_STP_SCRIPT);
-		@SuppressWarnings("unused")
-		MockSTPEditor editor = new MockSTPEditor(testDocument);
-
-		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
-		String prefix = "probe end{}";
-		testDocument.replace(offset, 0, prefix);
-		offset += prefix.length() - 1;
-
-		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
-		completionProcessor.waitForInitialization();
-		ICompletionProposal[] proposals = completionProcessor
-				.computeCompletionProposals(testDocument,
-						offset);
-
-		assertTrue(proposalsContain(proposals, "user_int16"));
-		assertTrue(proposalsContain(proposals, "user_int32"));
-		assertTrue(proposalsContain(proposals, "user_int64"));
-	}
-
-	@Test
 	public void testProbeVariableCompletion() throws BadLocationException {
 		assumeTrue(stapInstalled());
 
@@ -196,8 +171,6 @@ public class STPCompletionProcessorTest {
 		offset += prefix.length();
 
 		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
-		completionProcessor.waitForInitialization();
-
 		ICompletionProposal[] proposals = completionProcessor
 				.computeCompletionProposals(testDocument,
 						offset);
@@ -215,9 +188,10 @@ public class STPCompletionProcessorTest {
 	}
 
 	@Test
-	public void testFunctionCompletion() throws BadLocationException {
+	public void testFunctionCompletion() throws BadLocationException, InterruptedException {
 		assumeTrue(stapInstalled());
 
+		MyUpdateListener updateListiner = new MyUpdateListener();
 		Document testDocument = new Document(TEST_STP_SCRIPT);
 		@SuppressWarnings("unused")
 		MockSTPEditor editor = new MockSTPEditor(testDocument);
@@ -228,7 +202,12 @@ public class STPCompletionProcessorTest {
 		offset += prefix.length() - 1;
 
 		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
-		completionProcessor.waitForInitialization();
+		TapsetLibrary.addListener(updateListiner);
+
+		synchronized (updateListiner) {
+			if(!TapsetLibrary.isFinishSuccessful())
+				updateListiner.wait();
+		}
 
 		ICompletionProposal[] proposals = completionProcessor
 				.computeCompletionProposals(testDocument,

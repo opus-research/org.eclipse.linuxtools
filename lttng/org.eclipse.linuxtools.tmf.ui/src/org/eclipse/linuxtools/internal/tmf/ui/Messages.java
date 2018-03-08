@@ -72,11 +72,6 @@ public class Messages extends NLS {
     public static String TmfEventsTable_FilterHint;
     public static String TmfEventsTable_HideRawActionText;
     public static String TmfEventsTable_HideTableActionText;
-    public static String TmfEventsTable_OpenCallsiteActionText;
-    public static String TmfEventsTable_OpenCallsiteNotFound;
-    public static String TmfEventsTable_OpenCallsiteSelectFileDialogTitle;
-    public static String TmfEventsTable_OpenModelActionText;
-    public static String TmfEventsTable_OpenModelUnsupportedURI;
     public static String TmfEventsTable_ReferenceColumnHeader;
     public static String TmfEventsTable_RemoveBookmarkActionText;
     public static String TmfEventsTable_SearchHint;
@@ -99,10 +94,6 @@ public class Messages extends NLS {
     public static String TmfTimeLegend_TRACE_STATES_TITLE;
     public static String TmfTimeLegend_WINDOW_TITLE;
     public static String TmfTimeLegend_StateTypeName;
-    public static String TmfTimeFilterDialog_WINDOW_TITLE;
-    public static String TmfTimeFilterDialog_MESSAGE;
-    public static String TmfTimeFilterDialog_SELECT_ALL;
-    public static String TmfTimeFilterDialog_DESELECT_ALL;
 
     public static String TmfTimeTipHandler_DURATION;
     public static String TmfTimeTipHandler_TRACE_DATE;
@@ -110,9 +101,6 @@ public class Messages extends NLS {
     public static String TmfTimeTipHandler_TRACE_START_TIME;
     public static String TmfTimeTipHandler_TRACE_STATE;
     public static String TmfTimeTipHandler_TRACE_STOP_TIME;
-
-    public static String TmfTimeGraphCombo_FilterActionNameText;
-    public static String TmfTimeGraphCombo_FilterActionToolTipText;
 
     public static String TmfTimeGraphViewer_ResetScaleActionNameText;
     public static String TmfTimeGraphViewer_ResetScaleActionToolTipText;

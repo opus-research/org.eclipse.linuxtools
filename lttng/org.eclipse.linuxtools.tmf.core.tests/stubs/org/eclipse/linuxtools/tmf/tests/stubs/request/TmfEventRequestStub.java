@@ -13,8 +13,8 @@
 package org.eclipse.linuxtools.tmf.tests.stubs.request;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
  * <b><u>TmfEventRequestStub</u></b>
@@ -70,7 +70,7 @@ public class TmfEventRequestStub extends TmfEventRequest {
      * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
      */
     @Override
-    public void handleData(final ITmfEvent data) {
-        super.handleData(data);
+    public synchronized void handleEvent(final ITmfEvent data) {
+        super.handleEvent(data);
     }
 }

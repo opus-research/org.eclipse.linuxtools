@@ -63,7 +63,6 @@ public class TmfEventsCache {
     }
 
     private final CachedEvent[] fCache;
-    private final int fCacheSize;
     private int fCacheStartIndex = 0;
     private int fCacheEndIndex   = 0;
 
@@ -81,8 +80,7 @@ public class TmfEventsCache {
      *            The Events table this cache will cover
      */
     public TmfEventsCache(int cacheSize, TmfEventsTable table) {
-        fCacheSize = cacheSize;
-        fCache = new CachedEvent[cacheSize * 2]; // the cache holds two blocks of cache size
+        fCache = new CachedEvent[cacheSize];
         fTable = table;
     }
 
@@ -133,12 +131,13 @@ public class TmfEventsCache {
     }
 
     /**
-     * Get an event from the cache. If the cache does not contain the event,
-     * a cache population request is triggered.
+     * Get an event from the cache. This will remove the event from the cache.
+     *
+     * FIXME this does not currently remove the event!
      *
      * @param index
      *            The index of this event in the cache
-     * @return The cached event, or 'null' if the event is not in the cache
+     * @return The cached event, or 'null' if there is no event at that index
      */
     public synchronized CachedEvent getEvent(int index) {
         if ((index >= fCacheStartIndex) && (index < fCacheEndIndex)) {
@@ -150,11 +149,12 @@ public class TmfEventsCache {
     }
 
     /**
-     * Peek an event in the cache. Does not trigger cache population.
+     * Read an event, but without removing it from the cache.
      *
      * @param index
      *            Index of the event to peek
-     * @return The cached event, or 'null' if the event is not in the cache
+     * @return A reference to the event, or 'null' if there is no event at this
+     *         index
      */
     public synchronized CachedEvent peekEvent(int index) {
         if ((index >= fCacheStartIndex) && (index < fCacheEndIndex)) {
@@ -178,12 +178,12 @@ public class TmfEventsCache {
         if (index == fCacheEndIndex) {
             int i = index - fCacheStartIndex;
             if (i < fCache.length) {
-                fCache[i] = new CachedEvent(event, rank);
+                fCache[i] = new CachedEvent(event.clone(), rank);
                 fCacheEndIndex++;
             }
         }
-        if ((fFilter != null) && ((index % fCacheSize) == 0)) {
-            int i = index / fCacheSize;
+        if ((fFilter != null) && ((index % fCache.length) == 0)) {
+            int i = index / fCache.length;
             fFilterIndex.add(i, Integer.valueOf((int) rank));
         }
     }
@@ -207,9 +207,9 @@ public class TmfEventsCache {
 
             if ((fCacheEndIndex - fCacheStartIndex) > 1) {
                 if (rank < fCache[0].rank) {
-                    end = (fCacheStartIndex / fCacheSize) + 1;
+                    end = (fCacheStartIndex / fCache.length) + 1;
                 } else if (rank > fCache[fCacheEndIndex - fCacheStartIndex - 1].rank) {
-                    start = fCacheEndIndex / fCacheSize;
+                    start = fCacheEndIndex / fCache.length;
                 } else {
                     for (int i = 0; i < (fCacheEndIndex - fCacheStartIndex); i++) {
                         if (fCache[i].rank >= rank) {
@@ -233,7 +233,7 @@ public class TmfEventsCache {
             startRank = fFilterIndex.size() > 0 ? fFilterIndex.get(current) : 0;
         }
 
-        final int index = current * fCacheSize;
+        final int index = current * fCache.length;
 
         class DataRequest extends TmfDataRequest {
             ITmfFilter requestFilter;
@@ -307,14 +307,11 @@ public class TmfEventsCache {
             }
         }
 
-        // Populate the cache starting at the index that is one block less
-        // of cache size than the requested index. The cache will hold two
-        // consecutive blocks of cache size, centered on the requested index.
-        fCacheStartIndex = Math.max(0, index - fCacheSize);
-        fCacheEndIndex   = fCacheStartIndex;
+        fCacheStartIndex = index;
+        fCacheEndIndex   = index;
 
         job = new Job("Fetching Events") { //$NON-NLS-1$
-            private int startIndex = fCacheStartIndex;
+            private int startIndex = index;
             private int skipCount = 0;
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
@@ -324,10 +321,10 @@ public class TmfEventsCache {
                     nbRequested = fCache.length;
                 } else {
                     nbRequested = TmfDataRequest.ALL_DATA;
-                    int i = startIndex / fCacheSize;
+                    int i = index / fCache.length;
                     if (i < fFilterIndex.size()) {
-                        skipCount = startIndex - (i * fCacheSize);
                         startIndex = fFilterIndex.get(i);
+                        skipCount = index - (i * fCache.length);
                     }
                 }
 
@@ -348,7 +345,7 @@ public class TmfEventsCache {
                                     if (monitor.isCanceled()) {
                                         return;
                                     }
-                                    fCache[count] = new CachedEvent(event, rank);
+                                    fCache[count] = new CachedEvent(event.clone(), rank);
                                     count++;
                                     fCacheEndIndex++;
                                 }

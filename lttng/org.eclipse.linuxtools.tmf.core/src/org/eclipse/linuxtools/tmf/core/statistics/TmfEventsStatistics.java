@@ -20,15 +20,15 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -42,6 +42,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
+@SuppressWarnings("deprecation")
 public class TmfEventsStatistics implements ITmfStatistics {
 
     /* All timestamps should be stored in nanoseconds in the statistics backend */
@@ -263,8 +264,8 @@ public class TmfEventsStatistics implements ITmfStatistics {
         }
 
         @Override
-        public void handleData(final ITmfEvent event) {
-            super.handleData(event);
+        public synchronized void handleEvent(final ITmfEvent event) {
+            super.handleEvent(event);
             if (event != null) {
                 if (event.getTrace() == trace) {
                     processEvent(event);
@@ -324,8 +325,8 @@ public class TmfEventsStatistics implements ITmfStatistics {
         }
 
         @Override
-        public void handleData(ITmfEvent event) {
-            super.handleData(event);
+        public synchronized void handleEvent(ITmfEvent event) {
+            super.handleEvent(event);
             if ((event != null)  && (event.getTrace() == trace)) {
                 long ts = event.getTimestamp().normalize(0, SCALE).getValue();
                 Long key = results.floorKey(ts);
