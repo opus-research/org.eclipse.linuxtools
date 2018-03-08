@@ -9,7 +9,6 @@
  * Contributors:
  *   Florian Wininger - Initial API and implementation
  *   Alexandre Montplaisir - Refactoring, performance tweaks
- *   Bernd Hufmann - Updated signal handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statesystem;
@@ -64,6 +63,7 @@ public class TmfStateSystemExplorer extends TmfView {
     private static final int END_TIME_COL = 4;
     private static final int ATTRIBUTE_FULLPATH_COL = 5;
 
+    private ITmfTrace fTrace;
     private Tree fTree;
     private volatile long fCurrentTimestamp = -1L;
 
@@ -381,15 +381,26 @@ public class TmfStateSystemExplorer extends TmfView {
     // Signal handlers
     // ------------------------------------------------------------------------
 
-    @Override
-    protected void loadTrace() {
-        Thread thread = new Thread("State system visualizer construction") { //$NON-NLS-1$
-            @Override
-            public void run() {
-                createTable();
-            }
-        };
-        thread.start();
+    /**
+     * Handler for the trace selected signal. This will make the view display
+     * the information for the newly-selected trace.
+     *
+     * @param signal
+     *            The incoming signal
+     */
+    @TmfSignalHandler
+    public void traceSelected(TmfTraceSelectedSignal signal) {
+        ITmfTrace trace = signal.getTrace();
+        if (trace != fTrace) {
+            fTrace = trace;
+            Thread thread = new Thread("State system visualizer construction") { //$NON-NLS-1$
+                @Override
+                public void run() {
+                    createTable();
+                }
+            };
+            thread.start();
+        }
     }
 
     /**
