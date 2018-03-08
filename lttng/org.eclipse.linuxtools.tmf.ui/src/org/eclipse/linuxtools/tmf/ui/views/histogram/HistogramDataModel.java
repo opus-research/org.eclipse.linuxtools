@@ -96,7 +96,7 @@ public class HistogramDataModel implements IHistogramDataModel {
     // Timestamps
     private long fFirstBucketTime; // could be negative when analyzing events with descending order!!!
     private long fFirstEventTime;
-    private long fEndTime;
+    private long fLastEventTime;
     private long fSelectionBegin;
     private long fSelectionEnd;
     private long fTimeLimit;
@@ -146,7 +146,7 @@ public class HistogramDataModel implements IHistogramDataModel {
      * @since 2.0
      */
     public HistogramDataModel(long startTime, int nbBuckets) {
-        fFirstBucketTime = fFirstEventTime = fEndTime = startTime;
+        fFirstBucketTime = fFirstEventTime = fLastEventTime = startTime;
         fNbBuckets = nbBuckets;
         fBuckets = new long[nbBuckets];
         fLostEventsBuckets = new long[nbBuckets];
@@ -169,7 +169,7 @@ public class HistogramDataModel implements IHistogramDataModel {
         fLastBucket = other.fLastBucket;
         fFirstBucketTime = other.fFirstBucketTime;
         fFirstEventTime = other.fFirstEventTime;
-        fEndTime = other.fEndTime;
+        fLastEventTime = other.fLastEventTime;
         fSelectionBegin = other.fSelectionBegin;
         fSelectionEnd = other.fSelectionEnd;
         fTimeLimit = other.fTimeLimit;
@@ -239,7 +239,7 @@ public class HistogramDataModel implements IHistogramDataModel {
      * @since 2.0
      */
     public void setTimeRange(long startTime, long endTime) {
-        fFirstBucketTime = fFirstEventTime = fEndTime = startTime;
+        fFirstBucketTime = fFirstEventTime = fLastEventTime = startTime;
         fBucketDuration = 1;
         updateEndTime();
         while (endTime >= fTimeLimit) {
@@ -248,25 +248,12 @@ public class HistogramDataModel implements IHistogramDataModel {
     }
 
     /**
-     * Set the end time. Setting this ensures that the corresponding bucket is
-     * displayed regardless of the event counts.
+     * Returns the time of the last event in the model.
      *
-     * @param endTime
-     *            the time of the last used bucket
-     * @since 2.2
-     */
-    public void setEndTime(long endTime) {
-        fEndTime = endTime;
-        fLastBucket = (int) ((endTime - fFirstBucketTime) / fBucketDuration);
-    }
-
-    /**
-     * Returns the end time.
-     *
-     * @return the time of the last used bucket
+     * @return the time of last event.
      */
     public long getEndTime() {
-        return fEndTime;
+        return fLastEventTime;
     }
 
     /**
@@ -370,7 +357,7 @@ public class HistogramDataModel implements IHistogramDataModel {
         Arrays.fill(fLostEventsBuckets, 0);
         fNbEvents = 0;
         fFirstBucketTime = 0;
-        fEndTime = 0;
+        fLastEventTime = 0;
         fSelectionBegin = 0;
         fSelectionEnd = 0;
         fLastBucket = 0;
@@ -464,8 +451,8 @@ public class HistogramDataModel implements IHistogramDataModel {
             fFirstEventTime = timestamp;
         }
 
-        if (fEndTime < timestamp) {
-            fEndTime = timestamp;
+        if (fLastEventTime < timestamp) {
+            fLastEventTime = timestamp;
         }
 
         if (timestamp >= fFirstBucketTime) {
@@ -616,14 +603,14 @@ public class HistogramDataModel implements IHistogramDataModel {
         // Set selection begin and end index in the scaled histogram
         if (fSelectionBegin < fFirstBucketTime) {
             result.fSelectionBeginBucket = -1;
-        } else if (fSelectionBegin > fEndTime) {
+        } else if (fSelectionBegin > fLastEventTime) {
             result.fSelectionBeginBucket = fLastBucket;
         } else {
             result.fSelectionBeginBucket = (int) ((fSelectionBegin - fFirstBucketTime) / fBucketDuration) / bucketsPerBar;
         }
         if (fSelectionEnd < fFirstBucketTime) {
             result.fSelectionEndBucket = -1;
-        } else if (fSelectionEnd > fEndTime) {
+        } else if (fSelectionEnd > fLastEventTime) {
             result.fSelectionEndBucket = fLastBucket;
         } else {
             result.fSelectionEndBucket = (int) ((fSelectionEnd - fFirstBucketTime) / fBucketDuration) / bucketsPerBar;
