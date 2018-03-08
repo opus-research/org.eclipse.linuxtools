@@ -19,6 +19,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramDataModel;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramScaledData;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.IHistogramModelListener;
@@ -636,5 +639,177 @@ public class HistogramDataModelTest {
         }
         model.complete();
         assertTrue(count[0] == 0);
+    }
+
+    /**
+     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     */
+    @Test
+    public void testLostEventsScaleTo_0() {
+        final int nbBuckets = 10;
+        final int maxHeight = 10;
+        final int nbEvents = 3 * nbBuckets;
+        final int nbLostEvents_0 = 4;
+        final int nbLostEvents_1 = 9;
+        final int[] expectedResult = new int[] { 4, 4, 4, 4, 4, 4, 4, 2, 0, 0 };
+        final int[] expectedLostEventsResult = new int[] { 0, 2, 2, 0, 3, 3, 3, 0, 0, 0 };
+
+        HistogramDataModel model = new HistogramDataModel(nbBuckets);
+        for (int i = 0; i < nbEvents; i++) {
+            model.countEvent(i, i);
+        }
+
+        final TmfTimeRange timeRange_0 = new TmfTimeRange(
+                new TmfTimestamp(5L, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(10L, ITmfTimestamp.NANOSECOND_SCALE));
+        model.addLostEvents(timeRange_0, nbLostEvents_0);
+
+        final TmfTimeRange timeRange_1 = new TmfTimeRange(
+                new TmfTimestamp(18L, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(27L, ITmfTimestamp.NANOSECOND_SCALE));
+        model.addLostEvents(timeRange_1, nbLostEvents_1);
+
+        HistogramScaledData result = model.scaleTo(nbBuckets, maxHeight, 1);
+        for (int i = 0; i < result.fData.length; i++) {
+            assertTrue(result.fData[i] == expectedResult[i]);
+        }
+        for (int i = 0; i < result.fLostEventsData.length; i++) {
+            assertTrue(result.fLostEventsData[i] == expectedLostEventsResult[i]);
+        }
+
+        assertTrue(model.getNbEvents() == nbEvents);
+        assertTrue(model.getNbBuckets() == nbBuckets);
+        assertTrue(model.getBucketDuration() == 4);
+        assertTrue(model.getFirstBucketTime() == 0);
+        assertTrue(model.getStartTime() == 0);
+        assertTrue(model.getEndTime() == nbEvents - 1);
+        assertTrue(model.getTimeLimit() == 4 * nbBuckets);
+        assertTrue(result.fMaxCombinedValue == 7);
+    }
+
+    /**
+     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     */
+    @Test
+    public void testLostEventsScaleTo_1() {
+        final int nbBuckets = 10;
+        final int maxHeight = 10;
+        final int nbEvents = 3 * nbBuckets;
+        final int nbLostEvents_0 = 4;
+        final int nbLostEvents_1 = 9;
+        final int[] expectedLostEventsResult = new int[] { 0, 2, 5, 3, 3, 0, 0, 0, 0, 0 };
+
+        HistogramDataModel model = new HistogramDataModel(nbBuckets);
+        for (int i = 0; i < nbEvents; i++) {
+            model.countEvent(i, i);
+        }
+
+        final TmfTimeRange timeRange_0 = new TmfTimeRange(
+                new TmfTimestamp(5L, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(10L, ITmfTimestamp.NANOSECOND_SCALE));
+        model.addLostEvents(timeRange_0, nbLostEvents_0);
+
+        final TmfTimeRange timeRange_1 = new TmfTimeRange(
+                new TmfTimestamp(11L, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(18L, ITmfTimestamp.NANOSECOND_SCALE));
+        model.addLostEvents(timeRange_1, nbLostEvents_1);
+
+        HistogramScaledData result = model.scaleTo(nbBuckets, maxHeight, 1);
+        for (int i = 0; i < result.fLostEventsData.length; i++) {
+            assertTrue(result.fLostEventsData[i] == expectedLostEventsResult[i]);
+        }
+
+        assertTrue(model.getNbEvents() == nbEvents);
+        assertTrue(model.getNbBuckets() == nbBuckets);
+        assertTrue(model.getBucketDuration() == 4);
+        assertTrue(model.getFirstBucketTime() == 0);
+        assertTrue(model.getStartTime() == 0);
+        assertTrue(model.getEndTime() == nbEvents - 1);
+        assertTrue(model.getTimeLimit() == 4 * nbBuckets);
+        assertTrue(result.fMaxCombinedValue == 9);
+    }
+
+    /**
+     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     */
+    @Test
+    public void testLostEventsScaleTo_2() {
+        final int nbBuckets = 10;
+        final int maxHeight = 10;
+        final int nbEvents = 3 * nbBuckets;
+        final int nbLostEvents_0 = 5;
+        final int nbLostEvents_1 = 15;
+        final int nbLostEvents_2 = 2;
+        final int[] expectedLostEventsResult = new int[] { 0, 0, 4, 4, 4, 4, 4, 2, 0, 0 };
+
+        HistogramDataModel model = new HistogramDataModel(nbBuckets);
+        for (int i = 0; i < nbEvents; i++) {
+            model.countEvent(i, i);
+        }
+
+        final TmfTimeRange timeRange_0 = new TmfTimeRange(
+                new TmfTimestamp(18L, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(22L, ITmfTimestamp.NANOSECOND_SCALE));
+        model.addLostEvents(timeRange_0, nbLostEvents_0);
+
+        final TmfTimeRange timeRange_2 = new TmfTimeRange(
+                new TmfTimestamp(28L, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(29L, ITmfTimestamp.NANOSECOND_SCALE));
+        model.addLostEvents(timeRange_2, nbLostEvents_2);
+
+        final TmfTimeRange timeRange_1 = new TmfTimeRange(
+                new TmfTimestamp(11L, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(26L, ITmfTimestamp.NANOSECOND_SCALE));
+        model.addLostEvents(timeRange_1, nbLostEvents_1);
+
+        HistogramScaledData result = model.scaleTo(nbBuckets, maxHeight, 1);
+        for (int i = 0; i < result.fLostEventsData.length; i++) {
+            assertTrue(result.fLostEventsData[i] == expectedLostEventsResult[i]);
+        }
+
+        assertTrue(model.getNbEvents() == nbEvents);
+        assertTrue(model.getNbBuckets() == nbBuckets);
+        assertTrue(model.getBucketDuration() == 4);
+        assertTrue(model.getFirstBucketTime() == 0);
+        assertTrue(model.getStartTime() == 0);
+        assertTrue(model.getEndTime() == nbEvents - 1);
+        assertTrue(model.getTimeLimit() == 4 * nbBuckets);
+        assertTrue(result.fMaxCombinedValue == 8);
+    }
+
+    /**
+     * Test method for {@link HistogramDataModel#scaleTo(int,int,int)}.
+     */
+    @Test
+    public void testLostEventsScaleTo_3() {
+        final int nbBuckets = 10;
+        final int maxHeight = 10;
+        final int nbEvents = 3 * nbBuckets;
+        final int nbLostEvents_0 = 23;
+        final int[] expectedLostEventsResult = new int[] { 0, 0, 5, 5, 5, 4, 4, 0, 0, 0 };
+
+        HistogramDataModel model = new HistogramDataModel(nbBuckets);
+        for (int i = 0; i < nbEvents; i++) {
+            model.countEvent(i, i);
+        }
+
+        final TmfTimeRange timeRange_0 = new TmfTimeRange(
+                new TmfTimestamp(11L, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(26L, ITmfTimestamp.NANOSECOND_SCALE));
+        model.addLostEvents(timeRange_0, nbLostEvents_0);
+
+        HistogramScaledData result = model.scaleTo(nbBuckets, maxHeight, 1);
+        for (int i = 0; i < result.fLostEventsData.length; i++) {
+            assertTrue(result.fLostEventsData[i] == expectedLostEventsResult[i]);
+        }
+
+        assertTrue(model.getNbEvents() == nbEvents);
+        assertTrue(model.getNbBuckets() == nbBuckets);
+        assertTrue(model.getBucketDuration() == 4);
+        assertTrue(model.getFirstBucketTime() == 0);
+        assertTrue(model.getStartTime() == 0);
+        assertTrue(model.getEndTime() == nbEvents - 1);
+        assertTrue(model.getTimeLimit() == 4 * nbBuckets);
+        assertTrue(result.fMaxCombinedValue == 9);
     }
 }
