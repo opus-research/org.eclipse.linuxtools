@@ -52,7 +52,12 @@ public class ModelDataProcessor extends XMLProcessor {
 		image = ((CallData) callData).opModelImage;
 		imgSeen = 0;
 	}
-
+	/**
+	 * This method is called whenever a new tag is seen in the document.
+	 * @param name the name of the tag
+	 * @param attrs the tag's attributes
+	 * @param callData call data for the processor (usually the result is stored here)
+	 */
 	@Override
 	public void startElement(String name, Attributes attrs, Object callData) {
 		if (name.equals(IMAGE_TAG)) {
@@ -72,6 +77,11 @@ public class ModelDataProcessor extends XMLProcessor {
 		}
 	}
 	
+	/**
+	 * This method is called whenever the closing tag for an element is seen in the document.
+	 * @param name the element name that is ending
+	 * @param callData call data for the processor
+	 */
 	@Override
 	public void endElement(String name, Object callData) {
 		if (name.equals(IMAGE_TAG)) {

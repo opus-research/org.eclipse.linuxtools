@@ -75,6 +75,10 @@ public class ModelDataAdapter extends AbstractDataAdapter {
 	private Element oldRoot; // the root of the document with data from opreport
 	private Element newRoot; // the root of the document we intent to build
 	
+	/**
+	 * Constructor to the ModelAdapter class
+	 * @param is 
+	 */
 	public ModelDataAdapter(InputStream is) {
 		isParseable = true;
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -360,6 +364,10 @@ public class ModelDataAdapter extends AbstractDataAdapter {
 		}
     };
 
+    /**
+     * Return boolean variable 
+     * @return isParseable boolean variable 
+     */
 	public boolean isParseable() {
 		return isParseable;
 	}
