@@ -52,6 +52,7 @@ import org.eclipse.linuxtools.tmf.ui.views.TracingPerspectiveFactory;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramView;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.TmfStatisticsView;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -167,11 +168,26 @@ public class ImportAndReadSmokeTest {
                     protected IStatus run(IProgressMonitor monitor) {
                         try {
                             monitor.beginTask("Delete", 10);
-                            bot.waitUntil(Conditions.shellIsActive("Delete Resources"));
+                            String shellText = "Delete Resources";
+                            bot.waitUntil(Conditions.shellIsActive(shellText));
+                            final SWTBotShell shell = bot.shell(shellText);
+
                             // find modal window
                             monitor.worked(5);
                             bot = new SWTWorkbenchBot();
-                            bot.button("OK").click();
+                            final Button[] thing = new Button[1];
+                            Display.getDefault().syncExec(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    // this should find the OK button. Hard
+                                    // coded
+                                    thing[0] = (Button) ((Composite) ((Composite) ((Composite) shell.widget.getShell().getChildren()[0]).getChildren()[2]).getChildren()[0]).getChildren()[2];
+                                }
+                            });
+                            final SWTBotButton okButton = new SWTBotButton(thing[0]);
+                            bot.waitUntil(Conditions.widgetIsEnabled(okButton));
+                            okButton.click();
                             monitor.done();
                         } catch (TimeoutException e) {
                             fail(e.toString());
