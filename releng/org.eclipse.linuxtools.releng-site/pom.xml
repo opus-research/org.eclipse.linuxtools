@@ -19,49 +19,11 @@
   <parent>
     <groupId>org.eclipse.linuxtools.releng</groupId>
     <artifactId>linuxtools-releng-parent</artifactId>
-    <version>2.1.0-SNAPSHOT</version>
+    <version>2.2.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.releng-site</artifactId>
   <packaging>eclipse-repository</packaging>
-
-  <profiles>
-     <profile>
-     <id>build-server</id>
-     <build>
-        <plugins>
-           <plugin>
-             <artifactId>maven-antrun-plugin</artifactId>
-             <executions>
-               <execution>
-                 <id>deploy</id>
-                 <phase>install</phase>
-                 <goals>
-                   <goal>run</goal>
-                 </goals>
-                 <configuration>
-                   <target>
-                    <delete includeemptydirs="false">
-                       <fileset
-                         dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly-kepler">
-                         <include name="**" />
-                       </fileset>
-                     </delete>
-                     <copy includeemptydirs="false"
-                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly-kepler">
-                       <fileset dir="target/repository">
-                         <include name="**" />
-                       </fileset>
-                     </copy>
-                   </target>
-                 </configuration>
-               </execution>
-             </executions>
-           </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
   <build>
     <plugins>
@@ -115,6 +77,6 @@
 
   <name>Eclipse Linux Tools p2 Repository</name>
   <!-- see http://issues.sonatype.org/browse/TYCHO-313 -->
-  <version>2.1.0-SNAPSHOT</version>
+  <version>2.2.0-SNAPSHOT</version>
 
 </project>
