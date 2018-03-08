@@ -23,7 +23,7 @@ public class TapsetsPreferencePage extends FieldEditorPreferencePage implements 
 	public TapsetsPreferencePage() {
 		super(GRID);
 		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("TapsetsPreferencePage.AdditionalTapsetsCategory")); //$NON-NLS-1$
+		setDescription(Localization.getString("TapsetsPreferencePage.AdditionalTapsetsCategory"));
 	}
 	
 	/**
@@ -35,10 +35,9 @@ public class TapsetsPreferencePage extends FieldEditorPreferencePage implements 
 	@Override
 	public void createFieldEditors() {
 		addField(new PathEditor(IDEPreferenceConstants.P_TAPSETS,
-				Localization.getString("TapsetsPreferencePage.AdditionalTapsets"), Localization.getString("TapsetsPreferencePage.TapsetDirectory"), getFieldEditorParent())); //$NON-NLS-1$ //$NON-NLS-2$
+				Localization.getString("TapsetsPreferencePage.AdditionalTapsets"), Localization.getString("TapsetsPreferencePage.TapsetDirectory"), getFieldEditorParent()));
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 	}
 }

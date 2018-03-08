@@ -25,10 +25,9 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.ui.editor.actions.file.NewFileAction;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
-import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
@@ -45,9 +44,11 @@ public class AddStapProbe extends AbstractRulerActionDelegate {
 
 			@Override
 			public void runWithEvent(Event event) {
-				Shell shell = editor.getSite().getShell();
-				shell.setCursor(shell.getDisplay().getSystemCursor(
-						SWT.CURSOR_WAIT));
+				editor.getSite()
+						.getShell()
+						.setCursor(
+								editor.getSite().getShell().getDisplay()
+										.getSystemCursor(SWT.CURSOR_WAIT));
 				int lineno = rulerInfo.getLineOfLastMouseButtonActivity();
 				IDocument document = editor.getDocumentProvider().getDocument(
 						editor.getEditorInput());
@@ -56,18 +57,14 @@ public class AddStapProbe extends AbstractRulerActionDelegate {
 				String[] lines = s.split("\n"); //$NON-NLS-1$
 				String line = lines[lineno].trim();
 				boolean die = false;
-				if (line.isEmpty()) {//eat blank lines
+				if ("".equals(line)) //eat blank lines //$NON-NLS-1$
 					die = true;
-				}
-				if (line.startsWith("#")) {//eat preprocessor directives //$NON-NLS-1$
+				if (line.startsWith("#")) //eat preprocessor directives //$NON-NLS-1$
 					die = true;
-				}
-				if (line.startsWith("//")) {//eat C99 comments //$NON-NLS-1$
+				if (line.startsWith("//")) //eat C99 comments //$NON-NLS-1$
 					die = true;
-				}
-				if (line.startsWith("/*") && !line.contains("*/") && !line.endsWith("*/")) {//try to eat single-line C comments //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				if (line.startsWith("/*") && !line.contains("*/") && !line.endsWith("*/")) //try to eat single-line C comments //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					die = true;
-				}
 
 				// gogo find comment segments
 				try {
@@ -95,13 +92,14 @@ public class AddStapProbe extends AbstractRulerActionDelegate {
 							pair = i - i % 2;
 							start = commentChunks.get(pair).intValue();
 							end = commentChunks.get(pair + 1).intValue();
-							if (offset >= start && offset <= end) {
+							if (offset >= start && offset <= end)
 								die = true;
-							}
 						}
 					}
 				} catch (BadLocationException excp) {
-					ExceptionErrorDialog.openError(Localization.getString("AddStapProbe.UnableToInsertProbe"), excp); //$NON-NLS-1$
+					LogManager
+							.logCritical(
+									"Exception mouseDoubleClick: " + excp.getMessage(), this); //$NON-NLS-1$
 				}
 				if (die) {
 					MessageDialog
@@ -137,18 +135,16 @@ public class AddStapProbe extends AbstractRulerActionDelegate {
 							IEditorPart ed = PlatformUI.getWorkbench()
 									.getActiveWorkbenchWindow().getActivePage()
 									.getActiveEditor();
-							if (ed instanceof STPEditor) {
+							if (ed instanceof STPEditor)
 								IDESessionSettings
 										.setActiveSTPEditor((STPEditor) ed);
-							}
 						}
 
-						if (null != activeSTPEditor) {
+						if (null != activeSTPEditor)
 							activeSTPEditor.insertText(sb.toString());
-						}
 					}
 				}
-				shell.setCursor(null); // Return the cursor to normal
+				editor.getSite().getShell().setCursor(null); // Return the cursor to normal
 
 			}
 

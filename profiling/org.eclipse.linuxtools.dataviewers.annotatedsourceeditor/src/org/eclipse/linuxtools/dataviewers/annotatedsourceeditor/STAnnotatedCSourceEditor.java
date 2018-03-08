@@ -19,6 +19,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -41,27 +43,31 @@ import org.eclipse.swt.custom.LineBackgroundListener;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.StyledTextContent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.internal.texteditor.AnnotationColumn;
 import org.eclipse.ui.internal.texteditor.LineNumberColumn;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.AnnotationPreference;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.MarkerAnnotationPreferences;
+import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 
 public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundListener {
-	/**
-	 * @since 4.2
-	 */
-	public final static String ST_RULER = "STRuler"; //$NON-NLS-1$
+    private final static String ST_RULER = "STRuler";
 
     protected STContributedRulerColumn fAbstractSTRulerColumn;
 
@@ -81,10 +87,31 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
 
     @Override
     public void createPartControl(Composite parent) {
-    	super.createPartControl(parent);
         if (fInput == null) {
+            super.createPartControl(parent);
             return;
         }
+
+        GridLayout layout = new GridLayout();
+        layout.numColumns = fInput.getColumnCount() + 1;
+        layout.horizontalSpacing = 0;
+        parent.setLayout(layout);
+        GridData gd = new GridData();
+        gd.grabExcessHorizontalSpace = false;
+        gd.grabExcessVerticalSpace = true;
+
+        parent.setLayoutData(gd);
+
+        Composite fParentSv = new Composite(parent, SWT.NONE);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.horizontalSpan = fInput.getColumnCount() + 1;
+        gd.horizontalIndent = gd.verticalIndent = 0;
+        fParentSv.setLayoutData(gd);
+        FillLayout fillLayout = new FillLayout(SWT.HORIZONTAL | SWT.VERTICAL);
+        fillLayout.marginWidth = fillLayout.marginHeight = 0;
+        fParentSv.setLayout(fillLayout);
+
+        super.createPartControl(fParentSv);
 
         STColumnSupport columnSupport = (STColumnSupport) getAdapter(IColumnSupport.class);
         RulerColumnRegistry registry = RulerColumnRegistry.getDefault();
@@ -98,15 +125,42 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
         }
 
         CompositeRuler vr = (CompositeRuler) super.getVerticalRuler();
+        int count = 0;
+        Font font = parent.getFont();
+        FontData fd = font.getFontData()[0];
+        fd.setStyle(SWT.BOLD);
         for (Iterator<?> iter = vr.getDecoratorIterator(); iter.hasNext();) {
             IVerticalRulerColumn column = (IVerticalRulerColumn) iter.next();
             if (column instanceof STContributedRulerColumn) {
                 STContributedRulerColumn fSTColumn = (STContributedRulerColumn) column;
+                Label label = new Label(parent, SWT.BORDER);
+                gd = new GridData();
+                count++;
+                if (count == 1)
+                    gd.horizontalIndent = VERTICAL_RULER_WIDTH + 5;
+                else
+                    gd.horizontalIndent = 0;
+                gd.widthHint = fSTColumn.getWidth();
+                label.setFont(new Font(label.getDisplay(), fd));
+                label.setLayoutData(gd);
+                label.moveAbove(fParentSv);
+                label.setText(fSTColumn.getAnnotationColumn(0).getTitle());
+                fSTColumn.setLabelColumn(label);
+
                 if (fSTColumn.isShowingSTRuler()) {
                     ToolTipSupport.enableFor(fSTColumn);
                 }
             }
         }
+
+        Label label = new Label(parent, SWT.BORDER);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        label.setFont(new Font(label.getDisplay(), fd));
+        label.setLayoutData(gd);
+        label.moveAbove(fParentSv);
+        label.setText(getTitle());
 
         showLinesColored();
 
@@ -119,6 +173,32 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
                 fCachedTextWidget.addLineBackgroundListener(this);
             }
         }
+    }
+
+    @Override
+    protected void rulerContextMenuAboutToShow(IMenuManager menu) {
+        super.rulerContextMenuAboutToShow(menu);
+
+        CompositeRuler vr = (CompositeRuler) super.getVerticalRuler();
+
+        for (Iterator<?> iter = vr.getDecoratorIterator(); iter.hasNext();) {
+            IVerticalRulerColumn column = (IVerticalRulerColumn) iter.next();
+            if (column instanceof STContributedRulerColumn) {
+                STContributedRulerColumn fSTColumn = (STContributedRulerColumn) column;
+                IAction stprofcolAction = getAction(ISTTextEditorActionConstants.ST_TOGGLE);
+                stprofcolAction.setChecked(fSTColumn != null && fSTColumn.isShowingSTRuler());
+            } else if (column instanceof LineNumberColumn) {
+                LineNumberColumn fLineColumn = (LineNumberColumn) column;
+                IAction lineNumberAction = getAction(ITextEditorActionConstants.LINENUMBERS_TOGGLE);
+                lineNumberAction.setChecked(fLineColumn != null && fLineColumn.isShowingLineNumbers());
+            }
+        }
+
+        if (fInput != null) {
+            IAction stAction = getAction(ISTTextEditorActionConstants.ST_TOGGLE);
+            menu.appendToGroup(ITextEditorActionConstants.GROUP_RULERS, stAction);
+        }
+
     }
 
     @SuppressWarnings("rawtypes")
@@ -266,6 +346,32 @@ public class STAnnotatedCSourceEditor extends CEditor implements LineBackgroundL
             fInput = (AbstractSTAnnotatedSourceEditorInput) input;
             fListColumns = fInput.getColumns();
         }
+    }
+
+    @Override
+    protected void createActions() {
+        super.createActions();
+
+        ResourceAction action;
+
+        action = new ResourceAction(STTextEditorMessages.getBundleForConstructedKeys(),
+                "Editor.ToggleSTColumnAction.", IAction.AS_CHECK_BOX) { //$NON-NLS-1$
+            @Override
+            public void run() {
+                toggleSTRuler();
+            }
+        };
+
+        if (fInput != null) {
+            action.setActionDefinitionId(ISTTextEditorActionDefinitionIds.ST_TOGGLE);
+            setAction(ISTTextEditorActionConstants.ST_TOGGLE, action);
+        }
+    }
+
+    private void toggleSTRuler() {
+        // globally
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        store.setValue(ST_RULER, !isSTRulerVisible());
     }
 
     protected boolean isSTRulerVisible() {

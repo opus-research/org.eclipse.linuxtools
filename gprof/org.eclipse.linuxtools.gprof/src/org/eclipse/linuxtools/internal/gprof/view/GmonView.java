@@ -10,11 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gprof.view;
 
-import java.io.IOException;
-
 import org.eclipse.cdt.core.IBinaryParser.IBinaryObject;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
@@ -236,7 +233,7 @@ public class GmonView extends AbstractSTDataView {
 		GmonDecoder decoder = new GmonDecoder(binary, project);
 		try {
 			decoder.read(gmonPath);
-		} catch(IOException e) {
+		} catch(Exception e) {
 			Status status = new Status(
 					IStatus.ERROR,
 					Activator.PLUGIN_ID,
@@ -284,7 +281,7 @@ public class GmonView extends AbstractSTDataView {
 				tc.setToolTipText(spf.getColumnHeaderTooltip());
 				tv.refresh();
 			}
-		} catch(CoreException e) {
+		} catch(Exception e) {
 			Status status = new Status(
 					IStatus.ERROR,
 					Activator.PLUGIN_ID,

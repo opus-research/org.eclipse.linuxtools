@@ -27,7 +27,6 @@ public final class StapErrorParser implements IErrorParser {
 	 * @param output The output from the stderr StreamGobbler.
 	 * @return A table of strings in the proper format to be displayed in the error log.
 	 */
-	@Override
 	public String[][] parseOutput(String output) {
 		String[][] sErrors = null;
 		ArrayList<String[]> errors = new ArrayList<String[]>();

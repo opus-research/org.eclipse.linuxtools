@@ -133,7 +133,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			//(Only for testing this line..) PerfCore.Report(config, null, null, null, "/home/thavidu/dev/eclipse-oprof2-workspace/org.eclipse.linuxtools.internal.perf.tests/resources/perf.data");
 			IPath workingDir = Path.fromOSString(wd.toURI().getPath());
 			PerfCore.Report(config, getEnvironment(config), workingDir, monitor, null, print);
-			PerfCore.RefreshView(renderProcessLabel(exePath.toOSString()));
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -145,4 +144,5 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }
