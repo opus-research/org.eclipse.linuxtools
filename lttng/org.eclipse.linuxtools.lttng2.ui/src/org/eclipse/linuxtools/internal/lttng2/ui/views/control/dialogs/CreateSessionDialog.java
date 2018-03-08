@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -26,8 +25,8 @@ import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSys
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -104,10 +103,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      */
     private Text fSessionNameText = null;
     /**
-     * The label widget for the session path.
-     */
-    private Label fSessionPathLabel = null;
-    /**
      * The text widget for the session path.
      */
     private Text fSessionPathText = null;
@@ -124,10 +119,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      */
     private Composite fStreamingComposite = null;
     /**
-     * The text widget for the trace path.
-     */
-    private Text fTracePathText = null;
-    /**
      * The button to link data protocol/Address with control protocol.
      */
     private Button fLinkDataWithControlButton = null;
@@ -139,14 +130,10 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      * A selection listener that copies the protocol from control to data when being linked.
      */
     private ControlProtocolSelectionListener fCopyProtocolSelectionListener;
-    /**
-     * A selection listener updates the control port text depending on the control protocol selected.
-     */
+
     private ProtocolComboSelectionListener fControlProtocolSelectionListener;
-    /**
-     * A selection listener updates the data port text depending on the data protocol selected.
-     */
     private ProtocolComboSelectionListener fDataProtocolSelectionListener;
+
     /**
      * The text box for the host/IP address of the control channel.
      */
@@ -154,7 +141,7 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
     /**
      * A key listener that copies the host address from control to data when being linked.
      */
-    private CopyModifyListener fControlUrlKeyListener;
+    private CopyKeyListener fControlUrlKeyListener;
     /**
      * The text box for the control port.
      */
@@ -171,6 +158,14 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      * The text box for the data port.
      */
     private Text fDataPortText = null;
+    /**
+     * The button to not activate a consumer.
+     */
+    private Button fNoConsumerButton = null;
+    /**
+     * The button to disable the consumer.
+     */
+    private Button fDisableConsumerButton = null;
     /**
      * The parent where the new node should be added.
      */
@@ -207,9 +202,13 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      */
     private String fDataUrl = null;
     /**
-     * The trace path string.
+     * Flag for not activating a consumer for this session.
      */
-    private String fTracePath = null;
+    private boolean fIsNoConsumer = false;
+    /**
+     * Flag for disabling a consumer for this session.
+     */
+    private boolean fIsDisableConsumer = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -268,6 +267,8 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
        fNetworkUrl = null;
        fControlUrl = null;
        fDataUrl = null;
+       fIsNoConsumer = false;
+       fIsDisableConsumer = false;
     }
 
     @Override
@@ -285,6 +286,16 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
     @Override
     public String getDataUrl() {
         return fDataUrl;
+    }
+
+    @Override
+    public boolean isNoConsumer() {
+        return fIsNoConsumer;
+    }
+
+    @Override
+    public boolean isDisableConsumer() {
+        return fIsDisableConsumer;
     }
 
     // ------------------------------------------------------------------------
@@ -339,8 +350,8 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         fSessionNameText = new Text(sessionGroup, SWT.NONE);
         fSessionNameText.setToolTipText(Messages.TraceControl_CreateSessionNameTooltip);
 
-        fSessionPathLabel = new Label(sessionGroup, SWT.RIGHT);
-        fSessionPathLabel.setText(Messages.TraceControl_CreateSessionPathLabel);
+        Label sessionPath = new Label(sessionGroup, SWT.RIGHT);
+        sessionPath.setText(Messages.TraceControl_CreateSessionPathLabel);
         fSessionPathText = new Text(sessionGroup, SWT.NONE);
         fSessionPathText.setToolTipText(Messages.TraceControl_CreateSessionPathTooltip);
 
@@ -355,6 +366,38 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         fSessionPathText.setLayoutData(data);
 
         if (fParent.isNetworkStreamingSupported()) {
+            fNoConsumerButton = new Button(sessionGroup, SWT.CHECK);
+            fNoConsumerButton.setText(Messages.TraceControl_CreateSessionNoConsumertText);
+            fNoConsumerButton.setToolTipText(Messages.TraceControl_CreateSessionNoConsumertTooltip);
+            data = new GridData(GridData.FILL_HORIZONTAL);
+            data.horizontalSpan = 2;
+            fNoConsumerButton.setLayoutData(data);
+
+            fDisableConsumerButton = new Button(sessionGroup, SWT.CHECK);
+            fDisableConsumerButton.setText(Messages.TraceControl_CreateSessionDisableConsumertText);
+            fDisableConsumerButton.setToolTipText(Messages.TraceControl_CreateSessionDisableConsumertTooltip);
+            data = new GridData(GridData.FILL_HORIZONTAL);
+            data.horizontalSpan = 2;
+            fDisableConsumerButton.setLayoutData(data);
+
+            fNoConsumerButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (fNoConsumerButton.getSelection()) {
+                        fDisableConsumerButton.setSelection(false);
+                    }
+                }
+            });
+
+            fDisableConsumerButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (fDisableConsumerButton.getSelection()) {
+                        fNoConsumerButton.setSelection(false);
+                    }
+                }
+            });
+
             createAdvancedOptionsComposite();
         }
 
@@ -368,7 +411,7 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         fMainStreamingGroup.setLayout(new GridLayout(1, true));
 
         fConfigureStreamingButton = new Button(fMainStreamingGroup, SWT.PUSH);
-        fConfigureStreamingButton.setText(Messages.TraceControl_CreateSessionConfigureStreamingButtonText + " >>>"); //$NON-NLS-1$
+        fConfigureStreamingButton.setText(">>> " + Messages.TraceControl_CreateSessionConfigureStreamingButtonText); //$NON-NLS-1$
         fConfigureStreamingButton.setToolTipText(Messages.TraceControl_CreateSessionConfigureStreamingButtonTooltip);
         fConfigureStreamingButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -377,16 +420,11 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                     fIsStreamedTrace = false;
                     fConfigureStreamingButton.setText(">>> " + Messages.TraceControl_CreateSessionConfigureStreamingButtonText); //$NON-NLS-1$
                     fConfigureStreamingButton.setToolTipText(Messages.TraceControl_CreateSessionConfigureStreamingButtonTooltip);
-                    fSessionPathText.setEnabled(true);
-                    fSessionPathLabel.setText(Messages.TraceControl_CreateSessionPathLabel);
                     disposeConfigureStreamingComposite();
                 } else {
                     fIsStreamedTrace = true;
                     fConfigureStreamingButton.setText("<<< " + Messages.TraceControl_CreateSessionNoStreamingButtonText); //$NON-NLS-1$
                     fConfigureStreamingButton.setToolTipText(Messages.TraceControl_CreateSessionNoStreamingButtonTooltip);
-                    fSessionPathText.setEnabled(false);
-                    fSessionPathText.setText(""); //$NON-NLS-1$
-                    fSessionPathLabel.setText(""); //$NON-NLS-1$
                     createConfigureStreamingComposite();
                 }
 
@@ -411,20 +449,10 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
             urlGroup.setLayout(layout);
             urlGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            Label tracePathLabel = new Label(urlGroup, SWT.RIGHT);
-            tracePathLabel.setText(Messages.TraceControl_CreateSessionTracePathText);
-            fTracePathText = new Text(urlGroup, SWT.NONE);
-            fTracePathText.setToolTipText(Messages.TraceControl_CreateSessionTracePathTooltip);
-
-            // layout widgets
-            GridData data = new GridData(GridData.FILL_HORIZONTAL);
-            data.horizontalSpan = 6;
-            fTracePathText.setLayoutData(data);
-
             fLinkDataWithControlButton = new Button(urlGroup, SWT.CHECK);
             fLinkDataWithControlButton.setText(Messages.TraceControl_CreateSessionLinkButtonText);
             fLinkDataWithControlButton.setToolTipText(Messages.TraceControl_CreateSessionLinkButtonTooltip);
-            data = new GridData(GridData.FILL_HORIZONTAL);
+            GridData data = new GridData(GridData.FILL_HORIZONTAL);
             data.horizontalSpan = 7;
             fLinkDataWithControlButton.setLayoutData(data);
             fLinkDataWithControlButton.setSelection(true);
@@ -516,9 +544,19 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
 
             fControlProtocolCombo.addSelectionListener(fCopyProtocolSelectionListener);
 
-            fControlUrlKeyListener = new CopyModifyListener(fControlHostAddressText, fDataHostAddressText);
-            fControlHostAddressText.addModifyListener(fControlUrlKeyListener);
+            fControlUrlKeyListener = new CopyKeyListener(fControlHostAddressText, fDataHostAddressText);
+            fControlHostAddressText.addKeyListener(fControlUrlKeyListener);
 
+//            InetAddress inet = null;
+//            try {
+//                inet = InetAddress.getLocalHost();
+//                inet = InetAddress.getByName(inet.getHostName());
+//            } catch (UnknownHostException e1) {
+//            }
+//            if (inet != null) {
+//                fControlUrlAddressText.setText(inet.getHostAddress());
+//                fDataUrlAddressText.setText(inet.getHostAddress());
+//            }
             fControlProtocolCombo.select(DEFAULT_URL_INDEX);
             fDataProtocolCombo.select(DEFAULT_URL_INDEX);
 
@@ -536,7 +574,7 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                         fControlProtocolCombo.removeSelectionListener(fControlProtocolSelectionListener);
                         fDataProtocolCombo.removeSelectionListener(fDataProtocolSelectionListener);
                         fControlProtocolCombo.addSelectionListener(fCopyProtocolSelectionListener);
-                        fControlHostAddressText.addModifyListener(fControlUrlKeyListener);
+                        fControlHostAddressText.addKeyListener(fControlUrlKeyListener);
 
                         // Get previous selection and validate
                         int currentSelection = fControlProtocolCombo.getSelectionIndex() <= COMMON_URL_LAST_INDEX ?
@@ -567,7 +605,7 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                         fControlProtocolCombo.removeSelectionListener(fCopyProtocolSelectionListener);
                         fControlProtocolCombo.addSelectionListener(fControlProtocolSelectionListener);
                         fDataProtocolCombo.addSelectionListener(fDataProtocolSelectionListener);
-                        fControlHostAddressText.removeModifyListener(fControlUrlKeyListener);
+                        fControlHostAddressText.removeKeyListener(fControlUrlKeyListener);
 
                         // Update combo box items
                         int currentSelection = fControlProtocolCombo.getSelectionIndex();
@@ -667,9 +705,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         fDataUrl = null;
 
         if (fIsStreamedTrace) {
-            // Validate input data
-            fTracePath = fTracePathText.getText();
-
             if (fControlProtocolCombo.getSelectionIndex() < 0) {
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_CreateSessionDialogTitle,
@@ -703,19 +738,19 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                         fControlHostAddressText.getText(),
                         fControlPortText.getText(),
                         null,
-                        fTracePath);
+                        fSessionPath);
 
                 fDataUrl = getUrlString(fControlProtocolCombo.getItem(fDataProtocolCombo.getSelectionIndex()),
                         fDataHostAddressText.getText(),
                         null,
                         fDataPortText.getText(),
-                        fTracePath);
+                        fSessionPath);
             } else {
                 fNetworkUrl = getUrlString(fControlProtocolCombo.getItem(fDataProtocolCombo.getSelectionIndex()),
                         fControlHostAddressText.getText(),
                         fControlPortText.getText(),
                         fDataPortText.getText(),
-                        fTracePath);
+                        fSessionPath);
             }
         }
 
@@ -733,6 +768,11 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                     Messages.TraceControl_CreateSessionDialogTitle,
                     Messages.TraceControl_SessionAlreadyExistsError + " (" + fSessionName + ")");  //$NON-NLS-1$ //$NON-NLS-2$
             return;
+        }
+
+        if (fParent.isNetworkStreamingSupported()) {
+            fIsNoConsumer = fNoConsumerButton.getSelection();
+            fIsDisableConsumer = fDisableConsumerButton.getSelection();
         }
 
         // validation successful -> call super.okPressed()
@@ -763,17 +803,17 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         return stringBuilder.toString();
     }
 
-    private static class CopyModifyListener implements ModifyListener {
+    private static class CopyKeyListener extends KeyAdapter {
         private Text fSource;
         private Text fDestination;
 
-        public CopyModifyListener(Text source, Text destination) {
+        public CopyKeyListener(Text source, Text destination) {
             fSource = source;
             fDestination = destination;
         }
 
         @Override
-        public void modifyText(ModifyEvent e) {
+        public void keyReleased(KeyEvent e) {
             fDestination.setText(fSource.getText());
         }
     }

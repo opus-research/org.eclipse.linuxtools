@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.service;
 
@@ -201,42 +200,34 @@ public class LTTngControlService implements ILttngControlService {
             if (matcher.matches()) {
                 // Create Domain
                 IDomainInfo domainInfo = new DomainInfo(Messages.TraceControl_KernelDomainDisplayName);
+                sessionInfo.addDomain(domainInfo);
 
                 // in domain kernel
                 ArrayList<IChannelInfo> channels = new ArrayList<IChannelInfo>();
                 index = parseDomain(result.getOutput(), index, channels);
 
-                if (channels.size() > 0) {
-                    // add domain
-                    sessionInfo.addDomain(domainInfo);
+                // set channels
+                domainInfo.setChannels(channels);
 
-                    // set channels
-                    domainInfo.setChannels(channels);
-
-                    // set kernel flag
-                    domainInfo.setIsKernel(true);
-                }
+                // set kernel flag
+                domainInfo.setIsKernel(true);
                 continue;
             }
 
             matcher = LTTngControlServiceConstants.DOMAIN_UST_GLOBAL_PATTERN.matcher(line);
             if (matcher.matches()) {
                 IDomainInfo domainInfo = new DomainInfo(Messages.TraceControl_UstGlobalDomainDisplayName);
+                sessionInfo.addDomain(domainInfo);
 
                 // in domain UST
                 ArrayList<IChannelInfo> channels = new ArrayList<IChannelInfo>();
                 index = parseDomain(result.getOutput(), index, channels);
 
-                if (channels.size() > 0) {
-                    // add domain
-                    sessionInfo.addDomain(domainInfo);
+                // set channels
+                domainInfo.setChannels(channels);
 
-                    // set channels
-                    domainInfo.setChannels(channels);
-
-                    // set kernel flag
-                    domainInfo.setIsKernel(false);
-                }
+                // set kernel flag
+                domainInfo.setIsKernel(false);
                 continue;
             }
             index++;
@@ -265,14 +256,10 @@ public class LTTngControlService implements ILttngControlService {
             // or:
             // Error: Unable to list kernel events
             //
-            int index = 0;
-            while (index < result.getOutput().length) {
-                String line = result.getOutput()[index];
-                Matcher matcher = LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    return events;
-                }
-                index++;
+
+            if ((result.getOutput().length > 0) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[0]).matches()) ||
+               ((result.getOutput().length > 1) && (LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(result.getOutput()[1]).matches()))) {
+                return events;
             }
         }
 
@@ -367,6 +354,12 @@ public class LTTngControlService implements ILttngControlService {
      */
     @Override
     public ISessionInfo createSession(String sessionName, String sessionPath, IProgressMonitor monitor) throws ExecutionException {
+        return createSession(sessionName, sessionPath, false, false, monitor);
+    }
+
+    @Override
+    public ISessionInfo createSession(String sessionName, String sessionPath, boolean noConsumer, boolean disableConsumer,
+            IProgressMonitor monitor) throws ExecutionException {
 
         String newName = formatParameter(sessionName);
         String newPath = formatParameter(sessionPath);
@@ -378,30 +371,31 @@ public class LTTngControlService implements ILttngControlService {
             command.append(newPath);
         }
 
+        if (noConsumer) {
+            command.append(LTTngControlServiceConstants.OPTION_NO_CONSUMER);
+        } else if (disableConsumer) {
+            command.append(LTTngControlServiceConstants.OPTION_DISABLE_CONSUMER);
+        }
+
         ICommandResult result = executeCommand(command.toString(), monitor);
 
         //Session myssession2 created.
         //Traces will be written in /home/user/lttng-traces/myssession2-20120209-095418
         String[] output = result.getOutput();
 
-        // Get and session name and path
+        // Get and verify session name
+        Matcher matcher = LTTngControlServiceConstants.CREATE_SESSION_NAME_PATTERN.matcher(output[0]);
         String name = null;
-        String path = null;
 
-        int index = 0;
-        while (index < output.length) {
-            String line = output[index];
-            Matcher nameMatcher = LTTngControlServiceConstants.CREATE_SESSION_NAME_PATTERN.matcher(line);
-            Matcher pathMatcher = LTTngControlServiceConstants.CREATE_SESSION_PATH_PATTERN.matcher(line);
-            if (nameMatcher.matches()) {
-                name = String.valueOf(nameMatcher.group(1).trim());
-            } else if (pathMatcher.matches()) {
-                path = String.valueOf(pathMatcher.group(1).trim());
-            }
-            index++;
+        if (matcher.matches()) {
+            name = String.valueOf(matcher.group(1).trim());
+        } else {
+            // Output format not expected
+            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                    Messages.TraceControl_UnexpectedCommandOutputFormat + ":\n" + //$NON-NLS-1$
+                    formatOutput(result));
         }
 
-        // Verify session name
         if ((name == null) || (!"".equals(sessionName) && !name.equals(sessionName))) { //$NON-NLS-1$
             // Unexpected name returned
             throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
@@ -410,14 +404,27 @@ public class LTTngControlService implements ILttngControlService {
 
         SessionInfo sessionInfo = new SessionInfo(name);
 
-        // Verify session path
-        if ((path == null) || ((sessionPath != null) && (!path.contains(sessionPath)))) {
-            // Unexpected path
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                    Messages.TraceControl_UnexpectedPathError + ": " + name); //$NON-NLS-1$
-        }
+        if (!noConsumer) {
+            // Get and verify session path
+            matcher = LTTngControlServiceConstants.CREATE_SESSION_PATH_PATTERN.matcher(output[1]);
+            String path = null;
 
-        sessionInfo.setSessionPath(path);
+            if (matcher.matches()) {
+                path = String.valueOf(matcher.group(1).trim());
+            } else {
+                // Output format not expected
+                throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.TraceControl_UnexpectedCommandOutputFormat + ":\n" + //$NON-NLS-1$
+                        formatOutput(result));
+            }
+
+            if ((path == null) || ((sessionPath != null) && (!path.contains(sessionPath)))) {
+                // Unexpected path
+                throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.TraceControl_UnexpectedPathError + ": " + name); //$NON-NLS-1$
+            }
+            sessionInfo.setSessionPath(path);
+        }
 
         return sessionInfo;
 
@@ -425,10 +432,11 @@ public class LTTngControlService implements ILttngControlService {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService#createSession(java.lang.String, java.lang.String, java.lang.String, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.ILttngControlService#createSession(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, boolean, org.eclipse.core.runtime.IProgressMonitor)
      */
     @Override
-    public ISessionInfo createSession(String sessionName, String networkUrl, String controlUrl, String dataUrl, IProgressMonitor monitor) throws ExecutionException {
+    public ISessionInfo createSession(String sessionName, String networkUrl, String controlUrl,
+            String dataUrl, boolean noConsumer, boolean disableConsumer, IProgressMonitor monitor) throws ExecutionException {
 
         String newName = formatParameter(sessionName);
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
@@ -444,58 +452,53 @@ public class LTTngControlService implements ILttngControlService {
             command.append(dataUrl);
         }
 
+        if (noConsumer) {
+            command.append(LTTngControlServiceConstants.OPTION_NO_CONSUMER);
+        } else if (disableConsumer) {
+            command.append(LTTngControlServiceConstants.OPTION_DISABLE_CONSUMER);
+        }
+
         ICommandResult result = executeCommand(command.toString(), monitor);
 
-        // Verify output
+        //Session myssession2 created.
+        //Traces will be written in /home/user/lttng-traces/myssession2-20120209-095418
         String[] output = result.getOutput();
 
-        // Get and session name and path
+        // Get and verify session name
+        Matcher matcher = LTTngControlServiceConstants.CREATE_SESSION_NAME_PATTERN.matcher(output[0]);
         String name = null;
+
+        if (matcher.matches()) {
+            name = String.valueOf(matcher.group(1).trim());
+        } else {
+            // Output format not expected
+            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                    Messages.TraceControl_UnexpectedCommandOutputFormat + ":\n" + //$NON-NLS-1$
+                    formatOutput(result));
+        }
+        // Get and verify session path
+        matcher = LTTngControlServiceConstants.CREATE_SESSION_PATH_PATTERN.matcher(output[1]);
         String path = null;
 
-        int index = 0;
-        while (index < output.length) {
-            String line = output[index];
-            Matcher nameMatcher = LTTngControlServiceConstants.CREATE_SESSION_NAME_PATTERN.matcher(line);
-            Matcher pathMatcher = LTTngControlServiceConstants.CREATE_SESSION_PATH_PATTERN.matcher(line);
-
-            if (nameMatcher.matches()) {
-                name = String.valueOf(nameMatcher.group(1).trim());
-            } else if (pathMatcher.matches() && (networkUrl != null)) {
-                path = String.valueOf(pathMatcher.group(1).trim());
-            }
-            index++;
-        }
-
-        // Verify session name
-        if ((name == null) || (!"".equals(sessionName) && !name.equals(sessionName))) { //$NON-NLS-1$
-            // Unexpected name returned
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                    Messages.TraceControl_UnexpectedNameError + ": " + name); //$NON-NLS-1$
-        }
-
         SessionInfo sessionInfo = new SessionInfo(name);
+        if (!noConsumer && (networkUrl != null)) {
+            if (matcher.matches()) {
+                path = String.valueOf(matcher.group(1).trim());
+            } else {
+                // Output format not expected
+                throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.TraceControl_UnexpectedCommandOutputFormat + ":\n" + //$NON-NLS-1$
+                        formatOutput(result));
+            }
 
-        sessionInfo.setStreamedTrace(true);
-
-        // Verify session path
-        if (networkUrl != null) {
             if (path == null) {
                 // Unexpected path
                 throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
                         Messages.TraceControl_UnexpectedPathError + ": " + name); //$NON-NLS-1$
             }
-
             sessionInfo.setSessionPath(path);
-
-            // Check file protocol
-            Matcher matcher = LTTngControlServiceConstants.TRACE_FILE_PROTOCOL_PATTERN.matcher(path);
-            if (matcher.matches()) {
-                sessionInfo.setStreamedTrace(false);
-            }
         }
-        // When using controlUrl and dataUrl the full session path is not known yet
-        // and will be set later on when listing the session
+        sessionInfo.setStreamedTrace(true);
 
         return sessionInfo;
     }
@@ -509,24 +512,9 @@ public class LTTngControlService implements ILttngControlService {
         ICommandResult result = executeCommand(command.toString(), monitor, false);
         String[] output = result.getOutput();
 
-        boolean isError = isError(result);
-        if (isError && (output != null)) {
-            int index = 0;
-            while (index < output.length) {
-                String line = output[index];
-                Matcher matcher = LTTngControlServiceConstants.SESSION_NOT_FOUND_ERROR_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    // Don't treat this as an error
-                    isError = false;
-                }
-                index++;
-            }
-        }
-
-        if (isError) {
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command.toString() + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
+        if (isError(result) && ((output == null) || (!LTTngControlServiceConstants.SESSION_NOT_FOUND_ERROR_PATTERN.matcher(output[0]).matches()))) {
+                throw new ExecutionException(Messages.TraceControl_CommandError + " " + command.toString() + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
+       }
         //Session <sessionName> destroyed
     }
 
@@ -958,22 +946,9 @@ public class LTTngControlService implements ILttngControlService {
      * @return true if error else false
      */
     protected boolean isError(ICommandResult result) {
-        // Check return code and length of returned strings
-        if ((result.getResult()) != 0 || (result.getOutput().length < 1)) {
+        if ((result.getResult()) != 0 || (result.getOutput().length < 1 || LTTngControlServiceConstants.ERROR_PATTERN.matcher(result.getOutput()[0]).matches())) {
             return true;
         }
-
-        // Look for error pattern
-        int index = 0;
-        while (index < result.getOutput().length) {
-            String line = result.getOutput()[index];
-            Matcher matcher = LTTngControlServiceConstants.ERROR_PATTERN.matcher(line);
-            if (matcher.matches()) {
-                return true;
-            }
-            index++;
-        }
-
         return false;
     }
 
@@ -1029,8 +1004,6 @@ public class LTTngControlService implements ILttngControlService {
             String line = output[index];
 
             Matcher outerMatcher = LTTngControlServiceConstants.CHANNELS_SECTION_PATTERN.matcher(line);
-            Matcher noKernelChannelMatcher = LTTngControlServiceConstants.DOMAIN_NO_KERNEL_CHANNEL_PATTERN.matcher(line);
-            Matcher noUstChannelMatcher = LTTngControlServiceConstants.DOMAIN_NO_UST_CHANNEL_PATTERN.matcher(line);
             if (outerMatcher.matches()) {
                 IChannelInfo channelInfo = null;
                 while (index < output.length) {
@@ -1095,10 +1068,6 @@ public class LTTngControlService implements ILttngControlService {
                     }
                     index++;
                 }
-            } else if (noKernelChannelMatcher.matches() || noUstChannelMatcher.matches()) {
-                // domain indicates that no channels were found -> return
-                index++;
-                return index;
             }
             index++;
         }

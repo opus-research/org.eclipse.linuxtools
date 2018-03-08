@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.stubs.dialogs;
 
@@ -27,6 +26,8 @@ public class CreateSessionDialogStub implements ICreateSessionDialog {
     private String fNetworkUrl = null;
     private String fControlUrl = null;
     private String fDataUrl = null;
+    private boolean fIsNoConsumer = false;
+    private boolean fIsDisableConsumer = false;
 
     @Override
     public String getSessionName() {
@@ -97,4 +98,20 @@ public class CreateSessionDialogStub implements ICreateSessionDialog {
         this.fDataUrl = fDataUrl;
     }
 
+    @Override
+    public boolean isNoConsumer() {
+        return fIsNoConsumer;
+    }
+    public void setNoConsumer(boolean isNoConsumer) {
+        fIsNoConsumer = isNoConsumer;
+    }
+
+    @Override
+    public boolean isDisableConsumer() {
+        return fIsDisableConsumer;
+    }
+
+    public void setDisableConsumer(boolean isDisableConsumer) {
+        fIsDisableConsumer = isDisableConsumer;
+    }
 }

@@ -31,20 +31,21 @@ public class CoverageAnnotationColumn implements ISTAnnotationColumn {
 	public String getAnnotation(int index) {
 		try {
 			Line l = lines.get(index+1);
-			if (l.exists()) {
+			if (!l.isExists()) {
+				return "";
+			} else {
 				return Long.toString(l.getCount());
 			}
 		} catch (IndexOutOfBoundsException _) {
-			//ignore as empty string will be returned anyway
+			return "";
 		}
-		return ""; //$NON-NLS-1$
 	}
 
 	@Override
 	public String getTooltip(int index) {
 		try {
 			Line l = lines.get(index+1);
-			if (!l.exists()) {
+			if (!l.isExists()) {
 				return "non executable line";
 			} else {
 				long count = l.getCount();

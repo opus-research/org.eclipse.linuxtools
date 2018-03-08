@@ -1,15 +1,16 @@
 /**********************************************************************
- * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2011, 2012 Ericsson.
+ * 
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM - Initial API and implementation
- *     Bernd Hufmann - Updated for TMF
+ * 
+ * Contributors: 
+ * IBM - Initial API and implementation
+ * Bernd Hufmann - Updated for TMF
  **********************************************************************/
-
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
@@ -17,9 +18,10 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont;
 
 /**
  * Interface for accessing sequence diagram preferences.
- *
+ * 
  * @version 1.0
  * @author sveyrier
+ * 
  */
 public interface ISDPreferences {
 
@@ -86,7 +88,7 @@ public interface ISDPreferences {
 
     /**
      * Returns the background color for the given preference name (font preference name)
-     *
+     * 
      * @param prefId The preference name
      * @return the color
      */
@@ -94,15 +96,15 @@ public interface ISDPreferences {
 
     /**
      * Returns the foreground color for the given preference name (font preference name)
-     *
+     * 
      * @param prefId A preference name
-     * @return the color
+     * @return the color 
      */
     public IColor getForeGroundColor(String prefId);
 
     /**
      * Returns the font color for the given preference name (font preference name)
-     *
+     * 
      * @param prefId A preference name
      * @return the color
      */
@@ -110,7 +112,7 @@ public interface ISDPreferences {
 
     /**
      * Returns the font for the given preference name
-     *
+     * 
      * @param prefId the preference name
      * @return the font
      */
@@ -118,28 +120,28 @@ public interface ISDPreferences {
 
     /**
      * Returns the time compression bar selection color
-     *
-     * @return the time compression bar selection color
+     * 
+     * @return the time compression bar selection color 
      */
     public IColor getTimeCompressionSelectionColor();
 
     /**
      * Returns the background color used to draw selection
-     *
+     * 
      * @return the background color
      */
     public IColor getBackGroundColorSelection();
 
     /**
      * Returns the foreground color used to draw selection
-     *
+     * 
      * @return the foreground color
      */
     public IColor getForeGroundColorSelection();
 
     /**
-     * Returns whether to use gradient color or not
-     *
+     * Returns whether to use gradient color or not 
+     * 
      * @return whether to use gradient color or not
      */
     public boolean useGradienColor();
