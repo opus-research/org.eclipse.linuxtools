@@ -68,10 +68,18 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 	//Function adapted from org.eclipse.linuxtools.oprofile.launch.configuration.OprofileSetupTab.java
 	@Override
 	public void createControl(Composite parent) {
-		Composite top = new Composite(parent, SWT.NONE);
-		setControl(top);
-		top.setLayout(new GridLayout());
+		Composite top;
+
+		if(parent.getChildren().length > 0){
+			top = (Composite) parent.getChildren()[0];
+		} else {
+			top = new Composite(parent, SWT.NONE);
+			setControl(top);
+			top.setLayout(new GridLayout());
+		}
+
 		this.top = top;
+
 	}
 
 	private void createEventTabs(Composite top, ILaunchConfiguration config){

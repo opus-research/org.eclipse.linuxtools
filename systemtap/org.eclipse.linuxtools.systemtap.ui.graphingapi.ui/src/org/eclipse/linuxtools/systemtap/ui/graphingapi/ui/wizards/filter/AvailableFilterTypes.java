@@ -93,7 +93,7 @@ public final class AvailableFilterTypes {
 			if(l.contains("."))
 				low = new Double(Double.parseDouble(l));
 			else
-				low = Long.valueOf(l);
+				low = new Long(Long.parseLong(l));
 			if(h.contains("."))
 				high = new Double(Double.parseDouble(h));
 			else

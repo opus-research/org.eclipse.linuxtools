@@ -32,7 +32,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 
 public abstract class SystemTapView extends ViewPart {
@@ -133,7 +132,7 @@ public abstract class SystemTapView extends ViewPart {
             return Status.OK_STATUS;
         }
 
-    }
+    };
 
     /**
      * Method for fetching a parser object. This method should return
@@ -241,7 +240,7 @@ public abstract class SystemTapView extends ViewPart {
                     String message = ""; //$NON-NLS-1$
 
                     while ((line = buf.readLine()) != null) {
-                        message += line + NEW_LINE;
+                        message += line + NEW_LINE; //$NON-NLS-1$
                     }
 
                     try {
@@ -351,7 +350,7 @@ public abstract class SystemTapView extends ViewPart {
     protected void addKillButton() {
         IToolBarManager mgr = getViewSite().getActionBars().getToolBarManager();
         kill = new Action(Messages.getString("SystemTapView.StopScript"), //$NON-NLS-1$
-                AbstractUIPlugin.imageDescriptorFromPlugin(CallgraphCorePlugin.PLUGIN_ID, "icons/progress_stop.gif")) { //$NON-NLS-1$
+                CallgraphCorePlugin.imageDescriptorFromPlugin(CallgraphCorePlugin.PLUGIN_ID, "icons/progress_stop.gif")) { //$NON-NLS-1$
             public void run() {
                 getParser().cancelJob();
             }

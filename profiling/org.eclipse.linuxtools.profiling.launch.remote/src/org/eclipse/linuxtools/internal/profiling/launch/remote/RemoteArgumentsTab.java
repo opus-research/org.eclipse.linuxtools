@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class RemoteArgumentsTab extends AbstractLaunchConfigurationTab {
 
@@ -156,7 +155,7 @@ public class RemoteArgumentsTab extends AbstractLaunchConfigurationTab {
 
 	    @Override
 	    public Image getImage() {
-	        return AbstractUIPlugin.imageDescriptorFromPlugin(ProfileRemoteLaunchPlugin.PLUGIN_ID, "icons/arguments_tab.gif").createImage();
+	        return ProfileRemoteLaunchPlugin.imageDescriptorFromPlugin(ProfileRemoteLaunchPlugin.PLUGIN_ID, "icons/arguments_tab.gif").createImage();
 	    }
 
 }

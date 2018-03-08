@@ -32,6 +32,7 @@ import org.eclipse.linuxtools.systemtap.ui.structures.PasswordPrompt;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 
@@ -40,7 +41,7 @@ import org.eclipse.ui.WorkbenchException;
  * and send the output to both the <code>ScriptConsole</code> window and a <code>DataSet</code>.
  * @author Ryan Morse
  */
-public class RunScriptChartAction extends RunScriptAction {
+public class RunScriptChartAction extends RunScriptAction implements IWorkbenchWindowActionDelegate {
 	public RunScriptChartAction() {
 		super();
 		LogManager.logDebug("initialized", this); //$NON-NLS-1$

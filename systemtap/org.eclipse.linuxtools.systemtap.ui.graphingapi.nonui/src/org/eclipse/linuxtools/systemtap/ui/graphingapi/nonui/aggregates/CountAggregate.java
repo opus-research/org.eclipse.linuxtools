@@ -29,7 +29,7 @@ public class CountAggregate implements IDataAggregate {
 		for(int i=0; i<column.length; i++)
 			num++;
 		
-		return Integer.valueOf(num);
+		return new Integer(num);
 	}
 	
 	public String getID() {

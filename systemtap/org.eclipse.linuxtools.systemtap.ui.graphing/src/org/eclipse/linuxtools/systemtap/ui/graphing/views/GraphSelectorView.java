@@ -24,6 +24,7 @@ import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -127,7 +128,7 @@ public class GraphSelectorView extends ViewPart {
 	public GraphDisplaySet getActiveDisplaySet() {
 		int index = scriptFolder.getSelectionIndex();
 		if(index >= 0 && index < displaySets.size())
-			return displaySets.get(index);
+			return (GraphDisplaySet)displaySets.get(index);
 		else
 			return null;
 	}
@@ -144,17 +145,17 @@ public class GraphSelectorView extends ViewPart {
 	
 	private void fireTabCloseEvent() {
 		for(int i=0; i<tabListeners.size(); i++)
-			tabListeners.get(i).tabClosed();
+			((ITabListener)tabListeners.get(i)).tabClosed();
 	}
 	
 	private void fireTabOpenEvent() {
 		for(int i=0; i<tabListeners.size(); i++)
-			tabListeners.get(i).tabOpened();
+			((ITabListener)tabListeners.get(i)).tabOpened();
 	}
 	
 	private void fireTabChangedEvent() {
 		for(int i=0; i<tabListeners.size(); i++)
-			tabListeners.get(i).tabChanged();
+			((ITabListener)tabListeners.get(i)).tabChanged();
 	}
 
 	/**

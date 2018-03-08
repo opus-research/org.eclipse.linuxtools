@@ -23,6 +23,8 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IChangeRulerColumn;
 import org.eclipse.jface.text.source.ILineRange;
 import org.eclipse.jface.text.source.ISharedTextColors;
+import org.eclipse.jface.text.source.IVerticalRulerInfo;
+import org.eclipse.jface.text.source.IVerticalRulerInfoExtension;
 import org.eclipse.jface.text.source.IVerticalRulerListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.graphics.Color;
@@ -36,7 +38,7 @@ import org.eclipse.swt.widgets.Control;
  *
  * @since 3.0
  */
-public final class STChangeRulerColumn extends STRulerColumn implements IChangeRulerColumn, IRevisionRulerColumn, IRevisionRulerColumnExtension {
+public final class STChangeRulerColumn extends STRulerColumn implements IVerticalRulerInfo, IVerticalRulerInfoExtension, IChangeRulerColumn, IRevisionRulerColumn, IRevisionRulerColumnExtension {
 	/** The ruler's annotation model. */
 	private IAnnotationModel fAnnotationModel;
 	/** <code>true</code> if changes should be displayed using character indications instead of background colors. */
