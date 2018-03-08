@@ -52,9 +52,7 @@ public class MultiProcessTest extends AbstractMassifTest {
 		MassifViewPart view = (MassifViewPart) ValgrindUIPlugin.getDefault().getView().getDynamicView();
 		MassifOutput output = view.getOutput();
 		assertEquals(1, output.getPids().length);
-		MassifSnapshot[] snapshots = view.getSnapshots();
-		assertEquals(8, snapshots.length);
-		checkSnapshots(snapshots, 400, 8);
+		assertEquals(8, view.getSnapshots().length);
 	}
 	
 	public void testExec() throws Exception {
@@ -75,14 +73,6 @@ public class MultiProcessTest extends AbstractMassifTest {
 		MassifSnapshot[] snapshots2 = output.getSnapshots(pids[1]);
 		assertTrue(snapshots2.length == 8 || snapshots2.length == 14);
 		assertTrue(snapshots1.length != snapshots2.length);
-
-		if (snapshots1.length == 8) {
-			checkSnapshots(snapshots1, 400, 8);
-			checkSnapshots(snapshots2, 40, 16);
-		} else {
-			checkSnapshots(snapshots1, 40, 16);
-			checkSnapshots(snapshots2, 400, 8);
-		}
 	}
 	
 	public void testExecPidMenu() throws Exception {
