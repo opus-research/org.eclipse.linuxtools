@@ -29,14 +29,6 @@ import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSys
 public interface IRemoteSystemProxy {
 
     // ------------------------------------------------------------------------
-    // Constants
-    // ------------------------------------------------------------------------
-    /**
-     * Invalid port number for IP based connections.
-     */
-    public final static int INVALID_PORT_NUMBER = -1;
-
-    // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
     /**
@@ -73,17 +65,6 @@ public interface IRemoteSystemProxy {
      * @return file service subsystem, or <code>null</code> if not found.
      */
     public IFileServiceSubSystem getFileServiceSubSystem();
-
-    /**
-     * @return port of IP connection to be used
-     */
-    public int getPort();
-
-    /**
-     * Sets the port of the IP connection.
-     * @param port - the IP port to set
-     */
-    public void setPort(int port);
 
     /**
      * Connects the shell service sub system.
