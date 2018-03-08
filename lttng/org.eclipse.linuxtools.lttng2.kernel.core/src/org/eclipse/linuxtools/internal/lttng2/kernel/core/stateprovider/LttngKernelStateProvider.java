@@ -24,7 +24,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.statesystem.AbstractStateChangeInput;
+import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
@@ -38,13 +38,13 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * @author alexmont
  *
  */
-public class CtfKernelStateInput extends AbstractStateChangeInput {
+public class LttngKernelStateProvider extends AbstractTmfStateProvider {
 
     /**
      * Version number of this state provider. Please bump this if you modify the
      * contents of the generated state history in some way.
      */
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
 
     /* Event names HashMap. TODO: This can be discarded once we move to Java 7 */
     private final HashMap<String, Integer> knownEventNames;
@@ -59,7 +59,7 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
      * @param trace
      *            The LTTng 2.0 kernel trace directory
      */
-    public CtfKernelStateInput(CtfTmfTrace trace) {
+    public LttngKernelStateProvider(CtfTmfTrace trace) {
         super(trace, CtfTmfEvent.class, "LTTng Kernel"); //$NON-NLS-1$
         knownEventNames = fillEventNames();
     }
@@ -80,8 +80,8 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
     }
 
     @Override
-    public CtfKernelStateInput getNewInstance() {
-        return new CtfKernelStateInput((CtfTmfTrace) this.getTrace());
+    public LttngKernelStateProvider getNewInstance() {
+        return new LttngKernelStateProvider((CtfTmfTrace) this.getTrace());
     }
 
     @Override
@@ -264,20 +264,9 @@ public class CtfKernelStateInput extends AbstractStateChangeInput {
                 value = TmfStateValue.newValueString(nextProcessName);
                 ss.modifyAttribute(ts, value, quark);
 
-                /*
-                 * Check if we need to set the syscall state and the PPID of
-                 * the new process (in case we haven't seen this process before)
-                 */
-                quark = ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.SYSTEM_CALL);
-                if (ss.isLastAttribute(quark)) { /* Did we just add this attribute? */
-                    value = TmfStateValue.nullValue();
-                    ss.modifyAttribute(ts, value, quark);
-                }
-                quark = ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.PPID);
-                if (ss.isLastAttribute(quark)) {
-                    value = TmfStateValue.nullValue();
-                    ss.modifyAttribute(ts, value, quark);
-                }
+                /* Make sure the PPID and system_call sub-attributes exist */
+                ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.SYSTEM_CALL);
+                ss.getQuarkRelativeAndAdd(newCurrentThreadNode, Attributes.PPID);
 
                 /* Set the current scheduled process on the relevant CPU */
                 quark = ss.getQuarkRelativeAndAdd(currentCPUNode, Attributes.CURRENT_THREAD);
