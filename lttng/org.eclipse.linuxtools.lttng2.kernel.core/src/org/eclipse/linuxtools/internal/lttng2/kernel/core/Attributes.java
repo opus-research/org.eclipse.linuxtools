@@ -41,6 +41,7 @@ public interface Attributes {
     //static final String STATUS = "Status"
     static final String EXEC_NAME = "Exec_name";
     static final String SYSTEM_CALL = "System_call";
+    static final String EXEC_TIME = "Exec_time";
 
     /* Attributes under "Resources" */
     static final String IRQS = "IRQs";
