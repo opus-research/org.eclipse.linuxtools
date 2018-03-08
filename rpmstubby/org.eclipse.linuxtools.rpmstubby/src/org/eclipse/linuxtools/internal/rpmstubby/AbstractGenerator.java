@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Red Hat, Inc.
+ * Copyright (c) 2012 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *     Red Hat Incorporated - initial API and implementation
- *     Neil Guzman - stub specfile in proper dir (B#414589)
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpmstubby;
 
@@ -17,7 +16,6 @@ import java.io.InputStream;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -56,12 +54,7 @@ public abstract class AbstractGenerator {
 			StubbyLog.logError(new CoreException(status));
 		}
 		IContainer container = (IContainer) resource;
-		IResource specsFolder = container.getProject().findMember("SPECS"); //$NON-NLS-1$
-		IFile file = container.getFile(new Path(specfileName));
-		if (specsFolder != null) {
-			file = ((IFolder) specsFolder).getFile(new Path(specfileName));
-		}
-		final IFile openFile = file;
+		final IFile file = container.getFile(new Path(specfileName));
 		try {
 			InputStream stream = contentInputStream;
 			if (file.exists()) {
@@ -80,7 +73,7 @@ public abstract class AbstractGenerator {
 						IWorkbenchPage page = PlatformUI.getWorkbench()
 								.getActiveWorkbenchWindow().getActivePage();
 						try {
-							IDE.openEditor(page, openFile, true);
+							IDE.openEditor(page, file, true);
 						} catch (PartInitException e) {
 							StubbyLog.logError(e);
 						}
