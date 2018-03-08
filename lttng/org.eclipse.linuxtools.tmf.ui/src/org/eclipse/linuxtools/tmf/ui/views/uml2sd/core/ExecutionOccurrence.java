@@ -13,7 +13,7 @@
  **********************************************************************/
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IImage;
@@ -131,10 +131,9 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
      * Set the time when the execution occurrence starts.
      *
      * @param time the time when the execution occurrence starts
-     * @since 2.0
      */
     public void setStartTime(ITmfTimestamp time) {
-        fStartTime = time;
+        fStartTime = time.clone();
         fHasTimeInfo = true;
         if (fLifeline != null) {
             fLifeline.setTimeInfo(true);
@@ -145,26 +144,27 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
      * Set the time when the execution occurrence ends.
      *
      * @param time the time when the execution occurrence ends
-     * @since 2.0
      */
     public void setEndTime(ITmfTimestamp time) {
-        fEndTime = time;
+        fEndTime = time.clone();
         fHasTimeInfo = true;
         if (fLifeline != null) {
             fLifeline.setTimeInfo(true);
         }
     }
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getStartTime()
      */
     @Override
     public ITmfTimestamp getStartTime() {
         return fStartTime;
     }
 
-    /**
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#getEndTime()
      */
     @Override
     public ITmfTimestamp getEndTime() {

@@ -20,7 +20,6 @@ public class CountAggregate implements IDataAggregate {
 	 * 
 	 * @return Count of that column's values.
 	 */
-	@Override
 	public Number aggregate(Number[] column) {
 		if(column == null || column.length == 0)
 			return null;
@@ -30,10 +29,9 @@ public class CountAggregate implements IDataAggregate {
 		for(int i=0; i<column.length; i++)
 			num++;
 		
-		return Integer.valueOf(num);
+		return new Integer(num);
 	}
 	
-	@Override
 	public String getID() {
 		return ID;
 	}

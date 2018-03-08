@@ -14,20 +14,20 @@ package org.eclipse.linuxtools.internal.tmf.core.statesystem;
 
 import java.io.IOException;
 
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentRangeUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfStateSystemBuildCompleted;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
@@ -45,41 +45,38 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 public class HistoryBuilder extends TmfComponent {
 
     private final IStateChangeInput sci;
-    private final StateSystem ss;
+    private final StateHistorySystem shs;
     private final IStateHistoryBackend hb;
     private boolean started = true; /* Don't handle signals until we're ready */
 
     /**
-     * Instantiate a new HistoryBuilder helper. The input -> ss -> backend
-     * relationships should have been set up already.
+     * Instantiate a new HistoryBuilder helper.
      *
      * @param stateChangeInput
-     *            The input plugin to use
-     * @param ss
-     *            The state system object that will receive the state changes
-     *            from the input
+     *            The input plugin to use. This is required.
      * @param backend
-     *            The back-end storage to use, which will receive the intervals
-     *            from the ss
+     *            The backend storage to use.
      * @param buildManually
      *            Should we build this history in-band or not. True means we
      *            will start the building ourselves and block the caller until
-     *            construction is done. False (out-of-band) means we will start
-     *            listening for the signal and return immediately.
+     *            construction is done. False (out-of-band) means we will
+     *            start listening for the signal and return immediately. Another
+     *            signal will be sent when finished.
+     * @throws IOException
+     *             Is thrown if anything went wrong (usually with the storage
+     *             backend)
      */
-    public HistoryBuilder(IStateChangeInput stateChangeInput, StateSystem ss,
-            IStateHistoryBackend backend, boolean buildManually) {
-        if (stateChangeInput == null || backend == null || ss == null) {
+    public HistoryBuilder(IStateChangeInput stateChangeInput,
+            IStateHistoryBackend backend, boolean buildManually)
+            throws IOException {
+        if (stateChangeInput == null || backend == null) {
             throw new IllegalArgumentException();
         }
-        if (stateChangeInput.getAssignedStateSystem() != ss) {
-            /* Logic check to make sure the input is setup properly */
-            throw new RuntimeException();
-        }
-
         sci = stateChangeInput;
         hb = backend;
-        this.ss = ss;
+        shs = new StateHistorySystem(hb, true);
+
+        sci.assignTargetStateSystem(shs);
 
         if (buildManually) {
             TmfSignalManager.deregister(this);
@@ -102,9 +99,9 @@ public class HistoryBuilder extends TmfComponent {
      * @throws IOException
      *             If there was something wrong.
      */
-    public static ITmfStateSystemBuilder openExistingHistory(
+    public static IStateSystemBuilder openExistingHistory(
             IStateHistoryBackend hb) throws IOException {
-        return new StateSystem(hb, false);
+        return new StateHistorySystem(hb, false);
     }
 
     /**
@@ -113,8 +110,8 @@ public class HistoryBuilder extends TmfComponent {
      *
      * @return Reference to the state system, with access to everything.
      */
-    public ITmfStateSystemBuilder getStateSystemBuilder() {
-        return ss;
+    public IStateSystemBuilder getStateSystemBuilder() {
+        return shs;
     }
 
     /**
@@ -123,13 +120,14 @@ public class HistoryBuilder extends TmfComponent {
      * @return Reference to the state system, but only with the query methods
      *         available.
      */
-    public ITmfStateSystem getStateSystemQuerier() {
-        return ss;
+    public IStateSystemQuerier getStateSystemQuerier() {
+        return shs;
     }
 
     /**
      * Build the state history without waiting for signals or anything
      */
+    @SuppressWarnings("unchecked")
     private void buildManually() {
         StateSystemBuildRequest request = new StateSystemBuildRequest(this);
 
@@ -149,66 +147,31 @@ public class HistoryBuilder extends TmfComponent {
     // ------------------------------------------------------------------------
 
     /**
-     * Listen to the "trace range updated" signal to start the state history
+     * Listen to the "experiment selected" signal to start the state history
      * construction.
      *
      * @param signal
-     *            The "trace range updated" signal. Listening to this
+     *            The "experiment range updated" signal. Listening to this
      *            signal will coalesce this request with the one from the
      *            indexer and histogram.
      */
+    @SuppressWarnings("unchecked")
     @TmfSignalHandler
-    public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
-        ITmfTrace trace = signal.getTrace();
-        if (signal.getTrace() instanceof TmfExperiment) {
-            TmfExperiment experiment = (TmfExperiment) signal.getTrace();
-            for (ITmfTrace expTrace : experiment.getTraces()) {
-                if (expTrace == sci.getTrace()) {
-                    trace = expTrace;
-                    break;
-                }
-            }
-        }
-        if (trace != sci.getTrace()) {
-            return;
-        }
-        /* the signal is for this trace or for an experiment containing this trace */
+    public void experimentRangeUpdated(final TmfExperimentRangeUpdatedSignal signal) {
+        StateSystemBuildRequest request;
+        TmfExperiment<ITmfEvent> exp;
 
         if (!started) {
             started = true;
-            StateSystemBuildRequest request = new StateSystemBuildRequest(this);
-            trace = signal.getTrace();
-            trace.sendRequest(request);
-        }
-    }
-
-    /**
-     * Listen to the "trace closed" signal to clean up if necessary.
-     *
-     * @param signal
-     *            The "trace closed" signal.
-     */
-    @TmfSignalHandler
-    public void traceClosed(TmfTraceClosedSignal signal) {
-        ITmfTrace trace = signal.getTrace();
-        if (signal.getTrace() instanceof TmfExperiment) {
-            TmfExperiment experiment = (TmfExperiment) signal.getTrace();
-            for (ITmfTrace expTrace : experiment.getTraces()) {
-                if (expTrace == sci.getTrace()) {
-                    trace = expTrace;
-                    break;
-                }
+            request = new StateSystemBuildRequest(this);
+            exp = (TmfExperiment<ITmfEvent>) TmfExperiment.getCurrentExperiment();
+            if (exp == null) {
+                return;
             }
-        }
-        if (trace != sci.getTrace()) {
-            return;
-        }
-        /* the signal is for this trace or for an experiment containing this trace */
-
-        if (!started) {
-            close(true);
+            exp.sendRequest(request);
         }
     }
+
 
     // ------------------------------------------------------------------------
     // Methods reserved for the request object below
@@ -224,21 +187,27 @@ public class HistoryBuilder extends TmfComponent {
         if (deleteFiles) {
             hb.removeFiles();
         }
-        dispose();
+
+        /* Broadcast the signal saying the history is done building */
+        TmfSignal doneSig = new TmfStateSystemBuildCompleted(this, sci.getTrace());
+        TmfSignalManager.dispatchSignal(doneSig);
+
+        TmfSignalManager.deregister(this);
     }
 }
 
-class StateSystemBuildRequest extends TmfEventRequest {
+class StateSystemBuildRequest extends TmfEventRequest<ITmfEvent> {
 
     /** The amount of events queried at a time through the requests */
     private final static int chunkSize = 50000;
 
     private final HistoryBuilder builder;
     private final IStateChangeInput sci;
-    private final ITmfTrace trace;
+    private final ITmfTrace<ITmfEvent> trace;
 
+    @SuppressWarnings("unchecked")
     StateSystemBuildRequest(HistoryBuilder builder) {
-        super(builder.getInputPlugin().getExpectedEventType(),
+        super((Class<ITmfEvent>) builder.getInputPlugin().getExpectedEventType().getClass(),
                 TmfTimeRange.ETERNITY,
                 TmfDataRequest.ALL_DATA,
                 chunkSize,

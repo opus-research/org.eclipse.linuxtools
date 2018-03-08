@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,62 +9,75 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adapted for TMF Trace Model 1.0
- *   Alexandre Montplaisir - Port to JUnit4
- *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.trace;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTimestampLocation;
-import org.junit.Test;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 
 /**
  * Test suite for the TmfContext class.
  */
-@SuppressWarnings({"nls","javadoc"})
-public class TmfContextTest {
+@SuppressWarnings("nls")
+public class TmfContextTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Variables
     // ------------------------------------------------------------------------
 
-    private final String aString = "some location";
-    private final Long aLong = 12345L;
-    private final TmfTimestamp aTimestamp = new TmfTimestamp();
+    final String aString = "some location";
+    final Long aLong = 12345L;
+    final TmfTimestamp aTimestamp = new TmfTimestamp();
 
-    private final TmfStringLocation fLocation1 = new TmfStringLocation(aString);
-    private final TmfLongLocation fLocation2 = new TmfLongLocation(aLong);
-    private final TmfTimestampLocation fLocation3 = new TmfTimestampLocation(aTimestamp);
+    final TmfLocation<String> fLocation1 = new TmfLocation<String>(aString);
+    final TmfLocation<Long> fLocation2 = new TmfLocation<Long>(aLong);
+    final TmfLocation<ITmfTimestamp> fLocation3 = new TmfLocation<ITmfTimestamp>(aTimestamp);
 
-    private final long fRank1 = 1;
-    private final long fRank2 = 2;
-    private final long fRank3 = 3;
+    final long fRank1 = 1;
+    final long fRank2 = 2;
+    final long fRank3 = 3;
 
-    private final TmfContext fContext1 = new TmfContext(fLocation1, fRank1);
-    private final TmfContext fContext2 = new TmfContext(fLocation2, fRank2);
-    private final TmfContext fContext3 = new TmfContext(fLocation3, fRank3);
+    final TmfContext fContext1 = new TmfContext(fLocation1, fRank1);
+    final TmfContext fContext2 = new TmfContext(fLocation2, fRank2);
+    final TmfContext fContext3 = new TmfContext(fLocation3, fRank3);
+
+    // ------------------------------------------------------------------------
+    // Housekeeping
+    // ------------------------------------------------------------------------
+
+    /**
+     * @param name the test name
+     */
+    public TmfContextTest(final String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    @Test
     public void testTmfContextDefault() {
         final TmfContext context = new TmfContext();
         assertEquals("getLocation", null, context.getLocation());
         assertEquals("getRank", ITmfContext.UNKNOWN_RANK, context.getRank());
     }
 
-    @Test
     public void testTmfContextNoRank() {
         final TmfContext context1 = new TmfContext(fLocation1);
         final TmfContext context2 = new TmfContext(fLocation2);
@@ -79,7 +92,6 @@ public class TmfContextTest {
         assertEquals("getRank", ITmfContext.UNKNOWN_RANK, context3.getRank());
     }
 
-    @Test
     public void testTmfContext() {
         assertEquals("getLocation", fLocation1, fContext1.getLocation());
         assertEquals("getLocation", fLocation2, fContext2.getLocation());
@@ -90,7 +102,6 @@ public class TmfContextTest {
         assertEquals("getRank", fRank3, fContext3.getRank());
     }
 
-    @Test
     public void testTmfContextCopy() {
         final TmfContext context1 = new TmfContext(fContext1);
         final TmfContext context2 = new TmfContext(fContext2);
@@ -105,7 +116,6 @@ public class TmfContextTest {
         assertEquals("getRank", fRank3, context3.getRank());
     }
 
-    @Test
     public void testTmfContextCopy2() {
         try {
             new TmfContext((TmfContext) null);
@@ -123,8 +133,7 @@ public class TmfContextTest {
     // equals
     // ------------------------------------------------------------------------
 
-    @Test
-    public void testEqualsReflexivity() {
+    public void testEqualsReflexivity() throws Exception {
         assertTrue("equals", fContext1.equals(fContext1));
         assertTrue("equals", fContext2.equals(fContext2));
 
@@ -132,8 +141,7 @@ public class TmfContextTest {
         assertFalse("equals", fContext2.equals(fContext1));
     }
 
-    @Test
-    public void testEqualsSymmetry() {
+    public void testEqualsSymmetry() throws Exception {
         final TmfContext context1 = new TmfContext(fContext1);
         final TmfContext context2 = new TmfContext(fContext2);
 
@@ -144,8 +152,7 @@ public class TmfContextTest {
         assertTrue("equals", fContext2.equals(context2));
     }
 
-    @Test
-    public void testEqualsTransivity() {
+    public void testEqualsTransivity() throws Exception {
         final TmfContext context1 = new TmfContext(fContext1);
         final TmfContext context2 = new TmfContext(context1);
         final TmfContext context3 = new TmfContext(context2);
@@ -155,8 +162,7 @@ public class TmfContextTest {
         assertTrue("equals", context1.equals(context3));
     }
 
-    @Test
-    public void testEqualsNull() {
+    public void testEqualsNull() throws Exception {
         assertFalse("equals", fContext1.equals(null));
         assertFalse("equals", fContext2.equals(null));
     }
@@ -164,8 +170,7 @@ public class TmfContextTest {
     private static class MyContext extends TmfContext {
     }
 
-    @Test
-    public void testNonEquals() {
+    public void testNonEquals() throws Exception {
 
         // Different classes
         final MyContext myContext = new MyContext();
@@ -197,8 +202,7 @@ public class TmfContextTest {
     // hashCode
     // ------------------------------------------------------------------------
 
-    @Test
-    public void testHashCode() {
+    public void testHashCode() throws Exception {
         final TmfContext context1 = new TmfContext(fContext1);
         final TmfContext context2 = new TmfContext(fContext2);
 
@@ -217,7 +221,6 @@ public class TmfContextTest {
     // toString
     // ------------------------------------------------------------------------
 
-    @Test
     public void testToString() {
         final String expected1 = "TmfContext [fLocation=" + fLocation1 + ", fRank=" + 1 + "]";
         final String expected2 = "TmfContext [fLocation=" + fLocation2 + ", fRank=" + 2 + "]";
@@ -229,10 +232,34 @@ public class TmfContextTest {
     }
 
     // ------------------------------------------------------------------------
+    // clone
+    // ------------------------------------------------------------------------
+
+    public void testClone() {
+        try {
+            final TmfContext context1 = fContext1.clone();
+            final TmfContext context2 = fContext2.clone();
+            final TmfContext context3 = fContext3.clone();
+
+            assertEquals("clone", context1, fContext1);
+            assertEquals("clone", context2, fContext2);
+            assertEquals("clone", context3, fContext3);
+
+            context1.setLocation(null);
+            final TmfContext context4 = context1.clone();
+            assertEquals("clone", context1, context4);
+            assertNull(context1.getLocation());
+            assertNull(context4.getLocation());
+
+        } catch (final InternalError e) {
+            fail("clone()");
+        }
+    }
+
+    // ------------------------------------------------------------------------
     // setLocation, setRank, updateRank
     // ------------------------------------------------------------------------
 
-    @Test
     public void testSetLocation() {
         final TmfContext context1 = new TmfContext(fContext1);
         context1.setLocation(fContext2.getLocation());
@@ -241,7 +268,6 @@ public class TmfContextTest {
         assertEquals("getRank", 1, context1.getRank());
     }
 
-    @Test
     public void testSetRank() {
         final TmfContext context1 = new TmfContext(fContext1);
         context1.setRank(fContext2.getRank());
@@ -250,7 +276,6 @@ public class TmfContextTest {
         assertEquals("getRank", fRank2, context1.getRank());
     }
 
-    @Test
     public void testIncreaseRank() {
         final TmfContext context1 = new TmfContext(fContext1);
 

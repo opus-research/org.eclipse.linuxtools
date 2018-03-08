@@ -1,19 +1,17 @@
 /*******************************************************************************
  * Copyright (c) 2012 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -29,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * For convenience, a free-form reference field is also provided. It could be
  * used as e.g. a location marker (filename:lineno) to indicate where the event
  * was generated.
- *
+ * 
  * @version 1.0
  * @author Francois Chouinard
  *
@@ -38,7 +36,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @see ITmfEventField
  * @see TmfEvent
  */
-public interface ITmfEvent extends IAdaptable {
+public interface ITmfEvent {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -76,7 +74,7 @@ public interface ITmfEvent extends IAdaptable {
     /**
      * @return the trace that 'owns' the event
      */
-    public ITmfTrace getTrace();
+    public ITmfTrace<?> getTrace();
 
     /**
      * @return the event rank within the parent trace
@@ -85,7 +83,6 @@ public interface ITmfEvent extends IAdaptable {
 
     /**
      * @return the event timestamp
-     * @since 2.0
      */
     public ITmfTimestamp getTimestamp();
 
@@ -108,5 +105,10 @@ public interface ITmfEvent extends IAdaptable {
      * @return the event reference
      */
     public String getReference();
+
+    /**
+     * @return a clone of the event
+     */
+    public ITmfEvent clone();
 
 }

@@ -33,13 +33,11 @@ public class RowDataSet implements IHistoricalDataSet {
 		data = new ArrayList<IDataEntry>();
 	}
 
-	@Override
 	public void setData(IDataEntry entry) {
 		append(entry);
 	}
 	
-	@Override
-	public void append(IDataEntry entry) {
+	public void append(IDataEntry entry) throws ArrayIndexOutOfBoundsException {
 		RowEntry dataBlock = (RowEntry)entry;
 		if(dataBlock.getRow(null).length != this.getColCount())
 			throw new ArrayIndexOutOfBoundsException(Localization.getString("RowDataSet.ArraySizeMismatch") + dataBlock.getRow(null).length + " != " + this.getColCount());
@@ -47,22 +45,18 @@ public class RowDataSet implements IHistoricalDataSet {
 		data.add(entry);
 	}
 	
-	@Override
 	public String[] getTitles() {
 		return titles;
 	}
 	
-	@Override
 	public Object[] getColumn(int col) {
 		return getColumn(col, 0, getRowCount());
 	}
 	
-	@Override
 	public Object[] getColumn(int col, int start, int end) {
 		return getHistoricalData(null, col, start, end);
 	}
 	
-	@Override
 	public Object[] getRow(int row) {
 		IDataEntry entry = getEntry(row);
 		if(null != entry)
@@ -70,19 +64,16 @@ public class RowDataSet implements IHistoricalDataSet {
 		return null;
 	}
 	
-	@Override
 	public int getRowCount() {
 		return getEntryCount();
 	}
 	
-	@Override
 	public int getColCount() {
 		if(null == titles)
 			return -1;
 		return titles.length;
 	}
 	
-	@Override
 	public boolean readFromFile(File file) {
 		try {
 			FileReader fr = new FileReader(file);
@@ -105,7 +96,6 @@ public class RowDataSet implements IHistoricalDataSet {
 		return false;
 	}
 	
-	@Override
 	public boolean writeToFile(File file) {
 		try {
 			file.createNewFile();
@@ -139,19 +129,16 @@ public class RowDataSet implements IHistoricalDataSet {
 		return false;
 	}
 	
-	@Override
 	public String getID() {
 		return ID;
 	}
 	//End IDataSet Methods
 	
 	//IHistoricalDataSet Methods
-	@Override
 	public Object[] getHistoricalData(String key, int col) {
 		return getHistoricalData(key, col, 0, getRowCount());
 	}
 	
-	@Override
 	public Object[] getHistoricalData(String key, int col, int start, int end) {
 		if(start > end || start < 0 || end > getRowCount() || col < COL_ROW_NUM || col >= this.getColCount())
 			return null;
@@ -159,40 +146,36 @@ public class RowDataSet implements IHistoricalDataSet {
 		if(COL_ROW_NUM == col) {
 			Integer[] rows = new Integer[Math.min(end-start, data.size())];
 			for(int i=0;i<rows.length; i++)
-				rows[i] = Integer.valueOf(start+i+1);
+				rows[i] = new Integer(start+i+1);
 			return rows;
 		}
 
 		Object[] d = new Object[Math.min(end-start, data.size())];
 		
 		for(int i=0; i<d.length; i++)
-			d[i] = data.get(start+i).getColumn(col)[0];
+			d[i] = ((IDataEntry)data.get(start+i)).getColumn(col)[0];
 		return d;
 	}
 	
-	@Override
 	public int getEntryCount() {
 		return data.size();
 	}
 	
-	@Override
 	public boolean remove(IDataEntry entry) {
 		return data.remove(entry);
 	}
 	
-	@Override
 	public boolean remove(int entry) {
 		if(entry < 0 || entry >= data.size())
 			return false;
 		return (null != data.remove(entry));
 	}
 	
-	@Override
 	public IDataEntry getEntry(int entry) {
 		if(entry < 0 || entry >= getEntryCount())
 			return null;
 		else
-			return data.get(entry);
+			return (IDataEntry)data.get(entry);
 	}
 	//End IHistoricalDataSet Methods
 	

@@ -23,8 +23,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.actions.PerfComparisonAction;
-import org.eclipse.linuxtools.internal.perf.actions.PerfDoubleClickAction;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -47,11 +45,11 @@ public class PerfProfileView extends ViewPart {
 	private DrillDownAdapter drillDownAdapter;
 	private Action doubleClickAction;
 	
-	static class NameSorter extends ViewerSorter {
+	class NameSorter extends ViewerSorter {
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
-			return (((TreeParent) e1).getPercent()
-					<= ((TreeParent) e2).getPercent()) ? 1 : -1;
+			return (((TreeParent) e1).getPercent() <= ((TreeParent) e2)
+					.getPercent()) ? -1 : 1;
 		}
 	}
 
@@ -76,12 +74,13 @@ public class PerfProfileView extends ViewPart {
 
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.eclipse.linuxtools.internal.perf.viewer");
+		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
 		PerfPlugin.getDefault().setProfileView(this);
 	}
-
+	
 	public void refreshModel() {
 		viewer.setInput(PerfPlugin.getDefault().getModelRoot());
 		viewer.refresh();
@@ -108,7 +107,6 @@ public class PerfProfileView extends ViewPart {
 	}
 
 	private void fillLocalPullDown(IMenuManager manager) {
-		manager.add(new PerfComparisonAction());
 	}
 
 	private void fillContextMenu(IMenuManager manager) {
@@ -121,18 +119,17 @@ public class PerfProfileView extends ViewPart {
 		drillDownAdapter.addNavigationActions(manager);
 	}
 
-	private void hookDoubleClickAction() {
+	private void makeActions() {
 		doubleClickAction = new PerfDoubleClickAction(viewer);
+	}
+
+	private void hookDoubleClickAction() {
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				doubleClickAction.run();
 			}
 		});
-	}
-
-	public TreeViewer getTreeViewer () {
-		return viewer;
 	}
 	
 	@SuppressWarnings("unused")
@@ -149,10 +146,5 @@ public class PerfProfileView extends ViewPart {
 	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
-	}
-
-	@Override
-	public void setContentDescription (String name) {
-		super.setContentDescription(name);
 	}
 }

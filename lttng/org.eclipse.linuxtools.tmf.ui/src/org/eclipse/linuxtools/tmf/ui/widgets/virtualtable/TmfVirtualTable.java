@@ -429,11 +429,8 @@ public class TmfVirtualTable extends Composite {
             if (fSelectedEventRank < lastEventRank) {
                 fSelectedEventRank++;
                 selectedRow = fSelectedEventRank - fTableTopEventRank;
-                if (selectedRow == fFullyVisibleRows) {
+                if (selectedRow >= fFullyVisibleRows) {
                     fTableTopEventRank++;
-                    needsRefresh = true;
-                } else if (selectedRow < fFrozenRowCount || selectedRow > fFullyVisibleRows) {
-                    fTableTopEventRank = Math.max(0, Math.min(fSelectedEventRank - fFrozenRowCount, lastPageTopEntryRank));
                     needsRefresh = true;
                 }
             }
@@ -445,11 +442,8 @@ public class TmfVirtualTable extends Composite {
             if (fSelectedEventRank > 0) {
                 fSelectedEventRank--;
                 selectedRow = fSelectedEventRank - fTableTopEventRank;
-                if (selectedRow == fFrozenRowCount - 1 && fTableTopEventRank > 0) {
+                if (selectedRow < fFrozenRowCount && fTableTopEventRank > 0) {
                     fTableTopEventRank--;
-                    needsRefresh = true;
-                } else if (selectedRow < fFrozenRowCount || selectedRow > fFullyVisibleRows) {
-                    fTableTopEventRank = Math.max(0, Math.min(fSelectedEventRank - fFrozenRowCount, lastPageTopEntryRank));
                     needsRefresh = true;
                 }
             }
@@ -480,14 +474,11 @@ public class TmfVirtualTable extends Composite {
                     fSelectedEventRank = lastEventRank;
                 }
                 selectedRow = fSelectedEventRank - fTableTopEventRank;
-                if (selectedRow > fFullyVisibleRows + fFrozenRowCount - 1 && selectedRow < 2 * fFullyVisibleRows) {
+                if (selectedRow > fFullyVisibleRows - 1) {
                     fTableTopEventRank += fFullyVisibleRows;
                     if (fTableTopEventRank > lastPageTopEntryRank) {
                         fTableTopEventRank = lastPageTopEntryRank;
                     }
-                    needsRefresh = true;
-                } else if (selectedRow < fFrozenRowCount || selectedRow >= 2 * fFullyVisibleRows) {
-                    fTableTopEventRank = Math.max(0, Math.min(fSelectedEventRank - fFrozenRowCount, lastPageTopEntryRank));
                     needsRefresh = true;
                 }
             }
@@ -502,14 +493,11 @@ public class TmfVirtualTable extends Composite {
                     fSelectedEventRank = fFrozenRowCount;
                 }
                 selectedRow = fSelectedEventRank - fTableTopEventRank;
-                if (selectedRow < fFrozenRowCount && selectedRow > -fFullyVisibleRows) {
+                if (selectedRow < 0) {
                     fTableTopEventRank -= fFullyVisibleRows;
                     if (fTableTopEventRank < 0) {
                         fTableTopEventRank = 0;
                     }
-                    needsRefresh = true;
-                } else if (selectedRow <= -fFullyVisibleRows || selectedRow >= fFullyVisibleRows) {
-                    fTableTopEventRank = Math.max(0, Math.min(fSelectedEventRank - fFrozenRowCount, lastPageTopEntryRank));
                     needsRefresh = true;
                 }
             }
@@ -677,15 +665,6 @@ public class TmfVirtualTable extends Composite {
     }
 
     /**
-     * Gets the menu of this table
-     * @return a Menu
-     */
-    @Override
-    public Menu getMenu() {
-        return fTable.getMenu();
-    }
-
-    /**
      * Method clearAll empties a table.
      */
     public void clearAll() {
@@ -698,12 +677,12 @@ public class TmfVirtualTable extends Composite {
 	 *
      */
     public void setItemCount(int nbItems) {
-        final int nb = Math.max(0, nbItems);
+        nbItems = Math.max(0, nbItems);
 
-        if (nb != fTableItemCount) {
-            fTableItemCount = nb;
+        if (nbItems != fTableItemCount) {
+            fTableItemCount = nbItems;
             fTable.remove(fTableItemCount, fTable.getItemCount() - 1);
-            fSlider.setMaximum(nb);
+            fSlider.setMaximum(nbItems);
             resize();
             int tableHeight = Math.max(0, fTable.getClientArea().height - fTable.getHeaderHeight());
             fFullyVisibleRows = tableHeight / getItemHeight();
@@ -764,11 +743,11 @@ public class TmfVirtualTable extends Composite {
 
     /**
      * Method setTopIndex.
-     * @param index int suggested top index for the table.
+     * @param i int suggested top index for the table.
      */
-    public void setTopIndex(int index) {
+    public void setTopIndex(int i) {
         if (fTableItemCount > 0) {
-            int i = Math.min(index, fTableItemCount - 1);
+            i = Math.min(i, fTableItemCount - 1);
             i = Math.max(i, fFrozenRowCount);
 
             fTableTopEventRank = i - fFrozenRowCount;
@@ -928,18 +907,17 @@ public class TmfVirtualTable extends Composite {
 
     /**
      * Method setSelection.
-     * @param index int the item number to select in the table.
+     * @param i int the item number to select in the table.
      */
-    public void setSelection(int index) {
+    public void setSelection(int i) {
         if (fTableItemCount > 0) {
-            int i = Math.min(index, fTableItemCount - 1);
+            i = Math.min(i, fTableItemCount - 1);
             i = Math.max(i, 0);
 
             fSelectedEventRank = i;
             if ((i < fTableTopEventRank + fFrozenRowCount && i >= fFrozenRowCount) ||
                     (i >= fTableTopEventRank + fFullyVisibleRows)) {
-                int lastPageTopEntryRank = Math.max(0, fTableItemCount - fFullyVisibleRows);
-                fTableTopEventRank = Math.max(0, Math.min(lastPageTopEntryRank, i - fFrozenRowCount - fFullyVisibleRows / 2));
+                fTableTopEventRank = Math.max(0, i - fFrozenRowCount - fFullyVisibleRows / 2);
             }
             if (fFullyVisibleRows < fTableItemCount) {
                 fSlider.setSelection(fTableTopEventRank);

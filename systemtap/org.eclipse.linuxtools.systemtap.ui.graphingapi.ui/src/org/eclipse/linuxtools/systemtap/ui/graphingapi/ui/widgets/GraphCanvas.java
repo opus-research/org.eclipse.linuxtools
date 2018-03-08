@@ -57,7 +57,6 @@ public class GraphCanvas extends Canvas {
 		hBar = this.getHorizontalBar();
 		vBar = this.getVerticalBar();
 		hBar.addListener (SWT.Selection, new Listener () {
-			@Override
 			public void handleEvent (Event e) {
 				if(hBar.getSelection()+hBar.getThumb() == hBar.getMaximum())
 					autoScroll = true;
@@ -70,7 +69,6 @@ public class GraphCanvas extends Canvas {
 		});
 
 		vBar.addListener (SWT.Selection, new Listener () {
-			@Override
 			public void handleEvent (Event e) {
 				autoScroll = false;
 
@@ -121,9 +119,14 @@ public class GraphCanvas extends Canvas {
 	 */
 	public synchronized void repaint() {
 		getDisplay().syncExec(new Runnable() {
-			@Override
+			boolean stop = false;
 			public void run() {
-				redraw();
+				if(stop) return;
+				try {
+					redraw();
+				} catch (Exception e) {
+					stop = true;
+				}
 			}
 		});
 	}
@@ -131,7 +134,6 @@ public class GraphCanvas extends Canvas {
 	/**
 	 * Returns the size of the graphing area of the canvas.
 	 */
-	@Override
 	public Point getSize() {
 		Point p = new Point(super.getSize().x, super.getSize().y);
 		p.x -= vBar.getSize().x+5;

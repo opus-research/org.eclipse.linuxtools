@@ -28,7 +28,6 @@ import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserVi
  * @author Ryan Morse
  */
 public class DashboardCloseMonitor implements IWorkbenchListener {
-	@Override
 	public boolean preShutdown(IWorkbench workbench, boolean forced) {
 		boolean close = true;
 		if(!forced) {
@@ -38,7 +37,7 @@ public class DashboardCloseMonitor implements IWorkbenchListener {
 			if (ivp != null){
 				ActiveModuleBrowserView ambv = (ActiveModuleBrowserView)ivp;
 				if(ambv.anyRunning()) {
-					String msg = MessageFormat.format(Localization.getString("DashboardCloseMonitor.StillRunning"), (Object[])null); //$NON-NLS-1$
+					String msg = MessageFormat.format(Localization.getString("DashboardCloseMonitor.StillRunning"), (Object[])null);
 					close = MessageDialog.openQuestion(window.getShell(), "Closing...", msg);
 				}
 			}
@@ -47,6 +46,5 @@ public class DashboardCloseMonitor implements IWorkbenchListener {
 		return close;
 	}
 	
-	@Override
 	public void postShutdown(IWorkbench workbench) {}
 }

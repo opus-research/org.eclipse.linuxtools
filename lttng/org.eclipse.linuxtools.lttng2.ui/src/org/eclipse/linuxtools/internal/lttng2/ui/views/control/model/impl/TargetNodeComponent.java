@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl;
 
@@ -172,6 +171,7 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      * (non-Javadoc)
      * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
      */
+    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -205,34 +205,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
             return sessions.toArray(new TraceSessionComponent[sessions.size()]);
         }
         return new TraceSessionComponent[0];
-    }
-
-    /**
-     * @return node version
-     */
-    public String getNodeVersion() {
-        // Control service is null during connection to node
-        if (getControlService() != null) {
-            return getControlService().getVersion();
-        }
-        return ""; //$NON-NLS-1$
-    }
-
-    /**
-     * Returns if node supports filtering of events
-     * @return <code>true</code> if node supports filtering else <code>false</code>
-     */
-    public boolean isEventFilteringSupported() {
-        return getControlService().isVersionSupported("2.1.0"); //$NON-NLS-1$
-    }
-
-    /**
-     * Returns if node supports networks streaming or not
-     * @return <code>true</code> if node supports filtering else <code>false</code>
-     *
-     */
-    public boolean isNetworkStreamingSupported() {
-        return getControlService().isVersionSupported("2.1.0"); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------

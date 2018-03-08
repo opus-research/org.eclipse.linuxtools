@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl;
 
@@ -170,26 +169,11 @@ public class TraceEventComponent extends TraceControlComponent {
         fEventInfo.setLogLevel(levelName);
     }
 
-    /**
-     * Returns filter expression.
-     * @return filter expression
-     */
-    public String getFilterExpression() {
-        return fEventInfo.getFilterExpression();
-    }
-
-    /**
-     * Sets the filter expression.
-     * @param filter The filter expression to set
-     */
-    public void setFilterExpression(String filter) {
-        fEventInfo.setFilterExpression(filter);
-    }
-
     /*
      * (non-Javadoc)
      * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
      */
+    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {

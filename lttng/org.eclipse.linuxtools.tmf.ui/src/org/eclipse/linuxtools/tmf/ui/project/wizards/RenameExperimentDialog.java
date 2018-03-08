@@ -32,6 +32,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -43,14 +44,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.dialogs.SelectionStatusDialog;
-import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * Implementation of a dialog box to rename an experiment.
@@ -223,31 +219,15 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
-                    // Close the experiment if open
-                    IFile file = fExperiment.getBookmarksFile();
-                    FileEditorInput input = new FileEditorInput(file);
-                    IWorkbench wb = PlatformUI.getWorkbench();
-                    for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
-                        for (IWorkbenchPage wbPage : wbWindow.getPages()) {
-                            for (IEditorReference editorReference : wbPage.getEditorReferences()) {
-                                if (editorReference.getEditorInput().equals(input)) {
-                                    wbPage.closeEditor(editorReference.getEditor(false), false);
-                                }
-                            }
-                        }
-                    }
-
                     IFolder folder = fExperiment.getResource();
-                    IFile bookmarksFile = fExperiment.getBookmarksFile();
-                    IFile newBookmarksFile = folder.getFile(bookmarksFile.getName().replace(fExperiment.getName(), newName));
+                    IFile bookmarksFile = folder.getFile(fExperiment.getName() + '_');
+                    IFile newBookmarksFile = folder.getFile(newName + '_');
                     if (bookmarksFile.exists()) {
                         if (!newBookmarksFile.exists()) {
                             IPath newBookmarksPath = newBookmarksFile.getFullPath();
                             bookmarksFile.move(newBookmarksPath, IResource.FORCE | IResource.SHALLOW, null);
                         }
                     }
-
-                    fExperiment.renameSupplementaryFolder(newName);
                 	fExperiment.getResource().move(newPath, IResource.FORCE | IResource.SHALLOW, null);
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
@@ -262,7 +242,7 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
         } catch (InterruptedException exception) {
             return null;
         } catch (InvocationTargetException exception) {
-            MessageDialog.openError(getShell(), "", exception.getTargetException().getMessage()); //$NON-NLS-1$
+            MessageDialog.openError(getShell(), "", NLS.bind("", exception.getTargetException().getMessage())); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         } catch (RuntimeException exception) {
             return null;

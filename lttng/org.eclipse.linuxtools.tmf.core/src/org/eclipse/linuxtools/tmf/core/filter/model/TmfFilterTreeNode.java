@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 
 /**
  * The base class for the Filter tree nodes
- *
+ * 
  * @version 1.0
  * @author Yuriy Vashchuk
  * @author Patrick Tasse
@@ -42,9 +42,6 @@ public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable
 	private ITmfFilterTreeNode parent = null;
 	private ArrayList<ITmfFilterTreeNode> children = new ArrayList<ITmfFilterTreeNode>();
 
-    /**
-     * @param parent the parent node
-     */
     public TmfFilterTreeNode(final ITmfFilterTreeNode parent) {
     	if (parent != null) {
     		parent.addChild(this);
@@ -163,7 +160,8 @@ public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable
     protected Object getFieldValue(ITmfEvent event, String field) {
         Object value = null;
         if (ITmfEvent.EVENT_FIELD_CONTENT.equals(field)) {
-            value = event.getContent().toString();
+            ITmfEventField content = event.getContent();
+            value = (content.getValue() != null) ? content.getValue().toString() : content.toString();
         }
         else if (ITmfEvent.EVENT_FIELD_TYPE.equals(field)) {
             value = event.getType().getName();

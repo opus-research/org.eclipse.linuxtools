@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.service;
 
@@ -27,9 +26,9 @@ public class LTTngControlServiceConstants {
     // Version constants
     // ------------------------------------------------------------------------
     /**
-     * Pattern to match the LTTng toolchain version 2.x.y.
+     * Constant for the LTTng toolchain version
      */
-    public final static Pattern VERSION_2_PATTERN = Pattern.compile("(2\\.\\d+\\.\\d+).*"); //$NON-NLS-1$
+    public final static String LTTNG_MAJOR_VERSION_2_0 = "2.0"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Command constants
@@ -194,26 +193,6 @@ public class LTTngControlServiceConstants {
      * Command line option for printing the help of a specif command
      */
     public final static String OPTION_HELP = " -h ";  //$NON-NLS-1$
-    /**
-     * Command line option for listing the fields of UST tracepoints
-     */
-    public final static String OPTION_FIELDS = " -f "; //$NON-NLS-1$
-    /**
-     * Command line option for configuring event's filter
-     */
-    public final static String OPTION_FILTER = " --filter "; //$NON-NLS-1$
-    /**
-     * Command line option for configuring the streaming network URL (common for control and data channel).
-     */
-    public final static String OPTION_NETWORK_URL = " -U "; //$NON-NLS-1$
-    /**
-     * Command line option for configuring the streaming control URL.
-     */
-    public final static String OPTION_CONTROL_URL = " -C "; //$NON-NLS-1$
-    /**
-     * Command line option for configuring the streaming data URL.
-     */
-    public final static String OPTION_DATA_URL = " -D "; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Parsing constants
@@ -239,11 +218,6 @@ public class LTTngControlServiceConstants {
      */
     public final static Pattern TRACE_SESSION_PATH_PATTERN = Pattern.compile("\\s*Trace\\s+path\\:\\s+(.*)"); //$NON-NLS-1$
     /**
-     * Pattern to match session path for network tracing (lttng list <session>)
-     * Note: file for protocol is not considered as network trace since local consumer will be used.
-     */
-    public final static Pattern TRACE_NETWORK_PATH_PATTERN = Pattern.compile("\\s*Trace\\s+path\\:\\s+(net|net6|tcp|tcp6|)\\:\\/\\/(.*)(\\:(\\d*)\\/(.*)\\[data\\:\\s+(\\d*)\\]){0,1}"); //$NON-NLS-1$
-    /**
      * Pattern to match for kernel domain information (lttng list <session>)
      */
     public final static Pattern DOMAIN_KERNEL_PATTERN = Pattern.compile("=== Domain: Kernel ==="); //$NON-NLS-1$
@@ -251,14 +225,6 @@ public class LTTngControlServiceConstants {
      * Pattern to match for ust domain information (lttng list <session>)
      */
     public final static Pattern DOMAIN_UST_GLOBAL_PATTERN = Pattern.compile("=== Domain: UST global ==="); //$NON-NLS-1$
-    /**
-     * Pattern to match for matching warning about no kernel channel
-     */
-    public final static Pattern DOMAIN_NO_KERNEL_CHANNEL_PATTERN = Pattern.compile("\\s*Warning\\:\\s+No kernel\\s+channel.*"); //$NON-NLS-1$
-    /**
-     * Pattern to match for matching warning about no UST channel
-     */
-    public final static Pattern DOMAIN_NO_UST_CHANNEL_PATTERN = Pattern.compile("\\s*Error\\:\\s+UST\\s+channel\\s+not\\s+found.*"); //$NON-NLS-1$
     /**
      * Pattern to match for channels section (lttng list <session>)
      */
@@ -278,11 +244,11 @@ public class LTTngControlServiceConstants {
     /**
      * Pattern to match for event information (lttng list <session>)
      */
-    public final static Pattern EVENT_PATTERN = Pattern.compile("\\s+(.*)\\s+\\(loglevel:\\s+(.*)\\s+\\(\\d*\\)\\)\\s+\\(type:\\s+(.*)\\)\\s+\\[(enabled|disabled)\\]\\s*(\\[.*\\]){0,1}.*"); //$NON-NLS-1$
+    public final static Pattern EVENT_PATTERN = Pattern.compile("\\s+(.*)\\s+\\(loglevel:\\s+(.*)\\s+\\(\\d*\\)\\)\\s+\\(type:\\s+(.*)\\)\\s+\\[(enabled|disabled)\\].*"); //$NON-NLS-1$
     /**
      * Pattern to match a wildcarded event information (lttng list <session>)
      */
-    public final static Pattern WILDCARD_EVENT_PATTERN = Pattern.compile("\\s+(.*)\\s+\\(type:\\s+(.*)\\)\\s+\\[(enabled|disabled)\\]\\s*(\\[.*\\]){0,1}.*"); //$NON-NLS-1$
+    public final static Pattern WILDCARD_EVENT_PATTERN = Pattern.compile("\\s+(.*)\\s+\\(type:\\s+(.*)\\)\\s+\\[(enabled|disabled)\\].*"); //$NON-NLS-1$
     /**
      * Pattern to match a probe address information (lttng list <session>)
      */
@@ -328,10 +294,6 @@ public class LTTngControlServiceConstants {
      */
     public final static Pattern PROVIDER_EVENT_PATTERN = Pattern.compile("\\s*(.*)\\s+\\(loglevel:\\s+(.*)\\s+\\(\\d*\\)\\)\\s+\\(type:\\s+(.*)\\)"); //$NON-NLS-1$
     /**
-     * Pattern to match event fields
-     */
-    public final static Pattern EVENT_FIELD_PATTERN = Pattern.compile("\\s*(field:)\\s+(.*)\\s+\\((.*)\\)"); //$NON-NLS-1$
-    /**
      * Pattern to match for UST provider information (lttng list -u)
      */
     public final static Pattern UST_PROVIDER_PATTERN = Pattern.compile("\\s*PID\\:\\s+(\\d+)\\s+-\\s+Name\\:\\s+(.*)"); //$NON-NLS-1$
@@ -355,9 +317,5 @@ public class LTTngControlServiceConstants {
      * Pattern to match introduction line of context list.
      */
     public final static Pattern ADD_CONTEXT_HELP_CONTEXTS_END_LINE = Pattern.compile("\\s*Example.*"); //$NON-NLS-1$
-    /**
-     * Pattern to match error line if no kernel tracer is available or installed.
-     */
-    public final static Pattern LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN = Pattern.compile("\\s*Error:\\s+Unable\\s+to\\s+list\\s+kernel\\s+events.*"); //$NON-NLS-1$;
 
 }

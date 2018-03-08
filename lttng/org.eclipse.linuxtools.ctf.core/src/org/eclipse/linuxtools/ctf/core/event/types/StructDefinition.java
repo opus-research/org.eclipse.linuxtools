@@ -16,11 +16,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 
 /**
  * A CTF structure definition (similar to a C structure).
- *
+ * 
  * A structure is similar to a C structure, it is a compound data type that
  * contains other datatypes in fields. they are stored in an hashmap and indexed
  * by names which are strings.
@@ -220,24 +220,28 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        builder.append("{ "); //$NON-NLS-1$
+        int size = this.declaration.getFieldsList().size();
+        int n = 0;
+
+        if (size > 1) {
+            builder.append("{ "); //$NON-NLS-1$
+        }
 
         ListIterator<String> listIterator = this.declaration.getFieldsList()
                 .listIterator();
 
         while (listIterator.hasNext()) {
             String field = listIterator.next();
-
-            builder.append(field);
-            builder.append(" = "); //$NON-NLS-1$
             builder.append(lookupDefinition(field).toString());
-
-            if (listIterator.hasNext()) {
+            n++;
+            if (n != size) {
                 builder.append(", "); //$NON-NLS-1$
             }
         }
 
-        builder.append(" }"); //$NON-NLS-1$
+        if (size > 1) {
+            builder.append(" }"); //$NON-NLS-1$
+        }
 
         return builder.toString();
     }

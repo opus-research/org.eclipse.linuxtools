@@ -22,10 +22,9 @@ import org.eclipse.linuxtools.internal.gcov.model.TreeElement;
 
 public class FieldCoveragePercentage extends AbstractPercentageDrawerField implements IChartField {
 
-	public final static NumberFormat nf = new DecimalFormat("##0.0#"); //$NON-NLS-1$
+	public final static NumberFormat nf = new DecimalFormat("##0.0#");
 
 
-	@Override
 	public String getColumnHeaderText() {
 		return "Coverage %";
 	}
@@ -44,7 +43,6 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
 	 * @param obj
 	 * @return the percentage value to display, as a float
 	 */
-	@Override
 	public float getPercentage(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		return e.getCoveragePercentage();
@@ -64,7 +62,6 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
 		return true;
 	}
 
-	@Override
 	public String getToolTipText(Object element) {
 		TreeElement e = (TreeElement) element;
 		String s =" Coverage % = "+Integer.toString((int)e.getCoveragePercentage());
@@ -75,7 +72,6 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#compare(java.lang.Object, java.lang.Object)
 	 */
-	@Override
 	public int compare(Object obj1, Object obj2) {
 		TreeElement e1 = (TreeElement) obj1;
 		TreeElement e2 = (TreeElement) obj2;
@@ -89,7 +85,6 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.charts.provider.IChartField#getNumber(java.lang.Object)
 	 */
-	@Override
 	public Number getNumber(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		float f = getPercentage(obj);

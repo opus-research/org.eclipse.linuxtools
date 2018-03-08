@@ -1,15 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
- *
+ * Copyright (c) 2009, 2010, 2012 Ericsson
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Trace Model 1.0
- *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -19,20 +18,20 @@ package org.eclipse.linuxtools.tmf.core.trace;
  * <p>
  * It ties a trace location to an event rank. The context should be enough to
  * restore the trace state so the corresponding event can be read.
- *
+ * 
  * @version 1.0
  * @author Francois Chouinard
  *
  * @see ITmfLocation
  */
-public class TmfContext implements ITmfContext {
+public class TmfContext implements ITmfContext, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
     // The trace location
-    private ITmfLocation fLocation;
+    private ITmfLocation<? extends Comparable<?>> fLocation;
 
     // The event rank
     private long fRank;
@@ -50,27 +49,27 @@ public class TmfContext implements ITmfContext {
 
     /**
      * Simple constructor (unknown rank)
-     *
+     * 
      * @param location the event location
      */
-    public TmfContext(final ITmfLocation location) {
+    public TmfContext(final ITmfLocation<? extends Comparable<?>> location) {
         this(location, UNKNOWN_RANK);
     }
 
     /**
      * Full constructor
-     *
+     * 
      * @param location the event location
      * @param rank the event rank
      */
-    public TmfContext(final ITmfLocation location, final long rank) {
+    public TmfContext(final ITmfLocation<? extends Comparable<?>> location, final long rank) {
         fLocation = location;
         fRank = rank;
     }
 
     /**
      * Copy constructor
-     *
+     * 
      * @param context the other context
      */
     public TmfContext(final TmfContext context) {
@@ -82,6 +81,25 @@ public class TmfContext implements ITmfContext {
     }
 
     // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfContext clone() {
+        TmfContext clone = null;
+        try {
+            clone = (TmfContext) super.clone();
+            clone.fLocation = (fLocation != null) ? fLocation.clone() : null;
+            clone.fRank = fRank;
+        } catch (final CloneNotSupportedException e) {
+        }
+        return clone;
+    }
+
+    // ------------------------------------------------------------------------
     // ITmfContext
     // ------------------------------------------------------------------------
 
@@ -89,7 +107,7 @@ public class TmfContext implements ITmfContext {
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#getLocation()
      */
     @Override
-    public ITmfLocation getLocation() {
+    public ITmfLocation<? extends Comparable<?>> getLocation() {
         return fLocation;
     }
 
@@ -97,7 +115,7 @@ public class TmfContext implements ITmfContext {
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfContext#setLocation(org.eclipse.linuxtools.tmf.core.trace.ITmfLocation)
      */
     @Override
-    public void setLocation(final ITmfLocation location) {
+    public void setLocation(final ITmfLocation<? extends Comparable<?>> location) {
         fLocation = location;
     }
 

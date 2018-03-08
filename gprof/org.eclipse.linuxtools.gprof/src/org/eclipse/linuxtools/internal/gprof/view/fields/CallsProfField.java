@@ -32,7 +32,6 @@ public class CallsProfField extends AbstractSTDataViewersField implements IChart
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#compare(java.lang.Object, java.lang.Object)
 	 */
-	@Override
 	public int compare(Object obj1, Object obj2) {
 		TreeElement e1 = (TreeElement) obj1;
 		TreeElement e2 = (TreeElement) obj2;
@@ -45,7 +44,6 @@ public class CallsProfField extends AbstractSTDataViewersField implements IChart
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderText()
 	 */
-	@Override
 	public String getColumnHeaderText() {
 		return "Calls";
 	}
@@ -101,11 +99,10 @@ public class CallsProfField extends AbstractSTDataViewersField implements IChart
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getValue(java.lang.Object)
 	 */
-	@Override
 	public String getValue(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		int i = e.getCalls();
-		if (i == -1) return ""; //$NON-NLS-1$
+		if (i == -1) return "";
 		String ret = String.valueOf(i);
 		return ret;
 	}
@@ -115,12 +112,10 @@ public class CallsProfField extends AbstractSTDataViewersField implements IChart
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField#getBackground(java.lang.Object)
 	 */
-	@Override
 	public Color getBackground(Object element) {
 		return GmonView.getBackground(element);
 	}
 
-	@Override
 	public Number getNumber(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		int i = e.getCalls();

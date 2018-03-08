@@ -9,17 +9,11 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Changed to updated histogram data model
- *   Francois Chouinard - Reformat histogram labels on format change
+ *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
@@ -36,7 +30,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
@@ -78,7 +71,7 @@ import org.eclipse.swt.widgets.Text;
  * <li>number of events in that time range
  * </ul>
  *
- * @version 1.1
+ * @version 1.0
  * @author Francois Chouinard
  */
 public abstract class Histogram implements ControlListener, PaintListener, KeyListener, MouseListener, MouseTrackListener, IHistogramModelListener {
@@ -93,17 +86,26 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     private final Color fLastEventColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_RED);
     private final Color fHistoBarColor = new Color(Display.getDefault(), 74, 112, 139);
 
+    // Timestamp scale (nanosecond)
+    /**
+     * The time scale of the histogram (nano seconds)
+     */
+    public static final byte TIME_SCALE = -9;
+
+    /**
+     * The histogram bar width (number of pixels).
+     */
+    public static final int HISTOGRAM_BAR_WIDTH = 1;
+
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
+    // Owner view
     /**
      * The parent TMF view.
      */
     protected TmfView fParentView;
-
-    private Composite fComposite;
-    private Font fFont;
 
     // Histogram text fields
     private Text fMaxNbEventsText;
@@ -115,28 +117,23 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      *  Histogram drawing area
      */
     protected Canvas fCanvas;
-
     /**
      *  The histogram data model.
      */
     protected final HistogramDataModel fDataModel;
-
     /**
      * The histogram data model scaled to current resolution and screen width.
      */
     protected HistogramScaledData fScaledData;
 
-    /**
-     * The current event value
-     */
-    protected long fCurrentEventTime = 0L;
+    protected long fCurrentEventTime = 0;
 
     // ------------------------------------------------------------------------
     // Construction
     // ------------------------------------------------------------------------
 
     /**
-     * Full constructor.
+     * Standard constructor.
      *
      * @param view A reference to the parent TMF view.
      * @param parent A parent composite
@@ -144,7 +141,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     public Histogram(final TmfView view, final Composite parent) {
         fParentView = view;
 
-        fComposite = createWidget(parent);
+        createWidget(parent);
         fDataModel = new HistogramDataModel();
         fDataModel.addHistogramListener(this);
         clear();
@@ -154,24 +151,20 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         fCanvas.addKeyListener(this);
         fCanvas.addMouseListener(this);
         fCanvas.addMouseTrackListener(this);
-
-        TmfSignalManager.register(this);
     }
 
     /**
-     * Dispose resources and unregisters listeners.
+     * Dispose resources and deregisters listeners.
      */
     public void dispose() {
-        TmfSignalManager.deregister(this);
-
         fHistoBarColor.dispose();
         fDataModel.removeHistogramListener(this);
     }
 
-    private Composite createWidget(final Composite parent) {
+    private void createWidget(final Composite parent) {
 
         final Color labelColor = parent.getBackground();
-        fFont = adjustFont(parent);
+        final Font fFont = adjustFont(parent);
 
         final int initalWidth = 10;
 
@@ -210,16 +203,14 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         fMaxNbEventsText.setLayoutData(gridData);
 
         // Histogram itself
-        Composite canvasComposite = new Composite(composite, SWT.BORDER);
         gridData = new GridData();
         gridData.horizontalSpan = 2;
         gridData.verticalSpan = 2;
         gridData.horizontalAlignment = SWT.FILL;
         gridData.verticalAlignment = SWT.FILL;
         gridData.grabExcessHorizontalSpace = true;
-        canvasComposite.setLayoutData(gridData);
-        canvasComposite.setLayout(new FillLayout());
-        fCanvas = new Canvas(canvasComposite, SWT.DOUBLE_BUFFERED);
+        fCanvas = new Canvas(composite, SWT.BORDER | SWT.DOUBLE_BUFFERED);
+        fCanvas.setLayoutData(gridData);
 
         // Y-axis min event (always 0...)
         gridData = new GridData();
@@ -250,6 +241,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         fTimeRangeStartText = new Text(composite, SWT.READ_ONLY);
         fTimeRangeStartText.setFont(fFont);
         fTimeRangeStartText.setBackground(labelColor);
+        fTimeRangeStartText.setText(HistogramUtils.nanosecondsToString(0));
         fTimeRangeStartText.setLayoutData(gridData);
 
         // Window range end time
@@ -259,9 +251,8 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         fTimeRangeEndText = new Text(composite, SWT.READ_ONLY);
         fTimeRangeEndText.setFont(fFont);
         fTimeRangeEndText.setBackground(labelColor);
+        fTimeRangeEndText.setText(HistogramUtils.nanosecondsToString(0));
         fTimeRangeEndText.setLayoutData(gridData);
-
-        return composite;
     }
 
     private static Font adjustFont(final Composite composite) {
@@ -277,7 +268,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     // ------------------------------------------------------------------------
 
     /**
-     * Returns the start time (equal first bucket time)
+     * Returns the start time (equal first bucket time).
      * @return the start time.
      */
     public long getStartTime() {
@@ -323,9 +314,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      */
     public void clear() {
         fDataModel.clear();
-        synchronized (fDataModel) {
-            fScaledData = null;
-        }
+        fScaledData = null;
     }
 
     /**
@@ -457,18 +446,13 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
                             return;
                         }
                         fDataModel.setCurrentEvent(fCurrentEventTime);
-                        fScaledData = fDataModel.scaleTo(canvasWidth, canvasHeight, 1);
-                        synchronized(fDataModel) {
+                        fScaledData = fDataModel.scaleTo(canvasWidth, canvasHeight, HISTOGRAM_BAR_WIDTH);
+                        synchronized(fScaledData) {
                             if (fScaledData != null) {
                                 fCanvas.redraw();
-                                if (fDataModel.getNbEvents() != 0) {
-                                    // Display histogram and update X-,Y-axis labels
-                                    fTimeRangeStartText.setText(TmfTimestampFormat.getDefaulTimeFormat().format(fDataModel.getFirstBucketTime()));
-                                    fTimeRangeEndText.setText(TmfTimestampFormat.getDefaulTimeFormat().format(fDataModel.getEndTime()));
-                                } else {
-                                    fTimeRangeStartText.setText(""); //$NON-NLS-1$
-                                    fTimeRangeEndText.setText(""); //$NON-NLS-1$
-                                }
+                                // Display histogram and update X-,Y-axis labels
+                                fTimeRangeStartText.setText(HistogramUtils.nanosecondsToString(fDataModel.getFirstBucketTime()));
+                                fTimeRangeEndText.setText(HistogramUtils.nanosecondsToString(fDataModel.getEndTime()));
                                 fMaxNbEventsText.setText(Long.toString(fScaledData.fMaxValue));
                                 // The Y-axis area might need to be re-sized
                                 fMaxNbEventsText.getParent().layout();
@@ -543,8 +527,8 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
             // Draw the histogram bars
             imageGC.setBackground(fHistoBarColor);
             final int limit = width < scaledData.fWidth ? width : scaledData.fWidth;
-            for (int i = 0; i < limit; i++) {
-                final int value = (int) Math.ceil(scaledData.fData[i] * scaledData.fScalingFactor);
+            for (int i = 1; i < limit; i++) {
+                final int value = (int) (scaledData.fData[i] * scaledData.fScalingFactor);
                 imageGC.fillRectangle(i, height - value, 1, value);
             }
 
@@ -626,25 +610,23 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         if (fDataModel.getNbEvents() > 0 && fScaledData != null && fScaledData.fLastBucket >= event.x) {
             final String tooltip = formatToolTipLabel(event.x);
             fCanvas.setToolTipText(tooltip);
-        } else {
-            fCanvas.setToolTipText(null);
         }
     }
 
     private String formatToolTipLabel(final int index) {
-        long startTime = fScaledData.getBucketStartTime(index);
+        long startTime = fScaledData.getBucketStartTime(fScaledData.fCurrentBucket);
         // negative values are possible if time values came into the model in decreasing order
         if (startTime < 0) {
             startTime = 0;
         }
-        final long endTime = fScaledData.getBucketEndTime(index);
+        final long endTime = fScaledData.getBucketEndTime(fScaledData.fCurrentBucket);
         final int nbEvents = (index >= 0) ? fScaledData.fData[index] : 0;
 
         final StringBuffer buffer = new StringBuffer();
         buffer.append("Range = ["); //$NON-NLS-1$
-        buffer.append(new TmfTimestamp(startTime, ITmfTimestamp.NANOSECOND_SCALE).toString());
+        buffer.append(HistogramUtils.nanosecondsToString(startTime));
         buffer.append(","); //$NON-NLS-1$
-        buffer.append(new TmfTimestamp(endTime, ITmfTimestamp.NANOSECOND_SCALE).toString());
+        buffer.append(HistogramUtils.nanosecondsToString(endTime));
         buffer.append(")\n"); //$NON-NLS-1$
         buffer.append("Event count = "); //$NON-NLS-1$
         buffer.append(nbEvents);
@@ -664,30 +646,4 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     public void controlResized(final ControlEvent event) {
         fDataModel.complete();
     }
-
-    // ------------------------------------------------------------------------
-    // Signal Handlers
-    // ------------------------------------------------------------------------
-
-    /**
-     * Format the timestamp and update the display
-     *
-     * @param signal the incoming signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void timestampFormatUpdated(TmfTimestampFormatUpdateSignal signal) {
-        if (fDataModel.getNbEvents() == 0) {
-            return;
-        }
-
-        String newTS = TmfTimestampFormat.getDefaulTimeFormat().format(fDataModel.getFirstBucketTime());
-        fTimeRangeStartText.setText(newTS);
-
-        newTS = TmfTimestampFormat.getDefaulTimeFormat().format(fDataModel.getEndTime());
-        fTimeRangeEndText.setText(newTS);
-
-        fComposite.layout();
-    }
-
 }

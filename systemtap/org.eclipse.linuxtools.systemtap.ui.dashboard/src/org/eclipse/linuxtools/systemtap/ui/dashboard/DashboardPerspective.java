@@ -12,12 +12,14 @@
 package org.eclipse.linuxtools.systemtap.ui.dashboard;
 
 
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserView;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardView;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
+
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.ActiveModuleBrowserView;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardView;
 
 /**
  * The <code>DashboardPerspective</code> class defines the layout of the Dashboard perspective
@@ -26,26 +28,32 @@ import org.eclipse.ui.IPerspectiveFactory;
  * @author Ryan Morse
  */
 public class DashboardPerspective implements IPerspectiveFactory {
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.DashboardPerspective"; //$NON-NLS-1$
-
-	@Override
+	public static String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.DashboardPerspective";
+	
 	public void createInitialLayout(IPageLayout layout) {
+		LogManager.logDebug("Start createInitialLayout:", this); //$NON-NLS-1$
+
 		//Don't display the editor
 		String editorArea = layout.getEditorArea();
 		layout.setEditorAreaVisible(false);
 
 		//Create the left hand tabed view
-		IFolderLayout browsers = layout.createFolder("browsers", IPageLayout.LEFT, 0.25f, editorArea); //$NON-NLS-1$
-		browsers.addPlaceholder(DashboardModuleBrowserView.ID + ":*"); //$NON-NLS-1$
+		IFolderLayout browsers = layout.createFolder("browsers", IPageLayout.LEFT, 0.25f, editorArea);
+		browsers.addPlaceholder(DashboardModuleBrowserView.ID + ":*");
 		browsers.addView(DashboardModuleBrowserView.ID);
-
-
-		IFolderLayout browsers2 = layout.createFolder("browsers2", IPageLayout.BOTTOM, 0.5f, "browsers"); //$NON-NLS-1$ //$NON-NLS-2$
-		browsers2.addPlaceholder(ActiveModuleBrowserView.ID + ":*"); //$NON-NLS-1$
+		
+		
+		IFolderLayout browsers2 = layout.createFolder("browsers2", IPageLayout.BOTTOM, 0.5f, "browsers");
+		browsers2.addPlaceholder(ActiveModuleBrowserView.ID + ":*");
 		browsers2.addView(ActiveModuleBrowserView.ID);
 
 		layout.getViewLayout(DashboardModuleBrowserView.ID).setCloseable(false);
 		layout.getViewLayout(ActiveModuleBrowserView.ID).setCloseable(false);
+		//DashboardModuleBrowserView.getmoduleNames();
+		/*for (int i=0 ; i<moduleNames.size(); i++)
+		{
+			System.out.println("Dashboard perspective: " + moduleNames.get(i));
+		}*/
 
 		//Add the graph content view.
 		layout.addStandaloneView(DashboardView.ID, false, IPageLayout.TOP, 1.0f, editorArea);
@@ -60,5 +68,7 @@ public class DashboardPerspective implements IPerspectiveFactory {
 
 		//Add a link to the perspective in the MainMenu.  Window->Open Perspective
 		layout.addPerspectiveShortcut(ID);
+
+		LogManager.logDebug("End createInitialLayout:", this); //$NON-NLS-1$
 	}
 }

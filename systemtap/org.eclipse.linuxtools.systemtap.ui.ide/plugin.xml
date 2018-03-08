@@ -34,36 +34,6 @@
         id="org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView"
         name="%view.probe.name"/>
 	</extension>
-	<extension point="org.eclipse.ui.menus">
-       <menuContribution locationURI="toolbar:org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView">
-           <command
-                 commandId="org.eclipse.ui.navigate.collapseAll" />
-       </menuContribution>
-       <menuContribution locationURI="toolbar:org.eclipse.linuxtools.internal.systemtap.ui.ide.views.KernelBrowserView">
-           <command
-                 commandId="org.eclipse.ui.navigate.collapseAll" />
-       </menuContribution>
-       <menuContribution locationURI="toolbar:org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView">
-           <command
-                 commandId="org.eclipse.ui.navigate.collapseAll" />
-       </menuContribution>
-       <menuContribution
-             allPopups="true"
-             locationURI="toolbar:org.eclipse.ui.workbench.file">
-          <command
-                commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand"
-                icon="icons/actions/run/run_exc.gif"
-                label="%action.run.name"
-                style="push">
-          </command>
-          <command
-                commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptWithChart"
-                icon="icons/actions/run/run_chart.gif"
-                label="%action.runChart.name"
-                style="push">
-          </command>
-       </menuContribution>
-    </extension>
 	
 	<extension
 		point="org.eclipse.ui.editors">
@@ -82,6 +52,14 @@
 			icon="icons/views/page_obj.gif"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 			default="true"/>
+		<editor
+			name="%editor.c.name"
+			id="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.c.CEditor"
+			class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.c.CEditor"
+			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			icon="icons/views/page_obj.gif"
+			default="false"
+			extensions="c,h,cpp"/>
 	</extension>
 
 	<extension
@@ -112,9 +90,19 @@
 			class="org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.SyntaxColoringPreferencePage"
 			category="org.eclipse.linuxtools.systemtap.prefs.ide.editor"/>
 		<page
+			name="%preference.typeing.name"
+			id="org.eclipse.linuxtools.systemtap.prefs.ide.typeing"
+			class="org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.TypeingPreferencePage"
+			category="org.eclipse.linuxtools.systemtap.prefs.ide.editor"/>
+		<page
 			name="%preference.path.name"
 			id="org.eclipse.linuxtools.systemtap.prefs.ide.path"
 			class="org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.PathPreferencePage"
+			category="org.eclipse.linuxtools.systemtap.prefs.ide"/>
+		<page
+			name="%preference.stap.name"
+			id="org.eclipse.linuxtools.systemtap.prefs.ide.stap"
+			class="org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.StapPreferencePage"
 			category="org.eclipse.linuxtools.systemtap.prefs.ide"/>
 		<!--page
 			name="%preference.stapOptions.name"
@@ -125,7 +113,7 @@
 			name="%preference.tapsets.name"
 			id="org.eclipse.linuxtools.systemtap.prefs.ide.tapsets"
 			class="org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.TapsetsPreferencePage"
-			category="org.eclipse.linuxtools.systemtap.prefs.ide"/>
+			category="org.eclipse.linuxtools.systemtap.prefs.ide.stap"/>
 	</extension>
 
 	<extension
@@ -180,19 +168,10 @@
 			name="%category.popup.name"
 			description="%category.popup.desc"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.category.popup"/>
-  <command
-        defaultHandler="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptHandler"
-        description="%action.run.desc"
-        id="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand"
-        name="%action.run.name">
-  </command>
-  <command
-        defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptChartHandler"
-        description="%action.runChart.desc"
-        id="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptWithChart"
-        name="%action.runChart.name">
-  </command>
 	</extension>
+	
+	
+
 	<extension
 		point="org.eclipse.ui.actionSets">
 		<actionSet
@@ -207,6 +186,42 @@
 				toolbarPath="org.eclipse.ui.workbench.file/import.ext"
 				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.ImportTapsetAction"
 				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.ImportTapset"
+				style="push"
+				state="false"/>
+		</actionSet>
+		<actionSet
+			label="%actionset.run.name"
+			visible="false"
+			id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet">
+			<!--action
+				label="%action.runOptions.name"
+				tooltip="%action.runOptions.desc"
+				id="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptOptions"
+				icon="icons/actions/run/run_tool.gif"
+				toolbarPath="org.eclipse.ui.workbench.file/build.group"
+				menubarPath="launch/wbStart"
+				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptOptionsAction"
+				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScriptOptions"
+				style="push"
+				state="false"/-->
+			<action
+				label="%action.run.name"
+				tooltip="%action.run.desc"
+				id="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScript"
+				icon="icons/actions/run/run_exc.gif"
+				toolbarPath="org.eclipse.ui.workbench.file/build.group"
+				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptAction"
+				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScript"
+				style="push"
+				state="false"/>
+			<action
+				label="%action.stop.name"
+				tooltip="%action.stop.desc"
+				id="org.eclipse.linuxtools.systemtap.ui.consolelog.actions.StopScript"
+				icon="icons/actions/terminate_co.gif"
+				toolbarPath="org.eclipse.ui.workbench.file/stop.ext"
+				class="org.eclipse.linuxtools.systemtap.ui.consolelog.actions.StopScriptAction"
+				definitionId="org.eclipse.linuxtools.systemtap.ui.consolelog.commands.StopScript"
 				style="push"
 				state="false"/>
 		</actionSet>
@@ -225,28 +240,20 @@
 				id="org.eclipse.linuxtools.systemtap.ui.ide.definitionAction"
 				style="push"/>
 		</objectContribution>
-        <viewerContribution
-            targetID="#CEditorRulerContext"
-            id="org.eclipse.linuxtools.systemtap.ui.ide.actions">
-         <action
-               label="%action.addStapProbe.label"
-               class="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.hidden.AddStapProbe"
-               menubarPath="additions"
-               id="org.eclipse.linuxtools.systemtap.ui.ide.AddStapProbe">
-         </action>
-        </viewerContribution>
 	</extension>
 
 	<extension
 		point="org.eclipse.ui.perspectiveExtensions">
 		<perspectiveExtension
 			targetID="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective">
+			<actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet"/>
 			<actionSet id="org.eclipse.linuxtools.systemtap.ui.editor.FileActionSet"/>
 			<actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.FileActionSet"/>
 
 		</perspectiveExtension>
 		<perspectiveExtension
            targetID="org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective">
+           <actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet"/>
                         <view
                                 ratio="0.40f"
                                 relative="org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView"
@@ -260,78 +267,9 @@
 			targetID="org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective">
 			<perspectiveShortcut id="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective"/>
 		</perspectiveExtension>
+		<perspectiveExtension
+           targetID="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective">
+           <actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet"/>
+         </perspectiveExtension>
 	</extension>
- <extension
-       point="org.eclipse.ui.newWizards">
-    <category
-          id="org.eclipse.linuxtools.systemtap.ui.ide"
-          name="%category.name">
-    </category>
-    <wizard
-          category="org.eclipse.linuxtools.systemtap.ui.ide"
-          class="org.eclipse.linuxtools.systemtap.ui.ide.wizards.StapNewWizard"
-          icon="icons/smileytap.gif"
-          id="org.eclipse.linuxtools.systemtap.ui.ide.wizards.StapNewWizard"
-          name="%wizard.name">
-    </wizard>
- </extension>
- <extension
-       point="org.eclipse.debug.ui.launchShortcuts">
-    <shortcut
-          class="org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptLaunchShortcut"
-          id="org.eclipse.linuxtools.systemtap.ui.ide.StapLaunchShortcut"
-          label="Systemtap Script"
-          modes="run">
-       <contextualLaunch>
-          <enablement>
-             <with
-                   variable="selection">
-                <count
-                      value="1">
-                </count>
-                <test
-                      forcePluginActivation="true"
-                      property="org.eclipse.linuxtools.systemtap.ui.ide.property.systemtap">
-                </test>
-             </with>
-          </enablement>
-       </contextualLaunch>
-    </shortcut>
- </extension>
- <extension
-       point="org.eclipse.core.expressions.propertyTesters">
-    <propertyTester
-          class="org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptTester"
-          id="org.eclipse.linuxtools.systemtap.ui.ide.propertyTester1"
-          namespace="org.eclipse.linuxtools.systemtap.ui.ide.property"
-          properties="systemtap"
-          type="java.util.Arrays$ArrayList">
-    </propertyTester>
- </extension>
- <extension
-       point="org.eclipse.debug.core.launchConfigurationTypes">
-    <launchConfigurationType
-          delegate="org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptLaunchConfigurationDelegate"
-          id="org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType"
-          modes="run"
-          name="SystemTap"
-          public="true">
-    </launchConfigurationType>
- </extension>
- <extension
-       point="org.eclipse.debug.ui.launchConfigurationTypeImages">
-    <launchConfigurationTypeImage
-          configTypeID="org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType"
-          icon="icons/smileytap.gif"
-          id="org.eclipse.linuxtools.systemtap.ui.ide.systemtapLaunchConfigurationTypeImage">
-    </launchConfigurationTypeImage>
- </extension>
- <extension
-       point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-    <launchConfigurationTabGroup
-          class="org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptLaunchConfigurationTabGroup"
-          id="org.eclipse.linuxtools.systemtap.ui.ide.systemTapLaunchConfigurationTabGroup"
-          type="org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType">
-    </launchConfigurationTabGroup>
- </extension>
 </plugin>

@@ -11,19 +11,16 @@
 package org.eclipse.linuxtools.internal.valgrind.helgrind.tests;
 
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.linuxtools.internal.valgrind.launch.Messages;
 import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindUIPlugin;
 import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindViewPart;
 
 public class BasicHelgrindTest extends AbstractHelgrindTest {
 	
-	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		proj = createProjectAndBuild("basicTest"); //$NON-NLS-1$
 	}
 	
-	@Override
 	protected void tearDown() throws Exception {
 		deleteProject(proj);
 		super.tearDown();
@@ -34,7 +31,6 @@ public class BasicHelgrindTest extends AbstractHelgrindTest {
 		doLaunch(config, "testHelgrindGeneric"); //$NON-NLS-1$
 				
 		ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
-		assertEquals(1, view.getMessages().length);
-		assertEquals(view.getMessages()[0].getText(), Messages.getString("ValgrindOutputView.No_output")); //$NON-NLS-1$
+		assertEquals(3, view.getMessages().length);
 	}
 }

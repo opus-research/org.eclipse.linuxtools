@@ -27,8 +27,11 @@ import org.eclipse.cdt.ui.CElementLabelProvider;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -69,6 +72,42 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 		if (config != null) {
 			DebugUITools.launch(config, mode);
 		}
+	}
+
+	/**
+	 * Get a profiling launch shortcut that provides the specified type of profiling. This
+	 * looks through extensions of the extension point
+	 * <code>org.eclipse.linuxtools.profiling.launch.launchProvider</code> that have a
+	 * specific type attribute.
+	 *
+	 * @param type A profiling type (eg. memory, snapshot, timing, etc.)
+	 * @return a profiling launch shortcut that implements <code>ProfileLaunchShortcut</code>
+	 * and provides the necessary profiling type, or <code>null</code> if none could be found.
+	 * @since 1.1
+	 */
+	public ProfileLaunchShortcut getProfilingProvider(String type) {
+		IExtensionPoint extPoint = Platform.getExtensionRegistry()
+				.getExtensionPoint(ProfileLaunchPlugin.PLUGIN_ID, "launchProvider"); //$NON-NLS-1$
+		IConfigurationElement[] configs = extPoint.getConfigurationElements();
+		for (IConfigurationElement config : configs) {
+			if (config.getName().equals("provider")) { //$NON-NLS-1$
+				String currentType = config.getAttribute("type"); //$NON-NLS-1$
+				String shortcut = config.getAttribute("shortcut"); //$NON-NLS-1$
+				if (currentType != null &&  shortcut != null
+						&& currentType.equals(type)) {
+					try {
+						Object obj = config.createExecutableExtension("shortcut"); //$NON-NLS-1$
+						if (obj instanceof ProfileLaunchShortcut) {
+							return (ProfileLaunchShortcut) obj;
+						}
+					} catch (CoreException e) {
+						// continue, perhaps another configuration will succeed
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -124,38 +163,10 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 	 * @return
 	 */
 	protected abstract ILaunchConfigurationType getLaunchConfigType();
-
+	
 	protected abstract void setDefaultProfileAttributes(ILaunchConfigurationWorkingCopy wc) throws CoreException;
 
-	/**
-	 * Set default attributes for the given configuration.
-	 *
-	 * @param config
-	 * @since 1.2
-	 */
-	public void setDefaultProfileLaunchShortcutAttributes(ILaunchConfigurationWorkingCopy wc){
-		try {
-			setDefaultProfileAttributes(wc);
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-	}
-
 	protected ILaunchConfiguration createConfiguration(IBinary bin) {
-		return createConfiguration(bin, true);
-	}
-
-	/**
-	 * Create a launch configuration based on a binary, and optionally
-	 * save it to the underlying resource.
-	 *
-	 * @param bin a representation of a binary
-	 * @param save true if the configuration should be saved to the
-	 * underlying resource, and false if it should not be saved.
-	 * @return a launch configuration generated for the binary.
-	 * @since 1.2
-	 */
-	protected ILaunchConfiguration createConfiguration(IBinary bin, boolean save) {
 		ILaunchConfiguration config = null;
 		try {
 			String projectName = bin.getResource().getProjectRelativePath().toString();
@@ -169,11 +180,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 	
 			setDefaultProfileAttributes(wc);
 	
-			if (save){
-				config = wc.doSave();
-			} else {
-				config = wc;
-			}
+			config = wc.doSave();
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}

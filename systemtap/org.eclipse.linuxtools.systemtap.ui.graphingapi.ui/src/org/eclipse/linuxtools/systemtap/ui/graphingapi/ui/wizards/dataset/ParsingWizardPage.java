@@ -31,7 +31,6 @@ public abstract class ParsingWizardPage extends WizardPage {
 		super(title);
 	}
 	
-	@Override
 	public void createControl(Composite parent) {
 		wizard = (DataSetWizard)super.getWizard();
 	}
@@ -46,7 +45,6 @@ public abstract class ParsingWizardPage extends WizardPage {
 		txtSeries.setText("2"); //$NON-NLS-1$
 		txtSeries.setTextLimit(2);
 		txtSeries.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				if(!"".equals(txtSeries.getText().trim())) {
 					displayTextBoxes();
@@ -55,13 +53,11 @@ public abstract class ParsingWizardPage extends WizardPage {
 			}
 		});
 		txtSeries.addKeyListener(new KeyListener() {
-			@Override
 			public void keyPressed(KeyEvent e) {
 				if(('0' > e.character || '9' < e.character) && 31 < e.character && 127 > e.character)
 					e.doit = false;
 			}
 			
-			@Override
 			public void keyReleased(KeyEvent e) {}
 		});
 
@@ -141,12 +137,10 @@ public abstract class ParsingWizardPage extends WizardPage {
 		lblRegEx.setText(s.toString());
 	}
 	
-	@Override
 	public boolean canFlipToNextPage() {
 		return false;
 	}
 	
-	@Override
 	public void dispose() {
 		if(null != txtRegExpr) {
 			for(int i=0; i<txtRegExpr.length; i++) {
@@ -192,7 +186,6 @@ public abstract class ParsingWizardPage extends WizardPage {
 	abstract void copyExisting(IMemento oldMeta, IMemento newMeta);
 
 	protected class TextModifyListener implements ModifyListener {
-		@Override
 		public void modifyText(ModifyEvent e) {
 			checkComplete();
 			wizard.getContainer().updateButtons();
@@ -200,7 +193,6 @@ public abstract class ParsingWizardPage extends WizardPage {
 	}
 
 	private class RegExModifyListener extends TextModifyListener {
-		@Override
 		public void modifyText(ModifyEvent e) {
 			super.modifyText(e);
 			refreshRegEx();

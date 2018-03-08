@@ -1,18 +1,17 @@
 /*******************************************************************************
  * Copyright (c) 2008 Phil Muldoon <pkmuldoon@picobot.org>.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Phil Muldoon <pkmuldoon@picobot.org> - initial API and implementation.
+ *    Phil Muldoon <pkmuldoon@picobot.org> - initial API and implementation. 
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 
-import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
@@ -36,7 +35,7 @@ public class STPConfiguration extends SourceViewerConfiguration {
 	private ColorManager colorManager;
 	private STPEditor editor;
 	private DoubleClickStrategy doubleClickStrategy;
-
+	
 	public STPConfiguration(ColorManager colorManager, STPEditor editor) {
 		this.colorManager = colorManager;
 		this.editor = editor;
@@ -49,9 +48,8 @@ public class STPConfiguration extends SourceViewerConfiguration {
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
 		return new String[] {
 				IDocument.DEFAULT_CONTENT_TYPE,
-				STPPartitionScanner.STP_COMMENT,
-				STPPartitionScanner.STP_STRING,
-				STPPartitionScanner.STP_PROBE};
+				STPPartitionScanner. STP_COMMENT,
+				STPPartitionScanner.STP_STRING};
 	}
 
 	/* (non-Javadoc)
@@ -67,17 +65,14 @@ public class STPConfiguration extends SourceViewerConfiguration {
 		assistant
 				.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 		IContentAssistProcessor processor = new STPCompletionProcessor();
-
 		assistant.setContentAssistProcessor(processor,IDocument.DEFAULT_CONTENT_TYPE);
-		assistant.setContentAssistProcessor(processor,STPPartitionScanner.STP_PROBE);
-
 		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 		return assistant;
 	}
 
 	/**
 	 * Return the default Element scanner.
-	 *
+	 * 
 	 * @return default element scanner.
 	 */
 	protected STPElementScanner getSTPScanner() {
@@ -91,30 +86,29 @@ public class STPConfiguration extends SourceViewerConfiguration {
 
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getReconciler(org.eclipse.jface.text.source.ISourceViewer)
-     *
+     * 
      * Return the reconciler built on the custom Systemtap reconciling strategy that enables code folding for this editor.
      */
 	@Override
     public IReconciler getReconciler(ISourceViewer sourceViewer)
     {
         STPReconcilingStrategy strategy = new STPReconcilingStrategy();
-        strategy.setEditor(editor);
-        MonoReconciler reconciler = new MonoReconciler(strategy,false);
+        strategy.setEditor(editor);        
+        MonoReconciler reconciler = new MonoReconciler(strategy,false);        
         return reconciler;
     }
-
+	
 	/**
-	 * Instantiates and returns a double click strategy object if one does not exist, and returns the
+	 * Instantiates and returns a double click strategy object if one does not exist, and returns the 
 	 * current one if it does.
 	 */
-	@Override
 	public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer,String contentType) {
 		if (doubleClickStrategy == null)
 			doubleClickStrategy = new DoubleClickStrategy();
 		return doubleClickStrategy;
 	}
 
-
+    
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getPresentationReconciler(org.eclipse.jface.text.source.ISourceViewer)
 	 */
@@ -143,18 +137,8 @@ public class STPConfiguration extends SourceViewerConfiguration {
 		dr = new DefaultDamagerRepairer(getSTPScanner());
 		reconciler.setDamager(dr, STPPartitionScanner.STP_CONDITIONAL);
 		reconciler.setRepairer(dr, STPPartitionScanner.STP_CONDITIONAL);
-
-		dr = new DefaultDamagerRepairer(getSTPScanner());
-		reconciler.setDamager(dr, STPPartitionScanner.STP_PROBE);
-		reconciler.setRepairer(dr, STPPartitionScanner.STP_PROBE);
-
+		
 		return reconciler;
-	}
-
-	@Override
-	public IAutoEditStrategy[] getAutoEditStrategies(
-			ISourceViewer sourceViewer, String contentType) {
-		return new IAutoEditStrategy[] {new STPAutoEditStrategy()};
 	}
 
 }

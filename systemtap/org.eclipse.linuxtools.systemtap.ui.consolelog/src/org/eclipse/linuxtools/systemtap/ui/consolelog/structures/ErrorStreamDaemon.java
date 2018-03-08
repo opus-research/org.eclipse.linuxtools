@@ -24,17 +24,15 @@ public class ErrorStreamDaemon extends ConsoleStreamDaemon {
 
 		outputData = new StringBuilder();
 		this.parser = parser;
-		if (null != errorWindow) {
-			errorView = errorWindow;
-			errorView.clear();
-		}
+		
+		errorView = errorWindow;
+		errorView.clear();
 	}
 	
 	/**
 	 * Prints out the new output data to the console and parses it and sends it to the
 	 * ErrorView.
 	 */
-	@Override
 	protected void pushData() {
 		if(output.startsWith(Localization.getString("ErrorStreamDaemon.Password")))
 			output = output.substring(Localization.getString("ErrorStreamDaemon.Password").length());
@@ -62,7 +60,6 @@ public class ErrorStreamDaemon extends ConsoleStreamDaemon {
 	/**
 	 * Disposes of all internal references in the class. No method should be called after this.
 	 */
-	@Override
 	public void dispose() {
 		if(!isDisposed()) {
 			super.dispose();

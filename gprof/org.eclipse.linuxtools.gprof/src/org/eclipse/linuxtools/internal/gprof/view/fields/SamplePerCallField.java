@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.internal.gprof.view.fields;
 
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
+import org.eclipse.linuxtools.internal.gprof.parser.GmonDecoder;
 import org.eclipse.linuxtools.internal.gprof.view.GmonView;
 import org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement;
 import org.eclipse.swt.graphics.Color;
@@ -35,7 +36,6 @@ public class SamplePerCallField extends SampleProfField {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#compare(java.lang.Object, java.lang.Object)
 	 */
-	@Override
 	public int compare(Object obj1, Object obj2) {
 		TreeElement e1 = (TreeElement) obj1;
 		TreeElement e2 = (TreeElement) obj2;
@@ -53,18 +53,35 @@ public class SamplePerCallField extends SampleProfField {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#getColumnHeaderText()
 	 */
-	@Override
 	public String getColumnHeaderText() {
-		return "Time/Call";
+		String prefix = "";
+		Object o = viewer.getInput();
+		if (o instanceof GmonDecoder) {
+			GmonDecoder decoder = (GmonDecoder) o;
+			if (decoder.isICache()) {
+				prefix = "ICACHE ";
+			} else if (decoder.isDCache()) {
+				prefix = "DCACHE ";
+			}
+		}
+		return prefix + "Time/Call";
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#getColumnHeaderTooltip()
 	 */
-	@Override
 	public String getColumnHeaderTooltip() {
-		return "Time/Call spent by function";
+		Object o = viewer.getInput();
+		if (o instanceof GmonDecoder) {
+			GmonDecoder decoder = (GmonDecoder) o;
+			if (decoder.isICache()) {
+				return "Time/Call spent by function accessing instruction cache";
+			} else if (decoder.isDCache()) {
+				return "Time/Call spent by function accessing data cache";
+			}else return "Time/Call spent by function";
+		}
+		return null;
 	}
 
 
@@ -73,30 +90,27 @@ public class SamplePerCallField extends SampleProfField {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#getValue(java.lang.Object)
 	 */
-	@Override
 	public String getValue(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		int i = e.getSamples();
 		int j = e.getCalls();
-		if (i == -1 || j <= 0) return ""; //$NON-NLS-1$
+		if (i == -1 || j <= 0) return "";
 		float k = (float)i/(float)j;
 
 		double prof_rate = getProfRate();
 		if(prof_rate != 0){
 			return getValue(k, prof_rate);
-		}else return ""; //$NON-NLS-1$
+		}else return "";
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.fields.SampleProfField#getBackground(java.lang.Object)
 	 */
-	@Override
 	public Color getBackground(Object element) {
 		return GmonView.getBackground(element);
 	}
 
-	@Override
 	public Number getNumber(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		int i = e.getSamples();

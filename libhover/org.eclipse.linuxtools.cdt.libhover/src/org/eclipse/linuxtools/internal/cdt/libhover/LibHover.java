@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2006, 2007, 2008, 2011, 2012 Red Hat, Inc.
+ * Copyright (c) 2004, 2006, 2007, 2008, 2011 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.cdt.core.dom.ast.DOMException;
 import org.eclipse.cdt.core.dom.ast.IASTName;
@@ -86,16 +85,16 @@ public class LibHover implements ICHelpProvider {
     // see comment in initialize()
     // private static String defaultSearchPath = null;
     
-	private static ConcurrentHashMap<ICHelpBook, LibHoverLibrary> libraries = new ConcurrentHashMap<ICHelpBook, LibHoverLibrary>();
+	private static HashMap<ICHelpBook, LibHoverLibrary> libraries = new HashMap<ICHelpBook, LibHoverLibrary>();
 	
     static final String  constructTypes[] = {
-    	"dtype", //$NON-NLS-1$
-    	"enum",  //$NON-NLS-1$
-    	"function", //$NON-NLS-1$
-    	"groupsynopsis", //$NON-NLS-1$
-    	"struct", //$NON-NLS-1$
-    	"type",  //$NON-NLS-1$
-    	"union"  //$NON-NLS-1$
+    	"dtype", // $NON-NLS-1$
+    	"enum",  // $NON-NLS-1$
+    	"function", // $NON-NLS-1$
+    	"groupsynopsis", // $NON-NLS-1$
+    	"struct", // $NON-NLS-1$
+    	"type",  // $NON-NLS-1$
+    	"union"  // $NON-NLS-1$
     };
     
     static final int dtypeIndex         = 0;
@@ -132,7 +131,7 @@ public class LibHover implements ICHelpProvider {
     				File lDir = new File(locationDir.toOSString());
     				lDir.mkdir();
     				IPath location = locationDir.append(getTransformedName(l.getName()) + ".libhover"); //$NON-NLS-1$
-    				File target = new File(location.toOSString());
+    				File target = new File(location.toOSString()); //$NON-NLS-1$
     				if (!target.exists()) {
     					FileOutputStream f = new FileOutputStream(locationDir.append("tmpFile").toOSString()); //$NON-NLS-1$
     					ObjectOutputStream out = new ObjectOutputStream(f);
@@ -206,11 +205,11 @@ public class LibHover implements ICHelpProvider {
 	}
 
 	private static String getTransformedName(String name) {
-		return name.replaceAll("\\s", "_"); //$NON-NLS-1$ //$NON-NLS-2$
+		return name.replaceAll("\\s", "_");
 	}
 	
 	private static String getCleanName(String name) {
-		return name.replaceAll("_", " "); //$NON-NLS-1$ //$NON-NLS-2$
+		return name.replaceAll("_", " ");
 	}
 	
 	private static void getCachedLibraries(IFileStore dir, String type) {
@@ -224,7 +223,7 @@ public class LibHover implements ICHelpProvider {
 					File f = file.toLocalFile(EFS.NONE, null);
 					if (f != null) {
 						String name = getCleanName(fileName.substring(0,fileName.length()-9));
-						HelpBook h = new HelpBook(name, type);
+						HelpBook h = new HelpBook(name, type); //$NON-NLS-1$
 						helpBooks.add(h);
 						helpBooksMap.put(name, h);
 						String location = file.toURI().toString();
@@ -275,7 +274,7 @@ public class LibHover implements ICHelpProvider {
         }
         
 		public int compareTo (FunctionSummary x) {
-			FunctionSummary y = x;
+			FunctionSummary y = (FunctionSummary)x;
 			return getName().compareTo(y.getName());
 		}
 
@@ -294,13 +293,13 @@ public class LibHover implements ICHelpProvider {
             public String getPrototypeString(boolean namefirst) {
                 if (true == namefirst) {
                 	if (prototypeHasBrackets())
-                		return Name + " " + Prototype + " " + ReturnType; //$NON-NLS-1$ //$NON-NLS-2$
-                    return Name + " (" + Prototype + ") " + ReturnType; //$NON-NLS-1$ //$NON-NLS-2$
+                		return Name + " " + Prototype + " " + ReturnType; // $NON-NLS-1$ // $NON-NLS-2$
+                    return Name + " (" + Prototype + ") " + ReturnType; // $NON-NLS-1$ // $NON-NLS-2$
                 }
                 else {
                 	if (prototypeHasBrackets())
-                		return ReturnType + " " + Name + " " + Prototype; //$NON-NLS-1$ //$NON-NLS-2$
-                    return ReturnType + " " + Name + " (" + Prototype + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                		return ReturnType + " " + Name + " " + Prototype; // $NON-NLS-1$ // $NON-NLS-2$
+                    return ReturnType + " " + Name + " (" + Prototype + ")"; // $NON-NLS-1$ // $NON-NLS-2$ // $NON-NLS-3$
                 }
             }
         }
@@ -315,7 +314,7 @@ public class LibHover implements ICHelpProvider {
         public IRequiredInclude[] getIncludes() {
         	IRequiredInclude[] includes = new IRequiredInclude[Includes.size()];
         	for (int i = 0; i < Includes.size(); ++i) {
-        		includes[i] = Includes.get(i);
+        		includes[i] = (IRequiredInclude)Includes.get(i);
         	}
         	return includes;
         }
@@ -332,11 +331,10 @@ public class LibHover implements ICHelpProvider {
 		private IASTName result = null;
 		public EnclosingASTNameJob (ITranslationUnit t, 
 				int toffset, int tlength) {
-			super("EnclosingASTNameJob", t); //$NON-NLS-1$
+			super("EnclosingASTNameJob", t); // $NON-NLS-1$
 			this.toffset = toffset;
 			this.tlength = tlength;
 		}
-		@Override
 		public IStatus runOnAST(ILanguage lang, IASTTranslationUnit ast) {
 			if (ast != null) {
 				result = ast.getNodeSelector(null).findEnclosingName(toffset, tlength);
@@ -352,11 +350,10 @@ public class LibHover implements ICHelpProvider {
 		private IBinding binding;
 		private IASTName[] decls = null;
 		public ASTDeclarationFinderJob (ITranslationUnit t, IBinding binding) {
-			super("ASTDeclarationFinderJob", t); //$NON-NLS-1$
+			super("ASTDeclarationFinderJob", t); // $NON-NLS-1$
 			this.binding = binding;
 		}
-    	@Override
-		public IStatus runOnAST(ILanguage lang, IASTTranslationUnit ast) {
+    	public IStatus runOnAST(ILanguage lang, IASTTranslationUnit ast) {
     		if (ast != null) {
     			decls = ast.getDeclarationsInAST(binding);
     		}
@@ -380,7 +377,7 @@ public class LibHover implements ICHelpProvider {
         	try {
         		if (context instanceof IHoverHelpInvocationContext) {
         			// We know the file offset of the member reference.
-        			IRegion region = ((IHoverHelpInvocationContext)context).getHoverRegion();
+        			IRegion region = (IRegion)((IHoverHelpInvocationContext)context).getHoverRegion();
         			
         			// Now, let's find the declaration of the method.  We need to do this because we want the specific
         			// member prototype to go searching for.  There could be many members called "x" which have different
@@ -444,7 +441,7 @@ public class LibHover implements ICHelpProvider {
 			String[] qualified = c.getQualifiedName();
 			className = qualified[0];
 			for (int k = 1; k < qualified.length; ++k) {
-				className += "::" + qualified[k]; //$NON-NLS-1$
+				className += "::" + qualified[k];
 			}
 
 			// Check if we have an instance of a template class.	
@@ -455,8 +452,8 @@ public class LibHover implements ICHelpProvider {
 				ICPPTemplateParameterMap tiMap = ti.getTemplateParameterMap();
 				ICPPTemplateDefinition td = ti.getTemplateDefinition();
 				ICPPTemplateParameter[] templateArgs = td.getTemplateParameters();
-				className += "<"; //$NON-NLS-1$
-				String separator = ""; //$NON-NLS-1$
+				className += "<";
+				String separator = "";
 				for (int x = 0; x < templateArgs.length; ++x) {
 					ICPPTemplateParameter tp = templateArgs[x];
 					ICPPTemplateArgument ta = tiMap.getArgument(tp);
@@ -475,10 +472,10 @@ public class LibHover implements ICHelpProvider {
 							className += separator + getClassName((ICPPClassType)type);
 						else
 							className += separator + type.toString();
-						separator = ","; //$NON-NLS-1$
+						separator = ",";
 					}
 				}
-				className += ">"; //$NON-NLS-1$
+				className += ">";
 			}
 		} catch(DOMException e) {
 			return null;
@@ -547,7 +544,7 @@ public class LibHover implements ICHelpProvider {
 				f.Prototype = m.getPrototype();
 				f.Summary = m.getDescription();
 //				String actualClassName = className.substring(className.indexOf("::")+2); // $NON-NLS-1$
-				f.Name = className + "::" + memberName; //$NON-NLS-1$
+				f.Name = className + "::" + memberName; // $NON-NLS-1$
 				String[] templateParms = info.getTemplateParms();
 				for (int i = 0; i < templateTypes.size(); ++i) {
 					f.ReturnType = f.ReturnType.replaceAll(templateParms[i], templateTypes.get(i));
@@ -555,16 +552,16 @@ public class LibHover implements ICHelpProvider {
 					f.Name = f.Name.replaceAll(templateParms[i], templateTypes.get(i));
 				}
 				if (f.ReturnType.indexOf('<') >= 0) {
-					f.ReturnType = f.ReturnType.replaceAll("<", "&lt;"); //$NON-NLS-1$ //$NON-NLS-2$
-					f.ReturnType = f.ReturnType.replaceAll(">", "&gt;");  //$NON-NLS-1$//$NON-NLS-2$
+					f.ReturnType = f.ReturnType.replaceAll("<", "&lt;");
+					f.ReturnType = f.ReturnType.replaceAll(">", "&gt;");
 				}
 				if (f.Prototype.indexOf('<') >= 0) {
-					f.Prototype = f.Prototype.replaceAll("<", "&lt;"); //$NON-NLS-1$ //$NON-NLS-2$
-					f.Prototype = f.Prototype.replaceAll(">", "&gt;");  //$NON-NLS-1$//$NON-NLS-2$
+					f.Prototype = f.Prototype.replaceAll("<", "&lt;");
+					f.Prototype = f.Prototype.replaceAll(">", "&gt;");
 				}
 				if (f.Name.indexOf('<') >= 0) {
-					f.Name = f.Name.replaceAll("<", "&lt;");  //$NON-NLS-1$//$NON-NLS-2$
-					f.Name = f.Name.replaceAll(">", "&gt;"); //$NON-NLS-1$ //$NON-NLS-2$
+					f.Name = f.Name.replaceAll("<", "&lt;");
+					f.Name = f.Name.replaceAll(">", "&gt;");
 				}
 				f.setPrototypeHasBrackets(true);
 				f.setIncludeName(info.getInclude());
@@ -578,7 +575,7 @@ public class LibHover implements ICHelpProvider {
 	private boolean isParmMatch(MemberInfo m, String[] args, ArrayList<String> templateTypes, ClassInfo info) {
 		String[] memberParms = m.getParamTypes();
 		String className = info.getClassName();
-		int index = className.lastIndexOf("::"); //$NON-NLS-1$
+		int index = className.lastIndexOf("::");
 		String unqualifiedName = className.substring(index+2);
 		for (int i = 0; i < memberParms.length; ++i) {
 			String[] templateParms = info.getTemplateParms();
@@ -590,15 +587,15 @@ public class LibHover implements ICHelpProvider {
 			// is coming back from the indexer which will be fully-qualified and have template
 			// parameters specified.
 			if (memberParms[i].contains(unqualifiedName) && !memberParms[i].contains(className)) {
-				String classTemplate = ""; //$NON-NLS-1$
+				String classTemplate = new String("");
 				if (templateTypes.size() > 0) {
-					classTemplate = "<"; //$NON-NLS-1$
-					String separator = ""; //$NON-NLS-1$
+					classTemplate = "<";
+					String separator = "";
 					for (int j = 0; j < templateTypes.size(); ++j) {
 						classTemplate += separator + templateTypes.get(j);
-						separator = ","; //$NON-NLS-1$
+						separator = ",";
 					}
-					classTemplate += ">"; //$NON-NLS-1$
+					classTemplate += ">";
 				}
 				memberParms[i] = memberParms[i].replaceAll(unqualifiedName, className + classTemplate);
 			}
@@ -611,9 +608,9 @@ public class LibHover implements ICHelpProvider {
 		String[] result = new String[parameterTypes.length];
 		for (int i = 0; i < parameterTypes.length; ++i) {
 			String param = parameterTypes[i].toString();
-			param = param.replaceAll("\\{.*\\}", ""); //$NON-NLS-1$ //$NON-NLS-2$
+			param = param.replaceAll("\\{.*\\}", "");
 			param = param.trim();
-			int index = param.indexOf("#"); //$NON-NLS-1$
+			int index = param.indexOf("#");
 			while (index >= 0) {
 				// We assume no class has more than 9 template parms.
 				int digit = param.charAt(index + 1) - '0';
@@ -622,7 +619,7 @@ public class LibHover implements ICHelpProvider {
 					param = param.replaceFirst(param.substring(index, index + 2), templateTypes.get(digit));
 				else
 					param = param.replaceFirst(param.substring(index, index + 2), templateParms[digit]);
-				index = param.indexOf("#"); //$NON-NLS-1$
+				index = param.indexOf("#");
 			}
 			result[i] = param;
 		}
@@ -638,7 +635,7 @@ public class LibHover implements ICHelpProvider {
 			SortedMap<String, FunctionInfo> map = cppInfo.functions.tailMap(prefix);
 			Set<Map.Entry<String, FunctionInfo>> c = map.entrySet();
 			for (Iterator<Entry<String, FunctionInfo>> i = c.iterator(); i.hasNext();) {
-				Map.Entry<String, FunctionInfo> e = i.next();
+				Map.Entry<String, FunctionInfo> e = (Map.Entry<String, FunctionInfo>)i.next();
 				FunctionInfo x = e.getValue();
 				String name = x.getName();
 				// Look for names that start with prefix, but ignore names that
@@ -663,7 +660,7 @@ public class LibHover implements ICHelpProvider {
 		}
 		IFunctionSummary[] summaries = new IFunctionSummary[fList.size()];
 		for (int k = 0; k < summaries.length; k++) {
-			summaries[k] = fList.get(k);
+			summaries[k] = (IFunctionSummary)fList.get(k);
 		}
 		return summaries;
 	}

@@ -38,63 +38,53 @@ public class FilteredTableDataSet extends TableDataSet implements IFilteredDataS
 	}
 
 	//Overwrite methods to insure data is removed from the original DataSet
-	@Override
-	public void append(IDataEntry entry) {
+	public void append(IDataEntry entry) throws ArrayIndexOutOfBoundsException {
 		original.append(entry);
 	}
 	
-	@Override
 	public boolean remove(IDataEntry entry) {
 		return original.remove(entry);
 	}
 	
-	@Override
 	public boolean remove(int entry) {
 		return original.remove(entry);
 	}
 	//End overwrite methods to insure data is removed from the original DataSet
 	
  	//Overwrite to ensure the data returned has all the filters applied
-	@Override
 	public Object[] getColumn(int col, int start, int end) {
 		rebuildDataSet();
 		return super.getColumn(col, start, end);
 	}
 
-	@Override
 	public Object[] getRow(int row) {
 		rebuildDataSet();
 		return super.getRow(row);
 	}
 	
-	@Override
 	public int getRowCount() {
 		rebuildDataSet();
 		return super.getRowCount();
 	}
 
-	@Override
 	public Object[] getHistoricalData(String key, int col, int start, int end) {
 		return original.getHistoricalData(key, col, start, end);
 		//rebuildHistoricalDataSet();
 		//return super.getHistoricalData(key, col, start, end);
 	}
 	
-	@Override
 	public int getEntryCount() {
 		return original.getEntryCount();
 		//rebuildHistoricalDataSet();
 		//return super.getEntryCount();
 	}
 	
-	@Override
 	public IDataEntry getEntry(int entry) {
 		return original.getEntry(entry);
 		//rebuildHistoricalDataSet();
 		//return super.getEntry(entry);
 	}
 
-	@Override
 	public Object[][] getData() {
 		rebuildDataSet();
 		return super.getData();
@@ -102,25 +92,21 @@ public class FilteredTableDataSet extends TableDataSet implements IFilteredDataS
  	//End overwrite to ensure the data returned has all the filters applied
 
 	//IFilteredDataSet Methods
-	@Override
 	public void addFilter(IDataSetFilter filter) {
 		filters.add(filter);
 		filtersChanged = true;
 	}
 	
-	@Override
 	public boolean removeFilter(IDataSetFilter filter) {
 		filtersChanged = filters.remove(filter);
 		return filtersChanged;
 	}
 	
-	@Override
 	public void clearFilters() {
 		filters.clear();
 		filtersChanged = true;
 	}
 	
-	@Override
 	public IDataSetFilter[] getFilters() {
 		IDataSetFilter[] f = new IDataSetFilter[filters.size()];
 		filters.toArray(f);
@@ -138,7 +124,7 @@ public class FilteredTableDataSet extends TableDataSet implements IFilteredDataS
 			
  			ArrayList<Object>[] filterData = getFilterData();
 			for(int i=0; i<filters.size(); i++)
-				filterData = filters.get(i).filter(filterData);
+				filterData = ((IDataSetFilter)filters.get(i)).filter(filterData);
 			setFilteredData(filterData);
 		}
 	}

@@ -15,7 +15,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
 
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -42,35 +41,21 @@ public class Utils {
     public enum TimeFormat {
         /** Relative to the start of the trace */
         RELATIVE,
-
-        /**
-         * Absolute timestamp (ie, relative to the Unix epoch)
-         * @since 2.0
-         */
-        CALENDAR,
-
-        /**
-         * Timestamp displayed as a simple number
-         * @since 2.0
-         */
-        NUMBER,
+        /** Absolute timestamp (ie, relative to the Unix epoch) */
+        ABSOLUTE
     }
 
-    /**
-     * Timestamp resolution
-     */
+    static public final int IMG_THREAD_RUNNING = 0;
+    static public final int IMG_THREAD_SUSPENDED = 1;
+    static public final int IMG_THREAD_STOPPED = 2;
+    static public final int IMG_METHOD_RUNNING = 3;
+    static public final int IMG_METHOD = 4;
+    static public final int IMG_NUM = 5;
+
+    static public final Object[] _empty = new Object[0];
+
     public static enum Resolution {
-        /** seconds */
-        SECONDS,
-
-        /** milliseconds */
-        MILLISEC,
-
-        /** microseconds */
-        MICROSEC,
-
-        /** nanoseconds */
-        NANOSEC
+        SECONDS, MILLISEC, MICROSEC, NANOSEC
     }
 
     static private final SimpleDateFormat stimeformat = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
@@ -264,50 +249,6 @@ public class Utils {
     }
 
     /**
-     * Draw text in a rectangle, trimming the text to prevent exceeding the specified width.
-     *
-     * @param gc
-     *            The SWT GC object
-     * @param text
-     *            The string to be drawn
-     * @param x
-     *            The x coordinate of the top left corner of the rectangular area where the text is to be drawn
-     * @param y
-     *            The y coordinate of the top left corner of the rectangular area where the text is to be drawn
-     * @param width
-     *            The width of the area to be drawn
-     * @param isCentered
-     *            If <code>true</code> the text will be centered in the available width if space permits
-     * @param isTransparent
-     *            If <code>true</code> the background will be transparent, otherwise it will be opaque
-     * @return The number of characters written
-     *
-     * @since 2.0
-     */
-    static public int drawText(GC gc, String text, int x, int y, int width, boolean isCentered, boolean isTransparent) {
-        int len = text.length();
-        int textWidth = 0;
-        boolean isReallyCentered = isCentered;
-        int realX = x;
-
-        while (len > 0) {
-            textWidth = gc.stringExtent(text.substring(0, len)).x;
-            if (textWidth <= width) {
-                break;
-            }
-            isReallyCentered = false;
-            len--;
-        }
-        if (len > 0) {
-            if (isReallyCentered) {
-                realX += (width - textWidth) / 2;
-            }
-            gc.drawText(text.substring(0, len), realX, y, isTransparent);
-        }
-        return len;
-    }
-
-    /**
      * Formats time in format: MM:SS:NNN
      *
      * @param time time
@@ -317,21 +258,18 @@ public class Utils {
      */
     static public String formatTime(long time, TimeFormat format, Resolution resolution) {
         // if format is absolute (Calendar)
-        if (format == TimeFormat.CALENDAR) {
+        if (format == TimeFormat.ABSOLUTE) {
             return formatTimeAbs(time, resolution);
-        } else if (format == TimeFormat.NUMBER) {
-            return NumberFormat.getInstance().format(time);
         }
 
         StringBuffer str = new StringBuffer();
-        long t = time;
-        boolean neg = t < 0;
+        boolean neg = time < 0;
         if (neg) {
-            t = -t;
+            time = -time;
             str.append('-');
         }
 
-        long sec = (long) (t * 1E-9);
+        long sec = (long) (time * 1E-9);
         // TODO: Expand to make it possible to select the minute, second, nanosecond format
         //printing minutes is suppressed just sec and ns
         // if (sec / 60 < 10)
@@ -342,7 +280,7 @@ public class Utils {
         // if (sec < 10)
         // str.append('0');
         str.append(sec);
-        String ns = formatNs(t, resolution);
+        String ns = formatNs(time, resolution);
         if (!ns.equals("")) { //$NON-NLS-1$
             str.append('.');
             str.append(ns);
@@ -391,15 +329,14 @@ public class Utils {
      * seconds can be obtained by removing the last 9 digits: 1241207054 the
      * fractional portion of seconds, expressed in ns is: 171080214
      *
-     * @param srcTime
+     * @param time
      *            The source time in ns
      * @param res
      *            The Resolution to use
      * @return the formatted nanosec
      */
-    public static String formatNs(long srcTime, Resolution res) {
+    public static String formatNs(long time, Resolution res) {
         StringBuffer str = new StringBuffer();
-        long time = srcTime;
         boolean neg = time < 0;
         if (neg) {
             time = -time;
@@ -519,8 +456,7 @@ public class Utils {
                 break;
             }
 
-            if (currEvent == null || currEvent.getTime() != nextStartTime ||
-                    (nextStartTime != time && currEvent.getDuration() != nextEvent.getDuration())) {
+            if (currEvent == null || currEvent.getTime() != nextStartTime) {
                 prevEvent = currEvent;
                 currEvent = nextEvent;
             }
@@ -551,12 +487,11 @@ public class Utils {
     /**
      * Pretty-print a method signature.
      *
-     * @param origSig
+     * @param sig
      *            The original signature
      * @return The pretty signature
      */
-    static public String fixMethodSignature(String origSig) {
-        String sig = origSig;
+    static public String fixMethodSignature(String sig) {
         int pos = sig.indexOf('(');
         if (pos >= 0) {
             String ret = sig.substring(0, pos);
@@ -569,14 +504,12 @@ public class Utils {
     /**
      * Restore an original method signature from a pretty-printed one.
      *
-     * @param ppSig
+     * @param sig
      *            The pretty-printed signature
      * @return The original method signature
      */
-    static public String restoreMethodSignature(String ppSig) {
+    static public String restoreMethodSignature(String sig) {
         String ret = ""; //$NON-NLS-1$
-        String sig = ppSig;
-
         int pos = sig.indexOf('(');
         if (pos >= 0) {
             ret = sig.substring(0, pos);
@@ -602,14 +535,14 @@ public class Utils {
     /**
      * Get the mangled type information from an array of types.
      *
-     * @param typeStr
+     * @param type
      *            The types to convert. See method implementation for what it
      *            expects.
      * @return The mangled string of types
      */
-    public static String getTypeSignature(String typeStr) {
+    @SuppressWarnings("nls")
+    static public String getTypeSignature(String type) {
         int dim = 0;
-        String type = typeStr;
         for (int j = 0; j < type.length(); j++) {
             if (type.charAt(j) == '[') {
                 dim++;
@@ -622,7 +555,7 @@ public class Utils {
         StringBuffer sig = new StringBuffer(""); //$NON-NLS-1$
         for (int j = 0; j < dim; j++)
          {
-            sig.append("["); //$NON-NLS-1$
+            sig.append("[");                 //$NON-NLS-1$
         }
         if (type.equals("boolean")) { //$NON-NLS-1$
             sig.append('Z');

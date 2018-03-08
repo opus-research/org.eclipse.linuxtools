@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 
 
 /**
@@ -27,10 +27,9 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
  * @version 1.0
  * @author Patrick Tasse
  */
-@SuppressWarnings("javadoc")
 public class TmfFilterCompareNode extends TmfFilterTreeNode {
 
-    public static final String NODE_NAME = "COMPARE"; //$NON-NLS-1$
+	public static final String NODE_NAME = "COMPARE"; //$NON-NLS-1$
 	public static final String NOT_ATTR = "not"; //$NON-NLS-1$
 	public static final String FIELD_ATTR = "field"; //$NON-NLS-1$
 	public static final String RESULT_ATTR = "result"; //$NON-NLS-1$
@@ -54,80 +53,47 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
 	private Number fValueNumber;
 	private TmfTimestamp fValueTimestamp;
 
-	/**
-	 * @param parent the parent node
-	 */
 	public TmfFilterCompareNode(ITmfFilterTreeNode parent) {
 		super(parent);
 	}
 
-	/**
-	 * @return the NOT state
-	 */
 	public boolean isNot() {
 		return fNot;
 	}
 
-    /**
-     * @param not the NOT state
-     */
 	public void setNot(boolean not) {
 		this.fNot = not;
 	}
 
-	/**
-	 * @return the field name
-	 */
 	public String getField() {
 		return fField;
 	}
 
-	/**
-	 * @param field the field name
-	 */
 	public void setField(String field) {
 		this.fField = field;
 	}
 
-	/**
-	 * @return the compare result
-	 */
 	public int getResult() {
 		return fResult;
 	}
 
-	/**
-	 * @param result the compare result
-	 */
 	public void setResult(int result) {
 		this.fResult = result;
 	}
 
-	/**
-	 * @return the comparison type
-	 */
 	public Type getType() {
 		return fType;
 	}
 
-	/**
-	 * @param type the comparison type
-	 */
 	public void setType(Type type) {
 		this.fType = type;
 		setValue(fValue);
 	}
 
-	/**
-	 * @return the comparison value
-	 */
 	public String getValue() {
 		return fValue;
 	}
 
-	/**
-	 * @param value the comparison value
-	 */
 	public void setValue(String value) {
 		this.fValue = value;
 		fValueNumber = null;

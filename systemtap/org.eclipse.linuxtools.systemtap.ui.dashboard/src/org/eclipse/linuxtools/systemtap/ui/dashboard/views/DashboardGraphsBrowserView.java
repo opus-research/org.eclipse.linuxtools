@@ -14,14 +14,6 @@ package org.eclipse.linuxtools.systemtap.ui.dashboard.views;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.linuxtools.internal.systemtap.ui.dashboard.actions.ActivateGraphAction;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleData;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleTreeNode;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardGraphData;
-import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.GraphTreeNode;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -29,6 +21,16 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
+
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.actions.ActivateGraphAction;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.internal.DashboardPlugin;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleData;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.ActiveModuleTreeNode;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardGraphData;
+import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.GraphTreeNode;
 
 
 /**
@@ -39,39 +41,51 @@ import org.eclipse.ui.PlatformUI;
 public class DashboardGraphsBrowserView extends GraphsView {
 	public DashboardGraphsBrowserView() {
 		super();
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
 	}
-
-	@Override
+	
+	/**
+	 * This method sends requests to get all of the modules that are
+	 * avialable on the system.  Once then are found, it will
+	 * set the viewer's content to the tree of modules that were found.
+	 */
+	/*protected void generateGraphsTree() {
+		TreeNode graphs = DashboardGraphsLocator.getGraphs();
+		
+		if(null != graphs)
+			viewer.setInput(graphs);
+		else
+			viewer.setInput(new TreeNode("", false));
+	}*/
+	
 	protected void generateGraphsTree() {
-		viewer.setInput(new TreeNode("root", "", false)); //$NON-NLS-1$ //$NON-NLS-2$
+		viewer.setInput(new TreeNode("root", "", false));
 	}
-
-	@Override
+	
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		viewer.setLabelProvider(new ViewLabelProvider());
 	}
-
+	
 	/**
 	 * This method builds the actions for the items inside this view.  It adds a
 	 * double click listener to each of the Items so they will be run if they
 	 * are actual modules.  It also sets up the layout for popup menu when users
 	 * right click on a module element.
 	 */
-	@Override
 	protected void makeActions() {
 		//Gets items from plugin.xml
-		MenuManager manager = new MenuManager("modulePopup"); //$NON-NLS-1$
+		MenuManager manager = new MenuManager("modulePopup");
 		Control control = this.viewer.getControl();
-		manager.add(new Separator("file.ext")); //$NON-NLS-1$
-		manager.add(new Separator("build.ext")); //$NON-NLS-1$
+		manager.add(new Separator("file.ext"));
+		manager.add(new Separator("build.ext"));
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 		Menu menu = manager.createContextMenu(control);
 		control.setMenu(menu);
 		getSite().registerContextMenu(manager, viewer);
 		super.makeActions();
 	}
-
+	
 	public void add(String display, ActiveModuleData data) {
 		TreeNode root = (TreeNode)viewer.getInput();
 		ActiveModuleTreeNode child = new ActiveModuleTreeNode(data, display, true);
@@ -90,50 +104,47 @@ public class DashboardGraphsBrowserView extends GraphsView {
 			graphNode = new GraphTreeNode(graphData, data.module.graphs[i].title, true);
 			act.run(graphNode);
 			child.add(graphNode);
-
+			
 		}
 		root.sortLevel();
 		viewer.refresh();
-
+		
 	}
 	/**
 	 * This method removes all internal references. Nothing should be called/referenced after
 	 * this method is run.
 	 */
-	@Override
 	public void dispose() {
+		LogManager.logInfo("disposing", this); //$NON-NLS-1$
 		super.dispose();
 		viewer=null;
 	}
 	/**
-	 * This class provides functionality for determining what image to
+	 * This class provides functionality for determining what image to 
 	 * display for each item in the tree.
 	 */
-	private static class ViewLabelProvider extends LabelProvider {
-		@Override
+	private class ViewLabelProvider extends LabelProvider {
 		public String getText(Object obj) {
 			return obj.toString();
 		}
 
-		@Override
 		public Image getImage(Object obj) {
 			TreeNode treeObj = (TreeNode)obj;
 			Image img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
-
-			if(treeObj.getChildCount() > 0) {
-				img = DashboardPlugin.getImageDescriptor("icons/misc/module_obj.gif").createImage(); //$NON-NLS-1$
-			} else if(treeObj instanceof GraphTreeNode){
-				if(null == ((DashboardGraphData)((GraphTreeNode)treeObj).getData()).adapter) {
-					img = DashboardPlugin.getImageDescriptor("icons/misc/graph_dis.gif").createImage(); //$NON-NLS-1$
-				} else {
-					img = DashboardPlugin.getImageDescriptor("icons/misc/graph_act.gif").createImage(); //$NON-NLS-1$
-				}
+			
+			if(treeObj.getChildCount() > 0)
+				img = DashboardPlugin.getImageDescriptor("icons/misc/module_obj.gif").createImage();
+			else if(treeObj instanceof GraphTreeNode){
+				if(null == ((DashboardGraphData)((GraphTreeNode)treeObj).getData()).adapter)
+					img = DashboardPlugin.getImageDescriptor("icons/misc/graph_dis.gif").createImage();
+				else
+					img = DashboardPlugin.getImageDescriptor("icons/misc/graph_act.gif").createImage();
 			}
 
 			return img;
 		}
-	}
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardGraphsBrowserView"; //$NON-NLS-1$
-
+	}	
+	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardGraphsBrowserView";
+	
 }
 

@@ -26,39 +26,33 @@ public class SelectFilterWizard extends Wizard implements INewWizard {
 		filter = null;
 		this.series = series;
 	}
-
-	@Override
+	
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 	}
-
-	@Override
+	
 	public void addPages() {
-		setWindowTitle(Localization.getString("SelectFilterWizard.CreateFilter")); //$NON-NLS-1$
+		setWindowTitle(Localization.getString("SelectFilterWizard.CreateFilter"));
 		selectFilterPage = new SelectFilterWizardPage();
 		addPage(selectFilterPage);
-
+		
 		filterOptionsPages = new FilterWizardPage[AvailableFilterTypes.filterIDs.length];
 		for(int i=0; i<AvailableFilterTypes.filterIDs.length; i++) {
 			filterOptionsPages[i] = AvailableFilterTypes.getFilterWizardPage(AvailableFilterTypes.filterIDs[i]);
 			addPage(filterOptionsPages[i]);
 		}
 	}
-
-	@Override
+	
 	public boolean canFinish() {
-		IWizardPage page = this.getContainer().getCurrentPage();
-		if((null != filter) && (page instanceof FilterWizardPage)) {
+		IWizardPage page = this.getContainer().getCurrentPage(); 
+		if((null != filter) && (page instanceof FilterWizardPage))
 			return true;
-		}
 		return false;
 	}
 
-	@Override
 	public boolean performCancel() {
 		return true;
 	}
-
-	@Override
+	
 	public boolean performFinish() {
 		return true;
 	}
@@ -66,12 +60,10 @@ public class SelectFilterWizard extends Wizard implements INewWizard {
 	public IDataSetFilter getFilter() {
 		return filter;
 	}
-
-	@Override
+	
 	public void dispose() {
-		if(null != selectFilterPage) {
+		if(null != selectFilterPage)
 			selectFilterPage.dispose();
-		}
 		selectFilterPage = null;
 		if(null != filterOptionsPages) {
 			for(int i=0; i<filterOptionsPages.length; i++) {
@@ -84,10 +76,10 @@ public class SelectFilterWizard extends Wizard implements INewWizard {
 
 		super.dispose();
 	}
-
+	
 	private SelectFilterWizardPage selectFilterPage;
 	private FilterWizardPage[] filterOptionsPages;
 	public String[] series;
-
+	
 	public IDataSetFilter filter;
 }

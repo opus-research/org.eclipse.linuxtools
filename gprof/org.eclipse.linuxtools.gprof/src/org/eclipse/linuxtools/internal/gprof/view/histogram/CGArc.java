@@ -42,7 +42,6 @@ public class CGArc extends AbstractTreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getChildren()
 	 */
-	@Override
 	public LinkedList<? extends TreeElement> getChildren() {
 		return null;
 	}
@@ -51,7 +50,6 @@ public class CGArc extends AbstractTreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement#hasChildren()
 	 */
-	@Override
 	public boolean hasChildren() {
 		return false;
 	}
@@ -99,18 +97,16 @@ public class CGArc extends AbstractTreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement#getName()
 	 */
-	@Override
 	public String getName() {
 		String functionName = getFunctionName();
 		Path p = new Path(getSourcePath());
-		return functionName + " (" + p.lastSegment() + ":" + getSourceLine() + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		return functionName + " (" + p.lastSegment() + ":" + getSourceLine() + ")";
 	}
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement#getSourceLine()
 	 */
-	@Override
 	public int getSourceLine() {
 		Object o = this.getParent();
 		CGCategory category = (CGCategory) o;
@@ -126,7 +122,6 @@ public class CGArc extends AbstractTreeElement {
 	 * (non-Javadoc)
 	 * @see org.eclipse.linuxtools.internal.gprof.view.histogram.AbstractTreeElement#getSourcePath()
 	 */
-	@Override
 	public String getSourcePath() {
 		Object o = this.getParent();
 		CGCategory category = (CGCategory) o;
@@ -135,9 +130,11 @@ public class CGArc extends AbstractTreeElement {
 			String fileName = ((HistRoot)getRoot()).decoder.getFileName(symbol);
 			return fileName;
 		} else {
-			if (arc.parentPath == null) return "??"; //$NON-NLS-1$
+			if (arc.parentPath == null) return "??";
 			return arc.parentPath;
 		}
 	}
+	
+	
 
 }

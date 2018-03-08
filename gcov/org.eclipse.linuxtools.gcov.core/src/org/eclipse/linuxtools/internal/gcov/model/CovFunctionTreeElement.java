@@ -24,7 +24,7 @@ public class CovFunctionTreeElement extends AbstractTreeElement {
 	
 	public CovFunctionTreeElement(TreeElement parent, String name, String sourceFilePath, 
 			long firstLnNmbr, int executedLines, int instrumentedLines) {
-		super(parent, name, -1, executedLines, instrumentedLines);
+		super(parent, name, 0, executedLines, instrumentedLines);
 		this.sourceFilePath = sourceFilePath;
 		this.firstLnNmbr = firstLnNmbr;
 	}
@@ -32,17 +32,14 @@ public class CovFunctionTreeElement extends AbstractTreeElement {
 		
 	/* no children for functions*/
 	
-	@Override
 	public boolean hasChildren() {
 		return false;
 	}
 
-	@Override
 	public LinkedList<? extends TreeElement> getChildren() {
 		return null;
 	}
 
-	@Override
 	public void addChild(TreeElement child){
 	}
 	

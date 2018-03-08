@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,13 +9,12 @@
  * Contributors:
  * Francois Chouinard - Initial API and implementation
  * Francois Chouinard - Updated as per TMF Trace Model 1.0
- * Patrick Tasse - Updated for ranks in experiment location
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.trace;
 
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
-
+import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 
 /**
  * The experiment location in TMF.
@@ -32,9 +31,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  *
  * @see TmfLocationArray
  */
-public final class TmfExperimentLocation implements ITmfLocation {
-
-    private final TmfLocationArray fLocation;
+public class TmfExperimentLocation extends TmfLocation<TmfLocationArray> {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -46,7 +43,7 @@ public final class TmfExperimentLocation implements ITmfLocation {
      * @param locations the set of trace locations
      */
     public TmfExperimentLocation(TmfLocationArray locations) {
-        fLocation = locations;
+        super(locations);
     }
 
     /**
@@ -55,7 +52,22 @@ public final class TmfExperimentLocation implements ITmfLocation {
      * @param location the other experiment location
      */
     public TmfExperimentLocation(TmfExperimentLocation location) {
-        this(location.getLocationInfo());
+        this(location.getLocation());
+    }
+
+    // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfLocation#clone()
+     */
+    @Override
+    public TmfExperimentLocation clone() {
+//        super.clone(); // To keep FindBugs happy
+        TmfLocationArray array = getLocation();
+        TmfLocationArray clones = array.clone();
+        return new TmfExperimentLocation(clones);
     }
 
     // ------------------------------------------------------------------------
@@ -68,8 +80,11 @@ public final class TmfExperimentLocation implements ITmfLocation {
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        StringBuilder result = new StringBuilder("TmfExperimentLocation [");
-        result.append(fLocation.toString());
+        StringBuilder result = new StringBuilder("[TmfExperimentLocation");
+        ITmfLocation<? extends Comparable<?>>[] locations = getLocation().getLocations();
+        for (ITmfLocation<?> location : locations) {
+            result.append("[" + location + "]");
+        }
         result.append("]");
         return result.toString();
     }
@@ -97,14 +112,6 @@ public final class TmfExperimentLocation implements ITmfLocation {
             return false;
         }
         return true;
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocationData()
-     */
-    @Override
-    public TmfLocationArray getLocationInfo() {
-        return fLocation;
     }
 
 }

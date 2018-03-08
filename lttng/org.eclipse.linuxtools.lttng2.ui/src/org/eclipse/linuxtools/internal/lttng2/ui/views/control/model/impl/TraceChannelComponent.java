@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl;
 
@@ -225,6 +224,7 @@ public class TraceChannelComponent extends TraceControlComponent {
      * (non-Javadoc)
      * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
      */
+    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -287,23 +287,7 @@ public class TraceChannelComponent extends TraceControlComponent {
      *             If the command fails
      */
     public void enableEvents(List<String> eventNames, IProgressMonitor monitor) throws ExecutionException {
-        enableEvents(eventNames, null,  monitor);
-    }
-
-    /**
-     * Enables a list of events with no additional parameters.
-     *
-     * @param eventNames
-     *            - a list of event names to enabled.
-     * @param filterExpression
-     *            - a filter expression
-     * @param monitor
-     *            - a progress monitor
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void enableEvents(List<String> eventNames, String filterExpression, IProgressMonitor monitor) throws ExecutionException {
-        getControlService().enableEvents(getSessionName(), getName(), eventNames, isKernel(), filterExpression,  monitor);
+        getControlService().enableEvents(getSessionName(), getName(), eventNames, isKernel(), monitor);
     }
 
     /**
@@ -373,14 +357,12 @@ public class TraceChannelComponent extends TraceControlComponent {
      *            - a log level type
      * @param level
      *            - a log level
-     * @param filterExpression
-     *            - a filter expression
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableLogLevel(String eventName, LogLevelType logLevelType,
-            TraceLogLevel level, String filterExpression) throws ExecutionException {
-        enableLogLevel(eventName, logLevelType, level, filterExpression, new NullProgressMonitor());
+            TraceLogLevel level) throws ExecutionException {
+        enableLogLevel(eventName, logLevelType, level, new NullProgressMonitor());
     }
 
     /**
@@ -392,17 +374,15 @@ public class TraceChannelComponent extends TraceControlComponent {
      *            - a log level type
      * @param level
      *            - a log level
-     * @param filterExpression
-     *            - a filter expression
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableLogLevel(String eventName, LogLevelType logLevelType,
-            TraceLogLevel level, String filterExpression, IProgressMonitor monitor)
+            TraceLogLevel level, IProgressMonitor monitor)
             throws ExecutionException {
-        getControlService().enableLogLevel(getSessionName(), getName(), eventName, logLevelType, level, filterExpression, monitor);
+        getControlService().enableLogLevel(getSessionName(), getName(), eventName, logLevelType, level, monitor);
     }
 
     /**

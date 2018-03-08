@@ -16,7 +16,6 @@ package org.eclipse.linuxtools.internal.perf;
 
 import java.util.List;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
@@ -32,11 +31,8 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.eclipse.linuxtools.perf";
-
 	// View ID
 	public static final String VIEW_ID = "org.eclipse.linuxtools.perf.ui.ProfileView";
-	public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView";
-
 	// Launch Config ID
 	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile";
 	
@@ -57,14 +53,12 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final boolean ATTR_ModuleSymbols_default = false;
 	public static final String ATTR_HideUnresolvedSymbols = "org.eclipse.linuxtools.internal.perf.attr.HideUnresolvedSymbols";
 	public static final boolean ATTR_HideUnresolvedSymbols_default = true;
-	public static final String ATTR_ShowSourceDisassembly = "org.eclipse.linuxtools.internal.perf.attr.ShowSourceDisassembly";
-	public static final boolean ATTR_ShowSourceDisassembly_default = false;
 	
 	//Perf Events tab attribs.
 	public static final String ATTR_DefaultEvent = "org.eclipse.linuxtools.internal.perf.attr.DefaultEvent";
 	public static final boolean ATTR_DefaultEvent_default = true;
 	public static final String ATTR_MultipleEvents = "org.eclipse.linuxtools.internal.perf.attr.MultipleEvents";
-	public static final boolean ATTR_MultipleEvents_default = false;
+	public static final boolean ATTR_MultipleEvents_default = true;
 	public static final String ATTR_SelectedEvents = "org.eclipse.linuxtools.internal.perf.attr.SelectedEvents";
 	public static final List<String> ATTR_SelectedEvents_default = null;
 	public static final String ATTR_RawHwEvents = "org.eclipse.linuxtools.internal.perf.attr.RawHwEvents";
@@ -85,78 +79,30 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String STRINGS_HWBREAKPOINTS = "Hardware breakpoint";
 	public static final String STRINGS_UnfiledSymbols = "Unfiled Symbols";
 	public static final String STRINGS_MultipleFilesForSymbol = "Symbols conflicting in multiple files";
-	public static final String STRINGS_ShowSourceDisassembly = "Show Source Disassembly View";
 	
 	public static final String PERF_COMMAND = "perf";
 	public static final String PERF_DEFAULT_DATA = "perf.data";
 	public static final boolean DEBUG_ON = false; //Spew debug messages or not.
-
-
 	
+	  
 	
 	// The shared instance
 	private static PerfPlugin plugin;
 	
 	// Model Root
 	private TreeParent _modelRoot;
-
-	// Source Disassembly Data
-	private SourceDisassemblyData sourceDisassemblyData;
-
-	// Profile view
+	
+	//Profile view
 	private PerfProfileView _ProfileView = null;
 
-	// Current profile data
-	private IPath curProfileData;
-
-	// Current working directory
-	private IPath curWorkingDir;
-
 	public TreeParent getModelRoot() {
-		return _modelRoot;
-	}
-
-	public SourceDisassemblyData getSourceDisassemblyData () {
-		return sourceDisassemblyData;
-	}
-
-	public IPath getPerfProfileData() {
-		return curProfileData;
-	}
-
-	public IPath getWorkingDir(){
-		return curWorkingDir;
-	}
-
-	/**
-	 * Return cleared model root.
-	 * @return TreeParent cleared model root.
-	 */
-	public TreeParent clearModelRoot(){
-		if (_modelRoot == null) {
-			_modelRoot = new TreeParent("");
-		} else {
-			_modelRoot.clear();
-		}
 		return _modelRoot;
 	}
 
 	public void setModelRoot(TreeParent rootnode) {
 		this._modelRoot = rootnode;
 	}
-
-	public void setSourceDisassemblyData (SourceDisassemblyData sourceDisassemblyData) {
-		this.sourceDisassemblyData = sourceDisassemblyData;
-	}
-
-	public void setPerfProfileData(IPath perfProfileData) {
-		this.curProfileData = perfProfileData;
-	}
-
-	public void setWorkingDir(IPath workingDir){
-		curWorkingDir = workingDir;
-	}
-
+	
 	public PerfProfileView getProfileView() {
 		if (_ProfileView == null) {
 			try {

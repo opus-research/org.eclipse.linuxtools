@@ -17,9 +17,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocation;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocationInfo;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,23 +35,43 @@ public class CtfLocationTest {
     private CtfLocation fixture;
 
     /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(CtfLocationTest.class);
+    }
+
+    /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
-        fixture = new CtfLocation(new CtfLocationInfo(1, 0));
+        fixture = new CtfLocation(Long.valueOf(1));
+        fixture.setLocation(Long.valueOf(1));
     }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
+    }
+
 
     /**
      * Run the CtfLocation(Long) constructor test.
      */
     @Test
     public void testCtfLocation_long() {
-        CtfLocationInfo location = new CtfLocationInfo(1, 0);
+        Long location = Long.valueOf(1);
         CtfLocation result = new CtfLocation(location);
 
         assertNotNull(result);
-        assertEquals(Long.valueOf(1), (Long)result.getLocationInfo().getTimestamp());
+        assertEquals(Long.valueOf(1), result.getLocation());
     }
 
     /**
@@ -63,7 +83,18 @@ public class CtfLocationTest {
         CtfLocation result = new CtfLocation(timestamp);
 
         assertNotNull(result);
-        assertEquals(new Long(0L), (Long)result.getLocationInfo().getTimestamp());
+        assertEquals(new Long(0L), result.getLocation());
+    }
+
+    /**
+     * Run the CtfLocation clone() method test.
+     */
+    @Test
+    public void testClone() {
+        CtfLocation result = fixture.clone();
+
+        assertNotNull(result);
+        assertEquals(Long.valueOf(1), result.getLocation());
     }
 
     /**
@@ -71,8 +102,8 @@ public class CtfLocationTest {
      */
     @Test
     public void testGetLocation() {
-        CtfLocationInfo location = fixture.getLocationInfo();
-        Long result = location.getTimestamp();
+        Long result = fixture.getLocation();
+
         assertNotNull(result);
         assertEquals("1", result.toString()); //$NON-NLS-1$
         assertEquals((byte) 1, result.byteValue());
@@ -88,8 +119,8 @@ public class CtfLocationTest {
      */
     @Test
     public void testSetLocation() {
-        CtfLocationInfo location = new CtfLocationInfo(1337, 7331);
-        fixture = new CtfLocation(location);
+        Long location = Long.valueOf(1);
+        fixture.setLocation(location);
     }
 
     /**
@@ -97,8 +128,8 @@ public class CtfLocationTest {
      */
     @Test
     public void testToString_valid(){
-        CtfLocation fixture2 = new CtfLocation(new CtfLocationInfo(1337, 7331));
-        assertEquals("CtfLocation [fLocationInfo=Element [1337/7331]]", fixture2.toString()); //$NON-NLS-1$
+        CtfLocation fixture2 = new CtfLocation(new Long(1337L));
+        assertEquals("CtfLocation: 1337",fixture2.toString()); //$NON-NLS-1$
     }
 
     /**
@@ -106,7 +137,7 @@ public class CtfLocationTest {
      */
     @Test
     public void testToString_invalid(){
-        CtfLocation fixture2 = new CtfLocation(new CtfLocationInfo(-1, -1));
-        assertEquals("CtfLocation [INVALID]", fixture2.toString()); //$NON-NLS-1$
+        CtfLocation fixture2 = new CtfLocation(new Long(-1L));
+        assertEquals("CtfLocation: INVALID",fixture2.toString()); //$NON-NLS-1$
     }
 }

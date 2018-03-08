@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,17 +8,16 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  **********************************************************************/
-
 package org.eclipse.linuxtools.lttng2.ui.tests.control.model.component;
-
-import static org.junit.Assert.*;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.core.commands.ExecutionException;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TargetNodeState;
 import org.eclipse.linuxtools.internal.lttng2.stubs.service.TestRemoteSystemProxy;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.ControlView;
@@ -31,20 +30,65 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.service.LTTngCont
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 
 /**
- * The class <code>TraceControlComponentTest</code> contains tests for the class
- * <code>{@link TraceControlComponent}</code>.
+ * The class <code>TraceControlComponentTest</code> contains tests for the class <code>{@link TraceControlComponent}</code>.
+ *
  */
-@SuppressWarnings("nls")
-public class TraceControlComponentTest {
+@SuppressWarnings({"nls", "javadoc"})
+public class TraceControlComponentTest extends TestCase {
+
+    // ------------------------------------------------------------------------
+    // Test data
+    // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns test setup used when executing test case stand-alone.
+     * @return Test setup class
+     */
+    public static Test suite() {
+        return new ModelImplTestSetup(new TestSuite(TraceControlComponentTest.class));
+    }
+
+    // ------------------------------------------------------------------------
+    // Housekeeping
+    // ------------------------------------------------------------------------
+
+    /**
+     * Perform pre-test initialization.
+     *
+     * @throws Exception
+     *         if the initialization fails for some reason
+     *
+     */
+    @Override
+    @Before
+    public void setUp() throws Exception {
+    }
+
+    /**
+     * Perform post-test clean-up.
+     *
+     * @throws Exception
+     *         if the clean-up fails for some reason
+     *
+     */
+    @Override
+    @After
+    public void tearDown()  throws Exception {
+    }
 
     /**
      * Run the TraceControlComponent(String) constructor test.
      */
-    @Test
-    public void testTraceControlComponent_1() {
+    public void testTraceControlComponent_1()
+        throws Exception {
 
         String name = "node";
 
@@ -61,9 +105,10 @@ public class TraceControlComponentTest {
 
     /**
      * Run the TraceControlComponent(String,ITraceControlComponent) constructor test.
+     *
      */
-    @Test
-    public void testTraceControlComponent_2() {
+    public void testTraceControlComponent_2()
+        throws Exception {
         String name = "node";
 
         ITraceControlComponent parent = new TraceControlRoot();
@@ -79,9 +124,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void addChild(ITraceControlComponent) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testAddAndGetChild1() {
+    public void testAddAndGetChild1()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("node", new TraceControlRoot());
         fixture.setToolTip("This is the test node");
         fixture.addChild(new TraceControlRoot());
@@ -95,9 +143,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void addChild(ITraceControlComponent) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testAddAndGetChild2() {
+    public void testAddAndGetChild2()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         ITraceControlComponent component = null;
@@ -108,9 +159,13 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void addComponentListener(ITraceControlComponentChangedListener) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testAddComponentListener_1() {
+
+    public void testAddComponentListener_1()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", (ITraceControlComponent) null);
         fixture.setToolTip("");
 
@@ -130,9 +185,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the boolean containsChild(String) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testContainsChild_1() {
+    public void testContainsChild_1()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         fixture.addChild(new TraceControlRoot());
@@ -145,9 +203,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the boolean containsChild(String) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testContainsChild_2() {
+    public void testContainsChild_2()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("name", new TraceControlRoot());
         fixture.setToolTip("");
 
@@ -160,9 +221,13 @@ public class TraceControlComponentTest {
      * Run the void fireCompenentAdded(ITraceControlComponent,ITraceControlComponent) method test.
      * Run the void fireCompenentRemoved(ITraceControlComponent,ITraceControlComponent) method test.
      * Run the void fireCompenentChanged(ITraceControlComponent) method test
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testFireCompenentUpdated() {
+
+    public void testFireCompenentUpdated()
+        throws Exception {
         ITraceControlComponent parent = new TraceControlRoot();
 
         TraceControlComponent fixture = new TraceControlComponent("node", parent);
@@ -194,9 +259,13 @@ public class TraceControlComponentTest {
 
     /**
      * Run the Object getAdapter(Class) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testGetAdapter() {
+
+    public void testGetAdapter()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         fixture.addChild(new TraceControlRoot());
@@ -209,9 +278,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the ITraceControlComponent[] getChildren() method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testGetChildren_1() {
+    public void testGetChildren_1()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         fixture.addChild(new TraceControlRoot());
@@ -230,14 +302,13 @@ public class TraceControlComponentTest {
     }
 
     /**
-     * Run the ILttngControlService getControlService()/setControlService()
-     * method test.
+     * Run the ILttngControlService getControlService()/setControlService() method test.
      *
-     * @throws ExecutionException
-     *             Would fail the test
+     * @throws Exception
+     *
      */
-    @Test
-    public void testGetAndSetControlService_1() throws ExecutionException {
+    public void testGetAndSetControlService_1()
+        throws Exception {
 
         TraceControlComponent parent = new TraceControlComponent("parent") {
             ILttngControlService fService = null;
@@ -276,9 +347,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the Image getImage() method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testGetImage_1() {
+    public void testGetImage_1()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         fixture.addChild(new TraceControlRoot());
@@ -292,9 +366,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the boolean hasChildren() method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testHasChildren_1() {
+    public void testHasChildren_1()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         fixture.addChild(new TraceControlRoot());
@@ -306,9 +383,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the boolean hasChildren() method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testHasChildren_2() {
+    public void testHasChildren_2()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
 
@@ -319,9 +399,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void removeAllChildren() method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testRemoveAllChildren_2() {
+    public void testRemoveAllChildren_2()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
 
@@ -334,9 +417,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void removeChild(ITraceControlComponent) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testRemoveChild_1() {
+    public void testRemoveChild_1()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         TraceControlComponent child = new TraceControlComponent("child", fixture);
@@ -348,9 +434,13 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void removeChild(ITraceControlComponent) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testRemoveChild_2() {
+
+    public void testRemoveChild_2()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         fixture.addChild(new TraceControlRoot());
@@ -362,9 +452,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void removeComponentListener(ITraceControlComponentChangedListener) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testRemoveComponentListener_1() {
+    public void testRemoveComponentListener_1()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", (ITraceControlComponent) null);
         fixture.setToolTip("");
 
@@ -387,9 +480,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void removeComponentListener(ITraceControlComponentChangedListener) method test.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testRemoveComponentListener_2() {
+    public void testRemoveComponentListener_2()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         fixture.addChild(new TraceControlRoot());
@@ -401,9 +497,13 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void setChildren(List<ITraceControlComponent>)/ITraceControlComponent[] getChildren() method test.
+     *
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testGetAndSetChildren() {
+    public void testGetAndSetChildren()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         List<ITraceControlComponent> children = new LinkedList<ITraceControlComponent>();
@@ -420,9 +520,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void String getName()/setName(String) method tests.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testGetAndSetName() {
+    public void testGetAndSetName()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         fixture.addChild(new TraceControlRoot());
@@ -435,9 +538,12 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void ITraceControlComponent getParent()/setParent(ITraceControlComponent) method tests.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testGetAndSetParent() {
+    public void testGetAndSetParent()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("");
         fixture.addChild(new TraceControlRoot());
@@ -455,9 +561,13 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void TargetNodeState getTargetNodeState()/etTargetNodeState(TargetNodeState) method tests.
+     *
+     * @throws Exception
+     *
      */
-    @Test
-    public void testGetAndSetTargetNodeState_1() {
+    public void testGetAndSetTargetNodeState_1()
+        throws Exception {
+
         TraceControlComponent parent = new TraceControlComponent("parent") {
             private TargetNodeState fState;
 
@@ -516,9 +626,14 @@ public class TraceControlComponentTest {
 
     /**
      * Run the void setToolTip(String) method test.
+     *
+     * @throws Exception
+     *
+
      */
-    @Test
-    public void testGetSndSetToolTip() {
+
+    public void testGetSndSetToolTip()
+        throws Exception {
         TraceControlComponent fixture = new TraceControlComponent("", new TraceControlRoot());
         fixture.setToolTip("This is a tooltip");
         fixture.addChild(new TraceControlRoot());

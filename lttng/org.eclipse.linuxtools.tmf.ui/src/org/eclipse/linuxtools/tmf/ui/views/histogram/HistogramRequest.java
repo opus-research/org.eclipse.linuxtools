@@ -16,10 +16,9 @@
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -29,7 +28,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Francois Chouinard
  * <p>
  */
-public class HistogramRequest extends TmfEventRequest {
+public class HistogramRequest extends TmfEventRequest<ITmfEvent> {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -59,7 +58,6 @@ public class HistogramRequest extends TmfEventRequest {
      *            The number of events per block
      * @param execType
      *            The requested execution priority
-     * @since 2.0
      *
      */
     public HistogramRequest(HistogramDataModel histogram, TmfTimeRange range,
@@ -85,7 +83,7 @@ public class HistogramRequest extends TmfEventRequest {
     public void handleData(ITmfEvent event) {
         super.handleData(event);
         if (event != null) {
-            long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+            long timestamp = event.getTimestamp().getValue();
             fHistogram.countEvent(getNbRead(), timestamp);
         }
     }

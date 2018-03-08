@@ -20,14 +20,13 @@ import java.io.FileFilter;
  * @author Ryan Morse
  */
 public class DashboardModuleFileFilter implements FileFilter {
-	@Override
 	public boolean accept(File f) {
 		return f.isDirectory() || f.getName().toLowerCase().endsWith(DashboardModuleExtension);
 	}
 	
 	public String getDescription() {
-		return ".dash files"; //$NON-NLS-1$
+		return ".dash files";
 	}
 	
-	public static final String DashboardModuleExtension = ".dash"; //$NON-NLS-1$
+	public static final String DashboardModuleExtension = ".dash";
 }

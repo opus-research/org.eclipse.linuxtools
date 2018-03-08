@@ -13,43 +13,49 @@
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * Tests for the LTTng 2.0 kernel state provider
  *
- * @author Alexandre Montplaisir
+ * @author alexmont
+ *
  */
+@SuppressWarnings("javadoc")
 public class CtfKernelStateInputTest {
 
-    private final static int TRACE_INDEX = 1;
+    static IStateChangeInput input;
 
-    private static IStateChangeInput input;
-
-    /**
-     * Set-up.
-     */
     @BeforeClass
-    public static void initialize() {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
-        input = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
+    public static void initialize() throws TmfTraceException {
+        input = new CtfKernelStateInput(CtfTestFiles.getTestTrace());
 
     }
 
-    /**
-     * Test loading the state provider.
-     */
+    @AfterClass
+    public static void cleanup() {
+        //
+    }
+
     @Test
     public void testOpening() {
         long testStartTime;
         testStartTime = input.getStartTime();
-        assertEquals(testStartTime, StateSystemTest.startTime);
+        assertEquals(testStartTime, CtfTestFiles.startTime);
     }
+
+    //FIXME re-enable once we offer history-less state systems again
+//    @Test
+//    public void testRunning() {
+//        StateSystem ss = new StateSystem();
+//        input.assignTargetStateSystem(ss);
+//        input.run();
+//    }
 
 }

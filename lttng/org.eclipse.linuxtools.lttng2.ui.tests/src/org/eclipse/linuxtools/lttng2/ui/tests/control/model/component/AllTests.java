@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,29 +8,27 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
-
 package org.eclipse.linuxtools.lttng2.ui.tests.control.model.component;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-/**
- * Runner for the control.model.component unit tests.
- */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    TraceControlComponentTest.class,
-    TraceControlCreateSessionTests.class,
-    TraceControlKernelProviderTests.class,
-    TraceControlKernelSessionTests.class,
-    TraceControlPropertiesTest.class,
-    TraceControlTreeModelNoProvidersTest.class,
-    TraceControlTreeModelTest.class,
-    TraceControlUstProviderTests.class,
-    TraceControlUstSessionTests.class
-})
+@SuppressWarnings("javadoc")
 public class AllTests {
 
+    public static Test suite() {
+
+        TestSuite suite = new TestSuite(AllTests.class.getName());
+        //$JUnit-BEGIN$
+        suite.addTestSuite(TraceControlComponentTest.class);
+        suite.addTestSuite(TraceControlTreeModelTest.class);
+        suite.addTestSuite(TraceControlKernelProviderTests.class);
+        suite.addTestSuite(TraceControlUstProviderTests.class);
+        suite.addTestSuite(TraceControlKernelSessionTests.class);
+        suite.addTestSuite(TraceControlUstSessionTests.class);
+        suite.addTestSuite(TraceControlPropertiesTest.class);
+        //$JUnit-END$
+        return new ModelImplTestSetup(suite);
+    }
 }

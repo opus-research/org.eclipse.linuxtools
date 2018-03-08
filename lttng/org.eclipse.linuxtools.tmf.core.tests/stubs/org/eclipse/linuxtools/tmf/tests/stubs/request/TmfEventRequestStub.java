@@ -1,68 +1,69 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.tests.stubs.request;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
  * <b><u>TmfEventRequestStub</u></b>
+ * <p>
+ * TODO: Implement me. Please.
  */
-public class TmfEventRequestStub extends TmfEventRequest {
+public class TmfEventRequestStub<T extends TmfEvent> extends TmfEventRequest<T> {
 
     /**
-     * @param dataType the event type
+     * @param dataType
      */
-    public TmfEventRequestStub(final Class<? extends ITmfEvent> dataType) {
+    public TmfEventRequestStub(final Class<T> dataType) {
         super(dataType);
     }
 
     /**
-     * @param dataType the event type
-     * @param range the requested time range
+     * @param dataType
+     * @param range
      */
-    public TmfEventRequestStub(final Class<? extends ITmfEvent> dataType, final TmfTimeRange range) {
+    public TmfEventRequestStub(final Class<T> dataType, final TmfTimeRange range) {
         super(dataType, range);
     }
 
     /**
-     * @param dataType the event type
-     * @param range the requested time range
-     * @param nbRequested the number of events requested
+     * @param dataType
+     * @param range
+     * @param nbRequested
      */
-    public TmfEventRequestStub(final Class<? extends ITmfEvent> dataType, final TmfTimeRange range, final int nbRequested) {
+    public TmfEventRequestStub(final Class<T> dataType, final TmfTimeRange range, final int nbRequested) {
         super(dataType, range, nbRequested);
     }
 
     /**
-     * @param dataType the event type
-     * @param range the requested time range
-     * @param nbRequested the number of events requested
-     * @param blockSize the event block size
+     * @param dataType
+     * @param range
+     * @param nbRequested
+     * @param blockSize
      */
-    public TmfEventRequestStub(final Class<? extends ITmfEvent> dataType, final TmfTimeRange range, final int nbRequested, final int blockSize) {
+    public TmfEventRequestStub(final Class<T> dataType, final TmfTimeRange range, final int nbRequested, final int blockSize) {
         super(dataType, range, nbRequested, blockSize);
     }
 
     /**
-     * @param dataType the event type
-     * @param range the requested time range
-     * @param index the initial event index
-     * @param nbRequested the number of events requested
-     * @param blockSize the event block size
+     * @param dataType
+     * @param range
+     * @param nbRequested
+     * @param blockSize
      */
-    public TmfEventRequestStub(final Class<? extends ITmfEvent> dataType, final TmfTimeRange range, final long index, final int nbRequested, final int blockSize) {
+    public TmfEventRequestStub(final Class<T> dataType, final TmfTimeRange range, final long index, final int nbRequested, final int blockSize) {
         super(dataType, range, index, nbRequested, blockSize);
     }
 
@@ -70,7 +71,7 @@ public class TmfEventRequestStub extends TmfEventRequest {
      * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
      */
     @Override
-    public void handleData(final ITmfEvent data) {
+    public void handleData(final T data) {
         super.handleData(data);
     }
 }

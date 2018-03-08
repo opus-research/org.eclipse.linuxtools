@@ -1,28 +1,20 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- *
- * All rights reserved. This program and the accompanying materials are
- * made available under the terms of the Eclipse Public License v1.0 which
- * accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *   Alexandre Montplaisir - Port to JUnit4
- *******************************************************************************/
-
 package org.eclipse.linuxtools.tmf.core.tests.uml2sd;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-/**
- * Unit tests for tmf.core.uml2sd
- */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    TmfAsyncSequenceDiagramEventTest.class,
-    TmfSyncSequenceDiagramEventTest.class
-})
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
+
+@SuppressWarnings({ "nls" })
 public class AllTests {
+
+	public static Test suite() {
+		TestSuite suite = new TestSuite("Test suite for " + Activator.PLUGIN_ID + ".uml2sd"); //$NON-NLS-1$);
+		//$JUnit-BEGIN$
+		suite.addTestSuite(TmfSyncSequenceDiagramEventTest.class);
+		suite.addTestSuite(TmfAsyncSequenceDiagramEventTest.class);
+		//$JUnit-END$
+		return suite;
+	}
 
 }

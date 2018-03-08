@@ -16,11 +16,12 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.ui.ListEditor;
 import org.eclipse.linuxtools.systemtap.ui.structures.validators.DirectoryValidator;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.IWorkbench;
 
 public class PathPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -30,17 +31,18 @@ public class PathPreferencePage extends FieldEditorPreferencePage implements IWo
 
 	public PathPreferencePage() {
 		super(GRID);
+		LogManager.logDebug("Start PathPreferencePage:", this); //$NON-NLS-1$
 		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
+		LogManager.logDebug("End PathPreferencePage:", this); //$NON-NLS-1$
 	}
 
-	@Override
 	public void createFieldEditors() {
+		LogManager.logDebug("Start createFieldEditors:", this); //$NON-NLS-1$
 		Composite parent = getFieldEditorParent();
 		String labels[][] = {{Localization.getString("PathPreferencePage.LocalMachine"), LOCAL}, //$NON-NLS-1$
 							 {Localization.getString("PathPreferencePage.RemoteMachine"), REMOTE}}; //$NON-NLS-1$
 		RadioGroupFieldEditor radioEditor = new RadioGroupFieldEditor(IDEPreferenceConstants.P_REMOTE_LOCAL_KERNEL_SOURCE,
 				Localization.getString("PathPreferencePage.RemoteOrLocalRadio"), 1, labels, parent, true) { //$NON-NLS-1$
-			@Override
 			protected void fireValueChanged(String property,
 					Object oldValue,
 					Object newValue){
@@ -70,9 +72,15 @@ public class PathPreferencePage extends FieldEditorPreferencePage implements IWo
 		addField(new ListEditor(IDEPreferenceConstants.P_EXCLUDED_KERNEL_SOURCE,
 				Localization.getString("PathPreferencePage.ExcludedSourceFolders"), Localization.getString("PathPreferencePage.ExcludedDirectory"), "", new DirectoryValidator(), parent)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
+	LogManager.logDebug("End createFieldEditors:", this); //$NON-NLS-1$
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
+		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
+	}
+
+	public void dispose() {
+		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
+		super.dispose();
 	}
 }

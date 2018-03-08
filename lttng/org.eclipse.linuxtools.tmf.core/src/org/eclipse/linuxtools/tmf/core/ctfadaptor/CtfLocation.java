@@ -6,119 +6,120 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *   Matthew Khouzam - Initial API and implementation
- *   Alexandre Montplaisir - Extends TmfLocation
+ * Contributors: Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
 /**
  * The nugget of information that is unique to a location in a CTF trace.
- *
+ * 
  * It can be copied and used to restore a position in a given trace.
- *
+ * 
  * @version 1.0
  * @author Matthew Khouzam
  */
-public final class CtfLocation extends TmfLocation {
-
-    // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
+public class CtfLocation implements ITmfLocation<Long>, Cloneable {
 
     /**
      * An invalid location
      */
-    public static final CtfLocationInfo INVALID_LOCATION = new CtfLocationInfo(-1, -1);
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
+    public static final Long INVALID_LOCATION = -1L;
 
     /**
-     * Basic constructor for CtfLocation. Uses a default index of 0.
-     *
-     * @param timestamp
-     *            The timestamp of this location
-     * @since 2.0
+     * Constructor for CtfLocation.
+     * @param location Long
      */
-    public CtfLocation(final ITmfTimestamp timestamp) {
-        this(timestamp.getValue(), 0);
+    public CtfLocation(Long location) {
+        setLocation(location);
     }
 
     /**
-     * Constructor using timestamp object and index
-     *
-     * @param timestamp
-     *            The timestamp of this location
-     * @param index
-     *            The index of this location for this timestamp
-     * @since 2.0
+     * Constructor for CtfLocation.
+     * @param timestamp ITmfTimestamp
      */
-    public CtfLocation(final ITmfTimestamp timestamp, long index) {
-        this(timestamp.getValue(), index);
+    public CtfLocation(ITmfTimestamp timestamp) {
+        setLocation(timestamp.getValue());
+    }
+
+    private Long fTimestamp;
+
+    /**
+     * Method setLocation.
+     * @param location Long
+     */
+    public void setLocation(Long location) {
+        this.fTimestamp = location;
     }
 
     /**
-     * Constructor using a long value for the timestamp, and an index
-     *
-     * @param timestampValue
-     *            The new timestamp
-     * @param index
-     *            The new index
-     * @since 2.0
-     */
-    public CtfLocation(final long timestampValue, final long index) {
-       super(new CtfLocationInfo(timestampValue, index));
-    }
-
-    /**
-     * Constructor using a pre-made locationInfo object
-     *
-     * @param locationInfo
-     *            The locationInfo object to use
-     * @since 2.0
-     */
-    public CtfLocation(CtfLocationInfo locationInfo) {
-        super(locationInfo);
-    }
-
-    /**
-     * Copy constructor
-     *
-     * @param location
-     *            Other location to copy
-     * @since 2.0
-     */
-    public CtfLocation(final CtfLocation location) {
-        super(location);
-    }
-
-    // ------------------------------------------------------------------------
-    // TmfLocation
-    // ------------------------------------------------------------------------
-
-    /**
-     * @since 2.0
+     * Method getLocation.
+     * @return Long
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocation()
      */
     @Override
-    public CtfLocationInfo getLocationInfo() {
-        return (CtfLocationInfo) super.getLocationInfo();
+    public Long getLocation() {
+        return this.fTimestamp;
     }
 
-    // ------------------------------------------------------------------------
-    // Object
-    // ------------------------------------------------------------------------
+    /**
+     * Method clone.
+     * @return CtfLocation
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#clone()
+     */
+    @Override
+    public CtfLocation clone() {
+        return new CtfLocation(getLocation().longValue());
+    }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result)
+                + ((fTimestamp == null) ? 0 : fTimestamp.hashCode());
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof CtfLocation)) {
+            return false;
+        }
+        CtfLocation other = (CtfLocation) obj;
+        if (fTimestamp == null) {
+            if (other.fTimestamp != null) {
+                return false;
+            }
+        } else if (!fTimestamp.equals(other.fTimestamp)) {
+            return false;
+        }
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
-        if( this.getLocationInfo().equals(CtfLocation.INVALID_LOCATION )) {
-            return getClass().getSimpleName() + " [INVALID]"; //$NON-NLS-1$
+        if( this.getLocation().equals(CtfLocation.INVALID_LOCATION )) {
+            return "CtfLocation: INVALID"; //$NON-NLS-1$
         }
-        return super.toString();
+        return "CtfLocation: " + getLocation().toString(); //$NON-NLS-1$
     }
 
 }

@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.linuxtools.profiling"
       label="%featureName"
-      version="2.0.0.qualifier"
+      version="1.0.0.qualifier"
       provider-name="%featureProvider">
 
    <description>
@@ -54,16 +54,17 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.linuxtools.binutils"
+         id="org.eclipse.linuxtools.profiling.launch.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.linuxtools.profiling.docs"
+         id="org.eclipse.linuxtools.binutils"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>

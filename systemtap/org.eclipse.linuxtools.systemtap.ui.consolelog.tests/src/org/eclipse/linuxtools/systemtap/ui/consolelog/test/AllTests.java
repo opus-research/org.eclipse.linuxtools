@@ -13,12 +13,26 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog.test;
 
 import org.eclipse.linuxtools.systemtap.ui.consolelog.test.structures.ConsoleStreamDaemonTest;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.test.structures.ErrorStreamDaemonTest;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.test.structures.ErrorTableDisplayTest;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.test.structures.ScriptConsoleTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.test.views.ErrorViewTest;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({ ConsoleStreamDaemonTest.class,
-		ErrorStreamDaemonTest.class, ScriptConsoleTest.class })
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 public class AllTests {
+	public static Test suite() {
+		TestSuite suite = new TestSuite("Test for org.eclipse.linuxtools.systemtap.ui.consolelog.test");
+
+		//Structures
+		suite.addTestSuite(ConsoleStreamDaemonTest.class);
+		suite.addTestSuite(ErrorStreamDaemonTest.class);
+		suite.addTestSuite(ErrorTableDisplayTest.class);
+		suite.addTestSuite(ScriptConsoleTest.class);
+
+		//views
+		suite.addTestSuite(ErrorViewTest.class);
+		
+		return suite;
+	}
 }

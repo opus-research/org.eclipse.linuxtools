@@ -16,7 +16,7 @@
   <parent>
     <artifactId>linuxtools-lttng-parent</artifactId>
     <groupId>org.eclipse.linuxtools.lttng</groupId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>0.11.0-SNAPSHOT</version>
   </parent>
 
   <name>Linux Tools LTTng CTF Core Unit Test Suite</name>
@@ -37,31 +37,12 @@
     </resources>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-antrun-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>prepare</id>
-              <phase>validate</phase>
-              <configuration>
-                <target>
-                 <ant antfile="get-traces.xml" dir="traces" />
-                </target>
-              </configuration>
-              <goals>
-                <goal>run</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-surefire-plugin</artifactId>
         <version>${tycho-version}</version>
         <configuration>
-          <includes>
-            <include>**/AllCtfCoreTests.*</include>
-          </includes>
+          <testSuite>org.eclipse.linuxtools.ctf.core.tests</testSuite>
+          <testClass>org.eclipse.linuxtools.ctf.core.tests.AllCtfCoreTests</testClass>
           <useUIHarness>false</useUIHarness>
           <useUIThread>false</useUIThread>
           <product>org.eclipse.sdk.ide</product>

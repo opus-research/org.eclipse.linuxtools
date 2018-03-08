@@ -16,8 +16,10 @@ import java.io.IOException;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.systemtap.ui.editor.Localization;
+
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -48,12 +50,10 @@ public class PathEditorInput implements IPathEditorInput, ILocationProvider {
 		fPath = new Path(file.getAbsolutePath());
 	}
 
-	@Override
 	public int hashCode() {
 		return fPath.hashCode();
 	}
-
-	@Override
+	
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -63,39 +63,32 @@ public class PathEditorInput implements IPathEditorInput, ILocationProvider {
 
 		return fPath.equals(other.fPath);
 	}
-
-	@Override
+	
 	public boolean exists() {
 		return fPath.toFile().exists();
 	}
-
-	@Override
+	
 	public ImageDescriptor getImageDescriptor() {
 		return PlatformUI.getWorkbench().getEditorRegistry().getImageDescriptor(fPath.toString());
 	}
-
-	@Override
+	
 	public String getName() {
 		String[] substr = fPath.segments();
 		return substr[substr.length -1];
 	}
-
-	@Override
+	
 	public String getToolTipText() {
 		return fPath.makeRelative().toOSString();
 	}
-
-	@Override
+	
 	public IPath getPath() {
 		return fPath;
 	}
 
-	@Override
 	public Object getAdapter(Class adapter) {
 		return null;
 	}
 
-	@Override
 	public IPersistableElement getPersistable() {
 		return null;
 	}
@@ -104,7 +97,6 @@ public class PathEditorInput implements IPathEditorInput, ILocationProvider {
 		return fMainWindow;
 	}
 
-	@Override
 	public IPath getPath(Object element) {
 		if(element instanceof PathEditorInput) {
 			return ((PathEditorInput)element).getPath();

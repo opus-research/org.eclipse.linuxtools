@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,15 +8,15 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  **********************************************************************/
-
 package org.eclipse.linuxtools.lttng2.ui.tests.control.model.component;
-
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.net.URL;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -52,33 +52,67 @@ import org.eclipse.rse.core.model.ISystemProfile;
 import org.eclipse.rse.core.model.ISystemRegistry;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.junit.After;
-import org.junit.Test;
+import org.junit.Before;
 import org.osgi.framework.FrameworkUtil;
 
+
 /**
- * The class <code>TraceControlPropertiesTest</code> contains tests for the all
- * property class</code>.
+ * The class <code>TraceControlPropertiesTest</code> contains tests for the all property class</code>.
+ *
  */
 @SuppressWarnings("nls")
-public class TraceControlPropertiesTest {
+public class TraceControlPropertiesTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
-
     private static final String DIRECTORY   = "testfiles";
     private static final String TEST_STREAM = "ListInfoTest.cfg";
     private static final String SCEN_LIST_INFO_TEST = "ListInfoTest";
+
+
+    // ------------------------------------------------------------------------
+    // Test data
+    // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns test setup used when executing test case stand-alone.
+     * @return Test setup class
+     */
+    public static Test suite() {
+        return new ModelImplTestSetup(new TestSuite(TraceControlPropertiesTest.class));
+    }
 
     // ------------------------------------------------------------------------
     // Housekeeping
     // ------------------------------------------------------------------------
 
     /**
-     * Perform post-test clean-up.
+     * Perform pre-test initialization.
+     *
+     * @throws Exception
+     *         if the initialization fails for some reason
+     *
      */
+    @Override
+    @Before
+    public void setUp() throws Exception {
+    }
+
+    /**
+     * Perform post-test clean-up.
+     *
+     * @throws Exception
+     *         if the clean-up fails for some reason
+     *
+     */
+    @Override
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         TraceControlTestFacility.getInstance().waitForJobs();
     }
 
@@ -88,7 +122,6 @@ public class TraceControlPropertiesTest {
      * @throws Exception
      *             This will fail the test
      */
-    @Test
     public void testComponentProperties() throws Exception {
 
         TestRemoteSystemProxy proxy = new TestRemoteSystemProxy();
@@ -127,7 +160,6 @@ public class TraceControlPropertiesTest {
         assertEquals("myNode", source.getPropertyValue(TargetNodePropertySource.TARGET_NODE_NAME_PROPERTY_ID));
         assertEquals("LOCALHOST",  source.getPropertyValue(TargetNodePropertySource.TARGET_NODE_ADDRESS_PROPERTY_ID));
         assertEquals(TargetNodeState.CONNECTED.name(), source.getPropertyValue(TargetNodePropertySource.TARGET_NODE_STATE_PROPERTY_ID));
-        assertEquals("2.1.0", source.getPropertyValue(TargetNodePropertySource.TARGET_NODE_VERSION_PROPERTY_ID));
         assertNull(source.getPropertyValue("test"));
 
         adapter = node.getAdapter(IChannelInfo.class);
@@ -191,16 +223,6 @@ public class TraceControlPropertiesTest {
         assertEquals("ust_tests_hello:tptest_sighandler", baseSource.getPropertyValue(BaseEventPropertySource.BASE_EVENT_NAME_PROPERTY_ID));
         assertEquals(TraceEventType.TRACEPOINT.name(), baseSource.getPropertyValue(BaseEventPropertySource.BASE_EVENT_TYPE_PROPERTY_ID));
         assertEquals(TraceLogLevel.TRACE_DEBUG_MODULE.name(), baseSource.getPropertyValue(BaseEventPropertySource.BASE_EVENT_LOGLEVEL_PROPERTY_ID));
-
-        baseEventInfo = (BaseEventComponent) events[1];
-        assertNotNull(baseEventInfo);
-
-        adapter = baseEventInfo.getAdapter(IPropertySource.class);
-        assertNotNull(adapter);
-        assertTrue(adapter instanceof BaseEventPropertySource);
-        baseSource = (BaseEventPropertySource)adapter;
-        assertNotNull(baseSource.getPropertyDescriptors());
-        assertEquals("doublefield=float;floatfield=float;stringfield=string", baseSource.getPropertyValue(BaseEventPropertySource.BASE_EVENT_FIELDS_PROPERTY_ID));
 
         // ------------------------------------------------------------------------
         // Verify Session Properties (adapter)
@@ -324,13 +346,6 @@ public class TraceControlPropertiesTest {
         assertEquals(TraceEnablement.ENABLED.name(), probeEventSource.getPropertyValue(TraceEventPropertySource.TRACE_EVENT_STATE_PROPERTY_ID));
         assertEquals("0x0", probeEventSource.getPropertyValue(TraceProbeEventPropertySource.TRACE_EVENT_PROBE_OFFSET_PROPERTY_ID));
         assertEquals("init_post", probeEventSource.getPropertyValue(TraceProbeEventPropertySource.TRACE_EVENT_PROBE_SYMBOL_PROPERTY_ID));
-
-        //-------------------------------------------------------------------------
-        // Verify Filter of UST event
-        //-------------------------------------------------------------------------
-        event = (TraceEventComponent) domains[1].getChildren()[1].getChildren()[0];
-        adapter = event.getAdapter(IPropertySource.class);
-        assertEquals("with filter", event.getFilterExpression());
 
         //-------------------------------------------------------------------------
         // Delete node

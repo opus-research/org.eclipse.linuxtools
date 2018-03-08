@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -335,20 +334,8 @@ public class EnableEventsDialog extends Dialog implements IEnableEventsDialog  {
         if (fDomain != null) {
             fIsKernel = fDomain.isKernel();
         } else {
-            fIsKernel = fProviderGroup != null ? fProviderGroup.hasKernelProvider() : true;
+            fIsKernel = true;
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getFilterExpression()
-     */
-    @Override
-    public String getFilterExpression() {
-        if (!fIsKernel) {
-            return fUstComposite.getFilterExpression();
-        }
-        return null;
     }
 
     // ------------------------------------------------------------------------
@@ -393,7 +380,7 @@ public class EnableEventsDialog extends Dialog implements IEnableEventsDialog  {
         fUstButton.setText(Messages.TraceControl_UstDisplayName);
         fUstButton.setSelection(!fIsKernel);
 
-        if ((fDomain != null) || ((fProviderGroup != null) && (!fProviderGroup.hasKernelProvider()))) {
+        if (fDomain != null) {
             fKernelButton.setEnabled(false);
             fUstButton.setEnabled(false);
         }

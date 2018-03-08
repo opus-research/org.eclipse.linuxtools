@@ -13,9 +13,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.launch;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.IDebugUIConstants;
@@ -35,30 +32,6 @@ public class PerfLaunchShortcut extends ProfileLaunchShortcut {
 		//These settings make it appear smoother.
 		wc.setAttribute(IDebugUIConstants.ATTR_LAUNCH_IN_BACKGROUND, false);
 		wc.setAttribute(IDebugUIConstants.ATTR_CAPTURE_IN_CONSOLE, true);
-	}
-
-	/**
-	 * Create an ILaunchConfiguration instance given the project's name.
-	 *
-	 * @param projectName
-	 * @return ILaunchConfiguration based on String projectName
-	 */
-	public ILaunchConfiguration createDefaultConfiguration(String projectName) {
-		ILaunchConfiguration config = null;
-		try {
-			ILaunchConfigurationType configType = getLaunchConfigType();
-			ILaunchConfigurationWorkingCopy wc = configType.newInstance(
-					null,
-					getLaunchManager().generateLaunchConfigurationName(
-							projectName));
-			wc.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME,
-					projectName);
-			config = wc;
-
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-		return config;
 	}
 
 }

@@ -11,27 +11,24 @@
 package org.eclipse.linuxtools.internal.perf.tests;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.core.Launch;
 import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.actions.PerfDoubleClickAction;
 import org.eclipse.linuxtools.internal.perf.launch.PerfEventsTab;
+import org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigDelegate;
 import org.eclipse.linuxtools.internal.perf.launch.PerfOptionsTab;
 import org.eclipse.linuxtools.internal.perf.model.PMCommand;
 import org.eclipse.linuxtools.internal.perf.model.PMDso;
@@ -44,6 +41,9 @@ import org.osgi.framework.FrameworkUtil;
 
 public class ModelTest extends AbstractTest {
 	protected ILaunchConfiguration config;
+	protected PerfLaunchConfigDelegate delegate;
+	protected ILaunch launch;
+	protected ILaunchConfigurationWorkingCopy wc;
 	protected Stack<Class<?>> stack;
 
 	@Override
@@ -51,6 +51,11 @@ public class ModelTest extends AbstractTest {
 		super.setUp();
 		proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest"); //$NON-NLS-1$
 		config = createConfiguration(proj.getProject());
+
+		delegate = new PerfLaunchConfigDelegate();
+		launch = new Launch(config, ILaunchManager.PROFILE_MODE, null);
+		wc = config.getWorkingCopy();
+		setProfileAttributes(wc);
 
 		Class<?>[] klassList = new Class<?>[] { PMSymbol.class, PMFile.class,
 				PMDso.class, PMCommand.class, PMEvent.class };
@@ -61,6 +66,7 @@ public class ModelTest extends AbstractTest {
 	@Override
 	protected void tearDown() throws Exception {
 		deleteProject(proj);
+		wc.delete();
 		super.tearDown();
 	}
 
@@ -76,6 +82,26 @@ public class ModelTest extends AbstractTest {
 		wc.setAttribute(PerfPlugin.ATTR_SourceLineNumbers, false);
 		eventsTab.setDefaults(wc);
 		optionsTab.setDefaults(wc);
+	}
+
+	public void testDefaultRun () {
+		try {
+			delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
+		} catch (CoreException e) {
+			fail();
+		}
+	}
+
+	public void testClockEventRun () {
+		try {
+			ArrayList<String> list = new ArrayList<String>();
+			list.addAll(Arrays.asList(new String [] {"cpu-clock", "task-clock", "cycles"}));
+			wc.setAttribute(PerfPlugin.ATTR_DefaultEvent, false);
+			wc.setAttribute(PerfPlugin.ATTR_SelectedEvents, list);
+			delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
+		} catch (CoreException e) {
+			fail();
+		}
 	}
 
 	public void testModelDefaultGenericStructure() {
@@ -103,31 +129,6 @@ public class ModelTest extends AbstractTest {
 				"resources/defaultevent-data/perf.data.err.log");
 
 		checkChildrenPercentages(invisibleRoot, invisibleRoot.getPercent());
-	}
-
-	public void testDoubleClickAction () {
-		TreeParent invisibleRoot = buildModel(
-				"resources/defaultevent-data/perf.data",
-				"resources/defaultevent-data/perf.data.txt",
-				"resources/defaultevent-data/perf.data.err.log");
-
-		PerfPlugin.getDefault().setModelRoot(invisibleRoot);
-		// update the model root for the view
-		PerfCore.RefreshView("resources/defaultevent-data/perf.data");
-
-		// number of parents excluding invisibleRoot
-		int numOfParents = getNumberOfParents(invisibleRoot) - 1;
-
-		// create a double click action to act on the tree viewer
-		TreeViewer tv = PerfPlugin.getDefault().getProfileView().getTreeViewer();
-		PerfDoubleClickAction dblClick = new PerfDoubleClickAction(tv);
-
-		// double click every element
-		doubleClickAllChildren(invisibleRoot, tv, dblClick);
-
-		// If all elements are expanded, this is the number of elements
-		// in our model that have children.
-		assertEquals(numOfParents, tv.getExpandedElements().length);
 	}
 
 	public void testParserMultiEvent() {
@@ -213,206 +214,6 @@ public class ModelTest extends AbstractTest {
 		checkCommadLabels(cmdLabels, cmd);
 	}
 
-	public void testParseEventList() {
-		BufferedReader input = null;
-		try {
-			input = new BufferedReader(new FileReader("resources/simple-perf-event-list"));
-		} catch (FileNotFoundException e) {
-			fail();
-		}
-
-		HashMap<String, ArrayList<String>> eventList = PerfCore.parseEventList(input);
-		for(String key : eventList.keySet()){
-			if ("Raw hardware event descriptor".equals(key)) {
-				assertTrue(eventList.get(key).contains("rNNN"));
-				assertTrue(eventList.get(key).contains("cpu/t1=v1"));
-			} else if ("Hardware breakpoint".equals(key)) {
-				assertTrue(eventList.get(key).contains("mem:<addr>"));
-			} else if ("Software event".equals(key)) {
-				assertTrue(eventList.get(key).contains("cpu-clock"));
-				assertTrue(eventList.get(key).contains("task-clock"));
-			} else if ("Hardware cache event".equals(key)) {
-				assertTrue(eventList.get(key).contains("L1-dcache-loads"));
-				assertTrue(eventList.get(key).contains("L1-dcache-load-misses"));
-			} else if ("Tracepoint event".equals(key)) {
-				assertTrue(eventList.get(key).contains("mac80211:drv_return_void"));
-				assertTrue(eventList.get(key).contains("mac80211:drv_return_int"));
-			} else if ("Hardware event".equals(key)) {
-				assertTrue(eventList.get(key).contains("cpu-cycles"));
-				assertTrue(eventList.get(key).contains("stalled-cycles-frontend"));
-			}
-		}
-	}
-
-	public void testParseAnnotation() {
-		BufferedReader input = null;
-
-		try {
-			input = new BufferedReader(new FileReader(
-					"resources/perf-annotation-data"));
-		} catch (FileNotFoundException e) {
-			fail();
-		}
-
-		// Set up arguments for the annotation parser.
-		IPath workingDir = Path.fromOSString("/working/directory/");
-		PMCommand cmd = new PMCommand("testCommand");
-		PMDso dso = new PMDso("testDso", false);
-		PMFile tmpFile = new PMFile(PerfPlugin.STRINGS_UnfiledSymbols);
-		PMSymbol sym = new PMSymbol("testSym", 0, 0);
-
-		// Set children and respective parents.
-		cmd.addChild(dso);
-		dso.addChild(tmpFile);
-		tmpFile.addChild(sym);
-
-		dso.setParent(cmd);
-		tmpFile.setParent(dso);
-		sym.setParent(tmpFile);
-
-		PerfCore.parseAnnotation(null, input, workingDir, dso, sym);
-
-		// Expected results data.
-		String expectedDsoPath = "/working/directory/fibonacci";
-		String expectedFilePath = "/home/user/workspace/fibonacci/Debug/../src/fibonacci.cpp";
-
-		assertTrue(expectedDsoPath.equals(dso.getPath()));
-		assertTrue(dso.getChildren().length == 2);
-
-		for (TreeParent dsoChild : dso.getChildren()) {
-			String filePath = ((PMFile) dsoChild).getPath();
-
-			if (PerfPlugin.STRINGS_UnfiledSymbols.equals(filePath)) {
-				assertFalse(dsoChild.hasChildren());
-			} else {
-				assertTrue(expectedFilePath.equals(filePath));
-				assertTrue(dsoChild.hasChildren());
-				assertTrue(dsoChild.getChildren().length == 1);
-
-				TreeParent curSym = dsoChild.getChildren()[0];
-				assertTrue(curSym.hasChildren());
-				assertTrue(curSym.getChildren().length == 5);
-
-				float percentCount = 0;
-				for (TreeParent symChild : curSym.getChildren()) {
-					percentCount += symChild.getPercent();
-				}
-
-				assertTrue(Math.ceil(percentCount) == 100.0);
-
-			}
-		}
-	}
-
-	public void testAnnotateString(){
-		ILaunchConfigurationWorkingCopy tempConfig = null;
-		try {
-			tempConfig = config.copy("test-config");
-			tempConfig.setAttribute(PerfPlugin.ATTR_Kernel_Location,
-					"/boot/kernel");
-			tempConfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, true);
-		} catch (CoreException e) {
-			fail();
-		}
-
-		String[] annotateString = PerfCore.getAnnotateString(tempConfig, "dso",
-				"symbol", "resources/defaultevent-data/perf.data", false);
-
-		String[] expectedString = new String[] { PerfPlugin.PERF_COMMAND,
-				"annotate",
-				"-d",
-				"dso",
-				"-s",
-				"symbol",
-				"-l",
-				"-P",
-				"--vmlinux",
-				"/boot/kernel",
-				"-m",
-				"-i",
-				"resources/defaultevent-data/perf.data" };
-
-		for (int i = 0; i < annotateString.length; i++) {
-			assertTrue(annotateString[i].equals(expectedString[i]));
-		}
-	}
-
-	public void testRecordString() {
-		ILaunchConfigurationWorkingCopy tempConfig = null;
-		try {
-			tempConfig = config.copy("test-config");
-			tempConfig.setAttribute(PerfPlugin.ATTR_Record_Realtime, true);
-			tempConfig.setAttribute(PerfPlugin.ATTR_Record_Verbose, true);
-			tempConfig.setAttribute(PerfPlugin.ATTR_Multiplex, true);
-
-			ArrayList<String> selectedEvents = new ArrayList<String>();
-			selectedEvents.add("cpu-cycles");
-			selectedEvents.add("cache-misses");
-			selectedEvents.add("cpu-clock");
-			tempConfig.setAttribute(PerfPlugin.ATTR_SelectedEvents,	selectedEvents);
-
-			tempConfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, false);
-
-		} catch (CoreException e) {
-			fail();
-		}
-
-		String[] recordString = PerfCore.getRecordString(tempConfig);
-		assertNotNull(recordString);
-
-		String[] expectedString = { PerfPlugin.PERF_COMMAND,
-				"record",
-				"-f",
-				"-r",
-				"-v",
-				"-M",
-				"-e",
-				"cpu-cycles",
-				"-e",
-				"cache-misses",
-				"-e",
-				"cpu-clock" };
-		assertTrue(recordString.length == expectedString.length);
-
-		for (int i = 0; i < recordString.length; i++) {
-			assertTrue(recordString[i].equals(expectedString[i]));
-		}
-	}
-
-	public void testReportString(){ILaunchConfigurationWorkingCopy tempConfig = null;
-		try {
-			tempConfig = config.copy("test-config");
-			tempConfig.setAttribute(PerfPlugin.ATTR_Kernel_Location,
-					"/boot/kernel");
-			tempConfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, true);
-		} catch (CoreException e) {
-			fail();
-		}
-
-		String[] reportString = PerfCore.getReportString(tempConfig,
-				"resources/defaultevent-data/perf.data");
-		assertNotNull(reportString);
-
-		String[] expectedString = { PerfPlugin.PERF_COMMAND,
-				"report",
-				"--sort",
-				"comm,dso,sym",
-				"-n",
-				"-t",
-				"" + (char) 1,
-				"--vmlinux",
-				"/boot/kernel",
-				"-m",
-				"-i",
-				"resources/defaultevent-data/perf.data" };
-		assertTrue(reportString.length == expectedString.length);
-
-		for (int i = 0; i < reportString.length; i++) {
-			assertTrue(reportString[i].equals(expectedString[i]));
-		}
-
-	}
-
 	/**
 	 * @param root some element that will serve as the root
 	 * @param sum the expected sum of the percentages of this root's
@@ -454,42 +255,6 @@ public class ModelTest extends AbstractTest {
 				checkChildrenStructure(tp, newStack);
 			}
 		}
-	}
-
-	/**
-	 * Performs a Perf double-click action on every element in the
-	 * TreeViewer model.
-	 *
-	 * @param root some element that will serve as the root
-	 * @param tv a TreeViewer containing elements from the Perf model
-	 * @param dblClick the double-click action to perform on every
-	 * element of the TreeViewer.
-	 */
-	private void doubleClickAllChildren(TreeParent root, TreeViewer tv,
-			PerfDoubleClickAction dblClick) {
-
-		for (TreeParent child : root.getChildren()) {
-			// see PerfDoubleClickAction for IStructuredSelection
-			tv.setSelection(new StructuredSelection(child));
-			dblClick.run();
-			doubleClickAllChildren(child, tv, dblClick);
-		}
-	}
-
-	/**
-	 * Find the number of ancestors of the given root that have children.
-	 * This includes the given root in the computation.
-	 *
-	 * @param root some element that will serve as the root
-	 * @return the number of elements under, and including the
-	 * given root, that have children elements.
-	 */
-	private int getNumberOfParents(TreeParent root) {
-		int ret = root.hasChildren() ? 1 : 0;
-		for (TreeParent child : root.getChildren()) {
-			ret += getNumberOfParents(child);
-		}
-		return ret;
 	}
 
 	/**

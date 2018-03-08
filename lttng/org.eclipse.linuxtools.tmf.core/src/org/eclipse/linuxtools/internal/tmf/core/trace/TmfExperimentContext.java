@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,13 +9,13 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Put in shape for 1.0
- *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.trace;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 
 /**
@@ -25,7 +25,9 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
  * can pick the next one in chronological order.
  * <p>
  * This implies that the "next" event from each trace has already been
- * read and that we at least know its timestamp.
+ * read and that we at least know its timestamp. This doesn't imply that a
+ * full parse of the event content was performed (read: the legacy LTTng works
+ * like this...).
  * <p>
  * The last trace refers to the trace from which the last event was "consumed"
  * at the experiment level.
@@ -54,67 +56,89 @@ public class TmfExperimentContext extends TmfContext {
     // ------------------------------------------------------------------------
 
     /**
-     * Standard constructor
-     *
-     * @param nbTraces
-     *            The number of traces in the experiment
+     * @param contexts
      */
-    public TmfExperimentContext(final int nbTraces) {
+    public TmfExperimentContext(final ITmfContext[] contexts) {
         super();
-        fContexts = new ITmfContext[nbTraces];
-        fEvents = new ITmfEvent[nbTraces];
+        fContexts = contexts;
+        fEvents = new ITmfEvent[fContexts.length];
+        final ITmfLocation<?>[] locations = new ITmfLocation[fContexts.length];
+
+        setLocation(new TmfExperimentLocation(new TmfLocationArray(locations.clone())));
+
+        final long[] ranks = new long[fContexts.length];
+        long rank = 0;
+        for (int i = 0; i < fContexts.length; i++) {
+            if (contexts[i] != null) {
+                locations[i] = contexts[i].getLocation();
+                ranks[i] = contexts[i].getRank();
+                rank += contexts[i].getRank();
+            }
+        }
+
+//        setLocation(new TmfExperimentLocation(new TmfLocationArray(locations)));
+        setRank(rank);
         fLastTraceRead = NO_TRACE;
     }
 
+    /**
+     * @param other
+     */
+    public TmfExperimentContext(final TmfExperimentContext other) {
+        this(other.cloneContexts());
+        fEvents = other.fEvents;
+        if (other.getLocation() != null) {
+            setLocation(other.getLocation().clone());
+        }
+        setRank(other.getRank());
+        setLastTrace(other.fLastTraceRead);
+    }
+
     /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.TmfContext#dispose()
+     * @see org.eclipse.linuxtools.tmf.core.trace.TmfContext#clone()
      */
     @Override
-    public void dispose() {
-        for (ITmfContext context : fContexts) {
-            context.dispose();
+    public TmfExperimentContext clone() {
+        TmfExperimentContext clone = null;
+        clone = (TmfExperimentContext) super.clone();
+        clone.fContexts = cloneContexts();
+        clone.fEvents = cloneEvents();
+        clone.fLastTraceRead = fLastTraceRead;
+        return clone;
+    }
+
+    private ITmfContext[] cloneContexts() {
+        final ITmfContext[] contexts = new ITmfContext[fContexts.length];
+        for (int i = 0; i < fContexts.length; i++) {
+            contexts[i] = (fContexts[i] != null) ? fContexts[i].clone() : null;
         }
-        super.dispose();
+        return contexts;
+    }
+
+    private ITmfEvent[] cloneEvents() {
+        final ITmfEvent[] events = new ITmfEvent[fEvents.length];
+        for (int i = 0; i < fEvents.length; i++) {
+            events[i] = (fEvents[i] != null) ? fEvents[i].clone() : null;
+        }
+        return events;
     }
 
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
 
-    /**
-     * Get the trace contexts composing this experiment context.
-     *
-     * @return The array of trace contexts
-     */
     public ITmfContext[] getContexts() {
         return fContexts;
     }
 
-    /**
-     * Get the trace events located at this experiment context's location.
-     *
-     * @return The array of trace events
-     */
     public ITmfEvent[] getEvents() {
         return fEvents;
     }
 
-    /**
-     * Get the index of the trace that was last read (so the trace whose
-     * current context will match this experiment's).
-     *
-     * @return The index of the trace
-     */
     public int getLastTrace() {
         return fLastTraceRead;
     }
 
-    /**
-     * Set the last trace read index
-     *
-     * @param newIndex
-     *            The new value to assign
-     */
     public void setLastTrace(final int newIndex) {
         fLastTraceRead = newIndex;
     }

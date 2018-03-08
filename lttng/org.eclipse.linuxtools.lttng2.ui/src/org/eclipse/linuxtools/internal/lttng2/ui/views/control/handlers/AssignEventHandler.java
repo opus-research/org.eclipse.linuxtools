@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers;
 
@@ -94,16 +93,16 @@ public class AssignEventHandler extends BaseControlViewHandler {
                         List<BaseEventComponent> events = param.getEvents();
                         // Create list of event names
                         for (Iterator<BaseEventComponent> iterator = events.iterator(); iterator.hasNext();) {
-                            BaseEventComponent baseEvent = iterator.next();
-                            eventNames.add(baseEvent.getName());
+                            BaseEventComponent event = iterator.next();
+                            eventNames.add(event.getName());
                         }
 
                         TraceChannelComponent channel = dialog.getChannel();
                         if (channel == null) {
                             // enable events on default channel (which will be created by lttng-tools)
-                            dialog.getSession().enableEvents(eventNames, param.isKernel(), dialog.getFilterExpression(), monitor);
+                            dialog.getSession().enableEvents(eventNames, param.isKernel(), monitor);
                         } else {
-                            channel.enableEvents(eventNames, dialog.getFilterExpression(), monitor);
+                            channel.enableEvents(eventNames, monitor);
                         }
 
                     } catch (ExecutionException e) {
@@ -185,12 +184,6 @@ public class AssignEventHandler extends BaseControlViewHandler {
         }
 
         boolean isEnabled = ((!events.isEmpty()) && (sessions != null) && (sessions.length > 0));
-
-        // To avoid compiler warnings check for null even if isKernel is always not null when used below
-        if (isKernel == null) {
-            return false;
-        }
-
         fLock.lock();
         try {
             fParam = null;
