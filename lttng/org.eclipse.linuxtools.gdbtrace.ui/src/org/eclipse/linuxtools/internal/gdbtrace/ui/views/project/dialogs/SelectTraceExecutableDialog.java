@@ -137,6 +137,9 @@ public class SelectTraceExecutableDialog extends SelectionStatusDialog {
         Button browseExecutableButton = new Button(composite, SWT.NONE);
         browseExecutableButton.setText(Messages.SelectTraceExecutableDialog_Browse);
         browseExecutableButton.addSelectionListener(new SelectionAdapter() {
+            /**
+             * @param event the selected event, unused
+             */
             @Override
             public void widgetSelected(SelectionEvent event) {
                 FileDialog dlg = new FileDialog(shell);
@@ -174,7 +177,9 @@ public class SelectTraceExecutableDialog extends SelectionStatusDialog {
                 return true;
             }
         } catch (CoreException e) {
+            // catch block
         } catch (IOException e) {
+            // catch block
         }
         return false;
     }

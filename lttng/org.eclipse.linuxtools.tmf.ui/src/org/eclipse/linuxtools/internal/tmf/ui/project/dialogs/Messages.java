@@ -17,7 +17,6 @@ import org.eclipse.osgi.util.NLS;
 /**
  * Message bundle for dialog messages.
  */
-@SuppressWarnings("javadoc")
 public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.ui.project.dialogs.messages"; //$NON-NLS-1$
