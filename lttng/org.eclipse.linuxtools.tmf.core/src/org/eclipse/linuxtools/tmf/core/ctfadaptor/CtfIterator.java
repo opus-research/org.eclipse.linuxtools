@@ -85,7 +85,6 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         } else {
             setUnknownLocation();
         }
-
     }
 
     /**
@@ -152,7 +151,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
                 this.advance();
             }
         } else {
-            ret= false;
+            ret = false;
         }
         /* Seek the current location accordingly */
         if (ret) {
@@ -160,6 +159,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         } else {
             curLocation = NULL_LOCATION;
         }
+
         return ret;
     }
 
@@ -228,7 +228,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     @Override
     public void increaseRank() {
         /* Only increase the rank if it's valid */
-        if(hasValidRank()) {
+        if (hasValidRank()) {
             curRank++;
         }
     }
