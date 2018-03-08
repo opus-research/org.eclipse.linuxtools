@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.internal.systemtap.ui.graphicalrun.actions;
 import java.util.ArrayList;
 
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.LoggedCommand2;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.actions.ConsoleAction;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
@@ -27,7 +28,6 @@ import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.ChartStr
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IGobblerListener;
-import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
@@ -36,7 +36,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 
 /**
- * The action to allow users to change the parsing expression while a script is actively running.
+ * The action to allow users to change the parsing expression while a script is activly running.
  * @author Ryan Morse
  */
 public class ModifyParsingAction extends ConsoleAction {
@@ -60,8 +60,8 @@ public class ModifyParsingAction extends ConsoleAction {
 		IDataSet dataSet = wizard.getDataSet();
 
 		if(null != parser && null != dataSet) {
-			ScriptConsole console = ScriptConsole.getActive();
-			LoggedCommand cmd = console.getCommand();
+			ScriptConsole console = super.getActive();
+			LoggedCommand2 cmd = console.getCommand();
 
 			ArrayList<IGobblerListener> listeners = cmd.getInputStreamListeners();
 			ChartStreamDaemon2 daemon = null;
@@ -78,16 +78,16 @@ public class ModifyParsingAction extends ConsoleAction {
 				cmd.addInputStreamListener(daemon);
 			} else
 				daemon.setParser(dataSet, parser);
-
+			
 			IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorView.ID);
 			GraphSelectorView graphSelector = ((GraphSelectorView)ivp);
 			String name = console.getName();
 			graphSelector.createScriptSet(name.substring(name.lastIndexOf('/')+1), dataSet);
 		}
-
+		
 		wizard.dispose();
 	}
-
+	
 	/**
 	 * Gets the file location of the file open in the editor window.
 	 * @return The path of the file in the active editor window.

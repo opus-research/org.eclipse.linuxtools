@@ -245,7 +245,7 @@ public class TraceDomainComponent extends TraceControlComponent {
     public void enableEvents(List<String> eventNames, IProgressMonitor monitor)
             throws ExecutionException {
         getControlService().enableEvents(getSessionName(), null, eventNames,
-                isKernel(), null, monitor);
+                isKernel(), monitor);
     }
 
     /**
@@ -318,14 +318,12 @@ public class TraceDomainComponent extends TraceControlComponent {
      *            - a log level type
      * @param level
      *            - a log level
-     * @param filterExpression
-     *            - a filter expression
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableLogLevel(String eventName, LogLevelType logLevelType,
-            TraceLogLevel level, String filterExpression) throws ExecutionException {
-        enableLogLevel(eventName, logLevelType, level, filterExpression,
+            TraceLogLevel level) throws ExecutionException {
+        enableLogLevel(eventName, logLevelType, level,
                 new NullProgressMonitor());
     }
 
@@ -338,18 +336,16 @@ public class TraceDomainComponent extends TraceControlComponent {
      *            - a log level type
      * @param level
      *            - a log level
-     * @param filterExpression
-     *            - a filter expression
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableLogLevel(String eventName, LogLevelType logLevelType,
-            TraceLogLevel level, String filterExpression, IProgressMonitor monitor)
+            TraceLogLevel level, IProgressMonitor monitor)
             throws ExecutionException {
         getControlService().enableLogLevel(getSessionName(), null, eventName,
-                logLevelType, level, filterExpression, monitor);
+                logLevelType, level, monitor);
     }
 
     /**
