@@ -101,17 +101,6 @@ public class TmfExperimentContext extends TmfContext {
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.TmfContext#dispose()
-     */
-    @Override
-    public void dispose() {
-        for (ITmfContext context : fContexts) {
-            context.dispose();
-        }
-        super.dispose();
-    }
-
-    /* (non-Javadoc)
      * @see org.eclipse.linuxtools.tmf.core.trace.TmfContext#clone()
      */
     @Override
