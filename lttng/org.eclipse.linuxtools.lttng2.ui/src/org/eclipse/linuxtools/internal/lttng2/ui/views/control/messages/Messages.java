@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
+ *
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages;
 
@@ -103,8 +103,6 @@ final public class Messages extends NLS {
     public static String TraceControl_CreateSessionConfigureStreamingButtonTooltip;
     public static String TraceControl_CreateSessionNoStreamingButtonText;
     public static String TraceControl_CreateSessionNoStreamingButtonTooltip;
-    public static String TraceControl_CreateSessionTracePathText;
-    public static String TraceControl_CreateSessionTracePathTooltip;
     public static String TraceControl_CreateSessionLinkButtonText;
     public static String TraceControl_CreateSessionLinkButtonTooltip;
     public static String TraceControl_CreateSessionProtocolLabelText;
