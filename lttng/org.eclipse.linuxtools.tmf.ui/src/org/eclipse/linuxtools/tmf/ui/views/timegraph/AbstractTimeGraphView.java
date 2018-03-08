@@ -888,7 +888,12 @@ public abstract class AbstractTimeGraphView extends TmfView {
         fillLocalToolBar(bars.getToolBarManager());
     }
 
-    private void fillLocalToolBar(IToolBarManager manager) {
+    /**
+     * Add actions to local tool bar manager
+     *
+     * @param manager the tool bar manager
+     */
+    protected void fillLocalToolBar(IToolBarManager manager) {
         if (fFilterColumns.length > 0) {
             manager.add(fTimeGraphCombo.getShowFilterAction());
         }
