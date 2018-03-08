@@ -56,8 +56,11 @@ public class NameProfField extends AbstractSTDataViewersField {
 	 */
 	@Override
 	public String getValue(Object obj) {
-		TreeElement e = (TreeElement) obj;
-		return e.getName();
+		if (obj instanceof TreeElement) {
+			TreeElement e = (TreeElement) obj;
+			return e.getName();
+		}
+		return "";
 	}
 	
 	/*

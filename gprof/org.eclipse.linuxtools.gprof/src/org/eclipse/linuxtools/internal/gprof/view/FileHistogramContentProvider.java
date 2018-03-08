@@ -52,8 +52,11 @@ public class FileHistogramContentProvider implements ITreeContentProvider {
 	 */
 	@Override
 	public Object getParent(Object element) {
-		AbstractTreeElement elem = (AbstractTreeElement) element;
-		return elem.getParent();
+		if (element instanceof AbstractTreeElement) {
+			AbstractTreeElement elem = (AbstractTreeElement) element;
+			return elem.getParent();
+		}
+		return null;
 	}
 
 	/*
