@@ -21,10 +21,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
  * Provider for statistics, which is assigned to a trace. This can be used to
  * populate views like the Statistics View or the Histogram.
  *
- * As a guideline, since any trace type can use this interface, all timestamps
- * should be normalized to nanoseconds when using these methods
- * ({@link ITmfTimestamp#NANOSECOND_SCALE}).
- *
  * @author Alexandre Montplaisir
  * @since 2.0
  */
@@ -50,7 +46,8 @@ public interface ITmfStatistics {
      *            The end time of the query range. Has no effect if isGlobal is
      *            true.
      */
-    public void updateStats(boolean isGlobal, long start, long end);
+    public void updateStats(final boolean isGlobal, ITmfTimestamp start,
+            ITmfTimestamp end);
 
     /**
      * Return the total number of events in the trace.
@@ -76,7 +73,7 @@ public interface ITmfStatistics {
      *            End time of the time range
      * @return The number of events found
      */
-    public long getEventsInRange(long start, long end);
+    public long getEventsInRange(ITmfTimestamp start, ITmfTimestamp end);
 
     /**
      * Retrieve the number of events in the trace, per event type, in a given
@@ -88,7 +85,8 @@ public interface ITmfStatistics {
      *            End time of the time range
      * @return The map of <event_type, count>, for the given time range
      */
-    public Map<String, Long> getEventTypesInRange(long start, long end);
+    public Map<String, Long> getEventTypesInRange(ITmfTimestamp start,
+            ITmfTimestamp end);
 
     /**
      * Notify the statistics back-end that the trace is being closed, so it

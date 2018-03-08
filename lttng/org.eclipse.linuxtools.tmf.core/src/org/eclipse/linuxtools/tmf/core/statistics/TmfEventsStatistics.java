@@ -18,7 +18,6 @@ import java.util.Map;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -39,9 +38,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @since 2.0
  */
 public class TmfEventsStatistics implements ITmfStatistics {
-
-    /* All timestamps should be stored in nanoseconds in the statistics backend */
-    private static final int SCALE = ITmfTimestamp.NANOSECOND_SCALE;
 
     private final ITmfTrace trace;
 
@@ -65,7 +61,8 @@ public class TmfEventsStatistics implements ITmfStatistics {
     }
 
     @Override
-    public void updateStats(final boolean isGlobal, long start, long end) {
+    public void updateStats(final boolean isGlobal, ITmfTimestamp start,
+            ITmfTimestamp end) {
         cancelOngoingRequests();
 
         /*
@@ -73,9 +70,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
          * same thread, since it will be run by TmfStatisticsViewer's signal
          * handlers, to ensure they get correctly coalesced.
          */
-        ITmfTimestamp startTS = new TmfTimestamp(start, SCALE);
-        ITmfTimestamp endTS = new TmfTimestamp(end, SCALE);
-        TmfTimeRange range = isGlobal ? TmfTimeRange.ETERNITY : new TmfTimeRange(startTS, endTS);
+        TmfTimeRange range = isGlobal ? TmfTimeRange.ETERNITY : new TmfTimeRange(start, end);
         final StatsTotalRequest totalReq = new StatsTotalRequest(trace, range);
         final StatsPerTypeRequest perTypeReq = new StatsPerTypeRequest(trace, range);
 
@@ -156,11 +151,8 @@ public class TmfEventsStatistics implements ITmfStatistics {
     }
 
     @Override
-    public long getEventsInRange(long start, long end) {
-        ITmfTimestamp startTS = new TmfTimestamp(start, SCALE);
-        ITmfTimestamp endTS = new TmfTimestamp(end, SCALE);
-        TmfTimeRange range = new TmfTimeRange(startTS, endTS);
-
+    public long getEventsInRange(ITmfTimestamp start, ITmfTimestamp end) {
+        TmfTimeRange range = new TmfTimeRange(start, end);
         StatsTotalRequest request = new StatsTotalRequest(trace, range);
         sendAndWait(request);
 
@@ -169,11 +161,9 @@ public class TmfEventsStatistics implements ITmfStatistics {
     }
 
     @Override
-    public Map<String, Long> getEventTypesInRange(long start, long end) {
-        ITmfTimestamp startTS = new TmfTimestamp(start, SCALE);
-        ITmfTimestamp endTS = new TmfTimestamp(end, SCALE);
-        TmfTimeRange range = new TmfTimeRange(startTS, endTS);
-
+    public Map<String, Long> getEventTypesInRange(ITmfTimestamp start,
+            ITmfTimestamp end) {
+        TmfTimeRange range = new TmfTimeRange(start, end);
         StatsPerTypeRequest request = new StatsPerTypeRequest(trace, range);
         sendAndWait(request);
 
