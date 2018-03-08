@@ -43,11 +43,13 @@ public class LocalLoggedCommand extends LoggedCommand2 {
 			errorGobbler = new StreamGobbler(process.getErrorStream());            
 			inputGobbler = new StreamGobbler(process.getInputStream());
 
-			this.transferListeners();
+			int i;
+			for(i=0; i<inputListeners.size(); i++)
+				inputGobbler.addDataListener(inputListeners.get(i));
+			for(i=0; i<errorListeners.size(); i++)
+				errorGobbler.addDataListener(errorListeners.get(i));
 			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		} catch(IOException ioe) {}
 		return false;
 	}
 	
