@@ -135,6 +135,13 @@ public class HistoryBuilder extends TmfComponent {
         /* Send the request to the trace here, since there is probably no
          * experiment. */
         sp.getTrace().sendRequest(request);
+
+        // Make sure that request is sent here otherwise it will wait forever
+        // due to waitForCompletion()
+        sp.getTrace().notifyPendingRequest(false);
+
+        // This should not be called here because it will block forever
+        // if it is called from a signal handler (signal depth > 0 or requestPending > 0)
         try {
             request.waitForCompletion();
         } catch (InterruptedException e) {
