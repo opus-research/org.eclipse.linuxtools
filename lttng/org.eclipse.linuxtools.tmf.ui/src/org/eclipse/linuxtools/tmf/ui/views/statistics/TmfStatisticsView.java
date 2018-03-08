@@ -28,6 +28,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.viewers.ITmfViewer;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.StateSystemStatisticsViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.widgets.tabsview.TmfViewerFolder;
@@ -302,6 +303,6 @@ public class TmfStatisticsView extends TmfView {
      * @since 2.0
      */
     protected TmfStatisticsViewer getGlobalViewer() {
-        return new TmfStatisticsViewer();
+        return new StateSystemStatisticsViewer();
     }
 }
