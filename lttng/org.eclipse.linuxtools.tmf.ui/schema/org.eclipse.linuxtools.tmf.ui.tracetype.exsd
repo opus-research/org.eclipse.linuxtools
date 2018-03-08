@@ -64,6 +64,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="is_experiment" type="boolean">
+            <annotation>
+               <documentation>
+                  Whether this category applies to experiment instead of individual traces.
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -126,6 +133,13 @@
                <appinfo>
                   <meta.attribute kind="resource"/>
                </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="is_experiment" type="boolean">
+            <annotation>
+               <documentation>
+                  Whether this trace type applies to experiment instead of individual traces.
+               </documentation>
             </annotation>
          </attribute>
       </complexType>

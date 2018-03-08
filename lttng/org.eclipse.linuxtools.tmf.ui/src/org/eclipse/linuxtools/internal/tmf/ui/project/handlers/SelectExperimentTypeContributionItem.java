@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,8 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Patrick Tasse - Initial API and implementation
- *   Geneviève Bastien - Moved bulk of code to new parent class
+ *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -16,21 +15,21 @@ package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
 import org.eclipse.jface.action.IContributionItem;
 
 /**
- * ContributionItem for the trace type selection.
+ * ContributionItem for the experiment type selection.
  *
- * @author Patrick Tassé
+ * @author Geneviève Bastien
  */
-public class SelectTraceTypeContributionItem extends SelectElementTypeContributionItem {
+public class SelectExperimentTypeContributionItem extends SelectElementTypeContributionItem {
 
-    private static final String BUNDLE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.bundle"; //$NON-NLS-1$
-    private static final String TYPE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.type"; //$NON-NLS-1$
-    private static final String ICON_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.icon"; //$NON-NLS-1$
-    private static final String SELECT_TRACE_TYPE_COMMAND_ID = "org.eclipse.linuxtools.tmf.ui.command.select_trace_type"; //$NON-NLS-1$
+    private static final String BUNDLE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_experiment_type.bundle"; //$NON-NLS-1$
+    private static final String TYPE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_experiment_type.type"; //$NON-NLS-1$
+    private static final String ICON_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_experiment_type.icon"; //$NON-NLS-1$
+    private static final String SELECT_TRACE_TYPE_COMMAND_ID = "org.eclipse.linuxtools.tmf.ui.command.select_experiment_type"; //$NON-NLS-1$
     private static final String DEFAULT_TRACE_ICON_PATH = "icons/elcl16/trace.gif"; //$NON-NLS-1$
 
     @Override
     protected IContributionItem[] getContributionItems() {
-        return getContributionItems(false);
+        return getContributionItems(true);
     }
 
     @Override
