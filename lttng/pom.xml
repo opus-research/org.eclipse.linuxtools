@@ -20,12 +20,12 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.lttng</groupId>
   <artifactId>linuxtools-lttng-parent</artifactId>
-  <version>1.1.1</version>
+  <version>1.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools LTTng Parent</name>
@@ -80,13 +80,15 @@
   <profile>
     <id>lttngTests</id>
       <modules>
-        <module>org.eclipse.linuxtools.lttng.core.tests</module>
         <module>org.eclipse.linuxtools.lttng2.core.tests</module>
       </modules>
   </profile>
   
   <profile>
     <id>lttngPackage</id>
+      <properties>
+          <lttngPackageDestination>/var/www/technology/linuxtools/lttng/update-nightly/</lttngPackageDestination>
+      </properties>
       <modules>
         <module>org.eclipse.linuxtools.lttng.releng-site</module>
       </modules>
@@ -108,7 +110,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>sonar-maven-plugin</artifactId>
-        <version>2.0-beta-2</version>
+        <version>2.0</version>
       </plugin>
 
     </plugins>
@@ -126,13 +128,7 @@
     <module>org.eclipse.linuxtools.tmf.ui</module>
     <module>org.eclipse.linuxtools.tmf.ui.tests</module>
 
-    <module>org.eclipse.linuxtools.lttng</module>
-    <module>org.eclipse.linuxtools.lttng.core</module>
-    <!-- <module>org.eclipse.linuxtools.lttng.core.tests</module> activated by the lttngTests package -->
     <module>org.eclipse.linuxtools.lttng.help</module>
-    <module>org.eclipse.linuxtools.lttng.jni</module>
-    <module>org.eclipse.linuxtools.lttng.ui</module>
-    <module>org.eclipse.linuxtools.lttng.ui.tests</module>
 
     <module>org.eclipse.linuxtools.lttng2</module>
     <module>org.eclipse.linuxtools.lttng2.core</module>

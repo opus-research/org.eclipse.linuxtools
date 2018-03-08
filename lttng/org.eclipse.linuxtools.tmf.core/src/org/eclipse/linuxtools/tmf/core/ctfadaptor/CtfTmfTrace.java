@@ -18,6 +18,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp.TimestampType;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
@@ -32,7 +33,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
  * @version 1.0
  * @author Matthew khouzam
  */
-public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParser<CtfTmfEvent>{
+public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
 
 
     //-------------------------------------------
@@ -60,13 +61,18 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     //-------------------------------------------
     /**
      * Method initTrace.
-     * @param resource IResource
-     * @param path String
-     * @param eventType Class<CtfTmfEvent>
+     *
+     * @param resource
+     *            The resource associated with this trace
+     * @param path
+     *            The path to the trace file
+     * @param eventType
+     *            The type of events that will be read from this trace
      * @throws TmfTraceException
+     *             If something when wrong while reading the trace
      */
     @Override
-    public void initTrace(final IResource resource, final String path, final Class<CtfTmfEvent> eventType)
+    public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> eventType)
             throws TmfTraceException {
         /*
          * Set the cache size. This has to be done before the call to super()
@@ -83,14 +89,15 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
             CtfIteratorManager.addTrace(this);
             CtfTmfLightweightContext ctx;
             /* Set the start and (current) end times for this trace */
-            ctx = new CtfTmfLightweightContext(this);
-            ctx.setLocation(new CtfLocation(0L));
+            ctx = (CtfTmfLightweightContext) seekEvent(0L);
+            CtfTmfEvent event = getNext(ctx);
             if(ctx.getLocation().equals(CtfIterator.NULL_LOCATION)) {
                 /* Handle the case where the trace is empty */
                 this.setStartTime(TmfTimestamp.BIG_BANG);
             } else {
-                this.setStartTime(ctx.getCurrentEvent().getTimestamp());
-                this.setEndTime(ctx.getCurrentEvent().getTimestamp());
+                final ITmfTimestamp curTime = event.getTimestamp();
+                this.setStartTime(curTime);
+                this.setEndTime(curTime);
             }
 
         } catch (final CTFReaderException e) {
@@ -160,10 +167,10 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
         final CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
         context.setLocation(curLocation);
         context.seek(curLocation.getLocation());
-        final long currentTime = ((Long)context.getLocation().getLocation());
+        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocation());
         final long startTime = getIterator(this, context).getStartTime();
         final long endTime = getIterator(this, context).getEndTime();
-        return ((double) currentTime - startTime)
+        return ((double) currentTime.getTimestamp() - startTime)
                 / (endTime - startTime);
     }
 
@@ -199,14 +206,20 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
          * by rank for now.
          */
         if (currentLocation == null) {
-            currentLocation = new CtfLocation(0L);
+            currentLocation = new CtfLocation(new CtfLocationData(0L, 0L));
             context.setRank(0);
         }
         if (currentLocation.getLocation() == CtfLocation.INVALID_LOCATION) {
             ((CtfTmfTimestamp) getEndTime()).setType(TimestampType.NANOS);
-            currentLocation.setLocation(getEndTime().getValue() + 1);
+            currentLocation.setLocation(getEndTime().getValue() + 1, 0L);
         }
         context.setLocation(currentLocation);
+        if (location == null) {
+            CtfTmfEvent event = getIterator(this, context).getCurrentEvent();
+            if (event != null) {
+                currentLocation.setLocation(event.getTimestampValue(), 0);
+            }
+        }
         if(context.getRank() != 0) {
             context.setRank(ITmfContext.UNKNOWN_RANK);
         }
@@ -217,7 +230,11 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     @Override
     public ITmfContext seekEvent(double ratio) {
         CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
-        context.seek((long) (this.getNbEvents() * ratio));
+        final long end = this.getEndTime().getValue();
+        final long start = this.getStartTime().getValue();
+        final long diff = end - start;
+        final long ratioTs = (long) (diff * ratio) + start;
+        context.seek(ratioTs);
         context.setRank(ITmfContext.UNKNOWN_RANK);
         return context;
     }
@@ -251,8 +268,10 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
     /**
      * Suppressing the warning, because the 'throws' will usually happen in
      * sub-classes.
+     *
      * @throws TmfTraceException
      */
+    @SuppressWarnings("unused")
     protected void buildStateSystem() throws TmfTraceException {
         /*
          * Nothing is done in the basic implementation, please specify

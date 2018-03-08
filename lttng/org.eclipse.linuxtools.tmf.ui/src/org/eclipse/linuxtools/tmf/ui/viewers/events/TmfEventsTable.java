@@ -194,7 +194,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
     protected SashForm fSashForm;
     protected TmfVirtualTable fTable;
     protected TmfRawEventViewer fRawViewer;
-    protected ITmfTrace<?> fTrace;
+    protected ITmfTrace fTrace;
     protected boolean fPackDone = false;
     protected HeaderState fHeaderState = HeaderState.SEARCH;
     protected long fSelectedRank = 0;
@@ -727,6 +727,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             content[i] = fields[i].getValue() != null ? fields[i].getValue().toString() : ""; //$NON-NLS-1$
         }
         item.setText(content);
+        item.setData(event);
         item.setData(Key.TIMESTAMP, new TmfTimestamp(event.getTimestamp()));
         item.setData(Key.RANK, rank);
 
@@ -819,6 +820,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                 item.setText(i, ""); //$NON-NLS-1$
             }
         }
+        item.setData(null);
         item.setData(Key.TIMESTAMP, null);
         item.setData(Key.RANK, null);
         item.setForeground(null);
@@ -1118,7 +1120,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
 
     protected class FilterThread extends Thread {
         private final ITmfFilterTreeNode filter;
-        private TmfDataRequest<ITmfEvent> request;
+        private TmfDataRequest request;
         private boolean refreshBusy = false;
         private boolean refreshPending = false;
         private final Object syncObj = new Object();
@@ -1128,7 +1130,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             this.filter = filter;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public void run() {
             if (fTrace == null) {
@@ -1138,7 +1139,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             if (nbRequested <= 0) {
                 return;
             }
-            request = new TmfDataRequest<ITmfEvent>(ITmfEvent.class, (int) fFilterCheckCount,
+            request = new TmfDataRequest(ITmfEvent.class, (int) fFilterCheckCount,
                     nbRequested, fTrace.getCacheSize(), ExecutionType.BACKGROUND) {
                 @Override
                 public void handleData(final ITmfEvent event) {
@@ -1158,7 +1159,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                     fFilterCheckCount++;
                 }
             };
-            ((ITmfDataProvider<ITmfEvent>) fTrace).sendRequest(request);
+            ((ITmfDataProvider) fTrace).sendRequest(request);
             try {
                 request.waitForCompletion();
             } catch (final InterruptedException e) {
@@ -1282,7 +1283,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
         protected int direction;
         protected long rank;
         protected long foundRank = -1;
-        protected TmfDataRequest<ITmfEvent> request;
+        protected TmfDataRequest request;
 
         public SearchThread(final ITmfFilterTreeNode searchFilter, final ITmfFilterTreeNode eventFilter, final int startIndex,
                 final long currentRank, final int direction) {
@@ -1294,7 +1295,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             this.direction = direction;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         protected IStatus run(final IProgressMonitor monitor) {
             if (fTrace == null) {
@@ -1344,7 +1344,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                 if (direction == Direction.BACKWARD) {
                     rank = Math.max(0, rank - fTrace.getCacheSize() + 1);
                 }
-                request = new TmfDataRequest<ITmfEvent>(ITmfEvent.class, (int) rank, nbRequested, fTrace.getCacheSize(), ExecutionType.BACKGROUND) {
+                request = new TmfDataRequest(ITmfEvent.class, (int) rank, nbRequested, fTrace.getCacheSize(), ExecutionType.BACKGROUND) {
                     long currentRank = rank;
 
                     @Override
@@ -1360,7 +1360,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                         currentRank++;
                     }
                 };
-                ((ITmfDataProvider<ITmfEvent>) fTrace).sendRequest(request);
+                ((ITmfDataProvider) fTrace).sendRequest(request);
                 try {
                     request.waitForCompletion();
                     if (request.isCancelled()) {
@@ -1495,7 +1495,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
      *            true if the trace should be disposed when the table is
      *            disposed
      */
-    public void setTrace(final ITmfTrace<?> trace, final boolean disposeOnClose) {
+    public void setTrace(final ITmfTrace trace, final boolean disposeOnClose) {
         if ((fTrace != null) && fDisposeOnClose) {
             fTrace.dispose();
         }
@@ -1805,7 +1805,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
      * @param signal
      *            The incoming signal
      */
-    @SuppressWarnings("unchecked")
     @TmfSignalHandler
     public void currentTimeUpdated(final TmfTimeSynchSignal signal) {
         if ((signal.getSource() != this) && (fTrace != null) && (!fTable.isDisposed())) {
@@ -1813,7 +1812,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
             // Create a request for one event that will be queued after other ongoing requests. When this request is completed
             // do the work to select the actual event with the timestamp specified in the signal. This procedure prevents
             // the method fTrace.getRank() from interfering and delaying ongoing requests.
-            final TmfDataRequest<ITmfEvent> subRequest = new TmfDataRequest<ITmfEvent>(ITmfEvent.class, 0, 1, ExecutionType.FOREGROUND) {
+            final TmfDataRequest subRequest = new TmfDataRequest(ITmfEvent.class, 0, 1, ExecutionType.FOREGROUND) {
 
                 TmfTimestamp ts = new TmfTimestamp(signal.getCurrentTime());
 
@@ -1866,7 +1865,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker,
                 }
             };
 
-            ((ITmfDataProvider<ITmfEvent>) fTrace).sendRequest(subRequest);
+            ((ITmfDataProvider) fTrace).sendRequest(subRequest);
         }
     }
 
