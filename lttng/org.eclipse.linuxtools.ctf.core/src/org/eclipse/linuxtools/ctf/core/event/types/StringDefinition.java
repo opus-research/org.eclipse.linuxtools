@@ -34,7 +34,7 @@ public class StringDefinition extends Definition {
 
     private StringDeclaration declaration;
 
-    private StringBuilder string;
+    private String string;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -56,7 +56,7 @@ public class StringDefinition extends Definition {
 
         this.declaration = declaration;
 
-        string = new StringBuilder();
+        string = ""; //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------
@@ -79,31 +79,21 @@ public class StringDefinition extends Definition {
     }
 
     /**
-     * Gets the string
-     *
-     * @return the stringbuilder
-     */
-    public StringBuilder getString() {
-        return string;
-    }
-
-    /**
-     * Sets a stringbuilder for the definition
-     *
-     * @param string
-     *            the stringbuilder
-     */
-    public void setString(StringBuilder string) {
-        this.string = string;
-    }
-
-    /**
      * Gets the string (value)
      *
      * @return the string
      */
     public String getValue() {
-        return string.toString();
+        return string;
+    }
+
+    /**
+     * Sets the string (value)
+     *
+     * @param str the string
+     */
+    public void setValue(String str) {
+        this.string = str;
     }
 
     // ------------------------------------------------------------------------
@@ -114,12 +104,14 @@ public class StringDefinition extends Definition {
     public void read(BitBuffer input) throws CTFReaderException {
         /* Offset the buffer position wrt the current alignment */
         alignRead(input, this.declaration);
-        string.setLength(0);
+
+        StringBuilder sb = new StringBuilder();
         char c = (char) input.get(8, false);
         while (c != 0) {
-            string.append(c);
+            sb.append(c);
             c = (char) input.get(8, false);
         }
+        string = sb.toString();
     }
 
     @Override
