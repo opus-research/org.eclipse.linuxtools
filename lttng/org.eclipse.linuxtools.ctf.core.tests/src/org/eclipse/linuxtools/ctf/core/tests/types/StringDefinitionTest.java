@@ -47,7 +47,7 @@ public class StringDefinitionTest {
      */
     @Before
     public void setUp() {
-        String name = "testString";
+        String name = "testString"; //$NON-NLS-1$
         StringDeclaration stringDec = new StringDeclaration();
         fixture = stringDec.createDefinition(null, name);
     }
@@ -68,7 +68,7 @@ public class StringDefinitionTest {
     public void testStringDefinition() {
         StringDeclaration declaration = new StringDeclaration();
         IDefinitionScope definitionScope = null;
-        String fieldName = "";
+        String fieldName = ""; //$NON-NLS-1$
 
         StringDefinition result = new StringDefinition(declaration,
                 definitionScope, fieldName);

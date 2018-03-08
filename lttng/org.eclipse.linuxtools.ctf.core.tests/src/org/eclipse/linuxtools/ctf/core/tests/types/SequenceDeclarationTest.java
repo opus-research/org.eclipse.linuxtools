@@ -40,7 +40,7 @@ public class SequenceDeclarationTest {
 
     private SequenceDeclaration fixture;
 
-    static final String fieldName = "LengthName";
+    static final String fieldName = "LengthName"; //$NON-NLS-1$
     /**
      * Launch the test.
      *
@@ -66,12 +66,13 @@ public class SequenceDeclarationTest {
      */
     @Test
     public void testSequenceDeclaration() {
-        String lengthName = "";
+        String lengthName = ""; //$NON-NLS-1$
         IDeclaration elemType = new StringDeclaration();
 
-        SequenceDeclaration result = new SequenceDeclaration(lengthName, elemType);
+        SequenceDeclaration result = new SequenceDeclaration(lengthName,
+                elemType);
         assertNotNull(result);
-        String string = "[declaration] sequence[";
+        String string = "[declaration] sequence["; //$NON-NLS-1$
         assertEquals(string, result.toString().substring(0, string.length()));
     }
 
@@ -86,10 +87,11 @@ public class SequenceDeclarationTest {
 
         StructDeclaration structDec = new StructDeclaration(0);
         structDec.addField(fieldName, id);
-        StructDefinition structDef = new StructDefinition(structDec, null, "x");
+        StructDefinition structDef = new StructDefinition(structDec, null, "x"); //$NON-NLS-1$
         long seqLen = 10;
         structDef.lookupInteger(fieldName).setValue(seqLen);
-        SequenceDefinition result = this.fixture.createDefinition(structDef, fieldName);
+        SequenceDefinition result = this.fixture.createDefinition(structDef,
+                fieldName);
         assertNotNull(result);
     }
 
@@ -108,7 +110,7 @@ public class SequenceDeclarationTest {
     @Test
     public void testToString() {
         String result = fixture.toString();
-        String left = "[declaration] sequence[";
+        String left = "[declaration] sequence["; //$NON-NLS-1$
         assertEquals(left, result.substring(0, left.length()));
     }
 }

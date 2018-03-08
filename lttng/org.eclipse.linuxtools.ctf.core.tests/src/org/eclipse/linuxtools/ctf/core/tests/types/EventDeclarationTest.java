@@ -67,7 +67,7 @@ public class EventDeclarationTest {
         fixture.setId(1L);
         fixture.setFields(new StructDeclaration(1L));
         fixture.setStream(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)));
-        fixture.setName("");
+        fixture.setName(""); //$NON-NLS-1$
     }
 
     /**
@@ -119,7 +119,7 @@ public class EventDeclarationTest {
         obj.setId(1L);
         obj.setFields(new StructDeclaration(1L));
         obj.setStream(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)));
-        obj.setName("");
+        obj.setName(""); //$NON-NLS-1$
 
         assertTrue(fixture.equals(fixture));
         boolean result = fixture.equals(obj);
@@ -196,7 +196,7 @@ public class EventDeclarationTest {
         obj.setContext(new StructDeclaration(1L));
         obj.setId(1L);
         obj.setFields(new StructDeclaration(1L));
-        obj.setName("");
+        obj.setName(""); //$NON-NLS-1$
 
         boolean result = fixture.equals(obj);
         assertFalse(result);
@@ -349,9 +349,9 @@ public class EventDeclarationTest {
         assertNotNull(ed.getCPU());
         assertNotNull(ed.getPacketContext());
         assertNotNull(ed.getStreamInputReader());
-        assertNull(ed.lookupDefinition("context"));
-        assertNotNull(ed.lookupDefinition("fields"));
-        assertNull(ed.lookupDefinition("other"));
+        assertNull(ed.lookupDefinition("context")); //$NON-NLS-1$
+        assertNotNull(ed.lookupDefinition("fields")); //$NON-NLS-1$
+        assertNull(ed.lookupDefinition("other")); //$NON-NLS-1$
         assertNotNull(ed.toString());
         ed.setContext( ed.getFields());
         assertNotNull(ed.toString());

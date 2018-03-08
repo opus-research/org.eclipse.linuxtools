@@ -35,9 +35,8 @@ import org.junit.Test;
 public class IntegerDefinitionTest {
 
     private IntegerDefinition fixture;
-    String name = "testInt";
-    String clockName = "clock";
-
+    String name = "testInt"; //$NON-NLS-1$
+    String clockName = "clock"; //$NON-NLS-1$
     /**
      * Launch the test.
      *
@@ -78,7 +77,7 @@ public class IntegerDefinitionTest {
         IntegerDeclaration declaration = new IntegerDeclaration(1, true, 1,
                 ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
         IDefinitionScope definitionScope = null;
-        String fieldName = "";
+        String fieldName = ""; //$NON-NLS-1$
 
         IntegerDefinition result = new IntegerDefinition(declaration,
                 definitionScope, fieldName);
