@@ -9,24 +9,24 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.systemtap.ui.logging;
+package org.eclipse.linuxtools.internal.systemtap.ui.structures;
 
-import org.eclipse.ui.plugin.*;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The main plugin class to be used in the desktop.
  */
-public class LoggingPlugin extends AbstractUIPlugin {
+public class StructuresPlugin extends AbstractUIPlugin {
 
 	//The shared instance.
-	private static LoggingPlugin plugin;
+	private static StructuresPlugin plugin;
 	
 	/**
 	 * The constructor.
 	 */
-	public LoggingPlugin() {
+	public StructuresPlugin() {
 		plugin = this;
 	}
 
@@ -50,7 +50,7 @@ public class LoggingPlugin extends AbstractUIPlugin {
 	/**
 	 * Returns the shared instance.
 	 */
-	public static LoggingPlugin getDefault() {
+	public static StructuresPlugin getDefault() {
 		return plugin;
 	}
 
@@ -62,6 +62,6 @@ public class LoggingPlugin extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin("org.eclipse.linuxtools.systemtap.ui.logging", path);
+		return AbstractUIPlugin.imageDescriptorFromPlugin("org.eclipse.linuxtools.systemtap.ui.structures", path);
 	}
 }
