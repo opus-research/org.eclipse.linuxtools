@@ -2,6 +2,7 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -24,7 +25,7 @@ public class ScpExec extends LoggedCommand {
 	private Channel channel;
 
 	public ScpExec(String cmds[]) {
-		super(cmds, null);
+		super(cmds, null, null);
 		this.command = ""; //$NON-NLS-1$
 		for (String cmd:cmds) {
 			this.command = this.command + " " + cmd; //$NON-NLS-1$
@@ -66,7 +67,7 @@ public class ScpExec extends LoggedCommand {
 		} catch (JSchException e) {
 			IStatus status = new Status(IStatus.ERROR, ConsoleLogPlugin.PLUGIN_ID, Messages.ScpExec_FileTransferFailed, e);
 			ErrorDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.ScpExec_Error, e.getMessage(), status);
-			return status;
+			return status; 
 		} catch (IOException e) {
 			IStatus status = new Status(IStatus.ERROR, ConsoleLogPlugin.PLUGIN_ID, Messages.ScpExec_FileTransferFailed, e);
 			ErrorDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.ScpExec_Error, e.getMessage(), status);
