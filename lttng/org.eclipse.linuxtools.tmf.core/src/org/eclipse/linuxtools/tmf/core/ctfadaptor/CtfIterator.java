@@ -85,6 +85,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         } else {
             setUnknownLocation();
         }
+
     }
 
     /**
@@ -124,6 +125,11 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     public synchronized boolean seek(final CtfLocationInfo ctfLocationData) {
         boolean ret = false;
 
+        /* Avoid the cost of seeking at the current location. */
+        if (curLocation.getLocationInfo().equals(ctfLocationData)) {
+            return super.hasMoreEvents();
+        }
+
         /* Adjust the timestamp depending on the trace's offset */
         long currTimestamp = ctfLocationData.getTimestamp();
         final long offsetTimestamp = this.getCtfTmfTrace().getCTFTrace().timestampNanoToCycles(currTimestamp);
@@ -151,7 +157,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
                 this.advance();
             }
         } else {
-            ret = false;
+            ret= false;
         }
         /* Seek the current location accordingly */
         if (ret) {
@@ -159,7 +165,6 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
         } else {
             curLocation = NULL_LOCATION;
         }
-
         return ret;
     }
 
@@ -228,7 +233,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     @Override
     public void increaseRank() {
         /* Only increase the rank if it's valid */
-        if (hasValidRank()) {
+        if(hasValidRank()) {
             curRank++;
         }
     }
