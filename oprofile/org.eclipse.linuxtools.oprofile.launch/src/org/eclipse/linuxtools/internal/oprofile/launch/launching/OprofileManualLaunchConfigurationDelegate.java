@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -241,4 +242,6 @@ public class OprofileManualLaunchConfigurationDelegate extends AbstractOprofileL
 		}
 	}
 
+	@Override
+	public String generateCommand(ILaunchConfiguration config) { return null; /* dont care */}
 }
