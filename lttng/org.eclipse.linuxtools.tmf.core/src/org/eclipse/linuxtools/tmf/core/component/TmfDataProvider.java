@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2010 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
@@ -41,7 +41,9 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
  * implement the hooks (initializeContext() and getNext()).
  * <p>
  * TODO: Add support for providing multiple data types.
- * 
+ *
+ * @param <T> The provider event type
+ *
  * @version 1.0
  * @author Francois Chouinard
  */
@@ -51,7 +53,10 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
     // Constants
     // ------------------------------------------------------------------------
 
+    /** Default amount of events per request "chunk" */
     public static final int DEFAULT_BLOCK_SIZE = 50000;
+
+    /** Default size of the queue */
     public static final int DEFAULT_QUEUE_SIZE = 1000;
 
     // ------------------------------------------------------------------------
@@ -75,6 +80,9 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
     // Constructors
     // ------------------------------------------------------------------------
 
+    /**
+     * Default constructor
+     */
     public TmfDataProvider() {
         super();
         fQueueSize = DEFAULT_QUEUE_SIZE;
@@ -82,6 +90,14 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
         fExecutor = new TmfRequestExecutor();
     }
 
+    /**
+     * Initialize this data provider
+     *
+     * @param name
+     *            Name of the provider
+     * @param type
+     *            The type of events that will be handled
+     */
     public void init(String name, Class<T> type) {
         super.init(name);
         fType = type;
@@ -102,11 +118,25 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
         init(name, type);
     }
 
+    /**
+     * Copy constructor
+     *
+     * @param other
+     *            The other object to copy
+     */
     public TmfDataProvider(TmfDataProvider<T> other) {
         this();
         init(other.getName(), other.fType);
     }
 
+    /**
+     * Standard constructor. Instantiate and initialize at the same time.
+     *
+     * @param name
+     *            Name of the provider
+     * @param type
+     *            The type of events that will be handled
+     */
     public TmfDataProvider(String name, Class<T> type) {
         this(name, type, DEFAULT_QUEUE_SIZE);
     }
@@ -123,10 +153,20 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
     // Accessors
     // ------------------------------------------------------------------------
 
+    /**
+     * Get the queue size of this provider
+     *
+     * @return The size of the queue
+     */
     public int getQueueSize() {
         return fQueueSize;
     }
 
+    /**
+     * Get the event type this provider handles
+     *
+     * @return The type of ITmfEvent
+     */
     public Class<?> getType() {
         return fType;
     }
@@ -146,9 +186,6 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
         }
     }
 
-    /**
-     * This method queues the coalesced requests.
-     */
     @Override
     public void fireRequest() {
         synchronized (fLock) {
@@ -165,10 +202,13 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
     }
 
     /**
-     * Increments/decrements the pending requests counters and fires the request if necessary (counter == 0). Used for
-     * coalescing requests accross multiple TmfDataProvider.
-     * 
+     * Increments/decrements the pending requests counters and fires the request
+     * if necessary (counter == 0). Used for coalescing requests across multiple
+     * TmfDataProvider's.
+     *
      * @param isIncrement
+     *            Should we increment (true) or decrement (false) the pending
+     *            counter
      */
     @Override
     public void notifyPendingRequest(boolean isIncrement) {
@@ -230,10 +270,11 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
     // ------------------------------------------------------------------------
 
     private void dispatchRequest(final ITmfDataRequest<T> request) {
-        if (request.getExecType() == ExecutionType.FOREGROUND)
+        if (request.getExecType() == ExecutionType.FOREGROUND) {
             queueRequest(request);
-        else
+        } else {
             queueBackgroundRequest(request, request.getBlockSize(), true);
+        }
     }
 
     protected void queueRequest(final ITmfDataRequest<T> request) {
@@ -247,7 +288,7 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
 
         // Process the request
         TmfThread thread = new TmfThread(request.getExecType()) {
-            
+
             @Override
             public void run() {
 
@@ -271,9 +312,11 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
                     // Get the ordered events
                     T data = getNext(context);
                     if (Tracer.isRequestTraced())
+                     {
                         Tracer.traceRequest(request, "read first event"); //$NON-NLS-1$
+                    }
                     while (data != null && !isCompleted(request, data, nbRead)) {
-                        if (fLogData) { 
+                        if (fLogData) {
                             Tracer.traceEvent(provider, request, data);
                         }
                         if (request.getDataType().isInstance(data)) {
@@ -287,7 +330,9 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
                         }
                     }
                     if (Tracer.isRequestTraced())
+                     {
                         Tracer.traceRequest(request, "COMPLETED"); //$NON-NLS-1$
+                    }
 
                     if (request.isCancelled()) {
                         request.cancel();
@@ -311,7 +356,9 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
         };
 
         if (Tracer.isRequestTraced())
+         {
             Tracer.traceRequest(request, "QUEUED"); //$NON-NLS-1$
+        }
         fExecutor.execute(thread);
 
     }
@@ -401,7 +448,7 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
     /**
      * Initialize the provider based on the request. The context is provider
      * specific and will be updated by getNext().
-     * 
+     *
      * @param request
      * @return an application specific context; null if request can't be serviced
      */
@@ -410,7 +457,7 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
 //    /**
 //     * Return the next event based on the context supplied. The context
 //     * will be updated for the subsequent read.
-//     * 
+//     *
 //     * @param context the trace read context (updated)
 //     * @return the event referred to by context
 //     */
@@ -418,7 +465,7 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
 
     /**
      * Checks if the data meets the request completion criteria.
-     * 
+     *
      * @param request the request
      * @param data the data to verify
      * @param nbRead the number of events read so far
@@ -432,6 +479,12 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
     // Signal handlers
     // ------------------------------------------------------------------------
 
+    /**
+     * Handler for the start synch signal
+     *
+     * @param signal
+     *            Incoming signal
+     */
     @TmfSignalHandler
     public void startSynch(TmfStartSynchSignal signal) {
         synchronized (fLock) {
@@ -439,6 +492,12 @@ public abstract class TmfDataProvider<T extends ITmfEvent> extends TmfComponent 
         }
     }
 
+    /**
+     * Handler for the end synch signal
+     *
+     * @param signal
+     *            Incoming signal
+     */
     @TmfSignalHandler
     public void endSynch(TmfEndSynchSignal signal) {
         synchronized (fLock) {
