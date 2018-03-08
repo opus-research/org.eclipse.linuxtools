@@ -539,9 +539,9 @@ public class HistogramView extends TmfView {
 
     private void initializeHistograms() {
         TmfTimeRange fullRange = updateTraceTimeRange();
-        long timestamp = fTrace.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-        long startTime = fTrace.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-        long duration = fTrace.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue() - startTime;
+        long timestamp = tm.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        long startTime = tm.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        long duration = tm.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue() - startTime;
 
         if ((fTimeRangeRequest != null) && !fTimeRangeRequest.isCompleted()) {
             fTimeRangeRequest.cancel();
