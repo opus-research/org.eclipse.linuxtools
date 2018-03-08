@@ -14,8 +14,6 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        CTFTraceCallsitePerformanceTest.class,
-        CTFTraceTest.class,
         CTFTraceReaderTest.class,
         StreamInputTest.class,
         StreamInputReaderTimestampComparatorTest.class,
