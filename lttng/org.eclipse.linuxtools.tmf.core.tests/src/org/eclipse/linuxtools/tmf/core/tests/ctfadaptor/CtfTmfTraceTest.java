@@ -32,7 +32,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.junit.After;
 import org.junit.Before;
@@ -289,7 +289,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetStateSystem() {
-        ITmfStateSystem result = fixture.getStateSystem();
+        IStateSystemQuerier result = fixture.getStateSystem();
         assertNull(result);
     }
 

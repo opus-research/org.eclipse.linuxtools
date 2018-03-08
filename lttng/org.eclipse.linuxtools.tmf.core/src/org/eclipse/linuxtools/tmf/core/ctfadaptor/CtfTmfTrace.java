@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -49,7 +49,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     //-------------------------------------------
 
     /** Reference to the state system assigned to this trace */
-    protected ITmfStateSystem ss = null;
+    protected IStateSystemQuerier ss = null;
 
     /* Reference to the CTF Trace */
     private CTFTrace fTrace;
@@ -285,7 +285,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
      *
      * @return IStateSystemQuerier
      */
-    public ITmfStateSystem getStateSystem() {
+    public IStateSystemQuerier getStateSystem() {
         return this.ss;
     }
 
