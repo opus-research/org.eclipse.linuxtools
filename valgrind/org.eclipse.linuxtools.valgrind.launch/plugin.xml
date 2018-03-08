@@ -3,6 +3,7 @@
 <plugin>
    <extension-point id="valgrindTools" name="%extension-point.name.0" schema="schema/valgrindTools.exsd"/>
    <extension-point id="outputDirectoryProviders" name="%extension-point.name.1" schema="schema/outputDirectoryProviders.exsd"/>
+   <extension-point id="customMallocLibraries" name="Custom malloc libraries" schema="schema/customMallocLibraries.exsd"/>
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
