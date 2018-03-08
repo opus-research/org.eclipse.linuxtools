@@ -13,7 +13,12 @@
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow;
 
+import java.util.Iterator;
+
+import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
 
 /**
@@ -91,5 +96,24 @@ public class ControlFlowEntry extends TimeGraphEntry {
     @Override
     public String toString() {
         return getClass().getSimpleName() + '(' + getName() + '[' + fThreadId + "])"; //$NON-NLS-1$
+    }
+
+    @Override
+    public boolean isActive(long startTime, long endTime) {
+        Iterator<ITimeEvent> iterator = getTimeEventsIterator(startTime, endTime, 1);
+        while(iterator.hasNext()) {
+            ITimeEvent event = iterator.next();
+            if ((event.getTime() <= endTime && (event.getTime() + event.getDuration() >= startTime))) {
+                if (event instanceof TimeEvent) {
+                    TimeEvent timeEvent = (TimeEvent) event;
+                    int value = timeEvent.getValue();
+                    if (value != StateValues.PROCESS_STATUS_WAIT_BLOCKED) {
+                        return true;
+                    }
+                }
+            }
+
+        }
+        return false;
     }
 }

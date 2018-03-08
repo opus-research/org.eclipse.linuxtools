@@ -34,7 +34,10 @@ import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -395,6 +398,9 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
                 IDialogConstants.DESELECT_ALL_ID, Messages.TmfTimeFilterDialog_UNCHECK_ALL,
                 false);
 
+        Button checkActiveButton = createButton(buttonComposite,
+                IDialogConstants.PROCEED_ID, Messages.TmfTimeFilterDialog_CHECK_ACTIVE,
+                false);
 
         /*
          * Apply the layout again after creating the buttons to override
@@ -475,6 +481,21 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
             }
         });
 
+        checkActiveButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object[] viewerElements = fContentProvider.getElements(fInput);
+
+                TmfTraceManager traceManager = TmfTraceManager.getInstance();
+                TmfTimeRange displayRange = traceManager.getCurrentRange();
+
+                for (int i = 0; i < viewerElements.length; i++) {
+                    checkActiveElement(viewerElements[i], displayRange);
+                }
+                updateOKStatus();
+            }
+        });
+
         return buttonComposite;
     }
 
@@ -519,6 +540,20 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
 
         for (Object child : fContentProvider.getChildren(element)) {
             uncheckElement(child);
+        }
+    }
+
+    private void checkActiveElement(Object element, TmfTimeRange displayRange) {
+        if (element instanceof TimeGraphEntry) {
+            TimeGraphEntry entry = (TimeGraphEntry) element;
+            if (entry.isActive(displayRange.getStartTime().getValue(), displayRange.getEndTime().getValue())) {
+                checkElement(element);
+            } else {
+                uncheckElement(element);
+            }
+            for (TimeGraphEntry childEntry : entry.getChildren()) {
+                checkActiveElement(childEntry, displayRange);
+            }
         }
     }
 
