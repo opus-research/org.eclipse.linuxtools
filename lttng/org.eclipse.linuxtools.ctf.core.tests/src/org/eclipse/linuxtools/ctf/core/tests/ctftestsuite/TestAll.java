@@ -24,8 +24,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    // FIXME Disabled until the failures are actually fixed
-    // CtfTestSuiteTests.class
+    CtfTestSuiteTest.class
 })
 public class TestAll {
 
