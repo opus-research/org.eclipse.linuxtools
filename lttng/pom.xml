@@ -43,7 +43,7 @@
       </comments>
     </license>
   </licenses>
-  
+
 <profiles>
   <profile>
     <id>lttngPackage</id>
@@ -53,8 +53,8 @@
       <modules>
         <module>org.eclipse.linuxtools.lttng.releng-site</module>
       </modules>
-  </profile> 
-	
+  </profile>
+
 </profiles>
 
   <modules>
@@ -67,6 +67,7 @@
     <module>org.eclipse.linuxtools.tmf.core</module>
     <module>org.eclipse.linuxtools.tmf.core.tests</module>
     <module>org.eclipse.linuxtools.tmf.ui</module>
+    <module>org.eclipse.linuxtools.tmf.ui.graph</module>
     <module>org.eclipse.linuxtools.tmf.ui.tests</module>
     <module>org.eclipse.linuxtools.tmf.help</module>
 

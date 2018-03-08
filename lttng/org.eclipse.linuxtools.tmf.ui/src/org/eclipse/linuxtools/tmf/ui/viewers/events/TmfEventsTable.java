@@ -91,6 +91,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.ui.graph.PlottingDialog;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsCache.CachedEvent;
 import org.eclipse.linuxtools.tmf.ui.views.colors.ColorSetting;
 import org.eclipse.linuxtools.tmf.ui.views.colors.ColorSettingsManager;
@@ -726,6 +727,13 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             }
         };
 
+        final IAction createGraphAction = new Action(Messages.TmfEventsTable_CreateGraphActionText) {
+            @Override
+            public void run() {
+                createGraph();
+            }
+        };
+
         class ToggleBookmarkAction extends Action {
             long fRank;
 
@@ -784,6 +792,10 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 } else if (!fRawViewer.isVisible()) {
                     tablePopupMenu.add(showRawAction);
                 }
+                if (fTrace != null) {
+                    tablePopupMenu.add(createGraphAction);
+                }
+
                 tablePopupMenu.add(new Separator());
 
                 if (item != null) {
@@ -853,6 +865,12 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
 
         menu = rawViewerPopupMenu.createContextMenu(fRawViewer);
         fRawViewer.setMenu(menu);
+    }
+
+
+    private void createGraph() {
+        PlottingDialog dialog = new PlottingDialog(getTable().getShell(), fTrace, (ITmfFilterTreeNode) fTable.getData(Key.FILTER_OBJ));
+        dialog.open();
     }
 
 

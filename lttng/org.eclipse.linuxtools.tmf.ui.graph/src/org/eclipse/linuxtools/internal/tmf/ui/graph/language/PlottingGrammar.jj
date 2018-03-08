@@ -1,0 +1,37 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Kalray
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which
+ * accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Xavier Raynaud - Initial API and implementation
+ *******************************************************************************/
+
+/**
+ * Parser for the plotting language of the system trace plug-in
+ * @author Xavier Raynaud <xavier.raynaud@kalray.eu >
+ *
+ */options{  JDK_VERSION = "1.6";  static = true;}PARSER_BEGIN(PlottingLanguage)package org.eclipse.linuxtools.internal.tmf.ui.graph.language;
+
+import org.eclipse.linuxtools.internal.tmf.ui.graph.expression.*;public class PlottingLanguage{}PARSER_END(PlottingLanguage)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* OPERATORS */{  < PLUS : "+" >| < MINUS : "-" >| < MULTIPLY : "*" >| < DIVIDE : "/" >
+| < LEFT_PARENTHESIS: "(" >
+| < RIGHT_PARENTHESIS: ")" >}TOKEN : /* keyworks */{  < EVENT : "event" >| < PREVIOUS : "previous" >| < TIMESTAMP : "timestamp" >| < RANK : "rank" >}TOKEN : /* IDENTIFIERS */{  < IDENTIFIER :    < LETTER >    (      < LETTER >    | < DIGIT >    )* >| < #LETTER : [ "a"-"z", "A"-"Z", "_" ] >| < #DIGIT : [ "0"-"9" ] >}TOKEN :{  < INTEGER_LITERAL :    < DECIMAL_LITERAL > ([ "l", "L" ])?  | < HEX_LITERAL > ([ "l", "L" ])? >| < #DECIMAL_LITERAL : [ "1"-"9" ] ([ "0"-"9" ])* >| < #HEX_LITERAL : "0" [ "x", "X" ] ([ "0"-"9", "a"-"f", "A"-"F" ])+ >| < FLOATING_POINT_LITERAL :    < DECIMAL_FLOATING_POINT_LITERAL >  | < HEXADECIMAL_FLOATING_POINT_LITERAL >>| < #DECIMAL_FLOATING_POINT_LITERAL :    ([ "0"-"9" ])+ "." ([ "0"-"9" ])* (< DECIMAL_EXPONENT >)? ([ "f", "F", "d", "D" ])?  | "." ([ "0"-"9" ])+ (< DECIMAL_EXPONENT >)? ([ "f", "F", "d", "D" ])?  | ([ "0"-"9" ])+ < DECIMAL_EXPONENT > ([ "f", "F", "d", "D" ])?  | ([ "0"-"9" ])+ (< DECIMAL_EXPONENT >)? [ "f", "F", "d", "D" ] >| < #DECIMAL_EXPONENT : [ "e", "E" ] ([ "+", "-" ])? ([ "0"-"9" ])+ >| < #HEXADECIMAL_FLOATING_POINT_LITERAL :    "0" [ "x", "X" ] ([ "0"-"9", "a"-"f", "A"-"F" ])+ (".")? < HEXADECIMAL_EXPONENT > ([ "f", "F", "d", "D" ])?  | "0" [ "x", "X" ] ([ "0"-"9", "a"-"f", "A"-"F" ])* "." ([ "0"-"9", "a"-"f", "A"-"F" ])+ < HEXADECIMAL_EXPONENT > ([ "f", "F", "d", "D" ])? >| < #HEXADECIMAL_EXPONENT : [ "p", "P" ] ([ "+", "-" ])? ([ "0"-"9" ])+ >}
+PlottingExpression completeExpression() :
+{PlottingExpression ret;
+}
+{    ret = Expression()
+    < EOF >
+    {    return ret;
+    }
+}
+  
+
+
+PlottingExpression Expression() :{  PlottingExpression ret;  PlottingExpression tmp;}{  ret = MultiplicativeExpression()  (    < PLUS > tmp = MultiplicativeExpression()    {      ret = new PlottingAddExpression(ret, tmp);    }  | < MINUS > tmp = MultiplicativeExpression()    {      ret = new PlottingMinusExpression(ret, tmp);    }  )*  {    return ret;  }}PlottingExpression MultiplicativeExpression() :{  PlottingExpression ret;  PlottingExpression tmp;}{  ret = PrimaryExpression()  (    < MULTIPLY > tmp = PrimaryExpression()    {      ret = new PlottingMultExpression(ret, tmp);    }  | < DIVIDE > tmp = PrimaryExpression()    {      ret = new PlottingMultExpression(ret, tmp);    }  )*
+  {
+    return ret;
+  }}PlottingExpression PrimaryExpression() :{  PlottingExpression ret;
+  double tmp;}{  tmp = Literal()  {    return new PlottingLiteralExpression(tmp);  }| < EVENT > "."  (    < TIMESTAMP >    {      ret = new PlottingTimestampExpression();      return ret;    }  | < RANK >    {      ret = new PlottingRankExpression();      return ret;    }  | < IDENTIFIER >    {      ret = new PlottingFieldExpression(token.image);      return ret;    }  )| < PREVIOUS > "."  (    < TIMESTAMP >    {      ret = new PlottingPreviousTimestampExpression();      return ret;    }  | < RANK >    {      ret = new PlottingPreviousRankExpression();      return ret;    }  | < IDENTIFIER >    {      ret = new PlottingPreviousFieldExpression(token.image);      return ret;    }  )| < LEFT_PARENTHESIS > ret = Expression() < RIGHT_PARENTHESIS >  {    return ret;  }}double Literal() :{}{  < INTEGER_LITERAL >  {    return Long.parseLong(token.image);  }| < FLOATING_POINT_LITERAL >  {    return Double.parseDouble(token.image);  }}
