@@ -64,6 +64,7 @@ public class LaunchOptions {
 	public void saveConfiguration(ILaunchConfigurationWorkingCopy config) {
 		config.setAttribute(OprofileLaunchPlugin.ATTR_KERNEL_IMAGE_FILE, options.getKernelImageFile());
 		config.setAttribute(OprofileLaunchPlugin.ATTR_SEPARATE_SAMPLES, options.getSeparateProfilesMask());
+		config.setAttribute(OprofileLaunchPlugin.ATTR_EXECUTIONS_NUMBER, options.getExecutionsNumber());
 	}
 	
 	/**
@@ -75,6 +76,7 @@ public class LaunchOptions {
 		try {
 			options.setKernelImageFile(config.getAttribute(OprofileLaunchPlugin.ATTR_KERNEL_IMAGE_FILE, "")); //$NON-NLS-1$
 			options.setSeparateProfilesMask(config.getAttribute(OprofileLaunchPlugin.ATTR_SEPARATE_SAMPLES, OprofileDaemonOptions.SEPARATE_NONE));
+			options.setExecutionsNumber(config.getAttribute(OprofileLaunchPlugin.ATTR_EXECUTIONS_NUMBER, 1));
 		} catch (CoreException e) {
 		}
 	}
@@ -133,5 +135,13 @@ public class LaunchOptions {
 	 */
 	public void setBinaryImage(String image) {
 		options.setBinaryImage(image);
+	}
+	
+	public int getExecutionsNumber(){
+		return options.getExecutionsNumber();
+	}
+	
+	public void setExecutionsNumber(int number){
+		options.setExecutionsNumber(number);
 	}
 }

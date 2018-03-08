@@ -32,6 +32,8 @@ public class OprofileDaemonOptions {
 	//how many calls down to profile
 	private int callgraphDepth;
 	
+	private int executionsNumber;
+	
 	/**
 	 * Sample separation options. Determines how oprofiled will group
 	 *   samples for binaries which isn't the main binary being profiled.
@@ -136,5 +138,19 @@ public class OprofileDaemonOptions {
 	 */
 	public void setCallgraphDepth(int depth) {
 		this.callgraphDepth = depth;
+	}
+
+	/**
+	 * @since 1.1
+	 */
+	public int getExecutionsNumber() {
+		return executionsNumber;
+	}
+	
+	/**
+	 * @since 1.1
+	 */
+	public void setExecutionsNumber(int executionsNumber) {
+		this.executionsNumber = executionsNumber;
 	}
 }
