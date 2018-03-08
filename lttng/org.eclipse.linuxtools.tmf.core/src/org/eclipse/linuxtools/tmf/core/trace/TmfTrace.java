@@ -28,6 +28,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
@@ -117,6 +118,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     public TmfTrace() {
         super();
+        registerAsVip();
     }
 
     /**
@@ -152,6 +154,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             final ITmfEventParser parser)
                     throws TmfTraceException {
         super();
+        registerAsVip();
         fCacheSize = (cacheSize > 0) ? cacheSize : ITmfTrace.DEFAULT_TRACE_CACHE_SIZE;
         fStreamingInterval = interval;
         fIndexer = (indexer != null) ? indexer : new TmfCheckpointIndexer(this, fCacheSize);
@@ -170,6 +173,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         if (trace == null) {
             throw new IllegalArgumentException();
         }
+        registerAsVip();
         fCacheSize = trace.getCacheSize();
         fStreamingInterval = trace.getStreamingInterval();
         fIndexer = new TmfCheckpointIndexer(this);
@@ -717,5 +721,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
                 + ", fNbEvents=" + fNbEvents + ", fStartTime=" + fStartTime
                 + ", fEndTime=" + fEndTime + ", fStreamingInterval=" + fStreamingInterval + "]";
     }
+
+    // ------------------------------------------------------------------------
+    // Helper methods
+    // ------------------------------------------------------------------------
+    private void registerAsVip() {
+        TmfSignalManager.deregister(this);
+        TmfSignalManager.registerVIP(this);
+    }
+
 
 }

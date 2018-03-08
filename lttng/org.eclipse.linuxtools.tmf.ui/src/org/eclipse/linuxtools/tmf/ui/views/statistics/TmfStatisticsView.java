@@ -22,7 +22,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStartSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -67,11 +66,6 @@ public class TmfStatisticsView extends TmfView {
     protected final TmfViewerFolder fStatsViewers;
 
     /**
-     * Stores a reference to the selected trace.
-     */
-    private ITmfTrace fTrace;
-
-    /**
      * Constructor of a statistics view.
      *
      * @param viewName The name to give to the view.
@@ -111,26 +105,6 @@ public class TmfStatisticsView extends TmfView {
     }
 
     /**
-     * Handler called when an trace is opened.
-     *
-     * @param signal
-     *            Contains the information about the selection.
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceOpened(TmfTraceOpenedSignal signal) {
-        /*
-         * Dispose the current viewer and adapt the new one to the trace
-         * type of the trace opened
-         */
-        fStatsViewers.clear();
-        // Update the current trace
-        fTrace = signal.getTrace();
-        createStatisticsViewers();
-        fStatsViewers.layout();
-    }
-
-    /**
      * Handler called when an trace is selected. Checks if the trace
      * has changed and requests the selected trace if it has not yet been
      * cached.
@@ -140,18 +114,13 @@ public class TmfStatisticsView extends TmfView {
      * @since 2.0
      */
     @TmfSignalHandler
+    @Override
     public void traceSelected(TmfTraceSelectedSignal signal) {
         // Does not reload the same trace if already opened
         if (signal.getTrace() != fTrace) {
-            /*
-             * Dispose the current viewer and adapt the new one to the trace
-             * type of the trace selected
-             */
-            fStatsViewers.clear();
             // Update the current trace
             fTrace = signal.getTrace();
-            createStatisticsViewers();
-            fStatsViewers.layout();
+            loadTrace();
 
             TmfTraceRangeUpdatedSignal updateSignal = new TmfTraceRangeUpdatedSignal(this, fTrace, fTrace.getTimeRange());
 
@@ -286,5 +255,17 @@ public class TmfStatisticsView extends TmfView {
      */
     protected TmfStatisticsViewer getGlobalViewer() {
         return new TmfStatisticsViewer();
+    }
+
+    @Override
+    protected void loadTrace() {
+        /*
+         * Dispose the current viewer and adapt the new one to the trace
+         * type of the trace selected
+         */
+        fStatsViewers.clear();
+        // Update the current trace
+        createStatisticsViewers();
+        fStatsViewers.layout();
     }
 }
