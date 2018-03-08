@@ -28,6 +28,7 @@ public class SystemTapCommandGeneratorTest extends TestCase{
 	
 	public void testExecutionWithScriptAndBinaryAndArgument(){
 		
+		System.out.println("\n\nLaunching SystemTapCommandGeneratorTest\n");
 		String binaryFilePath = location + "factorial";
 		String scriptPath = location + "function_count.stp";
 		
