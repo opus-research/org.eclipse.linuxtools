@@ -6,10 +6,11 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors: Matthew Khouzam - Initial Design and implementation
- * Contributors: Francis Giraldeau - Initial API and implementation
- * Contributors: Philippe Proulx - Some refinement and optimization
- * Contributors: Etienne Bergeron <Etienne.Bergeron@gmail.com> - fix zero size read + cleanup
+ * Contributors:
+ *  Matthew Khouzam - Initial Design and implementation
+ *  Francis Giraldeau - Initial API and implementation
+ *  Philippe Proulx - Some refinement and optimization
+ *  Etienne Bergeron - fix zero size read + cleanup
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.io;
@@ -17,6 +18,8 @@ package org.eclipse.linuxtools.ctf.core.event.io;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * <b><u>BitBuffer</u></b>
@@ -108,20 +111,56 @@ public final class BitBuffer {
      * byte order.
      *
      * @return The long value read from the buffer
+     * @throws CTFReaderException
+     *             An error occurred reading the long.
      */
-    public long getLong() {
-        /* safe fall-back for non-aligned longs */
-        long a = getInt();
-        long b = getInt();
+    public long getLong() throws CTFReaderException {
+        return getLong(BIT_LONG, true);// whether it's signed or not does not
+                                       // matter for 64 bits
+    }
 
-        /* Cast the signed-extended int into a unsigned int. */
-        a &= 0xFFFFFFFFL;
-        b &= 0xFFFFFFFFL;
+    /**
+     * Relative <i>get</i> method for reading long of <i>length</i> bits.
+     *
+     * Reads <i>length</i> bits starting at the current position. The result is
+     * signed extended if <i>signed</i> is true. The current position is
+     * increased of <i>length</i> bits.
+     *
+     * @param length
+     *            The length in bits of this integer
+     * @param signed
+     *            The sign extended flag
+     * @return The long value read from the buffer
+     * @throws CTFReaderException
+     *             errors with the data
+     */
 
-        if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
-            return (a << 32) | b;
+    public long getLong(int length, boolean signed) throws CTFReaderException {
+        /*
+         * TODO: add a check if the alignment is 0, use bytebuffer.getLong()...
+         * maybe it's faster?
+         */
+        if (length > BIT_LONG) {
+            throw new CTFReaderException("Cannot read a long longer than 64 bits. Rquested: " + length); //$NON-NLS-1$
         }
-        return (b << 32) | a;
+        if (length > BIT_INT) {
+            final int highShift = length - BIT_INT;
+            long a = getInt() & 0x00000000FFFFFFFFL;
+            long b = getInt(highShift, false);
+            long retVal;
+            /* Cast the signed-extended int into a unsigned int. */
+            a &= 0xFFFFFFFFL;
+            b &= ((1L << highShift) - 1L);
+
+            retVal = (this.byteOrder == ByteOrder.BIG_ENDIAN) ? ((a << highShift) | b) : ((b << BIT_INT) | a);
+            /* sign extend */
+            if (signed) {
+                int signExtendBits = BIT_LONG - length;
+                retVal = (retVal << signExtendBits) >> signExtendBits;
+            }
+            return retVal;
+        }
+        return getInt(length, signed);
     }
 
     /**
