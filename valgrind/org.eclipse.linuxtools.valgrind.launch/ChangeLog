@@ -1,3 +1,9 @@
+2012-09-18  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* src/org/eclipse/linuxtools/internal/valgrind/launch/ValgrindOptionsTab.java (initializeFrom): Set initialized
+	flag to true at end of method.
+	(performApply): Check initialized flag before setting configuration values from widgets. 
+	
 2012-09-11  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* src/org/eclipse/linuxtools/internal/valgrind/launch/ValgrindOptionsTab.java (setDefaults): When noToolCombo

@@ -94,6 +94,7 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 
 	protected boolean isInitializing = false;
 	protected boolean initDefaults = false;
+	private boolean initialized = false;
 	
 	protected Exception ex;
 	
@@ -558,6 +559,7 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 		}
 		getControl().setRedraw(true);
 		isInitializing = false;
+		initialized = true;
 	}
 
 	@Override
@@ -595,31 +597,40 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 	}
 
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(LaunchConfigurationConstants.ATTR_TOOL, tool);
-		
-		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_TRACECHILD, traceChildrenButton.getSelection());
-		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_FREERES, runFreeresButton.getSelection());
+		// Check if we are initialized before performing apply because a UI refresh will cause
+		// a performApply to be triggered on the ProviderTab which owns this.  In the case where
+		// the user switches tools, the ProviderTab will already have set its initialized flag
+		// to true for the first tool created.  The tool switch will trigger the refresh to occur
+		// on a separate thread and it may beat the initializeFrom call that needs to occur
+		// first.  If the check isn't made, then the widgets are unset and we will end up locking
+		// in 0/null values for everything in the configuration.  Resolves bug 389778.
+		if (initialized) {
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_TOOL, tool);
 
-		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DEMANGLE, demangleButton.getSelection());
-		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_NUMCALLERS, numCallersSpinner.getSelection());
-		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_ERRLIMIT, errorLimitButton.getSelection());
-		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_BELOWMAIN, showBelowMainButton.getSelection());
-		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_MAXFRAME, maxStackFrameSpinner.getSelection());
-		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_SUPPFILES, Arrays.asList(suppFileList.getItems()));
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_TRACECHILD, traceChildrenButton.getSelection());
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_FREERES, runFreeresButton.getSelection());
 
-		// 3.4.0 specific
-		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_4_0) >= 0) {
-			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_MAINSTACK_BOOL, mainStackSizeButton.getSelection());
-			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_MAINSTACK, mainStackSizeSpinner.getSelection());
-		}
-		
-		// 3.6.0 specific
-		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0) {
-			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, dSymUtilButton.getSelection());
-		}
-		
-		if (dynamicTab != null) {
-			dynamicTab.performApply(configuration);
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DEMANGLE, demangleButton.getSelection());
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_NUMCALLERS, numCallersSpinner.getSelection());
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_ERRLIMIT, errorLimitButton.getSelection());
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_BELOWMAIN, showBelowMainButton.getSelection());
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_MAXFRAME, maxStackFrameSpinner.getSelection());
+			configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_SUPPFILES, Arrays.asList(suppFileList.getItems()));
+
+			// 3.4.0 specific
+			if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_4_0) >= 0) {
+				configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_MAINSTACK_BOOL, mainStackSizeButton.getSelection());
+				configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_MAINSTACK, mainStackSizeSpinner.getSelection());
+			}
+
+			// 3.6.0 specific
+			if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0) {
+				configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, dSymUtilButton.getSelection());
+			}
+
+			if (dynamicTab != null) {
+				dynamicTab.performApply(configuration);
+			}
 		}
 	}
 
