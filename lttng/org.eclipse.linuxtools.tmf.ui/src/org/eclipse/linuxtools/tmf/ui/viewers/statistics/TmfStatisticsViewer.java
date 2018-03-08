@@ -671,7 +671,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     }
 
     /**
-     * Resets the number of events within the time range
+     * Resets the number of events within the time range.
      */
     protected void resetTimeRangeValue() {
         TmfStatisticsTreeNode treeModelRoot = TmfStatisticsTreeRootFactory.getStatTreeRoot(getTreeID());
