@@ -71,14 +71,13 @@ public class BarGraph extends AGraph implements IBlockGraph, IScrollGraph {
 			gc.setForeground(c);
 			gc.setBackground(c1);
 			double width = WIDTH_PERCENT;
-			for(DataPoint point :points) {
-				px = super.getLocation().x + (((point.x * (elementList.length))-super.getLocalXMin()) * xSize) + super.getXPadding();
+			for(int i=0; i<points.length; i++) {
+				px = super.getLocation().x + (((points[i].x * (elementList.length))-super.getLocalXMin()) * xSize) + super.getXPadding();
 				px = px + ((j - elementList.length/2) * (xSize * width));
 				pw = (xSize * width);
 	
 				py = super.getSize().y - super.getYPadding();
-				ph = ((super.getLocalYMax() - point.y) * ySize) + super.getYPadding()-py;
-				//System.out.println("rectangle area:" + j + " " + px + " " + pw + " " + py + " " + ph + " " + points[i].x + " " + points[i].y );
+				ph = ((super.getLocalYMax() - points[i].y) * ySize) + super.getYPadding()-py;
 				gc.fillGradientRectangle((int)(px), (int)py, (int)pw, (int)ph, true);
 			}
 		}
