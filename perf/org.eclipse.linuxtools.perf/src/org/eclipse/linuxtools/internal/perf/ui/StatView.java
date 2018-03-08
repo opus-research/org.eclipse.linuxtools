@@ -59,6 +59,15 @@ public class StatView extends ViewPart {
 		// the default TextConsole font (we want monospaced)
 		text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
 	}
+
+	/**
+	 * Get view text.
+	 * @return String representing data on view,
+	 */
+	public String getText(){
+		return text.getText();
+	}
+
 	/**
 	 * Update to most recent statistics data.
 	 */
@@ -79,7 +88,7 @@ public class StatView extends ViewPart {
 			@Override
 			public void run() {
 				try {
-					// A new view is created every time
+					// A single view is updated with the latest data.
 					StatView view = (StatView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 							.showView(PerfPlugin.STAT_VIEW_ID);
 					view.updateData();
