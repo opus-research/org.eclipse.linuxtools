@@ -121,20 +121,15 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 					outputTo = binaryOutCons.newOutputStream();
 					//Get the printstream for that console
 					print = new PrintStream(outputTo);
-				}		
-
-				if (print != null) {
-					for (int i = 0; i < commandArray.length; i++) {
-						print.print(commandArray[i] + " ");
-					}
-
-					// Print Message
-					print.println();
-					print.println("Analysing recorded perf.data, please wait...");
-					// Possibly should pass this (the console reference) on to
-					// PerfCore.Report if theres anything we ever want to spit
-					// out to user.
+				}				
+				for (int i = 0; i < commandArray.length; i++) {
+					print.print(commandArray[i] + " ");
 				}
+				
+				//Print Message
+				print.println();
+				print.println("Analysing recorded perf.data, please wait...");
+				//Possibly should pass this (the console reference) on to PerfCore.Report if theres anything we ever want to spit out to user.
 			}
 			
 			//(Only for testing this line..) PerfCore.Report(config, null, null, null, "/home/thavidu/dev/eclipse-oprof2-workspace/org.eclipse.linuxtools.internal.perf.tests/resources/perf.data");
