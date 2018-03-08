@@ -284,6 +284,7 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
     /**
      * Return the suffix for resource names
      * @return The folder suffix
+     * @since 2.0
      */
     @Override
     public String getSuffix() {
