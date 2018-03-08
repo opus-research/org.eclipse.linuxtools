@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -43,7 +43,7 @@ import org.junit.Test;
  */
 public class CtfTmfEventTest {
 
-    private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private static CtfTmfEvent nullEvent;
     private CtfTmfEvent fixture;
@@ -61,8 +61,8 @@ public class CtfTmfEventTest {
      */
     @Before
     public void setUp() {
-        assumeTrue(testTrace.exists());
-        CtfTmfTrace trace = testTrace.getTrace();
+        assumeTrue(CtfTmfTestTraces.tracesExist());
+        CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
         CtfIterator tr = new CtfIterator(trace);
         tr.advance();
         fixture = tr.getCurrentEvent();
@@ -154,7 +154,7 @@ public class CtfTmfEventTest {
         String source = fixture.getSource();
         ITmfEventType type = fixture.getType();
         assertEquals(ITmfContext.UNKNOWN_RANK, rank);
-        assertEquals("kernel", trace.getName());
+        assertEquals("test", trace.getName());
         assertEquals("channel0_1", reference);
         assertEquals("1", source);
         assertEquals("lttng_statedump_vm_map", type.toString());

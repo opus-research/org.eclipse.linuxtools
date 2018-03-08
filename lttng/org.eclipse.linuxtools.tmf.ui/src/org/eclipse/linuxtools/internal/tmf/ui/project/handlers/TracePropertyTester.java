@@ -49,6 +49,9 @@ public class TracePropertyTester extends PropertyTester {
     // IPropertyTester
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.expressions.IPropertyTester#test(java.lang.Object, java.lang.String, java.lang.Object[], java.lang.Object)
+     */
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
 
@@ -95,7 +98,6 @@ public class TracePropertyTester extends PropertyTester {
                 for (TmfTraceElement aTrace : trace.getTraces()) {
                     hasHistory |= aTrace.hasSupplementaryResources();
                 }
-                hasHistory |= trace.hasSupplementaryResources();
                 return hasHistory;
             }
             return false;

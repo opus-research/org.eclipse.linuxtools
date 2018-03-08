@@ -13,18 +13,16 @@
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.eclipse.linuxtools.ctf.core.CTFStrings;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
@@ -58,55 +56,27 @@ public final class CtfTmfEventFactory {
             String fileName, CtfTmfTrace originTrace) {
 
         /* Prepare what to pass to CtfTmfEvent's constructor */
-        final IEventDeclaration eventDecl = eventDef.getDeclaration();
-        final long ts = eventDef.getTimestamp();
-        final CtfTmfTimestamp timestamp = new CtfTmfTimestamp(
-                originTrace.getCTFTrace().timestampCyclesToNanos(ts));
+        long ts = eventDef.getTimestamp();
+        CtfTmfTimestamp timestamp = new CtfTmfTimestamp(
+                    originTrace.getCTFTrace().timestampCyclesToNanos(ts));
 
         int sourceCPU = eventDef.getCPU();
 
         ITmfEventField content = new TmfEventField(
-                ITmfEventField.ROOT_FIELD_ID, null, parseFields(eventDef));
+                ITmfEventField.ROOT_FIELD_ID, parseFields(eventDef));
 
         String reference = fileName == null ? CtfTmfEvent.NO_STREAM : fileName;
 
-        /* Handle the special case of lost events */
-        if (eventDecl.getName().equals(CTFStrings.LOST_EVENT_NAME)) {
-            Definition nbLostEventsDef = eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_FIELD);
-            Definition durationDef = eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_DURATION);
-            if (!(nbLostEventsDef instanceof IntegerDefinition) || !(durationDef instanceof IntegerDefinition)) {
-                /*
-                 * One or both of these fields doesn't exist, or is not of the
-                 * right type. The event claims to be a "lost event", but is
-                 * malformed. Log it and return a null event instead.
-                 */
-                return getNullEvent();
-            }
-            long nbLostEvents = ((IntegerDefinition) nbLostEventsDef).getValue();
-            long duration = ((IntegerDefinition) durationDef).getValue();
-            CtfTmfTimestamp timestampEnd = new CtfTmfTimestamp(
-                    originTrace.getCTFTrace().timestampCyclesToNanos(ts) + duration);
-
-            CtfTmfLostEvent lostEvent = new CtfTmfLostEvent(originTrace,
-                    ITmfContext.UNKNOWN_RANK,
-                    content,
-                    reference, // filename
-                    sourceCPU,
-                    eventDecl,
-                    new TmfTimeRange(timestamp, timestampEnd),
-                    nbLostEvents);
-            return lostEvent;
-        }
-
-        /* Handle standard event types */
+        /* Construct and return the object */
         CtfTmfEvent event = new CtfTmfEvent(
                 originTrace,
                 ITmfContext.UNKNOWN_RANK,
                 timestamp,
                 content,
-                reference, // filename
+                reference,
                 sourceCPU,
-                eventDecl);
+                eventDef.getDeclaration()
+        );
         return event;
     }
 
@@ -133,25 +103,36 @@ public final class CtfTmfEventFactory {
         List<CtfTmfEventField> fields = new ArrayList<CtfTmfEventField>();
 
         StructDefinition structFields = eventDef.getFields();
-        for (Map.Entry<String, Definition> entry : structFields.getDefinitions().entrySet()) {
-            String curFieldName = entry.getKey();
-            Definition curFieldDef = entry.getValue();
-            CtfTmfEventField curField = CtfTmfEventField.parseField(curFieldDef, curFieldName);
+        Map<String, Definition> definitions = structFields.getDefinitions();
+        String curFieldName = null;
+        Definition curFieldDef;
+        CtfTmfEventField curField;
+        Iterator<Entry<String, Definition>> it = definitions.entrySet().iterator();
+        while(it.hasNext()) {
+            Entry<String, Definition> entry = it.next();
+            curFieldName = entry.getKey();
+            curFieldDef = entry.getValue();
+            curField = CtfTmfEventField.parseField(curFieldDef, curFieldName);
             fields.add(curField);
         }
 
         /* Add context information as CtfTmfEventField */
         StructDefinition structContext = eventDef.getContext();
         if (structContext != null) {
-            for (Map.Entry<String, Definition> entry : structContext.getDefinitions().entrySet()) {
+            definitions = structContext.getDefinitions();
+            String curContextName;
+            Definition curContextDef;
+            CtfTmfEventField curContext;
+            it = definitions.entrySet().iterator();
+            while(it.hasNext()) {
+                Entry<String, Definition> entry = it.next();
                 /* Prefix field name */
-                String curContextName = CtfConstants.CONTEXT_FIELD_PREFIX + entry.getKey();
-                Definition curContextDef = entry.getValue();
-                CtfTmfEventField curContext = CtfTmfEventField.parseField(curContextDef, curContextName);
+                curContextName = CtfConstants.CONTEXT_FIELD_PREFIX + entry.getKey();
+                curContextDef = entry.getValue();
+                curContext = CtfTmfEventField.parseField(curContextDef, curContextName);
                 fields.add(curContext);
             }
         }
-
         return fields.toArray(new CtfTmfEventField[fields.size()]);
     }
 }

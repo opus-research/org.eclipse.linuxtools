@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.core;
 
-import java.util.Arrays;
-
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IColor;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC;
@@ -35,47 +33,49 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * Set the red, green and blue value of the optional color to be used for filling the execution occurrence.
      */
-    private int[] fFillRGB;
+    protected int[] fFillRGB;
     /**
      * Set the red, green and blue value of the optional color to be used for drawing the execution occurrence
      */
-    private int[] fStrokeRGB;
+    protected int[] fStrokeRGB;
     /**
      * The occurrence image.
      */
-    private IImage fImage;
+    protected IImage fImage;
     /**
      * The top ellipses image.
      */
-    private IImage fEllipsesImage;
+    protected IImage fEllipsesImage;
     /**
      *  The start time stamp.
      */
-    private ITmfTimestamp fStartTime;
+    protected ITmfTimestamp fStartTime;
     /**
      * The end time stamp;
      */
-    private ITmfTimestamp fEndTime;
+    protected ITmfTimestamp fEndTime;
     /**
      * Flag to indicate whether time information is available or not.
      */
-    private boolean fHasTimeInfo;
+    protected boolean fHasTimeInfo;
 
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#setLifeline(org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.Lifeline)
+     */
     @Override
     public void setLifeline(Lifeline theLifeline) {
         super.setLifeline(theLifeline);
-        if (getLifeline() != null && fHasTimeInfo) {
-            getLifeline().setTimeInfo(true);
-            if (getLifeline().getFrame() != null) {
-                getLifeline().getFrame().setHasTimeInfo(true);
+        if (fLifeline != null && fHasTimeInfo) {
+            fLifeline.fHasTimeInfo = true;
+            if (fLifeline.getFrame() != null) {
+                fLifeline.getFrame().setHasTimeInfo(true);
             }
         }
     }
@@ -135,8 +135,8 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
     public void setStartTime(ITmfTimestamp time) {
         fStartTime = time;
         fHasTimeInfo = true;
-        if (getLifeline() != null) {
-            getLifeline().setTimeInfo(true);
+        if (fLifeline != null) {
+            fLifeline.setTimeInfo(true);
         }
     }
 
@@ -149,8 +149,8 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
     public void setEndTime(ITmfTimestamp time) {
         fEndTime = time;
         fHasTimeInfo = true;
-        if (getLifeline() != null) {
-            getLifeline().setTimeInfo(true);
+        if (fLifeline != null) {
+            fLifeline.setTimeInfo(true);
         }
     }
 
@@ -170,49 +170,19 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
         return fEndTime;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.ITimeRange#hasTimeInfo()
+     */
     @Override
     public boolean hasTimeInfo() {
         return fHasTimeInfo;
     }
 
-   /**
-    * @return the RGB of the occurrence filler.
-    * @since 2.0
-    */
-    public int[] getFillRGB() {
-       if (fFillRGB == null) {
-           return null;
-       }
-       return Arrays.copyOf(fFillRGB, fFillRGB.length);
-   }
-
-    /**
-     * @return the RGB of the occurrence filler.
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
      */
-     public int[] getStrokeRGB() {
-        if (fStrokeRGB == null) {
-            return null;
-        }
-        return Arrays.copyOf(fStrokeRGB, fStrokeRGB.length);
-    }
-
-    /**
-     * @return the image.
-     * @since 2.0
-     */
-    protected IImage getImage() {
-        return fImage;
-    }
-
-    /**
-     * @return the image.
-     * @since 2.0
-     */
-    protected IImage getEllipsesImage() {
-        return fEllipsesImage;
-    }
-
     @Override
     public void draw(IGC context) {
         super.draw(context);
@@ -228,6 +198,10 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#setUnselectedFillColor(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     protected IColor setUnselectedFillColor(IGC context) {
         ISDPreferences pref = SDViewPref.getInstance();
@@ -245,6 +219,10 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
         return super.setUnselectedFillColor(context);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.BasicExecutionOccurrence#setUnselectedStrokeColor(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
+     */
     @Override
     protected IColor setUnselectedStrokeColor(IGC context) {
         if (fStrokeRGB != null) {
@@ -253,15 +231,5 @@ public class ExecutionOccurrence extends BasicExecutionOccurrence implements ITi
             return tempStrokeColor;
         }
         return super.setUnselectedStrokeColor(context);
-    }
-
-    /**
-     * Sets the flag whether the frame has time info or not
-     * @since 2.0
-     * @param hasTimeInfo
-     *          true if frame has time info else false
-     */
-    public void setHasTimeInfo(boolean hasTimeInfo) {
-        fHasTimeInfo = hasTimeInfo;
     }
 }

@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IDomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceSessionState;
@@ -96,7 +95,10 @@ public class TraceSessionComponent extends TraceControlComponent {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getImage()
+     */
     @Override
     public Image getImage() {
         if (fIsDestroyed) {
@@ -179,22 +181,10 @@ public class TraceSessionComponent extends TraceControlComponent {
         fSessionInfo.setStreamedTrace(isStreamedTrace);
     }
 
-    /**
-     * Returns whether the session is snapshot session or not
-     * @return <code>true</code> if it is snapshot session else <code>false</code>
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
      */
-    public boolean isSnapshotSession() {
-        return fSessionInfo.isSnapshotSession();
-    }
-
-    /**
-     * Gets the snapshot information if available whether the session is a snapshot session or not
-     * @return the snapshot information or null if it is not a snapshot session
-     */
-    public ISnapshotInfo getSnapshotInfo() {
-        return fSessionInfo.getSnapshotInfo();
-    }
-
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -235,15 +225,6 @@ public class TraceSessionComponent extends TraceControlComponent {
         return ((TargetNodeComponent)getParent().getParent()).isEventFilteringSupported();
     }
 
-    /**
-     * Returns if node supports snapshots or not
-     * @return <code>true</code> if it supports snapshots else <code>false</code>
-     *
-     */
-    public boolean isSnapshotSupported() {
-        return ((TargetNodeComponent)getParent().getParent()).isSnapshotSupported();
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -260,7 +241,6 @@ public class TraceSessionComponent extends TraceControlComponent {
             throws ExecutionException {
         removeAllChildren();
         fSessionInfo = getControlService().getSession(getName(), monitor);
-
         IDomainInfo[] domains = fSessionInfo.getDomains();
         for (int i = 0; i < domains.length; i++) {
             TraceDomainComponent domainComponent = new TraceDomainComponent(
@@ -407,17 +387,5 @@ public class TraceSessionComponent extends TraceControlComponent {
     public List<String> getContextList(IProgressMonitor monitor)
             throws ExecutionException {
         return getControlService().getContextList(monitor);
-    }
-
-    /**
-     * Records a snapshot.
-     *
-     * @param monitor
-     *            - a progress monitor
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    public void recordSnapshot(IProgressMonitor monitor) throws ExecutionException {
-        getControlService().recordSnapshot(getName(), monitor);
     }
 }

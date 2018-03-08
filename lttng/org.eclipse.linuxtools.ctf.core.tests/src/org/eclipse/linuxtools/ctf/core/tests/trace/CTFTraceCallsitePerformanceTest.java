@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFCallsite;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.junit.Before;
@@ -32,16 +32,16 @@ import org.junit.Test;
  */
 public class CTFTraceCallsitePerformanceTest {
 
-    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
-
     private static final int NUMBER_OF_SEEKS = 100000;
 
+    @SuppressWarnings("nls")
     private final String[] callsites = { "Alligator", "Bunny", "Cat",
             "Dolphin", "Echidna", "Gazelle", "Heron", "Ibex", "Jackalope",
             "Koala", "Lynx", "Meerkat", "Narwhal", "Ocelot", "Pangolin",
             "Quetzal", "Ringtail", "Sandpiper", "Tiger", "Urchin", "Vulture",
             "Walrus", "X-Ray Tetra", "Zonkey" };
 
+    @SuppressWarnings("nls")
     private final String[] functions = { "sentence", "together", "children",
             "mountain", "chipmunk", "crashing", "drinking", "insisted",
             "insulted", "invented", "squinted", "standing", "swishing",
@@ -50,6 +50,7 @@ public class CTFTraceCallsitePerformanceTest {
             "birthday", "bluebird", "cheerful", "colorful", "daylight",
             "doghouse", "driveway", "everyone" };
 
+    @SuppressWarnings("nls")
     private final String[] files = { "Adult.java", "Aeroplane.java",
             "Air.java", "Airforce.java", "Airport.java", "Album.java",
             "Alphabet.java", "Apple.java", "Arm.java", "Army.java", "Babby.java" };
@@ -75,8 +76,8 @@ public class CTFTraceCallsitePerformanceTest {
     @Before
     public void setup() throws CTFReaderException, SecurityException,
             IllegalArgumentException {
-        assumeTrue(testTrace.exists());
-        fTrace = new CTFTrace(testTrace.getPath());
+        assumeTrue(CtfTestTraces.tracesExist());
+        fTrace = new CTFTrace(CtfTestTraces.getTraceFile().getParentFile());
     }
 
     private void addCallsites(int numCallsites) {
@@ -118,7 +119,7 @@ public class CTFTraceCallsitePerformanceTest {
     private void test(int callsiteSize) {
         addCallsites(callsiteSize);
         long ns = testMain();
-        System.out.println( "perf ( " + callsiteSize + ", " + ns + ")");
+        System.out.println( "perf ( " + callsiteSize + ", " + ns + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     private void perfTest() {

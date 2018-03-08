@@ -29,35 +29,35 @@ public interface ICreateSessionDialog {
     /**
      * @return the session name.
      */
-    String getSessionName();
+    public String getSessionName();
 
     /**
      * @return the session path (null for default path)
      */
-    String getSessionPath();
+    public String getSessionPath();
 
     /**
      * @return true for default location else false
      */
-    boolean isDefaultSessionPath();
+    public boolean isDefaultSessionPath();
 
     /**
      * Initializes the dialog box.
      * @param group - the session group
      */
-    void initialize(TraceSessionGroup group);
+    public void initialize(TraceSessionGroup group);
 
     /**
      * @return true if traces is to be streamed else false.
      */
-    boolean isStreamedTrace();
+    public boolean isStreamedTrace();
 
     /**
      * Get the network URL in case control and data is configured together otherwise null
      * If it returns a non-null value, getControlUrl() and getDataUrl() have to return null.
      * @return The network URL or null.
      */
-    String getNetworkUrl();
+    public String getNetworkUrl();
 
     /**
      * Get the control URL in case control and data is configured separately.
@@ -66,7 +66,7 @@ public interface ICreateSessionDialog {
      *
      * @return The control URL or null.
      */
-    String getControlUrl();
+    public String getControlUrl();
 
     /**
      * Get the data URL in case control and data is configured separately.
@@ -75,12 +75,7 @@ public interface ICreateSessionDialog {
      *
      * @return The data URL or null.
      */
-    String getDataUrl();
-
-    /**
-     * @return <code>true</code> if is a snapshot session else <code>false</code>
-     */
-    boolean isSnapshot();
+    public String getDataUrl();
 
     // ------------------------------------------------------------------------
     // Operations

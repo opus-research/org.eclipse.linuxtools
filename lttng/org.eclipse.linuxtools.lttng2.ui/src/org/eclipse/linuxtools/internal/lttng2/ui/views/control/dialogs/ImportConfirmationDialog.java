@@ -1,12 +1,12 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
- *
+ * Copyright (c) 2012 Ericsson
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
+ * 
+ * Contributors: 
  *   Bernd Hufmann - Initial API and implementation
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.Text;
  * <p>
  * Dialog box for collecting session creation information.
  * </p>
- *
+ * 
  * @author Bernd Hufmann
  */
 public class ImportConfirmationDialog extends Dialog implements IImportConfirmationDialog {
@@ -50,6 +50,10 @@ public class ImportConfirmationDialog extends Dialog implements IImportConfirmat
     // Attributes
     // ------------------------------------------------------------------------
     /**
+     * The dialog composite.
+     */
+    private Composite fDialogComposite = null;
+    /**
      * The radio button for selecting the overwrite action
      */
     private Button fOverwriteButton = null;
@@ -62,7 +66,7 @@ public class ImportConfirmationDialog extends Dialog implements IImportConfirmat
      */
     private Text fNewTraceNameText = null;
     /**
-     * The trace name which already exists in the project
+     * The trace name which already exists in the project 
      */
     private String fTraceName = null;
     /**
@@ -89,17 +93,28 @@ public class ImportConfirmationDialog extends Dialog implements IImportConfirmat
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IImportConfirmationDialog#setTraceName(java.lang.String)
+     */
     @Override
     public void setTraceName(String name) {
         fTraceName = name;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IImportConfirmationDialog#getNewTraceName()
+     */
     @Override
     public String getNewTraceName() {
         return fNewTraceName;
     }
-
+ 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IImportConfirmationDialog#isOverwrite()
+     */
     @Override
     public boolean isOverwrite() {
         return fIsOverride;
@@ -108,7 +123,10 @@ public class ImportConfirmationDialog extends Dialog implements IImportConfirmat
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+     */
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
@@ -116,21 +134,25 @@ public class ImportConfirmationDialog extends Dialog implements IImportConfirmat
         newShell.setImage(Activator.getDefault().loadIcon(IMPORT_ICON_FILE));
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(Composite parent) {
-
+        
         // Main dialog panel
-       Composite dialogComposite = new Composite(parent, SWT.NONE);
+        fDialogComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
-        dialogComposite.setLayout(layout);
-        dialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        fDialogComposite.setLayout(layout);
+        fDialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Label sessionNameLabel = new Label(dialogComposite, SWT.RIGHT);
+        Label sessionNameLabel = new Label(fDialogComposite, SWT.RIGHT);
         sessionNameLabel.setText(Messages.TraceControl_ImportDialogTraceAlreadyExistError + ": " + fTraceName); //$NON-NLS-1$
 
-        fOverwriteButton = new Button(dialogComposite, SWT.RADIO);
+        fOverwriteButton = new Button(fDialogComposite, SWT.RADIO);
         fOverwriteButton.setText(Messages.TraceControl_ImportDialogConfirmationOverwriteLabel);
-
+        
         fOverwriteButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -138,42 +160,50 @@ public class ImportConfirmationDialog extends Dialog implements IImportConfirmat
                 fNewTraceNameText.setText(fTraceName);
             }
         });
-
-        fRenameButton = new Button(dialogComposite, SWT.RADIO);
+        
+        fRenameButton = new Button(fDialogComposite, SWT.RADIO);
         fRenameButton.setText(Messages.TraceControl_ImportDialogConfirmationRenameLabel);
-
+        
         fRenameButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 fNewTraceNameText.setEnabled(true);
             }
         });
-
-        fNewTraceNameText = new Text(dialogComposite, SWT.NONE);
+        
+        fNewTraceNameText = new Text(fDialogComposite, SWT.NONE);
         fNewTraceNameText.setToolTipText(Messages.TraceControl_ImportDialogConfirmationNewNameLabel);
         fNewTraceNameText.setText(fTraceName);
 
         // Default
         fOverwriteButton.setSelection(true);
         fNewTraceNameText.setEnabled(false);
-
+        
 
         // layout widgets
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
-
+        
         fNewTraceNameText.setLayoutData(data);
 
         getShell().setMinimumSize(new Point(300, 150));
-
-        return dialogComposite;
+        
+        return fDialogComposite;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
         createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+     */
     @Override
     protected void okPressed() {
 

@@ -199,8 +199,7 @@ public class GmonView extends AbstractSTDataView {
     public static void setHistTitle(GmonDecoder decoder, Label titleLabel) {
         String title = " gmon file: " //$NON-NLS-1$
                 + decoder.getGmonFile() + "\n program file: " //$NON-NLS-1$
-                + decoder.getProgram().getPath() + "\n" //$NON-NLS-1$
-                + " timestamp: " + decoder.getGmonFileTimeStamp(); //$NON-NLS-1$
+                + decoder.getProgram().getPath();
         HistogramDecoder histo = decoder.getHistogramDecoder();
         if (histo.hasValues()) {
             double prof_rate = histo.getProf_rate();

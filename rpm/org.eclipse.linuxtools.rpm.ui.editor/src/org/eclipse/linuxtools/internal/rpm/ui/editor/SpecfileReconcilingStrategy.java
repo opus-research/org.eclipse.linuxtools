@@ -27,6 +27,8 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 public class SpecfileReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
+	private IDocument sDocument;
+	private IProgressMonitor sProgressMonitor;
 	private SpecfileFoldingStructureProvider sFoldingStructureProvider;
 
 	SpecfileContentOutlinePage outline;
@@ -41,22 +43,20 @@ public class SpecfileReconcilingStrategy implements IReconcilingStrategy, IRecon
 	}
 
 
-	@Override
 	public void setDocument(IDocument document) {
-		sFoldingStructureProvider.setDocument(document);
+		sDocument= document;
+		sFoldingStructureProvider.setDocument(sDocument);
 	}
 
-	@Override
 	public void setProgressMonitor(IProgressMonitor monitor) {
-		sFoldingStructureProvider.setProgressMonitor(monitor);
+		sProgressMonitor= monitor;
+		sFoldingStructureProvider.setProgressMonitor(sProgressMonitor);
 	}
 
-	@Override
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
 		reconcile();
 	}
 
-	@Override
 	public void initialReconcile() {
 		reconcile();
 	}
@@ -72,7 +72,6 @@ public class SpecfileReconcilingStrategy implements IReconcilingStrategy, IRecon
 		}
 	}
 
-	@Override
 	public void reconcile(IRegion partition) {
 		reconcile();
 	}
@@ -81,7 +80,6 @@ public class SpecfileReconcilingStrategy implements IReconcilingStrategy, IRecon
 		Shell shell= editor.getSite().getShell();
 		if (!(shell == null || shell.isDisposed())) {
 			shell.getDisplay().asyncExec(new Runnable() {
-				@Override
 				public void run() {
 					editor.setSpecfile(editor.getParser().parse(documentProvider
 							.getDocument(editor.getEditorInput())));

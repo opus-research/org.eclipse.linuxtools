@@ -82,17 +82,28 @@ public class BaseEventInfo extends TraceInfo implements IBaseEventInfo {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IBaseEventInfo#getEventType()
+     */
     @Override
     public TraceEventType getEventType() {
         return fEventType;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IBaseEventInfo#setEventType(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.TraceEventType)
+     */
     @Override
     public void setEventType(TraceEventType type) {
         fEventType = type;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IBaseEventInfo#setEventType(java.lang.String)
+     */
     @Override
     public void setEventType(String typeName) {
         if(TraceEventType.TRACEPOINT.getInName().equals(typeName)) {
@@ -106,16 +117,28 @@ public class BaseEventInfo extends TraceInfo implements IBaseEventInfo {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IBaseEventInfo#getLogLevel()
+     */
     @Override
     public TraceLogLevel getLogLevel() {
         return fLogLevel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IBaseEventInfo#setLogLevel(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.TraceLogLevel)
+     */
     @Override
     public void setLogLevel(TraceLogLevel level) {
         fLogLevel = level;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.IBaseEventInfo#setLogLevel(java.lang.String)
+     */
     @Override
     public void setLogLevel(String levelName) {
         if(TraceLogLevel.TRACE_EMERG.getInName().equals(levelName)) {
@@ -155,16 +178,28 @@ public class BaseEventInfo extends TraceInfo implements IBaseEventInfo {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo#getFields()
+     */
     @Override
     public IFieldInfo[] getFields() {
         return fFields.toArray(new IFieldInfo[fFields.size()]);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo#addField(org.eclipse.linuxtools.internal.lttng2.core.control.model.IFieldInfo)
+     */
     @Override
     public void addField(IFieldInfo field) {
         fFields.add(field);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo#setFields(java.util.List)
+     */
     @Override
     public void setFields(List<IFieldInfo> fields) {
         fFields.clear();
@@ -174,16 +209,29 @@ public class BaseEventInfo extends TraceInfo implements IBaseEventInfo {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo#getFilterExpression()
+     */
     @Override
     public String getFilterExpression() {
         return fFilterExpression;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo#setFilterExpression(java.lang.String)
+     */
     @Override
     public void setFilterExpression(String filter) {
         fFilterExpression = filter;
     }
 
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.TraceInfo#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -195,6 +243,10 @@ public class BaseEventInfo extends TraceInfo implements IBaseEventInfo {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.TraceInfo#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -226,6 +278,10 @@ public class BaseEventInfo extends TraceInfo implements IBaseEventInfo {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceInfo#toString()
+     */
     @SuppressWarnings("nls")
     @Override
     public String toString() {

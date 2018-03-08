@@ -168,51 +168,91 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     // Accessors
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isTracepoints()
+     */
     @Override
     public boolean isTracepoints() {
         return fIsTracepoints;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isAllTracePoints()
+     */
     @Override
     public boolean isAllTracePoints() {
         return fIsAllTracepoints;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getEventNames()
+     */
     @Override
     public List<String> getEventNames() {
         return new ArrayList<String>(fSelectedEvents);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isWildcard()
+     */
     @Override
     public boolean isWildcard() {
         return fIsWildcard;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getWildcard()
+     */
     @Override
     public String getWildcard() {
         return fWildcard;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isLogLevel()
+     */
     @Override
     public boolean isLogLevel() {
         return fIsLogLevel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevelType()
+     */
     @Override
     public LogLevelType getLogLevelType() {
         return fLogLevelType;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevel()
+     */
     @Override
     public TraceLogLevel getLogLevel() {
         return fLogLevel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevelEventName()
+     */
     @Override
     public String getLogLevelEventName() {
         return fLogLevelEventName;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getFilterExpression()
+     */
     @Override
     public String getFilterExpression() {
         return fFilterExpression;
@@ -244,10 +284,9 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     }
 
     /**
-     * Validates the UST composite input data.
-     *
-     * @return true if configured data is valid and can be retrieved.
-     */
+    * Validates the UST composite input data.
+    * @return true if configured data is valid and can be retrieved.
+    */
     public boolean isValid() {
 
         fIsTracepoints = fTracepointsActivateButton.getSelection();
@@ -282,9 +321,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
             }
 
             String temp = fLogLevelEventNameText.getText();
-            if (temp.isEmpty() ||
-                temp.matches("\\s*") || //$NON-NLS-1$
-                (!temp.matches("^[\\s]{0,}$") && !temp.matches("^[a-zA-Z0-9\\-\\_]{1,}$"))) { //$NON-NLS-1$ //$NON-NLS-2$
+            if (!temp.matches("^[\\s]{0,}$") && !temp.matches("^[a-zA-Z0-9\\-\\_]{1,}$")) { //$NON-NLS-1$ //$NON-NLS-2$
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_EnableEventsDialogTitle,
                         Messages.TraceControl_InvalidLogLevelEventNameError + " (" + temp + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
@@ -292,7 +329,9 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
                 return false;
             }
 
-            fLogLevelEventName = temp;
+            if(!temp.matches("\\s*")) { //$NON-NLS-1$
+                fLogLevelEventName = temp;
+            }
 
             TraceLogLevel[] levels = TraceLogLevel.values();
             int id = fLogLevelCombo.getSelectionIndex();
@@ -311,9 +350,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         fWildcard = null;
         if (fIsWildcard) {
             String tempWildcard = fWildcardText.getText();
-            if (tempWildcard.isEmpty() ||
-                tempWildcard.matches("\\s*") || //$NON-NLS-1$
-                (!tempWildcard.matches("^[\\s]{0,}$") && !tempWildcard.matches("^[a-zA-Z0-9\\-\\_\\*]{1,}$"))) { //$NON-NLS-1$ //$NON-NLS-2$
+            if (!tempWildcard.matches("^[\\s]{0,}$") && !tempWildcard.matches("^[a-zA-Z0-9\\-\\_\\*]{1,}$")) { //$NON-NLS-1$ //$NON-NLS-2$
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_EnableEventsDialogTitle,
                         Messages.TraceControl_InvalidWildcardError + " (" + tempWildcard + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
@@ -321,7 +358,9 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
                 return false;
             }
 
-            fWildcard = tempWildcard;
+            if(!tempWildcard.matches("\\s*")) { //$NON-NLS-1$
+                fWildcard = tempWildcard;
+            }
         }
 
         // initialize filter with null
@@ -329,7 +368,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         if (fProviderGroup.isEventFilteringSupported()) {
             String tempFilter = fFilterText.getText();
 
-            if(!tempFilter.isEmpty() && !tempFilter.matches("\\s*")) { //$NON-NLS-1$
+            if(!tempFilter.matches("\\s*")) { //$NON-NLS-1$
                 fFilterExpression = tempFilter;
             }
         }
@@ -504,7 +543,6 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         fLogLevelButton.setToolTipText(Messages.TraceControl_EnableEventsLogLevelTypeTooltip);
         data = new GridData(GridData.FILL_BOTH);
         fLogLevelButton.setLayoutData(data);
-        fLogLevelButton.setSelection(true);
 
         fLogLevelOnlyButton = new Button(logLevelGroup, SWT.RADIO);
         fLogLevelOnlyButton.setText(Messages.TraceControl_EnableEventsLogLevelOnlyTypeName);
@@ -557,7 +595,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content provider for the tracepoints tree.
      */
-    public static final class UstContentProvider extends TraceControlContentProvider {
+    final static public class UstContentProvider extends TraceControlContentProvider {
         @Override
         public Object[] getChildren(Object parentElement) {
             if (parentElement instanceof TargetNodeComponent) {
@@ -578,7 +616,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content label for the tracepoints tree.
      */
-    public static final class UstLabelProvider extends TraceControlLabelProvider {
+     final static public class UstLabelProvider extends TraceControlLabelProvider {
         @Override
         public Image getImage(Object element) {
             return null;
@@ -599,7 +637,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Check state listener for the tracepoints tree.
      */
-    public final class UstCheckStateListener implements ICheckStateListener {
+    final public class UstCheckStateListener implements ICheckStateListener {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             if (event.getChecked()) {

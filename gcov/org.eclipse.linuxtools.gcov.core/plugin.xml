@@ -3,9 +3,13 @@
 <plugin>
    <extension
          point="org.eclipse.ui.views">
+      <category
+            id="org.eclipse.linuxtools.gcov"
+            name="%gcovCategory">
+      </category>
       <view
             allowMultiple="true"
-            category="org.eclipse.linuxtools.profiling.ui"
+            category="org.eclipse.linuxtools.gcov"
             class="org.eclipse.linuxtools.internal.gcov.view.CovView"
             icon="icons/toggle.gif"
             id="org.eclipse.linuxtools.gcov.view"
@@ -29,21 +33,6 @@
             launcher="org.eclipse.linuxtools.internal.gcov.action.OpenGCAction"
             name="%gcovEditor">
       </editor>
-   </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.eclipse.linuxtools.internal.gcov.preferences.ColorPreferencePage"
-            id="org.eclipse.linuxtools.gcov.core.preferences.colors"
-            name="%colorprefpage"
-            category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage">
-      </page>
-   </extension>
-   <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.eclipse.linuxtools.internal.gcov.preferences.ColorPreferencesInitializer">
-      </initializer>
    </extension>
 
 

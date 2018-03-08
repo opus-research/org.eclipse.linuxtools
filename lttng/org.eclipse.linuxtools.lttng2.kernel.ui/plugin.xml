@@ -39,26 +39,10 @@
             icon="icons/obj16/garland16.png"
             id="org.eclipse.linuxtools.lttng2.kernel.tracetype"
             name="%tracetype.type.kernel"
-            trace_type="org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace">
+            trace_type="org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace">
          <eventsTableType
                class="org.eclipse.linuxtools.internal.lttng2.kernel.ui.viewers.events.LTTng2EventsTable">
          </eventsTableType>
       </type>
-   </extension>
-   <extension
-         point="org.eclipse.ui.navigator.navigatorContent">
-      <commonWizard
-            associatedExtensionId="org.eclipse.linuxtools.tmf.ui.navigator.content"
-            menuGroupId="org.eclipse.linuxtools.tmf.ui.views.ui.wizards.menuGroupId"
-            type="new"
-            wizardId="org.eclipse.linuxtools.tmf.ui.views.ui.wizards.newProject">
-         <enablement>
-            <with variable="activeWorkbenchWindow.activePerspective">
-               <equals
-                     value="org.eclipse.linuxtools.lttng2.kernel.ui.perspective">
-               </equals>
-            </with>
-         </enablement>
-      </commonWizard>
    </extension>
 </plugin>

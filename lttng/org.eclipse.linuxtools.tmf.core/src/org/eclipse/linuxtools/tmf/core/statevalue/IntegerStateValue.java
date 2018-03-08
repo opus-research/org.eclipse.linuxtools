@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 /**
  * A state value containing a simple integer.
  *
@@ -22,10 +20,10 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 final class IntegerStateValue extends TmfStateValue {
 
-    private final Integer valueInt;
+    private final int valueInt;
 
     public IntegerStateValue(int valueAsInt) {
-        this.valueInt = new Integer(valueAsInt);
+        this.valueInt = valueAsInt;
     }
 
     @Override
@@ -44,22 +42,12 @@ final class IntegerStateValue extends TmfStateValue {
     }
 
     @Override
-    public @Nullable String toString() {
+    public byte[] toByteArray() {
+        return null;
+    }
+
+    @Override
+    public String toString() {
         return String.format("%3d", valueInt); //$NON-NLS-1$
-    }
-
-    // ------------------------------------------------------------------------
-    // Unboxing methods
-    // ------------------------------------------------------------------------
-
-    @Override
-    public int unboxInt() {
-        return valueInt;
-    }
-
-    @Override
-    public long unboxLong() {
-        /* It's always safe to up-cast a int into a long */
-        return valueInt;
     }
 }

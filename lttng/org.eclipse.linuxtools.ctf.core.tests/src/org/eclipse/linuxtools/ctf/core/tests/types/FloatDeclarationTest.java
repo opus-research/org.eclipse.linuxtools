@@ -35,8 +35,8 @@ public class FloatDeclarationTest {
 
     @Test
     public void getterTest() {
-        fixture = new FloatDeclaration(8, 24, ByteOrder.nativeOrder(), 1);
-        assertEquals( fixture.getAlignment(), 1);
+        fixture = new FloatDeclaration(8, 24, ByteOrder.nativeOrder(), 0);
+        assertEquals( fixture.getAlignment(), 0);
         assertEquals( fixture.getByteOrder(), ByteOrder.nativeOrder());
         assertEquals( fixture.getExponent(), 8);
         assertEquals( fixture.getMantissa(), 24);
@@ -45,6 +45,6 @@ public class FloatDeclarationTest {
     @Test
     public void toStringTest() {
         fixture = new FloatDeclaration(8, 24, ByteOrder.nativeOrder(), 0);
-        assertTrue(fixture.toString().contains("float"));
+        assertTrue(fixture.toString().contains("float")); //$NON-NLS-1$
     }
 }

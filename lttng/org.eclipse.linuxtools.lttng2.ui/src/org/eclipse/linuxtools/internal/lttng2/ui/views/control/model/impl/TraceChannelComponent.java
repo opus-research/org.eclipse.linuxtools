@@ -40,11 +40,9 @@ import org.eclipse.ui.views.properties.IPropertySource;
  * @author Bernd Hufmann
  */
 public class TraceChannelComponent extends TraceControlComponent {
-
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
-
     /**
      * Path to icon file for this component (state enabled).
      */
@@ -57,7 +55,6 @@ public class TraceChannelComponent extends TraceControlComponent {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * The channel information.
      */
@@ -70,7 +67,6 @@ public class TraceChannelComponent extends TraceControlComponent {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Constructor
      * @param name - the name of the component.
@@ -87,7 +83,10 @@ public class TraceChannelComponent extends TraceControlComponent {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getImage()
+     */
     @Override
     public Image getImage() {
         if (fChannelInfo.getState() == TraceEnablement.DISABLED) {
@@ -116,6 +115,7 @@ public class TraceChannelComponent extends TraceControlComponent {
 
             eventComponents.add(event);
             event.setEventInfo(events[i]);
+//            addChild(event);
         }
         if (!eventComponents.isEmpty()) {
             setChildren(eventComponents);
@@ -220,7 +220,10 @@ public class TraceChannelComponent extends TraceControlComponent {
     public void setState(String stateName) {
         fChannelInfo.setState(stateName);
     }
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
+     */
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {

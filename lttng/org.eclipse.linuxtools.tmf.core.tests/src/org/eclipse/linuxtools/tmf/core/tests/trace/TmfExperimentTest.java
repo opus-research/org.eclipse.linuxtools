@@ -17,6 +17,7 @@ package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -24,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
@@ -38,7 +40,6 @@ import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
-import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
@@ -61,6 +62,8 @@ public class TmfExperimentTest {
     // Attributes
     // ------------------------------------------------------------------------
 
+    private static final String DIRECTORY   = "testfiles";
+    private static final String TEST_STREAM = "A-Test-10K";
     private static final String EXPERIMENT  = "MyExperiment";
     private static int          NB_EVENTS   = 10000;
     private static int          BLOCK_SIZE  = 1000;
@@ -104,7 +107,7 @@ public class TmfExperimentTest {
 
     @Before
     public void setUp() {
-        setupTrace(TmfTestTrace.A_TEST_10K.getFullPath());
+        setupTrace(DIRECTORY + File.separator + TEST_STREAM);
         setupExperiment();
     }
 
@@ -182,8 +185,15 @@ public class TmfExperimentTest {
     @Test
     public void testGetStateSystem() {
         /* There should not be any experiment-specific state system */
-        ITmfStateSystem ss = fExperiment.getStateSystems().get("something");
+        ITmfStateSystem ss = fExperiment.getStateSystem("something");
         assertNull(ss);
+    }
+
+    @Test
+    public void testListStateSystem() {
+        Collection<String> sss = fExperiment.listStateSystems();
+        assertNotNull(sss);
+        assertEquals(0, sss.size());
     }
 
     // ------------------------------------------------------------------------

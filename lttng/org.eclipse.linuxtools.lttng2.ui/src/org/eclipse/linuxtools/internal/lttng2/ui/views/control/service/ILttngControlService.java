@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IBaseEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IUstProviderInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
@@ -37,7 +36,7 @@ public interface ILttngControlService {
     /**
      * @return the version string.
      */
-    String getVersion();
+    public String getVersion();
 
     /**
      * Checks if given version is supported by this ILTTngControlService implementation.
@@ -45,7 +44,7 @@ public interface ILttngControlService {
      * @param version The version to check
      * @return <code>true</code> if version is supported else <code>false</code>
      */
-    boolean isVersionSupported(String version);
+    public boolean isVersionSupported(String version);
 
     /**
      * Retrieves the existing sessions names from the node.
@@ -56,7 +55,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    String[] getSessionNames(IProgressMonitor monitor)
+    public String[] getSessionNames(IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -70,20 +69,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    ISessionInfo getSession(String sessionName, IProgressMonitor monitor)
-            throws ExecutionException;
-
-    /**
-     * Retrieves the snapshot output information from the node
-     * @param sessionName
-     *            - the session name
-     * @param monitor
-     *            - a progress monitor
-     * @return snapshot output information
-     * @throws ExecutionException
-     *          if command fails
-     */
-    ISnapshotInfo getSnapshotInfo(String sessionName, IProgressMonitor monitor)
+    public ISessionInfo getSession(String sessionName, IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -95,7 +81,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    List<IBaseEventInfo> getKernelProvider(IProgressMonitor monitor)
+    public List<IBaseEventInfo> getKernelProvider(IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -116,7 +102,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    List<IUstProviderInfo> getUstProvider(IProgressMonitor monitor)
+    public List<IUstProviderInfo> getUstProvider(IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -126,15 +112,13 @@ public interface ILttngControlService {
      *            - a session name to create
      * @param sessionPath
      *            - a path for storing the traces (use null for default)
-     * @param isSnapshot
-     *            - true for snapshot session else false
      * @param monitor
      *            - a progress monitor
      * @return the session information
      * @throws ExecutionException
      *             If the command fails
      */
-    ISessionInfo createSession(String sessionName, String sessionPath, boolean isSnapshot, IProgressMonitor monitor) throws ExecutionException;
+    public ISessionInfo createSession(String sessionName, String sessionPath, IProgressMonitor monitor) throws ExecutionException;
 
     /**
      * Creates a session with given session name and location.
@@ -148,15 +132,13 @@ public interface ILttngControlService {
      *            - a URL for control channel (networkUrl has to be null, dataUrl has to be set)
      * @param dataUrl
      *            - a URL for data channel (networkUrl has to be null, controlUrl has to be set)
-     * @param isSnapshot
-     *            - true for snapshot session else false
      * @param monitor
      *            - a progress monitor
      * @return the session information
      * @throws ExecutionException
      *             If the command fails
      */
-    ISessionInfo createSession(String sessionName, String networkUrl, String controlUrl, String dataUrl, boolean isSnapshot, IProgressMonitor monitor) throws ExecutionException;
+    public ISessionInfo createSession(String sessionName, String networkUrl, String controlUrl, String dataUrl, IProgressMonitor monitor) throws ExecutionException;
 
     /**
      * Destroys a session with given session name.
@@ -168,7 +150,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void destroySession(String sessionName, IProgressMonitor monitor)
+    public void destroySession(String sessionName, IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -181,7 +163,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void startSession(String sessionName, IProgressMonitor monitor)
+    public void startSession(String sessionName, IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -194,7 +176,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void stopSession(String sessionName, IProgressMonitor monitor)
+    public void stopSession(String sessionName, IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -216,7 +198,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void enableChannels(String sessionName, List<String> channelNames,
+    public void enableChannels(String sessionName, List<String> channelNames,
             boolean isKernel, IChannelInfo info, IProgressMonitor monitor)
             throws ExecutionException;
 
@@ -236,7 +218,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void disableChannels(String sessionName, List<String> channelNames,
+    public void disableChannels(String sessionName, List<String> channelNames,
             boolean isKernel, IProgressMonitor monitor)
             throws ExecutionException;
 
@@ -259,7 +241,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void enableEvents(String sessionName, String channelName,
+    public void enableEvents(String sessionName, String channelName,
             List<String> eventNames, boolean isKernel, String filterExpression,
             IProgressMonitor monitor)
             throws ExecutionException;
@@ -277,7 +259,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void enableSyscalls(String sessionName, String channelName,
+    public void enableSyscalls(String sessionName, String channelName,
             IProgressMonitor monitor) throws ExecutionException;
 
     /**
@@ -298,7 +280,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void enableProbe(String sessionName, String channelName,
+    public void enableProbe(String sessionName, String channelName,
             String eventName, boolean isFunction, String probe,
             IProgressMonitor monitor) throws ExecutionException;
 
@@ -322,7 +304,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void enableLogLevel(String sessionName, String channelName,
+    public void enableLogLevel(String sessionName, String channelName,
             String eventName, LogLevelType logLevelType, TraceLogLevel level,
             String filterExpression,
             IProgressMonitor monitor) throws ExecutionException;
@@ -343,7 +325,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void disableEvent(String sessionName, String channelName,
+    public void disableEvent(String sessionName, String channelName,
             List<String> eventNames, boolean isKernel, IProgressMonitor monitor)
             throws ExecutionException;
 
@@ -356,7 +338,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    List<String> getContextList(IProgressMonitor monitor)
+    public List<String> getContextList(IProgressMonitor monitor)
             throws ExecutionException;
 
     /**
@@ -377,7 +359,7 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void addContexts(String sessionName, String channelName,
+    public void addContexts(String sessionName, String channelName,
             String eventName, boolean isKernel, List<String> contexts,
             IProgressMonitor monitor) throws ExecutionException;
 
@@ -391,19 +373,6 @@ public interface ILttngControlService {
      * @throws ExecutionException
      *             If the command fails
      */
-    void calibrate(boolean isKernel, IProgressMonitor monitor)
-            throws ExecutionException;
-
-    /**
-     * Records a snapshot.
-     *
-     * @param sessionName
-     *            - a session name
-     * @param monitor
-     *            - a progress monitor
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    void recordSnapshot(String sessionName, IProgressMonitor monitor)
+    public void calibrate(boolean isKernel, IProgressMonitor monitor)
             throws ExecutionException;
 }

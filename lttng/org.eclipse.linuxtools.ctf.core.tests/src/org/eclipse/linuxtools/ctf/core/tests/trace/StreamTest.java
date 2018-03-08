@@ -15,20 +15,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-import java.io.File;
 import java.nio.channels.FileChannel;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,9 +42,19 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class StreamTest {
 
-    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private Stream fixture;
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(StreamTest.class);
+    }
 
     /**
      * Perform pre-test initialization.
@@ -53,14 +63,22 @@ public class StreamTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(testTrace.exists());
-        fixture = new Stream(testTrace.getTrace());
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX));
         fixture.setEventContext(new StructDeclaration(1L));
         fixture.setPacketContext(new StructDeclaration(1L));
         fixture.setEventHeader(new StructDeclaration(1L));
         fixture.setId(1L);
-        fixture.addInput(new StreamInput(new Stream(testTrace.getTrace()),
-                (FileChannel) null, new File("")));
+        fixture.addInput(new StreamInput(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)),
+                (FileChannel) null, CtfTestTraces.getEmptyFile()));
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
@@ -70,7 +88,7 @@ public class StreamTest {
      */
     @Test
     public void testStream() throws CTFReaderException {
-        CTFTrace trace = testTrace.getTrace();
+        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
         Stream result = new Stream(trace);
         assertNotNull(result);
     }
@@ -130,7 +148,7 @@ public class StreamTest {
      */
     @Test
     public void testGetEvents() {
-        Map<Long, IEventDeclaration> result = fixture.getEvents();
+        HashMap<Long, IEventDeclaration> result = fixture.getEvents();
         assertNotNull(result);
     }
 

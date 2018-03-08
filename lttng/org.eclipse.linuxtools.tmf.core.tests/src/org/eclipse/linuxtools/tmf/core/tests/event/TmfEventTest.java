@@ -36,7 +36,6 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
-import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -64,22 +63,22 @@ public class TmfEventTest {
 
     private final Object fValue1a = "Some string";
     private final Object fValue1b = Integer.valueOf(10);
-    private final ITmfEventField fField1a = new TmfEventField(fLabel1, fValue1a, null);
-    private final ITmfEventField fField1b = new TmfEventField(fLabel2, fValue1b, null);
+    private final ITmfEventField fField1a = new TmfEventField(fLabel1, fValue1a);
+    private final ITmfEventField fField1b = new TmfEventField(fLabel2, fValue1b);
     private final ITmfEventField[] fFields1 = new ITmfEventField[] { fField1a, fField1b };
     private final String fRawContent1 = fField1a.toString() + fField1b.toString();
-    private final ITmfEventField fContent1 = new TmfEventField(fRawContent1, null, fFields1);
+    private final ITmfEventField fContent1 = new TmfEventField(fRawContent1, fFields1);
     private final TmfTimestamp fTimestamp1 = new TmfTimestamp(12345, 2, 5);
     private final String fReference1 = "Some reference";
     private final ITmfEvent fEvent1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
 
     private final Object fValue2a = "Another string";
     private final Object fValue2b = Integer.valueOf(-4);
-    private final ITmfEventField fField2a = new TmfEventField(fLabel1, fValue2a, null);
-    private final ITmfEventField fField2b = new TmfEventField(fLabel2, fValue2b, null);
+    private final ITmfEventField fField2a = new TmfEventField(fLabel1, fValue2a);
+    private final ITmfEventField fField2b = new TmfEventField(fLabel2, fValue2b);
     private final ITmfEventField[] fFields2 = new ITmfEventField[] { fField2a, fField2b };
     private final String fRawContent2 = fField2a.toString() + fField2b.toString();
-    private final ITmfEventField fContent2 = new TmfEventField(fRawContent2, null, fFields2);
+    private final ITmfEventField fContent2 = new TmfEventField(fRawContent2, fFields2);
     private final TmfTimestamp fTimestamp2 = new TmfTimestamp(12350, 2, 5);
     private final String fReference2 = "Some other reference";
     private final ITmfEvent fEvent2 = new TmfEvent(null, 1, fTimestamp2, fSource, fType, fContent2, fReference2);
@@ -89,9 +88,13 @@ public class TmfEventTest {
     // ------------------------------------------------------------------------
 
     private static TmfTraceStub openTrace() {
+        final String DIRECTORY = "testfiles";
+        final String TEST_STREAM = "A-Test-10K";
+        final String path = DIRECTORY + File.separator + TEST_STREAM;
+
         TmfTraceStub trace = null;
         try {
-            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.A_TEST_10K.getFullPath()), null);
+            final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
             final File test = new File(FileLocator.toFileURL(location).toURI());
             trace = new TmfTraceStub(test.toURI().getPath(), 500, false);
         } catch (final TmfTraceException e) {

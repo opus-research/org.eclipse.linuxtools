@@ -41,7 +41,6 @@ public class CreateSessionHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * The trace session group the command is to be executed on.
      */
@@ -50,7 +49,10 @@ public class CreateSessionHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
@@ -72,10 +74,10 @@ public class CreateSessionHandler extends BaseControlViewHandler {
                     try {
                         if (dialog.isStreamedTrace()) {
                             sessionGroup.createSession(dialog.getSessionName(), dialog.getNetworkUrl(), dialog.getControlUrl(),
-                                    dialog.getDataUrl(), dialog.isSnapshot(), monitor);
+                                    dialog.getDataUrl(), monitor);
                         } else {
                             String sessionPath = dialog.isDefaultSessionPath() ? null : dialog.getSessionPath();
-                            sessionGroup.createSession(dialog.getSessionName(), sessionPath, dialog.isSnapshot(), monitor);
+                            sessionGroup.createSession(dialog.getSessionName(), sessionPath, monitor);
                         }
                     } catch (ExecutionException e) {
                         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_CreateSessionFailure, e);
@@ -91,6 +93,10 @@ public class CreateSessionHandler extends BaseControlViewHandler {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
+     */
     @Override
     public boolean isEnabled() {
 

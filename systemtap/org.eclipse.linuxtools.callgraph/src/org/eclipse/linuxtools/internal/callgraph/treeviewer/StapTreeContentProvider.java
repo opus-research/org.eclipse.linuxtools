@@ -24,17 +24,17 @@ public class StapTreeContentProvider implements ITreeContentProvider{
 	
 	@Override
 	public Object[] getChildren(Object parentElement) {
-		List<StapData> empty = new ArrayList<StapData>();
+		List<StapData> EMPTY = new ArrayList<StapData>();
 		if (parentElement instanceof StapData) {
 			StapData parent = ((StapData) parentElement);
 			List<Integer> childrenIDs = parent.collapsedChildren;
 			for (int val : childrenIDs) {
 				if (graph.getNodeData(val) != null) {
-					empty.add(graph.getNodeData(val));
+					EMPTY.add(graph.getNodeData(val));
 				}
 			}
 		}
-		return empty.toArray();
+		return EMPTY.toArray();
 	}
 
 	@Override

@@ -20,7 +20,6 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IDomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BufferType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.DomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ITraceControlComponent;
@@ -83,6 +82,10 @@ public class TraceDomainComponent extends TraceControlComponent {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
+     */
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -133,13 +136,6 @@ public class TraceDomainComponent extends TraceControlComponent {
      */
     public TargetNodeComponent getTargetNode() {
         return ((TraceSessionComponent)getParent()).getTargetNode();
-    }
-
-    /**
-     * @return the buffer type
-     */
-    public BufferType getBufferType(){
-        return fDomainInfo.getBufferType();
     }
 
     // ------------------------------------------------------------------------

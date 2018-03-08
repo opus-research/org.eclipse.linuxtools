@@ -38,7 +38,7 @@ public class SystemTapCommandGenerator {
 		binaryPath = binPath;
 		scriptPath = scrPath;
 		isGuru = false;
-		arguments = "--runtime=dyninst " + arg; //$NON-NLS-1$
+		arguments = arg;
 		flags = opts;
 		binaryArguments = binArguments;
 		command = cmdTarget;
@@ -65,6 +65,7 @@ public class SystemTapCommandGenerator {
 		ArrayList<String> cmdList = new ArrayList<String>();
 		String[] script;
 
+		//getImportedTapsets(cmdList);
 		if (flags.length() > 0){
 			cmdList.add(flags);
 		}
@@ -92,7 +93,7 @@ public class SystemTapCommandGenerator {
 
 		for(int i=0; i< cmdList.size(); i++) {
 			if (cmdList.get(i) != null) {
-				script[i +1] = cmdList.get(i);
+				script[i +1] = cmdList.get(i).toString();
 			} else {
 				script[i + 1] = ""; //$NON-NLS-1$
 			}

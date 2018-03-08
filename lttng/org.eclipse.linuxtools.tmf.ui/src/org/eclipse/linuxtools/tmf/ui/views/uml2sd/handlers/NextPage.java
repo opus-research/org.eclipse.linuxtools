@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,10 +12,11 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
+import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 
 /**
  * Action class implementation to move the focus to the next page of the whole sequence diagram.
@@ -24,7 +25,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
  * @author sveyrier
  *
  */
-public class NextPage extends BaseSDAction {
+public class NextPage extends Action {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -35,6 +36,14 @@ public class NextPage extends BaseSDAction {
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.nextpage"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+    /**
+     * The sequence diagram view reference.
+     */
+    protected SDView fView = null;
+
+    // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
     /**
@@ -43,9 +52,10 @@ public class NextPage extends BaseSDAction {
      * @param view the view reference
      */
     public NextPage(SDView view) {
-        super(view);
-        setText(Messages.SequenceDiagram_NextPage);
-        setToolTipText(Messages.SequenceDiagram_GoToNextPage);
+        super();
+        fView = view;
+        setText(SDMessages._36);
+        setToolTipText(SDMessages._38);
         setId(ID);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_NEXT_PAGE));
     }
@@ -53,16 +63,19 @@ public class NextPage extends BaseSDAction {
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
+     */
      @Override
     public void run() {
-        if ((getView() == null) || (getView().getSDWidget()) == null) {
+        if ((fView == null) || (fView.getSDWidget()) == null) {
             return;
         }
-        if (getView().getSDPagingProvider() != null) {
-            getView().getSDPagingProvider().nextPage();
+        if (fView.getSDPagingProvider() != null) {
+            fView.getSDPagingProvider().nextPage();
         }
-        getView().updateCoolBar();
-        getView().getSDWidget().redraw();
+        fView.updateCoolBar();
+        fView.getSDWidget().redraw();
     }
 }

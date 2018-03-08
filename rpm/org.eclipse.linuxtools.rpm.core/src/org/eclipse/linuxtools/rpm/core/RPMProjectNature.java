@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public class RPMProjectNature implements IProjectNature {
 
-	private IProject project;
+	IProject project;
 	
 	/**
 	 * Adds the RPM project nature to a given workspace project.
@@ -60,20 +60,16 @@ public class RPMProjectNature implements IProjectNature {
 		project.setDescription(description, monitor);
 	}
 
-	@Override
-	public void configure() {
+	public void configure() throws CoreException {
 	}
 
-	@Override
-	public void deconfigure() {
+	public void deconfigure() throws CoreException {
 	}
 
-	@Override
 	public IProject getProject() {
 		return project;
 	}
 
-	@Override
 	public void setProject(IProject project) {
 		this.project = project;
 	}

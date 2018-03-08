@@ -84,11 +84,11 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
     /**
      * Index of last supported streaming protocol for common URL configuration.
      */
-    private static final int COMMON_URL_LAST_INDEX = 1;
+    private final static int COMMON_URL_LAST_INDEX = 1;
     /**
      *  Index of default streaming protocol.
      */
-    private static final int DEFAULT_URL_INDEX = 0;
+    private final static int DEFAULT_URL_INDEX = 0;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -111,10 +111,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      * The text widget for the session path.
      */
     private Text fSessionPathText = null;
-    /**
-     * The button widget to select a snapshot session
-     */
-    private Button fSnapshotButton = null;
     /**
      * The Group for stream configuration.
      */
@@ -188,10 +184,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
      */
     private String fSessionPath = null;
     /**
-     * The  session path string.
-     */
-    private boolean fIsSnapshot = false;
-    /**
      * Flag whether default location (path) shall be used or not
      */
     private boolean fIsDefaultPath = true;
@@ -234,29 +226,43 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ICreateSessionDialog#getSessionName()
+     */
     @Override
     public String getSessionName() {
         return fSessionName;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ICreateSessionDialog#getSessionPath()
+     */
     @Override
     public String getSessionPath() {
         return fSessionPath;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ICreateSessionDialog#isDefaultSessionPath()
+     */
     @Override
     public boolean isDefaultSessionPath() {
         return fIsDefaultPath;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ICreateSessionDialog#initialze(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionGroup)
+     */
     @Override
     public void initialize(TraceSessionGroup group) {
        fParent = group;
        fStreamingComposite = null;
        fSessionName = null;
        fSessionPath = null;
-       fIsSnapshot = false;
        fIsDefaultPath = true;
        fIsStreamedTrace = false;
        fNetworkUrl = null;
@@ -280,14 +286,15 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
     public String getDataUrl() {
         return fDataUrl;
     }
-    @Override
-    public boolean isSnapshot() {
-        return fIsSnapshot;
-    }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
+
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createContents(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createContents(Composite parent) {
         fControl = super.createContents(parent);
@@ -299,7 +306,10 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
 
         return fControl;
     }
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+     */
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
@@ -307,6 +317,10 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         newShell.setImage(Activator.getDefault().loadIcon(CREATE_SESSION_ICON_FILE));
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(Composite parent) {
 
@@ -329,15 +343,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         fSessionPathLabel.setText(Messages.TraceControl_CreateSessionPathLabel);
         fSessionPathText = new Text(sessionGroup, SWT.NONE);
         fSessionPathText.setToolTipText(Messages.TraceControl_CreateSessionPathTooltip);
-
-        if (fParent.isSnapshotSupported()) {
-            fSnapshotButton = new Button(sessionGroup, SWT.CHECK);
-            fSnapshotButton.setText(Messages.TraceControl_CreateSessionSnapshotLabel);
-            fSnapshotButton.setToolTipText(Messages.TraceControl_CreateSessionSnapshotTooltip);
-            GridData data = new GridData(GridData.FILL_HORIZONTAL);
-            data.horizontalSpan = 4;
-            fSnapshotButton.setData(data);
-        }
 
         // layout widgets
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
@@ -611,12 +616,20 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
         createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+     */
     @Override
     protected void okPressed() {
         // Validate input data
@@ -632,14 +645,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                 if (fsss != null) {
                     try {
                         IRemoteFile remoteFolder = fsss.getRemoteFileObject(fSessionPath, new NullProgressMonitor());
-
-                        if (remoteFolder == null) {
-                            MessageDialog.openError(getShell(),
-                                    Messages.TraceControl_CreateSessionDialogTitle,
-                                    Messages.TraceControl_InvalidSessionPathError + " (" + fSessionPath + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
-                            return;
-                        }
-
                         if (remoteFolder.exists()) {
                             MessageDialog.openError(getShell(),
                                     Messages.TraceControl_CreateSessionDialogTitle,
@@ -655,10 +660,6 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                 }
             }
             fIsDefaultPath = false;
-        }
-
-        if(fParent.isSnapshotSupported()) {
-            fIsSnapshot = fSnapshotButton.getSelection();
         }
 
         fNetworkUrl = null;

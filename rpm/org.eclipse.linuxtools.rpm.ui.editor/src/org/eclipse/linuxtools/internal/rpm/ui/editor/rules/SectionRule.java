@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2013 Red Hat, Inc.
+ * Copyright (c) 2007, 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,13 +25,13 @@ public class SectionRule implements IPredicateRule {
 	private StringBuilder nextHeaderBuffer = new StringBuilder();
 
 	/** The success token */
-	private IToken token;
+	IToken token;
 
 	/** The beginning token, represents a section of the spec file */
-	private String startingHeader;
+	String startingHeader;
 
 	/** A list of possible ending section headers */
-	private String[] endingHeaders;
+	String[] endingHeaders;
 
 	public SectionRule(String startingHeader, String[] endingHeaders,
 			IToken token) {
@@ -40,12 +40,10 @@ public class SectionRule implements IPredicateRule {
 		this.token = token;
 	}
 
-	@Override
 	public IToken getSuccessToken() {
 		return token;
 	}
 
-	@Override
 	public IToken evaluate(ICharacterScanner scanner, boolean resume) {
 		/* whether we think we're reading the ending sequence, i.e. the next
 		 * section heading
@@ -87,6 +85,7 @@ public class SectionRule implements IPredicateRule {
 					nextHeaderBuffer.setLength(0);
 					readingEndSequence = true;
 				} else if (c == ICharacterScanner.EOF) {
+					
 					// we allow EOF as a valid ending to a section
 					break;
 				} else {
@@ -103,13 +102,15 @@ public class SectionRule implements IPredicateRule {
 
 					// we've found our terminating header
 					if (nextHeaderBuffer.toString().equals(tempSectionheader)) {
+
 						// exclude the terminating header from the partition
 						unreadBuffer(scanner, nextHeaderBuffer);
+
 						return token;
 					}
 				}
 			}
-
+			
 			// read the next char
 			c = scanner.read();
 			fBuffer.append((char) c);
@@ -121,21 +122,19 @@ public class SectionRule implements IPredicateRule {
 		return token;
 	}
 
-	@Override
 	public IToken evaluate(ICharacterScanner scanner) {
 		return evaluate(scanner, false);
 	}
 
 	/**
 	 * Returns the characters in the buffer to the scanner.
-	 *
+	 * 
 	 * @param scanner
 	 *            the scanner to be used
 	 */
 	protected void unreadBuffer(ICharacterScanner scanner, StringBuilder buffer) {
-		for (int i = buffer.length() - 1; i >= 0; i--) {
+		for (int i = buffer.length() - 1; i >= 0; i--)
 			scanner.unread();
-		}
 	}
 
 }

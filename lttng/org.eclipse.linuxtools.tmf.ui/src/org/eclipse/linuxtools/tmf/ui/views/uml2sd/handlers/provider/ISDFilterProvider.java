@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,8 +13,6 @@
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider;
 
 import java.util.List;
-
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.FilterCriteria;
 
 /**
  * Interface for providing a filter provider.
@@ -38,6 +36,6 @@ public interface ISDFilterProvider extends ISDGraphNodeSupporter {
      * @param filters user selection made in the dialog box
      * @return true if the filter applied
      */
-    boolean filter(List<FilterCriteria> filters);
+    public boolean filter(List<?> filters);
 
 }

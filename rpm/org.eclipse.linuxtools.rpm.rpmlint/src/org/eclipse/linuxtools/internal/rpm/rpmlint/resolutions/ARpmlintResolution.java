@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2013 Red Hat, Inc.
+ * Copyright (c) 2007, 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,24 +23,23 @@ import org.eclipse.ui.ide.IDE;
 
 /**
  * Base class providing common functionality for rpmlint resolution.
- *
+ * 
  */
 public abstract class ARpmlintResolution implements IMarkerResolution2 {
 
-
+	
 	/**
-	 * No image for rpmlint resolutions for now.
-	 *
+	 * No image for rpmlint resolutions for now. 
+	 * 
 	 * @see org.eclipse.ui.IMarkerResolution2#getImage()
 	 */
-	@Override
 	public Image getImage() {
 		return null;
 	}
-
+	
 	/**
 	 * Returns the SpecfileEditor for the given IMarker if any.
-	 *
+	 * 
 	 * @param marker The marker to use for retrieving the editor.
 	 * @return The SpecfileEditor this marker is from or null if it's not a SpecfileEditor.
 	 */
@@ -59,6 +58,7 @@ public abstract class ARpmlintResolution implements IMarkerResolution2 {
 		if (!(part instanceof SpecfileEditor)) {
 			return null;
 		}
-		return (SpecfileEditor) part;
+		SpecfileEditor editor = (SpecfileEditor) part;
+		return editor;
 	}
 }

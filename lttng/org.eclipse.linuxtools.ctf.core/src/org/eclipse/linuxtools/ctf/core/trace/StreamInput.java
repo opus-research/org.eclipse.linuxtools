@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -56,7 +56,7 @@ public class StreamInput implements IDefinitionScope {
     /**
      * Information on the file (used for debugging)
      */
-    private final File file;
+    public final File file;
 
     /**
      * The packet index of this input
@@ -68,17 +68,17 @@ public class StreamInput implements IDefinitionScope {
     /*
      * Definition of trace packet header
      */
-    private StructDefinition tracePacketHeaderDef = null;
+    StructDefinition tracePacketHeaderDef = null;
 
     /*
      * Definition of trace stream packet context
      */
-    private StructDefinition streamPacketContextDef = null;
+    StructDefinition streamPacketContextDef = null;
 
     /*
      * Total number of lost events in this stream
      */
-    private long lostSoFar = 0;
+    long lostSoFar = 0;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -244,9 +244,9 @@ public class StreamInput implements IDefinitionScope {
             StructDefinition tracePacketHeaderDef,
             StructDefinition streamPacketContextDef, BitBuffer bitBuffer)
             throws CTFReaderException {
-
-        /* Ignoring the return value, but this call is needed to initialize the input */
-        createPacketBitBuffer(fileSizeBytes, packetOffsetBytes, packetIndex, bitBuffer);
+        @SuppressWarnings("unused")
+        MappedByteBuffer bb = createPacketBitBuffer(fileSizeBytes,
+                packetOffsetBytes, packetIndex, bitBuffer);
 
         /*
          * Read the trace packet header if it exists.
@@ -358,13 +358,14 @@ public class StreamInput implements IDefinitionScope {
         /*
          * Check the trace UUID
          */
-        ArrayDefinition uuidDef =
-                (ArrayDefinition) tracePacketHeaderDef.lookupDefinition("uuid"); //$NON-NLS-1$
+        ArrayDefinition uuidDef = (ArrayDefinition) tracePacketHeaderDef
+                .lookupDefinition("uuid"); //$NON-NLS-1$
         if (uuidDef != null) {
             byte[] uuidArray = new byte[16];
 
-            for (int i = 0; i < uuidArray.length; i++) {
-                IntegerDefinition uuidByteDef = (IntegerDefinition) uuidDef.getElem(i);
+            for (int i = 0; i < 16; i++) {
+                IntegerDefinition uuidByteDef = (IntegerDefinition) uuidDef
+                        .getElem(i);
                 uuidArray[i] = (byte) uuidByteDef.getValue();
             }
 
@@ -425,11 +426,11 @@ public class StreamInput implements IDefinitionScope {
 
         Long contentSize = (Long) packetIndex.lookupAttribute("content_size"); //$NON-NLS-1$
         Long packetSize = (Long) packetIndex.lookupAttribute("packet_size"); //$NON-NLS-1$
-        Long tsBegin = (Long) packetIndex.lookupAttribute("timestamp_begin"); //$NON-NLS-1$
-        Long tsEnd = (Long) packetIndex.lookupAttribute("timestamp_end"); //$NON-NLS-1$
+        Long timestampBegin = (Long) packetIndex.lookupAttribute("timestamp_begin"); //$NON-NLS-1$
+        Long timestampEnd = (Long) packetIndex.lookupAttribute("timestamp_end"); //$NON-NLS-1$
         String device = (String) packetIndex.lookupAttribute("device"); //$NON-NLS-1$
         // LTTng Specific
-        Long cpuId = (Long) packetIndex.lookupAttribute("cpu_id"); //$NON-NLS-1$
+        Long CPU_ID = (Long) packetIndex.lookupAttribute("cpu_id"); //$NON-NLS-1$
         Long lostEvents = (Long) packetIndex.lookupAttribute("events_discarded");  //$NON-NLS-1$
 
         /* Read the content size in bits */
@@ -451,16 +452,16 @@ public class StreamInput implements IDefinitionScope {
         }
 
         /* Read the begin timestamp */
-        if (tsBegin != null) {
-            packetIndex.setTimestampBegin(tsBegin.longValue());
+        if (timestampBegin != null) {
+            packetIndex.setTimestampBegin(timestampBegin.longValue());
         }
 
         /* Read the end timestamp */
-        if (tsEnd != null) {
-            if( tsEnd == -1 ) {
-                tsEnd = Long.MAX_VALUE;
+        if (timestampEnd != null) {
+            if( timestampEnd == -1 ) {
+                timestampEnd = Long.MAX_VALUE;
             }
-            packetIndex.setTimestampEnd(tsEnd.longValue());
+            packetIndex.setTimestampEnd(timestampEnd.longValue());
             setTimestampEnd(packetIndex.getTimestampEnd());
         }
 
@@ -468,8 +469,8 @@ public class StreamInput implements IDefinitionScope {
             packetIndex.setTarget(device);
         }
 
-        if (cpuId != null) {
-            packetIndex.setTarget("CPU" + cpuId.toString()); //$NON-NLS-1$
+        if (CPU_ID != null) {
+            packetIndex.setTarget("CPU" + CPU_ID.toString()); //$NON-NLS-1$
         }
 
         if (lostEvents != null) {
@@ -478,6 +479,11 @@ public class StreamInput implements IDefinitionScope {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -486,6 +492,11 @@ public class StreamInput implements IDefinitionScope {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

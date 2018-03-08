@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -23,8 +23,6 @@ package org.eclipse.linuxtools.tmf.core.statevalue;
  */
 final class NullStateValue extends TmfStateValue {
 
-    private final String value = "nullValue"; //$NON-NLS-1$
-
     @Override
     public Type getType() {
         return Type.NULL;
@@ -37,30 +35,16 @@ final class NullStateValue extends TmfStateValue {
 
     @Override
     public Object getValue() {
-        return value;
+        return null;
+    }
+
+    @Override
+    public byte[] toByteArray() {
+        return null;
     }
 
     @Override
     public String toString() {
-        return value;
-    }
-
-    // ------------------------------------------------------------------------
-    // Unboxing methods. Null values can be unboxed into any type.
-    // ------------------------------------------------------------------------
-
-    @Override
-    public int unboxInt() {
-        return -1;
-    }
-
-    @Override
-    public long unboxLong() {
-        return -1;
-    }
-
-    @Override
-    public String unboxStr() {
         return "nullValue"; //$NON-NLS-1$
     }
 }

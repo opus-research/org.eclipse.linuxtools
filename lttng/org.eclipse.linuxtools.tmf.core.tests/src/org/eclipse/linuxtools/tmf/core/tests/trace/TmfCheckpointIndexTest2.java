@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
-import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
@@ -50,6 +49,10 @@ public class TmfCheckpointIndexTest2 {
     // Variables
     // ------------------------------------------------------------------------
 
+    private static final String    DIRECTORY   = "testfiles";
+    // Trace has 3 events at t=101 at rank 99, 100, 101
+    // Trace has events with same timestamp (ts=102) for ranks 102..702 -> 2 checkpoints with same timestamp are created
+    private static final String    TEST_STREAM = "A-Test-10K-2";
     private static final int       BLOCK_SIZE  = 100;
     private static final int       NB_EVENTS   = 702;
     private static TestTrace       fTrace      = null;
@@ -61,9 +64,7 @@ public class TmfCheckpointIndexTest2 {
 
     @Before
     public void setUp() {
-        // Trace has 3 events at t=101 at rank 99, 100, 101
-        // Trace has events with same timestamp (ts=102) for ranks 102..702 -> 2 checkpoints with same timestamp are created
-        setupTrace(TmfTestTrace.A_TEST_10K2.getFullPath());
+        setupTrace(DIRECTORY + File.separator + TEST_STREAM);
     }
 
     @After
@@ -124,7 +125,7 @@ public class TmfCheckpointIndexTest2 {
                 final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
                 final File test = new File(FileLocator.toFileURL(location).toURI());
                 fTrace = new TestTrace(test.toURI().getPath(), BLOCK_SIZE);
-                fTrace.indexTrace(true);
+                fTrace.indexTrace();
             } catch (final TmfTraceException e) {
                 e.printStackTrace();
             } catch (final URISyntaxException e) {
@@ -136,7 +137,7 @@ public class TmfCheckpointIndexTest2 {
 
         if (fEmptyTrace == null) {
             fEmptyTrace = new EmptyTestTrace();
-            fEmptyTrace.indexTrace(true);
+            fEmptyTrace.indexTrace();
         }
     }
 
@@ -145,6 +146,7 @@ public class TmfCheckpointIndexTest2 {
     // ------------------------------------------------------------------------
 
     @Test
+    @SuppressWarnings("null")
     public void testTmfTraceMultiTimestamps() {
         assertEquals("getCacheSize",   BLOCK_SIZE, fTrace.getCacheSize());
         assertEquals("getTraceSize",   NB_EVENTS,  fTrace.getNbEvents());

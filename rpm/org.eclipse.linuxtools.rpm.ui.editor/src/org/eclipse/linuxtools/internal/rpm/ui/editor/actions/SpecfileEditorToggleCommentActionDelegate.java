@@ -29,14 +29,15 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public class SpecfileEditorToggleCommentActionDelegate extends AbstractHandler {
 
+	SpecfileEditor editor;
+
 	/*
 	 * (non-Javadoc)
 	 *
 	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
 	 */
-	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		SpecfileEditor editor = (SpecfileEditor) HandlerUtil.getActiveEditor(event);
+		editor = (SpecfileEditor) HandlerUtil.getActiveEditor(event);
 		IDocument document = (IDocument) editor.getAdapter(IDocument.class);
 		ISelection currentSelection = editor.getSpecfileSourceViewer()
 				.getSelection();
@@ -52,9 +53,8 @@ public class SpecfileEditorToggleCommentActionDelegate extends AbstractHandler {
 				if (linesContentCommentChar(content)) {
 					if (selection.getStartLine() == selection.getEndLine()) {
 						selectedContent = ISpecfileSpecialSymbols.COMMENT_START + content;
-					} else {
+					} else
 						selectedContent = ISpecfileSpecialSymbols.COMMENT_START + content.replaceAll("\n", "\n#"); //$NON-NLS-1$ //$NON-NLS-2$
-					}
 				} else {
 					selectedContent = content.replaceFirst(ISpecfileSpecialSymbols.COMMENT_START, "").replaceAll( //$NON-NLS-1$
 							"\n#", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -87,11 +87,10 @@ public class SpecfileEditorToggleCommentActionDelegate extends AbstractHandler {
 		boolean ret = false;
 		try {
 			while ((line = reader.readLine()) != null) {
-				if (line.startsWith(ISpecfileSpecialSymbols.COMMENT_START)) {
+				if (line.startsWith(ISpecfileSpecialSymbols.COMMENT_START))
 					ret = false;
-				} else {
+				else
 					return true;
-				}
 			}
 		} catch (IOException e) {
 			SpecfileLog.logError(e);

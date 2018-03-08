@@ -1,25 +1,22 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *     Simon Marchi - Initial API and implementation
- *     Marc-Andre Laperle - Add min/maximum for validation
+ * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors: Simon Marchi - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import java.math.BigInteger;
 import java.nio.ByteOrder;
 
 /**
  * A CTF integer declaration.
- *
+ * 
  * The declaration of a integer basic data type.
  *
  * @version 1.0
@@ -32,13 +29,13 @@ public class IntegerDeclaration implements IDeclaration {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final int length;
-    private final boolean signed;
-    private final int base;
-    private final ByteOrder byteOrder;
-    private final Encoding encoding;
-    private final long alignment;
-    private final String clock;
+    final private int length;
+    final private boolean signed;
+    final private int base;
+    final private ByteOrder byteOrder;
+    final private Encoding encoding;
+    final private long alignment;
+    final private String clock;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -46,34 +43,23 @@ public class IntegerDeclaration implements IDeclaration {
 
     /**
      * Contructor
-     *
-     * @param len
-     *            The length in bits
-     * @param signed
-     *            Is the integer signed? false == unsigned
-     * @param base
-     *            The base (10-16 are most common)
-     * @param byteOrder
-     *            Big endian little endian or other
-     * @param encoding
-     *            ascii, utf8 or none.
-     * @param clock
-     *            The clock path, can be null
-     * @param alignment
-     *            The minimum alignment. Should be >= 1
+     * @param len the length in bits
+     * @param signed is the integer signed? false == unsigned
+     * @param base the base (10-16 are most common)
+     * @param byteOrder Big endian little endian or other
+     * @param encoding ascii, utf8 or none.
+     * @param clock the clock path, can be null
+     * @param alignment the minimum alignment
      */
     public IntegerDeclaration(int len, boolean signed, int base,
             ByteOrder byteOrder, Encoding encoding, String clock, long alignment) {
-        if (len <= 0 || len == 1 && signed) {
-            throw new IllegalArgumentException();
-        }
         this.length = len;
         this.signed = signed;
         this.base = base;
         this.byteOrder = byteOrder;
         this.encoding = encoding;
         this.clock = clock;
-        this.alignment = Math.max(alignment, 1);
+        this.alignment = alignment;
     }
 
     // ------------------------------------------------------------------------
@@ -154,33 +140,6 @@ public class IntegerDeclaration implements IDeclaration {
     public String toString() {
         /* Only used for debugging */
         return "[declaration] integer[" + Integer.toHexString(hashCode()) + ']'; //$NON-NLS-1$
-    }
-
-    /**
-     * Get the maximum value for this integer declaration
-     *
-     * @return The maximum value for this integer declaration
-     * @since 2.0
-     */
-    public BigInteger getMaxValue() {
-        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
-        BigInteger max = signed ? capacity.divide(BigInteger.valueOf(2)) : capacity;
-        return max.subtract(BigInteger.ONE);
-    }
-
-    /**
-     * Get the minimum value for this integer declaration
-     *
-     * @return The minimum value for this integer declaration
-     * @since 2.0
-     */
-    public BigInteger getMinValue() {
-        if (!signed) {
-            return BigInteger.ZERO;
-        }
-
-        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
-        return capacity.divide(BigInteger.valueOf(2)).negate();
     }
 
 }

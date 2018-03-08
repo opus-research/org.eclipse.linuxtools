@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.binutils.link2source;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,7 +55,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
  * This class provides a support for link-to-source
- *
+ * 
  * @author Xavier Raynaud <xavier.raynaud@st.com>
  */
 public class STLink2SourceSupport {
@@ -69,7 +70,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the location of the given symbol
-     *
+     * 
      * @param symbol
      * @return <code>true</code> if the link-to-source was successful, <code>false</code> otherwise
      */
@@ -81,7 +82,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param addr2lineOutput
@@ -96,7 +97,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param sourceLoc
@@ -112,7 +113,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param sourceLoc
@@ -128,7 +129,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given address
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param address
@@ -142,7 +143,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given address
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param address
@@ -157,7 +158,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param addr2lineOutput
@@ -173,7 +174,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param sourceLoc
@@ -192,7 +193,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param sourceLoc
@@ -209,13 +210,14 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param sourceLoc
      *            the location of the source file
      * @param lineNumber
      * @return <code>true</code> if the link-to-source was successful, <code>false</code> otherwise
+     * @throws IOException
      */
     public boolean openSourceFileAtLocation(IPath binaryLoc, IPath sourceLoc, int lineNumber) {
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -228,7 +230,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param project
      *            the parent project
      * @param sourceLoc
@@ -245,13 +247,14 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param project
      *            the parent project
      * @param sourceLoc
      *            the location of the source file
      * @param lineNumber
      * @return <code>true</code> if the link-to-source was successful, <code>false</code> otherwise
+     * @throws IOException
      */
     public boolean openSourceFileAtLocation(IProject project, IPath sourceLoc, int lineNumber) {
         return openFileImpl(project, sourceLoc, lineNumber);
@@ -259,7 +262,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given address
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param address
@@ -275,7 +278,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given address
-     *
+     * 
      * @param binaryLoc
      *            a path to a binary file
      * @param address
@@ -329,7 +332,7 @@ public class STLink2SourceSupport {
 
     /**
      * Opens a C Editor pointing to the given symbol
-     *
+     * 
      * @param binary
      * @param symbol
      * @return <code>true</code> if the link-to-source was successful, <code>false</code> otherwise
@@ -343,7 +346,7 @@ public class STLink2SourceSupport {
 
     /**
      * Opens a C Editor pointing to the given location
-     *
+     * 
      * @param binary
      * @param addr2lineOutput
      *            a location, as returned by addr2line (/path/to/file:linenumber)
@@ -357,7 +360,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param binary
      *            a binary file
      * @param sourceLoc
@@ -376,7 +379,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given location
-     *
+     * 
      * @param binary
      *            a binary file
      * @param sourceLoc
@@ -393,7 +396,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given address
-     *
+     * 
      * @param binary
      *            a binary file
      * @param address
@@ -408,7 +411,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given address
-     *
+     * 
      * @param binary
      *            a binary file
      * @param address
@@ -421,7 +424,7 @@ public class STLink2SourceSupport {
 
     /**
      * Open a C Editor at the given address
-     *
+     * 
      * @param binary
      *            a binary file
      * @param address

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -65,7 +65,7 @@ abstract class BaseEnableChannelHandler extends BaseControlViewHandler {
      * @throws ExecutionException
      *             If something goes wrong when enabling the channel
      */
-    public abstract void enableChannel(CommandParameter param,
+    abstract public void enableChannel(CommandParameter param,
             List<String> channelNames, IChannelInfo info, boolean isKernel,
             IProgressMonitor monitor) throws ExecutionException;
 
@@ -73,8 +73,12 @@ abstract class BaseEnableChannelHandler extends BaseControlViewHandler {
      * @param param - a parameter instance with data for the command execution
      * @return returns the relevant domain (null if domain is not known)
      */
-    public abstract TraceDomainComponent getDomain(CommandParameter param);
+    abstract public TraceDomainComponent getDomain(CommandParameter param);
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         fLock.lock();
@@ -82,7 +86,6 @@ abstract class BaseEnableChannelHandler extends BaseControlViewHandler {
             final CommandParameter param = fParam.clone();
 
             final IEnableChannelDialog dialog =  TraceControlDialogFactory.getInstance().getEnableChannelDialog();
-            dialog.setTargetNodeComponent(param.getSession().getTargetNode());
             dialog.setDomainComponent(getDomain(param));
             dialog.setHasKernel(param.getSession().hasKernelProvider());
 

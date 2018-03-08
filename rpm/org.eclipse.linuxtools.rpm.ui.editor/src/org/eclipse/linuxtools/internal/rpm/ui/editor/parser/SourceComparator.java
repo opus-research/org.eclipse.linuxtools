@@ -14,24 +14,19 @@ package org.eclipse.linuxtools.internal.rpm.ui.editor.parser;
 import java.io.Serializable;
 import java.util.Comparator;
 
-public class SourceComparator implements Comparator<SpecfileSource>,
-		Serializable {
+public class SourceComparator implements Comparator<SpecfileSource>, Serializable{
 	private static final long serialVersionUID = 1L;
 
-	@Override
 	public int compare(SpecfileSource source0, SpecfileSource source1) {
-		if (source0 == null) {
+		if (source0 == null)
 			return -1;
-		}
-		if (source1 == null) {
+		if (source1 == null)
 			return 1;
-		}
-		if (source0.getNumber() < source1.getNumber()) {
+		if (source0.getNumber() < source1.getNumber())
 			return -1;
-		} else if (source0.getNumber() == source1.getNumber()) {
+		else if (source0.getNumber() == source1.getNumber())
 			return 0;
-		} else {
+		else
 			return 1;
-		}
 	}
 }

@@ -17,6 +17,8 @@ import static org.junit.Assert.assertNotNull;
 import java.util.UUID;
 
 import org.eclipse.linuxtools.ctf.core.trace.Utils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -27,6 +29,41 @@ import org.junit.Test;
  * @version $Revision: 1.0 $
  */
 public class UtilsTest {
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(UtilsTest.class);
+    }
+
+    /**
+     * Perform pre-test initialization.
+     */
+    @Before
+    public void setUp() {
+        // add additional set up code here
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
+    }
+
+    /**
+     * Run the Utils() constructor test.
+     */
+    @Test
+    public void testUtils() {
+        Utils result = new Utils();
+        assertNotNull(result);
+    }
 
     /**
      * Run the UUID makeUUID(byte[]) method test.
@@ -57,7 +94,7 @@ public class UtilsTest {
         assertNotNull(result);
         assertEquals(72339069014638592L, result.getLeastSignificantBits());
         assertEquals(72339069014638592L, result.getMostSignificantBits());
-        assertEquals("01010000-0000-0000-0101-000000000000", result.toString());
+        assertEquals("01010000-0000-0000-0101-000000000000", result.toString()); //$NON-NLS-1$
         assertEquals(0, result.variant());
         assertEquals(0, result.version());
     }
@@ -76,7 +113,7 @@ public class UtilsTest {
         assertNotNull(result);
         assertEquals(0L, result.getLeastSignificantBits());
         assertEquals(0L, result.getMostSignificantBits());
-        assertEquals("00000000-0000-0000-0000-000000000000", result.toString());
+        assertEquals("00000000-0000-0000-0000-000000000000", result.toString()); //$NON-NLS-1$
         assertEquals(0, result.variant());
         assertEquals(0, result.version());
     }

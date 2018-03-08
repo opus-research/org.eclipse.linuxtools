@@ -26,75 +26,56 @@ public interface ISessionInfo extends ITraceInfo {
     /**
      * @return the session state state (active or inactive).
      */
-    TraceSessionState getSessionState();
+    public TraceSessionState getSessionState();
     /**
      * Sets the session state  to the given value.
      * @param state - state to set.
      */
-    void setSessionState(TraceSessionState state);
+    public void setSessionState(TraceSessionState state);
 
     /**
      * Sets the event state to the value specified by the given name.
      * @param stateName - state to set.
      */
-    void setSessionState(String stateName);
+    public void setSessionState(String stateName);
 
     /**
      * @return path string where session is located.
      */
-    String getSessionPath();
+    public String getSessionPath();
 
     /**
      * Sets the path string (where session is located) to the given value.
      * @param path - session path to set.
      */
-    void setSessionPath(String path);
+    public void setSessionPath(String path);
 
     /**
      * @return all domain information as array.
      */
-    IDomainInfo[] getDomains();
+    public IDomainInfo[] getDomains();
 
     /**
      * Sets all domain information specified by given list.
      * @param domains - all domain information to set.
      */
-    void setDomains(List<IDomainInfo> domains);
+    public void setDomains(List<IDomainInfo> domains);
 
     /**
      * Adds a single domain information.
      * @param domainInfo domain information to add.
      */
-    void addDomain(IDomainInfo domainInfo);
+    public void addDomain(IDomainInfo domainInfo);
 
     /**
      * Returns if session is streamed over network
      * @return <code>true</code> if streamed over network else <code>false</code>
      */
-    boolean isStreamedTrace();
+    public boolean isStreamedTrace();
 
     /**
      * Sets whether the trace is streamed or not
      * @param isStreamedTrace <code>true</code> if streamed over network else <code>false</code>
      */
-    void setStreamedTrace(boolean isStreamedTrace);
-
-    /**
-     * Returns whether the session is snapshot session or not
-     * @return <code>true</code> if it is snapshot session else <code>false</code>
-     */
-    boolean isSnapshotSession();
-
-    /**
-     * Gets the snapshot information the session or null if it is not a
-     * snapshot session.
-     * @return snapshot information
-     */
-    ISnapshotInfo getSnapshotInfo();
-
-    /**
-     * Sets the snapshot information of the session
-     * @param setSnapshotInfo - the snapshot data to set.
-     */
-    void setSnapshotInfo(ISnapshotInfo setSnapshotInfo);
+    public void setStreamedTrace(boolean isStreamedTrace);
 }

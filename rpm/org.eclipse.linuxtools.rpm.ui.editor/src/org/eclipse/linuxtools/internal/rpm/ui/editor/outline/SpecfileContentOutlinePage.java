@@ -11,7 +11,6 @@
 
 package org.eclipse.linuxtools.internal.rpm.ui.editor.outline;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -21,7 +20,6 @@ import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileElement;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
@@ -29,7 +27,7 @@ public class SpecfileContentOutlinePage extends ContentOutlinePage {
 
 	private ITextEditor editor;
 	private IEditorInput input;
-
+	
 	public SpecfileContentOutlinePage(SpecfileEditor editor) {
 		super();
 		this.editor = editor;
@@ -51,13 +49,11 @@ public class SpecfileContentOutlinePage extends ContentOutlinePage {
 			if (control != null && !control.isDisposed())
 			{
 				control.getDisplay().asyncExec(new Runnable() {
-					@Override
 					public void run() {
 						if (!control.isDisposed()) {
 							control.setRedraw(false);
-							if (input != null) {
+							if (input != null)
 								viewer.setInput(input);
-							}
 							viewer.expandAll();
 							control.setRedraw(true);
 						}
@@ -66,7 +62,7 @@ public class SpecfileContentOutlinePage extends ContentOutlinePage {
 			}
 		}
 	}
-
+	
 	@Override
 	public void createControl(Composite parent) {
 
@@ -74,23 +70,13 @@ public class SpecfileContentOutlinePage extends ContentOutlinePage {
 
 		TreeViewer viewer= getTreeViewer();
 		viewer.setContentProvider(new SpecfileContentProvider(editor));
-		IProject project = null;
-		if (input instanceof IFileEditorInput) {
-			IFileEditorInput fileEditorInput= (IFileEditorInput) input;
-			project = fileEditorInput.getFile().getProject();
-		}
-		SpecfileLabelProvider labelProvider = new SpecfileLabelProvider();
-		if (project!=null) {
-			labelProvider.setProject(project);
-		}
-		viewer.setLabelProvider(labelProvider);
+		viewer.setLabelProvider(new SpecfileLabelProvider());
 		viewer.addSelectionChangedListener(this);
 
-		if (input != null) {
+		if (input != null)
 			viewer.setInput(input);
-		}
 	}
-
+	
 	/*
 	 * Change in selection
 	 */
@@ -98,19 +84,23 @@ public class SpecfileContentOutlinePage extends ContentOutlinePage {
 	public void selectionChanged(SelectionChangedEvent event)
 	{
 		super.selectionChanged(event);
-
+		
 		//find out which item in tree viewer we have selected, and set highlight range accordingly
 		ISelection selection = event.getSelection();
-		if (selection.isEmpty()) {
+		if (selection.isEmpty())
 			editor.resetHighlightRange();
-		} else {
+		else
+		{
 			SpecfileElement element = (SpecfileElement) ((IStructuredSelection) selection)
-					.getFirstElement();
-
+					.getFirstElement();		
+			
 			int start = element.getLineStartPosition();
-			try	{
+			try
+			{
 				editor.setHighlightRange(start, 1, true);
-			} catch (IllegalArgumentException e) {
+			}
+			catch (IllegalArgumentException e)
+			{
 				editor.resetHighlightRange();
 			}
 		}

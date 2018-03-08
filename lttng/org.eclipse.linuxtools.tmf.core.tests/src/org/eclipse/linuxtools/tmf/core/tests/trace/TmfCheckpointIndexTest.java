@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
-import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -50,6 +49,8 @@ public class TmfCheckpointIndexTest {
     // Variables
     // ------------------------------------------------------------------------
 
+    private static final String    DIRECTORY   = "testfiles";
+    private static final String    TEST_STREAM = "A-Test-10K";
     private static final int       BLOCK_SIZE  = 100;
     private static final int       NB_EVENTS   = 10000;
     private static TestTrace       fTrace      = null;
@@ -61,7 +62,7 @@ public class TmfCheckpointIndexTest {
 
     @Before
     public void setUp() {
-        setupTrace(TmfTestTrace.A_TEST_10K.getFullPath());
+        setupTrace(DIRECTORY + File.separator + TEST_STREAM);
     }
 
     @After
@@ -122,7 +123,7 @@ public class TmfCheckpointIndexTest {
                 final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
                 final File test = new File(FileLocator.toFileURL(location).toURI());
                 fTrace = new TestTrace(test.toURI().getPath(), BLOCK_SIZE);
-                fTrace.indexTrace(true);
+                fTrace.indexTrace();
             } catch (final TmfTraceException e) {
                 e.printStackTrace();
             } catch (final URISyntaxException e) {
@@ -134,7 +135,7 @@ public class TmfCheckpointIndexTest {
 
         if (fEmptyTrace == null) {
             fEmptyTrace = new EmptyTestTrace();
-            fEmptyTrace.indexTrace(true);
+            fEmptyTrace.indexTrace();
         }
     }
 
@@ -143,6 +144,7 @@ public class TmfCheckpointIndexTest {
     // ------------------------------------------------------------------------
 
     @Test
+    @SuppressWarnings("null")
     public void testTmfTraceIndexing() {
         assertEquals("getCacheSize",   BLOCK_SIZE, fTrace.getCacheSize());
         assertEquals("getTraceSize",   NB_EVENTS,  fTrace.getNbEvents());
@@ -167,6 +169,7 @@ public class TmfCheckpointIndexTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     public void testEmptyTmfTraceIndexing() {
         assertEquals("getCacheSize",   ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, fEmptyTrace.getCacheSize());
         assertEquals("getTraceSize",   0,  fEmptyTrace.getNbEvents());

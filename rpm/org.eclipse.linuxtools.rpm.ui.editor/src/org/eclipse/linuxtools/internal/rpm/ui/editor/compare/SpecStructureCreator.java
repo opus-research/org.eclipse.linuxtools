@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
@@ -33,8 +33,8 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfilePartitioner;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePartitionScanner;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfilePackage;
@@ -44,7 +44,7 @@ import org.eclipse.swt.graphics.Image;
 
 /**
  * Structure creator making which structure is based on the following tree.
- *
+ * 
  * <pre>
  * ROOT_NODE
  * 		SECTIONS...N
@@ -64,23 +64,19 @@ public class SpecStructureCreator extends StructureCreator {
 			}
 		}
 
-		@Override
 		public String getName() {
 			return this.getId();
 		}
 
-		@Override
 		public String getType() {
 			return "spec"; //$NON-NLS-1$
 		}
 
-		@Override
 		public Image getImage() {
 			return CompareUI.getImage(getType());
 		}
 	}
 
-	@Override
 	public String getName() {
 		return Messages.SpecStructureCreator_0;
 	}
@@ -90,7 +86,6 @@ public class SpecStructureCreator extends StructureCreator {
 		return null;
 	}
 
-	@Override
 	public String getContents(Object node, boolean ignoreWhitespace) {
 		if (node instanceof IStreamContentAccessor) {
 			IStreamContentAccessor sca = (IStreamContentAccessor) node;
@@ -144,9 +139,8 @@ public class SpecStructureCreator extends StructureCreator {
 	}
 
 	private IProgressMonitor beginWork(IProgressMonitor monitor) {
-		if (monitor == null) {
+		if (monitor == null)
 			return new NullProgressMonitor();
-		}
 		return new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN);
 	}
 
@@ -156,9 +150,8 @@ public class SpecStructureCreator extends StructureCreator {
 	}
 
 	private static String readString(InputStream is, String encoding) {
-		if (is == null) {
+		if (is == null)
 			return null;
-		}
 		BufferedReader reader = null;
 		try {
 			StringBuffer buffer = new StringBuffer();
@@ -166,9 +159,8 @@ public class SpecStructureCreator extends StructureCreator {
 			int read = 0;
 			reader = new BufferedReader(new InputStreamReader(is, encoding));
 
-			while ((read = reader.read(part)) != -1) {
+			while ((read = reader.read(part)) != -1)
 				buffer.append(part, 0, read);
-			}
 
 			return buffer.toString();
 
@@ -192,12 +184,14 @@ public class SpecStructureCreator extends StructureCreator {
 		if (is != null) {
 			String encoding = null;
 			if (sa instanceof IEncodedStreamContentAccessor) {
-				encoding = ((IEncodedStreamContentAccessor) sa)
-						.getCharset();
+				try {
+					encoding = ((IEncodedStreamContentAccessor) sa)
+							.getCharset();
+				} catch (Exception e) {
+				}
 			}
-			if (encoding == null) {
+			if (encoding == null)
 				encoding = ResourcesPlugin.getEncoding();
-			}
 			return readString(is, encoding);
 		}
 		return null;
@@ -205,7 +199,7 @@ public class SpecStructureCreator extends StructureCreator {
 
 	@Override
 	protected IDocumentPartitioner getDocumentPartitioner() {
-		return new FastPartitioner(new SpecfilePartitionScanner(),
+		return new SpecfilePartitioner(new SpecfilePartitionScanner(),
 				SpecfilePartitionScanner.SPEC_PARTITION_TYPES);
 	}
 
@@ -220,11 +214,10 @@ public class SpecStructureCreator extends StructureCreator {
 			IProgressMonitor monitor) throws CoreException {
 
 		final boolean isEditable;
-		if (input instanceof IEditableContent) {
+		if (input instanceof IEditableContent)
 			isEditable = ((IEditableContent) input).isEditable();
-		} else {
+		else
 			isEditable = false;
-		}
 
 		DocumentRangeNode rootNode = new StructureRootNode(document, input,
 				this, adapter) {

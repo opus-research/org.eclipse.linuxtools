@@ -20,12 +20,13 @@ import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,9 +40,19 @@ import org.junit.Test;
 @SuppressWarnings("javadoc")
 public class EventDeclarationTest {
 
-    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private EventDeclaration fixture;
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(EventDeclarationTest.class);
+    }
 
     /**
      * Perform pre-test initialization.
@@ -50,13 +61,21 @@ public class EventDeclarationTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        assumeTrue(testTrace.exists());
+        assumeTrue(CtfTestTraces.tracesExist());
         fixture = new EventDeclaration();
         fixture.setContext(new StructDeclaration(1L));
         fixture.setId(1L);
         fixture.setFields(new StructDeclaration(1L));
-        fixture.setStream(new Stream(testTrace.getTrace()));
-        fixture.setName("");
+        fixture.setStream(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)));
+        fixture.setName(""); //$NON-NLS-1$
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
@@ -99,8 +118,8 @@ public class EventDeclarationTest {
         obj.setContext(new StructDeclaration(1L));
         obj.setId(1L);
         obj.setFields(new StructDeclaration(1L));
-        obj.setStream(new Stream(testTrace.getTrace()));
-        obj.setName("");
+        obj.setStream(new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX)));
+        obj.setName(""); //$NON-NLS-1$
 
         assertTrue(fixture.equals(fixture));
         boolean result = fixture.equals(obj);
@@ -177,7 +196,7 @@ public class EventDeclarationTest {
         obj.setContext(new StructDeclaration(1L));
         obj.setId(1L);
         obj.setFields(new StructDeclaration(1L));
-        obj.setName("");
+        obj.setName(""); //$NON-NLS-1$
 
         boolean result = fixture.equals(obj);
         assertFalse(result);
@@ -316,7 +335,7 @@ public class EventDeclarationTest {
      */
     @Test
     public void testEventDefinition() throws CTFReaderException {
-        CTFTrace trace = testTrace.getTrace();
+        CTFTrace trace = CtfTestTraces.getTestTrace(TRACE_INDEX);
         CTFTraceReader tr = new CTFTraceReader(trace);
         tr.advance();
         EventDefinition ed = new EventDefinition(null, null);
@@ -330,9 +349,9 @@ public class EventDeclarationTest {
         assertNotNull(ed.getCPU());
         assertNotNull(ed.getPacketContext());
         assertNotNull(ed.getStreamInputReader());
-        assertNull(ed.lookupDefinition("context"));
-        assertNotNull(ed.lookupDefinition("fields"));
-        assertNull(ed.lookupDefinition("other"));
+        assertNull(ed.lookupDefinition("context")); //$NON-NLS-1$
+        assertNotNull(ed.lookupDefinition("fields")); //$NON-NLS-1$
+        assertNull(ed.lookupDefinition("other")); //$NON-NLS-1$
         assertNotNull(ed.toString());
         ed.setContext( ed.getFields());
         assertNotNull(ed.toString());

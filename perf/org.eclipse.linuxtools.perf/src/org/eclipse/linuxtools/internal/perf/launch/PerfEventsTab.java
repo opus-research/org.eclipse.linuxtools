@@ -46,7 +46,7 @@ import org.eclipse.swt.widgets.Text;
 
 public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 
-	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
+	private static final String EMPTY_STRING = "";
 
 	// checkbox for selecting default event
 	protected Button chkDefaultEvent;
@@ -71,7 +71,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 	 */
 	@Override
 	public Image getImage() {
-		return PerfPlugin.getImageDescriptor("icons/event.gif").createImage(); //$NON-NLS-1$
+		return PerfPlugin.getImageDescriptor("icons/event.gif").createImage();
 	}
 
 	@Override
@@ -383,7 +383,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 		} catch (CoreException e) {
 			return null;
 		}
-		if (name.isEmpty()){
+		if (name.equals(EMPTY_STRING)){
 			return null;
 		}
 

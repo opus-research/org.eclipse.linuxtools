@@ -12,13 +12,7 @@
             category="org.eclipse.cdt.ui.preferences.CPluginPreferencePage"
             class="org.eclipse.linuxtools.internal.profiling.launch.provider.ProviderPreferencesPage"
             id="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
-            name="%profiling.page.name">
-      </page>
-      <page
-            category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
-            class="org.eclipse.linuxtools.internal.profiling.launch.provider.ProfilingCategoriesPreferencesPage"
-            id="org.eclipse.linuxtools.profiling.provider.ProfilingCategoriesPreferencePage"
-            name="%categories.page.name">
+            name="%page.name">
       </page>
    </extension>
    <extension
@@ -108,7 +102,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.eclipse.linuxtools.profiling.provider.ProfilingCategoriesPreferencePage"
+            category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
             id="org.eclipse.linuxtools.profiling.provider.TimingPreferencePage"
             name="%page.name.0">
             <class class="org.eclipse.linuxtools.internal.profiling.launch.provider.AbstractProviderPreferencesPage">
@@ -205,7 +199,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.eclipse.linuxtools.profiling.provider.ProfilingCategoriesPreferencePage"
+            category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
             id="org.eclipse.linuxtools.profiling.provider.MemoryPreferencePage"
             name="%page.name.1">
             <class class="org.eclipse.linuxtools.internal.profiling.launch.provider.AbstractProviderPreferencesPage">
@@ -302,7 +296,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.eclipse.linuxtools.profiling.provider.ProfilingCategoriesPreferencePage"
+            category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
             id="org.eclipse.linuxtools.profiling.provider.CoveragePreferencePage"
             name="%page.name.2">
             <class class="org.eclipse.linuxtools.internal.profiling.launch.provider.AbstractProviderPreferencesPage">
@@ -342,7 +336,7 @@
             category="org.eclipse.cdt.ui.newui.Page_head_general"
             class="org.eclipse.linuxtools.internal.profiling.launch.provider.ProfilingPropertyPage"
             id="org.eclipse.linuxtools.profiling.launch.provider.properties.page"
-            name="%profiling.property.page.name">
+            name="%page.name">
             <filter
                name="projectNature"
                value="org.eclipse.cdt.core.cnature" />
@@ -436,14 +430,14 @@
        <!-- Profiling launch tabs-->
       <tab
             id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.mainTab"
-            group="org.eclipse.cdt.launch.applicationProfileLaunchTabGroup"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
             name="%MainTab.name"
             class="org.eclipse.cdt.launch.ui.CMainTab">
         <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
       </tab>
       <tab
             id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.argumentsTab"
-            group="org.eclipse.cdt.launch.applicationProfileLaunchTabGroup"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
             name="%ArgumentsTab.name"
             class="org.eclipse.cdt.launch.ui.CArgumentsTab">
         <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
@@ -451,7 +445,7 @@
       </tab>
       <tab
             id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.environmentTab"
-            group="org.eclipse.cdt.launch.applicationProfileLaunchTabGroup"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
             name="%EnvironmentTab.name"
             class="org.eclipse.debug.ui.EnvironmentTab">
         <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
@@ -459,7 +453,7 @@
       </tab>
       <tab
             id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.commonTab"
-            group="org.eclipse.cdt.launch.applicationProfileLaunchTabGroup"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
             name="%CommonTab.name"
             class="org.eclipse.debug.ui.CommonTab">
         <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
@@ -467,7 +461,7 @@
       </tab>
       <tab
             id="org.eclipse.linuxtools.profiling.launch.profileApplicationLaunch.profilingTab"
-            group="org.eclipse.cdt.launch.applicationProfileLaunchTabGroup"
+            group="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup"
             name="%ProfilerTab.name"
             class="org.eclipse.linuxtools.internal.profiling.launch.CProfilingOptionsTab">
         <associatedDelegate delegate="org.eclipse.linuxtools.profiling.launch.profilingDelegate"/>
@@ -479,7 +473,7 @@
       <launchConfigurationTabGroup
             type="org.eclipse.cdt.launch.applicationLaunchType"
             class="org.eclipse.linuxtools.profiling.launch.PlaceHolderLaunchConfigurationTabGroup"
-            id="org.eclipse.cdt.launch.applicationProfileLaunchTabGroup">
+            id="org.eclipse.linuxtools.profiling.launch.applicationProfileLaunchTabGroup">
          <launchMode mode="profile"/>
       </launchConfigurationTabGroup>
       </extension>
