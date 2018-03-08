@@ -24,7 +24,6 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier2;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -145,15 +144,6 @@ public class CtfTmfTrace extends TmfTrace<CtfTmfEvent> implements ITmfEventParse
         } catch (final CTFReaderException e) {
             /* Nope, not a CTF trace we can read */
             return false;
-        }
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        //TODO replace with null check once we move -Querier2 back into -1
-        if (ss instanceof IStateSystemQuerier2) {
-            ((IStateSystemQuerier2) ss).dispose();
         }
     }
 

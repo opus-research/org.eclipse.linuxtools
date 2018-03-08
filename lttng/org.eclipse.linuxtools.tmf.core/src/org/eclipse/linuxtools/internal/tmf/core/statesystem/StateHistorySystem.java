@@ -275,11 +275,6 @@ public class StateHistorySystem extends StateSystem implements
                 ", returning dummy interval"); //$NON-NLS-1$
     }
 
-    @Override
-    public void dispose() {
-        backend.dispose();
-    }
-
     /**
      * @name Debugging methods
      */

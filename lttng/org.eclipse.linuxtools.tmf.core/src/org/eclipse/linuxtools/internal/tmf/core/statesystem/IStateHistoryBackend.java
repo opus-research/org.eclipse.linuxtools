@@ -115,12 +115,6 @@ public interface IStateHistoryBackend {
     public long supplyAttributeTreeWriterFilePosition();
 
     /**
-     * Tell the back-end we won't be using it anymore (so it can close its
-     * files, etc.)
-     */
-    public void dispose();
-
-    /**
      * Delete any generated files or anything that might have been created by
      * the history backend (either temporary or save files). By calling this, we
      * return to the state as it was before ever building the history.
