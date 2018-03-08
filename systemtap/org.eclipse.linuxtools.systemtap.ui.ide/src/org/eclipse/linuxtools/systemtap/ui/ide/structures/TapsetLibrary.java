@@ -79,9 +79,6 @@ public final class TapsetLibrary {
 		probeTree = stpp.getProbes();
 	}
 	
-	public static boolean isFinishSuccessful(){
-		return stpp.isFinishSuccessful();
-	}
 	/**
 	 * This method will get all of the tree information from 
 	 * the TreeSettings xml file.
@@ -94,7 +91,7 @@ public final class TapsetLibrary {
 	/**
 	 * This method checks to see if the tapsets have changed
 	 * at all since the TreeSettings.xml file was created.
-	 * @return boolean indicating whether or not the TreeSettings.xml file has the most up-to-date version
+	 * @return boolean indecating whether or not the TreeSettings.xml file has the most up-to-date version
 	 */
 	private static boolean isTreeFileCurrent() {
 		long treesDate = TreeSettings.getTreeFileDate();

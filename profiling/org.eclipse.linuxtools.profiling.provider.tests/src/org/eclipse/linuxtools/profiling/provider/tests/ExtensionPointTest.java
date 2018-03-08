@@ -47,10 +47,7 @@ public class ExtensionPointTest {
 	@Test
 	public void testShortCut () {
 		ProfileLaunchShortcut shortcut = ProviderFramework.getLaunchShortcutProviderFromId(PLUGIN_ID + "1");
-		ProfileLaunchShortcut shortcut2 = ProviderFramework.getProfilingProvider(PROFILING_TYPE);
-
 		assertTrue(shortcut instanceof StubbyLaunchShortcut);
-		assertTrue(shortcut2 instanceof StubbyLaunchShortcut);
 	}
 
 	@Test
