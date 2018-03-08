@@ -211,4 +211,24 @@ public class TimeGraphEntry implements ITimeGraphEntry {
         return getClass().getSimpleName() + '(' + fName + ')';
     }
 
+    /**
+     * This function says if an entry is active or not during an interval. This property depends
+     * on the view and allows the use of the button "Check Current Active"
+     *
+     * @param startTime start time in nanoseconds
+     * @param endTime stop time in nanoseconds
+     * @return true if the entry is active during the interval
+     * @since 2.2
+     */
+    public boolean isActive(long startTime, long endTime) {
+        for (ITimeEvent event : fEventList) {
+            if ((event.getTime() <= endTime && (event.getTime() + event.getDuration() >= startTime))) {
+                if (event instanceof TimeEvent) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
