@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -298,9 +298,7 @@ public final class TmfTraceType {
         // remove the customTraceTypes
         final String[] keySet = fTraceTypes.keySet().toArray(new String[0]);
         for (String key : keySet) {
-            TraceTypeHelper helper = fTraceTypes.get(key);
-            if (helper.getCategoryName().equals(CUSTOM_TXT_CATEGORY) || helper.getCategoryName().equals(CUSTOM_XML_CATEGORY)) {
-                helper.getTrace().dispose();
+            if (fTraceTypes.get(key).getCategoryName().equals(CUSTOM_TXT_CATEGORY) || fTraceTypes.get(key).getCategoryName().equals(CUSTOM_XML_CATEGORY)) {
                 fTraceTypes.remove(key);
             }
         }
