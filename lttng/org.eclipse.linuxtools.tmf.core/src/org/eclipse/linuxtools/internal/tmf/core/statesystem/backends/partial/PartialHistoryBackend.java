@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
@@ -32,6 +33,7 @@ import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -101,8 +103,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
      */
     public PartialHistoryBackend(ITmfStateProvider partialInput, PartialStateSystem pss,
             IStateHistoryBackend realBackend, long granularity) {
-        if (granularity <= 0 || partialInput == null || pss == null ||
-                partialInput.getAssignedStateSystem() != pss) {
+        if (granularity <= 0 || partialInput.getAssignedStateSystem() != pss) {
             throw new IllegalArgumentException();
         }
 
@@ -164,12 +165,12 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public FileInputStream supplyAttributeTreeReader() {
+    public @Nullable FileInputStream supplyAttributeTreeReader() {
         return innerHistory.supplyAttributeTreeReader();
     }
 
     @Override
-    public File supplyAttributeTreeWriterFile() {
+    public @Nullable File supplyAttributeTreeWriterFile() {
         return innerHistory.supplyAttributeTreeWriterFile();
     }
 
@@ -191,9 +192,16 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
     @Override
     public void doQuery(List<ITmfStateInterval> currentStateInfo, long t)
             throws TimeRangeException, StateSystemDisposedException {
+
+        ITmfStateSystem upstreamSS = partialSS.getUpstreamSS();
+        if (upstreamSS == null) {
+            /* Should not happen if the partialSS was initialized */
+            throw new IllegalStateException();
+        }
+
         /* Wait for required steps to be done */
         waitForCheckpoints();
-        partialSS.getUpstreamSS().waitUntilBuilt();
+        upstreamSS.waitUntilBuilt();
 
         if (!checkValidTime(t)) {
             throw new TimeRangeException();
@@ -236,9 +244,8 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         try {
             for (int i = 0; i < currentStateInfo.size(); i++) {
                 long start = 0;
-                ITmfStateValue val = null;
                 start = partialSS.getOngoingStartTime(i);
-                val = partialSS.queryOngoingState(i);
+                ITmfStateValue val = partialSS.queryOngoingState(i);
 
                 ITmfStateInterval interval = new TmfStateInterval(start, t, i, val);
                 currentStateInfo.set(i, interval);
@@ -309,7 +316,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         }
 
         @Override
-        public void handleData(final ITmfEvent event) {
+        public void handleData(final @Nullable ITmfEvent event) {
             super.handleData(event);
             if (event != null && event.getTrace() == trace) {
                 eventCount++;
@@ -346,7 +353,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         }
 
         @Override
-        public void handleData(final ITmfEvent event) {
+        public void handleData(final @Nullable ITmfEvent event) {
             super.handleData(event);
             if (event != null && event.getTrace() == trace) {
                 sci.processEvent(event);

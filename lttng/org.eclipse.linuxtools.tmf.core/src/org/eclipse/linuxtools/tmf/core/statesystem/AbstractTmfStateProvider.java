@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
@@ -47,10 +48,10 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
     private final Thread eventHandlerThread;
 
     private boolean ssAssigned;
-    private ITmfEvent currentEvent;
+    private @Nullable ITmfEvent currentEvent;
 
     /** State system in which to insert the state changes */
-    protected ITmfStateSystemBuilder ss = null;
+    protected @Nullable ITmfStateSystemBuilder ss = null;
 
     /**
      * Instantiate a new state provider plugin.
@@ -61,10 +62,11 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
      *            The specific class for the event type that will be used within
      *            the subclass
      * @param id
-     *            Name given to this state change input. Only used internally.
+     *            Name given to this state change input. Only used internally. A
+     *            default will be provided if 'null' is passed.
      */
     public AbstractTmfStateProvider(ITmfTrace trace,
-            Class<? extends ITmfEvent> eventType, String id) {
+            Class<? extends ITmfEvent> eventType, @Nullable String id) {
         this.trace = trace;
         this.eventType = eventType;
         eventsQueue = new ArrayBlockingQueue<ITmfEvent>(DEFAULT_EVENTS_QUEUE_SIZE);
@@ -93,7 +95,7 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
     }
 
     @Override
-    public ITmfStateSystem getAssignedStateSystem() {
+    public @Nullable ITmfStateSystem getAssignedStateSystem() {
         return ss;
     }
 
@@ -153,6 +155,23 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
         }
     }
 
+    /**
+     * Return the state system builder object, but only after it's been
+     * assigned. Meant to be used by subclasses, so they don't have to
+     * null-check over and over (and to extract it in a local variable, which is
+     * always good practice before using a mutable field).
+     *
+     * @return The state system builder
+     * @since 2.2
+     */
+    protected ITmfStateSystemBuilder getSSBuilder() {
+        ITmfStateSystemBuilder ss2 = ss;
+        if (ss2 == null) {
+            throw new IllegalStateException("State system not initialized"); //$NON-NLS-1$
+        }
+        return ss2;
+    }
+
     // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------
@@ -209,12 +228,16 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
         }
 
         private void closeStateSystem() {
+            /* Extract local variable to prevent multi-threading issues */
+            final ITmfStateSystemBuilder ss2 = ss;
+            final ITmfEvent currentEvent2 = currentEvent;
+
             /* Close the History system, if there is one */
-            if (currentEvent == null) {
+            if (currentEvent2 == null || ss2 == null) {
                 return;
             }
             try {
-                ss.closeHistory(currentEvent.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue());
+                ss2.closeHistory(currentEvent2.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue());
             } catch (TimeRangeException e) {
                 /*
                  * Since we're using currentEvent.getTimestamp, this shouldn't

@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -294,7 +295,7 @@ public interface ITmfStateSystem {
      *             If the query is sent after the state system has been disposed
      * @since 2.0
      */
-    ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
+    @Nullable ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
             throws StateValueTypeException, AttributeNotFoundException,
             TimeRangeException, StateSystemDisposedException;
 
@@ -358,7 +359,7 @@ public interface ITmfStateSystem {
      * @since 2.0
      */
     List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
-            long t1, long t2, long resolution, IProgressMonitor monitor)
+            long t1, long t2, long resolution, @Nullable IProgressMonitor monitor)
             throws TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException;
 }

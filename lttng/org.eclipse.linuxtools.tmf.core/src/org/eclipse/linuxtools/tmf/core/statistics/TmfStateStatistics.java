@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -108,7 +109,7 @@ public class TmfStateStatistics implements ITmfStatistics {
      * @throws TmfTraceException
      *             If something went wrong trying to initialize the statistics
      */
-    public TmfStateStatistics(ITmfTrace trace) throws TmfTraceException {
+    public TmfStateStatistics(@NonNull ITmfTrace trace) throws TmfTraceException {
         this.trace = trace;
         String directory = TmfTraceManager.getSupplementaryFileDir(trace);
 
@@ -151,8 +152,9 @@ public class TmfStateStatistics implements ITmfStatistics {
      *             If the file could not be written to
      * @since 2.2
      */
-    public TmfStateStatistics(ITmfTrace trace, File totalsHistoryFile,
-            File typesHistoryFile) throws TmfTraceException {
+    public TmfStateStatistics(@NonNull ITmfTrace trace,
+            @NonNull File totalsHistoryFile,
+            @NonNull File typesHistoryFile) throws TmfTraceException {
         this.trace = trace;
         final ITmfStateProvider totalsInput = new StatsProviderTotals(trace);
         final ITmfStateProvider typesInput = new StatsProviderEventTypes(trace);

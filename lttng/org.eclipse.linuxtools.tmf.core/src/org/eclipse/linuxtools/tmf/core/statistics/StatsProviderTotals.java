@@ -13,12 +13,14 @@
 
 package org.eclipse.linuxtools.tmf.core.statistics;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics.Attributes;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -52,7 +54,7 @@ class StatsProviderTotals extends AbstractTmfStateProvider {
      * @param trace
      *            The trace for which we build this state system
      */
-    public StatsProviderTotals(ITmfTrace trace) {
+    public StatsProviderTotals(@NonNull ITmfTrace trace) {
         super(trace, ITmfEvent.class ,"TMF Statistics, event totals"); //$NON-NLS-1$
     }
 
@@ -77,10 +79,12 @@ class StatsProviderTotals extends AbstractTmfStateProvider {
          * timestamp values to nanoseconds. */
         final long ts = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
+        final ITmfStateSystemBuilder ssb = getSSBuilder();
+
         try {
             /* Total number of events */
-            int quark = ss.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
-            ss.incrementAttribute(ts, quark);
+            int quark = ssb.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
+            ssb.incrementAttribute(ts, quark);
 
         } catch (StateValueTypeException e) {
             e.printStackTrace();
