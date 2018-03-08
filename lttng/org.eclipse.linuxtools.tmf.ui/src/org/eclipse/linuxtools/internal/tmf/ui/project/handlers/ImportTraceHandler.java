@@ -21,7 +21,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.wizards.ImportTraceWizard;
+import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.ImportTraceWizard;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -43,6 +43,28 @@ public class ImportTraceHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
+        TmfTraceFolder traceFolder = getTraceFolder();
+        if( traceFolder == null) {
+            return null;
+        }
+        // Fire the Import Trace Wizard
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        Shell shell = workbench.getActiveWorkbenchWindow().getShell();
+
+        ImportTraceWizard wizard = new ImportTraceWizard();
+        wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(traceFolder));
+        WizardDialog dialog = new WizardDialog(shell, wizard);
+        dialog.open();
+
+        traceFolder.refresh();
+
+        return null;
+    }
+
+    /**
+     * @return the trace folder or null
+     */
+    protected TmfTraceFolder getTraceFolder() {
         // Check if we are closing down
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (window == null) {
@@ -53,11 +75,11 @@ public class ImportTraceHandler extends AbstractHandler {
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
         if (part == null) {
-            return false;
+            return null;
         }
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
-            return false;
+            return null;
         }
         ISelection selection = selectionProvider.getSelection();
 
@@ -73,19 +95,7 @@ public class ImportTraceHandler extends AbstractHandler {
         if (traceFolder == null) {
             return null;
         }
-
-        // Fire the Import Trace Wizard
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        Shell shell = workbench.getActiveWorkbenchWindow().getShell();
-
-        ImportTraceWizard wizard = new ImportTraceWizard();
-        wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(traceFolder));
-        WizardDialog dialog = new WizardDialog(shell, wizard);
-        dialog.open();
-
-        traceFolder.refresh();
-
-        return null;
+        return traceFolder;
     }
 
 }
