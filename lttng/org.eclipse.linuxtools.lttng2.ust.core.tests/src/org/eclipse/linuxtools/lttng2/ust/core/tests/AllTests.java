@@ -7,26 +7,19 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Francois Chouinard - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
+ *   Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.tests.request;
+package org.eclipse.linuxtools.lttng2.ust.core.tests;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Requests tests
+ * Runner for the lttng2.kernel unit tests.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    TmfCoalescedDataRequestTest.class,
-    TmfCoalescedEventRequestTest.class,
-    TmfDataRequestTest.class,
-    TmfEventRequestTest.class,
-    TmfSchedulerTest.class
+    ActivatorTest.class
 })
-public class AllTests {
-
-}
+public class AllTests { }
