@@ -7,20 +7,36 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors: Alexandre Montplaisir - Initial API and implementation
+ * Contributors: Matthew Khouzam - Addition to have more descriptive errors
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
 
+import java.lang.reflect.Field;
+
+import org.antlr.runtime.MismatchedTokenException;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
+import org.eclipse.linuxtools.ctf.parser.CTFLexer;
+
 /**
  * General exception that is thrown when there is a problem somewhere with the
  * CTF trace reader.
- * 
+ *
  * @version 1.0
  * @author Alexandre Montplaisir
  */
 public class CTFReaderException extends Exception {
 
     private static final long serialVersionUID = 2065258365219777672L;
+    private int fErrorLine = -1;
+    private Token fToken = null;
+    private String fFile = ""; //$NON-NLS-1$
+    private String fExpectingName;
+    private String fActualName;
+    private int fExpectedValue;
+    private int fActualValue;
+
 
     /**
      * Default constructor with no message.
@@ -48,4 +64,6 @@ public class CTFReaderException extends Exception {
     public CTFReaderException(Exception e) {
         super(e);
     }
+
+
 }
