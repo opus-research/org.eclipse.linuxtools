@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,15 +38,19 @@ public class DiagramToolTip {
     /**
      * The parent control where the tooltip must be drawn.
      */
-    private Control fParent = null;
+    protected Control fParent = null;
     /**
      * The tooltip shell.
      */
-    private Shell fToolTipShell = null;
+    protected Shell fToolTipShell = null;
+    /**
+     * The tooltip text.
+     */
+    protected String fText = null;
     /**
      * The text box.
      */
-    private Text fTextBox = null;
+    protected Text fTextBox = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -80,6 +84,7 @@ public class DiagramToolTip {
             return;
         }
 
+        fText = value;
         int w = fToolTipShell.getBounds().width;
         Point hr = Display.getDefault().getCursorLocation();
         int cursorH = 32;
@@ -106,6 +111,7 @@ public class DiagramToolTip {
         fToolTipShell.setSize(fTextBox.getSize());
         fTextBox.setVisible(true);
         fToolTipShell.setVisible(true);
+
     }
 
     /**
@@ -113,14 +119,6 @@ public class DiagramToolTip {
      */
     public void hideToolTip() {
         fToolTipShell.setVisible(false);
-    }
-
-    /**
-     * @return parent control
-     * @since 2.0
-     */
-    public Control getParent() {
-        return fParent;
     }
 
 }
