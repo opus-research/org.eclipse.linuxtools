@@ -52,50 +52,6 @@
           </execution>
         </executions>
       </plugin>
-      <!--
-           Packaging type 'eclipse-repository' performs a clean on the
-           'initialize' phase. The maven-javadoc-plugin executes
-           'generate-sources', which will also trigger an 'initialize' (clean).
-
-           Copy the contents of our target folder to another location so
-           that it's available for later use.
-      -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <executions>
-	  <execution>
-            <id>clean-saved-releng-repo</id>
-            <phase>install</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-		<executable>/usr/bin/rm</executable>
-		<arguments>
-                    <argument>-rf</argument>
-                    <argument>target_save</argument>
-                </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>preserve-releng-repo</id>
-            <phase>install</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-		<executable>/usr/bin/cp</executable>
-		<arguments>
-                    <argument>-rp</argument>
-                    <argument>${project.build.directory}</argument>
-                    <argument>target_save</argument>
-                </arguments>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
