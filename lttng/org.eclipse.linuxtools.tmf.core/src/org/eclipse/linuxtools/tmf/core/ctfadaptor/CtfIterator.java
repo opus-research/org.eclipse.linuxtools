@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
  */
 public class CtfIterator extends CTFTraceReader implements ITmfContext, Comparable<CtfIterator>, Cloneable {
 
-
     private final CtfTmfTrace ctfTmfTrace;
 
     /**
@@ -48,7 +47,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext, Comparab
         this.ctfTmfTrace = trace;
         if (this.hasMoreEvents()) {
 
-            this.curLocation = new CtfLocation(trace.getStartTime(),0);
+            this.curLocation = new CtfLocation(trace.getStartTime());
             this.curRank = 0;
         } else {
             setUnknownLocation();
@@ -117,7 +116,8 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext, Comparab
     public boolean seek(final CtfLocationData ctfLocationData) {
         boolean ret = false;
         long currTimestamp = ctfLocationData.getTimestamp();
-        final long offsetTimestamp = ctfTmfTrace.getCTFTrace().timestampNanoToCycles(currTimestamp);
+        final long offsetTimestamp = currTimestamp
+                - this.getTrace().getOffset();
         if (offsetTimestamp < 0) {
             ret = super.seek(0L);
         } else {
