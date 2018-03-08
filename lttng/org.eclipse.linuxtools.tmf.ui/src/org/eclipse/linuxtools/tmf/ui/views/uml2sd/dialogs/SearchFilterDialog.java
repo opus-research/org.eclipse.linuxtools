@@ -29,7 +29,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessageReturn;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -183,11 +183,11 @@ public class SearchFilterDialog extends Dialog {
         if (fOkText != null) {
             getButton(IDialogConstants.OK_ID).setText(fOkText);
         } else {
-            getButton(IDialogConstants.OK_ID).setText(Messages.SequenceDiagram_Find);
+            getButton(IDialogConstants.OK_ID).setText(SDMessages._21);
         }
 
         if (fIsFind) {
-            getButton(IDialogConstants.CANCEL_ID).setText(Messages.SequenceDiagram_Close);
+            getButton(IDialogConstants.CANCEL_ID).setText(SDMessages._22);
         }
 
         Button okButton = getButton(IDialogConstants.OK_ID);
@@ -200,7 +200,7 @@ public class SearchFilterDialog extends Dialog {
         if (fTitle != null) {
             getShell().setText(fTitle);
         } else {
-            getShell().setText(Messages.SequenceDiagram_SequenceDiagramFind);
+            getShell().setText(SDMessages._24);
         }
 
         getShell().pack();
