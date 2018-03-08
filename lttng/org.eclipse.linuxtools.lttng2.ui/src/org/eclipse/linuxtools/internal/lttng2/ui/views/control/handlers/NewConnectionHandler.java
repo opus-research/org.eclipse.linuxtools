@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson and others
+ * Copyright (c) 2012, 2013 Ericsson and others
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -48,6 +48,7 @@ public class NewConnectionHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
+
     /**
      * The trace control system type defined for LTTng version 2.0 and later.
      */
@@ -56,15 +57,12 @@ public class NewConnectionHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
     /**
      * The parent trace control component the new node will be added to.
      */
     private ITraceControlComponent fRoot = null;
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-     */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         assert (fRoot != null);
@@ -165,10 +163,6 @@ public class NewConnectionHandler extends BaseControlViewHandler {
         return result.toArray(new IHost[result.size()]);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
-     */
     @Override
     public boolean isEnabled() {
 

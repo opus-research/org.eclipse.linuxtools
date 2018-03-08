@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -118,37 +118,22 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.INewConnectionDialog#getConnectionName()
-     */
+
     @Override
     public String getConnectionName() {
         return fConnectionName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.INewConnectionDialog#getHostName()
-     */
     @Override
     public String getHostName() {
         return fHostName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.INewConnectionDialog#setTraceControlParent(org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ITraceControlComponent)
-     */
     @Override
     public void setTraceControlParent(ITraceControlComponent parent) {
         fParent = parent;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.INewConnectionDialog#setHosts(org.eclipse.rse.core.model.IHost[])
-     */
     @Override
     public void setHosts(IHost[] hosts) {
         if (hosts != null) {
@@ -159,10 +144,7 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
-     */
+
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
@@ -170,10 +152,6 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
         newShell.setImage(Activator.getDefault().loadIcon(TARGET_NEW_CONNECTION_ICON_FILE));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createDialogArea(Composite parent) {
 
@@ -275,20 +253,12 @@ public class NewConnectionDialog extends Dialog implements INewConnectionDialog 
         return fDialogComposite;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
         createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#okPressed()
-     */
     @Override
     protected void okPressed() {
         // Validate input data
