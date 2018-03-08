@@ -54,4 +54,10 @@ final class LongStateValue extends TmfStateValue {
     public long unboxLong() {
         return valueLong;
     }
+
+    @Override
+    public double unboxDouble() {
+        /* It's always safe to cast an long into a double but rounding may occur */
+        return valueLong;
+    }
 }
