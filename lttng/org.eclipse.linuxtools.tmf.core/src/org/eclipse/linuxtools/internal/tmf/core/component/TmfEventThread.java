@@ -138,13 +138,6 @@ public class TmfEventThread implements Runnable {
     /**
      * @return The request execution state
      */
-    public boolean isPaused(){
-        return isPaused;
-    }
-
-    /**
-     * @return The request execution state
-     */
     public boolean isCompleted() {
         return isCompleted;
     }
@@ -178,7 +171,6 @@ public class TmfEventThread implements Runnable {
 
             while (event != null && !fProvider.isCompleted(fRequest, event, nbRead)) {
                 if (isPaused) {
-                    //System.out.println(getExecType().toString() + getRequest().getRequestId() + " en attente");
                     try {
                         while (isPaused) {
                             synchronized (object) {
@@ -248,4 +240,5 @@ public class TmfEventThread implements Runnable {
             fRequest.cancel();
         }
     }
+
 }
