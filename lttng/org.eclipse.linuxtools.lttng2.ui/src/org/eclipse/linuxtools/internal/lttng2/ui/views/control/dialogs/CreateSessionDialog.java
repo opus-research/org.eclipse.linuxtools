@@ -437,7 +437,7 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
                     fIsStreamedTrace = true;
                     fConfigureStreamingButton.setText("<<< " + Messages.TraceControl_CreateSessionNoStreamingButtonText); //$NON-NLS-1$
                     fConfigureStreamingButton.setToolTipText(Messages.TraceControl_CreateSessionNoStreamingButtonTooltip);
-                    createConfigureStreamingComposite(fMainStreamingGroup);
+                    createConfigureStreamingComposite();
                 }
 
                 fDialogComposite.layout();
@@ -449,13 +449,9 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
         });
     }
 
-    /**
-     * Create Streaming dialog
-     * @param parent
-     */
-    protected void createConfigureStreamingComposite(Composite parent) {
+    private void createConfigureStreamingComposite() {
         if (fStreamingComposite == null) {
-            fStreamingComposite = new Composite(parent, SWT.NONE);
+            fStreamingComposite = new Composite(fMainStreamingGroup, SWT.NONE);
             GridLayout layout = new GridLayout(1, true);
             fStreamingComposite.setLayout(layout);
             fStreamingComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -565,6 +561,16 @@ public class CreateSessionDialog extends Dialog implements ICreateSessionDialog 
             fControlUrlKeyListener = new CopyKeyListener(fControlHostAddressText, fDataHostAddressText);
             fControlHostAddressText.addKeyListener(fControlUrlKeyListener);
 
+//            InetAddress inet = null;
+//            try {
+//                inet = InetAddress.getLocalHost();
+//                inet = InetAddress.getByName(inet.getHostName());
+//            } catch (UnknownHostException e1) {
+//            }
+//            if (inet != null) {
+//                fControlUrlAddressText.setText(inet.getHostAddress());
+//                fDataUrlAddressText.setText(inet.getHostAddress());
+//            }
             fControlProtocolCombo.select(DEFAULT_URL_INDEX);
             fDataProtocolCombo.select(DEFAULT_URL_INDEX);
 
