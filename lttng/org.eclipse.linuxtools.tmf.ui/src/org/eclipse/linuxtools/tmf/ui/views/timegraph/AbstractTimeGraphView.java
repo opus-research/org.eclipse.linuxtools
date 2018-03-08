@@ -99,7 +99,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
     private List<TimeGraphEntry> fEntryList;
 
     /** The trace to entry list hash map */
-    private final Map<ITmfTrace, List<TimeGraphEntry>> fEntryListMap = new HashMap<ITmfTrace, List<TimeGraphEntry>>();
+    private final Map<Object, List<TimeGraphEntry>> fEntryListMap = new HashMap<Object, List<TimeGraphEntry>>();
 
     /* The trace to build thread hash map */
     private final Map<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<ITmfTrace, BuildThread>();
@@ -138,6 +138,9 @@ public abstract class AbstractTimeGraphView extends TmfView {
     private final TimeGraphPresentationProvider fPresentation;
 
     private TreeLabelProvider fLabelProvider = new TreeLabelProvider();
+
+    /** Current object the actual entry list is associated to */
+    private Object fCurrentObject;
 
     // ------------------------------------------------------------------------
     // Getters and setters
@@ -262,21 +265,21 @@ public abstract class AbstractTimeGraphView extends TmfView {
      *
      * @return the entry list map
      */
-    protected Map<ITmfTrace, List<TimeGraphEntry>> getEntryListMap() {
+    protected Map<Object, List<TimeGraphEntry>> getEntryListMap() {
         return Collections.unmodifiableMap(fEntryListMap);
     }
 
     /**
      * Adds an entry to the entry list
      *
-     * @param trace
-     *            the trace to add
+     * @param obj
+     *            the object to add
      * @param list
      *            The list of time graph entries
      */
-    protected void putEntryList(ITmfTrace trace, List<TimeGraphEntry> list) {
+    protected void putEntryList(Object obj, List<TimeGraphEntry> list) {
         synchronized(fEntryListMap) {
-            fEntryListMap.put(trace, list);
+            fEntryListMap.put(obj, list);
         }
     }
 
@@ -705,8 +708,25 @@ public abstract class AbstractTimeGraphView extends TmfView {
     // ------------------------------------------------------------------------
 
     private void loadTrace() {
+        fCurrentObject = fTrace;
+        loadCurrent();
+    }
+
+    /**
+     * Load the entries for a current object (there is not necessarily only one
+     * set of entries per trace)
+     *
+     * @param obj
+     *            The object to load entries for
+     */
+    protected void loadFor(Object obj) {
+        fCurrentObject = obj;
+        loadCurrent();
+    }
+
+    private void loadCurrent() {
         synchronized (fEntryListMap) {
-            fEntryList = fEntryListMap.get(fTrace);
+            fEntryList = fEntryListMap.get(fCurrentObject);
             if (fEntryList == null) {
                 synchronized (fBuildThreadMap) {
                     BuildThread buildThread = new BuildThread(fTrace, this.getName());
