@@ -19,7 +19,6 @@ import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 
 /**
@@ -86,6 +85,7 @@ public class Stream {
      */
     public void setId(long id) {
         this.id = id;
+        this.events = trace.createEvents(this.id);
     }
 
     /**
@@ -243,12 +243,9 @@ public class Stream {
         if (events.get(event.getId()) != null) {
             throw new ParseException("Event id already exists"); //$NON-NLS-1$
         }
-        if (event.getId() == null) {
-            events.put(EventDeclaration.UNSET_EVENT_ID, event);
-        } else {
-            /* Put the event in the map */
-            events.put(event.getId(), event);
-        }
+
+        /* Put the event in the map */
+        events.put(event.getId(), event);
     }
 
     /**

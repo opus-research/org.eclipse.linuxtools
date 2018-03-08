@@ -63,7 +63,6 @@ public class ChartPNG {
 	 */
 	public void showView() {
 		Display.getDefault().syncExec(new Runnable() {
-			@Override
 			public void run() {
 				try {
 					IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();

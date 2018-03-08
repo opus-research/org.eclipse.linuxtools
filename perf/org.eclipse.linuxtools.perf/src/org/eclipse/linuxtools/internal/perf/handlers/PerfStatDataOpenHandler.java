@@ -15,9 +15,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Date;
-import java.text.DateFormat;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.perf.IPerfData;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
@@ -35,7 +32,9 @@ public class PerfStatDataOpenHandler implements IEditorLauncher {
 	@Override
 	public void open(IPath file) {
 		File statFile = file.toFile();
-		try (BufferedReader fileReader = new BufferedReader(new FileReader(statFile))) {
+		BufferedReader fileReader = null;
+		try {
+			fileReader = new BufferedReader(new FileReader(statFile));
 			final StringBuilder contents = new StringBuilder();
 			final StringBuilder title = new StringBuilder();
 			String line;
@@ -56,12 +55,11 @@ public class PerfStatDataOpenHandler implements IEditorLauncher {
 						statFile.getName()));
 			}
 
-			final String timestamp = DateFormat.getInstance().format(new Date(statFile.lastModified()));
 			PerfPlugin.getDefault().setStatData(new IPerfData() {
 
 				@Override
 				public String getTitle() {
-					return title.toString() + " (" + timestamp + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+					return title.toString();
 				}
 
 				@Override
@@ -77,6 +75,14 @@ public class PerfStatDataOpenHandler implements IEditorLauncher {
 		} catch (IOException e) {
 			PerfPlugin.getDefault().openError(e,
 					NLS.bind(Messages.PerfEditorLauncher_file_read_error, statFile.getName()));
-		} 
+		} finally {
+			if (fileReader != null) {
+				try {
+					fileReader.close();
+				} catch (IOException e) {
+					PerfPlugin.getDefault().openError(e, "");
+				}
+			}
+		}
 	}
 }

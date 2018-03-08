@@ -45,23 +45,7 @@ public class Utils {
 	 */
 	public static BufferedProcessInputStream runCommandToInputStream(String... command)
 			throws IOException {
-		return runCommandToInputStream(null, command);
-	}
-
-	/**
-	 * Runs the given command and parameters.
-	 * @param project rpm project
-	 *
-	 * @param command
-	 *            The command with all parameters.
-	 * @return Stream containing the combined content of stderr and stdout.
-	 * @throws IOException
-	 *             If IOException occurs.
-	 * @since 2.1
-	 */
-	public static BufferedProcessInputStream runCommandToInputStream(IProject project, String... command)
-			throws IOException {
-		Process p = RuntimeProcessFactory.getFactory().exec(command, project);
+		Process p = RuntimeProcessFactory.getFactory().exec(command, null);
 		return new BufferedProcessInputStream(p);
 	}
 
@@ -135,22 +119,10 @@ public class Utils {
 	 */
 	public static String runCommandToString(String... command)
 			throws IOException {
-		return runCommandToString(null, command);
-	}
-
-	/**
-	 * Run a command and return its output.
-	 * @param project rpm Project
-	 * @param command The command to execute.
-	 * @return The output of the executed command.
-	 * @throws IOException If an I/O exception occurred.
-	 * @since 2.1
-	 */
-	public static String runCommandToString(IProject project, String... command)
-			throws IOException {
-		BufferedInputStream in = runCommandToInputStream(project, command);
+		BufferedInputStream in = runCommandToInputStream(command);
 		return inputStreamToString(in);
 	}
+
 	/**
 	 * Reads the content of the given InputStream and returns its textual
 	 * representation.
@@ -188,11 +160,17 @@ public class Utils {
 	 * @throws IOException If an I/O exception occurs.
 	 */
 	public static void copyFile(File in, File out) throws IOException {
-		try (FileInputStream fin = new FileInputStream(in);
-				FileChannel inChannel = fin.getChannel();
-				FileOutputStream fos = new FileOutputStream(out);
-				FileChannel outChannel = fos.getChannel()) {
+		FileChannel inChannel = new FileInputStream(in).getChannel();
+		FileChannel outChannel = new FileOutputStream(out).getChannel();
+		try {
 			inChannel.transferTo(0, inChannel.size(), outChannel);
+		} finally {
+			if (inChannel != null) {
+				inChannel.close();
+			}
+			if (outChannel != null) {
+				outChannel.close();
+			}
 		}
 	}
 }

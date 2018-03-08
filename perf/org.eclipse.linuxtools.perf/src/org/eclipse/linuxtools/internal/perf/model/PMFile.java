@@ -24,10 +24,9 @@ public class PMFile extends TreeParent {
 	
 	@Override
 	public String toString() {
-		String prefix = ""; //$NON-NLS-1$
-		if (getPercent() != -1) {
-			prefix = getPercent() + "% in "; //$NON-NLS-1$
-		}
+		String prefix = "";
+		if (getPercent() != -1)
+			prefix = getPercent() + "% in ";
 		return prefix + path;
 	}
 }

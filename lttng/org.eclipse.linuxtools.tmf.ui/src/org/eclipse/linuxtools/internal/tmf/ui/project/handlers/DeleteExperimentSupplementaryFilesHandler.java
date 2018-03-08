@@ -7,9 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Bernd Hufmann - Initial API and implementation
- *     Patrick Tasse - Close editors to release resources
- *     Marc-Andre Laperle - Fix NPE (Bug 416574)
+ *   Bernd Hufmann - Initial API and implementation
+ *   Patrick Tasse - Close editors to release resources
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -74,20 +73,17 @@ public class DeleteExperimentSupplementaryFilesHandler extends AbstractHandler {
             TreeSelection sel = (TreeSelection) selection;
             // There should be only one item selected as per the plugin.xml
             Object element = sel.getFirstElement();
-            List<IResource> resourcesList = new ArrayList<>();
+            List<IResource> resourcesList = new ArrayList<IResource>();
 
             if (element instanceof TmfExperimentElement) {
 
                 TmfExperimentElement experiment = (TmfExperimentElement) element;
 
                 IResource[] resources = experiment.getSupplementaryResources();
-                // List to know which resources belong to the experiment
-                List<IResource> experimentResources = Arrays.asList(resources);
-
-                resourcesList.addAll(experimentResources);
+                resourcesList.addAll(Arrays.asList(resources));
 
                 // Map to know which trace to close for each resource
-                HashMap<IResource, TmfTraceElement> traceMap = new HashMap<>();
+                HashMap<IResource, TmfTraceElement> traceMap = new HashMap<IResource, TmfTraceElement>();
 
                 for (TmfTraceElement aTrace : experiment.getTraces()) {
 
@@ -113,12 +109,7 @@ public class DeleteExperimentSupplementaryFilesHandler extends AbstractHandler {
 
                 // Delete the selected resources
                 for (IResource resource : resourcesToDelete) {
-                    if (experimentResources.contains(resource)) {
-                        experiment.closeEditors();
-                    } else {
-                        traceMap.get(resource).closeEditors();
-                    }
-
+                    traceMap.get(resource).closeEditors();
                     try {
                         resource.delete(true, new NullProgressMonitor());
                     } catch (CoreException e) {

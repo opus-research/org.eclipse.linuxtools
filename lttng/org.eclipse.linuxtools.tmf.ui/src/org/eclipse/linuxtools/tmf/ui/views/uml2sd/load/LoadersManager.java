@@ -64,11 +64,11 @@ public class LoadersManager {
     /**
      * Map for caching information (view ID to loader class)
      */
-    private Map<String, IUml2SDLoader> fViewLoaderMap = new HashMap<>();
+    private Map<String, IUml2SDLoader> fViewLoaderMap = new HashMap<String, IUml2SDLoader>();
     /**
      * Map for caching information (view ID to list of configuration elements)
      */
-    private Map<String, ArrayList<IConfigurationElement>> fViewLoadersList = new HashMap<>();
+    private Map<String, ArrayList<IConfigurationElement>> fViewLoadersList = new HashMap<String, ArrayList<IConfigurationElement>>();
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -310,7 +310,7 @@ public class LoadersManager {
             return list;
         }
 
-        ArrayList<IConfigurationElement> ret = new ArrayList<>();
+        ArrayList<IConfigurationElement> ret = new ArrayList<IConfigurationElement>();
         IExtensionPoint iep = Platform.getExtensionRegistry().getExtensionPoint(Activator.PLUGIN_ID, LOADER_TAG);
         if (iep == null) {
             return ret;

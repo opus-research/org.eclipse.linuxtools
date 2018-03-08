@@ -48,7 +48,7 @@ public class Activator extends AbstractUIPlugin {
 	private RpmMacroProposalsList macrosList ;
 
 	// RPM Groups
-	private List<String> rpmGroups = new ArrayList<>() ;
+	private List<String> rpmGroups = new ArrayList<String>() ;
 
 	// RPM package list
 	public static RpmPackageProposalsList packagesList ;
@@ -130,7 +130,6 @@ public class Activator extends AbstractUIPlugin {
 			File dir = new File(docDir);
 			if (dir.exists()) {
 				File files[] = dir.listFiles(new FilenameFilter() {
-					@Override
 					public boolean accept(File dir, String name) {
 						return name.startsWith("rpm-"); //$NON-NLS-1$
 					}

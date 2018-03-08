@@ -32,7 +32,7 @@ public class TraceFolderContentProvider implements IStructuredContentProvider {
     public Object[] getElements(Object inputElement) {
         if (inputElement instanceof TmfTraceFolder) {
             TmfTraceFolder folder = (TmfTraceFolder) inputElement;
-            List<ITmfProjectModelElement> elements = new ArrayList<>();
+            List<ITmfProjectModelElement> elements = new ArrayList<ITmfProjectModelElement>();
             for (ITmfProjectModelElement element : folder.getChildren()) {
                 if (element instanceof TmfTraceElement) {
                     TmfTraceElement trace = (TmfTraceElement) element;

@@ -35,7 +35,6 @@ public class SpecfileFoldingStructureProvider {
 
 
 	private static class ElementByLineNbrComparator implements Comparator<SpecfileElement> {
-		@Override
 		public int compare(SpecfileElement element1, SpecfileElement element2) {
 			Integer lineNbr1 = element1.getLineNumber();
 			Integer lineNbr2 = element2.getLineNumber();
@@ -79,7 +78,7 @@ public class SpecfileFoldingStructureProvider {
 	}
 
 	private Map<Annotation,Position> computeAdditions(Set<Position> currentRegions) {
-		Map<Annotation,Position> additionsMap = new HashMap<>();
+		Map<Annotation,Position> additionsMap = new HashMap<Annotation,Position>();
 		for (Position position: currentRegions) {
 			additionsMap.put(new ProjectionAnnotation(), position);
 		}
@@ -88,7 +87,7 @@ public class SpecfileFoldingStructureProvider {
 
 	private Annotation[] computeDifferences(ProjectionAnnotationModel model,
 			Set<Position> current) {
-		List<Annotation> deletions = new ArrayList<>();
+		List<Annotation> deletions = new ArrayList<Annotation>();
 		for (Iterator<Annotation> iter = model.getAnnotationIterator(); iter.hasNext();) {
 			Annotation annotation = iter.next();
 			if (annotation instanceof ProjectionAnnotation) {
@@ -104,7 +103,7 @@ public class SpecfileFoldingStructureProvider {
 	}
 
 	private Set<Position> createFoldingStructure(Specfile specfile) {
-		List<SpecfileElement> elements = new ArrayList<>();
+		List<SpecfileElement> elements = new ArrayList<SpecfileElement>();
 		elements.addAll(specfile.getSections());
 		elements.addAll(specfile.getComplexSections());
 		Collections.sort(elements, new ElementByLineNbrComparator());
@@ -112,7 +111,7 @@ public class SpecfileFoldingStructureProvider {
 	}
 
 	private Set<Position> addFoldingRegions(List<SpecfileElement> elements) {
-		Set<Position> regions = new HashSet<>();
+		Set<Position> regions = new HashSet<Position>();
 		// add folding on the preamble section
 		Position position;
 		if (elements.size() > 0) {

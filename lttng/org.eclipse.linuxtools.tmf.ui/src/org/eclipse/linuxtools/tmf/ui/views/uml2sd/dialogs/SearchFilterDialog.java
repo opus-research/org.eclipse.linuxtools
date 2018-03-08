@@ -213,6 +213,7 @@ public class SearchFilterDialog extends Dialog {
     /**
      * Loads criteria from the dialog settings which are saved in the workspace.
      */
+    @SuppressWarnings("rawtypes")
     protected void loadCriteria() {
 
         String CRITERIA = FIND_CRITERIA;
@@ -221,14 +222,14 @@ public class SearchFilterDialog extends Dialog {
         }
 
         DialogSettings section = (DialogSettings) Activator.getDefault().getDialogSettings().getSection(CRITERIA);
-        List<GraphNode> selection = fSdView.getSDWidget().getSelection();
+        List selection = fSdView.getSDWidget().getSelection();
         if ((selection == null || selection.size() != 1) || (!fIsFind)) {
             if (section != null) {
                 fCriteria = new Criteria();
                 fCriteria.load(section);
             }
         } else {
-            GraphNode gn = selection.get(0);
+            GraphNode gn = (GraphNode) selection.get(0);
             fCriteria = new Criteria();
             fCriteria.setExpression(gn.getName());
             fCriteria.setCaseSenstiveSelected(true);
@@ -296,7 +297,7 @@ public class SearchFilterDialog extends Dialog {
         fCriteria.save(section);
 
         if (fCriteria.getExpression().length() > 0) {
-            ArrayList<String> list = new ArrayList<>();
+            ArrayList<String> list = new ArrayList<String>();
             for (int i = 0; i < fExpressionList.length; i++) {
                 list.add(fExpressionList[i]);
             }

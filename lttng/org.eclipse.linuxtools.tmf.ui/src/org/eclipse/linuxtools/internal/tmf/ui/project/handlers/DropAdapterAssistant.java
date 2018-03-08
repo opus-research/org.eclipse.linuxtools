@@ -261,7 +261,6 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         }
         if (traceResource != null && traceResource.exists()) {
             createLink(targetExperiment.getResource(), traceResource, traceResource.getName());
-            targetExperiment.deleteSupplementaryResources();
             targetExperiment.closeEditors();
             return traceResource;
         }
@@ -377,7 +376,6 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
             }
             if (resource != null && resource.exists()) {
                 createLink(targetExperiment.getResource(), resource, resource.getName());
-                targetExperiment.deleteSupplementaryResources();
                 targetExperiment.closeEditors();
                 return true;
             }

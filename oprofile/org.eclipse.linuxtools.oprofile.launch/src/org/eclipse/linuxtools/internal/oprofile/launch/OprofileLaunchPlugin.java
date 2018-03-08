@@ -41,23 +41,17 @@ public class OprofileLaunchPlugin extends AbstractUIPlugin {
 	public static final String ATTR_USE_DEFAULT_EVENT = ID_LAUNCH_PROFILE + ".USE_DEFAULT_EVENT";		//$NON-NLS-1$
 	public static final String ATTR_EXECUTIONS_NUMBER = ID_LAUNCH_PROFILE + ".EXECUTIONS_NUMBER";		//$NON-NLS-1$
 
-	/**
-	 * @since 2.1
-	 */
-	public static final String ATTR_OPROFILE_COMBO_TEXT = ID_LAUNCH_PROFILE + ".OPROFILE_COMBO_TEXT";		//$NON-NLS-1$
-
 	// Manual Profile string \\
 	public static final String ATTR_MANUAL_PROFILE = ID_LAUNCH_PROFILE + ".MANUAL_PROFILE";		//$NON-NLS-1$
 
 	// Counter Attributes \\
 	private static final String ATTR_COUNTER(int nr) { return ID_LAUNCH_PROFILE + ".COUNTER_" + nr; } 					//$NON-NLS-1$
 	public static final String ATTR_COUNTER_ENABLED(int nr)  { return ATTR_COUNTER(nr) + ".ENABLED"; } 					//$NON-NLS-1$
-	public static final String ATTR_COUNTER_EVENT(int nr, int ev) { return ATTR_COUNTER(nr)  + ".EVENT " + ev; } 						//$NON-NLS-1$
+	public static final String ATTR_COUNTER_EVENT(int nr) { return ATTR_COUNTER(nr)  + ".EVENT"; } 						//$NON-NLS-1$
 	public static final String ATTR_COUNTER_PROFILE_KERNEL(int nr) { return ATTR_COUNTER(nr) + ".PROFILE_KERNEL"; }		//$NON-NLS-1$
 	public static final String ATTR_COUNTER_PROFILE_USER(int nr) { return ATTR_COUNTER(nr) + ".PROFILE_USER"; } 		//$NON-NLS-1$
 	public static final String ATTR_COUNTER_COUNT(int nr) { return ATTR_COUNTER(nr) + ".COUNT"; } 						//$NON-NLS-1$
 	public static final String ATTR_COUNTER_UNIT_MASK(int nr) { return  ATTR_COUNTER(nr) + ".UNIT_MASK"; } 				//$NON-NLS-1$
-	public static final String ATTR_NUMBER_OF_EVENTS(int nr) { return ATTR_COUNTER(nr) + ".EVENTS"; }					//$NON-NLS-1$
 
 
 	public static final String ICON_PATH = "icons/"; //$NON-NLS-1$

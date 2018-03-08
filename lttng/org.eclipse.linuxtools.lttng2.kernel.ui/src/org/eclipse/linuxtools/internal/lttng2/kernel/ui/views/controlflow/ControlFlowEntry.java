@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,28 +8,39 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
- *   Geneviève Bastien - Move code to provide base classes for time graph view
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventIterator;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 
 /**
  * An entry in the Control Flow view
  */
-public class ControlFlowEntry extends TimeGraphEntry {
-
+public class ControlFlowEntry implements ITimeGraphEntry {
+    private final int fThreadQuark;
     private final LttngKernelTrace fTrace;
+    private ControlFlowEntry fParent = null;
+    private final ArrayList<ControlFlowEntry> fChildren = new ArrayList<ControlFlowEntry>();
+    private String fName;
     private final int fThreadId;
     private final int fParentThreadId;
-    private final int fThreadQuark;
+    private long fStartTime = -1;
+    private long fEndTime = -1;
+    private List<ITimeEvent> fEventList = new ArrayList<ITimeEvent>();
+    private List<ITimeEvent> fZoomedEventList = null;
 
     /**
      * Constructor
      *
-     * @param quark
+     * @param threadQuark
      *            The attribute quark matching the thread
      * @param trace
      *            The trace on which we are working
@@ -44,12 +55,85 @@ public class ControlFlowEntry extends TimeGraphEntry {
      * @param endTime
      *            The end time of this process
      */
-    public ControlFlowEntry(int quark, LttngKernelTrace trace, String execName, int threadId, int parentThreadId, long startTime, long endTime) {
-        super(execName, startTime, endTime);
+    public ControlFlowEntry(int threadQuark, LttngKernelTrace trace, String execName, int threadId, int parentThreadId, long startTime, long endTime) {
+        fThreadQuark = threadQuark;
         fTrace = trace;
+        fName = execName;
         fThreadId = threadId;
         fParentThreadId = parentThreadId;
-        fThreadQuark = quark;
+        fStartTime = startTime;
+        fEndTime = endTime;
+    }
+
+    @Override
+    public ITimeGraphEntry getParent() {
+        return fParent;
+    }
+
+    @Override
+    public boolean hasChildren() {
+        return fChildren.size() > 0;
+    }
+
+    @Override
+    public List<ControlFlowEntry> getChildren() {
+        return fChildren;
+    }
+
+    @Override
+    public String getName() {
+        return fName;
+    }
+
+    /**
+     * Update the entry name
+     * @param execName the updated entry name
+     */
+    public void setName(String execName) {
+        fName = execName;
+    }
+
+    @Override
+    public long getStartTime() {
+        return fStartTime;
+    }
+
+    @Override
+    public long getEndTime() {
+        return fEndTime;
+    }
+
+    @Override
+    public boolean hasTimeEvents() {
+        return true;
+    }
+
+    @Override
+    public Iterator<ITimeEvent> getTimeEventsIterator() {
+        return new EventIterator(fEventList, fZoomedEventList);
+    }
+
+    @Override
+    public Iterator<ITimeEvent> getTimeEventsIterator(long startTime, long stopTime, long visibleDuration) {
+        return new EventIterator(fEventList, fZoomedEventList, startTime, stopTime);
+    }
+
+    /**
+     * Get the quark of the attribute matching this thread's TID
+     *
+     * @return The quark
+     */
+    public int getThreadQuark() {
+        return fThreadQuark;
+    }
+
+    /**
+     * Get the CTF trace object
+     *
+     * @return The trace
+     */
+    public LttngKernelTrace getTrace() {
+        return fTrace;
     }
 
     /**
@@ -62,15 +146,6 @@ public class ControlFlowEntry extends TimeGraphEntry {
     }
 
     /**
-     * Get the entry's kernel trace
-     *
-     * @return the entry's kernel trace
-     */
-    public LttngKernelTrace getTrace() {
-        return fTrace;
-    }
-
-    /**
      * Get this thread's parent TID
      *
      * @return The "PTID"
@@ -80,16 +155,54 @@ public class ControlFlowEntry extends TimeGraphEntry {
     }
 
     /**
-     * Get the quark of the attribute matching this thread's TID
+     * Add an event to this process's timeline
      *
-     * @return The quark
+     * @param event
+     *            The time event
      */
-    public int getThreadQuark() {
-        return fThreadQuark;
+    public void addEvent(ITimeEvent event) {
+        long start = event.getTime();
+        long end = start + event.getDuration();
+        synchronized (fEventList) {
+            fEventList.add(event);
+            if (fStartTime == -1 || start < fStartTime) {
+                fStartTime = start;
+            }
+            if (fEndTime == -1 || end > fEndTime) {
+                fEndTime = end;
+            }
+        }
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + '(' + getName() + '[' + fThreadId + "])"; //$NON-NLS-1$
+    /**
+     * Set the general event list of this entry
+     *
+     * @param eventList
+     *            The list of time events
+     */
+    public void setEventList(List<ITimeEvent> eventList) {
+        fEventList = eventList;
+    }
+
+    /**
+     * Set the zoomed event list of this entry
+     *
+     * @param eventList
+     *            The list of time events
+     */
+    public void setZoomedEventList(List<ITimeEvent> eventList) {
+        fZoomedEventList = eventList;
+    }
+
+    /**
+     * Add a child entry to this one (to show relationships between processes as
+     * a tree)
+     *
+     * @param child
+     *            The child entry
+     */
+    public void addChild(ControlFlowEntry child) {
+        child.fParent = this;
+        fChildren.add(child);
     }
 }

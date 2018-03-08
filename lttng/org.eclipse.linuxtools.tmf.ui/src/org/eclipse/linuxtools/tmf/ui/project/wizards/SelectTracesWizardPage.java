@@ -100,7 +100,7 @@ public class SelectTracesWizardPage extends WizardPage {
         tableColumn.setText(Messages.SelectTracesWizardPage_TraceColumnHeader);
 
         // Get the list of traces already part of the experiment
-        fPreviousTraces = new HashMap<>();
+        fPreviousTraces = new HashMap<String, TmfTraceElement>();
         for (ITmfProjectModelElement child : fExperiment.getChildren()) {
             if (child instanceof TmfTraceElement) {
                 TmfTraceElement trace = (TmfTraceElement) child;
@@ -162,7 +162,6 @@ public class SelectTracesWizardPage extends WizardPage {
         }
         fProject.refresh();
         if (changed) {
-            fExperiment.deleteSupplementaryResources();
             fExperiment.closeEditors();
         }
 
@@ -173,7 +172,7 @@ public class SelectTracesWizardPage extends WizardPage {
      * Get the list of selected traces
      */
     private TmfTraceElement[] getSelection() {
-        Vector<TmfTraceElement> traces = new Vector<>();
+        Vector<TmfTraceElement> traces = new Vector<TmfTraceElement>();
         Object[] selection = fCheckboxTableViewer.getCheckedElements();
         for (Object sel : selection) {
             if (sel instanceof TmfTraceElement) {

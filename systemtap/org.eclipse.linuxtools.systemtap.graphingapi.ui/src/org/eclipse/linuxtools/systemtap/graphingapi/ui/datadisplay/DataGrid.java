@@ -290,14 +290,9 @@ public class DataGrid implements IUpdateListener {
 					item = new TableItem(table, SWT.NONE);
 					os = filteredDataSet.getRow(i);
 
-					//Add 1 to the index/row num since graphs start counting rows at 1, not 0.
-					item.setText(0, Integer.toString(i + 1));
-					for(j=0; j<os.length; j++) {
-						//Ignore null items
-						if (os[j] != null) {
-							item.setText(j+1, columnFormat[j].format(os[j].toString()));
-						}
-					}
+					item.setText(0, "" + i); //$NON-NLS-1$
+					for(j=0; j<os.length; j++)
+						item.setText(j+1, columnFormat[j].format(os[j].toString()));
 				}
 
 				if(FULL_UPDATE != (style & FULL_UPDATE)) {

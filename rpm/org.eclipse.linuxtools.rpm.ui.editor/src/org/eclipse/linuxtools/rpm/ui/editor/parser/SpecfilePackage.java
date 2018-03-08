@@ -29,8 +29,8 @@ public class SpecfilePackage extends SpecfileSection {
 		super.setSpecfile(specfile);
 		setPackageName(packageName);
         setPackage(this);
-        sections = new ArrayList<>();
-        requires = new ArrayList<>();
+        sections = new ArrayList<SpecfileSection>();
+        requires = new ArrayList<SpecfileTag>();
 	}
 
 	public String getDescription() {

@@ -48,21 +48,11 @@ public class TestInfoPreParse {
 
 	private static final String REL_PATH_TO_INFO_PRE_PARSE_RAW = "resources/test_info_pre_parse_raw.xml";
 	private static final String REL_PATH_TO_INFO_PRE_PARSE_EXEPECTED = "resources/test_info_pre_parse_expected.xml";
-	private Element [] rootList;
-	private ArrayList<ArrayList<String>> valueList;
+	Element [] rootList;
+	ArrayList<ArrayList<String>> valueList;
 
 	@Before
-	public void setUp() {
-		String devOprofileAbsFilePath = null;
-		Path devOprofilePath = new Path("resources/dev/oprofile/");
-		URL devOprofileURL = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), devOprofilePath , null);
-		try {
-			devOprofileAbsFilePath = FileLocator.toFileURL(devOprofileURL).getFile();
-		} catch (IOException e) {
-			fail("Failed to convert the resource file's path.");
-		}
-		InfoAdapter.setOprofileDir(devOprofileAbsFilePath);
-
+	protected void setUp() {
 		IFileStore fileStore = null;
 		String absFilePath = null;
 
@@ -143,7 +133,7 @@ public class TestInfoPreParse {
 	@Test
 	public void testEventData (){
 		final String [] eventTags = new String [] {InfoAdapter.NAME, InfoAdapter.DESCRIPTION, InfoAdapter.MINIMUM};
-		final String [] unitMaskTags = new String [] {InfoAdapter.DEFAULT};
+		final String [] unitMaskTags = new String [] {InfoAdapter.TYPE, InfoAdapter.DEFAULT};
 		final String [] maskTags = new String [] {InfoAdapter.VALUE};
 
 		// compare the event data

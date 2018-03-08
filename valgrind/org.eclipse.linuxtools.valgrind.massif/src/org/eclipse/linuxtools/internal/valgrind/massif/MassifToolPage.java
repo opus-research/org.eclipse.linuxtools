@@ -75,13 +75,11 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		}
 	};
 	protected ModifyListener modifyListener = new ModifyListener() {
-		@Override
 		public void modifyText(ModifyEvent e) {
 			updateLaunchConfigurationDialog();	
 		}			
 	};
 	
-	@Override
 	public void createControl(Composite parent) {
 		Composite top = new Composite(parent, SWT.NONE);
 		
@@ -336,12 +334,11 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		 ignoreFnList.remove(selections);
 	}
 
-	@Override
 	public String getName() {
 		return Messages.getString("MassifToolPage.Massif_Options"); //$NON-NLS-1$
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		isInitializing = true;
 		try {
@@ -384,7 +381,6 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		isInitializing = false;
 	}
 
-	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(MassifLaunchConstants.ATTR_MASSIF_HEAP, heapButton.getSelection());
 		configuration.setAttribute(MassifLaunchConstants.ATTR_MASSIF_HEAPADMIN, heapAdminSpinner.getSelection());
@@ -435,7 +431,6 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		return result;
 	}
 	
-	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(LaunchConfigurationConstants.ATTR_TOOL, MassifPlugin.TOOL_ID);
 		configuration.setAttribute(MassifLaunchConstants.ATTR_MASSIF_HEAP, MassifLaunchConstants.DEFAULT_MASSIF_HEAP);
@@ -457,7 +452,6 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		}
 	}
 	
-	@Override
 	public void setValgrindVersion(Version ver) {
 		valgrindVersion = ver;
 	}

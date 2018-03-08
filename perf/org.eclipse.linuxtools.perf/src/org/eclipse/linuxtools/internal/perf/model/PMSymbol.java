@@ -17,10 +17,10 @@ public class PMSymbol extends TreeParent {
 
 	public String getFunctionName() {
 		String tmpName = getName();
-		if (tmpName.startsWith("[")) { // filer out the "[.] " //$NON-NLS-1$
+		if (tmpName.startsWith("[")) { // filer out the "[.] "
 			tmpName = tmpName.substring(4);
 		}
-		int argloc = tmpName.indexOf("("); // and the (.... //$NON-NLS-1$
+		int argloc = tmpName.indexOf("("); // and the (....
 		if (argloc != -1) {
 			tmpName = tmpName.substring(0,argloc);
 		}
@@ -43,8 +43,7 @@ public class PMSymbol extends TreeParent {
 
 	@Override
 	public String toString() {
-		return getPercent()
-				+ "% (" + getFormattedSamples() + " samples) in " + getName() + (pathConflictFound ? "(Warning multiple paths found for this symbol!)" : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		return getPercent() + "% (" + getFormattedSamples() + " samples) in " + getName() + (pathConflictFound ? "(Warning multiple paths found for this symbol!)" : "");
 	}
 
 	public void markConflict() {

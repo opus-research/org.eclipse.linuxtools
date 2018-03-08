@@ -274,7 +274,7 @@ public class Lifeline extends GraphNode {
         if (hasChildren()) {
             return getNodeMap().get(BasicExecutionOccurrence.EXEC_OCC_TAG);
         }
-        return new ArrayList<>();
+        return new ArrayList<GraphNode>();
     }
 
     @Override

@@ -33,9 +33,11 @@ public class RpmPackageProposalsListTest {
 	public void setUp() {
 		Activator.getDefault().getPreferenceStore().setValue(
 				PreferenceConstants.P_RPM_LIST_FILEPATH, "/tmp/pkglist");
-		try (BufferedWriter out = new BufferedWriter(new FileWriter(
-				"/tmp/pkglist"))) {
+		try {
+			BufferedWriter out = new BufferedWriter(new FileWriter(
+					"/tmp/pkglist"));
 			out.write("setup\ntest\nrpm\n");
+			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
