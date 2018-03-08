@@ -317,7 +317,7 @@
  <extension
        point="org.eclipse.debug.core.launchConfigurationTypes">
     <launchConfigurationType
-          delegate="org.eclipse.linuxtools.systemtap.ui.ide.launcher.SystemTapScriptLaunchConfigurationDelegate"
+          delegate="org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptLaunchConfigurationDelegate"
           id="org.eclipse.linuxtools.systemtap.ui.ide.SystemTapLaunchConfigurationType"
           modes="run"
           name="SystemTap"
