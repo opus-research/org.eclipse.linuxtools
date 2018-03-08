@@ -45,7 +45,7 @@ import org.osgi.framework.FrameworkUtil;
 
 /**
  * Tests for the Download and Prepare sources command from RPM UI Editor
- * 
+ *
  */
 public class DownloadPrepareSourcesTest {
 
@@ -71,7 +71,7 @@ public class DownloadPrepareSourcesTest {
 
 	/**
 	 * Create the test project before starting each test
-	 * 
+	 *
 	 * @throws CoreException
 	 */
 	@Before
@@ -84,7 +84,7 @@ public class DownloadPrepareSourcesTest {
 	/**
 	 * If the test project exists, delete it and its contents
 	 * (used to start clean and fresh for each test case)
-	 * 
+	 *
 	 * @throws CoreException
 	 */
 	@After
@@ -96,7 +96,7 @@ public class DownloadPrepareSourcesTest {
 
 	/**
 	 * Testing downloading sources using RPMBuild layout
-	 * 
+	 *
 	 * @throws CoreException
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -115,7 +115,7 @@ public class DownloadPrepareSourcesTest {
 
 	/**
 	 * Test downloading sources using FLAT layout
-	 * 
+	 *
 	 * @throws CoreException
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -133,7 +133,7 @@ public class DownloadPrepareSourcesTest {
 
 	/**
 	 * Test preparing sources using RPMBuild layout
-	 * 
+	 *
 	 * @throws CoreException
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -155,10 +155,10 @@ public class DownloadPrepareSourcesTest {
 
 		checkPreparedSources(rpmProject, RPMProjectLayout.RPMBUILD);
 	}
-	
+
 	/**
 	 * Test preparing sources using FLAT layout
-	 * 
+	 *
 	 * @throws CoreException
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -183,7 +183,7 @@ public class DownloadPrepareSourcesTest {
 
 	/**
 	 * Check if the file was downloaded correctly based on project layout
-	 * 
+	 *
 	 * @param project The RPM project
 	 * @param layout The layout of the RPM project (RPMBuild or FLAT)
 	 * @throws CoreException
@@ -212,7 +212,7 @@ public class DownloadPrepareSourcesTest {
 
 	/**
 	 * Check if the source was prepared correctly based on project layout
-	 * 
+	 *
 	 * @param project The RPM project
 	 * @param layout The layout of the RPM project (RPMBuild or FLAT)
 	 * @throws CoreException
@@ -245,7 +245,7 @@ public class DownloadPrepareSourcesTest {
 
 	/**
 	 * Download and also test if the file was downloaded correctly
-	 * 
+	 *
 	 * @param project The RPM project
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -270,7 +270,7 @@ public class DownloadPrepareSourcesTest {
 
 	/**
 	 * Import the SRPM into the project (make .spec accessible)
-	 * 
+	 *
 	 * @param testProject The test project
 	 * @param layout layout The layout of the RPM project (RPMBuild or FLAT)
 	 * @return The RPM project
@@ -288,7 +288,7 @@ public class DownloadPrepareSourcesTest {
 				"resources" + file_sep + "srpms" + file_sep + //$NON-NLS-1$ //$NON-NLS-2$
 						"hello-2.8-1.fc19.src.rpm"), null);
 		File foo = new File(FileLocator.toFileURL(url).getPath());
-		
+
 		// import the SRPM into the RPMProject
 		rpmProject.importSourceRPM(foo);
 		return rpmProject;
