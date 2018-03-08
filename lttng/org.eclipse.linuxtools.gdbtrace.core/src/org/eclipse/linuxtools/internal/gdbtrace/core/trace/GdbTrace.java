@@ -15,17 +15,15 @@
 
 package org.eclipse.linuxtools.internal.gdbtrace.core.trace;
 
-import java.io.File;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.internal.gdbtrace.core.Activator;
 import org.eclipse.linuxtools.internal.gdbtrace.core.GdbTraceCorePlugin;
 import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEvent;
+import org.eclipse.linuxtools.internal.gdbtrace.core.Activator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -82,11 +80,8 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
 
     @Override
     public IStatus validate(IProject project, String path) {
-        if (fileExists(path) ) {
-            if( (new File(path)).isFile()) {
-                return Status.OK_STATUS;
-            }
-            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.GdbTrace_GdbTracesMustBeAFile + ": " + path + " " + Messages.GdbTrace_IsNotAFile);  //$NON-NLS-1$//$NON-NLS-2$
+        if (fileExists(path)) {
+            return Status.OK_STATUS;
         }
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.GdbTrace_FileNotFound + ": " + path); //$NON-NLS-1$
     }
@@ -96,12 +91,12 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
         try {
             String tracedExecutable = resource.getPersistentProperty(EXEC_KEY);
             if (tracedExecutable == null) {
-                throw new TmfTraceException(Messages.GdbTrace_ExecutableNotSet);
+                throw new TmfTraceException("Trace executable not set"); //$NON-NLS-1$
             }
             fGdbTpRef = new DsfGdbAdaptor(this, GDB_EXECUTABLE, path, tracedExecutable);
             fNbFrames = fGdbTpRef.getNumberOfFrames();
         } catch (CoreException e) {
-            throw new TmfTraceException(Messages.GdbTrace_FailedToInitializeTrace, e);
+            throw new TmfTraceException("Failed to initialize trace", e); //$NON-NLS-1$
         }
 
         super.initTrace(resource, path, type);
