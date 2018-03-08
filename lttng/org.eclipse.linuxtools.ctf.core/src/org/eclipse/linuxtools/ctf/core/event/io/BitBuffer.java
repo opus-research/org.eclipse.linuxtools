@@ -100,6 +100,24 @@ public final class BitBuffer {
     }
 
     /**
+     * Relative <i>get</i> method for reading 64-bit integer.
+     *
+     * Reads next eight bytes from the current bit position according to current
+     * byte order.
+     *
+     * @return The long value read from the buffer
+     */
+    public long getLong() {
+        long a = getInt(BIT_INT, false);
+        long b = getInt(BIT_INT, false);
+
+        if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
+            return (a << 32) | b;
+        }
+        return (b << 32) | a;
+    }
+
+    /**
      * Relative <i>get</i> method for reading integer of <i>length</i> bits.
      *
      * Reads <i>length</i> bits starting at the current position. The result is
