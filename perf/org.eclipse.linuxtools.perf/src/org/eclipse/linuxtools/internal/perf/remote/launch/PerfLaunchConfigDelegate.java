@@ -70,9 +70,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 	public void launch(ILaunchConfiguration config, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		try {
-			System.out.println(" ************************** ");
-			System.out.println(" ************* perf REMOTE launch delegate!!!! ************** ");
-			System.out.println(" ************************** ");
 			this.configUtils = new ConfigUtils(config);
 			IProject project = ConfigUtils.getProject(configUtils.getProjectName());
 			// check if Perf exists in $PATH

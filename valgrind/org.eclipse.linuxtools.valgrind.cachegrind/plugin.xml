@@ -30,22 +30,6 @@
             tabgroup="org.eclipse.linuxtools.internal.valgrind.cachegrind.CachegrindLaunchConfigurationTabGroup"
             type="timing">
       </provider>
-   </extension>
-   <!-- RemoteProxy provider extension for unified launcher -->
-   <extension
-         point="org.eclipse.linuxtools.profiling.launch.RemoteProxyManager">
-      <provider
-            class="org.eclipse.linuxtools.profiling.launch.RemoteProxyManager"
-            delegate="org.eclipse.linuxtools.internal.valgrind.launch.ValgrindRemoteProxyLaunchDelegate"
-            description="%cachegrindLaunchConfiguration.description.0"
-            id="org.eclipse.linuxtools.profiling.provider.valgrind.cachegrind.remote"
-            scheme="remotetools"
-            information="%cachegrindLaunchConfiguration.information.0"
-            name="%cachegrindLaunchConfiguration.name.0"
-            priority="2"
-            tabgroup="org.eclipse.linuxtools.internal.valgrind.launch.ValgrindRemoteProxyLaunchConfigurationTabGroup"
-            type="timing">
-      </provider>
-   </extension> 
+   </extension>   
 
 </plugin>

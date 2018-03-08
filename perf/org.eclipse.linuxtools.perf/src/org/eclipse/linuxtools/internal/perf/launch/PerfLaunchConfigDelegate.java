@@ -60,11 +60,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			throw new CoreException(status);
 		}
 		
-		System.out.println(" ************************** ");
-		System.out.println(" ************* perf LOCAL launch delegate!!!! ************** ");
-		System.out.println(" ************************** ");
-		
-		
 		//Find the binary path
 		IPath exePath = CDebugUtils.verifyProgramPath( config );
 		
