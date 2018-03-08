@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
@@ -29,6 +29,15 @@ public final class Messages extends NLS {
 	public static String PrepareSources_coreException;
 	public static String PrepareSources_prepareSources;
 	public static String PrepareSources_consoleName;
+
+	// SpecfileEditorBuildSRPMDelegate
+	public static String BuildSRPM_executeMessage;
+
+	// SpecfileEditorBuildSRPMDelegate
+	public static String BuildRPMS_executeMessage;
+
+	// SpecfileEditorBuildSRPMDelegate
+	public static String BuildAll_executeMessage;
 
 	// RPMHandlerUtils
 	public static String RPMHandlerUtils_cannotCreateRPMProject;
