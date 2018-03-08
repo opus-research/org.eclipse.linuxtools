@@ -26,15 +26,17 @@ public interface IRemoteEnvProxyManager extends IRemoteProxyManager {
 	/**
 	 * Method to get system's environment variables.
 	 *
-	 * @param project The project to get env for.
+	 * @param Project
+	 *            IProject
 	 * @return Mapping of environment variables
 	 * @since 2.1
-	*/
+	*/	
 	public Map<String, String> getEnv(IProject project) throws CoreException;
         /**
          * Method to get system's environment variables.
-         *
-         * @param uri The uri to get env for.
+         *      
+         * @param Resource URI
+         *            URI
          * @return Mapping of environment variables
          * @since 2.1
         */

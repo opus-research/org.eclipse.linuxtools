@@ -78,5 +78,5 @@ public class UniqueFilterTest  {
 		assertTrue(UniqueFilter.ID.equals(filter.getID()));
 	}
 
-	private UniqueFilter filter;
+	UniqueFilter filter;
 }

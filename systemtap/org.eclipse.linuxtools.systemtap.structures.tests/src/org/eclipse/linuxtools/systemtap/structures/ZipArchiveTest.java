@@ -9,7 +9,7 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.structures.tests;
+package org.eclipse.linuxtools.systemtap.structures;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
