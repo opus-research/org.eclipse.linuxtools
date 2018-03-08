@@ -17,8 +17,6 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.internal.profiling.provider.ProviderProfileConstants;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
 public class ProviderLaunchConfigurationDelegate extends
 		ProfileLaunchConfigurationDelegate {
@@ -34,7 +32,7 @@ public class ProviderLaunchConfigurationDelegate extends
 						ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
 
 				// get delegate associated with provider id.
-				ProfileLaunchConfigurationDelegate delegate = getConfigurationDelegateFromId(providerId);
+				ProfileLaunchConfigurationDelegate delegate = ProviderFramework.getConfigurationDelegateFromId(providerId);
 
 				// launch delegate
 				if (delegate != null) {
@@ -62,13 +60,13 @@ public class ProviderLaunchConfigurationDelegate extends
 		// Look in the preferences for a provider
 		String providerId = ConfigurationScope.INSTANCE.getNode(type).get(
 				ProviderProfileConstants.PREFS_KEY, "");
-		if (providerId.equals("") || getConfigurationDelegateFromId(providerId) == null) {
+		if (providerId.equals("") || ProviderFramework.getConfigurationDelegateFromId(providerId) == null) {
 			// Get highest priority provider
-			providerId = ProfileLaunchConfigurationTabGroup
+			providerId = ProviderFramework
 					.getHighestProviderId(type);
 			if (providerId == null) {
 				// Get default provider
-				providerId = ProfileLaunchShortcut
+				providerId = ProviderFramework
 						.getDefaultLaunchShortcutProviderId(type);
 			}
 		}
