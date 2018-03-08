@@ -241,6 +241,9 @@ public class ScriptConsole extends IOConsole {
 			int lastDot = moduleName.indexOf(".stp"); //$NON-NLS-1$
 			if (lastSlash > 0 && lastDot > 0){
 				moduleName = moduleName.substring(lastSlash, lastDot);
+				if (moduleName.indexOf('-') != -1){
+					moduleName = moduleName.substring(0, moduleName.indexOf('-'));
+				}
 			}
 		}
 		return this.moduleName;
