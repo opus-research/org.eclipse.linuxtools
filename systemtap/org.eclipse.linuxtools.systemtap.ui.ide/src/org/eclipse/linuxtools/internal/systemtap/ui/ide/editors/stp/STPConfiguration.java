@@ -165,10 +165,4 @@ public class STPConfiguration extends SourceViewerConfiguration {
 		return processor;
 	}
 
-	@Override
-	public String[] getDefaultPrefixes(ISourceViewer sourceViewer,
-			String contentType) {
-		return new String[] { "//", "" };  //$NON-NLS-1$//$NON-NLS-2$
-	}
-
 }
