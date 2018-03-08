@@ -153,7 +153,7 @@ public class RowDataSet implements IHistoricalDataSet {
 		Object[] d = new Object[Math.min(end-start, data.size())];
 		
 		for(int i=0; i<d.length; i++)
-			d[i] = data.get(start+i).getColumn(col)[0];
+			d[i] = ((IDataEntry)data.get(start+i)).getColumn(col)[0];
 		return d;
 	}
 	
@@ -175,7 +175,7 @@ public class RowDataSet implements IHistoricalDataSet {
 		if(entry < 0 || entry >= getEntryCount())
 			return null;
 		else
-			return data.get(entry);
+			return (IDataEntry)data.get(entry);
 	}
 	//End IHistoricalDataSet Methods
 	
