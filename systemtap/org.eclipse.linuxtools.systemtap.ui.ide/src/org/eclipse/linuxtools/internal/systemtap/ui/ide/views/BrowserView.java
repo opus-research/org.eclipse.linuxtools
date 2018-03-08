@@ -50,7 +50,7 @@ public abstract class BrowserView extends ViewPart {
 	 * @author Ryan Morse
 	 *
 	 */
-	static class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
+	class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {}
 		
 		public void dispose() {}
@@ -84,7 +84,7 @@ public abstract class BrowserView extends ViewPart {
 	 * Provides the icon and text for each entry in the tapset tree.
 	 * @author Ryan Morse
 	 */
-	static class ViewLabelProvider extends LabelProvider {
+	class ViewLabelProvider extends LabelProvider {
 		public String getText(Object obj) {
 			return obj.toString();
 		}

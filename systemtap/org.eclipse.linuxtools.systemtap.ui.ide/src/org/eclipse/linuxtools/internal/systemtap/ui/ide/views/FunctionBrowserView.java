@@ -33,13 +33,6 @@ import org.eclipse.ui.IWorkbenchActionConstants;
  * @author Henry Hughes
  */
 public class FunctionBrowserView extends BrowserView {
-	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView";
-	private FunctionBrowserAction doubleClickAction;
-	private IDoubleClickListener dblClickListener;
-	private TreeNode functions;
-	private TreeNode localFunctions;
-	private Menu menu;
-
 	public FunctionBrowserView() {
 		super();
 		LogManager.logInfo("Initializing", this); //$NON-NLS-1$
@@ -135,6 +128,12 @@ public class FunctionBrowserView extends BrowserView {
 			menu.dispose();
 		menu = null;
 		LogManager.logDebug("End dispose:", this); //$NON-NLS-1$
-		TapsetLibrary.stop();
 	}
+	
+	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView";
+	private FunctionBrowserAction doubleClickAction;
+	private IDoubleClickListener dblClickListener;
+	private TreeNode functions;
+	private TreeNode localFunctions;
+	private Menu menu;
 }

@@ -77,7 +77,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 		addField(macroHoverListEditor);
 	}
 
-	static class MacroListEditor extends ListEditor {
+	class MacroListEditor extends ListEditor {
 
 		/**
 		 * The list widget; <code>null</code> if none (before creation or
