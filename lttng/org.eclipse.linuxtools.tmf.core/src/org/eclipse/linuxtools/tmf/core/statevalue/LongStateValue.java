@@ -42,6 +42,11 @@ final class LongStateValue extends TmfStateValue {
     }
 
     @Override
+    public byte[] toByteArray() {
+        return null;
+    }
+
+    @Override
     public String toString() {
         return String.format("%3d", valueLong); //$NON-NLS-1$
     }
