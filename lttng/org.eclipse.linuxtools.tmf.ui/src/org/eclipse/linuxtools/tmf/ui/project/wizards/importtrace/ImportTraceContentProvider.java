@@ -35,10 +35,10 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
  */
 class ImportTraceContentProvider implements ITreeContentProvider {
 
-    final Map<String, String> fTraceTypes = new HashMap<String, String>();
-    final Map<String, Set<FileAndName>> fTraceFiles = new HashMap<String, Set<FileAndName>>();
-    final List<String> fTraceTypesToScan;
-    final Set<String> fParentFilesToScan;
+    private final Map<String, String> fTraceTypes = new HashMap<String, String>();
+    private final Map<String, Set<FileAndName>> fTraceFiles = new HashMap<String, Set<FileAndName>>();
+    private final List<String> fTraceTypesToScan;
+    private final Set<String> fParentFilesToScan;
 
     public ImportTraceContentProvider(List<String> traceTypesToScan, Set<String> parentFilesToScan) {
         fTraceTypesToScan = traceTypesToScan;

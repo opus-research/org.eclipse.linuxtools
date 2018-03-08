@@ -23,38 +23,37 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.messages"; //$NON-NLS-1$
 
-    public static String ImportTraceWizard_importProblem ;
-    public static String ImportTraceWizard_importCaption;
-    public static String ImportTraceWizard_traceDisplayName;
-    public static String ImportTraceWizard_linkTraces;
-    public static String ImportTraceWizard_copyTraces;
-    public static String ImportTraceWizard_overwriteTraces;
-    public static String ImportTraceWizard_addFile;
-    public static String ImportTraceWizard_addDirectory;
-    public static String ImportTraceWizard_remove;
-    public static String ImportTraceWizardDirectory_title;
-    public static String ImportTraceWizardDirectory_hint;
-    public static String ImportTraceWizardScanPage_renameError;
-    public static String ImportTraceWizardScanPage_selectAtleastOne;
+    public static String ImportTraceWizardImportProblem ;
+    public static String ImportTraceWizardImportCaption;
+    public static String ImportTraceWizardTraceDisplayName;
+    public static String ImportTraceWizardLinkTraces;
+    public static String ImportTraceWizardCopyTraces;
+    public static String ImportTraceWizardOverwriteTraces;
+    public static String ImportTraceWizardAddFile;
+    public static String ImportTraceWizardAddDirectory;
+    public static String ImportTraceWizardRemove;
+    public static String ImportTraceWizardDirectoryTitle;
+    public static String ImportTraceWizardDirectoryHint;
+    public static String ImportTraceWizardScanPageRenameError;
+    public static String ImportTraceWizardScanPageSelectAtleastOne;
 
-    public static String ImportTraceWizardScanPage_title;
-    public static String ImportTraceWizard_selectAll;
+    public static String ImportTraceWizardScanPageTitle;
+    public static String ImportTraceWizardSelectAll;
 
-    public static String ImportTraceWizardSelectTraceTypePage_title;
-    public static String ImportTraceWizardPageOptions_noProjectSelected;
+    public static String ImportTraceWizardSelectTraceTypePageTitle;
 
-    public static String ImportTraceWizardPageOptions_title;
+    public static String ImportTraceWizardPageOptionsTitle;
 
-    public static String ImportTraceWizardPageScan_done;
-    public static String ImportTraceWizardPageScan_scanning;
-    public static String ImportTraceWizardPage_selectNone;
-    public static String ImportTraceWizardPage_selectHint;
-    public static String BatchImportTraceWizard_remove;
-    public static String BatchImportTraceWizard_add;
+    public static String ImportTraceWizardPageScanDone;
+    public static String ImportTraceWizardPageScanScanning;
+    public static String ImportTraceWizardPageSelectNone;
+    public static String ImportTraceWizardPageSelectHint;
+    public static String BatchImportTraceWizardRemove;
+    public static String BatchImportTraceWizardAdd;
 
-    public static String BatchImportTraceWizard_errorImportingTraceResource;
+    public static String BatchImportTraceWizardErrorImportingTraceResource;
 
-    public static String BatchImportTraceWizard_selectProject;
+    public static String SharedSelectProject;
 
     static {
         // initialize resource bundle

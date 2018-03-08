@@ -111,7 +111,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
     public void createControl(Composite parent) {
         super.createControl(parent);
         final Composite control = (Composite) this.getControl();
-        setTitle(Messages.ImportTraceWizardScanPage_title);
+        setTitle(Messages.ImportTraceWizardScanPageTitle);
         traceTypeViewer = new CheckboxTreeViewer(control, SWT.CHECK);
         traceTypeViewer.setContentProvider(getBatchWizard().getScannedTraces());
         traceTypeViewer.getTree().setHeaderVisible(true);
@@ -132,7 +132,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         // --------------------
         TreeViewerColumn column = new TreeViewerColumn(traceTypeViewer, SWT.NONE);
         column.getColumn().setWidth(200);
-        column.getColumn().setText(Messages.ImportTraceWizard_traceDisplayName);
+        column.getColumn().setText(Messages.ImportTraceWizardTraceDisplayName);
         column.setLabelProvider(new FirstColumnLabelProvider());
         column.setEditingSupport(new ColumnEditorSupport(traceTypeViewer, textCellEditor));
 
@@ -142,7 +142,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
         column = new TreeViewerColumn(traceTypeViewer, SWT.NONE);
         column.getColumn().setWidth(200);
-        column.getColumn().setText(Messages.ImportTraceWizard_importCaption);
+        column.getColumn().setText(Messages.ImportTraceWizardImportCaption);
         column.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -157,7 +157,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         init();
         getBatchWizard().setTracesToScan(fTracesToScan);
         fRunnable.schedule();
-        setErrorMessage(Messages.ImportTraceWizardScanPage_selectAtleastOne);
+        setErrorMessage(Messages.ImportTraceWizardScanPageSelectAtleastOne);
     }
 
     private void init() {
@@ -167,12 +167,12 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         optionPane.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, true));
 
         final Button fLink = new Button(optionPane, SWT.RADIO);
-        fLink.setText(Messages.ImportTraceWizard_linkTraces);
+        fLink.setText(Messages.ImportTraceWizardLinkTraces);
         fLink.setSelection(true);
         fLink.setLayoutData(new GridData());
 
         final Button fCopy = new Button(optionPane, SWT.RADIO);
-        fCopy.setText(Messages.ImportTraceWizard_copyTraces);
+        fCopy.setText(Messages.ImportTraceWizardCopyTraces);
         fCopy.setLayoutData(new GridData());
 
         final SelectionListener linkedListener = new RadioChooser(fLink);
@@ -181,7 +181,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         fCopy.addSelectionListener(linkedListener);
 
         Button fOverwrite = new Button(optionPane, SWT.CHECK);
-        fOverwrite.setText(Messages.ImportTraceWizard_overwriteTraces);
+        fOverwrite.setText(Messages.ImportTraceWizardOverwriteTraces);
         fOverwrite.setLayoutData(new GridData());
         fOverwrite.setSelection(true);
         fOverwrite.addSelectionListener(new SelectionListener() {
@@ -326,9 +326,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
             }
             getBatchWizard().updateConflicts();
             if (getBatchWizard().hasConflicts()) {
-                setErrorMessage(Messages.ImportTraceWizardScanPage_renameError);
+                setErrorMessage(Messages.ImportTraceWizardScanPageRenameError);
             } else if (!getBatchWizard().hasTracesToImport()) {
-                setErrorMessage(Messages.ImportTraceWizardScanPage_selectAtleastOne);
+                setErrorMessage(Messages.ImportTraceWizardScanPageSelectAtleastOne);
             } else {
                 setErrorMessage(null);
             }
@@ -352,6 +352,8 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
     private final class ScanRunnable extends Job {
 
+        // monitor is stored here, starts as the main monitor but becomes a
+        // submonitor
         private IProgressMonitor fMonitor;
 
         public ScanRunnable(String name) {
@@ -364,16 +366,24 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
 
         @Override
         public IStatus run(IProgressMonitor monitor) {
+
+            // set up phase, it is synchronous
+
             fMonitor = monitor;
             final Control control = traceTypeViewer.getControl();
+            // please note the sync exec here is to allow us to set
             control.getDisplay().syncExec(new Runnable() {
                 @Override
                 public void run() {
+                    // monitor gets overwritten here so it's necessary to save
+                    // it in a field.
                     fMonitor = SubMonitor.convert(getMonitor());
-                    getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
+                    getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
                     ((SubMonitor) getMonitor()).setWorkRemaining(IProgressMonitor.UNKNOWN);
                 }
             });
+
+            // at this point we start calling async execs and updating the view
 
             while (fCanRun == true) {
                 boolean updated = false;
@@ -384,9 +394,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         @Override
                         public void run() {
                             if (!control.isDisposed()) {
-                                getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
-                                getMonitor().subTask(Messages.ImportTraceWizardPageScan_done);
-                                ImportTraceWizardScanPage.this.setMessage(Messages.ImportTraceWizardPageScan_scanning + " " + Messages.ImportTraceWizardPageScan_done); //$NON-NLS-1$
+                                getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
+                                getMonitor().subTask(Messages.ImportTraceWizardPageScanDone);
+                                ImportTraceWizardScanPage.this.setMessage(Messages.ImportTraceWizardPageScanScanning + ' ' + Messages.ImportTraceWizardPageScanDone);
                             }
                         }
                     });
@@ -409,9 +419,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         updated = true;
                     }
                     final int scanned = getBatchWizard().getNumberOfResults();
-                    final int toScan = fTracesToScan.size();
-                    final int prevVal = (int) ((scanned - 1) * 100.0 / (scanned - 1 + toScan + 1));
-                    final int curVal = (int) ((scanned) * 100.0 / (scanned + toScan));
+                    final int total = scanned + fTracesToScan.size();
+                    final int prevVal = (int) ((scanned - 1) * 100.0 / total);
+                    final int curVal = (int) ((scanned) * 100.0 / total);
                     if (curVal != prevVal) {
                         updated = true;
                     }
@@ -424,12 +434,12 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                                 @Override
                                 public void run() {
                                     if (!control.isDisposed()) {
-                                        getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
+                                        getMonitor().setTaskName(Messages.ImportTraceWizardPageScanScanning + ' ');
                                         getMonitor().subTask(traceToScan.getTraceToScan());
                                         getMonitor().worked(1);
-                                        ImportTraceWizardScanPage.this.setMessage(Messages.ImportTraceWizardPageScan_scanning + " " //$NON-NLS-1$
+                                        ImportTraceWizardScanPage.this.setMessage(Messages.ImportTraceWizardPageScanScanning + ' '
                                                 + Integer.toString(curVal)
-                                                + "%"); //$NON-NLS-1$
+                                                + '%');
                                     }
                                 }
                             }

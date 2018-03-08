@@ -85,7 +85,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     // ------------------
 
     private IWizardPage fSelectDirectoriesPage;
-    private IWizardPage fScanPage;
+    private ImportTraceWizardScanPage fScanPage;
     private IWizardPage fSelectTypePage;
     private IWizardPage fOptions;
 
@@ -137,9 +137,9 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         fOptions = new ImportTraceWizardPageOptions(workbench, selection);
         // keep in case it's called later
         Iterator<?> iter = selection.iterator();
-        while(iter.hasNext()){
+        while (iter.hasNext()) {
             Object selected = iter.next();
-            if( selected instanceof TmfTraceFolder){
+            if (selected instanceof TmfTraceFolder) {
                 fTargetFolder = ((TmfTraceFolder) selected).getResource();
                 break;
             }
@@ -169,7 +169,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     public void addFileToScan(final String fileName) {
         if (!fParentFiles.containsKey(fileName)) {
             fParentFiles.put(fileName, new HashSet<String>());
-            startUpdateTask(Messages.BatchImportTraceWizard_add + " " + fileName, fileName); //$NON-NLS-1$
+            startUpdateTask(Messages.BatchImportTraceWizardAdd + ' ' + fileName, fileName);
 
         }
 
@@ -184,7 +184,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     public void removeFile(final String fileName) {
         fParentFiles.remove(fileName);
         fParentFilesToScan.remove(fileName);
-        startUpdateTask(Messages.BatchImportTraceWizard_remove + " " + fileName, null);//$NON-NLS-1$
+        startUpdateTask(Messages.BatchImportTraceWizardRemove + ' ' + fileName, null);
     }
 
     private void startUpdateTask(final String taskName, final String fileName) {
@@ -343,6 +343,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                 final boolean startsWithTxt = traceType.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY);
                 final boolean startsWithXML = traceType.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY);
                 if (!traceTypeOK && (startsWithTxt || startsWithXML)) {
+                    final char SEPARATOR = ':';
                     // do custom trace stuff here
                     traceTypeOK = true;
                     String traceTypeToken[] = traceType.split(":", 2); //$NON-NLS-1$
@@ -350,10 +351,10 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         traceBundle =
                                 Activator.getDefault().getBundle().getSymbolicName();
                         if (startsWithTxt) {
-                            traceTypeId = CustomTxtTrace.class.getCanonicalName() + ":" + traceTypeToken[1]; //$NON-NLS-1$
+                            traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + traceTypeToken[1];
                         }
                         else {
-                            traceTypeId = CustomXmlTrace.class.getCanonicalName() + ":" + traceTypeToken[1]; //$NON-NLS-1$
+                            traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + traceTypeToken[1];
                         }
                         traceIcon = DEFAULT_TRACE_ICON_PATH;
                     } else {
@@ -411,8 +412,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
                 }
             } catch (CoreException e) {
-                Activator.getDefault().logError(Messages.BatchImportTraceWizard_errorImportingTraceResource
-                        + " " + resource.getName(), e); //$NON-NLS-1$
+                Activator.getDefault().logError(Messages.BatchImportTraceWizardErrorImportingTraceResource
+                        + ' ' + resource.getName(), e);
             }
         }
         return validate;
@@ -535,7 +536,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
         IStatus status = op.getStatus();
         if (!status.isOK()) {
-            ErrorDialog.openError(getContainer().getShell(), Messages.ImportTraceWizard_importProblem, null, status);
+            ErrorDialog.openError(getContainer().getShell(), Messages.ImportTraceWizardImportProblem, null, status);
             return false;
         }
 
@@ -618,6 +619,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     }
 
     private void updateTracesToScan(final List<String> added) {
+        // Treeset is used instead of a hashset since the traces should be read
+        // in the order they were added.
         final Set<String> filesToScan = new TreeSet<String>();
         for (String name : fParentFiles.keySet()) {
             filesToScan.addAll(fParentFiles.get(name));
@@ -694,14 +697,14 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         fTracesToScan.put(tv);
                         monitor.subTask(tv.getTraceToScan());
                         if (monitor.isCanceled()) {
-                            ((ImportTraceWizardScanPage) fScanPage).refresh();
+                            fScanPage.refresh();
                             return CANCEL_STATUS;
                         }
                     }
                 }
             }
         }
-        ((ImportTraceWizardScanPage) fScanPage).refresh();
+        fScanPage.refresh();
         return Status.OK_STATUS;
     }
 
@@ -764,7 +767,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
      * @return the target folder
      */
     public IFolder getTargetFolder() {
-
         return fTargetFolder;
     }
 
