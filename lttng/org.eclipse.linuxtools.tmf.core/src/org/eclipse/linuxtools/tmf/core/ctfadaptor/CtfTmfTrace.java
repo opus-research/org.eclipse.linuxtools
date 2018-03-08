@@ -13,7 +13,6 @@
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
-import java.nio.BufferOverflowException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -21,7 +20,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
@@ -31,9 +29,9 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 
 /**
@@ -155,10 +153,7 @@ public class CtfTmfTrace extends TmfTrace
             temp.dispose();
         } catch (final CTFReaderException e) {
             validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + e.toString()); //$NON-NLS-1$
-        } catch (final BufferOverflowException e){
-            validTrace = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.CtfTmfTrace_ReadingError +": " + Messages.CtfTmfTrace_BufferOverflowErrorMessage); //$NON-NLS-1$
         }
-
         return validTrace;
     }
 
@@ -310,63 +305,6 @@ public class CtfTmfTrace extends TmfTrace
             return fTrace.getOffset();
         }
         return 0;
-    }
-
-    /**
-     * Returns whether or not an event is in the metadata of the trace,
-     * therefore if it can possibly be in the trace. It does not verify whether
-     * or not the event is actually in the trace
-     *
-     * @param eventName
-     *            The name of the event to check
-     * @return Whether the event is in the metadata or not
-     * @since 2.1
-     */
-    public boolean hasEvent(final String eventName) {
-        Map<Long, IEventDeclaration> events = fTrace.getEvents(0L);
-        if (events != null) {
-            for (IEventDeclaration decl : events.values()) {
-                if (decl.getName().equals(eventName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Return whether all requested events are in the metadata
-     *
-     * @param names
-     *            The array of events to check for
-     * @return Whether all events are in the metadata
-     * @since 2.1
-     */
-    public boolean hasAllEvents(String[] names) {
-        for (String name : names) {
-            if (!hasEvent(name)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns whether the metadata contains at least one of the requested
-     * events
-     *
-     * @param names
-     *            The array of event names of check for
-     * @return Whether one of the event is present in trace metadata
-     * @since 2.1
-     */
-    public boolean hasAtLeastOneOfEvents(String[] names) {
-        for (String name : names) {
-            if (hasEvent(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // -------------------------------------------
