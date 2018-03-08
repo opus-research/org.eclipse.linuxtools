@@ -230,13 +230,6 @@ public class CTFTrace implements IDefinitionScope {
     }
 
     /**
-     * CTFTrace empty constructor for testing purposes
-     * @since 3.0
-     */
-    public CTFTrace(){
-        path = null;
-    }
-    /**
      * Dispose the trace
      *
      * @since 2.0
