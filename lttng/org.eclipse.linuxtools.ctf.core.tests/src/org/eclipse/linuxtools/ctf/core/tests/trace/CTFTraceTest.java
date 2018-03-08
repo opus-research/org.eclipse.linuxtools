@@ -17,8 +17,8 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.TestParams;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
-import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
+import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,16 +104,9 @@ public class CTFTraceTest {
      */
     @Test
     public void testAddStream() throws ParseException, CTFReaderException {
-        // test number of streams
-        int nbStreams = fixture.nbStreams();
-        assertEquals(1, nbStreams);
-        // Add a stream
         Stream stream = new Stream(TestParams.createTrace());
-        stream.setId(1234);
+        stream.setId(1L);
         fixture.addStream(stream);
-        // test number of streams
-        nbStreams = fixture.nbStreams();
-        assertEquals(2, nbStreams);
     }
 
     /**
@@ -236,6 +229,15 @@ public class CTFTraceTest {
     }
 
     /**
+     * Run the int nbStreams() method test.
+     */
+    @Test
+    public void testNbStreams() {
+        int result = fixture.nbStreams();
+        assertEquals(2, result);
+    }
+
+    /**
      * Run the boolean packetHeaderIsSet() method test with a valid header set.
      */
     @Test
@@ -330,7 +332,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testGetClock_3() {
-        String name = "invisibleClock"; //$NON-NLS-1$
+        String name = ""; //$NON-NLS-1$
         CTFClock result = fixture.getClock(name);
         assertNull(result);
     }
@@ -341,7 +343,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testSetClock_1() {
-        String name = "clockyClock"; //$NON-NLS-1$
+        String name = ""; //$NON-NLS-1$
         fixture.addClock(name, new CTFClock());
         CTFClock result = fixture.getClock(name);
 
@@ -380,7 +382,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testLookupEnvironment_2() {
-        String key = "otherTest"; //$NON-NLS-1$
+        String key = "test"; //$NON-NLS-1$
         String result = fixture.lookupEnvironment(key);
         assertNull(result);
     }

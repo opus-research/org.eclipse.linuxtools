@@ -16,6 +16,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 
 /**
  * <b><u>TmfEmptyTraceStub</u></b>
@@ -24,15 +25,13 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
  */
 public class TmfEmptyTraceStub extends TmfTraceStub {
 
-    /**
-     *
-     */
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     *
+     * @param path
+     * @throws FileNotFoundException
      */
     public TmfEmptyTraceStub() {
         super();
@@ -44,7 +43,7 @@ public class TmfEmptyTraceStub extends TmfTraceStub {
     // ------------------------------------------------------------------------
 
     @Override
-    public TmfContext seekEvent(final ITmfLocation location) {
+    public TmfContext seekEvent(final ITmfLocation<?> location) {
         return new TmfContext();
     }
 
@@ -54,12 +53,12 @@ public class TmfEmptyTraceStub extends TmfTraceStub {
     }
 
     @Override
-    public double getLocationRatio(ITmfLocation location) {
+    public double getLocationRatio(ITmfLocation<?> location) {
         return 0;
     }
 
     @Override
-    public ITmfLocation getCurrentLocation() {
+    public TmfLocation<Long> getCurrentLocation() {
         return null;
     }
 

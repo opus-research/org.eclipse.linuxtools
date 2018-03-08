@@ -22,9 +22,6 @@ import junit.framework.TestSuite;
  */
 public class AllTmfCoreTests {
 
-	/**
-	 * @return the TMF Core test suite
-	 */
 	public static Test suite() {
 		TestSuite suite = new TestSuite(AllTmfCoreTests.class.getName());
 		//$JUnit-BEGIN$
@@ -32,7 +29,6 @@ public class AllTmfCoreTests {
 		suite.addTest(org.eclipse.linuxtools.tmf.core.tests.event.AllTests.suite());
 		suite.addTest(org.eclipse.linuxtools.tmf.core.tests.request.AllTests.suite());
 		suite.addTest(org.eclipse.linuxtools.tmf.core.tests.component.AllTests.suite());
-		suite.addTest(org.eclipse.linuxtools.tmf.core.tests.statesystem.AllTests.suite());
 		suite.addTest(org.eclipse.linuxtools.tmf.core.tests.trace.AllTests.suite());
 		suite.addTest(org.eclipse.linuxtools.tmf.core.tests.uml2sd.AllTests.suite());
 		suite.addTest(org.eclipse.linuxtools.tmf.core.tests.util.AllTests.suite());

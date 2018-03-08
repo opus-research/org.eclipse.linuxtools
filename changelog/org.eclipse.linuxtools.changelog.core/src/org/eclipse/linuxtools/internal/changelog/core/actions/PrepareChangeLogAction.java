@@ -90,7 +90,7 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 	protected boolean newEntryWritten = false;
 	protected boolean createChangeLog = true;
 	
-	private static class MyDocumentProvider extends FileDocumentProvider {
+	private class MyDocumentProvider extends FileDocumentProvider {
 
 		@Override
 		public IDocument createDocument(Object element) throws CoreException {
@@ -98,7 +98,7 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 		}
 	}
 
-	private static class MyStorageDocumentProvider extends StorageDocumentProvider {
+	private class MyStorageDocumentProvider extends StorageDocumentProvider {
 
 		@Override
 		public IDocument createDocument(Object element) throws CoreException {
@@ -324,20 +324,16 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 				// Check the type of entry and sort into lists.  Do not add an entry
 				// for ChangeLog files.
 				if (!(p.getPath().lastSegment().equals("ChangeLog"))) { // $NON-NLS-1$
-					switch (kind) {
-					case SyncInfo.ADDITION:
+					if (kind == SyncInfo.ADDITION) {
 						p.setNewfile(true);
 						newList.add(p);
-						break;
-					case SyncInfo.DELETION:
+					} else if (kind == SyncInfo.DELETION) {
 						p.setRemovedFile(true);
 						removeList.add(p);
-						break;
-					case SyncInfo.CHANGE:
+					} else if (kind == SyncInfo.CHANGE) {
 						if (info.getLocal().getType() == IResource.FILE) {
 							changeList.add(p);
 						}
-						break;
 					}
 				} else {
 					this.changeLogModified = true;

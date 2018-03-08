@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,9 +13,9 @@ import org.junit.Test;
 /**
  * Part of the BitBuffet tests with test the methods to read/write integers.
  * These are separated from the main file because the fixture is different.
- *
+ * 
  * @author alexmont
- *
+ * 
  */
 public class BitBufferIntTest {
 
@@ -23,7 +23,7 @@ public class BitBufferIntTest {
 
     /**
      * Launch the test.
-     *
+     * 
      * @param args
      *            the command line arguments
      */
@@ -113,10 +113,11 @@ public class BitBufferIntTest {
     @Test
     public void testGetInt_signed() {
         fixture.position(1);
+        int index = 1;
         int length = 0;
         boolean signed = true;
 
-        int result = fixture.getInt(length, signed);
+        int result = fixture.getInt(index, length, signed);
         assertEquals(0, result);
     }
 
@@ -126,10 +127,11 @@ public class BitBufferIntTest {
     @Test
     public void testGetInt_signed_length1() {
         fixture.position(1);
+        int index = 1;
         int length = 1;
         boolean signed = true;
 
-        int result = fixture.getInt(length, signed);
+        int result = fixture.getInt(index, length, signed);
         assertEquals(0, result);
     }
 
@@ -144,8 +146,9 @@ public class BitBufferIntTest {
         le_fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
         createBuffer(le_fixture);
         le_fixture.position(1);
+        int index = 1;
         int length = 24;
-        int result = le_fixture.getInt(length, false);
+        int result = le_fixture.getInt(index, length, false);
 
         /* 0x020100 downshifted */
         assertEquals(0x810080, result);
@@ -162,8 +165,9 @@ public class BitBufferIntTest {
         le_fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
         createBuffer(le_fixture);
         le_fixture.position(0);
+        int index = 0;
         int length = 24;
-        int result = le_fixture.getInt(length, false);
+        int result = le_fixture.getInt(index, length, false);
         assertEquals(0x020100, result);
     }
 
@@ -194,10 +198,11 @@ public class BitBufferIntTest {
         small_fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
         createBuffer(small_fixture, 2);
         small_fixture.position(1);
+        int index = 1;
         int length = 64;
         boolean signed = true;
 
-        int result = small_fixture.getInt(length, signed);
+        int result = small_fixture.getInt(index, length, signed);
         assertEquals(0, result);
     }
 
@@ -228,11 +233,12 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt_length0() {
+        int index = 1;
         int length = 0;
         int value = 1;
 
         fixture.position(1);
-        fixture.putInt(length, value);
+        fixture.putInt(index, length, value);
     }
 
     /**
@@ -240,11 +246,12 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt_length1() {
+        int index = 1;
         int length = 1;
         int value = 1;
 
         fixture.position(1);
-        fixture.putInt(length, value);
+        fixture.putInt(index, length, value);
     }
 
     /**
@@ -252,18 +259,12 @@ public class BitBufferIntTest {
      */
     @Test
     public void testPutInt_hex() {
-        final int value = 0x010203;
-        int read;
+        int value = 0x010203;
 
-        for (int i = 0; i <= 32; i++) {
-            fixture.position(i);
-            fixture.putInt(value);
-
-            fixture.position(i);
-            read = fixture.getInt();
-
-            assertEquals(value, read);
-        }
+        fixture.position(1);
+        fixture.putInt(value);
+        int read = fixture.getInt();
+        assertEquals(value, read);
     }
 
     /**
@@ -277,10 +278,11 @@ public class BitBufferIntTest {
         createBuffer(fixture2, 4);
         fixture2.position(1);
 
+        int index = 16;
         int length = 32;
         int value = 1;
 
-        fixture2.putInt(length, value);
+        fixture2.putInt(index, length, value);
 
         int read = fixture2.getInt(1, true);
         assertEquals(value, read);

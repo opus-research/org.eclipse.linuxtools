@@ -51,10 +51,7 @@ public abstract class CtfIteratorManager {
      *            the trace to register.
      */
     public static synchronized void removeTrace(final CtfTmfTrace trace) {
-        CtfTraceManager mgr = map.remove(trace);
-        if (mgr != null) {
-            mgr.clear();
-        }
+        map.remove(trace);
     }
 
     /**
@@ -145,10 +142,7 @@ class CtfTraceManager {
                  */
                 retVal = replaceRandomElement(context);
             }
-            if (context.getLocation() != null) {
-                final CtfLocationData location = (CtfLocationData) context.getLocation().getLocationInfo();
-                retVal.seek(location);
-            }
+            retVal.seek((Long) context.getLocation().getLocation());
         }
         return retVal;
     }
@@ -192,11 +186,4 @@ class CtfTraceManager {
         return elem;
     }
 
-    void clear() {
-        for (CtfIterator iterator : fMap.values()) {
-            iterator.dispose();
-        }
-        fMap.clear();
-        fRandomAccess.clear();
-    }
 }

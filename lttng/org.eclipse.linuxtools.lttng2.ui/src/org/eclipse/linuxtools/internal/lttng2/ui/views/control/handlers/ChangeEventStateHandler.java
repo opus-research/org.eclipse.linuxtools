@@ -67,7 +67,7 @@ abstract public class ChangeEventStateHandler extends BaseControlViewHandler {
      * @param channel - channel of events to be enabled
      * @param eventNames - list event names
      * @param monitor - a progress monitor
-     * @throws ExecutionException If the command fails
+     * @throws ExecutionException
      */
     abstract protected void changeState(TraceChannelComponent channel, List<String> eventNames, IProgressMonitor monitor) throws ExecutionException;
 
@@ -105,13 +105,13 @@ abstract public class ChangeEventStateHandler extends BaseControlViewHandler {
 
                             for (Iterator<TraceEventComponent> iterator = events.iterator(); iterator.hasNext();) {
                                 // Enable/disable all selected channels which are disabled
-                                TraceEventComponent traceEvent = iterator.next();
+                                TraceEventComponent event = iterator.next();
 
                                 // Workaround for wildcard handling in lttng-tools
-                                if ("*".equals(traceEvent.getName())) { //$NON-NLS-1$
+                                if ("*".equals(event.getName())) { //$NON-NLS-1$
                                     isAll = true;
                                 } else {
-                                    eventNames.add(traceEvent.getName());
+                                    eventNames.add(event.getName());
                                 }
                             }
                             if (isAll) {

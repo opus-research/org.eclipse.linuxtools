@@ -169,6 +169,7 @@ public class TraceSessionComponent extends TraceControlComponent {
      * (non-Javadoc)
      * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
      */
+    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
@@ -190,23 +191,6 @@ public class TraceSessionComponent extends TraceControlComponent {
      */
     public TargetNodeComponent getTargetNode() {
         return ((TraceSessionGroup)getParent()).getTargetNode();
-    }
-
-    /**
-     * Returns whether the kernel provider is available or not
-     * @return <code>true</code> if kernel provide is available or <code>false</code>
-     */
-    public boolean hasKernelProvider() {
-        List<ITraceControlComponent> providerGroups = getTargetNode().getChildren(TraceProviderGroup.class);
-        return (!providerGroups.isEmpty() ? ((TraceProviderGroup) providerGroups.get(0)).hasKernelProvider() : false);
-    }
-
-    /**
-     * Returns if node supports filtering of events
-     * @return <code>true</code> if node supports filtering else <code>false</code>
-     */
-    public boolean isEventFilteringSupported() {
-        return ((TargetNodeComponent)getParent().getParent()).isEventFilteringSupported();
     }
 
     // ------------------------------------------------------------------------
@@ -340,14 +324,12 @@ public class TraceSessionComponent extends TraceControlComponent {
      *            - a list of event names to enabled.
      * @param isKernel
      *            - a flag for indicating kernel or UST.
-     * @param filterExpression
-     *            - a filter expression
      * @throws ExecutionException
      *             If the command fails
      */
-    public void enableEvent(List<String> eventNames, boolean isKernel, String filterExpression)
+    public void enableEvent(List<String> eventNames, boolean isKernel)
             throws ExecutionException {
-        enableEvents(eventNames, isKernel, filterExpression, new NullProgressMonitor());
+        enableEvents(eventNames, isKernel, new NullProgressMonitor());
     }
 
     /**
@@ -357,17 +339,15 @@ public class TraceSessionComponent extends TraceControlComponent {
      *            - a list of event names to enabled.
      * @param isKernel
      *            - a flag for indicating kernel or UST.
-     * @param filterExpression
-     *            - a filter expression
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableEvents(List<String> eventNames, boolean isKernel,
-            String filterExpression, IProgressMonitor monitor) throws ExecutionException {
+            IProgressMonitor monitor) throws ExecutionException {
         getControlService().enableEvents(getName(), null, eventNames, isKernel,
-                filterExpression, monitor);
+                monitor);
     }
 
     /**
@@ -439,14 +419,12 @@ public class TraceSessionComponent extends TraceControlComponent {
      *            - a log level type
      * @param level
      *            - a log level
-     * @param filterExpression
-     *            - a filter expression
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableLogLevel(String eventName, LogLevelType logLevelType,
-            TraceLogLevel level, String filterExpression) throws ExecutionException {
-        enableLogLevel(eventName, logLevelType, level, filterExpression,
+            TraceLogLevel level) throws ExecutionException {
+        enableLogLevel(eventName, logLevelType, level,
                 new NullProgressMonitor());
     }
 
@@ -459,18 +437,16 @@ public class TraceSessionComponent extends TraceControlComponent {
      *            - a log level type
      * @param level
      *            - a log level
-     * @param filterExpression
-     *            - a filter expression
      * @param monitor
      *            - a progress monitor
      * @throws ExecutionException
      *             If the command fails
      */
     public void enableLogLevel(String eventName, LogLevelType logLevelType,
-            TraceLogLevel level, String filterExpression, IProgressMonitor monitor)
+            TraceLogLevel level, IProgressMonitor monitor)
             throws ExecutionException {
         getControlService().enableLogLevel(getName(), null, eventName,
-                logLevelType, level, null, monitor);
+                logLevelType, level, monitor);
     }
 
     /**

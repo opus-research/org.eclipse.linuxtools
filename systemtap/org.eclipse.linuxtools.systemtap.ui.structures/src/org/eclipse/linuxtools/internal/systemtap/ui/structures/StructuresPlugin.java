@@ -20,7 +20,6 @@ import org.osgi.framework.BundleContext;
  */
 public class StructuresPlugin extends AbstractUIPlugin {
 
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.systemtap.ui.structures"; //$NON-NLS-1$
 	//The shared instance.
 	private static StructuresPlugin plugin;
 	
@@ -34,7 +33,6 @@ public class StructuresPlugin extends AbstractUIPlugin {
 	/**
 	 * This method is called upon plug-in activation
 	 */
-	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 	}
@@ -42,7 +40,6 @@ public class StructuresPlugin extends AbstractUIPlugin {
 	/**
 	 * This method is called when the plug-in is stopped
 	 */
-	@Override
 	public void stop(BundleContext context) throws Exception {
 		super.stop(context);
 		plugin = null;
@@ -63,6 +60,6 @@ public class StructuresPlugin extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, path);
+		return AbstractUIPlugin.imageDescriptorFromPlugin("org.eclipse.linuxtools.systemtap.ui.structures", path);
 	}
 }

@@ -53,8 +53,6 @@ public class EventIdCache {
 	private static final String EVENT = "event"; //$NON-NLS-1$
 	private static final String EVENT_NAME = "event_name"; //$NON-NLS-1$
 
-	private static final String LOCAL = "local"; //$NON-NLS-1$
-
 	private Document eventDoc; // the document to hold the xml from ophelp
 	private Element eventRoot; // the root corresponding to the xml from ophelp
 	// name - the name of the event
@@ -66,26 +64,22 @@ public class EventIdCache {
 	
 	public static EventIdCache getInstance(){
 
-		if (cacheMap == null) {
+		if(cacheMap == null){
 			cacheMap = new HashMap<String, EventIdCache>();
 		}
 
 		IProject project = Oprofile.OprofileProject.getProject();
-		EventIdCache newCache = new EventIdCache();
-		if (project != null) {
+		if(project != null){
 			EventIdCache eventIdCache = cacheMap.get(project.getLocationURI().getHost());
-			if (eventIdCache == null) {
-				cacheMap.put(project.getLocationURI().getHost(), newCache);
-			}
-		} else {
-			// If no project associated we should launch locally
-			EventIdCache eventIdCache = cacheMap.get(LOCAL);
-			if (eventIdCache == null) {
-				cacheMap.put(LOCAL, newCache);
-			}
+			if(eventIdCache == null){
+					eventIdCache = new EventIdCache();
+					cacheMap.put(project.getLocationURI().getHost(), eventIdCache);
+		}
+			return eventIdCache;
+		} else{
+			return null;
 		}
 
-		return newCache;
 	}
 	
 	/**
@@ -94,13 +88,7 @@ public class EventIdCache {
 	 */
 	public Element getElementWithName (String name) {
 		IProject project = Oprofile.OprofileProject.getProject();
-		EventIdCache eventIdCache;
-		if (project != null) {
-			eventIdCache = cacheMap.get(project.getLocationURI().getHost());
-		} else {
-			eventIdCache = cacheMap.get(LOCAL);
-		}
-
+		EventIdCache eventIdCache = cacheMap.get(project.getLocationURI().getHost());
 		if (eventIdCache.nameMap == null){
 			readXML(eventIdCache);
 			buildCache(eventIdCache);
@@ -160,12 +148,7 @@ public class EventIdCache {
 	 */
 	public String getUnitMaskType(String name) {
 		IProject project = Oprofile.OprofileProject.getProject();
-		EventIdCache eventIdCache;
-		if (project != null) {
-			eventIdCache = cacheMap.get(project.getLocationURI().getHost());
-		} else {
-			eventIdCache = cacheMap.get(LOCAL);
-		}
+		EventIdCache eventIdCache = cacheMap.get(project.getLocationURI().getHost());
 
 		if (eventIdCache.eventRoot == null){
 			readXML(eventIdCache);

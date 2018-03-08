@@ -14,38 +14,38 @@ package org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.actions;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.text.MessageFormat;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.WorkbenchException;
+import org.eclipse.ui.XMLMemento;
+
 import org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.dashboardextension.dialogs.ExportScriptDialog;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.GraphData;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.ZipArchive;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.DashboardPerspective;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardMetaData;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModule;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.structures.DashboardModuleFileFilter;
 import org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardModuleBrowserView;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSetParser;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.IDataSetFilter;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.structures.GraphData;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.dataset.DataSetWizard;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective;
 import org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptAction;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
-import org.eclipse.linuxtools.systemtap.ui.structures.ZipArchive;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.SystemTapGUISettings;
-import org.eclipse.ui.IMemento;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.WorkbenchException;
-import org.eclipse.ui.XMLMemento;
 
 /**
  * This class brings up a dialog box for the user to select what they want the
@@ -53,22 +53,21 @@ import org.eclipse.ui.XMLMemento;
  * dashboard for use at any time.
  * @author Ryan Morse
  */
-public class ExportScriptAction extends RunScriptAction {
+public class ExportScriptAction extends RunScriptAction implements IWorkbenchWindowActionDelegate {
 	/**
 	 * This method will bring up the export script dialog window for the user
 	 * to select what they want to new module to contain.  If the user enters
 	 * module information and clicks ok the module will be built and added to
 	 * the dashboard.
 	 */
-
-	private static String scriptFileName = "/script.stp"; //$NON-NLS-1$
-
-	@Override
+	
+	private static String scriptFileName = "/script.stp";
+	
 	public void run(IAction action) {
 		String script = getFilePath();
 		if(null == script || script.length() <= 0) {
-			String msg = MessageFormat.format(Localization.getString("ExportScriptAction.NoFileToExport"), (Object[])null); //$NON-NLS-1$
-			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("ExportScriptAction.Error"), msg); //$NON-NLS-1$
+			String msg = MessageFormat.format(Localization.getString("ExportScriptAction.NoFileToExport"), (Object[])null);
+			MessageDialog.openWarning(fWindow.getShell(), Localization.getString("ExportScriptAction.Error"), msg);
 		} else {
 			DataSetWizard wizard = new DataSetWizard(GraphingConstants.DataSetMetaData, script);
 			IWorkbench workbench = PlatformUI.getWorkbench();
@@ -81,14 +80,15 @@ public class ExportScriptAction extends RunScriptAction {
 			IDataSet dataSet = wizard.getDataSet();
 
 			wizard.dispose();
-
+			
 			if(null == parser || null == dataSet)
 				return;
-
+			
 			ExportScriptDialog exportDialog = new ExportScriptDialog(fWindow.getShell(), dataSet);
-			exportDialog.create();
-
-			if(exportDialog.open() == Window.OK) {
+			exportDialog.open();
+			
+			exportDialog.dispose();
+			if(!exportDialog.isCanceled()) {
 				String category = exportDialog.getCategory();
 				String display = exportDialog.getDisplay();
 				String description = exportDialog.getDescription();
@@ -96,15 +96,15 @@ public class ExportScriptAction extends RunScriptAction {
 				TreeNode filters = exportDialog.getGraphFilters();
 
 				validateDirectory();
-				File meta = saveMetaData(display, category, description, dataSet, parser, gd, filters,"local"); //$NON-NLS-1$
-				String archiveName = getSaveDirectory() + "/" + category.replace(' ', '_') + "." + display.replace(' ', '_'); //$NON-NLS-1$ //$NON-NLS-2$
+				File meta = saveMetaData(display, category, description, dataSet, parser, gd, filters,"local");
+				String archiveName = getSaveDirectory() + "/" + category.replace(' ', '_') + "." + display.replace(' ', '_');
 				buildArchive(archiveName, new File(script), meta);
 				cleanupFiles(new String[] {archiveName, meta.getAbsolutePath()});
 				updateDashboard();
 			}
 		}
 	}
-
+	
 	/**
 	 * This method will check to make sure the exported module directory is valid.
 	 * If it isn't then the foleders will be created in order to make the directory
@@ -116,7 +116,7 @@ public class ExportScriptAction extends RunScriptAction {
 		if(!folder.exists())
 			folder.mkdir();
 	}
-
+	
 	/**
 	 * This method will create a new XML Memento used to store all of the meta data
 	 * for the module.  This data is all based on what the user selected from the
@@ -143,8 +143,8 @@ public class ExportScriptAction extends RunScriptAction {
 			data.putString(DashboardMetaData.XMLdScript, scriptFileName);
 			data.putString(DashboardMetaData.XMLdLocation, location);
 			data.putString(DashboardMetaData.XMLdScriptFileName, scriptFileName);
-
-
+				
+			
 			child = data.createChild(DashboardMetaData.XMLParsingExpressions);
 			String[] cols = dataSet.getTitles();
 			for(int i=0; i<cols.length; i++) {
@@ -163,7 +163,7 @@ public class ExportScriptAction extends RunScriptAction {
 				for(j=0; j<treeChild.getChildCount(); j++) {
 					((IDataSetFilter)(treeChild.getChildAt(j).getData())).writeXML(child2);
 				}
-
+				
 				child3 = child2.createChild(DashboardMetaData.XMLgSeries);
 				child3.putString(DashboardMetaData.XMLgAxis, DashboardMetaData.XMLgAxisX);
 				child3.putInteger(DashboardMetaData.XMLgColumn, gd[i].xSeries);
@@ -173,23 +173,23 @@ public class ExportScriptAction extends RunScriptAction {
 					child3.putInteger(DashboardMetaData.XMLgColumn, gd[i].ySeries[j]);
 				}
 			}
-
+			
 			meta = new File(getSaveDirectory() + DashboardModule.metaFileName);
 			FileWriter writer = new FileWriter(meta);
 			data.save(writer);
 			writer.close();
 		} catch(FileNotFoundException fnfe) {
 			return meta;
-		} catch (IOException e) {
+		} catch(Exception e) {
 			return meta;
 		}
 		return meta;
 	}
-
+	
 	/**
 	 * This method will create the module archive by first zipping the .stp file and the meta data
-	 * together.  Then it will compress the .zip file into a .gz file.  The .gz file's extension is
-	 * set to .dash to discurage users from trying to modify it and to make it sepecific to the
+	 * together.  Then it will compress the .zip file into a .gz file.  The .gz file's extension is 
+	 * set to .dash to discurage users from trying to modify it and to make it sepecific to the 
 	 * SystemTapGUI dashboard.
 	 * @param archiveName The name to use for the file containing the new module data.
 	 * @param script The file representing the .stp script file to use for the module
@@ -198,11 +198,11 @@ public class ExportScriptAction extends RunScriptAction {
 	private void buildArchive(String archiveName, File script, File meta) {
 		String[] files = new String[] {script.getAbsolutePath(), meta.getAbsolutePath()};
 		String[] names = new String[] {scriptFileName, DashboardModule.metaFileName};
-
+		
 		ZipArchive.zipFiles(archiveName, files, names);
 		ZipArchive.compressFile(archiveName + DashboardModuleFileFilter.DashboardModuleExtension, archiveName);
 	}
-
+	
 	/**
 	 * This method will delete any extra files that were generated as a result of building
 	 * the Dashboard module.
@@ -211,22 +211,22 @@ public class ExportScriptAction extends RunScriptAction {
 	private void cleanupFiles(String[] files) {
 		if(null == files)
 			return;
-
+		
 		File f;
-		for(String fileName: files) {
-			f = new File(fileName);
+		for(int i=0; i<files.length; i++) {
+			f = new File(files[i]);
 			if(f.exists())
 				f.delete();
 		}
 	}
-
+	
 	/**
 	 * This method will get the directory name that should be used for saving the dashboard modules.
 	 */
 	private String getSaveDirectory() {
-		return SystemTapGUISettings.settingsFolder + "/dashboard"; //$NON-NLS-1$
+		return SystemTapGUISettings.settingsFolder + "/dashboard";
 	}
-
+	
 	/**
 	 * This method forces the Dashboard's DashboardModuleBrowserView to refresh itself to ensure
 	 * that is contains the most up-to-date module list.
@@ -240,5 +240,11 @@ public class ExportScriptAction extends RunScriptAction {
 			p = PlatformUI.getWorkbench().showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		} catch(WorkbenchException we) {}
 	}
-
+	
+	/**
+	 * Removes all internal references to objects.  No other method should be called after this.
+	 */
+	public void dispose() {
+		super.dispose();
+	}
 }

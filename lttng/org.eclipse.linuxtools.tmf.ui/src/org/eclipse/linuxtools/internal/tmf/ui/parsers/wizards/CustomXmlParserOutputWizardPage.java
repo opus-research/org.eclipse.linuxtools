@@ -1,15 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2013 Ericsson
- *
- * All rights reserved. This program and the accompanying materials are
- * made available under the terms of the Eclipse Public License v1.0 which
- * accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *   Patrick Tassé - Initial API and implementation
- *******************************************************************************/
-
 package org.eclipse.linuxtools.internal.tmf.ui.parsers.wizards;
 
 import java.io.File;
@@ -20,15 +8,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
+import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomEventsTable;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -41,11 +29,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
-/**
- * Output wizard page for custom XML trace parsers.
- *
- * @author Patrick Tassé
- */
 public class CustomXmlParserOutputWizardPage extends WizardPage {
 
     private static final Image upImage = Activator.getDefault().getImageFromPath("/icons/elcl16/up_button.gif"); //$NON-NLS-1$
@@ -65,12 +48,6 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
     CustomEventsTable previewTable;
     File tmpFile;
 
-    /**
-     * Constructor
-     *
-     * @param wizard
-     *            The wizard to which this page belongs
-     */
     protected CustomXmlParserOutputWizardPage(final CustomXmlParserWizard wizard) {
         super("CustomParserOutputWizardPage"); //$NON-NLS-1$
         setTitle(wizard.inputPage.getTitle());
@@ -111,9 +88,8 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
         previewTable = new CustomEventsTable(new CustomXmlTraceDefinition(), tableContainer, 0);
         previewTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        if (wizard.definition != null) {
+        if (wizard.definition != null)
             loadDefinition(wizard.definition);
-        }
         setControl(container);
 
     }
@@ -124,8 +100,8 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
         super.dispose();
     }
 
-    private void loadDefinition(final CustomTraceDefinition def) {
-        for (final OutputColumn outputColumn : def.outputs) {
+    private void loadDefinition(final CustomTraceDefinition definition) {
+        for (final OutputColumn outputColumn : definition.outputs) {
             final Output output = new Output(outputsContainer, outputColumn.name);
             outputs.add(output);
         }
@@ -145,12 +121,11 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
             while (iter.hasNext()) {
                 final Output output = iter.next();
                 boolean found = false;
-                for (final String name : outputNames) {
+                for (final String name : outputNames)
                     if (output.name.equals(name)) {
                         found = true;
                         break;
                     }
-                }
                 if (!found) {
                     output.dispose();
                     iter.remove();
@@ -160,29 +135,25 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
             // create outputs that have been added in the input page
             for (final String name : outputNames) {
                 boolean found = false;
-                for (final Output output : outputs) {
+                for (final Output output : outputs)
                     if (output.name.equals(name)) {
                         found = true;
                         break;
                     }
-                }
-                if (!found) {
+                if (!found)
                     outputs.add(new Output(outputsContainer, name));
-                }
             }
 
             outputsContainer.layout();
             outputsScrolledComposite.setMinSize(outputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).x, outputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).y-5);
             updatePreviewTable();
-            if (sash.getSize().y > outputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + previewTable.getTable().getItemHeight()) {
+            if (sash.getSize().y > outputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + previewTable.getTable().getItemHeight())
                 sash.setWeights(new int[] {outputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, sash.getSize().y - outputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).y});
-            } else {
+            else
                 sash.setWeights(new int[] {outputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, previewTable.getTable().getItemHeight()});
-            }
             setPageComplete(true);
-        } else {
+        } else
             setPageComplete(false);
-        }
         super.setVisible(visible);
     }
 
@@ -228,8 +199,7 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
             writer.write(wizard.inputPage.getInputText());
             writer.close();
 
-            final CustomXmlTrace trace = new CustomXmlTrace(null, definition, tmpFile.getAbsolutePath(), CACHE_SIZE);
-            trace.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, false);
+            final ITmfTrace<?> trace = new CustomXmlTrace(null, definition, tmpFile.getAbsolutePath(), CACHE_SIZE);
             previewTable.dispose();
             previewTable = new CustomEventsTable(definition, tableContainer, CACHE_SIZE);
             previewTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -244,18 +214,11 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
         container.layout();
     }
 
-    /**
-     * Extract the output columns from the page's current contents.
-     *
-     * @return The list of output columns
-     */
     public List<OutputColumn> extractOutputs() {
         int numColumns = 0;
-        for (int i = 0; i < outputs.size(); i++) {
-            if (outputs.get(i).enabledButton.getSelection()) {
+        for (int i = 0; i < outputs.size(); i++)
+            if (outputs.get(i).enabledButton.getSelection())
                 numColumns++;
-            }
-        }
         final List<OutputColumn> outputColumns = new ArrayList<OutputColumn>(numColumns);
         numColumns = 0;
         for (int i = 0; i < outputs.size(); i++) {
@@ -328,11 +291,6 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
         }
     }
 
-    /**
-     * Get the trace definition.
-     *
-     * @return The trace definition
-     */
     public CustomXmlTraceDefinition getDefinition() {
         return definition;
     }

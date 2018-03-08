@@ -11,71 +11,68 @@
 
 package org.eclipse.linuxtools.systemtap.ui.structures.runnable;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.eclipse.linuxtools.systemtap.ui.structures.runnable.Command;
 
-import org.junit.Before;
-import org.junit.Test;
+import junit.framework.TestCase;
 
-
-public class CommandTest {
-
-	@Before
-	public void setUp() {
-		tc = new Command(new String[] {"ls", "/home/"}, null);
+public class CommandTest extends TestCase {
+	public CommandTest(String name) {
+		super(name);
 	}
 
-	@Test
+	protected void setUp() throws Exception {
+		super.setUp();
+		
+		tc = new Command(new String[] {"ls", "/home/"}, null, null);
+	}
+
 	public void testCommand() {
 		assertNotNull("Command not null", tc);
 
-		tc = new Command(null, null);
+		tc = new Command(null, null, null);
+		assertNotNull("Command not null", tc);
+		
+		tc = new Command(new String[] {}, null, null);
 		assertNotNull("Command not null", tc);
 
-		tc = new Command(new String[] {}, null);
+		tc = new Command(new String[] {""}, null, null);
 		assertNotNull("Command not null", tc);
 
-		tc = new Command(new String[] {""}, null);
+		tc = new Command(new String[] {"a"}, null, null);
 		assertNotNull("Command not null", tc);
 
-		tc = new Command(new String[] {"a"}, null);
-		assertNotNull("Command not null", tc);
-
-		tc = new Command(new String[] {"ls", "/"}, null);
+		tc = new Command(new String[] {"ls", "/"}, null, null);
 		assertNotNull("Command not null", tc);
 	}
 
-	@Test
 	public void testIsFinished() {
 		assertTrue("Not finished", tc.isRunning());
 		tc.stop();
 		assertFalse("Finished", tc.isRunning());
 	}
-
-	@Test
+	
 	public void testStop() {
 		assertTrue("Running", tc.isRunning());
 		tc.stop();
 		assertFalse("Not running", tc.isRunning());
 	}
 
-	@Test
 	public void testGetReturnValue() {
-		assertEquals(Integer.MAX_VALUE, tc.getReturnValue());
+		assertEquals(-1, tc.getReturnValue());
 	}
-
-	@Test
+	
 	public void testIsDisposed() {
 		assertFalse(tc.isDisposed());
 		tc.dispose();
 		assertTrue(tc.isDisposed());
 	}
-
-	@Test
+	
 	public void testDispose() {
 		tc.dispose();
+	}
+
+	protected void tearDown() throws Exception {
+		super.tearDown();
 	}
 
 	Command tc;

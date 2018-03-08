@@ -25,6 +25,7 @@ import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 
 /**
@@ -33,12 +34,11 @@ import org.eclipse.ui.PlatformUI;
  * @author Henry Hughes
  * @author Ryan Morse
  */
-public class TreeExpandCollapseAction extends Action implements
-		ISelectionListener {
+public class TreeExpandCollapseAction extends Action  implements ISelectionListener,IWorkbenchAction {
 	private final IWorkbenchWindow fWindow;
 	private IStructuredSelection selection;
 	private final Class<?> cl;
-
+	
 	/**
 	 * The default constructor. Takes a <code>Class</code> representing the viewer that it is to expand
 	 * or collapse, as there is only one in the workbench at a time.
@@ -79,7 +79,6 @@ public class TreeExpandCollapseAction extends Action implements
 	 * The main body of the action. Expands or Collapses the viewer specified at construction to
 	 * the level of the current selection.
 	 */
-	@Override
 	public void run() {
 		LogManager.logDebug("Start run:", this); //$NON-NLS-1$
 		if(!(cl.equals(FunctionBrowserView.class) || cl.equals(ProbeAliasBrowserView.class) || cl.equals(KernelBrowserView.class))) {
@@ -124,9 +123,11 @@ public class TreeExpandCollapseAction extends Action implements
 				doExpand = false;
 
 		if(doExpand) {
+			//System.out.println("Attempting to expand at node "+ o.toString());
 			viewer.getViewer().expandToLevel(o,1);
 		} else {
-			viewer.getViewer().collapseToLevel(o,1);
+			//System.out.println("Attempting to collapse at node " + o.toString());
+			viewer.getViewer().collapseToLevel(o,1);	
 		}
 		LogManager.logDebug("End run:", this); //$NON-NLS-1$
 	}

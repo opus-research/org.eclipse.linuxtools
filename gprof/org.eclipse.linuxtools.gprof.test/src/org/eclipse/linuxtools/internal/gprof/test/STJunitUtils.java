@@ -263,7 +263,6 @@ public class STJunitUtils {
 		File dir = new File(filename);
 		File[] testDirs = dir.listFiles(
 			new FileFilter() {
-				@Override
 				public boolean accept(File arg0) {
 					return (arg0.isDirectory() && arg0.getName().matches(regexp));
 				}

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
+import java.io.IOException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -24,9 +25,9 @@ import org.eclipse.swt.widgets.Shell;
 
 public class MinVersionTest extends AbstractMemcheckTest {
 
-	static class ValgrindIncorrectVersion extends ValgrindStubCommand {
+	class ValgrindIncorrectVersion extends ValgrindStubCommand {
 		@Override
-		public String whichVersion(IProject project) {
+		public String whichVersion(IProject project) throws IOException {
 			 return "valgrind-3.2.1"; //$NON-NLS-1$
 		}
 	}
@@ -39,7 +40,7 @@ public class MinVersionTest extends AbstractMemcheckTest {
 		saveVersion();
 	}
 
-	private void saveVersion() {
+	private void saveVersion() throws CoreException {
 		ValgrindLaunchPlugin.getDefault().setValgrindCommand(new ValgrindIncorrectVersion());
 	}
 	
