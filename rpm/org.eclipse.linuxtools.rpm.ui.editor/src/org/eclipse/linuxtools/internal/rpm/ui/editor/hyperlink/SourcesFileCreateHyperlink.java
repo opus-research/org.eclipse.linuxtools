@@ -44,11 +44,15 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 	 * Creates hyperlink for the following file name, region and file whether
 	 * the file name is found.
 	 *
-	 * @param original The file where the reference to this file name is.
-	 * @param fileName The name of the file to open.
-	 * @param region The hyperlink region.
+	 * @param original
+	 *            The file where the reference to this file name is.
+	 * @param fileName
+	 *            The name of the file to open.
+	 * @param region
+	 *            The hyperlink region.
 	 */
-	public SourcesFileCreateHyperlink(IFile original, String fileName, IRegion region) {
+	public SourcesFileCreateHyperlink(IFile original, String fileName,
+			IRegion region) {
 		this.fileName = fileName;
 		this.original = original;
 		this.region = region;
@@ -76,8 +80,8 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 	}
 
 	/**
-	 * Tries to create the given file name looking for it in the current directory
-	 * and in ../SOURCES.
+	 * Tries to create the given file name looking for it in the current
+	 * directory and in ../SOURCES.
 	 *
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#open()
 	 */
@@ -87,11 +91,11 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 		final InputStream source = new ByteArrayInputStream("".getBytes()); //$NON-NLS-1$
 		IFile file = null;
 
-		if (resourceToOpen == null || !resourceToOpen.exists()) {
+		if (resourceToOpen == null) {
 			IResource sourcesFolder = container.getProject().findMember(
 					"SOURCES"); //$NON-NLS-1$
 			file = container.getFile(new Path(fileName));
-			if (sourcesFolder != null && sourcesFolder.exists()) {
+			if (sourcesFolder != null) {
 				file = ((IFolder) sourcesFolder).getFile(new Path(fileName));
 			}
 			if (!file.exists()) {
@@ -103,7 +107,7 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 			}
 			resourceToOpen = file;
 		}
-		if (resourceToOpen != null && resourceToOpen.exists()) {
+		if (resourceToOpen != null) {
 			IWorkbenchPage page = PlatformUI.getWorkbench()
 					.getActiveWorkbenchWindow().getActivePage();
 			try {

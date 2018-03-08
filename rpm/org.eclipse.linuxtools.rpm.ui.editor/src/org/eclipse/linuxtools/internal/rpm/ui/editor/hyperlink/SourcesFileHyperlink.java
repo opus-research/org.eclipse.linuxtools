@@ -79,7 +79,7 @@ public class SourcesFileHyperlink implements IHyperlink {
 	public void open() {
 		IContainer container = original.getParent();
 		IResource resourceToOpen = container.findMember(fileName);
-		if (resourceToOpen == null || !resourceToOpen.exists()) {
+		if (resourceToOpen == null) {
 			IResource sourcesFolder = container.getParent().findMember(
 					"SOURCES"); //$NON-NLS-1$
 			resourceToOpen = ((IFolder) sourcesFolder).getFile(fileName);

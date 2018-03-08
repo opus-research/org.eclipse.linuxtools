@@ -118,11 +118,11 @@ public class SourcesFileHyperlinkDetector extends AbstractHyperlinkDetector {
 		IResource resourceToOpen = container.findMember(patchName);
 		IFile file = null;
 
-		if (resourceToOpen == null || !resourceToOpen.exists()) {
+		if (resourceToOpen == null) {
 			IResource sourcesFolder = container.getProject().findMember(
 					"SOURCES"); //$NON-NLS-1$
 			file = container.getFile(new Path(patchName));
-			if (sourcesFolder != null && sourcesFolder.exists()) {
+			if (sourcesFolder != null) {
 				file = ((IFolder) sourcesFolder).getFile(new Path(patchName));
 			}
 			if (!file.exists()) {
