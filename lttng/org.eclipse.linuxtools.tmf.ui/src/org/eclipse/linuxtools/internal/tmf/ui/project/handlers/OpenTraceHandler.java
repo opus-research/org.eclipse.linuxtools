@@ -21,8 +21,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEditorInput;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
@@ -119,27 +117,15 @@ public class OpenTraceHandler extends AbstractHandler {
             @Override
             public void run() {
 
-                final ITmfTrace trace = traceElement.instantiateTrace();
-                final ITmfEvent traceEvent = traceElement.instantiateEvent();
-                if ((trace == null) || (traceEvent == null)) {
-                    displayErrorMsg(Messages.OpenTraceHandler_NoTraceType);
-                    if (trace != null) {
-                        trace.dispose();
-                    }
+                final ITmfTrace trace = traceElement.openTrace();
+
+                if (trace == null) {
                     return;
                 }
 
                 // Get the editor_id from the extension point
                 String traceEditorId = traceElement.getEditorId();
                 final String editorId = (traceEditorId != null) ? traceEditorId : TmfEventsEditor.ID;
-
-                try {
-                    trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass());
-                } catch (final TmfTraceException e) {
-                    displayErrorMsg(Messages.OpenTraceHandler_InitError + "\n\n" + e); //$NON-NLS-1$
-                    trace.dispose();
-                    return;
-                }
 
                 final IFile file;
                 try {

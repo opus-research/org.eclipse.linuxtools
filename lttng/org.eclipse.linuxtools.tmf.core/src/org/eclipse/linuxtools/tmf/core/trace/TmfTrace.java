@@ -26,8 +26,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
+import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
+import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
@@ -284,6 +287,25 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
          * how/if to register a new state system in derived classes.
          */
         return Status.OK_STATUS;
+    }
+
+    /**
+     * Executes the analysis modules that are meant to be automatically executed
+     *
+     * @since 3.0
+     */
+    protected void executeAnalysis() {
+        Map<String, IAnalysisModule> modules = TmfAnalysisManager.getAnalysisModules(this);
+        for (IAnalysisModule module : modules.values()) {
+            if (module.isAutomatic()) {
+                try {
+                    module.setTrace(this);
+                } catch (TmfAnalysisException e) {
+                }
+                module.execute();
+            }
+        }
+
     }
 
     /**
@@ -682,6 +704,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         if (!status.isOK()) {
             Activator.log(status);
         }
+        executeAnalysis();
 
         /* Refresh the project, so it can pick up new files that got created. */
         try {

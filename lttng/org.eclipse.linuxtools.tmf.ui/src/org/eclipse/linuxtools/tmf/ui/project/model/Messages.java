@@ -20,9 +20,16 @@ import org.eclipse.osgi.util.NLS;
  * @author Jean-Christian Kouamé
  * @since 3.0
  */
+@SuppressWarnings("javadoc")
 public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.project.model.messages"; //$NON-NLS-1$
+
+    /**
+     * The message when analysis view is not available
+     * @since 3.0
+     */
+    public static String TmfTraceAnalysis_ViewUnavailable;
 
     /** The category of the resource properties */
     public static String TmfTraceElement_ResourceProperties;
@@ -44,6 +51,11 @@ public class Messages extends NLS {
 
     /** The description for the linked property */
     public static String TmfTraceElement_IsLinked;
+
+
+    public static String TmfTraceElement_Title;
+    public static String TmfTraceElement_NoTraceType;
+    public static String TmfTraceElement_InitError;
 
     static {
         // initialize resource bundle
