@@ -9,12 +9,12 @@
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
  *******************************************************************************/
 
-package org.eclipse.linuxtools.systemtap.ui.graphing.structures;
+package org.eclipse.linuxtools.systemtap.ui.consolelog.test.structures;
 
 import junit.framework.TestCase;
 
-public class GraphDisplaySetTest extends TestCase {
-	public GraphDisplaySetTest(String name) {
+public class ErrorTableDisplayTest extends TestCase {
+	public ErrorTableDisplayTest(String name) {
 		super(name);
 	}
 
@@ -22,7 +22,6 @@ public class GraphDisplaySetTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 	}
-
 	
 	@Override
 	protected void tearDown() throws Exception {
