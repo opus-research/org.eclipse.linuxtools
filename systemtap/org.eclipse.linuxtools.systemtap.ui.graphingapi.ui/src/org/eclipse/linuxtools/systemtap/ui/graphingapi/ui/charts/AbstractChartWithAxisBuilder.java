@@ -1,10 +1,13 @@
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.charts;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+
 import org.eclipse.linuxtools.internal.systemtap.ui.graphingapi.ui.GraphingAPIUIPlugin;
-import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.adapters.IAdapter;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.preferences.GraphingAPIPreferenceConstants;
+import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.adapters.IAdapter;
+
 import org.eclipse.swt.widgets.Composite;
+
 import org.swtchart.IAxis;
 import org.swtchart.ISeries;
 import org.swtchart.ITitle;
@@ -12,7 +15,7 @@ import org.swtchart.LineStyle;
 
 /**
  * Builds the chart with axis.
- *
+ * 
  * @author Qi Liang
  */
 public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder {
@@ -30,11 +33,11 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 
     /**
      * Constructor.
-     *
+     * 
      * @param dataSet
      *            data for chart
      */
-
+    
     public AbstractChartWithAxisBuilder(IAdapter adapter, Composite parent, int style, String title) {
     	 super(adapter, parent, style, title);
 		IPreferenceStore store = GraphingAPIUIPlugin.getDefault().getPreferenceStore();
@@ -60,7 +63,7 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 		if (labels.length > 0)
 			xTitle.setText(labels[0]);
 		else
-			xTitle.setText(""); //$NON-NLS-1$
+			xTitle.setText("");
 	}
 
 	/**
@@ -69,7 +72,7 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 	@Override
 	protected void buildYAxis() {
 		IAxis yAxis = this.chart.getAxisSet().getYAxis(0);
-		yAxis.getTitle().setText(""); //$NON-NLS-1$
+		yAxis.getTitle().setText("");
 		if (yLineGrid)
 			yAxis.getGrid().setStyle(LineStyle.SOLID);
 		else

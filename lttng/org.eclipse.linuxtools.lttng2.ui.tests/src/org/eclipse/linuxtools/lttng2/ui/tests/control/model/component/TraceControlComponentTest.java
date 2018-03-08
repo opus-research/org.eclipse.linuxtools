@@ -37,6 +37,7 @@ import org.junit.Test;
  * The class <code>TraceControlComponentTest</code> contains tests for the class
  * <code>{@link TraceControlComponent}</code>.
  */
+@SuppressWarnings("nls")
 public class TraceControlComponentTest {
 
     /**

@@ -42,7 +42,7 @@ public class BasicStateSystemExample {
     public static void main(String[] args) {
         /* Read a trace and build the state system */
         try {
-            File newStateFile = new File("/tmp/helloworldctf.ht");
+            File newStateFile = new File("/tmp/helloworldctf.ht"); //$NON-NLS-1$
             IStateChangeInput input = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(1));
             ITmfStateSystem ss = StateSystemManager.loadStateHistory(newStateFile, input, true);
 
@@ -67,25 +67,25 @@ public class BasicStateSystemExample {
             List<ITmfStateInterval> stateIntervals;
             StringBuilder output = new StringBuilder();
 
-            currentThreadByCPUS = ssb.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD);
+            currentThreadByCPUS = ssb.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD); //$NON-NLS-1$
 
             for (Integer currentThread : currentThreadByCPUS) {
                 stateIntervals = ssb.queryHistoryRange(currentThread.intValue(), ssb.getStartTime(),
                         ssb.getCurrentEndTime());
 
                 /* Output formatting */
-                output.append("Value of attribute : ");
+                output.append("Value of attribute : "); //$NON-NLS-1$
                 output.append(ssb.getFullAttributePath(currentThread.intValue()));
-                output.append("\n------------------------------------------------\n");
+                output.append("\n------------------------------------------------\n"); //$NON-NLS-1$
                 for (ITmfStateInterval stateInterval : stateIntervals) {
                     /* Print the interval */
                     output.append('[');
                     output.append(String.valueOf(stateInterval.getStartTime()));
-                    output.append(", ");
+                    output.append(", "); //$NON-NLS-1$
                     output.append(String.valueOf(stateInterval.getEndTime()));
                     output.append(']');
                     /* Print the attribute value */
-                    output.append(" = ");
+                    output.append(" = "); //$NON-NLS-1$
                     output.append(stateInterval.getStateValue().unboxInt());
                     output.append('\n');
                 }

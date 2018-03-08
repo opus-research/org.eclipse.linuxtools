@@ -36,6 +36,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfRequestExecutor class.
  */
+@SuppressWarnings({ "nls" })
 public class TmfRequestExecutorTest {
 
     // ------------------------------------------------------------------------

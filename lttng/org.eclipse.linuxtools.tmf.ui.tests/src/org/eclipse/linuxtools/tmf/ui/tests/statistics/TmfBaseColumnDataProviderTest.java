@@ -40,6 +40,7 @@ import org.junit.Test;
 /**
  * TmfBaseColumnDataProvider test cases.
  */
+@SuppressWarnings("nls")
 public class TmfBaseColumnDataProviderTest {
 
     // ------------------------------------------------------------------------

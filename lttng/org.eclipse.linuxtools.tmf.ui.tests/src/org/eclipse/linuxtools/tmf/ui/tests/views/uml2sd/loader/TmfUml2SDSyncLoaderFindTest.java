@@ -36,6 +36,7 @@ import org.junit.Test;
  *
  * @author Bernd Hufmann
  */
+@SuppressWarnings("nls")
 public class TmfUml2SDSyncLoaderFindTest {
 
     // ------------------------------------------------------------------------
