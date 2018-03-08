@@ -20,6 +20,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.profiling.provider.launch.Messages;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderFramework;
 import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
@@ -63,7 +64,7 @@ public class ProviderOptionsTab extends ProfileLaunchConfigurationTab {
 		setControl(top);
 		top.setLayout(new GridLayout(1, true));
 		providerCombo = new Combo(top, SWT.READ_ONLY);
-		comboItems = ProfileLaunchConfigurationTabGroup
+		comboItems = ProviderFramework
 				.getProviderNamesForType(getProfilingType());
 		Set<String> providerNames = comboItems.keySet();
 		providerCombo.setItems(providerNames.toArray(new String[0]));
