@@ -78,6 +78,7 @@ public class StreamInput implements IDefinitionScope {
      * Total number of lost events in this stream
      */
     long lostSoFar = 0;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -420,31 +421,25 @@ public class StreamInput implements IDefinitionScope {
                 packetIndex.addAttribute(field,
                         ((StringDefinition) id).getValue());
             }
-
         }
 
         Long contentSize = (Long) packetIndex.lookupAttribute("content_size"); //$NON-NLS-1$
         Long packetSize = (Long) packetIndex.lookupAttribute("packet_size"); //$NON-NLS-1$
-        Long timestampBegin = (Long) packetIndex
-                .lookupAttribute("timestamp_begin"); //$NON-NLS-1$
+        Long timestampBegin = (Long) packetIndex.lookupAttribute("timestamp_begin"); //$NON-NLS-1$
         Long timestampEnd = (Long) packetIndex.lookupAttribute("timestamp_end"); //$NON-NLS-1$
         String device = (String) packetIndex.lookupAttribute("device"); //$NON-NLS-1$
         // LTTng Specific
         Long CPU_ID = (Long) packetIndex.lookupAttribute("cpu_id"); //$NON-NLS-1$
         Long lostEvents = (Long) packetIndex.lookupAttribute("events_discarded");  //$NON-NLS-1$
-        /*
-         * Read the content size in bits
-         */
+
+        /* Read the content size in bits */
         if (contentSize != null) {
             packetIndex.setContentSizeBits(contentSize.intValue());
         } else {
             packetIndex.setContentSizeBits((int) (fileSizeBytes * 8));
         }
 
-        /*
-         * Read the packet size in bits
-         */
-
+        /* Read the packet size in bits */
         if (packetSize != null) {
             packetIndex.setPacketSizeBits(packetSize.intValue());
         } else {
@@ -455,17 +450,12 @@ public class StreamInput implements IDefinitionScope {
             }
         }
 
-        /*
-         * Read the begin timestamp
-         */
-
+        /* Read the begin timestamp */
         if (timestampBegin != null) {
             packetIndex.setTimestampBegin(timestampBegin.longValue());
         }
 
-        /*
-         * Read the end timestamp
-         */
+        /* Read the end timestamp */
         if (timestampEnd != null) {
             if( timestampEnd == -1 ) {
                 timestampEnd = Long.MAX_VALUE;
@@ -483,7 +473,6 @@ public class StreamInput implements IDefinitionScope {
         }
 
         if (lostEvents != null) {
-
             packetIndex.setLostEvents(lostEvents - lostSoFar);
             this.lostSoFar = lostEvents;
         }
