@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Francois Chouinard - Standardize on the default toString()
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
@@ -16,7 +15,7 @@ package org.eclipse.linuxtools.tmf.core.event;
 /**
  * A simplified timestamp where scale and precision are set to 0.
  *
- * @version 1.1
+ * @version 1.0
  * @author Francois Chouinard
  */
 public class TmfSimpleTimestamp extends TmfTimestamp {
@@ -132,6 +131,15 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
         final TmfSimpleTimestamp ts = (TmfSimpleTimestamp) other;
 
         return compareTo(ts, false) == 0;
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.TmfTimestamp#toString()
+     */
+    @Override
+    @SuppressWarnings("nls")
+    public String toString() {
+        return "TmfSimpleTimestamp [fValue=" + getValue() + "]";
     }
 
 }
