@@ -11,6 +11,8 @@
 
 package org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph;
 
+import java.text.MessageFormat;
+
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.systemtap.graphingapi.ui.Localization;
 import org.eclipse.swt.SWT;
@@ -48,10 +50,9 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		//Set the layout data
 		Composite comp = new Composite(parent, SWT.NULL);
 		comp.setLayout(new GridLayout());
-		comp.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		Group cmpGraphOptsGraph = new Group(comp, SWT.SHADOW_ETCHED_IN);
-		cmpGraphOptsGraph.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		cmpGraphOptsGraph.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, false, false));
 		RowLayout rowLayout = new RowLayout();
 		rowLayout.type = SWT.HORIZONTAL;
 		rowLayout.spacing = 10;
@@ -72,14 +73,8 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			}
 		}
 
-		//Add the title widgets
-		//data1 = new FormData();
-		//data1.top = new FormAttachment(cmpGraphOptsGraph, 10);
-
 		Group cmpGraphOptsSeries = new Group(comp, SWT.SHADOW_ETCHED_IN);
-		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		//rowLayout = new RowLayout(SWT.VERTICAL);
-		//rowLayout.fill = true;
+		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
 		cmpGraphOptsSeries.setLayout(layout);
@@ -95,27 +90,21 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		txtTitle.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				getWizard().getContainer().updateButtons();
-				if(txtTitle.getText().length() == 0) {
-					setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.TitleNotSet")); //$NON-NLS-1$
-					setMessage(null);
-				} else {
-					setErrorMessage(null);
-					setMessage(""); //$NON-NLS-1$
-				}
+				checkErrors();
 			}
 		});
 
 		//Add the data series widgets
 		String[] labels = model.getSeries();
 
-		cboYItems = new Combo[labels.length];
+		cboYItems = new Combo[!edit ? labels.length : Math.max(labels.length, model.getYSeries().length)];
 		lblYItems = new Label[cboYItems.length];
+		deleted = new boolean[cboYItems.length + 1];
 
 		Label lblXItem = new Label(cmpGraphOptsSeries, SWT.NONE);
 		lblXItem.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		lblXItem.setText(Localization.getString("SelectGraphAndSeriesWizardPage.XSeries")); //$NON-NLS-1$
-		cboXItem = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN);
+		cboXItem = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN|SWT.READ_ONLY);
 		cboXItem.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		cboXItem.addSelectionListener(new ComboSelectionListener());
 		cboXItem.add(Localization.getString("SelectGraphAndSeriesWizardPage.RowID")); //$NON-NLS-1$
@@ -123,8 +112,8 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		for(int i=0; i<cboYItems.length; i++) {
 			lblYItems[i] = new Label(cmpGraphOptsSeries, SWT.NONE);
 			lblYItems[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-			lblYItems[i].setText(Localization.getString("SelectGraphAndSeriesWizardPage.YSeries") + i + ":"); //$NON-NLS-1$ //$NON-NLS-2$
-			cboYItems[i] = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN);
+			lblYItems[i].setText(MessageFormat.format(Localization.getString("SelectGraphAndSeriesWizardPage.YSeries"), new Integer(i))); //$NON-NLS-1$
+			cboYItems[i] = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN|SWT.READ_ONLY);
 			cboYItems[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			cboYItems[i].addSelectionListener(new ComboSelectionListener());
 
@@ -141,17 +130,45 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 				cboYItems[j].add(labels[i]);
 		}
 
-		cboXItem.select(edit ? model.getXSeries() + 1 : 0);
-		boolean cvisible = edit;
-		if (edit) {
-			cboYItems[0].select(model.getYSeries()[0]);
+		int selected;
+		if (!edit) {
+			cboXItem.select(0);
+			cboYItems[0].select(0);
+		} else {
+			selected = model.getXSeries();
+			if (selected < labels.length){
+				cboXItem.select(selected + 1);
+			} else {
+				cboXItem.add(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"), 0); //$NON-NLS-1$
+				cboXItem.select(0);
+				deleted[0] = true;
+			}
+			selected = model.getYSeries()[0];
+			if (selected < labels.length) {
+				cboYItems[0].select(selected);
+			} else {
+				cboYItems[0].add(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"), 0); //$NON-NLS-1$
+				cboYItems[0].select(0);
+				deleted[1] = true;
+			}
 		}
+		boolean cvisible = true;
 		for(int i=1; i<cboYItems.length; i++) {
-			int index = edit && model.getYSeries().length > i ? model.getYSeries()[i] + 1 : 0;
-			cboYItems[i].select(index);
+			if (!edit || model.getYSeries().length <= i) {
+				cboYItems[i].select(selected = 0);
+			} else {
+				selected = model.getYSeries()[i];
+				if (selected < labels.length){
+					cboYItems[i].select(selected + 1);
+				} else {
+					cboYItems[i].add(Localization.getString("SelectGraphAndSeriesWizardPage.Deleted"), 0); //$NON-NLS-1$
+					cboYItems[i].select(0);
+					deleted[i+1] = true;
+				}
+			}
 			cboYItems[i].setVisible(cvisible);
 			lblYItems[i].setVisible(cvisible);
-			cvisible = (index > 0);
+			cvisible = (selected > 0);
 		}
 
 		//Select one of the graph types by default, rather than blank choice
@@ -164,6 +181,7 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		}
 
 		setControl(comp);
+		checkErrors();
 	}
 
 	@Override
@@ -194,11 +212,11 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 
 	/**
 	 * Saves all information pertaining to series data & naming to the model.
-	 * @return True if there are no conflicts in series data selection; false otherwise.
-	 * In the case of the latter, no data is saved.
+	 * @return <code>true</code> if there are no conflicts in series data selection,
+	 * <code>false</code> otherwise. In the case of the latter, no data is saved.
 	 */
 	private boolean saveDataToModelSeries() {
-		if(isSeriesUnique()) {
+		if(getErrorMessage() == null) {
 			model.setTitle(txtTitle.getText());
 
 			if(null != txtKey && txtKey.isEnabled())
@@ -209,54 +227,79 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			model.setXSeries(cboXItem.getSelectionIndex()-1);
 
 			int i, count;
-			for(i=1, count=1; i<cboYItems.length; i++)
-				if(0 != cboYItems[i].getSelectionIndex())
-					count++;
+			for(i=1, count=1; i<cboYItems.length && 0 != cboYItems[i].getSelectionIndex(); i++) {
+				count++;
+			}
 
 			int[] ySeries = new int[count];
 			ySeries[0] = cboYItems[0].getSelectionIndex();
-			for(i=1; i<count; i++)
+			for(i=1; i<count; i++) {
 				ySeries[i] = cboYItems[i].getSelectionIndex()-1;
+			}
 			model.setYSeries(ySeries);
 			return true;
 		}
 		return false;
 	}
 
+	private void markAsDuplicate(Combo item, Boolean bad) {
+		item.setForeground(item.getDisplay().getSystemColor(bad ? SWT.COLOR_RED : SWT.COLOR_BLACK));
+	}
+
 	/**
 	 * Checks for conflicts in data selection. (An example of a conflict
 	 * is two Y-series fields set to the same output value.)
-	 * @return True if there is no conflict, false otherwise.
+	 * @return <code>true</code> if there is no conflict, <code>false</code> otherwise.
+	 * Also visually marks conficting series.
 	 */
 	private boolean isSeriesUnique() {
-		if("".equals(txtTitle.getText().trim())) //$NON-NLS-1$
-			return false;
-		if(null != txtKey && txtKey.isEnabled() && txtKey.getText().length() <= 0)
-			return false;
+		boolean foundDuplicate = false;
+
+		// Undo duplicate marking, as it is to be updated.
+		markAsDuplicate(cboXItem, false);
+		for (int i = 0; i < cboYItems.length; i++) {
+			markAsDuplicate(cboYItems[i], false);
+		}
 
 		for(int j,i=0; i<cboYItems.length; i++) {
-			if(cboYItems[i].isVisible()) {
+			if(cboYItems[i].isVisible() && !deleted[i+1]) {
 				for(j=i+1; j<cboYItems.length; j++) {
-					if(cboYItems[j].isVisible()) {
-						if(0 > cboYItems[i].getSelectionIndex())
-							return false;
-						else if(0 > cboYItems[j].getSelectionIndex())
-							return false;
-						else if(cboYItems[i].getItem(cboYItems[i].getSelectionIndex()).equals(cboYItems[j].getItem(cboYItems[j].getSelectionIndex()))) {
-							return false;
+					try {
+						if(!deleted[j+1] && cboYItems[j].isVisible() && cboYItems[i].getItem(cboYItems[i].getSelectionIndex())
+								.equals(cboYItems[j].getItem(cboYItems[j].getSelectionIndex()))) {
+								markAsDuplicate(cboYItems[i], true);
+								markAsDuplicate(cboYItems[j], true);
+								foundDuplicate = true;
 						}
+					} catch (Exception e) {
+						// If a cboYItem has no item selected, don't mark any duplicates. Ignore.
 					}
 				}
-				if(0 > cboYItems[i].getSelectionIndex())
-					return false;
-				else if(0 > cboXItem.getSelectionIndex())
-					return false;
-				else if(cboYItems[i].getItem(cboYItems[i].getSelectionIndex()).equals(cboXItem.getItem(cboXItem.getSelectionIndex()))) {
-					return false;
+				try {
+					if(!deleted[0] && cboYItems[i].getItem(cboYItems[i].getSelectionIndex()).equals(cboXItem.getItem(cboXItem.getSelectionIndex()))) {
+						markAsDuplicate(cboYItems[i], true);
+						markAsDuplicate(cboXItem, true);
+						foundDuplicate = true;
+					}
+				} catch (Exception e) {
+					// Ignore for same reason as above.
 				}
 			}
 		}
-		return true;
+		return !foundDuplicate;
+	}
+
+	/**
+	 * Checks for deleted/unselected series entries.
+	 * @return <code>true if some value is not selected, <code>false</code> otherwise.
+	 */
+	private boolean isSeriesDeleted() {
+		for (int i = 0; i < deleted.length; i++) {
+			if (deleted[i]) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -310,13 +353,32 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 
 		@Override
 		public void widgetSelected(SelectionEvent e) {
-			if(!cboXItem.equals(e.getSource())) {
+			Combo source = (Combo) e.getSource();
+			if(cboXItem.equals(source)) {
+				if (deleted[0] && cboXItem.getSelectionIndex() != 0) {
+					cboXItem.remove(0);
+					deleted[0] = false;
+				}
+			}
+			else {
+				for (int i = 0; i < cboYItems.length; i++) {
+					if (deleted[i+1] && cboYItems[i].equals(source) && cboYItems[i].getSelectionIndex() != 0) {
+						cboYItems[i].remove(0);
+						deleted[i+1] = false;
+						break;
+					}
+				}
 				boolean setVisible = true;
 				if(GraphFactory.isMultiGraph(model.getGraphID())) {
 					for(int i=1; i<cboYItems.length; i++) {
 						cboYItems[i].setVisible(setVisible);
 						lblYItems[i].setVisible(setVisible);
-						if(cboYItems[i].getSelectionIndex() > 0 && cboYItems[i].isVisible())
+						if (!setVisible && deleted[i+1]) {
+							cboYItems[i].remove(0);
+							deleted[i+1] = false;
+							cboYItems[i].select(0);
+						}
+						if(deleted[i+1] || (cboYItems[i].getSelectionIndex() > 0 && cboYItems[i].isVisible()))
 							setVisible = true;
 						else
 							setVisible = false;
@@ -324,20 +386,24 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 				}
 			}
 
-			if(!isSeriesUnique()) {
-				setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.SeriesNotSelected")); //$NON-NLS-1$
-				setMessage(null);
-			} else {
-				setErrorMessage(null);
-				setMessage(""); //$NON-NLS-1$
-			}
-			if(txtTitle.getText().length() == 0) {
-				setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.TitleNotSet")); //$NON-NLS-1$
-				setMessage(null);
-			}
-
-			getWizard().getContainer().updateButtons();
+			checkErrors();
 		}
+	}
+
+	private void checkErrors(){
+		if(!isSeriesUnique()) {
+			setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.SeriesNotUnique")); //$NON-NLS-1$
+		}
+		else if(isSeriesDeleted()) {
+			setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.SeriesDeleted")); //$NON-NLS-1$
+		}
+		else if(txtTitle.getText().length() == 0) {
+			setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.TitleNotSet")); //$NON-NLS-1$
+		}
+		else {
+			setErrorMessage(null);
+		}
+		getWizard().getContainer().updateButtons();
 	}
 
 	private Button[] btnGraphs;
@@ -351,5 +417,6 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 	private Combo[] cboYItems;
 	private Label[] lblYItems;
 	private GraphModel model;
+	private boolean[] deleted;
 	private boolean edit;
 }

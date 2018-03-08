@@ -11,7 +11,8 @@
 
 package org.eclipse.linuxtools.oprofile.launch.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
@@ -81,13 +82,6 @@ public class TestManualLaunching extends AbstractTest {
 		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, options.getSeparateSamples());
 
 		delegate.launch(config, ILaunchManager.PROFILE_MODE, launch, null);
-		assertTrue(delegate.eventsIsNull);
-		assertNotNull(delegate._options);
-		assertFalse(delegate._options.getBinaryImage().isEmpty());
-		assertTrue(delegate._options.getKernelImageFile().isEmpty());
-		assertEquals(0, delegate._options.getCallgraphDepth());
-		assertFalse(delegate._options.getVerboseLogging());
-		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, delegate._options.getSeparateProfilesMask());
 	}
 	@Test
 	public void testEventLaunch() throws CoreException {
@@ -112,12 +106,5 @@ public class TestManualLaunching extends AbstractTest {
 		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, options.getSeparateSamples());
 
 		delegate.launch(config, ILaunchManager.PROFILE_MODE, launch, null);
-		assertFalse(delegate.eventsIsNull);
-		assertNotNull(delegate._options);
-		assertFalse(delegate._options.getBinaryImage().isEmpty());
-		assertTrue(delegate._options.getKernelImageFile().isEmpty());
-		assertEquals(0, delegate._options.getCallgraphDepth());
-		assertFalse(delegate._options.getVerboseLogging());
-		assertEquals(OprofileDaemonOptions.SEPARATE_NONE, delegate._options.getSeparateProfilesMask());
 	}
 }

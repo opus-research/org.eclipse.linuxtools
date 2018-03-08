@@ -11,13 +11,13 @@
 
 package org.eclipse.linuxtools.oprofile.launch.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -112,9 +112,5 @@ public class TestLaunchingExternalProject extends AbstractTest {
 
 		OprofileProject.setProfilingBinary(OprofileProject.OPCONTROL_BINARY);
 		delegate.launch(config, ILaunchManager.PROFILE_MODE, launch, null);
-		assertTrue(delegate.eventsIsNull);
-		assertNotNull(delegate._options);
-		assertTrue(delegate._options.getBinaryImage().length() > 0);
-		assertEquals(EXTERNAL_PROJECT_PATH.toOSString() + IPath.SEPARATOR + "Debug" + IPath.SEPARATOR + PROJECT_NAME, delegate._options.getBinaryImage()); //$NON-NLS-1$
 	}
 }

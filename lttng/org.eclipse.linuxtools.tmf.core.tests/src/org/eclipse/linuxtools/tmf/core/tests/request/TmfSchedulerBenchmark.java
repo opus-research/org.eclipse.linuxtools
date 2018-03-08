@@ -16,7 +16,7 @@ import java.io.PrintWriter;
 
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -238,7 +238,7 @@ public class TmfSchedulerBenchmark {
             super(trace.getEventType(),
                     timeRange,
                     0,
-                    TmfDataRequest.ALL_DATA,
+                    ITmfEventRequest.ALL_DATA,
                     ExecutionType.BACKGROUND);
             startTime = System.nanoTime();
         }
@@ -303,7 +303,7 @@ public class TmfSchedulerBenchmark {
             super(trace.getEventType(),
                     timeRange,
                     0,
-                    TmfDataRequest.ALL_DATA,
+                    ITmfEventRequest.ALL_DATA,
                     ExecutionType.FOREGROUND);
             startTime = System.nanoTime();
         }

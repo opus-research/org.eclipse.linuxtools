@@ -16,6 +16,7 @@ import java.math.BigInteger;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF integer definition.
@@ -37,7 +38,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     private long value;
 
     // ------------------------------------------------------------------------
-    // Contructors
+    // Constructors
     // ------------------------------------------------------------------------
 
     /**
@@ -57,7 +58,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     }
 
     // ------------------------------------------------------------------------
-    // Gettters/Setters/Predicates
+    // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**
@@ -99,13 +100,9 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     }
 
     @Override
-    public void read(BitBuffer input) {
-        final long longNegBit = 0x0000000080000000L;
-
+    public void read(BitBuffer input) throws CTFReaderException {
         /* Offset the buffer position wrt the current alignment */
-        int align = (int) declaration.getAlignment();
-        long pos = input.position() + ((align - (input.position() % align)) % align);
-        input.position(pos);
+        alignRead(input, this.declaration);
 
         boolean signed = declaration.isSigned();
         int length = declaration.getLength();
@@ -116,40 +113,23 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
          * input buffer? If not, then temporarily set the buffer's endianness to
          * this field's just to read the data
          */
-        ByteOrder byteOrder = input.getByteOrder();
+        ByteOrder previousByteOrder = input.getByteOrder();
         if ((this.declaration.getByteOrder() != null) &&
                 (this.declaration.getByteOrder() != input.getByteOrder())) {
             input.setByteOrder(this.declaration.getByteOrder());
         }
 
-        // TODO: use the eventual getLong from BitBuffer
-        if (length == 64) {
-            long low = input.getInt(32, false);
-            low = low & 0x00000000FFFFFFFFL;
-            long high = input.getInt(32, false);
-            high = high & 0x00000000FFFFFFFFL;
-            if (this.declaration.getByteOrder() != ByteOrder.BIG_ENDIAN) {
-                bits = (high << 32) | low;
-            } else {
-                bits = (low << 32) | high;
-            }
-        } else {
-            bits = input.getInt(length, signed);
-            bits = bits & 0x00000000FFFFFFFFL;
-            /*
-             * The previous line loses sign information but is necessary, this
-             * fixes the sign for 32 bit numbers. Sorry, in java all 64 bit ints
-             * are signed.
-             */
-            if ((longNegBit == (bits & longNegBit)) && signed) {
-                bits |= 0xffffffff00000000L;
-            }
+        if (length > 64) {
+            throw new CTFReaderException("Cannot read an integer with over 64 bits. Length given: " + length); //$NON-NLS-1$
         }
+
+        bits = input.get(length, signed);
+
         /*
          * Put the input buffer's endianness back to original if it was changed
          */
-        if (byteOrder != input.getByteOrder()) {
-            input.setByteOrder(byteOrder);
+        if (previousByteOrder != input.getByteOrder()) {
+            input.setByteOrder(previousByteOrder);
         }
 
         value = bits;

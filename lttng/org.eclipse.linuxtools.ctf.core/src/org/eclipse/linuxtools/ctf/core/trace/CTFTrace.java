@@ -379,11 +379,11 @@ public class CTFTrace implements IDefinitionScope {
     }
 
     /**
-     * Method majortIsSet is the major version number set?
+     * Method majorIsSet is the major version number set?
      *
      * @return boolean is the major set?
      */
-    public boolean majortIsSet() {
+    public boolean majorIsSet() {
         return major != null;
     }
 
@@ -531,7 +531,7 @@ public class CTFTrace implements IDefinitionScope {
             fc = fis.getChannel();
 
             /* Map one memory page of 4 kiB */
-            byteBuffer = fc.map(MapMode.READ_ONLY, 0, Math.min((int) fc.size(), 4096));
+            byteBuffer = fc.map(MapMode.READ_ONLY, 0, (int) Math.min(fc.size(), 4096L));
         } catch (IOException e) {
             /* Shouldn't happen at this stage if every other check passed */
             throw new CTFReaderException(e);
