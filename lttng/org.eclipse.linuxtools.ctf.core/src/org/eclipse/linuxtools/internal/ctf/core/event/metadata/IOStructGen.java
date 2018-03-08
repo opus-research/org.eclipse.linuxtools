@@ -48,9 +48,14 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
  * tree node to make sure that the node is indeed of the type the function is
  * expecting.
  */
-/**
- * IOStructGen
+/*
+ * Suppress unchecked warnings for things like List<CommonTree> children =
+ * root.getChildren(), because ANTLR doesn't know what generics are.
  */
+/**
+ * <b><u>IOStructGen</u></b>
+ */
+@SuppressWarnings("unchecked")
 public class IOStructGen {
 
     // ------------------------------------------------------------------------
