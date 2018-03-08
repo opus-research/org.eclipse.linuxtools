@@ -104,11 +104,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             case FULL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
                 final File htFile = new File(directory + getSsFileName());
-                /* If the history is already built then the notify request has to send
-                 * in the calling method. Set the relevant flag here. */
-                boolean[] isNotifyPendingReqNeeded = new boolean[1];
-                fStateSystem = TmfStateSystemFactory.newFullHistory(htFile, htInput, true, isNotifyPendingReqNeeded);
-                setNotifyPendingReqNeeded(isNotifyPendingReqNeeded[0]);
+                fStateSystem = TmfStateSystemFactory.newFullHistory(htFile, htInput, true);
                 break;
             case PARTIAL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
@@ -133,13 +129,11 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
     @Override
     protected void canceling() {
         /*
-         * FIXME: Actually, fStateSystem will [almost?] always be null while it
-         * is being built, so it is preferable to just tell the state system
-         * factory and she will handle how to cancel its work.
+         * FIXME: I guess that will do to cancel the state system building, but
+         * it may be preferable to just tell the state system and he will handle
+         * himself how to cancel its work
          */
-        if (fStateSystem != null) {
-            fStateSystem.dispose();
-        }
+        fStateSystem.dispose();
     }
 
     @Override

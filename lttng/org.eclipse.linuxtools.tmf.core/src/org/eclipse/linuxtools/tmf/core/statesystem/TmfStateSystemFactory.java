@@ -60,28 +60,23 @@ public final class TmfStateSystemFactory extends TmfComponent {
      *            If false, the construction will wait for a signal before
      *            starting. If true, it will build everything right now and
      *            block the caller. It has no effect if the file already exists.
-     * @param isNotifyPendingReqNeeded
-     *            one element array to store flag if trace needs to be notified
-     *            about request or not
      * @return A IStateSystemQuerier handler to the state system, with which you
      *         can then run queries on the history.
      * @throws TmfTraceException
      *             If there was a problem reading or writing one of the files.
      *             See the contents of this exception for more info.
-     * @since 3.0
+     * @since 2.0
      */
     public static ITmfStateSystem newFullHistory(File htFile,
-            ITmfStateProvider stateProvider, boolean buildManually, boolean[] isNotifyPendingReqNeeded)
+            ITmfStateProvider stateProvider, boolean buildManually)
             throws TmfTraceException {
         IStateHistoryBackend htBackend;
-
-        isNotifyPendingReqNeeded[0] = true;
 
         /* If the target file already exists, do not rebuild it uselessly */
         // TODO for now we assume it's complete. Might be a good idea to check
         // at least if its range matches the trace's range.
         if (htFile.exists()) {
-           /* Load an existing history */
+            /* Load an existing history */
             final int version = (stateProvider == null) ?
                     ITmfStateProvider.IGNORE_PROVIDER_VERSION :
                     stateProvider.getVersion();
@@ -103,18 +98,13 @@ public final class TmfStateSystemFactory extends TmfComponent {
         if (stateProvider == null) {
             return null;
         }
-
         try {
-            isNotifyPendingReqNeeded[0] = !buildManually;
-
             htBackend = new ThreadedHistoryTreeBackend(htFile,
                     stateProvider.getStartTime(), stateProvider.getVersion(), QUEUE_SIZE);
             StateSystem ss = new StateSystem(htBackend);
             stateProvider.assignTargetStateSystem(ss);
             builder = new HistoryBuilder(stateProvider, ss, htBackend, buildManually);
         } catch (IOException e) {
-            isNotifyPendingReqNeeded[0] = true;
-
             /*
              * If it fails here however, it means there was a problem writing to
              * the disk, so throw a real exception this time.
@@ -122,38 +112,6 @@ public final class TmfStateSystemFactory extends TmfComponent {
             throw new TmfTraceException(e.toString(), e);
         }
         return builder.getStateSystemQuerier();
-    }
-
-
-    /**
-     * Load the history file matching the target trace. If the file already
-     * exists, it will be opened directly. If not, it will be created from
-     * scratch. In the case the history has to be built, it's possible to block
-     * the calling thread until construction is complete.
-     *
-     * @param htFile
-     *            The target name of the history file we want to use. If it
-     *            exists it will be opened. If it doesn't, a new file will be
-     *            created with this name/path.
-     * @param stateProvider
-     *            The {@link ITmfStateProvider} to use for building the history
-     *            file. It may be required even if we are opening an
-     *            already-existing history (ie, for partial histories).
-     * @param buildManually
-     *            If false, the construction will wait for a signal before
-     *            starting. If true, it will build everything right now and
-     *            block the caller. It has no effect if the file already exists.
-     * @return A IStateSystemQuerier handler to the state system, with which you
-     *         can then run queries on the history.
-     * @throws TmfTraceException
-     *             If there was a problem reading or writing one of the files.
-     *             See the contents of this exception for more info.
-     * @since 2.0
-     */
-    public static ITmfStateSystem newFullHistory(File htFile,
-            ITmfStateProvider stateProvider, boolean buildManually)
-            throws TmfTraceException {
-        return newFullHistory(htFile, stateProvider, buildManually, new boolean[1]);
     }
 
     /**
