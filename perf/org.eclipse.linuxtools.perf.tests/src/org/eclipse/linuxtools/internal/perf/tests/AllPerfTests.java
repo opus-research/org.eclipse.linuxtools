@@ -14,9 +14,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({
-	LaunchTabsTest.class,ModelTest.class,DataManipulatorTest.class,SaveSessionTest.class,StatsComparisonTest.class,LaunchTest.class, LaunchRemoteTest.class
-})
+@Suite.SuiteClasses({ LaunchTabsTest.class, ModelTest.class,
+		DataManipulatorTest.class, SaveSessionTest.class,
+		StatsComparisonTest.class, LaunchTest.class, LaunchRemoteTest.class,
+		StatViewTest.class, SourceDisassemblyViewTest.class,
+		StatComparisonViewTest.class })
 
 public class AllPerfTests {
 }
