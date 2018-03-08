@@ -97,11 +97,17 @@ public class Utils {
 		}
 		IStatus result;
 		if (child.exitValue() != 0){
+			StringBuilder errorMessage = new StringBuilder();
+			errorMessage.append(NLS.bind(
+							Messages.Utils_NON_ZERO_RETURN_CODE, child.exitValue()));
+			errorMessage.append('\n');
+			errorMessage.append('\n');
+			errorMessage.append(inputStreamToString(child.getErrorStream()));
+
 			result = new Status(
 					IStatus.ERROR,
 					FrameworkUtil.getBundle(Utils.class).getSymbolicName(),
-					NLS.bind(
-							Messages.Utils_NON_ZERO_RETURN_CODE, child.exitValue()), null); 
+					errorMessage.toString(), null);
 		} else{
 			result = Status.OK_STATUS;
 		}
