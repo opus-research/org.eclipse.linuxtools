@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
- *   Marc-Andre Laperle - Log some exceptions
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
@@ -205,7 +204,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                 }
             });
         } catch (InvocationTargetException e) {
-            Activator.getDefault().logError(Messages.ImportTraceWizardImportProblem, e);
         } catch (InterruptedException e) {
         }
     }
@@ -486,7 +484,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         } catch (InterruptedException e) {
             return false;
         } catch (InvocationTargetException e) {
-            Activator.getDefault().logError(Messages.ImportTraceWizardImportProblem, e);
+            System.out.println(e.getTargetException());
             return false;
         }
 
