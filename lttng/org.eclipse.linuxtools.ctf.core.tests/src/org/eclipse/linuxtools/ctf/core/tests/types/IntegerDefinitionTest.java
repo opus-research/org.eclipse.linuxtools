@@ -21,7 +21,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -87,10 +86,9 @@ public class IntegerDefinitionTest {
 
     /**
      * Run the void read(BitBuffer) method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testRead() throws CTFReaderException {
+    public void testRead() {
         fixture.setValue(1L);
         BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
 

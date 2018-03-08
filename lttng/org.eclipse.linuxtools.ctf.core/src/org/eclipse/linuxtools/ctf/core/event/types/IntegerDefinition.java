@@ -16,7 +16,6 @@ import java.math.BigInteger;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF integer definition.
@@ -100,7 +99,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
     }
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
         final long longNegBit = 0x0000000080000000L;
         /* Offset the buffer position wrt the current alignment */
         alignRead(input, this.declaration);
@@ -122,9 +121,9 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
 
         // TODO: use the eventual getLong from BitBuffer
         if (length == 64) {
-            long low = input.get(32, false);
+            long low = input.getInt(32, false);
             low = low & 0x00000000FFFFFFFFL;
-            long high = input.get(32, false);
+            long high = input.getInt(32, false);
             high = high & 0x00000000FFFFFFFFL;
             if (this.declaration.getByteOrder() != ByteOrder.BIG_ENDIAN) {
                 bits = (high << 32) | low;
@@ -132,7 +131,7 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
                 bits = (low << 32) | high;
             }
         } else {
-            bits = input.get(length, signed);
+            bits = input.getInt(length, signed);
             bits = bits & 0x00000000FFFFFFFFL;
             /*
              * The previous line loses sign information but is necessary, this
