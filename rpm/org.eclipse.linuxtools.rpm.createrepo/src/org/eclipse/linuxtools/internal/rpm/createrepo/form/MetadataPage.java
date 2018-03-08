@@ -31,7 +31,6 @@ import org.eclipse.linuxtools.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -147,14 +146,7 @@ public class MetadataPage extends FormPage {
 		sectionClientTags.setLayout(layout);
 
 		tagTxt = createTextFieldWithLabel(sectionClientTags, Messages.MetadataPage_labelTags);
-		tagTxt.addSelectionListener(new SelectionListener() {
-			/*
-			 * (non-Javadoc)
-			 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
-			 */
-			@Override
-			public void widgetSelected(SelectionEvent e) {/* not implemented */}
-
+		tagTxt.addSelectionListener(new SelectionAdapter() {
 			/*
 			 * (non-Javadoc)
 			 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
@@ -376,13 +368,6 @@ public class MetadataPage extends FormPage {
 		public void widgetSelected(SelectionEvent e) {
 			addTag();
 		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-		 */
-		@Override
-		public void widgetDefaultSelected(SelectionEvent e) {/* not implemented */}
 	}
 
 	/**
@@ -412,13 +397,6 @@ public class MetadataPage extends FormPage {
 				}
 			}
 		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-		 */
-		@Override
-		public void widgetDefaultSelected(SelectionEvent e) {/* not implemented */}
 	}
 
 	/**
@@ -444,13 +422,6 @@ public class MetadataPage extends FormPage {
 				}
 			}
 		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.eclipse.swt.events.SelectionAdapter#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-		 */
-		@Override
-		public void widgetDefaultSelected(SelectionEvent e) {/* not implemented */}
 	}
 
 }

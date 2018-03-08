@@ -66,8 +66,6 @@ public final class Messages {
 	// Createrepo
 	/****/
 	public static String Createrepo_jobName;
-	/****/
-	public static String Createrepo_errorExecuting;
 
 	// RepoFormEditor
 	/****/
@@ -92,6 +90,8 @@ public final class Messages {
 	public static String ImportRPMsPage_buttonCreateRepo;
 	/****/
 	public static String ImportRPMsPage_errorRefreshingTree;
+	/****/
+	public static String ImportRPMsPage_errorResourceChanged;
 
 	// ImportRPMsPage$ImportButtonListener
 	/****/
