@@ -650,6 +650,10 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     @SuppressWarnings("unchecked")
     @Override
     public boolean filter(List<?> filters) {
+        if (filters == null) {
+            return true;
+        }
+
         fLock.lock();
         try {
             cancelOngoingRequests();
