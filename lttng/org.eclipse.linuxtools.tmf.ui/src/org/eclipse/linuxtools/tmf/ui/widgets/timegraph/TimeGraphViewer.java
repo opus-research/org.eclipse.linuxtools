@@ -116,8 +116,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
     private Action fZoomInAction;
     private Action fZoomOutAction;
     private Action fHideArrowsAction;
-    private Action fFollowArrowFwdAction;
-    private Action fFollowArrowBwdAction;
 
     /**
      * Standard constructor
@@ -427,8 +425,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
             fTime0 = fTime0Bound;
             fTime1 = fTime1Bound;
         }
-        fTime0 = Math.max(fTime0Bound, Math.min(fTime0, fTime1Bound));
-        fTime1 = Math.max(fTime0Bound, Math.min(fTime1, fTime1Bound));
         if (fTime1 - fTime0 < fMinTimeInterval) {
             fTime1 = Math.min(fTime1Bound, fTime0 + fMinTimeInterval);
         }
@@ -642,17 +638,10 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
      *            The end time
      */
     public void setTimeBounds(long beginTime, long endTime) {
-        if (endTime >= beginTime) {
-            fBeginTime = beginTime;
-            fEndTime = endTime;
-            fTime0Bound = beginTime;
-            fTime1Bound = endTime;
-        } else {
-            fBeginTime = 0;
-            fEndTime = 0;
-            fTime0Bound = 0;
-            fTime1Bound = 0;
-        }
+        fBeginTime = beginTime;
+        fEndTime = endTime;
+        fTime0Bound = beginTime;
+        fTime1Bound = endTime;
         fTimeGraphCtrl.adjustScrolls();
     }
 
@@ -1490,12 +1479,6 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
                     if (dialogSettings != null) {
                         dialogSettings.put(HIDE_ARROWS_KEY, hideArrows);
                     }
-                    if (fFollowArrowFwdAction != null) {
-                        fFollowArrowFwdAction.setEnabled(!hideArrows);
-                    }
-                    if (fFollowArrowBwdAction != null) {
-                        fFollowArrowBwdAction.setEnabled(!hideArrows);
-                    }
                 }
             };
             fHideArrowsAction.setToolTipText(Messages.TmfTimeGraphViewer_HideArrowsActionToolTipText);
@@ -1504,67 +1487,9 @@ public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
                 boolean hideArrows = dialogSettings.getBoolean(HIDE_ARROWS_KEY);
                 fTimeGraphCtrl.hideArrows(hideArrows);
                 fHideArrowsAction.setChecked(hideArrows);
-                if (fFollowArrowFwdAction != null) {
-                    fFollowArrowFwdAction.setEnabled(!hideArrows);
-                }
-                if (fFollowArrowBwdAction != null) {
-                    fFollowArrowBwdAction.setEnabled(!hideArrows);
-                }
             }
         }
         return fHideArrowsAction;
-    }
-
-    /**
-     * Get the follow arrow forward action.
-     *
-     * @return The Action object
-     *
-     * @since 2.1
-     */
-    public Action getFollowArrowFwdAction() {
-        if (fFollowArrowFwdAction == null) {
-            fFollowArrowFwdAction = new Action() {
-                @Override
-                public void run() {
-                    fTimeGraphCtrl.followArrowFwd();
-                    adjustVerticalScrollBar();
-                }
-            };
-            fFollowArrowFwdAction.setText(Messages.TmfTimeGraphViewer_FollowArrowForwardActionNameText);
-            fFollowArrowFwdAction.setToolTipText(Messages.TmfTimeGraphViewer_FollowArrowForwardActionToolTipText);
-            fFollowArrowFwdAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_FOLLOW_ARROW_FORWARD));
-            if (fHideArrowsAction != null) {
-                fFollowArrowFwdAction.setEnabled(!fHideArrowsAction.isChecked());
-            }
-        }
-        return fFollowArrowFwdAction;
-    }
-
-    /**
-     * Get the follow arrow backward action.
-     *
-     * @return The Action object
-     *
-     * @since 2.1
-     */
-    public Action getFollowArrowBwdAction() {
-        if (fFollowArrowBwdAction == null) {
-            fFollowArrowBwdAction = new Action() {
-                @Override
-                public void run() {
-                    fTimeGraphCtrl.followArrowBwd();
-                    adjustVerticalScrollBar();
-                }
-            };
-            fFollowArrowBwdAction.setText(Messages.TmfTimeGraphViewer_FollowArrowBackwardActionNameText);
-            fFollowArrowBwdAction.setToolTipText(Messages.TmfTimeGraphViewer_FollowArrowBackwardActionToolTipText);
-            fFollowArrowBwdAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_FOLLOW_ARROW_BACKWARD));
-            if (fHideArrowsAction != null) {
-                fFollowArrowBwdAction.setEnabled(!fHideArrowsAction.isChecked());
-            }
-        }
-        return fFollowArrowBwdAction;
     }
 
     private void adjustVerticalScrollBar() {
