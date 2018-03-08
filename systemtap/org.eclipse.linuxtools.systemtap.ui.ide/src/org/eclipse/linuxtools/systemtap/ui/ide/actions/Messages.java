@@ -7,8 +7,6 @@ public class Messages extends NLS {
 	public static String ScriptRunAction_InvalidScriptTitle;
 	public static String ScriptRunAction_InvalidScriptTMessage;
 	public static String TempFileAction_errorDialogTitle;
-	public static String RunScriptChartAction_couldNotSwitchToGraphicPerspective;
-
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
