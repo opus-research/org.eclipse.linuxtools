@@ -112,7 +112,7 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 
 		ProfileLaunchConfigurationTabGroup tabGroupConfig;
 
-		if (curProviderId == null || curProviderId.isEmpty()) {
+		if (curProviderId == null || "".equals(curProviderId)) {
 			curProviderId = getDefaultProviderId();
 		}
 
@@ -157,7 +157,7 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 	}
 
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-		if (providerCombo != null && !providerCombo.getText().isEmpty()) {
+		if (providerCombo != null && !providerCombo.getText().equals("")) {
 			for (AbstractLaunchConfigurationTab tab : tabs) {
 				tab.setDefaults(configuration);
 			}
@@ -238,15 +238,15 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 	protected void setConfigurationName(String newToolName) {
 		try {
 			String currentToolName = initial.getAttribute(
-					ProviderProfileConstants.PROVIDER_CONFIG_TOOLNAME_ATT, ""); //$NON-NLS-1$
+					ProviderProfileConstants.PROVIDER_CONFIG_TOOLNAME_ATT, "");
 
 			// Append the new tool name as long as the current and new tool
 			// names are different.
-			if (newToolName != null && !newToolName.isEmpty()
+			if (newToolName != null && !newToolName.equals("")
 					&& !currentToolName.equals(newToolName)) {
 
 				String projectName = initial.getAttribute(
-						ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, ""); //$NON-NLS-1$
+						ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
 
 				// String of the form <project name> [<tool name>].
 				String newConfigurationName = ProviderLaunchShortcut
@@ -284,9 +284,9 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 	protected String getProviderId() {
 		try {
 			return initial.getAttribute(
-					ProviderProfileConstants.PROVIDER_CONFIG_ATT, ""); //$NON-NLS-1$
+					ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
 		} catch (CoreException e) {
-			return ""; //$NON-NLS-1$
+			return "";
 		}
 	}
 
@@ -337,12 +337,12 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 		String provider;
 		try {
 			provider = config.getAttribute(
-					ProviderProfileConstants.PROVIDER_CONFIG_ATT, ""); //$NON-NLS-1$
+					ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
 		} catch (CoreException e) {
 			setErrorMessage(e.getMessage());
 			return false;
 		}
-		if (provider.isEmpty()) {
+		if (provider.equals("")) {
 			setErrorMessage(Messages.ProfilingTab_providerid_not_found);
 			return false;
 		}
@@ -399,7 +399,7 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 
 	/**
 	 * Get profiling type of the configuration.
-	 *
+	 * 
 	 * @return String profiling type this plug-in supports.
 	 */
 	protected String getProfilingType() {
@@ -431,9 +431,8 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 
 	@Override
 	public void dispose() {
-		if (img != null) {
+		if (img != null)
 			img.dispose();
-		}
 		super.dispose();
 	}
 }
