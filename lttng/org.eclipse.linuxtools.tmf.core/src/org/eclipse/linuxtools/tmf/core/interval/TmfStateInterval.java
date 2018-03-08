@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.interval;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 
 /**
@@ -85,7 +86,7 @@ public final class TmfStateInterval implements ITmfStateInterval {
     }
 
     @Override
-    public String toString() {
+    public @Nullable String toString() {
         /* Only used for debugging */
         StringBuffer buf = new StringBuffer(start + " to "); //$NON-NLS-1$
         buf.append(end + ", "); //$NON-NLS-1$

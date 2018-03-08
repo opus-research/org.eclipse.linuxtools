@@ -22,11 +22,14 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
 /**
  * State history back-end that stores its intervals in RAM only. It cannot be
@@ -50,7 +53,11 @@ public class InMemoryBackend implements IStateHistoryBackend {
     private static final Comparator<ITmfStateInterval> END_COMPARATOR =
             new Comparator<ITmfStateInterval>() {
                 @Override
-                public int compare(ITmfStateInterval o1, ITmfStateInterval o2) {
+                public int compare(@Nullable ITmfStateInterval o1, @Nullable ITmfStateInterval o2) {
+                    if (o1 == null || o2 == null) {
+                        throw new IllegalArgumentException();
+                    }
+
                     final long e1 = o1.getEndTime();
                     final long e2 = o2.getEndTime();
                     final int a1 = o1.getAttribute();
@@ -179,13 +186,13 @@ public class InMemoryBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public FileInputStream supplyAttributeTreeReader() {
+    public @Nullable FileInputStream supplyAttributeTreeReader() {
         /* Saving to disk not supported */
         return null;
     }
 
     @Override
-    public File supplyAttributeTreeWriterFile() {
+    public @Nullable File supplyAttributeTreeWriterFile() {
         /* Saving to disk not supported */
         return null;
     }
@@ -211,11 +218,14 @@ public class InMemoryBackend implements IStateHistoryBackend {
         writer.println(intervals.toString());
     }
 
+
     private static Iterator<ITmfStateInterval> serachforEndTime(TreeSet<ITmfStateInterval> tree, long time) {
-        ITmfStateInterval dummyInterval = new TmfStateInterval(-1, time, -1, null);
+        ITmfStateInterval dummyInterval = new TmfStateInterval(-1, time, -1, TmfStateValue.nullValue());
         ITmfStateInterval myInterval = tree.lower(dummyInterval);
         if (myInterval == null) {
-            return tree.iterator();
+            @SuppressWarnings("null")
+            @NonNull Iterator<ITmfStateInterval> it = tree.iterator();
+            return it;
         }
         final SortedSet<ITmfStateInterval> tailSet = tree.tailSet(myInterval);
         Iterator<ITmfStateInterval> retVal = tailSet.iterator();

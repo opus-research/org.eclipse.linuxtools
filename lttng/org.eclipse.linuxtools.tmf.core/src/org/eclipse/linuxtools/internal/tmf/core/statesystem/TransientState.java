@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -58,11 +59,7 @@ class TransientState {
         ongoingStateStartTimes = new ArrayList<Long>();
         stateValueTypes = new ArrayList<Type>();
 
-        if (backend != null) {
-            latestTime = backend.getStartTime();
-        } else {
-            latestTime = 0;
-        }
+        latestTime = backend.getStartTime();
     }
 
     long getLatestTime() {
@@ -71,7 +68,9 @@ class TransientState {
 
     ITmfStateValue getOngoingStateValue(int index) throws AttributeNotFoundException {
         checkValidAttribute(index);
-        return ongoingStateInfo.get(index);
+        @SuppressWarnings("null")
+        @NonNull ITmfStateValue sv = ongoingStateInfo.get(index);
+        return sv;
     }
 
     long getOngoingStartTime(int index) throws AttributeNotFoundException {
@@ -94,8 +93,10 @@ class TransientState {
      */
     ITmfStateInterval getOngoingInterval(int quark) throws AttributeNotFoundException {
         checkValidAttribute(quark);
-        return new TmfStateInterval(ongoingStateStartTimes.get(quark), -1, quark,
-                ongoingStateInfo.get(quark));
+        @SuppressWarnings("null")
+        @NonNull ITmfStateValue sv = ongoingStateInfo.get(quark);
+
+        return new TmfStateInterval(ongoingStateStartTimes.get(quark), -1, quark, sv);
     }
 
     private void checkValidAttribute(int quark) throws AttributeNotFoundException {
@@ -142,12 +143,7 @@ class TransientState {
          */
         ongoingStateInfo.add(TmfStateValue.nullValue());
         stateValueTypes.add(Type.NULL);
-
-        if (backend == null) {
-            ongoingStateStartTimes.add(0L);
-        } else {
-            ongoingStateStartTimes.add(backend.getStartTime());
-        }
+        ongoingStateStartTimes.add(backend.getStartTime());
     }
 
     /**
@@ -223,15 +219,18 @@ class TransientState {
             return;
         }
 
-        if (backend != null && ongoingStateStartTimes.get(index) < eventTime) {
+        if (ongoingStateStartTimes.get(index) < eventTime) {
             /*
              * These two conditions are necessary to create an interval and
              * update ongoingStateInfo.
              */
+            @SuppressWarnings("null")
+            @NonNull ITmfStateValue sv = ongoingStateInfo.get(index);
+
             backend.insertPastState(ongoingStateStartTimes.get(index),
                     eventTime - 1, /* End Time */
                     index, /* attribute quark */
-                    ongoingStateInfo.get(index)); /* StateValue */
+                    sv); /* StateValue */
 
             ongoingStateStartTimes.set(index, eventTime);
         }
@@ -262,8 +261,11 @@ class TransientState {
              * to the query.
              */
             if (this.hasInfoAboutStateOf(t, i)) {
-                interval = new TmfStateInterval(ongoingStateStartTimes.get(i), -1,
-                        i, ongoingStateInfo.get(i));
+                @SuppressWarnings("null")
+                @NonNull ITmfStateValue sv = ongoingStateInfo.get(i);
+
+                interval = new TmfStateInterval(ongoingStateStartTimes.get(i),
+                        -1, i, sv);
                 stateInfo.set(i, interval);
             }
         }
@@ -286,10 +288,13 @@ class TransientState {
                 continue;
             }
             try {
+                @SuppressWarnings("null")
+                @NonNull ITmfStateValue sv = ongoingStateInfo.get(i);
+
                 backend.insertPastState(ongoingStateStartTimes.get(i),
                         endTime, /* End Time */
                         i, /* attribute quark */
-                        ongoingStateInfo.get(i)); /* StateValue */
+                        sv); /* StateValue */
 
             } catch (TimeRangeException e) {
                 /*

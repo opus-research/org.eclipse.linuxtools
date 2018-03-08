@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.internal.lttng2.kernel.core;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -36,7 +37,7 @@ public class Activator extends Plugin {
     /**
      * The shared instance
      */
-    private static Activator plugin;
+    private static @Nullable Activator plugin;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -57,7 +58,7 @@ public class Activator extends Plugin {
      *
      * @return the shared instance
      */
-    public static Activator getDefault() {
+    public static @Nullable Activator getDefault() {
         return plugin;
     }
 
@@ -66,13 +67,13 @@ public class Activator extends Plugin {
     // ------------------------------------------------------------------------
 
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(@Nullable BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
     }
 
     @Override
-    public void stop(BundleContext context) throws Exception {
+    public void stop(@Nullable BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
     }

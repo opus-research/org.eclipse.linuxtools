@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
@@ -141,12 +142,12 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public FileInputStream supplyAttributeTreeReader() {
+    public @Nullable FileInputStream supplyAttributeTreeReader() {
         return treeIO.supplyATReader();
     }
 
     @Override
-    public File supplyAttributeTreeWriterFile() {
+    public @Nullable File supplyAttributeTreeWriterFile() {
         return treeIO.supplyATWriterFile();
     }
 
@@ -185,7 +186,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         /* We start by reading the information in the root node */
         // FIXME using CoreNode for now, we'll have to redo this part to handle
         // different node types
-        CoreNode currentNode = sht.getLatestBranch().get(0);
+        CoreNode currentNode = sht.getInLatestBranch(0);
         currentNode.writeInfoFromNode(stateInfo, t);
 
         /* Then we follow the branch down in the relevant children */
@@ -232,7 +233,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         // FIXME using CoreNode for now, we'll have to redo this part to handle
         // different node types
-        CoreNode currentNode = sht.getLatestBranch().get(0);
+        CoreNode currentNode = sht.getInLatestBranch(0);
         HTInterval interval = currentNode.getRelevantInterval(key, t);
 
         try {
@@ -247,7 +248,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
          * Since we should now have intervals at every attribute/timestamp
          * combination, it should NOT be null here.
          */
-        assert (interval != null);
+        if (interval == null) { throw new IllegalStateException(); }
         return interval;
     }
 
@@ -266,7 +267,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
      * @return The tree depth
      */
     public int getTreeDepth() {
-        return sht.getLatestBranch().size();
+        return sht.getLatestBranchSize();
     }
 
     /**
