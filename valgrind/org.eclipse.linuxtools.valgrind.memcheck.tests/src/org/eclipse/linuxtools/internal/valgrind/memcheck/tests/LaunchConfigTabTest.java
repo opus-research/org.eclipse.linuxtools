@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 
 import org.eclipse.cdt.debug.core.CDebugUtils;
@@ -35,6 +37,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.osgi.framework.Version;
 
 public class LaunchConfigTabTest extends AbstractMemcheckTest {
@@ -44,9 +49,8 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 	protected ILaunchConfiguration config;
 	protected Shell testShell;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	protected void setUpProject() throws Exception {
 		proj = createProjectAndBuild("basicTest"); //$NON-NLS-1$
 
 		config = createConfiguration(proj.getProject());
@@ -56,8 +60,8 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		tab = new ValgrindOptionsTab();
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
+	@After
+	protected void cleanup() throws Exception {
 		tab.dispose();
 		testShell.dispose();
 		deleteProject(proj);
@@ -85,6 +89,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		return launch;
 	}
 
+	@Test
 	public void testDefaults() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		ILaunch launch = saveAndLaunch(wc, "testDefaults"); //$NON-NLS-1$
