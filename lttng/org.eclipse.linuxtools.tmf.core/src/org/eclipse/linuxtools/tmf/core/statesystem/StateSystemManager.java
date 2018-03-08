@@ -72,8 +72,9 @@ public abstract class StateSystemManager extends TmfComponent {
         // at least if its range matches the trace's range.
         if (htFile.exists()) {
             /* Load an existing history */
+            final int version = htInput == null? -42 : htInput.getVersion();
             try {
-                htBackend = new HistoryTreeBackend(htFile);
+                htBackend = new HistoryTreeBackend(htFile, version);
                 ITmfStateSystem ss = HistoryBuilder.openExistingHistory(htBackend);
                 return ss;
             } catch (IOException e) {
@@ -92,7 +93,8 @@ public abstract class StateSystemManager extends TmfComponent {
             return null;
         }
         try {
-            htBackend = new ThreadedHistoryTreeBackend(htFile, htInput.getStartTime(), QUEUE_SIZE);
+            htBackend = new ThreadedHistoryTreeBackend(htFile,
+                    htInput.getVersion(), htInput.getStartTime(), QUEUE_SIZE);
             StateSystem ss = new StateSystem(htBackend);
             htInput.assignTargetStateSystem(ss);
             builder = new HistoryBuilder(htInput, ss, htBackend, buildManually);
