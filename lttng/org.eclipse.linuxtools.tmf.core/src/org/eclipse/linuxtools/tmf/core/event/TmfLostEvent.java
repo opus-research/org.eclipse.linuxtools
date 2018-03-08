@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @version 1.0
  * @since 1.2
 */
-public class TmfLostEvent extends TmfMutableEvent implements ITmfLostEvent {
+public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -69,17 +69,13 @@ public class TmfLostEvent extends TmfMutableEvent implements ITmfLostEvent {
      * @param event the original event
      */
     public TmfLostEvent(final ITmfLostEvent event) {
-        if (event == null) {
-            throw new IllegalArgumentException();
-        }
-        setTrace(event.getTrace());
-        setRank(event.getRank());
-        setTimestamp(event.getTimestamp());
-        setSource(event.getSource());
-        setType(event.getType());
-        setContent(event.getContent());
-        setReference(event.getReference());
-
+        super(  event.getTrace(),
+                event.getRank(),
+                event.getTimestamp(),
+                event.getSource(),
+                event.getType(),
+                event.getContent(),
+                event.getReference());
         fTimeRange = event.getTimeRange();
         fNbLostEvents = event.getNbLostEvents();
     }
