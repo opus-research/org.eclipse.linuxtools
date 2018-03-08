@@ -10,20 +10,15 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.tests;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchPlugin;
-import org.osgi.framework.Version;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.BundleContext;
 
-
-public class ValgrindTestsPlugin {
+public class ValgrindTestsPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.eclipse.linuxtools.valgrind.tests"; //$NON-NLS-1$
-
-	// The minimum valgrind version supported for testing
-	private static final Version MIN_TEST_VER = new Version(3, 7, 0);
-
-	// Java Runtime System Properties
+	
+	// Java Runtime System Properties	
 	/**
 	 *  usage: -Declipse.valgrind.tests.generateFiles=<yes|no> [default: no]
 	 *  if yes, will run Valgrind and store its output files for each test under
@@ -32,7 +27,7 @@ public class ValgrindTestsPlugin {
 	 */
 	public static final String SYSTEM_PROPERTY_GENERATE_FILES = "eclipse.valgrind.tests.generateFiles"; //$NON-NLS-1$
 	public static final boolean GENERATE_FILES = System.getProperty(SYSTEM_PROPERTY_GENERATE_FILES, "no").equals("yes"); //$NON-NLS-1$ //$NON-NLS-2$
-
+	
 	/**
 	 *  usage: -Declipse.valgrind.tests.runValgrind=<yes|no> [default: yes]
 	 *  if yes, will run Valgrind as in a normal launch
@@ -40,28 +35,46 @@ public class ValgrindTestsPlugin {
 	 */
 	public static final String SYSTEM_PROPERTY_RUN_VALGRIND = "eclipse.valgrind.tests.runValgrind"; //$NON-NLS-1$
 	// generateFiles implies runValgrind
-	public static final boolean RUN_VALGRIND = (GENERATE_FILES || System.getProperty(SYSTEM_PROPERTY_RUN_VALGRIND, "yes").equals("yes")) //$NON-NLS-1$ //$NON-NLS-2$ 
-			&& versionSupported();
-
+	public static final boolean RUN_VALGRIND = GENERATE_FILES || System.getProperty(SYSTEM_PROPERTY_RUN_VALGRIND, "yes").equals("yes"); //$NON-NLS-1$ //$NON-NLS-2$
+	
 	// Launch config attribute to mock valgrind's exit code
 	public static final String ATTR_MOCK_EXIT_CODE = PLUGIN_ID + ".MOCK_EXIT_CODE"; //$NON-NLS-1$
+	
+	// The shared instance
+	private static ValgrindTestsPlugin plugin;
 
 	/**
-	 * Compare currently available Valgrind version against the minimum
-	 * supported testing version.
-	 *
-	 * @return <code>true</code> if the current valgrind version is greater than
-	 *         or equal to the minimum supported test version, and
-	 *         <code>false</code> otherwise.
+	 * The constructor
 	 */
-	public static boolean versionSupported() {
-		Version valgrindVersion = new Version(0, 0, 0);
-		try {
-			valgrindVersion = ValgrindLaunchPlugin.getDefault()
-					.getValgrindVersion(null);
-		} catch (CoreException e) {
-			return false;
-		}
-		return valgrindVersion.compareTo(MIN_TEST_VER) >= 0;
+	public ValgrindTestsPlugin() {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+	 */
+	@Override
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		plugin = this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+	 */
+	@Override
+	public void stop(BundleContext context) throws Exception {
+		plugin = null;
+		super.stop(context);
+	}
+
+	/**
+	 * Returns the shared instance
+	 *
+	 * @return the shared instance
+	 */
+	public static ValgrindTestsPlugin getDefault() {
+		return plugin;
 	}
 }

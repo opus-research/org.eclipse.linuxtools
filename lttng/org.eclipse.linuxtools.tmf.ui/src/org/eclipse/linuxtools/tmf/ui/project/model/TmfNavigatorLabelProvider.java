@@ -80,10 +80,8 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
         if (icon == null) {
             URL imageURL = bundle.getResource(url);
             ImageDescriptor descriptor = ImageDescriptor.createFromURL(imageURL);
-            if (descriptor != null) {
-                icon = descriptor.createImage();
-                plugin.getImageRegistry().put(key, icon);
-            }
+            icon = descriptor.createImage();
+            plugin.getImageRegistry().put(key, icon);
         }
         return icon;
     }
@@ -91,7 +89,10 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
     // ------------------------------------------------------------------------
     // ICommonLabelProvider
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ILabelProvider#getImage(java.lang.Object)
+     */
     @Override
     public Image getImage(Object element) {
 
@@ -105,13 +106,7 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
                 String icon = trace.getResource().getPersistentProperty(TmfCommonConstants.TRACEICON);
                 if (name != null && icon != null) {
                     Bundle bundle = Platform.getBundle(name);
-                    if (bundle != null) {
-                        Image image = loadIcon(bundle, icon);
-                        if (image != null) {
-                            return image;
-                        }
-                    }
-                    return fUnknownTraceIcon;
+                    return loadIcon(bundle, icon);
                 }
             } catch (CoreException e) {
             }
@@ -133,6 +128,10 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ILabelProvider#getText(java.lang.Object)
+     */
     @Override
     public String getText(Object element) {
 
@@ -159,36 +158,68 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse.jface.viewers.ILabelProviderListener)
+     */
     @Override
     public void addListener(ILabelProviderListener listener) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IBaseLabelProvider#dispose()
+     */
     @Override
     public void dispose() {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IBaseLabelProvider#isLabelProperty(java.lang.Object, java.lang.String)
+     */
     @Override
     public boolean isLabelProperty(Object element, String property) {
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IBaseLabelProvider#removeListener(org.eclipse.jface.viewers.ILabelProviderListener)
+     */
     @Override
     public void removeListener(ILabelProviderListener listener) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.navigator.IMementoAware#restoreState(org.eclipse.ui.IMemento)
+     */
     @Override
     public void restoreState(IMemento aMemento) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.navigator.IMementoAware#saveState(org.eclipse.ui.IMemento)
+     */
     @Override
     public void saveState(IMemento aMemento) {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.navigator.IDescriptionProvider#getDescription(java.lang.Object)
+     */
     @Override
     public String getDescription(Object anElement) {
         return getText(anElement);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.navigator.ICommonLabelProvider#init(org.eclipse.ui.navigator.ICommonContentExtensionSite)
+     */
     @Override
     public void init(ICommonContentExtensionSite aConfig) {
     }

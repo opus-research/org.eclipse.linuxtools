@@ -80,7 +80,10 @@ public class TraceEventComponent extends TraceControlComponent {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getImage()
+     */
     @Override
     public Image getImage() {
         if (fEventInfo.getState() == TraceEnablement.DISABLED) {
@@ -182,6 +185,10 @@ public class TraceEventComponent extends TraceControlComponent {
         fEventInfo.setFilterExpression(filter);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceControlComponent#getAdapter(java.lang.Class)
+     */
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {

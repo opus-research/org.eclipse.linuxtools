@@ -15,14 +15,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
-import org.eclipse.linuxtools.systemtap.structures.runnable.Command;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpExec;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.views.ErrorView;
+import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
@@ -41,7 +39,7 @@ import org.eclipse.ui.console.IOConsole;
  */
 public class ScriptConsole extends IOConsole {
 
-	private Command cmd;
+	private LoggedCommand cmd;
 	private Runnable stopCommand;
 	private String moduleName;
 
@@ -176,11 +174,7 @@ public class ScriptConsole extends IOConsole {
 			@Override
 			public void run() {
 				ScpExec stop = new ScpExec(new String[]{getStopString()});
-				try {
-					stop.start();
-				} catch (CoreException e) {
-				  // Failed to start the 'stop' process. Ignore.
-				}
+				stop.start();
 			}
 		};
 	    this.run(cmd, errorParser);
@@ -195,21 +189,21 @@ public class ScriptConsole extends IOConsole {
 	 * @since 2.0
 	 */
 	public void runLocally(String[] command, String[] envVars, IErrorParser errorParser) {
-		cmd = new Command(command, envVars);
+		cmd = new LoggedCommand(command, envVars);
 		this.stopCommand = new Runnable() {
 			@Override
 			public void run() {
 				try {
 					RuntimeProcessFactory.getFactory().exec(getStopString(), null, null);
 				} catch (IOException e) {
-					ExceptionErrorDialog.openError(Localization.getString("ScriptConsole.ErrorKillingStap"), e); //$NON-NLS-1$
+					e.printStackTrace();
 				}
 			}
 		};
 		this.run(cmd, errorParser);
 	}
 
-	private void run(Command cmd, IErrorParser errorParser){
+	private void run(LoggedCommand cmd, IErrorParser errorParser){
 		createConsoleDaemon();
 		if (errorParser != null) {
 			createErrorDaemon(errorParser);
@@ -218,11 +212,7 @@ public class ScriptConsole extends IOConsole {
 	    	cmd.addErrorStreamListener(errorDaemon);
 	    }
         cmd.addInputStreamListener(consoleDaemon);
-        try {
-			cmd.start();
-		} catch (CoreException e) {
-			ExceptionErrorDialog.openError(e.getMessage(), e);
-		}
+        cmd.start();
         activate();
         notifyConsoleObservers(true);
         ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
@@ -287,7 +277,7 @@ public class ScriptConsole extends IOConsole {
 	 * @return The <code>LoggedCommand</code> that is running in this console.
 	 * @since 2.0
 	 */
-	public Command getCommand() {
+	public LoggedCommand getCommand() {
 		return cmd;
 	}
 

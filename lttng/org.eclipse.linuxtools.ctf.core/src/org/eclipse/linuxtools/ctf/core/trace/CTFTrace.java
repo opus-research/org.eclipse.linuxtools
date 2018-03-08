@@ -1,14 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *     Matthew Khouzam - Initial API and implementation
- *     Alexandre Montplaisir - Initial API and implementation
+ * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors: Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
@@ -63,6 +62,11 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndex;
  */
 public class CTFTrace implements IDefinitionScope {
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
     @SuppressWarnings("nls")
     @Override
     public String toString() {
@@ -75,6 +79,11 @@ public class CTFTrace implements IDefinitionScope {
      * The trace directory on the filesystem.
      */
     private final File path;
+
+    /**
+     * The metadata parsing object.
+     */
+    private final Metadata metadata;
 
     /**
      * Major CTF version number
@@ -133,8 +142,9 @@ public class CTFTrace implements IDefinitionScope {
     private final List<FileInputStream> fileInputStreams = new LinkedList<FileInputStream>();
 
     /** Handlers for the metadata files */
-    private static final FileFilter METADATA_FILE_FILTER = new MetadataFileFilter();
-    private static final Comparator<File> METADATA_COMPARATOR = new MetadataComparator();
+    private final static FileFilter metadataFileFilter = new MetadataFileFilter();
+    private final static Comparator<File> metadataComparator = new MetadataComparator(); // $codepro.audit.disable
+                                                                                         // fieldJavadoc
 
     /** map of all the event types */
     private final Map<Long,HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,IEventDeclaration>>();
@@ -145,7 +155,6 @@ public class CTFTrace implements IDefinitionScope {
 
     /** Callsite helpers */
     private Map<String, LinkedList<CTFCallsite>> callsitesByName = new HashMap<String, LinkedList<CTFCallsite>>();
-
     /** Callsite helpers */
     private TreeSet<CTFCallsite> callsitesByIP = new TreeSet<CTFCallsite>();
 
@@ -178,7 +187,7 @@ public class CTFTrace implements IDefinitionScope {
      */
     public CTFTrace(File path) throws CTFReaderException {
         this.path = path;
-        final Metadata metadata = new Metadata(this);
+        this.metadata = new Metadata(this);
 
         /* Set up the internal containers for this trace */
         if (!this.path.exists()) {
@@ -200,8 +209,8 @@ public class CTFTrace implements IDefinitionScope {
         }
 
         /* List files not called metadata and not hidden. */
-        File[] files = path.listFiles(METADATA_FILE_FILTER);
-        Arrays.sort(files, METADATA_COMPARATOR);
+        File[] files = path.listFiles(metadataFileFilter);
+        Arrays.sort(files, metadataComparator);
         /* Try to open each file */
         for (File streamFile : files) {
             openStreamInput(streamFile);
@@ -258,9 +267,8 @@ public class CTFTrace implements IDefinitionScope {
      * @param streamId
      *            The ID of the stream from which to read
      * @return The Hash map with the event declarations
-     * @since 2.0
      */
-    public Map<Long, IEventDeclaration> getEvents(Long streamId) {
+    public HashMap<Long, IEventDeclaration> getEvents(Long streamId) {
         return eventDecs.get(streamId);
     }
 
@@ -282,7 +290,7 @@ public class CTFTrace implements IDefinitionScope {
      * @return the hashmap with the event definitions
      * @since 2.0
      */
-    public Map<Long, EventDefinition> getEventDefs(StreamInput id) {
+    public HashMap<Long, EventDefinition> getEventDefs(StreamInput id) {
         if(! eventDefs.containsKey(id)){
             eventDefs.put(id, new HashMap<Long, EventDefinition>());
         }
@@ -396,9 +404,8 @@ public class CTFTrace implements IDefinitionScope {
      * Method UUIDIsSet is the UUID set?
      *
      * @return boolean is the UUID set?
-     * @since 2.0
      */
-    public boolean uuidIsSet() {
+    public boolean UUIDIsSet() {
         return uuid != null;
     }
 
@@ -452,7 +459,7 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @return ByteOrder gets the trace byte order
      */
-    public final ByteOrder getByteOrder() {
+    public ByteOrder getByteOrder() {
         return byteOrder;
     }
 
@@ -527,10 +534,10 @@ public class CTFTrace implements IDefinitionScope {
             fc = fis.getChannel();
 
             /* Map one memory page of 4 kiB */
-            byteBuffer = fc.map(MapMode.READ_ONLY, 0, Math.min((int)fc.size(), 4096));
+            byteBuffer = fc.map(MapMode.READ_ONLY, 0, 4096);
         } catch (IOException e) {
             /* Shouldn't happen at this stage if every other check passed */
-            throw new CTFReaderException(e);
+            throw new CTFReaderException();
         }
 
         /* Create a BitBuffer with this mapping and the trace byte order */
@@ -581,10 +588,6 @@ public class CTFTrace implements IDefinitionScope {
         } else {
             /* No packet header, we suppose there is only one stream */
             stream = streams.get(null);
-        }
-
-        if (stream == null) {
-            throw new CTFReaderException("Unexpected end of stream"); //$NON-NLS-1$
         }
 
         /* Create the stream input */
@@ -726,7 +729,7 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @return the time offset of a clock with respect to UTC in nanoseconds
      */
-    private double getTimeScale() {
+    private final double getTimeScale() {
         if (getClock() == null) {
             return 1.0;
         }
@@ -738,7 +741,7 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @return if the trace is in ns or cycles.
      */
-    private boolean clockNeedsScale() {
+    private final boolean clockNeedsScale() {
         if (getClock() == null) {
             return false;
         }
@@ -750,7 +753,7 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @return 1.0 / scale
      */
-    private double getInverseTimeScale() {
+    private final double getInverseTimeScale() {
         if (getClock() == null) {
             return 1.0;
         }
@@ -808,9 +811,8 @@ public class CTFTrace implements IDefinitionScope {
      * Add an event declaration map to the events map.
      * @param id the id of a stream
      * @return the hashmap containing events.
-     * @since 2.0
      */
-    public Map<Long, IEventDeclaration> createEvents(Long id){
+    public HashMap<Long, IEventDeclaration> createEvents(Long id){
         HashMap<Long, IEventDeclaration> value = eventDecs.get(id);
         if( value == null ) {
             value = new HashMap<Long, IEventDeclaration>();

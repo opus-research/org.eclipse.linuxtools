@@ -168,51 +168,91 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     // Accessors
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isTracepoints()
+     */
     @Override
     public boolean isTracepoints() {
         return fIsTracepoints;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isAllTracePoints()
+     */
     @Override
     public boolean isAllTracePoints() {
         return fIsAllTracepoints;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getEventNames()
+     */
     @Override
     public List<String> getEventNames() {
         return new ArrayList<String>(fSelectedEvents);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isWildcard()
+     */
     @Override
     public boolean isWildcard() {
         return fIsWildcard;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getWildcard()
+     */
     @Override
     public String getWildcard() {
         return fWildcard;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#isLogLevel()
+     */
     @Override
     public boolean isLogLevel() {
         return fIsLogLevel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevelType()
+     */
     @Override
     public LogLevelType getLogLevelType() {
         return fLogLevelType;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevel()
+     */
     @Override
     public TraceLogLevel getLogLevel() {
         return fLogLevel;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getLogLevelEventName()
+     */
     @Override
     public String getLogLevelEventName() {
         return fLogLevelEventName;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.IEnableUstEvents#getFilterExpression()
+     */
     @Override
     public String getFilterExpression() {
         return fFilterExpression;
@@ -244,10 +284,9 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     }
 
     /**
-     * Validates the UST composite input data.
-     *
-     * @return true if configured data is valid and can be retrieved.
-     */
+    * Validates the UST composite input data.
+    * @return true if configured data is valid and can be retrieved.
+    */
     public boolean isValid() {
 
         fIsTracepoints = fTracepointsActivateButton.getSelection();
@@ -556,7 +595,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content provider for the tracepoints tree.
      */
-    public static final class UstContentProvider extends TraceControlContentProvider {
+    final static public class UstContentProvider extends TraceControlContentProvider {
         @Override
         public Object[] getChildren(Object parentElement) {
             if (parentElement instanceof TargetNodeComponent) {
@@ -577,7 +616,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Content label for the tracepoints tree.
      */
-    public static final class UstLabelProvider extends TraceControlLabelProvider {
+     final static public class UstLabelProvider extends TraceControlLabelProvider {
         @Override
         public Image getImage(Object element) {
             return null;
@@ -598,7 +637,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
     /**
      * Check state listener for the tracepoints tree.
      */
-    public final class UstCheckStateListener implements ICheckStateListener {
+    final public class UstCheckStateListener implements ICheckStateListener {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             if (event.getChecked()) {

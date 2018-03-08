@@ -25,9 +25,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
-import org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode;
-import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeDefinitionNode;
+import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 
 /**
  * Runs stap -vp1 & stap -up2 in order to get all of the probes/functions
@@ -47,9 +46,8 @@ public class ProbeParser extends TapsetParser {
 
 	static ProbeParser parser = null;
 	public static ProbeParser getInstance(){
-		if (parser != null) {
+		if (parser != null)
 			return parser;
-		}
 
 		String[] tapsets = IDEPlugin.getDefault().getPreferenceStore()
 				.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
@@ -76,9 +74,6 @@ public class ProbeParser extends TapsetParser {
 	protected IStatus run(IProgressMonitor monitor) {
 		String s = collect(null);
 		s = addStaticProbes(s);
-		if (cancelRequested){
-			return new Status(IStatus.OK, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
-		}
 		parseProbes(s);
 		probes.sortTree();
 		fireUpdateEvent();	//Inform listeners that everything is done
@@ -102,12 +97,7 @@ public class ProbeParser extends TapsetParser {
 			options = null;
 		}
 
-		String s = runStap(options, script);
-		if (s == null) {
-			return ""; //$NON-NLS-1$
-		}
-
-		return s;
+		return runStap(options, script);
 	}
 
 	/**
@@ -129,9 +119,7 @@ public class ProbeParser extends TapsetParser {
 		TreeNode group = null;
 
 		StringTokenizer st = new StringTokenizer(s, "\n", false); //$NON-NLS-1$
-		if (st.hasMoreTokens()){
-			st.nextToken(); //skip the stap command itself
-		}
+	    st.nextToken(); //skip the stap command itself
 		while(st.hasMoreTokens() && !cancelRequested){
 			String tokenString = st.nextToken();
 
@@ -198,16 +186,10 @@ public class ProbeParser extends TapsetParser {
 	 * @return
 	 */
 	private String addStaticProbes(String probeList) {
-		if (cancelRequested) {
-			return ""; //$NON-NLS-1$
-		}
 		StringBuilder probes = new StringBuilder(probeList);
 
 		BufferedReader input = null;
 		try {
-			if (IDEPlugin.getDefault() == null) {
-				return ""; //$NON-NLS-1$
-			}
 			URL location = IDEPlugin.getDefault().getBundle().getEntry("completion/static_probe_list.properties"); //$NON-NLS-1$
 			location = FileLocator.toFileURL(location);
 			input = new BufferedReader(new FileReader(new File(location.getFile())));
@@ -219,9 +201,9 @@ public class ProbeParser extends TapsetParser {
 			}
 			input.close();
 		} catch (FileNotFoundException e) {
-			ExceptionErrorDialog.openError(Messages.ProbeParser_errorInitializingStaticProbes, e);
+			e.printStackTrace();
 		} catch (IOException e) {
-			ExceptionErrorDialog.openError(Messages.ProbeParser_errorInitializingStaticProbes, e);
+			e.printStackTrace();
 		}
 
 		return probes.toString();

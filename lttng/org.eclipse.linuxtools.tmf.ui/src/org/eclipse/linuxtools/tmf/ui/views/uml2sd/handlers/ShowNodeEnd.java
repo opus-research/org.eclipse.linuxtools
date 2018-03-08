@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,14 +14,16 @@ package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
 import java.util.Iterator;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
+import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode;
+import org.eclipse.ui.IViewPart;
 
 /**
  * Action class implementation to show end of a graph node.
@@ -29,7 +31,15 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.GraphNode;
  * @version 1.0
  * @author sveyrier
  */
-public class ShowNodeEnd extends BaseSDAction {
+public class ShowNodeEnd extends Action {
+
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+    /**
+     * The sequence diagram view reference
+     */
+    protected SDView fView = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -45,25 +55,30 @@ public class ShowNodeEnd extends BaseSDAction {
      * Constructor
      *
      * @param view The sequence diagram view reference
-     * @since 2.0
      */
-    public ShowNodeEnd(SDView view) {
-        super(view);
+    public ShowNodeEnd(IViewPart view) {
+        super();
+        if (view instanceof SDView) {
+            fView = (SDView)view;
+        }
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_NODE_END));
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#run()
+     */
     @Override
     @SuppressWarnings("rawtypes")
     public void run() {
-        if (getView() == null) {
+        if (fView == null) {
             return;
         }
 
-        SDWidget sdWidget = getView().getSDWidget();
+        SDWidget sdWidget = fView.getSDWidget();
 
         if (sdWidget == null) {
             return;
@@ -86,5 +101,14 @@ public class ShowNodeEnd extends BaseSDAction {
                 sdWidget.ensureVisible(Math.round((node.getX() + node.getWidth()) * sdWidget.getZoomFactor() + sdWidget.getVisibleWidth() / (float) 2), Math.round((node.getY() + node.getHeight()) * sdWidget.getZoomFactor()));
             }
         }
+    }
+
+    /**
+     * Sets the active SD view.
+     *
+     * @param view The SD view.
+     */
+   public void setView(SDView view) {
+        fView = view;
     }
 }

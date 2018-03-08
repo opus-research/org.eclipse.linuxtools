@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -10,7 +10,6 @@
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Changed to updated histogram data model
  *   Francois Chouinard - Moved from LTTng to TMF
- *   Patrick Tasse - Update for mouse wheel zoom
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -46,24 +45,32 @@ public class TimeRangeHistogram extends Histogram {
      */
     public TimeRangeHistogram(HistogramView view, Composite parent) {
         super(view, parent);
-        fZoom = new HistogramZoom(this, getStartTime(), getTimeLimit());
-        addMouseWheelListener(fZoom);
+        fZoom = new HistogramZoom(this, fCanvas, getStartTime(), getTimeLimit());
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.Histogram#updateTimeRange(long, long)
+     */
     @Override
     public void updateTimeRange(long startTime, long endTime) {
         ((HistogramView) fParentView).updateTimeRange(startTime, endTime);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.histogram.Histogram#clear()
+     */
     @Override
     public synchronized void clear() {
         if (fZoom != null) {
             fZoom.setFullRange(0L, 0L);
             fZoom.setNewRange(0L, 0L);
+            fZoom.stop();
         }
         super.clear();
     }

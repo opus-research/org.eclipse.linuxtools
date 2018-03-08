@@ -24,10 +24,10 @@ import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.ISpecfileSpecialSymbols;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.parser.SpecfileSource;
+import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileDefine;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileElement;
-import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileParser;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -39,34 +39,37 @@ import com.ibm.icu.util.StringTokenizer;
 
 /**
  * Hyperlink detector for source, patch and defines in the spec file.
- *
+ * 
  */
 public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector {
 
 	private static final String PATCH_IDENTIFIER = "%patch"; //$NON-NLS-1$
 	private static final String SOURCE_IDENTIFIER = "%{SOURCE"; //$NON-NLS-1$
 	private Specfile specfile;
-
+	
 	public IHyperlink[] detectHyperlinks(ITextViewer textViewer,
 			IRegion region, boolean canShowMultipleHyperlinks) {
-
+		
 		if (region == null || textViewer == null) {
 			return null;
 		}
+		
+		if (specfile == null) {
+			SpecfileEditor a = ((SpecfileEditor) this.getAdapter(SpecfileEditor.class));
+			if (a != null) {
+				specfile = a.getSpecfile();
+			} else {
+				return null;
+			}
+		}
 
 		IDocument document = textViewer.getDocument();
-		if (document == null) {
-			return null;
-		}
-
-		if (specfile == null) {
-			SpecfileParser parser = new SpecfileParser();
-			specfile = parser.parse(document);
-		}
-
 
 		int offset = region.getOffset();
 
+		if (document == null) {
+			return null;
+		}
 		IRegion lineInfo;
 		String line;
 		try {
@@ -87,7 +90,7 @@ public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector 
 			Pattern defineRegexp = Pattern.compile("%\\{(.*?)\\}"); //$NON-NLS-1$
 			Matcher fit = defineRegexp.matcher(tempWord);
 			while (fit.find()){
-				if ((fit.start()+tempLineOffset <= offsetInLine) && (offsetInLine <= fit.end()+tempLineOffset)){
+				if ((fit.start() <= offsetInLine) && (offsetInLine <= fit.end())){
 					tempWord = fit.group();
 					wordOffsetInLine = fit.start();
 					tempLineOffset += fit.start();
@@ -105,18 +108,16 @@ public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector 
 					word.substring(SOURCE_IDENTIFIER.length(),
 							word.length() - 1)).intValue();
 			SpecfileSource source = specfile.getSource(sourceNumber);
-			if (source != null) {
+			if (source != null)
 				return prepareHyperlink(lineInfo, line, word, source);
-			}
 		} else if (word.startsWith(PATCH_IDENTIFIER)) {
 
 			int sourceNumber = Integer.valueOf(
 					word.substring(PATCH_IDENTIFIER.length(), word.length()))
 					.intValue();
 			SpecfileSource source = specfile.getPatch(sourceNumber);
-			if (source != null) {
+			if (source != null)
 				return prepareHyperlink(lineInfo, line, word, source);
-			}
 		} else {
 			String defineName = getDefineName(word);
 			SpecfileDefine define = specfile.getDefine(defineName);
@@ -149,19 +150,19 @@ public class SpecfileElementHyperlinkDetector extends AbstractHyperlinkDetector 
 		if (editor.getEditorInput() instanceof FileEditorInput) {
 			IFile original = ((FileEditorInput) editor.getEditorInput()).getFile();
 			return new IHyperlink[] { new SpecfileElementHyperlink(urlRegion,
-					source, original) };
+					source, original) };			
 		} else {
 			return null;
 		}
-
+		
 
 	}
-
+	
 	private IHyperlink[] prepareHyperlink(IRegion lineInfo, String line,
 			String word, SpecfileElement source) {
 		return prepareHyperlink(lineInfo, line, word, source, 0);
 	}
-
+	
 	public void setSpecfile(Specfile specfile) {
 		this.specfile = specfile;
 	}

@@ -45,7 +45,7 @@ view    CDATA #REQUIRED
 default (true | false)
 </pre>
 
-*id - A unique identifier for this uml2SDLoader. This is not mandatory as long as the id attribute cannot be retrieved by the provider plug-in. The class attribute is the one on which the underlying algorithm relies.
+*id - A unique identifier for this uml2SDLoader. This is not mandatory as long as the id attribute cannot be retrieved by the provider plug-in. The class attribute is the one on which the underlying algorythm relies.
 *name - An name of the extension instance.
 *class - The implementation of this UML2 SD viewer loader. The class must implement org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.IUml2SDLoader.
 *view - The view ID of the view that this loader aims to populate. Either org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView itself or a extension of org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView.
@@ -383,13 +383,13 @@ To add time information in sequence diagram the timestamp has to be set for each
 <pre>
     private void createFrame() {
         //...
-        start.setTime(new TmfTimestamp(1000, -3));
-        syn1.setTime(new TmfTimestamp(1005, -3));
-        synReturn1.setTime(new TmfTimestamp(1050, -3));
-        asyn1.setStartTime(new TmfTimestamp(1060, -3));
-        asyn1.setEndTime(new TmfTimestamp(1070, -3));
-        asynReturn1.setStartTime(new TmfTimestamp(1060, -3));
-        asynReturn1.setEndTime(new TmfTimestamp(1070, -3));
+        start.setTime(new TmfTimestamp(1000, (byte) -3));
+        syn1.setTime(new TmfTimestamp(1005, (byte) -3));
+        synReturn1.setTime(new TmfTimestamp(1050, (byte) -3));
+        asyn1.setStartTime(new TmfTimestamp(1060, (byte) -3));
+        asyn1.setEndTime(new TmfTimestamp(1070, (byte) -3));
+        asynReturn1.setStartTime(new TmfTimestamp(1060, (byte) -3));
+        asynReturn1.setEndTime(new TmfTimestamp(1070, (byte) -3));
         //...
     }
 </pre>
@@ -478,34 +478,58 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider {
         fSdView.setFrame(testFrame);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#hasNextPage()
+     */
     @Override
     public boolean hasNextPage() {
         return page == 0;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#hasPrevPage()
+     */
     @Override
     public boolean hasPrevPage() {
         return page == 1;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#nextPage()
+     */
     @Override
     public void nextPage() {
         page = 1;
         createSecondFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#prevPage()
+     */
     @Override
     public void prevPage() {
         page = 0;
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#firstPage()
+     */
     @Override
     public void firstPage() {
         page = 0;
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDPagingProvider#lastPage()
+     */
     @Override
     public void lastPage() {
         page = 1;
@@ -526,7 +550,7 @@ To use the advanced paging provider, the interface ''ISDAdvancePagingProvider'' 
  
 ==== Using the Find Provider Interface ====
 
-For finding nodes in a sequence diagram two interfaces exists. One for basic finding and one for extended finding. The basic find comes with a dialog box for entering find criteria as regular expressions. This find criteria can be used to execute the find. Find criteria a persisted in the Eclipse workspace.
+For finding nodes in a sequence diagram two interfaces exists. One for basic finding and one for extended finding. The basic find comes with a dialog box for entering find criterias as regular expressions. This find criteria can be used to execute the find. Find criterias a persisted in the Eclipse workspace.
 <br>
 For the extended find provider interface a ''org.eclipse.jface.action.Action'' class has to be provided. The actual find handling has to be implemented and triggered by the action.
 <br>
@@ -552,7 +576,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         fSdView.setSDFindProvider(this);
         createFrame();
     }
-
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter#isNodeSupported(int)
+     */
     @Override
     public boolean isNodeSupported(int nodeType) {
         switch (nodeType) {
@@ -566,6 +593,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter#getNodeName(int, java.lang.String)
+     */
     @Override
     public String getNodeName(int nodeType, String loaderClassName) {
         switch (nodeType) {
@@ -577,6 +608,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         return "";
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider#find(org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.widgets.Criteria)
+     */
     @Override
     public boolean find(Criteria criteria) {
         Frame frame = fSdView.getFrame();
@@ -599,6 +634,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider#cancel()
+     */
     @Override
     public void cancel() {
         // reset find parameters
@@ -617,7 +656,7 @@ Note that the find dialog will be opened by typing the key shortcut CRTL+F.
 
 ==== Using the Filter Provider Interface ====
 
-For filtering of sequence diagram elements two interfaces exists. One basic for filtering and one for extended filtering. The basic filtering comes with two dialog for entering filter criteria as regular expressions and one for selecting the filter to be used. Multiple filters can be active at a time. Filter criteria are persisted in the Eclipse workspace.
+For filtering of sequence diagram elements two interfaces exists. One basic for filtering and one for extended filtering. The basic filtering comes with two dialog for entering filter criterias as regular expressions and one for selecting the filter to be used. Multiple filters can be active at a time. Filter criterias are persisted in the Eclipse workspace. 
 <br>
 To use the basic filter provider, first the interface method of the ''ISDFilterProvider'' has to be implemented by a class. Typically, this is implemented in the loader class. Add the ''ISDFilterProvider'' to the list of implemented interfaces, implement the method ''filter()''and set the provider in the ''setViewer()'' method as well as remove the provider in the ''dispose()'' method of the loader class. Please note that the ''ISDFindProvider'' extends the interface ''ISDGraphNodeSupporter'' which methods (''isNodeSupported()'' and ''getNodeName()'') have to be implemented, too. <br>
 Note that no example implementation of ''filter()'' is provided. 
@@ -643,6 +682,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFilterProvider#filter(java.util.List)
+     */
     @Override
     public boolean filter(List<?> list) {
         return false;
@@ -690,6 +733,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDExtendedActionBarProvider#supplementCoolbarContent(org.eclipse.ui.IActionBars)
+     */
     @Override
     public void supplementCoolbarContent(IActionBars iactionbars) {
         Action action = new Action("Refresh") {
@@ -759,6 +806,10 @@ public class SampleLoader implements IUml2SDLoader, ISDPagingProvider, ISDFindPr
         createFrame();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.ISelectionListener#selectionChanged(org.eclipse.ui.IWorkbenchPart, org.eclipse.jface.viewers.ISelection)
+     */
     @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
         ISelection sel = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
@@ -805,7 +856,7 @@ public class OpenSDView extends AbstractHandler {
 
 === Downloading the Tutorial ===
 
-Use the following link to download the source code of the tutorial [http://wiki.eclipse.org/images/e/e6/SamplePlugin.zip Plug-in of Tutorial].
+Use the following link to download the source code of the tutorial [[Media:SamplePlugin.zip | Plug-in of Tutorial]] 
 
 == Integration of Tracing and Monitoring Framework with Sequence Diagram Framework ==
 
@@ -865,20 +916,20 @@ A third type of event request is issued for finding specific data across pages.
 ==== TMF Signal Framework ====
 
 The reference loader extends the class ''TmfComponent''. By doing that the loader is register as TMF signal handler for sending and receiving TMF signals. The loader implements signal handlers for the following TMF signals:
-*''TmfTraceSelectedSignal''
-This signal indicates that a trace or experiment was selected. When receiving this signal the indexing request is initiated and the first page is displayed after receiving the relevant information.
-*''traceClosed''
-This signal indicates that a trace or experiment was closed. When receiving this signal the loader resets its data and a blank page is loaded in the Sequence Diagram View.
+*''TmfExperimentSelectedSignal''
+This signal indicates that a Experiment was selected. When receiving this signal the indexing request is initiated and the first page is displayed after receiving the relevant information.
+*''TmfExperimentDisposedSignal''
+This signal indicates that a Experiment was disposed. When receiving this signal the loader resets its data and a blank page is loaded in the Sequence Diagram View.
 *''TmfTimeSynchSignal''
-This signal indicates that a event with a certain timestamp is selected. When receiving this signal the corresponding message is selected in the Sequence Diagram View. If necessary, the page is changed.
+This signal indicates that a event with a certain time stamp is selected. When receiving this signal the corresponding message is selected in the Sequence Diagram View. If necessary, the page is changed. 
 *''TmfRangeSynchSignal''
 This signal indicates that a new time range is in focus. When receiving this signal the loader loads the page which corresponds to the start time of the time range signal. The message with the start time will be in focus.
 
-Besides acting on receiving signals, the reference loader is also sending signals. A ''TmfTimeSynchSignal'' is broadcasted with the timestamp of the message which was selected in the Sequence Diagram View. ''TmfRangeSynchSignal'' is sent when a page is changed in the Sequence Diagram View. The start timestamp of the time range sent is the timestamp of the first message. The end timestamp sent is the timestamp of the first message plus the current time range window. The current time range window is the time window that was indicated in the last received ''TmfRangeSynchSignal''.
+Besides acting on receiving signals, the reference loader is also sending signals. A ''TmfTimeSynchSignal'' is broadcasted with the time stamp of the message which was selected in the Sequence Diagram View. ''TmfRangeSynchSignal'' is sent when a page is changed in the Sequence Diagram View. The start timestamp of the time range sent is the timestamp of the first message. The end timestamp sent is the timestamp of the first message plus the current time range window. The current time range window is the time window that was indicated in the last received ''TmfRangeSynchSignal''.
 
 === Supported Traces ===
 
-The reference implementation is able to analyze traces from a single component that traces the interaction with other components. For example, a server node could have trace information about its interaction with client nodes. The server node could be traced and then analyzed using TMF and the Sequence Diagram Framework of TMF could used to visualize the interactions with the client nodes.<br>
+The reference implementation is able to analyze traces from a single component that traces the interaction between other components. For example, a server node could have trace information about its interaction with client nodes. The server node could be traced and then analyzed using TMF and the Sequence Diagram Framework of TMF could used to visualize the interactions with the client nodes.<br> 
 
 Note that combined traces of multiple components, that contain the trace information about the same interactions are not supported in the reference implementation!
 
@@ -891,14 +942,14 @@ The reference implementation in class ''TmfUml2SDSyncLoader'' in package ''org.e
      * @param tmfEvent Event to parse for sequence diagram event details
      * @return sequence diagram event if details are available else null
      */
-    protected ITmfSyncSequenceDiagramEvent getSequenceDiagramEvent(ITmfEvent tmfEvent){
+    protected ITmfSyncSequenceDiagramEvent getSequnceDiagramEvent(TmfEvent tmfEvent){
         //type = .*RECEIVE.* or .*SEND.*
         //content = sender:<sender name>:receiver:<receiver name>,signal:<signal name>
         String eventType = tmfEvent.getType().toString();
-        if (eventType.contains(Messages.TmfUml2SDSyncLoader_EventTypeSend) || eventType.contains(Messages.TmfUml2SDSyncLoader_EventTypeReceive)) {
-            Object sender = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncLoader_FieldSender);
-            Object receiver = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncLoader_FieldReceiver);
-            Object name = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncLoader_FieldSignal);
+        if (eventType.contains(Messages.TmfUml2SDSyncCloader_EventTypeSend) || eventType.contains(Messages.TmfUml2SDSyncCloader_EventTypeReceive)) {
+            Object sender = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncCloader_FieldSender);
+            Object receiver = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncCloader_FieldReceiver);
+            Object name = tmfEvent.getContent().getField(Messages.TmfUml2SDSyncCloader_FieldSignal);
             if ((sender instanceof ITmfEventField) && (receiver instanceof ITmfEventField) && (name instanceof ITmfEventField)) {
                 ITmfSyncSequenceDiagramEvent sdEvent = new TmfSyncSequenceDiagramEvent(tmfEvent,
                                 ((ITmfEventField) sender).getValue().toString(),
@@ -909,7 +960,7 @@ The reference implementation in class ''TmfUml2SDSyncLoader'' in package ''org.e
             }
         }
         return null;
-    }
+    }    
 </pre>
 
 The analysis looks for event type Strings containing ''SEND'' and ''RECEIVE''. If event type matches these key words, the analyzer will look for strings ''sender'', ''receiver'' and ''signal'' in the event fields of type ''ITmfEventField''. If all the data is found a sequence diagram event from can be created. Note that Sync Messages are assumed, which means start and end time are the same.
@@ -930,9 +981,10 @@ Run the Reference Application. To launch the Eclipse Application select the ''Ov
 To open the Reference Sequence Diagram View, select '''Windows -> Show View -> Other... -> TMF -> Sequence Diagram''' <br> 
 [[Image:images/ShowTmfSDView.png]]<br>
 
-An blank Sequence Diagram View will open. 
+An blank Sequence Diagram View will open. Open also the TMF Events View by selecting '''Windows -> Show View -> Other... -> TMF -> Events''' <br>
+[[Image:images/ShowEventsView.png]]<br>
 
-Select the '''Select Experiment''' button of the toolbar to load the sequence diagram from the data provided in the trace file. What this does is open the file ''tracesets/sdEvents'', parse this file through TMF and analyze all events of type ''TmfEvent'' and generates the Sequence Diagram out of it.  <br>
+Select the '''Select Experiment''' button of the toolbar to load the sequence diagram from the data provided in the trace file. What this does is open the file ''tracesets/sdEvents'', parse this file through TMF and analyze all events of type ''TmfEvent'' and generates the Sequence Digram out of it.  <br>
 [[Image:images/ReferenceSeqDiagram.png]]<br>
 
 Now the reference application can be explored. To demonstrate the view features try the following things:
@@ -950,25 +1002,25 @@ To dispose the diagram, select the '''Dispose Experiment''' button of the toolba
 In some case it might be necessary to change the implementation of the analysis of each ''TmfEvent'' for the generation of ''Sequence Diagram Events''. For that just extend the class ''TmfUml2SDSyncLoader'' and overwrite the method ''protected ITmfSyncSequenceDiagramEvent getSequnceDiagramEvent(TmfEvent tmfEvent)'' with your own implementation.
 
 === Downloading the Reference Plug-in ===
-To download the reference plug-in that demonstrates the reference loader, use the following link: [http://wiki.eclipse.org/images/d/d3/ReferencePlugin.zip Reference Plug-in]. Just extract the zip file and import the extracted Eclipse plug-in (plug-in name: ''org.eclipse.linuxtools.tmf.reference.ui'') to your Eclipse workspace. <br>
+To download the reference plug-in that demonstrates the reference loader, use the following link: [[Media:ReferencePlugin.zip | Reference Plug-in]]. Just extract the zip file and import the extracted Eclipse plug-in (plug-in name: ''org.eclipse.linuxtools.tmf.reference.ui'') to your Eclipse workspace. <br>
 
 =CTF Parser=
 
-== CTF Format ==
+== CTF Format == 
 CTF is a format used to store traces. It is self defining, binary and made to be easy to write to. 
 Before going further, the full specification of the CTF file format can be found at http://www.efficios.com/ .
 
-For the purpose of the reader some basic description will be given. A CTF trace typically is made of several files all in the same folder.
+For the purpose of the reader some basic description will be given. A CTF trace typically is made of several files all in the same folder. 
 
-These files can be split into two types :
+These files can be split into two types : 
 * Metadata
 * Event streams
-
+ 
 === Metadata ===
-The metadata is either raw text or packetized text. It is tsdl encoded. it contains a description of the type of data in the event streams. It can grow over time if new events are added to a trace but it will never overwrite what is already there.
+The metadata is either raw text or packetized text. It is tsdl encoded. it contains a description of the type of data in the event streams. It can grow over time if new events are added to a trace but it will never overwrite what is already there. 
 
 === Event Streams ===
-The event streams are a file per stream per cpu. These streams are binary and packet based. The streams store events and event information (ie lost events) The event data is stored in headers and field payloads.
+The event streams are a file per stream per cpu. These streams are binary and packet based. The streams store events and event information (ie lost events) The event data is stored in headers and field payloads. 
 
 So if you have two streams (channels) "channel1" and "channel2" and 4 cores, you will have the following files in your trace directory: "channel1_0" , "channel1_1" , "channel1_2" , "channel1_3" , "channel2_0" , "channel2_1" , "channel2_2" & "channel2_3"
 
@@ -977,50 +1029,47 @@ In order to read a CTF trace, two steps must be done.
 * The metadata must be read to know how to read the events.
 * the events must be read.
 
-The metadata is a written in a subset of the C language called TSDL. To read it, first it is depacketized (if it is not in plain text) then the raw text is parsed by an antlr grammer. The parsing is done in two phases. There is a lexer (CTFLexer.g) which separated the metatdata text into tokens. The tokens are then pattern matched using the parser (CTFParser.g) to form an AST. This AST is walked through using "IOStructGen.java" to populate streams and traces in trace parent object.
+The metadata is a written in a subset of the C language called TSDL. To read it, first it is depacketized (if it is not in plain text) then the raw text is parsed by an antlr grammer. The parsing is done in two phases. There is a lexer (CTFLexer.g) which separated the metatdata text into tokens. The tokens are then pattern matched using the parser (CTFParser.g) to form an AST. This AST is walked through using "IOStructGen.java" to populate streams and traces in trace parent object. 
 
-When the metadata is loaded and read, the trace object will be populated with 3 items:
-* the event definitions available per stream: a definition is a description of the datatype.
-* the event declarations available per stream: this will save declaration creation on a per event basis. They will all be created in advance, just not populated.
-* the beginning of a packet index.
+When the metadata is loaded and read, the trace object will be populated with 3 items: 
+* the event definitions available per stream: a definition is a description of the datatype. 
+* the event declarations available per stream: this will save declaration creation on a per event basis. They will all be created in advance, just not populated. 
+* the beginning of a packet index. 
 
-Now all the trace readers for the event streams have everything they need to read a trace. They will each point to one file, and read the file from packet to packet. Everytime the trace reader changes packet, the index is updated with the new packet's information. The readers are in a priority queue and sorted by timestamp. This ensures that the events are read in a sequential order. They are also sorted by file name so that in the eventuality that two events occur at the same time, they stay in the same order.
+Now all the trace readers for the event streams have everything they need to read a trace. They will each point to one file, and read the file from packet to packet. Everytime the trace reader changes packet, the index is updated with the new packet's information. The readers are in a priority queue and sorted by timestamp. This ensures that the events are read in a sequential order. They are also sorted by file name so that in the eventuality that two events occur at the same time, they stay in the same order. 
 
 == Seeking in a trace ==
-The reason for maintaining an index is to speed up seeks. In the case that a user wishes to seek to a certain timestamp, they just have to find the index entry that contains the timestamp, and go there to iterate in that packet until the proper event is found. this will reduce the searches time by an order of 8000 for a 256k paket size (kernel default).
+The reason for maintaining an index is to speed up seeks. In the case that a user wishes to seek to a certain timestamp, they just have to find the index entry that contains the timestamp, and go there to iterate in that packet until the proper event is found. this will reduce the searches time by an order of 8000 for a 256k paket size (kernel default). 
 
 == Interfacing to TMF == 
-The trace can be read easily now but the data is still awkward to extract.
+The trace can be read easily now but the data is still awkward to extract. 
 
 === CtfLocation ===
-A location in a given trace, it is currently the timestamp of a trace and the index of the event. The index shows for a given timestamp if it is the first second or nth element.
+A location in a given trace, it is currently the timestamp of a trace. 
 
 === CtfTmfTrace ===
 The CtfTmfTrace is a wrapper for the standard CTF trace that allows it to perform the following actions: 
-* '''initTrace()''' create a trace
-* '''validateTrace()''' is the trace a CTF trace?
-* '''getLocationRatio()''' how far in the trace is my location?
-* '''seekEvent()''' sets the cursor to a certain point in a trace.
-* '''readNextEvent()''' reads the next event and then advances the cursor
-* '''getTraceProperties()''' gets the 'env' structures of the metadata
+* '''InitTrace()''' create a trace
+* '''ValidateTrace()''' is the trace a CTF trace?
+* '''GeTLocationRatio()''' how far in the trace is my location?
+* '''SeekEvent()''' sets the cursor to a certain point in a trace.  
+* '''ReadNextEvent()''' reads the next event and then advances the cursor
+* '''GetEnvironmntVars()''' gets the 'env' structures of the metadata
 
 === CtfIterator ===
 The CtfIterator is a wrapper to the CTF file reader. It behaves like an iterator on a trace. However, it contains a file pointer and thus cannot be duplicated too often or the system will run out of file handles. To alleviate the situation, a pool of iterators is created at the very beginning and stored in the CtfTmfTrace. They can be retried by calling the GetIterator() method.
 
-=== CtfIteratorManager ===
-Since each CtfIterator will have a file reader, the OS will run out of handles if too many iterators are spawned. The solution is to use the iterator manager. This will allow the user to get an iterator. If there is a context at the requested position, the manager will return that one, if not, a context will be selected at random and set to the correct location. Using random replacement minimizes contention as it will settle quickly at a new balance point.
-
-=== CtfTmfContext ===
-The CtfTmfContext implements the ITmfContext type. It is the CTF equivalent of TmfContext. It has a CtfLocation and points to an iterator in the CtfTmfTrace iterator pool as well as the parent trace. it is made to be cloned easily and not affect system resources much. Contexts behave much like C file pointers (FILE*) but they can be copied until one runs out of RAM.
+=== CtfLightWeightContext ===
+The CtfLightWeightContext wraps the tmfContext type. It has a CtfLocation and points to an iterator in the CtfTmfTrace iterator pool as well as the parent trace. it is made to be cloned easily and not affect system resources much.  Contexts behave much like C File Pointers (FILE*) but they can be copied until one runs out of ram. 
 
 === CtfTmfTimestamp ===
 The CtfTmfTimestamp take a CTF time (normally a long int) and outputs the time formats it as a TmfTimestamp, allowing it to be compared to other timestamps. The time is stored with the UTC offset already applied. It also features a simple toString() function that allows it to output the time in more Human readable ways: "yyyy/mm/dd/hh:mm:ss.nnnnnnnnn ns" for example. An additional feature is the getDelta() function that allows two timestamps to be substracted, showing the time difference between A and B.
  
 === CtfTmfEvent ===
-The CtfTmfEvent is an ITmfEvent that is used to wrap event declarations and event definitions from the CTF side into easier to read and parse chunks of information. It is a final class with final fields made to be newed very often without incurring performance costs. Most of the information is already available. It should be noted that one type of event can appear called "lost event" these are synthetic events that do not exist in the trace. They will not appear in other trace readers such as babeltrace.
+The CtfTmfEvent is an ITmfEvent that is used to wrap event declarations and event definitions from the CTF side into easier to read and parse chunks of information. It is a final class with final fields made to be newed very often without incurring performance costs. Most of the information is already available. It should be noted that one type of event can appear called "lost event" these are synthetic events that do not exist in the trace. They will not appear in other trace readers such as babeltrace. 
 
 === Other ===
-There are other helper files that format given events for views, they are simpler and the architecture does not depend on them.
+There are other helper files that format given events for views, they are simpler and the architecture does not depend on them. 
 
 === Limitations ===
 For the moment live trace reading is not supported, there are no sources of traces to test on.

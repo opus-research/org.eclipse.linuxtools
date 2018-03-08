@@ -177,6 +177,9 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      * @return The size of the Strings Entry that was written, if any.
      */
     int writeInterval(ByteBuffer buffer, int endPosOfStringEntry) {
+        int sizeOfStringEntry;
+        byte[] byteArrayToWrite;
+
         buffer.putLong(start);
         buffer.putLong(end);
         buffer.putInt(attribute);
@@ -197,37 +200,41 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
                  */
                 e.printStackTrace();
             }
-            break;
+            return 0; /* we didn't use a Strings section entry */
 
         case TYPE_STRING:
-            byte[] byteArrayToWrite;
-            try {
-                byteArrayToWrite = sv.unboxStr().getBytes();
-            } catch (StateValueTypeException e1) {
-                /* Should not happen, we're in a switch/case for string type */
-                throw new RuntimeException();
-            }
+            byteArrayToWrite = sv.toByteArray();
+            /*
+             * Size to write (+2 = +1 for size at the start, +1 for the 0 at the
+             * end)
+             */
+            sizeOfStringEntry = byteArrayToWrite.length + 2;
 
             /* we use the valueOffset as an offset. */
-            buffer.putInt(endPosOfStringEntry - stringsEntrySize);
+            buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
             buffer.mark();
-            buffer.position(endPosOfStringEntry - stringsEntrySize);
+            buffer.position(endPosOfStringEntry - sizeOfStringEntry);
 
             /*
              * write the Strings entry (1st byte = size, then the bytes, then the 0)
              */
-            buffer.put((byte) stringsEntrySize);
+            buffer.put((byte) sizeOfStringEntry);
             buffer.put(byteArrayToWrite);
             buffer.put((byte) 0);
             assert (buffer.position() == endPosOfStringEntry);
             buffer.reset();
-            break;
+            return sizeOfStringEntry;
 
         case TYPE_LONG:
+            /*
+             * Size to write is the number of bytes in a Long
+             */
+            sizeOfStringEntry = 8;
+
             /* we use the valueOffset as an offset. */
-            buffer.putInt(endPosOfStringEntry - stringsEntrySize);
+            buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
             buffer.mark();
-            buffer.position(endPosOfStringEntry - stringsEntrySize);
+            buffer.position(endPosOfStringEntry - sizeOfStringEntry);
 
             /*
              * write the Long in the Strings section
@@ -243,12 +250,11 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             }
             assert (buffer.position() == endPosOfStringEntry);
             buffer.reset();
-            break;
+            return sizeOfStringEntry;
 
         default:
-            break;
+            return 0;
         }
-        return stringsEntrySize;
     }
 
     @Override
@@ -296,31 +302,15 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      * @return
      */
     int getIntervalSize() {
-        return stringsEntrySize + HTNode.DATA_ENTRY_SIZE;
+        return stringsEntrySize + HTNode.getDataEntrySize();
     }
 
     private int computeStringsEntrySize() {
-        switch(sv.getType()) {
-        case NULL:
-        case INTEGER:
-            /* Those don't use the strings section at all */
+        if (sv.toByteArray() == null) {
             return 0;
-        case LONG:
-            /* The value's bytes are written directly into the strings section */
-            return 8;
-        case STRING:
-            try {
-                /* String's length + 2 (1 byte for size, 1 byte for \0 at the end */
-                return sv.unboxStr().getBytes().length + 2;
-            } catch (StateValueTypeException e) {
-                /* We're inside a switch/case for the string type, can't happen */
-                throw new IllegalStateException(e);
-            }
-        default:
-            /* It's very important that we know how to write the state value in
-             * the file!! */
-            throw new IllegalStateException();
         }
+        return sv.toByteArray().length + 2;
+        /* (+1 for the first byte indicating the size, +1 for the 0'ed byte) */
     }
 
     /**
@@ -340,9 +330,10 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof HTInterval &&
-                this.compareTo((HTInterval) other) == 0) {
-            return true;
+        if (other instanceof HTInterval) {
+            if (this.compareTo((HTInterval) other) == 0) {
+                return true;
+            }
         }
         return false;
     }
@@ -387,7 +378,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             return TYPE_LONG;
         default:
             /* Should not happen if the switch is fully covered */
-            throw new IllegalStateException();
+            throw new RuntimeException();
         }
     }
 }

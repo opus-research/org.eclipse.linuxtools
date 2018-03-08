@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,7 +33,7 @@ public class FontImpl implements IFont {
     /**
      * The font object
      */
-    private final Font fFont;
+    protected Font fFont = null;
     /**
      * Flag to indicate that this object is managing the resource.
      */
@@ -65,7 +65,6 @@ public class FontImpl implements IFont {
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
-
     /**
      * Returns a font implementation based system font.
      *
@@ -75,11 +74,19 @@ public class FontImpl implements IFont {
         return new FontImpl(Display.getDefault().getSystemFont());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont#getFont()
+     */
     @Override
     public Object getFont() {
         return fFont;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IFont#dispose()
+     */
     @Override
     public void dispose() {
         if (fFont != null) {
