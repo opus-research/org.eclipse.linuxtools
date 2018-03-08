@@ -29,7 +29,10 @@ public class TmfEventsStatisticsTest extends TmfStatisticsTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        assumeTrue(testTrace.exists());
-        backend = new TmfEventsStatistics(testTrace.getTrace());
+        assumeTrue(testTraceKernel.exists());
+        assumeTrue(testTraceLostEvents.exists());
+
+        backendKernel = new TmfEventsStatistics(testTraceKernel.getTrace());
+        backendLostEvents = new TmfEventsStatistics(testTraceLostEvents.getTrace());
     }
 }

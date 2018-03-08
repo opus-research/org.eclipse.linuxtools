@@ -29,19 +29,27 @@ import org.junit.BeforeClass;
 public class TmfStateStatisticsTest extends TmfStatisticsTest {
 
     /**
-     * Set up the fixture (build the state history, etc.) once for all tests.
+     * Set up the fixtures (build the state history, etc.) once for all tests.
      */
     @BeforeClass
     public static void setUpClass() {
-        assumeTrue(testTrace.exists());
+        assumeTrue(testTraceKernel.exists());
+        assumeTrue(testTraceLostEvents.exists());
         try {
             File totalsFileKernel = File.createTempFile("stats-test-kernel-totals", ".ht");
             File typesFileKernel = File.createTempFile("stats-test-kernel-types", ".ht");
             totalsFileKernel.deleteOnExit();
             typesFileKernel.deleteOnExit();
 
-            backend = new TmfStateStatistics(testTrace.getTrace(),
+            File totalsFileLostEvents = File.createTempFile("stats-test-lostevents-totals", ".ht");
+            File typesFileLostEvents = File.createTempFile("stats-test-lostevents-types", ".ht");
+            totalsFileLostEvents.deleteOnExit();
+            typesFileLostEvents.deleteOnExit();
+
+            backendKernel = new TmfStateStatistics(testTraceKernel.getTrace(),
                     totalsFileKernel, typesFileKernel);
+            backendLostEvents = new TmfStateStatistics(testTraceLostEvents.getTrace(),
+                    totalsFileLostEvents, typesFileLostEvents);
 
         } catch (TmfTraceException e) {
             e.printStackTrace();
