@@ -14,16 +14,13 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        CTFTraceCallsitePerformanceTest.class,
-        CTFTraceTest.class,
         CTFTraceReaderTest.class,
         StreamInputTest.class,
         StreamInputReaderTimestampComparatorTest.class,
         StreamInputReaderTest.class,
         StreamInputReaderComparatorTest.class,
         StreamInputPacketIndexEntryTest.class,
-        StreamInputPacketIndexTest.class,
-        StreamTest.class,
+        StreamInputPacketIndexTest.class, StreamTest.class, CTFTraceTest.class,
         MetadataTest.class, })
 public class TestAll {
 

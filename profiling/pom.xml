@@ -28,7 +28,7 @@
   <version>1.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Eclipse Linux Tools Profiling Framework Parent</name>
+  <name>Eclipse Linux Tools Valgrind Parent</name>
 
   <licenses>
     <license>
