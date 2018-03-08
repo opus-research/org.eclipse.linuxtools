@@ -13,16 +13,8 @@ package org.eclipse.linuxtools.internal.perf;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
 
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunch;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IOConsole;
 
 /**
  * This class represents the general flow of a perf command being
@@ -32,7 +24,6 @@ public abstract class AbstractDataManipulator {
 
 	private String text;
 	private String title;
-	private ILaunch launch;
 
 	AbstractDataManipulator (String title) {
 		this.title = title;
@@ -46,84 +37,73 @@ public abstract class AbstractDataManipulator {
 		return title;
 	}
 
-	public void setLaunch (ILaunch launch) {
-		this.launch = launch;
-	}
-
 	public void performCommand(String[] cmd, int fd) {
-		BufferedReader buff = null;
-		BufferedReader bufftmp = null;
+		BufferedReader buffData = null;
+		BufferedReader buffTmp = null;
 
 		try {
-
 			Process proc = RuntimeProcessFactory.getFactory().exec(cmd, null);
-
-			switch (fd) {
-			case 1:
-				buff = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-				bufftmp = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-				break;
-			case 2:
-				buff = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-				bufftmp = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-				break;
-			default:
-				buff = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-				bufftmp = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-			}
-
-			StringBuffer strBuff = new StringBuffer();
+			StringBuffer strBuffData = new StringBuffer();
 			StringBuffer strBuffTmp = new StringBuffer();
 			String line = ""; //$NON-NLS-1$
 
-			// If the buffer is not being consumed, the other one may block.
-			while ((line = bufftmp.readLine()) != null) {
-				strBuffTmp.append(line);
-				strBuffTmp.append("\n"); //$NON-NLS-1$
-			}
+			switch (fd) {
+			case 1:
+				buffData = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+				buffTmp = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
-			while ((line = buff.readLine()) != null) {
-				strBuff.append(line);
-				strBuff.append("\n"); //$NON-NLS-1$
-			}
-			text = strBuff.toString();
-
-			if (launch != null) {
-				String configName = launch.getLaunchConfiguration().getName();
-				// Console will try to read from stream so create afterwards
-				// Console will have the configuration name as a substring
-				DebugPlugin.newProcess(launch, proc, ""); //$NON-NLS-1$
-
-				ConsolePlugin plugin = ConsolePlugin.getDefault();
-				IConsoleManager conMan = plugin.getConsoleManager();
-				IConsole[] existing = conMan.getConsoles();
-				IOConsole binaryOutCons = null;
-				PrintStream print;
-
-				// Find the console
-				for (IConsole x : existing) {
-					if (x.getName().contains(configName)) { //$NON-NLS-1$
-						binaryOutCons = (IOConsole) x;
-					}
+				// If the buffer is not being consumed, the other one may block.
+				while ((line = buffData.readLine()) != null) {
+					strBuffData.append(line);
+					strBuffData.append("\n"); //$NON-NLS-1$
 				}
 
-				// Get the printstream via the outputstream.
-				// Get ouput stream
-				if (binaryOutCons != null) {
-					OutputStream outputTo = binaryOutCons.newOutputStream();
-					print = new PrintStream(outputTo);
-					print.println(strBuffTmp.toString());
+				while ((line = buffTmp.readLine()) != null) {
+					strBuffTmp.append(line);
+					strBuffTmp.append("\n"); //$NON-NLS-1$
+				}
+				break;
+			case 2:
+				buffData = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+				buffTmp = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+
+				// If the buffer is not being consumed, the other one may block.
+				while ((line = buffTmp.readLine()) != null) {
+					strBuffTmp.append(line);
+					strBuffTmp.append("\n"); //$NON-NLS-1$
+				}
+
+				while ((line = buffData.readLine()) != null) {
+					strBuffData.append(line);
+					strBuffData.append("\n"); //$NON-NLS-1$
+				}
+				break;
+			default:
+				buffData = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+				buffTmp = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+
+				// If the buffer is not being consumed, the other one may block.
+				while ((line = buffData.readLine()) != null) {
+					strBuffData.append(line);
+					strBuffData.append("\n"); //$NON-NLS-1$
+				}
+
+				while ((line = buffTmp.readLine()) != null) {
+					strBuffTmp.append(line);
+					strBuffTmp.append("\n"); //$NON-NLS-1$
 				}
 			}
+
+			text = strBuffData.toString();
 		} catch (IOException e) {
 			text = ""; //$NON-NLS-1$
 		} finally {
 			try {
-				if (buff != null) {
-					buff.close();
+				if (buffData != null) {
+					buffData.close();
 				}
-				if (bufftmp != null) {
-					bufftmp.close();
+				if (buffTmp != null) {
+					buffTmp.close();
 				}
 			} catch (IOException e) {
 				// continue
