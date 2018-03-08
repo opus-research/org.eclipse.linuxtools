@@ -30,6 +30,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,6 +47,16 @@ public class ArrayDefinitionTest {
     private ArrayDefinition charArrayFixture;
     private ArrayDefinition stringArrayFixture;
     private ArrayDefinition longArrayFixture;
+
+    /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(ArrayDefinitionTest.class);
+    }
 
     /**
      * Perform pre-test initialization.
@@ -74,13 +85,21 @@ public class ArrayDefinitionTest {
         return temp;
     }
 
+
+    /**
+     * @return
+     */
     private ArrayDefinition createStringArray() {
         StringDeclaration strDecl = new StringDeclaration();
         StringDefinition[] defs = createDefs();
         ArrayDefinition temp = setUpDeclaration(strDecl, defs);
         return temp;
     }
-
+    /**
+     * @param decl
+     * @param defs
+     * @return
+     */
     private ArrayDefinition setUpDeclaration(IDeclaration decl,
             Definition[] defs) {
         ArrayDeclaration ad = new ArrayDeclaration(0, decl);
@@ -88,8 +107,11 @@ public class ArrayDefinitionTest {
         temp.setDefinitions(defs);
         return temp;
     }
-
-
+    /**
+     * @param size
+     * @param bits
+     * @return
+     */
     private static IntegerDefinition[] createIntDefs(int size, int bits) {
         IntegerDefinition[] defs = new IntegerDefinition[size];
         for (int i = 0; i < size; i++) {
@@ -100,6 +122,13 @@ public class ArrayDefinitionTest {
             defs[i].setValue(i);
         }
         return defs;
+    }
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     private static StringDefinition[] createDefs() {
