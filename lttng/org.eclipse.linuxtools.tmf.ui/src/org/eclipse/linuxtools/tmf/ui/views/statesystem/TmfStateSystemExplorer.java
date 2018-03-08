@@ -357,10 +357,6 @@ public class TmfStateSystemExplorer extends TmfView {
                 value = String.valueOf(state.unboxLong());
                 item.setText(TYPE_COL, Messages.TypeLong);
                 break;
-            case DOUBLE:
-                value = String.valueOf(state.unboxDouble());
-                item.setText(TYPE_COL, Messages.TypeDouble);
-                break;
             case STRING:
                 value = state.unboxStr();
                 item.setText(TYPE_COL, Messages.TypeString);
@@ -485,7 +481,7 @@ public class TmfStateSystemExplorer extends TmfView {
         Thread thread = new Thread("State system visualizer update") { //$NON-NLS-1$
             @Override
             public void run() {
-                ITmfTimestamp currentTime = signal.getBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
+                ITmfTimestamp currentTime = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
                 fCurrentTimestamp = currentTime.getValue();
 
                 if (filterStatus) {
@@ -507,7 +503,7 @@ public class TmfStateSystemExplorer extends TmfView {
         };
         thread.start();
     }
-
+    
     /**
      * Update the display to use the updated timestamp format
      *

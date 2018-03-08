@@ -20,7 +20,6 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    ActivatorTest.class,
-    org.eclipse.linuxtools.lttng2.ust.core.tests.trace.callstack.AllTests.class
+    ActivatorTest.class
 })
 public class AllTests { }

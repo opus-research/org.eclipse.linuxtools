@@ -19,7 +19,6 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IFieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IUstProviderInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEnablement;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
@@ -32,7 +31,6 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.EventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.FieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.SessionInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.SnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.UstProviderInfo;
 
 /**
@@ -58,8 +56,6 @@ public class ModelImplFactory {
     private IUstProviderInfo fUstProviderInfo2 = null;
     private IProbeEventInfo fProbeEventInfo1 = null;
     private IProbeEventInfo fProbeEventInfo2 = null;
-    private ISnapshotInfo fSnapshotInfo1 = null;
-    private ISnapshotInfo fSnapshotInfo2 = null;
 
     public ModelImplFactory() {
 
@@ -146,20 +142,10 @@ public class ModelImplFactory {
         fProbeEventInfo1.setAddress("0xc1231234");
 
         fProbeEventInfo2 = new ProbeEventInfo("probeEvent2");
-        fProbeEventInfo2.setEventType(TraceEventType.FUNCTION);
+        fProbeEventInfo2.setEventType(TraceEventType.UNKNOWN);
         fProbeEventInfo2.setState(TraceEnablement.DISABLED);
         fProbeEventInfo2.setOffset("0x100");
         fProbeEventInfo2.setSymbol("init_post");
-
-        fSnapshotInfo1 = new SnapshotInfo("snapshot-1");
-        fSnapshotInfo1.setId(1);
-        fSnapshotInfo1.setSnapshotPath("/home/user/lttng-trace/mysession/");
-        fSnapshotInfo2 = new SnapshotInfo("other-snapshot");
-        fSnapshotInfo2.setId(1);
-        fSnapshotInfo2.setSnapshotPath("net4://172.0.0.1:1234/");
-        fSnapshotInfo2.setStreamedSnapshot(true);
-
-        fSessionInfo1.setSnapshotInfo(fSnapshotInfo1);
     }
 
     public ISessionInfo getSessionInfo1() {
@@ -228,13 +214,5 @@ public class ModelImplFactory {
 
     public IFieldInfo getFieldInfo2() {
         return fFieldInfo2;
-    }
-
-    public ISnapshotInfo getSnapshotInfo1() {
-        return fSnapshotInfo1;
-    }
-
-    public ISnapshotInfo getSnapshotInfo2() {
-        return fSnapshotInfo2;
     }
 }

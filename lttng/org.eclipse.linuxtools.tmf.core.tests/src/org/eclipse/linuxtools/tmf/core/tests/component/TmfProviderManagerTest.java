@@ -22,6 +22,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+
 import org.junit.Test;
 
 /**
@@ -76,6 +77,10 @@ public class TmfProviderManagerTest {
     }
 
     private class TmfEvent3 extends TmfEvent {
+        @SuppressWarnings("unused")
+        public TmfEvent3(TmfEvent3 other) {
+            super(other);
+        }
     }
 
     private class TestProvider3 extends TmfDataProvider {
