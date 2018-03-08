@@ -86,18 +86,18 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
         /* Read the 'type' of the value, then react accordingly */
         valueType = buffer.get();
-
-        switch(valueType)
-        {
-        case ITmfStateValue.TYPE_NULL:
-            value = TmfStateValue.nullValue();
-            break;
-        case ITmfStateValue.TYPE_INTEGER:
+        if (valueType <= 0) {
             /* the type of ValueOrOffset is 'value' */
             valueOrOffset = buffer.getInt();
-            value = TmfStateValue.newValueInt(valueOrOffset);
-            break;
-        case ITmfStateValue.TYPE_STRING:
+            if (valueOrOffset == -1) {
+                /* Null value */
+                value = TmfStateValue.nullValue();
+            } else {
+                /* Normal integer value */
+                value = TmfStateValue.newValueInt(valueOrOffset);
+            }
+
+        } else { // valueType > 0
             /* the type is 'offset' */
             valueOrOffset = buffer.getInt();
 
@@ -133,30 +133,6 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
              * interval)
              */
             buffer.reset();
-
-            break;
-        case ITmfStateValue.TYPE_LONG:
-            /* the type is 'offset' */
-            valueOrOffset = buffer.getInt();
-
-            /*
-             * Go read the corresponding entry in the Strings section of the
-             * block
-             */
-            buffer.mark();
-            buffer.position(valueOrOffset);
-            value = TmfStateValue.newValueLong(buffer.getLong());
-
-            /*
-             * Restore the file pointer's position (so we can read the next
-             * interval)
-             */
-            buffer.reset();
-            break;
-        default:
-            value = TmfStateValue.nullValue();
-            break;
-
         }
 
         try {
@@ -209,51 +185,26 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             return 0; /* we didn't use a Strings section entry */
 
         }
+        /*
+         * Size to write (+2 = +1 for size at the start, +1 for the 0 at the
+         * end)
+         */
+        sizeOfStringEntry = byteArrayToWrite.length + 2;
 
-        if (sv.getType() == ITmfStateValue.TYPE_STRING) {
-            /*
-             * Size to write (+2 = +1 for size at the start, +1 for the 0 at the
-             * end)
-             */
-            sizeOfStringEntry = byteArrayToWrite.length + 2;
+        /* we use the valueOffset as an offset. */
+        buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
+        buffer.mark();
+        buffer.position(endPosOfStringEntry - sizeOfStringEntry);
 
-            /* we use the valueOffset as an offset. */
-            buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
-            buffer.mark();
-            buffer.position(endPosOfStringEntry - sizeOfStringEntry);
-
-            /*
-             * write the Strings entry (1st byte = size, then the bytes, then the 0)
-             */
-            buffer.put((byte) sizeOfStringEntry);
-            buffer.put(byteArrayToWrite);
-            buffer.put((byte) 0);
-            assert (buffer.position() == endPosOfStringEntry);
-            buffer.reset();
-            return sizeOfStringEntry;
-
-        } else if (sv.getType() == ITmfStateValue.TYPE_LONG){
-            /*
-             * Size to write is direct
-             */
-            sizeOfStringEntry = byteArrayToWrite.length;
-
-            /* we use the valueOffset as an offset. */
-            buffer.putInt(endPosOfStringEntry - sizeOfStringEntry);
-            buffer.mark();
-            buffer.position(endPosOfStringEntry - sizeOfStringEntry);
-
-            /*
-             * write the Strings entry
-             */
-            buffer.put(byteArrayToWrite);
-            assert (buffer.position() == endPosOfStringEntry);
-            buffer.reset();
-            return sizeOfStringEntry;
-
-        } else {
-            return 0;
-        }
+        /*
+         * write the Strings entry (1st byte = size, then the bytes, then the 0)
+         */
+        buffer.put((byte) sizeOfStringEntry);
+        buffer.put(byteArrayToWrite);
+        buffer.put((byte) 0);
+        assert (buffer.position() == endPosOfStringEntry);
+        buffer.reset();
+        return sizeOfStringEntry;
     }
 
     @Override

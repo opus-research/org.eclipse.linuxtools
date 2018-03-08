@@ -30,7 +30,6 @@ public class AllPerfTests {
 
 		suite.addTestSuite(LaunchTabsTest.class);
 		suite.addTestSuite(ModelTest.class);
-		suite.addTestSuite(DataManipulatorTest.class);
 
 		if (RUN_PERF) {
 			suite.addTestSuite(LaunchTest.class);
