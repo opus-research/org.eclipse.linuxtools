@@ -343,7 +343,8 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
             boolean hasNext = true;
             while (hasNext) {
                 synchronized (timeAnalysisEntry) {
-                    while ((hasNext = iterator.hasNext()) == true) {
+                    hasNext = iterator.hasNext();
+                    while (true) {
                         event = (TimeChartEvent) iterator.next();
                         if (event.getTime() + event.getDuration() > startTime && event.getTime() < stopTime && event.getDuration() > fMaxDuration
                                 && event.getNbEvents() > 1) {
@@ -351,7 +352,7 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
                         }
                     }
                 }
-                if (hasNext && event != null) {
+                if (hasNext) {
                     if (event.getItemizedEntry() == null) {
                         itemizeEvent(event);
                     } else {
@@ -432,12 +433,10 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
             boolean hasNext = true;
             while (!interrupted && hasNext) {
                 synchronized (timeAnalysisEntry) {
-                    while ((hasNext = iterator.hasNext()) == true) {
-                        event = (TimeChartEvent) iterator.next();
-                        break;
-                    }
+                    hasNext = iterator.hasNext();
+                    event = (TimeChartEvent) iterator.next();
                 }
-                if (hasNext && event != null) {
+                if (hasNext) {
                     // TODO possible concurrency problem here with ItemizeJob
                     event.setColorSettingPriority(ColorSettingsManager.PRIORITY_NONE);
                     if (event.getItemizedEntry() != null) {
@@ -459,12 +458,10 @@ public class TimeChartView extends TmfView implements ITimeGraphRangeListener, I
             boolean hasNext = true;
             while (!interrupted && hasNext) {
                 synchronized (timeAnalysisEntry) {
-                    while ((hasNext = iterator.hasNext()) == true) {
-                        event = (TimeChartEvent) iterator.next();
-                        break;
-                    }
+                    hasNext = iterator.hasNext();
+                    event = (TimeChartEvent) iterator.next();
                 }
-                if (hasNext && event != null) {
+                if (hasNext) {
                     // TODO possible concurrency problem here with ItemizeJob
                     if (event.getItemizedEntry() == null) {
                         decorateEvent(event);
