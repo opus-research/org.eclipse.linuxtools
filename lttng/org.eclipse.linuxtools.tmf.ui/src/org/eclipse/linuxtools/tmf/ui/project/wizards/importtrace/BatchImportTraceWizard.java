@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -168,7 +169,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     public void addFileToScan(final String fileName) {
         if (!fParentFiles.containsKey(fileName)) {
             fParentFiles.put(fileName, new HashSet<String>());
-            startUpdateTask(Messages.BatchImportTraceWizardAdd + ' ' + fileName, fileName);
+            startUpdateTask(Messages.BatchImportTraceWizard_add + " " + fileName, fileName); //$NON-NLS-1$
 
         }
 
@@ -183,7 +184,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     public void removeFile(final String fileName) {
         fParentFiles.remove(fileName);
         fParentFilesToScan.remove(fileName);
-        startUpdateTask(Messages.BatchImportTraceWizardRemove + ' ' + fileName, null);
+        startUpdateTask(Messages.BatchImportTraceWizard_remove + " " + fileName, null);//$NON-NLS-1$
     }
 
     private void startUpdateTask(final String taskName, final String fileName) {
@@ -411,8 +412,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
                 }
             } catch (CoreException e) {
-                Activator.getDefault().logError(Messages.BatchImportTraceWizardErrorImportingTraceResource
-                        + ' ' + resource.getName(), e);
+                Activator.getDefault().logError(Messages.BatchImportTraceWizard_errorImportingTraceResource
+                        + " " + resource.getName(), e); //$NON-NLS-1$
             }
         }
         return validate;
@@ -535,7 +536,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
 
         IStatus status = op.getStatus();
         if (!status.isOK()) {
-            ErrorDialog.openError(getContainer().getShell(), Messages.ImportTraceWizardImportProblem, null, status);
+            ErrorDialog.openError(getContainer().getShell(), Messages.ImportTraceWizard_ImportProblem, null, status);
             return false;
         }
 
