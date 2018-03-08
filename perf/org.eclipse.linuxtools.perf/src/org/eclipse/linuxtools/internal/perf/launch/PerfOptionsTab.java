@@ -18,19 +18,20 @@ import java.io.File;
 import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -52,11 +53,7 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 	protected Button _chkMultiplexEvents;
 	protected Button _chkModuleSymbols;
 	protected Button _chkHideUnresolvedSymbols;
-	protected Button _chkShowSourceDisassembly;
 	protected Exception ex;
-	
-	protected Composite top;
-	protected ScrolledComposite scrollTop;
 	
 	/**
 	 * @see ILaunchConfigurationTab#getImage()
@@ -102,14 +99,8 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 	//Function adapted from org.eclipse.linuxtools.oprofile.launch.configuration.OprofileSetupTab.java
 	@Override
 	public void createControl(Composite parent) {
-		scrollTop = new ScrolledComposite(parent,	SWT.H_SCROLL | SWT.V_SCROLL);
-		scrollTop.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		scrollTop.setExpandVertical(true);
-		scrollTop.setExpandHorizontal(true);
-
-		setControl(scrollTop);
-
-		top = new Composite(scrollTop, SWT.NONE);
+		Composite top = new Composite(parent, SWT.NONE);
+		setControl(top);
 		top.setLayout(new GridLayout());
 
 		GridData data;
@@ -169,7 +160,6 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		_chkModuleSymbols = _createCheckButton(p, PerfPlugin.STRINGS_ModuleSymbols);
 		_chkHideUnresolvedSymbols = _createCheckButton(p, PerfPlugin.STRINGS_HideUnresolvedSymbols);
 		_chkSourceLineNumbers = _createCheckButton(p, PerfPlugin.STRINGS_SourceLineNumbers);
-		_chkShowSourceDisassembly = _createCheckButton(p, PerfPlugin.STRINGS_ShowSourceDisassembly);
 		_chkSourceLineNumbers.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent se) {
@@ -182,19 +172,8 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		});
 		_chkKernel_SourceLineNumbers = _createCheckButton(p, PerfPlugin.STRINGS_Kernel_SourceLineNumbers);
 		_chkRecord_Realtime = _createCheckButton(p, PerfPlugin.STRINGS_Record_Realtime);
-		_chkMultiplexEvents = _createCheckButton(p, PerfPlugin.STRINGS_Multiplex);
-
-		scrollTop.setContent(top);
-		recomputeSize();
-		updateLaunchConfigurationDialog();
-	}
-
-	protected void recomputeSize() {
-		Point point = top.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		top.setSize(point);
-		scrollTop.setMinSize(point);
-	}
-
+		_chkMultiplexEvents = _createCheckButton(p, PerfPlugin.STRINGS_Multiplex);		
+	}	
 	//Function adapted from org.eclipse.linuxtools.oprofile.launch.configuration.OprofileSetupTab.java
 	// Helper function for creating buttons. 
 	private Button _createCheckButton(Composite parent, String label) {
@@ -281,7 +260,6 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 			_chkMultiplexEvents.setSelection(config.getAttribute(PerfPlugin.ATTR_Multiplex, PerfPlugin.ATTR_Multiplex_default));
 			_chkModuleSymbols.setSelection(config.getAttribute(PerfPlugin.ATTR_ModuleSymbols, PerfPlugin.ATTR_ModuleSymbols_default));
 			_chkHideUnresolvedSymbols.setSelection(config.getAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, PerfPlugin.ATTR_HideUnresolvedSymbols_default));
-			_chkShowSourceDisassembly.setSelection(config.getAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, PerfPlugin.ATTR_ShowSourceDisassembly_default));
 		} catch (CoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -298,7 +276,6 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 		wconfig.setAttribute(PerfPlugin.ATTR_Multiplex, _chkMultiplexEvents.getSelection());
 		wconfig.setAttribute(PerfPlugin.ATTR_ModuleSymbols, _chkModuleSymbols.getSelection());
 		wconfig.setAttribute(PerfPlugin.ATTR_HideUnresolvedSymbols, _chkHideUnresolvedSymbols.getSelection());
-		wconfig.setAttribute(PerfPlugin.ATTR_ShowSourceDisassembly, _chkShowSourceDisassembly.getSelection());
 	}
 
 	@Override

@@ -178,7 +178,7 @@ public class HistogramView extends TmfView {
         gridData.verticalAlignment = SWT.CENTER;
         fCurrentEventTimeControl = new HistogramCurrentTimeControl(this, controlsComposite, currentEventLabel, 0L);
         fCurrentEventTimeControl.setLayoutData(gridData);
-        fCurrentEventTimeControl.setValue(Long.MIN_VALUE);
+        fCurrentEventTimeControl.setValue(0L);
 
         // Window span time control
         gridData = new GridData();
@@ -186,7 +186,7 @@ public class HistogramView extends TmfView {
         gridData.verticalAlignment = SWT.CENTER;
         fTimeSpanControl = new HistogramTimeRangeControl(this, controlsComposite, windowSpanLabel, 0L);
         fTimeSpanControl.setLayoutData(gridData);
-        fTimeSpanControl.setValue(Long.MIN_VALUE);
+        fTimeSpanControl.setValue(0L);
 
         // --------------------------------------------------------------------
         // Time range histogram
@@ -341,22 +341,20 @@ public class HistogramView extends TmfView {
     }
 
     private void setNewRange(long startTime, long duration) {
-        long realStart = startTime;
-
-        if (realStart < fTraceStartTime) {
-            realStart = fTraceStartTime;
+        if (startTime < fTraceStartTime) {
+            startTime = fTraceStartTime;
         }
 
-        long endTime = realStart + duration;
+        long endTime = startTime + duration;
         if (endTime > fTraceEndTime) {
             endTime = fTraceEndTime;
             if ((endTime - duration) > fTraceStartTime) {
-                realStart = endTime - duration;
+                startTime = endTime - duration;
             } else {
-                realStart = fTraceStartTime;
+                startTime = fTraceStartTime;
             }
         }
-        updateTimeRange(realStart, endTime);
+        updateTimeRange(startTime, endTime);
     }
 
     // ------------------------------------------------------------------------
@@ -428,9 +426,9 @@ public class HistogramView extends TmfView {
         // Clear the UI widgets
         fFullTraceHistogram.clear();
         fTimeRangeHistogram.clear();
-        fCurrentEventTimeControl.setValue(Long.MIN_VALUE);
+        fCurrentEventTimeControl.setValue(0L);
 
-        fTimeSpanControl.setValue(Long.MIN_VALUE);
+        fTimeSpanControl.setValue(0);
     }
 
     /**

@@ -62,8 +62,18 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		if (samples) return "Samples";
-		return "Time";
+		String prefix = "";
+		Object o = viewer.getInput();
+		if (o instanceof GmonDecoder) {
+			GmonDecoder decoder = (GmonDecoder) o;
+			if (decoder.isICache()) {
+				prefix = "ICACHE ";
+			} else if (decoder.isDCache()) {
+				prefix = "DCACHE ";
+			}
+		}
+		if (samples) return prefix + "Samples";
+		return prefix + "Time";
 	}
 	
 	/*
@@ -72,8 +82,19 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 	 */
 	@Override
 	public String getColumnHeaderTooltip() {
+		Object o = viewer.getInput();
+		if (o instanceof GmonDecoder) {
+			GmonDecoder decoder = (GmonDecoder) o;
+			if (decoder.isICache()) {
+				return "Time spent by function accessing instruction cache";
+			} else if (decoder.isDCache()) {
+				return "Time spent by function accessing data cache";
+			}
+		}
 		return null;
 	}
+	
+	
 
 	/*
 	 * (non-Javadoc)
@@ -83,12 +104,12 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 	public String getValue(Object obj) {
 		TreeElement e = (TreeElement) obj;
 		int i = e.getSamples();
-		if (i == -1) return ""; //$NON-NLS-1$
+		if (i == -1) return "";
 		if (samples) {
 			return String.valueOf(i);
 		} else {
 			double prof_rate = getProfRate();
-			if (prof_rate == UNINITIALIZED) return "?"; //$NON-NLS-1$
+			if (prof_rate == UNINITIALIZED) return "?";
 			return getValue(i, prof_rate);
 		}
 	}
@@ -171,14 +192,25 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 	 */
 	@Override
 	public String getToolTipText(Object element) {
+		String suffix = "";
+		Object o = viewer.getInput();
+		if (o instanceof GmonDecoder) {
+			GmonDecoder decoder = (GmonDecoder) o;
+			if (decoder.isICache()) {
+				suffix = " in instruction cache";
+			} else if (decoder.isDCache()) {
+				suffix = " in data cache";
+			}
+		}
+		
 		if (element instanceof HistRoot) {
-			return "total time spent in the program";
+			return "total time spent in the program" + suffix;
 		} else if (element instanceof HistFunction) {
-			return "time spent in this function";
+			return "time spent in this function" + suffix;
 		} else if (element instanceof HistFile) {
-			return "time spent in this file";
+			return "time spent in this file" + suffix;
 		} else if (element instanceof HistLine) {
-			return "time spent at this location";
+			return "time spent at this location" + suffix;
 		}
 		return null;
 	}
@@ -198,4 +230,6 @@ public class SampleProfField extends AbstractSTDataViewersField implements IChar
 		return i;
 	}
 
+	
+	
 }

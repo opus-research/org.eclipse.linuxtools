@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog.structures;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Image;
@@ -26,7 +25,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 
 
@@ -65,7 +63,6 @@ public class ErrorTableDisplay {
 	 */
 	public void clear() {
 		table.getDisplay().syncExec(new Runnable() {
-			@Override
 			public void run() {
 				table.removeAll();
 			}
@@ -77,7 +74,7 @@ public class ErrorTableDisplay {
 	 * @param row The pre-divied sections of the error message.
 	 */
 	public void addRow(final String[] row) {
-		addRow(row, AbstractUIPlugin.imageDescriptorFromPlugin(ConsoleLogPlugin.PLUGIN_ID, "icons/views/error_st_obj.gif").createImage()); //$NON-NLS-1$
+		addRow(row, ConsoleLogPlugin.getImageDescriptor("icons/views/error_st_obj.gif").createImage()); //$NON-NLS-1$
 	}
 
 	/**
@@ -87,7 +84,6 @@ public class ErrorTableDisplay {
 	 */
 	public void addRow(final String[] row, final Image img) {
 		table.getDisplay().syncExec(new Runnable() {
-			@Override
 			public void run() {
 				item = new TableItem(table, SWT.NULL);
 				for(int i=0; i<row.length; i++)
@@ -140,8 +136,10 @@ public class ErrorTableDisplay {
 	 * When clicked it will find the line number the error occured on and then set the
 	 * cursor location to that location in the active editor.
 	 */
-	private final MouseListener mouseListener = new MouseAdapter() {
-		@Override
+	private final MouseListener mouseListener = new MouseListener() {
+		public void mouseDown(MouseEvent me) {}
+		public void mouseUp(MouseEvent me) {}
+
 		public void mouseDoubleClick(MouseEvent me) {
 			String location = table.getSelection()[0].getText(4);
 

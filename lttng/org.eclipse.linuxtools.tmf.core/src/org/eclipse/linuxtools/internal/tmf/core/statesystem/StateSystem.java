@@ -23,7 +23,6 @@ import java.util.concurrent.CountDownLatch;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -61,23 +60,10 @@ public class StateSystem implements ITmfStateSystemBuilder {
     private boolean isDisposed = false;
 
     /**
-     * New-file constructor. For when you build a state system with a new file,
-     * or if the back-end does not require a file on disk.
-     *
-     * @param backend
-     *            Back-end plugin to use
-     */
-    public StateSystem(IStateHistoryBackend backend) {
-        this.backend = backend;
-        this.transState = new TransientState(backend);
-        this.attributeTree = new AttributeTree(this);
-    }
-
-    /**
      * General constructor
      *
      * @param backend
-     *            The "state history storage" back-end to use.
+     *            The "state history storage" backend to use.
      * @param newFile
      *            Put true if this is a new history started from scratch. It is
      *            used to tell the state system where to get its attribute tree.
@@ -617,9 +603,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
         ITmfStateInterval currentInterval;
         long ts, tEnd;
 
-        IProgressMonitor mon = monitor;
-        if (mon == null) {
-            mon = new NullProgressMonitor();
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
         }
 
         /* Make sure the time range makes sense */
@@ -645,7 +630,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          */
         for (ts = t1; (currentInterval.getEndTime() != -1) && (ts < tEnd);
                 ts += resolution) {
-            if (mon.isCanceled()) {
+            if (monitor.isCanceled()) {
                 return intervals;
             }
             if (ts <= currentInterval.getEndTime()) {

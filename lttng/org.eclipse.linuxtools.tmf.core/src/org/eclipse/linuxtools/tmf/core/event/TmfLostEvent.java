@@ -20,7 +20,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  *
  * @author Francois Chouinard
  * @version 1.0
- * @since 1.2
+ * @since 2.0
 */
 public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
 
@@ -69,13 +69,17 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
      * @param event the original event
      */
     public TmfLostEvent(final ITmfLostEvent event) {
-        super(  event.getTrace(),
-                event.getRank(),
-                event.getTimestamp(),
-                event.getSource(),
-                event.getType(),
-                event.getContent(),
-                event.getReference());
+        if (event == null) {
+            throw new IllegalArgumentException();
+        }
+        setTrace(event.getTrace());
+        setRank(event.getRank());
+        setTimestamp(event.getTimestamp());
+        setSource(event.getSource());
+        setType(event.getType());
+        setContent(event.getContent());
+        setReference(event.getReference());
+
         fTimeRange = event.getTimeRange();
         fNbLostEvents = event.getNbLostEvents();
     }
@@ -84,11 +88,17 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
     // ITmfLostEvent
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent#getTimeRange()
+     */
     @Override
     public TmfTimeRange getTimeRange() {
         return fTimeRange;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent#getNbLostEvents()
+     */
     @Override
     public long getNbLostEvents() {
         return fNbLostEvents;
@@ -113,9 +123,28 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
     }
 
     // ------------------------------------------------------------------------
+    // Cloneable
+    // ------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public TmfLostEvent clone() {
+        TmfLostEvent clone = null;
+        clone = (TmfLostEvent) super.clone();
+        clone.fTimeRange = fTimeRange;
+        clone.fNbLostEvents = fNbLostEvents;
+        return clone;
+    }
+
+    // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -125,6 +154,9 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -150,6 +182,9 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {

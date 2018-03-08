@@ -19,55 +19,45 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 
 /*
- * This class implements a selection service
+ * This class implements a selection service 
  */
 public class STSelectionProvider implements ISelectionProvider {
 
-    private final LinkedList<ISelectionChangedListener> listeners = new LinkedList<ISelectionChangedListener>();
-    private ISelection selection = StructuredSelection.EMPTY;
+	private final LinkedList<ISelectionChangedListener> listeners = new LinkedList<ISelectionChangedListener>();
+	private ISelection selection = StructuredSelection.EMPTY;
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.
-     * ISelectionChangedListener)
-     */
-    @Override
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
+	 */
 	public void addSelectionChangedListener(ISelectionChangedListener listener) {
-        listeners.add(listener);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
-     */
-    @Override
+		listeners.add(listener);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
+	 */
 	public ISelection getSelection() {
-        return selection;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.
-     * ISelectionChangedListener)
-     */
-    @Override
+		return selection;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
+	 */
 	public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-        listeners.remove(listener);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
-     */
-    @Override
+		listeners.remove(listener);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
+	 */
 	public void setSelection(ISelection selection) {
-        this.selection = selection;
-        for (ISelectionChangedListener listener : listeners) {
-            listener.selectionChanged(new SelectionChangedEvent(this, selection));
-        }
-    }
+		this.selection = selection;
+		for (ISelectionChangedListener listener : listeners) {
+			listener.selectionChanged(new SelectionChangedEvent(this, selection));
+		}
+	}
 }
