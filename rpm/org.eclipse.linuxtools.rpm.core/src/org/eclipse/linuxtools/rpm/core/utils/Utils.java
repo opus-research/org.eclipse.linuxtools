@@ -76,6 +76,7 @@ public class Utils {
 	 *            The command with all parameters.
 	 * @return int The return value of the command.
 	 * @throws IOException If an IOException occurs.
+	 * @since 1.1
 	 */
 	public static IStatus runCommand(final OutputStream outStream, IProject project,
 			String... command) throws IOException {
