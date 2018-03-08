@@ -22,7 +22,6 @@
       <provider
             default="false"
             delegate="org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchConfigurationDelegate"
-            description="%cachegrindLaunchConfiguration.description.0"
             id="org.eclipse.linuxtools.profiling.provider.valgrind.cachegrind"
             name="%cachegrindLaunchConfiguration.name.0"
             priority="2"
