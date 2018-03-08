@@ -24,8 +24,8 @@ package org.eclipse.linuxtools.tmf.core.statevalue;
 final class NullStateValue extends TmfStateValue {
 
     @Override
-    public Type getType() {
-        return Type.NULL;
+    public byte getType() {
+        return ITmfStateValue.TYPE_NULL;
     }
 
     @Override

@@ -16,7 +16,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,12 +67,7 @@ public class RunScriptHandler extends AbstractHandler {
 	private String tmpfileName = null;
 	private String serverfileName = null;
 	private IPath path;
-	private List<String> cmdList;
 
-
-	public RunScriptHandler(){
-		this.cmdList = new ArrayList<String>();
-	}
 
 	/**
 	 * @since 2.0
@@ -212,15 +206,6 @@ public class RunScriptHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Adds the given String to the list of commands to be
-	 * passed to systemtap when running the command
-	 * @param option
-	 */
-	public void addComandLineOptions(String option){
-		this.cmdList.add(option);
-	}
-
-	/**
 	 * The command line argument generation method used by <code>RunScriptAction</code>. This generates
 	 * a stap command line that includes the tapsets specified in user preferences, a guru mode flag
 	 * if necessary, and the path to the script on disk.
@@ -228,12 +213,18 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @since 2.0
 	 */
 	protected String[] buildStandardScript() {
+	//FixMe: Take care of this in the next release. For now only the guru mode is sent
+		ArrayList<String> cmdList = new ArrayList<String>();
+		String[] script;
+
 		getImportedTapsets(cmdList);
 
 		if(isGuru())
 			cmdList.add("-g"); //$NON-NLS-1$
 
-		return finalizeScript(cmdList);
+		script = finalizeScript(cmdList);
+
+		return script;
 	}
 
 	/**
@@ -242,7 +233,7 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @since 2.0
 	 */
 
-	protected void getImportedTapsets(List<String> cmdList) {
+	protected void getImportedTapsets(ArrayList<String> cmdList) {
 		IPreferenceStore preferenceStore = IDEPlugin.getDefault().getPreferenceStore();
 		String[] tapsets = preferenceStore.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
 
@@ -309,7 +300,7 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @return An array suitable to pass to <code>Runtime.exec</code> to start stap on this file.
 	 * @since 2.0
 	 */
-	protected String[] finalizeScript(List<String> cmdList) {
+	protected String[] finalizeScript(ArrayList<String> cmdList) {
 
 		String[] script;
 
