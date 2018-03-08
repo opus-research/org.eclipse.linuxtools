@@ -57,9 +57,11 @@ public class IDEPlugin extends AbstractUIPlugin {
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		super.stop(context);
-		TapsetLibrary.stop();
+
 		ScriptConsole.stopAll();
+
 		plugin.getWorkbench().removeWorkbenchListener(workbenchListener);
+
 		plugin = null;
 	}
 
