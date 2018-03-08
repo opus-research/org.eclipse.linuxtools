@@ -102,7 +102,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 						savedFileName));
 				int rc = mb.open();
 				if (rc == SWT.OK) {
-					new DownloadJob(savedFile, connection).schedule();
+					new DownloadJob(savedFile, connection, true).schedule();
 				}
 
 			} else {

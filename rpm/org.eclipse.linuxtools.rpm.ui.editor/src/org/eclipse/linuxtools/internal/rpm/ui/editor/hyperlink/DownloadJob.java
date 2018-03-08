@@ -30,11 +30,17 @@ import org.eclipse.osgi.util.NLS;
 public class DownloadJob extends Job {
 	private IFile file;
 	private URLConnection content;
+	private boolean fileOverride;
 
-	public DownloadJob(IFile file, URLConnection content) {
+	public DownloadJob(IFile file, URLConnection content, boolean override) {
 		super(NLS.bind(Messages.SourcesFileDownloadHyperlink_4, file.getName()));
 		this.file = file;
 		this.content = content;
+		this.fileOverride = override;
+	}
+
+	public DownloadJob(IFile file, URLConnection content) {
+		this(file, content, false);
 	}
 
 	@Override
@@ -47,21 +53,19 @@ public class DownloadJob extends Job {
 			FileOutputStream fos = new FileOutputStream(tempFile);
 			InputStream is = new BufferedInputStream(content.getInputStream());
 			int b;
-			byte buf[] = new byte[5 * 1024];
 			boolean canceled = false;
-				while ((b = is.read(buf)) != -1) {
-					if (monitor.isCanceled()) {
-						canceled = true;
-						break;
-					}
-					fos.write(buf, 0 ,b);
-					monitor.worked(1);
+			while ((b = is.read()) != -1) {
+				if (monitor.isCanceled()) {
+					canceled = true;
+					break;
 				}
+				fos.write(b);
+				monitor.worked(1);
+			}
 			is.close();
 			fos.close();
 			if (!canceled) {
-				// override the previous file if there is one
-				if (file.exists()) {
+				if (fileOverride) {
 					file.setContents(new FileInputStream(tempFile), true,
 							false, monitor);
 				} else {
