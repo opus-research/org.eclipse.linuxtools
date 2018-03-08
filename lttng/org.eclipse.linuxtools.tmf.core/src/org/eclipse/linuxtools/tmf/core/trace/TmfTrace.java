@@ -45,7 +45,6 @@ import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -394,8 +393,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // ------------------------------------------------------------------------
 
     @Override
-    public Class<ITmfEvent> getEventType() {
-        return (Class<ITmfEvent>) super.getType();
+    public Class<? extends ITmfEvent> getEventType() {
+        return super.getType();
     }
 
     @Override
@@ -709,16 +708,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      */
     @Override
-    public synchronized ITmfContext armRequest(final ITmfDataRequest request) {
+    public synchronized ITmfContext armRequest(final ITmfEventRequest request) {
         if (executorIsShutdown()) {
             return null;
         }
-        if ((request instanceof ITmfEventRequest)
-            && !TmfTimestamp.BIG_BANG.equals(((ITmfEventRequest) request).getRange().getStartTime())
-            && (request.getIndex() == 0))
-        {
-            final ITmfContext context = seekEvent(((ITmfEventRequest) request).getRange().getStartTime());
-            ((ITmfEventRequest) request).setStartIndex((int) context.getRank());
+        if (!TmfTimestamp.BIG_BANG.equals(request.getRange().getStartTime())
+                && (request.getIndex() == 0)) {
+            final ITmfContext context = seekEvent(request.getRange().getStartTime());
+            request.setStartIndex((int) context.getRank());
             return context;
 
         }
@@ -750,9 +747,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             return;
         }
 
+        /*
+         * The signal is either for this trace, or for an experiment containing
+         * this trace.
+         */
         MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, null, null);
         status.add(buildStatistics());
         status.add(buildStateSystem());
+        status.add(executeAnalysis());
         if (!status.isOK()) {
             Activator.log(status);
         }
@@ -802,14 +804,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     @TmfSignalHandler
     public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
         if (signal.getTrace() == this) {
-            /*
-             * The signal is either for this trace, or for an experiment containing
-             * this trace.
-             */
-            IStatus status = executeAnalysis();
-            if (!status.isOK()) {
-                Activator.log(status);
-            }
             getIndexer().buildIndex(getNbEvents(), signal.getRange(), false);
         }
     }

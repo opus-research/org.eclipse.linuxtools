@@ -17,8 +17,7 @@ import java.io.IOException;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -136,13 +135,6 @@ public class HistoryBuilder extends TmfComponent {
         /* Send the request to the trace here, since there is probably no
          * experiment. */
         sp.getTrace().sendRequest(request);
-
-        // Make sure that request is sent here otherwise it will wait forever
-        // due to waitForCompletion()
-        sp.getTrace().notifyPendingRequest(false);
-
-        // This should not be called here because it will block forever
-        // if it is called from a signal handler (signal depth > 0 or requestPending > 0)
         try {
             request.waitForCompletion();
         } catch (InterruptedException e) {
@@ -240,8 +232,8 @@ class StateSystemBuildRequest extends TmfEventRequest {
         super(builder.getStateProvider().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
                 0,
-                TmfDataRequest.ALL_DATA,
-                ITmfDataRequest.ExecutionType.BACKGROUND);
+                ITmfEventRequest.ALL_DATA,
+                ITmfEventRequest.ExecutionType.BACKGROUND);
         this.builder = builder;
         this.sci = builder.getStateProvider();
         this.trace = sci.getTrace();
