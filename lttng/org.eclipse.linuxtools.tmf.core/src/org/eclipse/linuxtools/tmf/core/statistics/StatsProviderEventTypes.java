@@ -28,23 +28,25 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * The state provider for traces statistics that use TmfStateStatistics. It
  * should work with any trace type for which we can use the state system.
  *
- * The resulting attribute tree will look like this:
- *<pre>
+ * It will store number of events seen, per event types. The resulting attribute
+ * tree will look like this:
+ *
+ * <pre>
  * (root)
- *   |-- total
  *   \-- event_types
  *        |-- (event name 1)
  *        |-- (event name 2)
  *        |-- (event name 3)
  *       ...
- *</pre>
+ * </pre>
+ *
  * And each (event name)'s value will be an integer, representing how many times
  * this particular event type has been seen in the trace so far.
  *
  * @author Alexandre Montplaisir
  * @version 1.0
  */
-class StatsStateProvider extends AbstractTmfStateProvider {
+class StatsProviderEventTypes extends AbstractTmfStateProvider {
 
     /**
      * Version number of this input handler. Please bump this if you modify the
@@ -58,8 +60,8 @@ class StatsStateProvider extends AbstractTmfStateProvider {
      * @param trace
      *            The trace for which we build this state system
      */
-    public StatsStateProvider(ITmfTrace trace) {
-        super(trace, ITmfEvent.class ,"TMF Statistics"); //$NON-NLS-1$
+    public StatsProviderEventTypes(ITmfTrace trace) {
+        super(trace, ITmfEvent.class ,"TMF Statistics, events per type"); //$NON-NLS-1$
     }
 
     @Override
@@ -68,8 +70,8 @@ class StatsStateProvider extends AbstractTmfStateProvider {
     }
 
     @Override
-    public StatsStateProvider getNewInstance() {
-        return new StatsStateProvider(this.getTrace());
+    public StatsProviderEventTypes getNewInstance() {
+        return new StatsProviderEventTypes(this.getTrace());
     }
 
     @Override
@@ -89,16 +91,14 @@ class StatsStateProvider extends AbstractTmfStateProvider {
                 quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, Messages.LostEventsName);
 
                 int curVal = ss.queryOngoingState(quark).unboxInt();
-                if (curVal == -1) { curVal = 0; }
+                if (curVal == -1) {
+                    curVal = 0;
+                }
 
                 TmfStateValue value = TmfStateValue.newValueInt((int) (curVal + le.getNbLostEvents()));
                 ss.modifyAttribute(ts, value, quark);
                 return;
             }
-
-            /* Total number of events */
-            quark = ss.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
-            ss.incrementAttribute(ts, quark);
 
             /* Number of events of each type, globally */
             quark = ss.getQuarkAbsoluteAndAdd(Attributes.EVENT_TYPES, eventName);
