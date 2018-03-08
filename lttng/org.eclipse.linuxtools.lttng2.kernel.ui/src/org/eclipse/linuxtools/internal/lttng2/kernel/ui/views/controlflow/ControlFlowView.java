@@ -9,6 +9,7 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   Bernd Hufmann - Updated signal handling
+ *   Marc-Andre Laperle - Add time zone preference
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow;
@@ -41,6 +42,7 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
@@ -586,6 +588,14 @@ public class ControlFlowView extends TmfView {
                 startZoomThread(startTime, endTime);
             }
         });
+    }
+
+    /**
+     * @param signal the format of the timestamps was updated.
+     */
+    @TmfSignalHandler
+    public void updateTimeFormat( final TmfTimestampFormatUpdateSignal signal){
+        this.fTimeGraphCombo.refresh();
     }
 
     // ------------------------------------------------------------------------
