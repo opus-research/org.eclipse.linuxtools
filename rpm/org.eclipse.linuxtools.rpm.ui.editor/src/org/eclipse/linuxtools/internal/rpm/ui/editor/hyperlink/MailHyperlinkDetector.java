@@ -24,13 +24,14 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.eclipse.jface.text.hyperlink.URLHyperlinkDetector;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
 
 
 /**
- * Mail hyperlink detector. Largely inspired of {@link org.eclipse.jface.text.hyperlink.URLHyperlinkDetector}
+ * Mail hyperlink detector. Largely inspired of {@link URLHyperlinkDetector}
  */
 public class MailHyperlinkDetector extends AbstractHyperlinkDetector {
 

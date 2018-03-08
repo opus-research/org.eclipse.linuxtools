@@ -19,9 +19,8 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat;
 /**
  * TMF Time format preferences
  *
- * @author Francois Chouinard
  * @version 1.0
- * @since 2.0
+ * @author Francois Chouinard
  */
 @SuppressWarnings("javadoc")
 public class TmfTimePreferences {
