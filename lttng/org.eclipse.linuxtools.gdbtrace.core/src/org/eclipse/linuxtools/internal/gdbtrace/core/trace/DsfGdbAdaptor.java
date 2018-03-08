@@ -165,28 +165,16 @@ public class DsfGdbAdaptor {
             });
         }
 
-        /**
-         * @param launches unused parameter
-         */
         @Override
         public synchronized void launchesRemoved(ILaunch[] launches) {
-            //do nothing
         }
 
-        /**
-         * @param launches unused parameter
-         */
         @Override
         public synchronized void launchesAdded(ILaunch[] launches) {
-            //do nothing
         }
 
-        /**
-         * @param launches unused parameter
-         */
         @Override
         public synchronized void launchesChanged(ILaunch[] launches) {
-            //do nothing
         }
 
         @Override
@@ -241,11 +229,8 @@ public class DsfGdbAdaptor {
                                     break;
                                 }
                             } catch (InterruptedException e) {
-                                // catch exception
                             } catch (java.util.concurrent.ExecutionException e) {
-                                // catch exception
                             } catch (RejectedExecutionException e) {
-                                // catch exception
                             } finally {
                                 tracker.dispose();
                             }
@@ -463,12 +448,12 @@ public class DsfGdbAdaptor {
             executor.execute(selectRecordQuery);
             selectRecordQuery.get(); // blocks
         } catch (RejectedExecutionException e) {
-            // catch block
+
         } catch (InterruptedException e) {
-            // catch block
+            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (ExecutionException e) {
-            // catch block
+            // TODO Auto-generated catch block
             e.printStackTrace();
         } finally {
             tracker.dispose();
@@ -521,11 +506,11 @@ public class DsfGdbAdaptor {
             ITraceStatusDMData data = selectRecordQuery.get(); // blocks
             frameNum = data.getNumberOfCollectedFrame();
         } catch (InterruptedException e) {
-            // catch block
+
         } catch (java.util.concurrent.ExecutionException e) {
-            // catch block
+
         } catch (RejectedExecutionException e) {
-            // catch block
+
         } finally {
             tracker.dispose();
         }
@@ -827,7 +812,7 @@ public class DsfGdbAdaptor {
         });
     }
 
-    static void gotoRank(IEditorPart editor, int rank) {
+    private static void gotoRank(IEditorPart editor, int rank) {
         IEditorInput editorInput = editor.getEditorInput();
         if (editorInput instanceof IFileEditorInput) {
             IFile file = ((IFileEditorInput) editorInput).getFile();

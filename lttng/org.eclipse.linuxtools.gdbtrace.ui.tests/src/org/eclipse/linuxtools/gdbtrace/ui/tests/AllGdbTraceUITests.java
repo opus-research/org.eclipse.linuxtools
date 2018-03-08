@@ -24,5 +24,5 @@ import org.junit.runners.Suite;
 })
 
 public class AllGdbTraceUITests {
-    // tests should go here
+
 }

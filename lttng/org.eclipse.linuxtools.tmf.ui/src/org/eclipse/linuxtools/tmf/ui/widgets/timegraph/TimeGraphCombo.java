@@ -694,6 +694,9 @@ public class TimeGraphCombo extends Composite {
     // Control
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.swt.widgets.Control#redraw()
+     */
     @Override
     public void redraw() {
         fTimeGraphViewer.getControl().redraw();
