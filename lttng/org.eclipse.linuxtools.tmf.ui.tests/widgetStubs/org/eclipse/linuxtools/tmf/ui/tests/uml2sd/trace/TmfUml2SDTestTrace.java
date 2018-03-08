@@ -30,9 +30,9 @@ import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
  * Parser implementation for Uml2SD Test Traces.
  *
  */
-public class TmfUml2SDTestTrace implements ITmfEventParser {
+public class TmfUml2SDTestTrace implements ITmfEventParser<TmfEvent> {
 
-    ITmfTrace fEventStream;
+    ITmfTrace<TmfEvent> fEventStream;
 
     /**
      * Default Constructor
@@ -44,14 +44,14 @@ public class TmfUml2SDTestTrace implements ITmfEventParser {
      * Constructor
      * @param eventStream ITmfTrace implementation
      */
-    public TmfUml2SDTestTrace(ITmfTrace eventStream) {
+    public TmfUml2SDTestTrace(ITmfTrace<TmfEvent> eventStream) {
         fEventStream = eventStream;
     }
 
     /**
      * @param eventStream ITmfTrace implementation to set
      */
-    public void setTrace(ITmfTrace eventStream) {
+    public void setTrace(ITmfTrace<TmfEvent> eventStream) {
         fEventStream = eventStream;
     }
 
@@ -70,7 +70,7 @@ public class TmfUml2SDTestTrace implements ITmfEventParser {
 
         long location = 0;
         if (context != null) {
-            location = ((TmfLocation<Long>) (context.getLocation())).getLocationData();
+            location = ((TmfLocation<Long>) (context.getLocation())).getLocation();
         }
 
         try {

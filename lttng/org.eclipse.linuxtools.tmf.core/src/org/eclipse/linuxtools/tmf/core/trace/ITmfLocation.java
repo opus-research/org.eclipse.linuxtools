@@ -36,9 +36,8 @@ public interface ITmfLocation<L extends Comparable<?>> {
 
     /**
      * @return the location
-     * @since 2.0
      */
-    public L getLocationData();
+    public L getLocation();
 
     // ------------------------------------------------------------------------
     // Operations
