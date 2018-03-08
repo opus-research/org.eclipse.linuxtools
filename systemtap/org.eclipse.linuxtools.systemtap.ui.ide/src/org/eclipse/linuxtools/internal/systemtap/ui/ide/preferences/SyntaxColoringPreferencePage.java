@@ -27,7 +27,7 @@ public class SyntaxColoringPreferencePage extends PreferencePage implements IWor
 	public SyntaxColoringPreferencePage() {
 		super();
 		setPreferenceStore(IDEPlugin.getDefault().getPreferenceStore());
-		setDescription(Localization.getString("SyntaxColoringPreferencePage.SyntaxColoringOptions")); //$NON-NLS-1$
+		setDescription(Localization.getString("SyntaxColoringPreferencePage.SyntaxColoringOptions"));
 	}
 
 	public void init(IWorkbench workbench) {
@@ -41,25 +41,25 @@ public class SyntaxColoringPreferencePage extends PreferencePage implements IWor
 
 		stpDC = createColorFieldEditor(
 				IDEPreferenceConstants.P_STP_DEFAULT_COLOR,
-				Localization.getString("SyntaxColoringPreferencePage.DefaultColor"), comp); //$NON-NLS-1$
+				Localization.getString("SyntaxColoringPreferencePage.DefaultColor"), comp);
 		stpKC = createColorFieldEditor(
 				IDEPreferenceConstants.P_STP_KEYWORD_COLOR,
-				Localization.getString("SyntaxColoringPreferencePage.KeywordColor"), comp); //$NON-NLS-1$
+				Localization.getString("SyntaxColoringPreferencePage.KeywordColor"), comp);
 		stpEC = createColorFieldEditor(
 				IDEPreferenceConstants.P_STP_EMBEDDED_C_COLOR,
-				Localization.getString("SyntaxColoringPreferencePage.EmbeddedCColor"), comp); //$NON-NLS-1$
+				Localization.getString("SyntaxColoringPreferencePage.EmbeddedCColor"), comp);
 		stpEE = createColorFieldEditor(
 				IDEPreferenceConstants.P_STP_EMBEDDED_COLOR,
-				Localization.getString("SyntaxColoringPreferencePage.EmbeddedColor"), comp); //$NON-NLS-1$
+				Localization.getString("SyntaxColoringPreferencePage.EmbeddedColor"), comp);
 		stpCC = createColorFieldEditor(
 				IDEPreferenceConstants.P_STP_COMMENT_COLOR,
-				Localization.getString("SyntaxColoringPreferencePage.CommentColor"), comp); //$NON-NLS-1$
+				Localization.getString("SyntaxColoringPreferencePage.CommentColor"), comp);
 		stpTC = createColorFieldEditor(
 				IDEPreferenceConstants.P_STP_TYPE_COLOR,
-				Localization.getString("SyntaxColoringPreferencePage.TypeColor"), comp); //$NON-NLS-1$
+				Localization.getString("SyntaxColoringPreferencePage.TypeColor"), comp);
 		stpSC = createColorFieldEditor(
 				IDEPreferenceConstants.P_STP_STRING_COLOR,
-				Localization.getString("SyntaxColoringPreferencePage.StringColor"), comp); //$NON-NLS-1$
+				Localization.getString("SyntaxColoringPreferencePage.StringColor"), comp);
 
 	    return comp;
 	}
