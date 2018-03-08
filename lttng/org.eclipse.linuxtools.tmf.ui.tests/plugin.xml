@@ -62,6 +62,10 @@
             id="org.eclipse.linuxtools.tmf.tests.category.tracetype"
             name="Test trace">
       </category>
+      <category
+            id="org.eclipse.linuxtools.tmf.tests.category.tracetype2"
+            name="Test trace2">
+      </category>
       <type
             category="org.eclipse.linuxtools.tmf.tests.category.tracetype"
             event_type="org.eclipse.linuxtools.tmf.core.event.TmfEvent"
@@ -72,6 +76,12 @@
                class="org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable">
          </eventsTableType>
       </type>
+      <experiment
+            id="org.eclipse.linuxtools.tmf.tests.experimenttype"
+            name="Test experiment"
+            experiment_type="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub">
+      </experiment>
    </extension>
+   
 
 </plugin>

@@ -33,6 +33,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfTraceImportExcept
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEditorInput;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.swt.widgets.Display;
@@ -176,6 +177,64 @@ public class TmfOpenTraceHelper {
         return openTraceFromElement(found);
     }
 
+    private static ITmfTrace openTraceElement(final TmfTraceElement traceElement) {
+        final ITmfTrace trace = traceElement.instantiateTrace();
+        final ITmfEvent traceEvent = traceElement.instantiateEvent();
+        if ((trace == null) || (traceEvent == null)) {
+            if (trace != null) {
+                TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_NoTraceType);
+                trace.dispose();
+            }
+            return null;
+        }
+
+        try {
+            trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass());
+        } catch (final TmfTraceException e) {
+            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_InitError + ENDL + ENDL + e);
+            trace.dispose();
+            return null;
+        }
+        return trace;
+    }
+
+    private static ITmfTrace openExperimentElement(final TmfExperimentElement experimentElement) {
+        /* Experiment element now has an experiment type associated with it */
+        final TmfExperiment experiment = experimentElement.instantiateTrace();
+        if (experiment == null) {
+            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_NoTraceType);
+            return null;
+        }
+
+        // Instantiate the experiment's traces
+        final List<TmfTraceElement> traceEntries = experimentElement.getTraces();
+        int cacheSize = Integer.MAX_VALUE;
+        final ITmfTrace[] traces = new ITmfTrace[traceEntries.size()];
+        for (int i = 0; i < traceEntries.size(); i++) {
+            TmfTraceElement element = traceEntries.get(i);
+
+            // Since trace is under an experiment, use the original trace from
+            // the traces folder
+            element = element.getElementUnderTraceFolder();
+
+            ITmfTrace trace = openTraceElement(element);
+
+            if (trace == null) {
+                for (int j = 0; j < i; j++) {
+                    traces[j].dispose();
+                }
+                return null;
+            }
+            cacheSize = Math.min(cacheSize, trace.getCacheSize());
+
+            traces[i] = trace;
+        }
+
+        // Create the experiment
+        experiment.initExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
+        return experiment;
+    }
+
     /**
      * Open a trace from a TmfTraceElement
      *
@@ -183,31 +242,27 @@ public class TmfOpenTraceHelper {
      *            the {@link TmfTraceElement} to open
      * @return Status.OK_STATUS
      */
-    public static IStatus openTraceFromElement(final TmfTraceElement traceElement) {
+    public static IStatus openTraceFromElement(final TmfCommonProjectElement traceElement) {
         Thread thread = new Thread() {
             @Override
             public void run() {
 
-                final ITmfTrace trace = traceElement.instantiateTrace();
-                final ITmfEvent traceEvent = traceElement.instantiateEvent();
-                if ((trace == null) || (traceEvent == null)) {
-                    if (trace != null) {
-                        TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_NoTraceType);
-                        trace.dispose();
-                    }
+                ITmfTrace trace1 = null;
+                if (traceElement instanceof TmfTraceElement) {
+                    trace1 = openTraceElement((TmfTraceElement) traceElement);
+                } else if (traceElement instanceof TmfExperimentElement) {
+                    trace1 = openExperimentElement((TmfExperimentElement) traceElement);
+                } else {
+                    return;
+                }
+
+                if (trace1 == null) {
                     return;
                 }
 
                 // Get the editor_id from the extension point
                 String traceEditorId = traceElement.getEditorId();
                 final String editorId = (traceEditorId != null) ? traceEditorId : TmfEventsEditor.ID;
-                try {
-                    trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass());
-                } catch (final TmfTraceException e) {
-                    TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_InitError + ENDL + ENDL + e);
-                    trace.dispose();
-                    return;
-                }
 
                 final IFile file;
                 try {
@@ -215,9 +270,11 @@ public class TmfOpenTraceHelper {
                 } catch (final CoreException e) {
                     Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningTrace + traceElement.getName());
                     TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_Error + ENDL + ENDL + e.getMessage());
-                    trace.dispose();
+                    trace1.dispose();
                     return;
                 }
+
+                final ITmfTrace trace = trace1;
 
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
