@@ -10,10 +10,9 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.profiling.launch.provider.launch;
 
-import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.cdt.core.model.IBinary;
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
@@ -23,14 +22,13 @@ import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.linuxtools.internal.profiling.launch.provider.ProviderProfileConstants;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
 
 public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IExecutableExtension {
 
@@ -66,97 +64,93 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 
 	@Override
 	protected ILaunchConfiguration findLaunchConfiguration(IBinary bin, String mode) {
-
-		// create a default launch configuration based on the shortcut
-		ILaunchConfiguration config = createConfiguration(bin, false);
-
-		String providerId = null;
-		try {
-			providerId = ProviderLaunchConfigurationDelegate.getProviderIdToRun(config.getWorkingCopy(), type);
-		} catch (CoreException e1) {
-			e1.printStackTrace();
-		}
+		String type = getProfilingType();
 
 		// check that there exists a provider for the given profiling type
-		if (providerId == null) {
+		if (ProviderLaunchConfigurationDelegate.getProviderIdToRun(null, type) == null) {
 			handleFail(Messages.ProviderLaunchShortcut_0 + " " + type);
 			return null;
 		}
 
-		// true if a configuration exists for current project and program
-		boolean existsConfigForProject = false;
-
-		// true if a configuration exists for current project, program and
-		// the default provider
-		boolean existsConfigForTool = false;
+		// create a launch configuration based on the shortcut
+		ILaunchConfiguration config = createConfiguration(bin, false);
+		boolean exists = false;
 
 		try {
-			String projectName = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
-			String programName = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, "");
-			ILaunchConfiguration[] configs = getLaunchManager().getLaunchConfigurations(getLaunchConfigType());
+			for (ILaunchConfiguration cfg : getLaunchManager().getLaunchConfigurations(getLaunchConfigType())){
+				if (areEqual(config, cfg)){
+					exists = true;
+				}
+			}
+		} catch (CoreException e) {
+			exists = true;
+		}
 
-			for(ILaunchConfiguration currConfig : configs){
-				String curProjectName = currConfig.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
-				String curProgramName = currConfig.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, "");
+		// only save the configuration if it does not exist
+		if (! exists) {
+			createConfiguration(bin);
+		}
 
-				// check that current configuration belongs to the current project/program
-				if(curProjectName.equals(projectName) && curProgramName.equals(programName)){
-					existsConfigForProject = true;
-					String curProviderId = currConfig.getAttribute(ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
+		return super.findLaunchConfiguration(bin, mode);
+	}
 
-					// check that current configuration has the same provider as the provider to run.
-					if(curProviderId.equals(providerId)){
-						existsConfigForTool = true;
-						break;
+	/**
+	 * @param cfg1 a launch configuration
+	 * @param cfg2 a launch configuration
+	 * @return true if the launch configurations contain the exact
+	 * same attributes, and false otherwise.
+	 */
+	private boolean areEqual(ILaunchConfiguration cfg1,
+			ILaunchConfiguration cfg2) {
+
+		// We don't care about these attributes.
+		final List<String> IGNORED_ATTRS = Arrays.asList(new String [] {
+						ICDTLaunchConfigurationConstants.ATTR_BUILD_BEFORE_LAUNCH,
+						ICDTLaunchConfigurationConstants.ATTR_COREFILE_PATH,
+						IDebugUIConstants.ATTR_CAPTURE_IN_CONSOLE });
+
+		try {
+			Map<?, ?> attrs1 = cfg1.getAttributes();
+			Map<?, ?> attrs2 = cfg2.getAttributes();
+
+			for (Object key1 : attrs1.keySet()) {
+				if (! attrs2.containsKey(key1)
+						&& ! IGNORED_ATTRS.contains(key1.toString())) {
+					return false;
+				}
+			}
+
+			for (Object key2 : attrs2.keySet()) {
+				if (! attrs1.containsKey(key2)
+						&& ! IGNORED_ATTRS.contains(key2.toString())) {
+					return false;
+				}
+			}
+
+			for (Object key1 : attrs1.keySet()) {
+				for (Object key2 : attrs2.keySet()) {
+					if (key1.toString().equals(key2.toString())
+							&& ! attrs1.get(key1).toString().equals(attrs2.get(key2).toString())) {
+						return false;
 					}
 				}
 			}
 		} catch (CoreException e) {
-			// a configuration might be corrupted, skip prompting logic
-			// and fall back to default behavior
-			existsConfigForProject = true;
-			existsConfigForTool = true;
+			return false;
 		}
 
-		// automatically create a configuration if there are none available for
-		// the current project/program
-		if (!existsConfigForProject) {
-			createConfiguration(bin);
-		} else if (!existsConfigForTool) {
-			String provider = ProviderFramework
-					.getProviderToolNameFromId(providerId);
-
-			String profileType = Character.toUpperCase(type.charAt(0))
-					+ type.substring(1);
-
-			// prompt message
-			String promptMsg = MessageFormat.format(
-					Messages.ProviderLaunchConfigurationPrompt_0,
-					(Object[]) new String[] { profileType, provider });
-
-			MessageBox prompt = new MessageBox(getActiveWorkbenchShell(),
-					SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-			prompt.setMessage(promptMsg);
-
-			// prompt user for configuration creation
-			if (prompt.open() == SWT.YES) {
-				return createConfiguration(bin);
-			}
-		}
-		return super.findLaunchConfiguration(bin, mode);
+		return true;
 	}
+
 
 	@Override
 	protected void setDefaultProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
 
 		// acquire a provider id to run.
-		final String providerId = ProviderLaunchConfigurationDelegate.getProviderIdToRun(wc, getProfilingType());
-
-		// get tool name from id.
-		final String providerToolName = ProviderFramework.getProviderToolNameFromId(providerId);
+		String providerId = ProviderLaunchConfigurationDelegate.getProviderIdToRun(wc, getProfilingType());
 
 		// get tab group associated with provider id.
-		final ProfileLaunchConfigurationTabGroup tabgroup = ProfileLaunchConfigurationTabGroup.getTabGroupProviderFromId(providerId);
+		ProfileLaunchConfigurationTabGroup tabgroup = ProfileLaunchConfigurationTabGroup.getTabGroupProviderFromId(providerId);
 
 		/**
 		 * Certain tabs' setDefaults(ILaunchConfigurationWorkingCopy) may
@@ -209,8 +203,7 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 				if (name == null) {
 					name = "";
 				}
-				String providerConfigutationName = generateProviderConfigurationName(name, providerToolName);
-				return getLaunchManager().generateLaunchConfigurationName(providerConfigutationName);
+				return getLaunchManager().generateLaunchConfigurationName(name);
 			}
 		};
 
@@ -229,21 +222,6 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 
 		wc.setAttribute(ProviderProfileConstants.PROVIDER_CONFIG_ATT,
 				providerId);
-
-		// set tool name in configuration.
-		wc.setAttribute(ProviderProfileConstants.PROVIDER_CONFIG_TOOLNAME_ATT, providerToolName);
-
-		/**
-		 * To avoid renaming an already renamed launch configuration, we can
-		 * check the expected format of the name using regular expressions and
-		 * skip on matches.
-		 */
-		String curConfigName = wc.getName();
-		Pattern configNamePattern = Pattern.compile(".+\\s\\[.+\\](\\s\\(\\d+\\))?$"); //$NON-NLS-1$
-		Matcher match = configNamePattern.matcher(curConfigName);
-		if (!match.find()) {
-			wc.rename(dialog.generateName(curConfigName));
-		}
 	}
 
 	/**
@@ -274,20 +252,6 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
 
 	public String getProfilingType() {
 		return type;
-	}
-
-	/**
-	 * Generate a string that can be used as a name for a provider launch configuration.
-	 * It combines <code>configName</code> and <code>toolName</code> into a String of
-	 * consistent format: <configuration name> [<tool name>].
-	 *
-	 * @param configName
-	 * @param toolName
-	 * @return String tool name appended to original configuration name.
-	 * @since 1.2
-	 */
-	public static String generateProviderConfigurationName(String configName, String toolName){
-		return configName + " " + "[" + toolName + "]"; //$NON-NLS-1$
 	}
 
 }
