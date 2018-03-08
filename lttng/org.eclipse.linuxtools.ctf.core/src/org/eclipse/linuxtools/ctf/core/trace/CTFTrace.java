@@ -122,7 +122,7 @@ public class CTFTrace implements IDefinitionScope {
     /**
      * Collection of streams contained in the trace.
      */
-    private final Map<Long, Stream> streams =  new HashMap<Long, Stream>();
+    private final Map<Long, Stream> streams = new HashMap<Long, Stream>();
 
     /**
      * Collection of environment variables set by the tracer
@@ -143,9 +143,9 @@ public class CTFTrace implements IDefinitionScope {
                                                                                          // fieldJavadoc
 
     /** map of all the event types */
-    private final Map<Long,HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,IEventDeclaration>>();
+    private final Map<Long, HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long, IEventDeclaration>>();
     /** map of all the event types */
-    private final Map<StreamInput,HashMap<Long, EventDefinition>> eventDefs = new HashMap<StreamInput, HashMap<Long,EventDefinition>>();
+    private final Map<StreamInput, HashMap<Long, EventDefinition>> eventDefs = new HashMap<StreamInput, HashMap<Long, EventDefinition>>();
     /** map of all the indexes */
     private final Map<StreamInput, StreamInputPacketIndex> indexes = new HashMap<StreamInput, StreamInputPacketIndex>();
 
@@ -153,8 +153,6 @@ public class CTFTrace implements IDefinitionScope {
     private Map<String, LinkedList<CTFCallsite>> callsitesByName = new HashMap<String, LinkedList<CTFCallsite>>();
     /** Callsite helpers */
     private TreeSet<CTFCallsite> callsitesByIP = new TreeSet<CTFCallsite>();
-
-
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -200,8 +198,7 @@ public class CTFTrace implements IDefinitionScope {
         /* Open all the trace files */
         /* Create the definitions needed to read things from the files */
         if (packetHeaderDecl != null) {
-            packetHeaderDef = packetHeaderDecl.createDefinition(this,
-                    "packet.header"); //$NON-NLS-1$
+            packetHeaderDef = packetHeaderDecl.createDefinition(this, "packet.header"); //$NON-NLS-1$
         }
 
         /* List files not called metadata and not hidden. */
@@ -238,6 +235,7 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Dispose the trace
+     *
      * @since 2.0
      */
     public void dispose() {
@@ -250,7 +248,8 @@ public class CTFTrace implements IDefinitionScope {
                 }
             }
         }
-        System.gc(); // Invoke GC to release MappedByteBuffer objects (Java bug JDK-4724038)
+        System.gc(); // Invoke GC to release MappedByteBuffer objects (Java bug
+                     // JDK-4724038)
     }
 
     // ------------------------------------------------------------------------
@@ -270,11 +269,13 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Gets an index for a given StreamInput
-     * @param id the StreamInput
+     *
+     * @param id
+     *            the StreamInput
      * @return The index
      */
-    StreamInputPacketIndex getIndex(StreamInput id){
-        if(! indexes.containsKey(id)){
+    StreamInputPacketIndex getIndex(StreamInput id) {
+        if (!indexes.containsKey(id)) {
             indexes.put(id, new StreamInputPacketIndex());
         }
         return indexes.get(id);
@@ -282,12 +283,14 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Gets an event Declaration hashmap for a given StreamInput
-     * @param id the StreamInput
+     *
+     * @param id
+     *            the StreamInput
      * @return the hashmap with the event definitions
      * @since 2.0
      */
     public HashMap<Long, EventDefinition> getEventDefs(StreamInput id) {
-        if(! eventDefs.containsKey(id)){
+        if (!eventDefs.containsKey(id)) {
             eventDefs.put(id, new HashMap<Long, EventDefinition>());
         }
         return eventDefs.get(id);
@@ -530,7 +533,7 @@ public class CTFTrace implements IDefinitionScope {
             fc = fis.getChannel();
 
             /* Map one memory page of 4 kiB */
-            byteBuffer = fc.map(MapMode.READ_ONLY, 0, Math.min((int)fc.size(), 4096));
+            byteBuffer = fc.map(MapMode.READ_ONLY, 0, Math.min((int) fc.size(), 4096));
         } catch (IOException e) {
             /* Shouldn't happen at this stage if every other check passed */
             throw new CTFReaderException();
@@ -573,7 +576,8 @@ public class CTFTrace implements IDefinitionScope {
             /* Read the stream ID */
             Definition streamIDDef = packetHeaderDef.lookupDefinition("stream_id"); //$NON-NLS-1$
 
-            if (streamIDDef instanceof IntegerDefinition) { //this doubles as a null check
+            if (streamIDDef instanceof IntegerDefinition) { // this doubles as a
+                                                            // null check
                 long streamID = ((IntegerDefinition) streamIDDef).getValue();
                 stream = streams.get(streamID);
             } else {
@@ -647,11 +651,12 @@ public class CTFTrace implements IDefinitionScope {
 
         /* It should be ok now. */
         streams.put(stream.getId(), stream);
-        eventDecs.put(stream.getId(), new HashMap<Long,IEventDeclaration>());
+        eventDecs.put(stream.getId(), new HashMap<Long, IEventDeclaration>());
     }
 
     /**
      * gets the Environment variables from the trace metadata (See CTF spec)
+     *
      * @return the environment variables in a map form (key value)
      * @since 2.0
      */
@@ -661,7 +666,9 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Look up a specific environment variable
-     * @param key the key to look for
+     *
+     * @param key
+     *            the key to look for
      * @return the value of the variable, can be null.
      */
     public String lookupEnvironment(String key) {
@@ -670,8 +677,11 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Add a variable to the environment variables
-     * @param varName the name of the variable
-     * @param varValue the value of the variable
+     *
+     * @param varName
+     *            the name of the variable
+     * @param varValue
+     *            the value of the variable
      */
     public void addEnvironmentVar(String varName, String varValue) {
         environment.put(varName, varValue);
@@ -679,8 +689,11 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Add a clock to the clock list
-     * @param nameValue the name of the clock (full name with scope)
-     * @param ctfClock the clock
+     *
+     * @param nameValue
+     *            the name of the clock (full name with scope)
+     * @param ctfClock
+     *            the clock
      */
     public void addClock(String nameValue, CTFClock ctfClock) {
         clocks.put(nameValue, ctfClock);
@@ -688,15 +701,14 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * gets the clock with a specific name
-     * @param name the name of the clock.
+     *
+     * @param name
+     *            the name of the clock.
      * @return the clock
      */
     public CTFClock getClock(String name) {
         return clocks.get(name);
     }
-
-
-
 
     /**
      * gets the clock if there is only one. (this is 100% of the use cases as of
@@ -800,21 +812,25 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Does a given stream contain any events?
-     * @param id the stream ID
+     *
+     * @param id
+     *            the stream ID
      * @return true if the stream has events.
      */
-    public boolean hasEvents(Long id){
+    public boolean hasEvents(Long id) {
         return eventDecs.containsKey(id);
     }
 
     /**
      * Add an event declaration map to the events map.
-     * @param id the id of a stream
+     *
+     * @param id
+     *            the id of a stream
      * @return the hashmap containing events.
      */
-    public HashMap<Long, IEventDeclaration> createEvents(Long id){
+    public HashMap<Long, IEventDeclaration> createEvents(Long id) {
         HashMap<Long, IEventDeclaration> value = eventDecs.get(id);
-        if( value == null ) {
+        if (value == null) {
             value = new HashMap<Long, IEventDeclaration>();
             eventDecs.put(id, value);
         }
@@ -868,7 +884,7 @@ public class CTFTrace implements IDefinitionScope {
      */
     public List<CTFCallsite> getCallsiteCandidates(String eventName) {
         LinkedList<CTFCallsite> retVal = callsitesByName.get(eventName);
-        if( retVal == null ) {
+        if (retVal == null) {
             retVal = new LinkedList<CTFCallsite>();
         }
         return retVal;
@@ -916,8 +932,8 @@ public class CTFTrace implements IDefinitionScope {
     public CTFCallsite getCallsite(String eventName, long ip) {
         final LinkedList<CTFCallsite> candidates = callsitesByName.get(eventName);
         final CTFCallsite dummyCs = new CTFCallsite(null, null, ip, null, -1);
-        final int pos = Collections.binarySearch(candidates, dummyCs)+1;
-        if( pos >= candidates.size()) {
+        final int pos = Collections.binarySearch(candidates, dummyCs) + 1;
+        if (pos >= candidates.size()) {
             return null;
         }
         return candidates.get(pos);
