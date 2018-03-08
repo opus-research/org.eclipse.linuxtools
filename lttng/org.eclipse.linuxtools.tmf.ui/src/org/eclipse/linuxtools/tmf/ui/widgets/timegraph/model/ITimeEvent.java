@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,6 +9,7 @@
  * Contributors:
  *   Alvaro Sanchez-Leon - Initial API and implementation
  *   Patrick Tasse - Refactoring
+ *   Geneviève Bastien - Added the isLink method and extension of Comparable
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
@@ -20,7 +21,7 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
  * @author Alvaro Sanchez-Leon
  * @author Patrick Tasse
  */
-public interface ITimeEvent {
+public interface ITimeEvent extends Comparable<ITimeEvent> {
 
     /**
      * Get the entry matching this time event.
@@ -46,5 +47,14 @@ public interface ITimeEvent {
      * <p>
      */
     long getDuration();
+
+    /**
+     * Returns whether an event is just for an entry or if it is a link (between
+     * two entries)
+     *
+     * @return true if event is a link
+     * @since 3.0
+     */
+    boolean isLink();
 
 }

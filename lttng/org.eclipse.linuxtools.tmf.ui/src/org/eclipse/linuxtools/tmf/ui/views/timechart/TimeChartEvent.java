@@ -372,4 +372,20 @@ public class TimeChartEvent implements ITimeEvent {
             }
         }
     }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public boolean isLink() {
+        return false;
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public int compareTo(ITimeEvent o) {
+        return getTime() < o.getTime() ? -1 : getTime() > o.getTime() ? 1 : 0;
+    }
 }

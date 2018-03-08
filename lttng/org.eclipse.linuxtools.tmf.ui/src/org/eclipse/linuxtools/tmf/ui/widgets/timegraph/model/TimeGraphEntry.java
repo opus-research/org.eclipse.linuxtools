@@ -14,6 +14,7 @@
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -169,6 +170,7 @@ public class TimeGraphEntry implements ITimeGraphEntry {
         long end = start + event.getDuration();
         synchronized (fEventList) {
             fEventList.add(event);
+            Collections.sort(fEventList);
             if (fStartTime == -1 || start < fStartTime) {
                 fStartTime = start;
             }
@@ -199,7 +201,11 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      *            The list of time events
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
-        fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
+        if (eventList == null) {
+            fZoomedEventList = new ArrayList<ITimeEvent>();
+        } else {
+            fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
+        }
     }
 
     /**
