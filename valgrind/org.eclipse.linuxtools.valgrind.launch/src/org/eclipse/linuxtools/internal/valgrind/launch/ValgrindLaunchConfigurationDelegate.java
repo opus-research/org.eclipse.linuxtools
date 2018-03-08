@@ -44,8 +44,6 @@ import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.sourcelookup.containers.LocalFileStorage;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
-import org.eclipse.linuxtools.internal.valgrind.core.CommandLineConstants;
-import org.eclipse.linuxtools.internal.valgrind.core.LaunchConfigurationConstants;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindCommand;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindCoreParser;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindError;
@@ -54,6 +52,7 @@ import org.eclipse.linuxtools.internal.valgrind.core.ValgrindStackFrame;
 import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindUIPlugin;
 import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindViewPart;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
+import org.eclipse.linuxtools.valgrind.core.CommandLineConstants;
 import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 import org.eclipse.linuxtools.valgrind.launch.IValgrindLaunchDelegate;
 import org.eclipse.linuxtools.valgrind.launch.IValgrindOutputDirectoryProvider;
@@ -351,20 +350,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 			if (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL) != LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL)
 				opts.add(CommandLineConstants.OPT_DSYMUTIL + EQUALS + (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DSYMUTIL, LaunchConfigurationConstants.DEFAULT_GENERAL_DSYMUTIL) ? YES : NO));
 		}
-
-		// 3.8.0 specific
-		if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
-			boolean useCustomMalloc = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_BOOL);
-			if (useCustomMalloc) {
-				boolean dynamicMalloc = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC_DYNAMIC_BOOL);
-				if(dynamicMalloc){
-					opts.add(CommandLineConstants.OPT_CUSTOM_MALLOC + EQUALS + config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_CUSTOM_MALLOC, LaunchConfigurationConstants.DEFAULT_GENERAL_CUSTOM_MALLOC));
-				} else {
-					opts.add(CommandLineConstants.OPT_CUSTOM_MALLOC + EQUALS + CommandLineConstants.OPT_CUSTOM_MALLOC_STATIC);
-				}
-			}
-		}
-
+		
 		List<?> suppFiles = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_SUPPFILES, LaunchConfigurationConstants.DEFAULT_GENERAL_SUPPFILES); 
 		for (Object strpath : suppFiles) {
 			IPath suppfile = getPlugin().parseWSPath((String) strpath);

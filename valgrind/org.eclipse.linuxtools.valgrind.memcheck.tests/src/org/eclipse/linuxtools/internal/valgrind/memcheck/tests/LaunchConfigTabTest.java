@@ -23,7 +23,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
-import org.eclipse.linuxtools.internal.valgrind.core.CommandLineConstants;
 import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchPlugin;
 import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindOptionsTab;
 import org.eclipse.linuxtools.internal.valgrind.memcheck.MemcheckLaunchConstants;
@@ -34,12 +33,8 @@ import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindViewPart;
 import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.osgi.framework.Version;
 
 public class LaunchConfigTabTest extends AbstractMemcheckTest {
@@ -90,7 +85,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		return launch;
 	}
 
-	public void testDefaults() throws Exception {		
+	public void testDefaults() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		ILaunch launch = saveAndLaunch(wc, "testDefaults"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
@@ -117,7 +112,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			assertTrue(cmd.contains("--workaround-gcc296-bugs=no")); //$NON-NLS-1$
 			assertTrue(cmd.contains("--partial-loads-ok=no")); //$NON-NLS-1$
 			assertTrue(cmd.contains("--undef-value-errors=yes")); //$NON-NLS-1$
-			
+
 			// 3.4.0 specific
 			IProject project = CDebugUtils.verifyCProject(wc).getProject();
 			Version ver = ValgrindLaunchPlugin.getDefault().getValgrindVersion(project);
@@ -131,7 +126,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		}
 	}
 
-	public void testWSSuppresions() throws Exception {		
+	public void testWSSuppresions() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		String text = "${workspace_loc:/basicTest/testsuppfile.supp}"; //$NON-NLS-1$
 		tab.getSuppFileList().add(text);
@@ -163,7 +158,7 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			fail();
 		}
 	}
-	
+
 	public void testSuppressionsMultiple() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IPath suppPath = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path("basicTest/testsuppfile.supp")).getLocation(); //$NON-NLS-1$
@@ -306,12 +301,12 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 
 	public void testAlignment() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
-		
+
 		assertFalse(dynamicTab.getAlignmentSpinner().getEnabled());
 		dynamicTab.getAlignmentButton().setSelection(true);
 		dynamicTab.getAlignmentButton().notifyListeners(SWT.Selection, null);
 		assertTrue(dynamicTab.getAlignmentSpinner().getEnabled());
-		
+
 		dynamicTab.getAlignmentSpinner().setSelection(512);
 		tab.performApply(wc);
 		config = wc.doSave();
@@ -320,24 +315,20 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 
 		ILaunch launch = doLaunch(config, "testAlignment"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
-		if (p.length > 0) {
-			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-			assertEquals(0, p[0].getExitValue());
-			assertTrue(cmd.contains("--alignment=512")); //$NON-NLS-1$
-		}
-		else {
-			fail();
-		}
+		assertTrue("process array should not be empty", p.length > 0);
+		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+		assertEquals(0, p[0].getExitValue());
+		assertTrue(cmd.contains("--alignment=512")); //$NON-NLS-1$
 	}
 
 	public void testAlignmentBad() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
-		
+
 		assertFalse(dynamicTab.getAlignmentSpinner().getEnabled());
 		dynamicTab.getAlignmentButton().setSelection(true);
 		dynamicTab.getAlignmentButton().notifyListeners(SWT.Selection, null);
 		assertTrue(dynamicTab.getAlignmentSpinner().getEnabled());
-		
+
 		dynamicTab.getAlignmentSpinner().setSelection(63);
 		tab.performApply(wc);
 		config = wc.doSave();
@@ -350,63 +341,49 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		dynamicTab.getLeakCheckButton().setSelection(false);
 		ILaunch launch = saveAndLaunch(wc, "testNoLeakCheck"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
-		if (p.length > 0) {
-			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-			assertEquals(0, p[0].getExitValue());
-			assertTrue(cmd.contains("--leak-check=no")); //$NON-NLS-1$
-		}
-		else {
-			fail();
-		}
+		assertTrue("process array should not be empty", p.length > 0);
+		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+		assertEquals(0, p[0].getExitValue());
+		assertTrue(cmd.contains("--leak-check=no")); //$NON-NLS-1$
 	}
-	
+
 	public void testShowReachable() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		dynamicTab.getShowReachableButton().setSelection(true);
 		ILaunch launch = saveAndLaunch(wc, "testShowReachable"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
-		if (p.length > 0) {
-			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-			assertEquals(0, p[0].getExitValue());
-			assertTrue(cmd.contains("--show-reachable=yes")); //$NON-NLS-1$
-		}
-		else {
-			fail();
-		}
+		assertTrue("process array should not be empty", p.length > 0);
+		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+		assertEquals(0, p[0].getExitValue());
+		assertTrue(cmd.contains("--show-reachable=yes")); //$NON-NLS-1$
 	}
 
 	public void testLeakResolutionMed() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		String[] opts = dynamicTab.getLeakResCombo().getItems();
-		int ix = Arrays.asList(opts).indexOf(MemcheckLaunchConstants.LEAK_RES_MED);
+		int ix = Arrays.asList(opts).indexOf(
+				MemcheckLaunchConstants.LEAK_RES_MED);
 		dynamicTab.getLeakResCombo().select(ix);
 		ILaunch launch = saveAndLaunch(wc, "testLeakResolutionMed"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
-		if (p.length > 0) {
-			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-			assertEquals(0, p[0].getExitValue());
-			assertTrue(cmd.contains("--leak-resolution=med")); //$NON-NLS-1$
-		}
-		else {
-			fail();
-		}
+		assertTrue("process array should not be empty", p.length > 0);
+		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+		assertEquals(0, p[0].getExitValue());
+		assertTrue(cmd.contains("--leak-resolution=med")); //$NON-NLS-1$
 	}
 
 	public void testLeakResolutionHigh() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		String[] opts = dynamicTab.getLeakResCombo().getItems();
-		int ix = Arrays.asList(opts).indexOf(MemcheckLaunchConstants.LEAK_RES_HIGH);
+		int ix = Arrays.asList(opts).indexOf(
+				MemcheckLaunchConstants.LEAK_RES_HIGH);
 		dynamicTab.getLeakResCombo().select(ix);
 		ILaunch launch = saveAndLaunch(wc, "testLeakResolutionHigh"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
-		if (p.length > 0) {
-			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-			assertEquals(0, p[0].getExitValue());
-			assertTrue(cmd.contains("--leak-resolution=high")); //$NON-NLS-1$
-		}
-		else {
-			fail();
-		}
+		assertTrue("process array should not be empty", p.length > 0);
+		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+		assertEquals(0, p[0].getExitValue());
+		assertTrue(cmd.contains("--leak-resolution=high")); //$NON-NLS-1$
 	}
 
 	public void testFreeListVol() throws Exception {
@@ -414,14 +391,10 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		dynamicTab.getFreelistSpinner().setSelection(2000000);
 		ILaunch launch = saveAndLaunch(wc, "testFreeListVol"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
-		if (p.length > 0) {
-			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-			assertEquals(0, p[0].getExitValue());
-			assertTrue(cmd.contains("--freelist-vol=2000000")); //$NON-NLS-1$
-		}
-		else {
-			fail();
-		}
+		assertTrue("process array should not be empty", p.length > 0);
+		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+		assertEquals(0, p[0].getExitValue());
+		assertTrue(cmd.contains("--freelist-vol=2000000")); //$NON-NLS-1$
 	}
 
 	public void testWorkaroundGCCBugs() throws Exception {
@@ -429,14 +402,10 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		dynamicTab.getGccWorkaroundButton().setSelection(true);
 		ILaunch launch = saveAndLaunch(wc, "testWorkaroundGCCBugs"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
-		if (p.length > 0) {
-			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-			assertEquals(0, p[0].getExitValue());
-			assertTrue(cmd.contains("--workaround-gcc296-bugs=yes")); //$NON-NLS-1$
-		}
-		else {
-			fail();
-		}
+		assertTrue("process array should not be empty", p.length > 0);
+		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+		assertEquals(0, p[0].getExitValue());
+		assertTrue(cmd.contains("--workaround-gcc296-bugs=yes")); //$NON-NLS-1$
 	}
 
 	public void testPartialLoads() throws Exception {
@@ -444,14 +413,10 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		dynamicTab.getPartialLoadsButton().setSelection(true);
 		ILaunch launch = saveAndLaunch(wc, "testPartialLoads"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
-		if (p.length > 0) {
-			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-			assertEquals(0, p[0].getExitValue());
-			assertTrue(cmd.contains("--partial-loads-ok=yes")); //$NON-NLS-1$
-		}
-		else {
-			fail();
-		}
+		assertTrue("process array should not be empty", p.length > 0);
+		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+		assertEquals(0, p[0].getExitValue());
+		assertTrue(cmd.contains("--partial-loads-ok=yes")); //$NON-NLS-1$
 	}
 
 	public void testUndefValueErrors() throws Exception {
@@ -459,20 +424,17 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		dynamicTab.getUndefValueButton().setSelection(false);
 		ILaunch launch = saveAndLaunch(wc, "testUndefValueErrors"); //$NON-NLS-1$
 		IProcess[] p = launch.getProcesses();
-		if (p.length > 0) {
-			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-			assertEquals(0, p[0].getExitValue());
-			assertTrue(cmd.contains("--undef-value-errors=no")); //$NON-NLS-1$
-		}
-		else {
-			fail();
-		}
+		assertTrue("process array should not be empty", p.length > 0);
+		String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+		assertEquals(0, p[0].getExitValue());
+		assertTrue(cmd.contains("--undef-value-errors=no")); //$NON-NLS-1$
 	}
-	
+
 	public void testMainStackSize() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IProject project = CDebugUtils.verifyCProject(wc).getProject();
-		Version ver = ValgrindLaunchPlugin.getDefault().getValgrindVersion(project);
+		Version ver = ValgrindLaunchPlugin.getDefault().getValgrindVersion(
+				project);
 		if (ver.compareTo(ValgrindLaunchPlugin.VER_3_4_0) >= 0) {
 			assertFalse(tab.getMainStackSizeSpinner().isEnabled());
 			tab.getMainStackSizeButton().setSelection(true);
@@ -481,43 +443,34 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 			tab.getMainStackSizeSpinner().setSelection(2048);
 			ILaunch launch = saveAndLaunch(wc, "testMainStackFrame"); //$NON-NLS-1$
 			IProcess[] p = launch.getProcesses();
-			if (p.length > 0) {
-				String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-				assertEquals(0, p[0].getExitValue());
-				assertTrue(cmd.contains("--main-stacksize=2048")); //$NON-NLS-1$
-			}
-			else {
-				fail();
-			}
-		}
-		else {
+			assertTrue("process array should not be empty", p.length > 0);
+			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+			assertEquals(0, p[0].getExitValue());
+			assertTrue(cmd.contains("--main-stacksize=2048")); //$NON-NLS-1$
+		} else {
 			assertNull(tab.getMainStackSizeButton());
 			assertNull(tab.getMainStackSizeSpinner());
 		}
 	}
-	
+
 	public void testTrackOrigins() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IProject project = CDebugUtils.verifyCProject(config).getProject();
-		Version ver = ValgrindLaunchPlugin.getDefault().getValgrindVersion(project);
+		Version ver = ValgrindLaunchPlugin.getDefault().getValgrindVersion(
+				project);
 		if (ver.compareTo(ValgrindLaunchPlugin.VER_3_4_0) >= 0) {
 			dynamicTab.getTrackOriginsButton().setSelection(true);
 			ILaunch launch = saveAndLaunch(wc, "testTrackOrigins"); //$NON-NLS-1$
 			IProcess[] p = launch.getProcesses();
-			if (p.length > 0) {
-				String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-				assertEquals(0, p[0].getExitValue());
-				assertTrue(cmd.contains("--track-origins=yes")); //$NON-NLS-1$
-			}
-			else {
-				fail();
-			}
-		}
-		else {
+			assertTrue("process array should not be empty", p.length > 0);
+			String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+			assertEquals(0, p[0].getExitValue());
+			assertTrue(cmd.contains("--track-origins=yes")); //$NON-NLS-1$
+		} else {
 			assertNull(dynamicTab.getTrackOriginsButton());
 		}
 	}
-	
+
 	public void testTrackOriginsValidity() throws Exception {
 		ILaunchConfigurationWorkingCopy wc = initConfig();
 		IProject project = CDebugUtils.verifyCProject(config).getProject();
@@ -544,106 +497,10 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 		doLaunch(config, "testValgrindError"); //$NON-NLS-1$
 
 		ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
-		IValgrindMessage[] messages = view.getMessages(); 
+		IValgrindMessage[] messages = view.getMessages();
 		assertTrue(messages.length > 0);
-		
+
 		String text = messages[0].getText();
 		assertTrue(text.contains(notExistentFile));
-	}
-
-	public void testAlternateDynamicMalloc() throws Exception {
-		ILaunchConfigurationWorkingCopy wc = initConfig();
-		IProject project = CDebugUtils.verifyCProject(wc).getProject();
-		Version ver = ValgrindLaunchPlugin.getDefault().getValgrindVersion(project);
-		if (ver.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
-			Control customMallocControl = tab.getCustomMallocControl();
-			Button customMallocButton = tab.getCustomMallocButton();
-			assertFalse(customMallocControl.isEnabled());
-			assertFalse(customMallocButton.getSelection());
-
-			Button dynamicLibRadio = tab.getDynamicLibRadio();
-			assertFalse(dynamicLibRadio.isEnabled());
-			assertTrue(dynamicLibRadio.getSelection());
-
-			Button staticLibRadio = tab.getStaticLibRadio();
-			assertFalse(staticLibRadio.isEnabled());
-			assertFalse(staticLibRadio.getSelection());
-
-			customMallocButton.setSelection(true);
-			customMallocButton.notifyListeners(SWT.Selection, null);
-			assertTrue(dynamicLibRadio.isEnabled());
-			assertTrue(staticLibRadio.isEnabled());
-
-			dynamicLibRadio.setSelection(true);
-			dynamicLibRadio.notifyListeners(SWT.Selection, null);
-			assertTrue(customMallocControl.isEnabled());
-
-			if(customMallocControl instanceof Combo){
-				((Combo)customMallocControl).setText("tcmalloc"); //$NON-NLS-1$
-			} else if (customMallocControl instanceof Text){
-				((Text)customMallocControl).setText("tcmalloc"); //$NON-NLS-1$
-			}
-
-			ILaunch launch = saveAndLaunch(wc, "testCustomMalloc"); //$NON-NLS-1$
-			IProcess[] p = launch.getProcesses();
-			if (p.length > 0) {
-				String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-				assertEquals(0, p[0].getExitValue());
-				assertTrue(cmd.contains("--soname-synonyms=somalloc=tcmalloc")); //$NON-NLS-1$
-			}
-			else {
-				fail();
-			}
-		}
-		else {
-			assertFalse(tab.getCustomMallocButton().isVisible());
-			assertFalse(tab.getCustomMallocControl().isVisible());
-		}
-	}
-
-	public void testAlternateStaticMalloc() throws Exception {
-		ILaunchConfigurationWorkingCopy wc = initConfig();
-		IProject project = CDebugUtils.verifyCProject(wc).getProject();
-		Version ver = ValgrindLaunchPlugin.getDefault().getValgrindVersion(project);
-		if (ver.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
-			Control customMallocControl = tab.getCustomMallocControl();
-			Button customMallocButton = tab.getCustomMallocButton();
-			assertFalse(customMallocControl.isEnabled());
-			assertFalse(customMallocButton.getSelection());
-
-			Button dynamicLibRadio = tab.getDynamicLibRadio();
-			assertFalse(dynamicLibRadio.isEnabled());
-			assertTrue(dynamicLibRadio.getSelection());
-
-			Button staticLibRadio = tab.getStaticLibRadio();
-			assertFalse(staticLibRadio.isEnabled());
-			assertFalse(staticLibRadio.getSelection());
-
-			customMallocButton.setSelection(true);
-			customMallocButton.notifyListeners(SWT.Selection, null);
-			assertTrue(dynamicLibRadio.isEnabled());
-			assertTrue(staticLibRadio.isEnabled());
-
-			dynamicLibRadio.setSelection(false);
-			dynamicLibRadio.notifyListeners(SWT.Selection, null);
-			staticLibRadio.setSelection(true);
-			staticLibRadio.notifyListeners(SWT.Selection, null);
-			assertFalse(customMallocControl.isEnabled());
-
-			ILaunch launch = saveAndLaunch(wc, "testCustomMalloc"); //$NON-NLS-1$
-			IProcess[] p = launch.getProcesses();
-			if (p.length > 0) {
-				String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
-				assertEquals(0, p[0].getExitValue());
-				assertTrue(cmd.contains("--soname-synonyms=somalloc=" + CommandLineConstants.OPT_CUSTOM_MALLOC_STATIC)); //$NON-NLS-1$
-			}
-			else {
-				fail();
-			}
-		}
-		else {
-			assertFalse(tab.getCustomMallocButton().isVisible());
-			assertFalse(tab.getCustomMallocControl().isVisible());
-		}
 	}
 }

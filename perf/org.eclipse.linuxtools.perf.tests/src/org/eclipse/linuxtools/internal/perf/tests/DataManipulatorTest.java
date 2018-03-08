@@ -10,19 +10,23 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.linuxtools.internal.perf.ReportComparisonData;
 import org.eclipse.linuxtools.internal.perf.SourceDisassemblyData;
 import org.eclipse.linuxtools.internal.perf.StatData;
+import org.junit.Test;
 
-public class DataManipulatorTest extends TestCase {
+public class DataManipulatorTest {
 
+	@Test
 	public void testEchoSourceDisassemblyData() {
 		final IPath path = new Path("/a/b/c/"); //$NON-NLS-1$
 
@@ -34,7 +38,7 @@ public class DataManipulatorTest extends TestCase {
 
 		assertEquals(expected, sdData.getPerfData().trim());
 	}
-
+	@Test
 	public void testEchoStatData() {
 		final String binary = "a/b/c.out";
 		final String[] args = new String[] { "arg1", "arg2", "arg3" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -51,7 +55,7 @@ public class DataManipulatorTest extends TestCase {
 
 		assertEquals(expected, sData.getPerfData().trim());
 	}
-
+	@Test
 	public void testEchoStatDataEvents() {
 		final String binary = "a/b/c.out";
 		final String[] args = new String[] { "arg1", "arg2", "arg3" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -73,6 +77,20 @@ public class DataManipulatorTest extends TestCase {
 		}
 
 		assertEquals(expected, sData.getPerfData().trim());
+	}
+
+	@Test
+	public void testEchoReportDiffData() {
+		File oldData = new File("perf.old.data"); //$NON-NLS-1$
+		File newData = new File("perf.data"); //$NON-NLS-1$
+		StubReportDiffData diffData = new StubReportDiffData("title", //$NON-NLS-1$
+				oldData, newData);
+		diffData.parse();
+
+		String expected = "perf diff " + oldData.getAbsolutePath()  //$NON-NLS-1$
+				+ " " + newData.getAbsolutePath();  //$NON-NLS-1$
+
+		assertEquals(expected, diffData.getPerfData().trim());
 	}
 
 	/**
@@ -119,6 +137,27 @@ public class DataManipulatorTest extends TestCase {
 			// echo will print to standard out
 			performCommand(cmd, 1);
 		}
+	}
+
+	/**
+	 * Used for testing ReportComparisonData
+	 */
+	private class StubReportDiffData extends ReportComparisonData{
+
+		public StubReportDiffData(String title, File oldFile, File newFile) {
+			super(title, oldFile, newFile);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected String[] getCommand() {
+			// return the same command with 'echo' prepended
+			List<String> ret = new ArrayList<String>();
+			ret.add("echo"); //$NON-NLS-1$
+			ret.addAll(Arrays.asList(super.getCommand()));
+			return ret.toArray(new String[0]);
+		}
+
 	}
 
 }

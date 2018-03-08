@@ -6,8 +6,9 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors: Matthew Khouzam - Initial API and implementation
- * Contributors: Simon Marchi - Initial API and implementation
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *     Simon Marchi - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
@@ -34,6 +35,7 @@ import org.eclipse.linuxtools.ctf.parser.CTFLexer;
 import org.eclipse.linuxtools.ctf.parser.CTFParser;
 import org.eclipse.linuxtools.ctf.parser.CTFParser.parse_return;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.IOStructGen;
+import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.CtfAntlrException;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 
 /**
@@ -52,12 +54,12 @@ public class Metadata {
     /**
      * Name of the metadata file in the trace directory
      */
-    final static String METADATA_FILENAME = "metadata"; //$NON-NLS-1$
+    private static final String METADATA_FILENAME = "metadata"; //$NON-NLS-1$
 
     /**
      * Size of the metadata packet header, in bytes, computed by hand.
      */
-    final static int METADATA_PACKET_HEADER_SIZE = 37;
+    private static final int METADATA_PACKET_HEADER_SIZE = 37;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -176,9 +178,9 @@ public class Metadata {
         } catch (ParseException e) {
             tempException = new CTFReaderException(e);
         } catch (MismatchedTokenException e) {
-            tempException = new CTFReaderException(e);
+            tempException = new CtfAntlrException(e);
         } catch (RecognitionException e) {
-            tempException = new CTFReaderException(e);
+            tempException = new CtfAntlrException(e);
         }
 
         /* Ghetto resource management. Java 7 will deliver us from this... */
@@ -219,12 +221,9 @@ public class Metadata {
         CTFLexer ctfLexer = new CTFLexer(antlrStream);
         CommonTokenStream tokens = new CommonTokenStream(ctfLexer);
         CTFParser ctfParser = new CTFParser(tokens, false);
-        parse_return ret;
 
-        ret = ctfParser.parse();
-
-        CommonTree tree = (CommonTree) ret.getTree();
-        return tree;
+        parse_return pr = ctfParser.parse();
+        return (CommonTree) pr.getTree();
     }
 
     /**
@@ -249,7 +248,7 @@ public class Metadata {
         try {
             metadataFileChannel.read(magicByteBuffer, 0);
         } catch (IOException e) {
-            throw new CTFReaderException("Unable to read metadata file channel."); //$NON-NLS-1$
+            throw new CTFReaderException("Unable to read metadata file channel.", e); //$NON-NLS-1$
         }
 
         /* Get the first int from the file */
@@ -296,7 +295,7 @@ public class Metadata {
         try {
             nbBytesRead = metadataFileChannel.read(headerByteBuffer);
         } catch (IOException e) {
-            throw new CTFReaderException("Error reading the metadata header."); //$NON-NLS-1$
+            throw new CTFReaderException("Error reading the metadata header.", e); //$NON-NLS-1$
         }
 
         /* Return null if EOF */
@@ -333,7 +332,7 @@ public class Metadata {
 
         /* Check UUID */
         UUID uuid = Utils.makeUUID(header.uuid);
-        if (!trace.UUIDIsSet()) {
+        if (!trace.uuidIsSet()) {
             trace.setUUID(uuid);
         } else {
             if (!trace.getUUID().equals(uuid)) {
@@ -343,6 +342,9 @@ public class Metadata {
 
         /* Extract the text from the packet */
         int payloadSize = ((header.contentSize / 8) - METADATA_PACKET_HEADER_SIZE);
+        if (payloadSize < 0) {
+            throw new CTFReaderException("Invalid metadata packet payload size."); //$NON-NLS-1$
+        }
         int skipSize = (header.packetSize - header.contentSize) / 8;
 
         /* Read the payload + the padding in a ByteBuffer */
@@ -351,7 +353,7 @@ public class Metadata {
         try {
             metadataFileChannel.read(payloadByteBuffer);
         } catch (IOException e) {
-            throw new CTFReaderException("Error reading metadata packet payload."); //$NON-NLS-1$
+            throw new CTFReaderException("Error reading metadata packet payload.", e); //$NON-NLS-1$
         }
         payloadByteBuffer.rewind();
 
@@ -368,7 +370,7 @@ public class Metadata {
         return header;
     }
 
-    static class MetadataPacketHeader {
+    private static class MetadataPacketHeader {
 
         public int magic;
         public byte uuid[] = new byte[16];
