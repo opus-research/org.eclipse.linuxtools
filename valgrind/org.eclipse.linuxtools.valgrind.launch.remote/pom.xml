@@ -17,11 +17,11 @@
     <version>2.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>org.eclipse.linuxtools.valgrind.launch</artifactId>
+  <artifactId>org.eclipse.linuxtools.valgrind.launch.remote</artifactId>
   <version>1.2.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 
-  <name>Linux Tools Valgrind Launch Plug-in</name>
+  <name>Linux Tools Valgrind Remote Launch Plug-in</name>
 
  <build>
      <!-- workaround for https://issues.sonatype.org/browse/TYCHO-168 -->
