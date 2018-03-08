@@ -25,7 +25,7 @@ import org.osgi.framework.FrameworkUtil;
 
 /**
  * Job for handling rpm exports.
- * @since 1.0.0
+ * @since 1.1
  */
 public class RPMExportOperation extends Job {
 	private RPMProject rpmProject;
@@ -58,7 +58,7 @@ public class RPMExportOperation extends Job {
 		case ALL:
 			try {
 				monitor.beginTask(Messages
-						.getString("RPMExportOperation.Executing_All_Export"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
+						.getString("RPMExportOperation.Executing_RPM_Export"), IProgressMonitor.UNKNOWN); //$NON-NLS-1$
 				result = rpmProject.buildAll(out);
 			} catch (CoreException e) {
 				result = new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
