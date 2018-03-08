@@ -121,10 +121,10 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 }
                 return State.SOFT_IRQ_ACTIVE.ordinal();
             } else {
-                return INVISIBLE; // NULL
+                return -1; // NULL
             }
         }
-        return TRANSPARENT;
+        return State.UNKNOWN.ordinal();
     }
 
     @Override

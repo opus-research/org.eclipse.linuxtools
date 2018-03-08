@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
@@ -90,10 +91,15 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
     }
 
     @Override
+    public ITmfStateSystem getAssignedStateSystem() {
+        return ss;
+    }
+
+    @Override
     public void dispose() {
         /* Insert a null event in the queue to stop the event handler's thread. */
         try {
-            eventsQueue.put(org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent.getNullEvent());
+            eventsQueue.put(CtfTmfEventFactory.getNullEvent());
             eventHandlerThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();

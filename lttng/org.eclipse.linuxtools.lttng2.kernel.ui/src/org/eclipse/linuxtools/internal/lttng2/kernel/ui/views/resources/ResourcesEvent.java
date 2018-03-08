@@ -76,9 +76,4 @@ public class ResourcesEvent extends TimeEvent {
     public Type getType() {
         return fType;
     }
-
-    @Override
-    public String toString() {
-        return "ResourcesEvent start=" + fTime + " end=" + (fTime + fDuration) + " duration=" + fDuration + " type=" + fType + " value=" + fValue; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-    }
 }
