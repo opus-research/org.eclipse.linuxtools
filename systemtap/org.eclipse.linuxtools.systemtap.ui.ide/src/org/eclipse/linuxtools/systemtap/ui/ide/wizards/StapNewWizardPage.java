@@ -10,15 +10,16 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.systemtap.ui.ide.wizards;
 
-import java.io.File;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -29,10 +30,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -142,10 +142,13 @@ public class StapNewWizardPage extends WizardPage {
 	 * the container field.
 	 */
 	private void handleBrowse() {
-		DirectoryDialog dialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OPEN);
-		String path = dialog.open();
-		if (path != null){
-			containerText.setText(path);
+		ContainerSelectionDialog dialog = new ContainerSelectionDialog(
+				getShell(), ResourcesPlugin.getWorkspace().getRoot(), false, ""); //$NON-NLS-1$
+		if (dialog.open() == Window.OK) {
+			Object[] result = dialog.getResult();
+			if (result.length == 1) {
+				containerText.setText(((Path) result[0]).toString());
+			}
 		}
 	}
 
@@ -178,17 +181,10 @@ public class StapNewWizardPage extends WizardPage {
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
 			if (ext.equalsIgnoreCase("stp") == false) { //$NON-NLS-1$
-				updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus5")); //$NON-NLS-1$
+				updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus.5")); //$NON-NLS-1$
 				return;
 			}
 		}
-
-		File file = new File(container.toFile(), fileName);
-		if (file.exists()){
-			updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus6")); //$NON-NLS-1$
-			return;
-		}
-
 		updateStatus(null);
 	}
 

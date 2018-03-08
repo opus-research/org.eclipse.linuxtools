@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.systemtap.ui.ide.wizards;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ResourceBundle;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -25,7 +26,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective;
-import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -78,9 +78,11 @@ public class StapNewWizard extends Wizard implements INewWizard {
 		final String fileName = page.getFileName();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
 			@Override
-			public void run(IProgressMonitor monitor) {
+			public void run(IProgressMonitor monitor) throws InvocationTargetException {
 				try {
 					doFinish(containerName, fileName, monitor);
+				} catch (CoreException e) {
+					throw new InvocationTargetException(e);
 				} finally {
 					monitor.done();
 				}
@@ -105,39 +107,28 @@ public class StapNewWizard extends Wizard implements INewWizard {
 	 * the editor on the newly created file.
 	 */
 
-	private void doFinish(String containerName,	String fileName, IProgressMonitor monitor) {
+	private void doFinish(String containerName,	String fileName, IProgressMonitor monitor) throws CoreException {
 		// create a .stp file
 
-		monitor.beginTask(resourceBundle.getString("StapNewWizard.BeginTask") + " " + fileName, 2); //$NON-NLS-1$ //$NON-NLS-2$
-		final IFileStore newFile;
-		try {
-			IFileStore container = EFS.getLocalFileSystem().getStore(new Path(containerName));
-			container.mkdir(EFS.NONE, monitor);
-
-			newFile = EFS.getLocalFileSystem().getStore(new Path(containerName+"/"+fileName)); //$NON-NLS-1$
-			String envString = "#!/usr/bin/env stap"; //$NON-NLS-1$
-			newFile.openOutputStream(EFS.NONE, monitor).write(envString.getBytes());
-
-    		monitor.worked(1);
-    		monitor.setTaskName(resourceBundle.getString("StapNewWizard.SetTask")); //$NON-NLS-1$
-    		getShell().getDisplay().asyncExec(new Runnable() {
-    			@Override
-    			public void run() {
-    				try {
-    					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getWorkbench()
-    							.showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-    					IDE.openEditorOnFileStore(page, newFile);
-    				} catch (WorkbenchException e1) {
-    					ExceptionErrorDialog.openError(Messages.StapNewWizard_0, e1);
-    				}
-    			}
-    		});
-		} catch (IOException e) {
-			ExceptionErrorDialog.openError(Messages.StapNewWizard_1, e);
-		} catch (CoreException e) {
-			ExceptionErrorDialog.openError(Messages.StapNewWizard_2, e);
-		}
-
+		monitor.beginTask(resourceBundle.getString("StapNewWizard.BeginTask") + fileName, 2); //$NON-NLS-1$
+		final IContainer newResource = (IContainer) ResourcesPlugin.getWorkspace().getRoot().findMember(containerName);
+		final IFile newFile = newResource.getFile(new Path(fileName));
+		String envString = "#!/usr/bin/env stap"; //$NON-NLS-1$
+		newFile.create(new ByteArrayInputStream(envString.getBytes()) , true, monitor);
+		monitor.worked(1);
+		monitor.setTaskName(resourceBundle.getString("StapNewWizard.SetTask")); //$NON-NLS-1$
+		getShell().getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getWorkbench()
+							.showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+					IDE.openEditor(page, newFile);
+				} catch (WorkbenchException e1) {
+					// ignore, the file is created but opening the editor failed
+				}
+			}
+		});
 		monitor.worked(1);
 	}
 

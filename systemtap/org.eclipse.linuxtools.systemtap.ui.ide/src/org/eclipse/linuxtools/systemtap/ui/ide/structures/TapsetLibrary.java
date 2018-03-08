@@ -27,9 +27,9 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.FunctionParse
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.ProbeParser;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetParser;
 import org.eclipse.linuxtools.man.parser.ManPage;
+import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 import org.eclipse.linuxtools.systemtap.ui.ide.IDESessionSettings;
-import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
-import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
 import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.PreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 
@@ -214,9 +214,8 @@ public final class TapsetLibrary {
 	 * @since 2.0
 	 */
 	public static boolean addFunctionListener(IUpdateListener listener) {
-		if(null == functionParser) {
+		if(null == functionParser)
 			return false;
-		}
 		functionParser.addListener(listener);
 		return true;
 	}
@@ -225,9 +224,8 @@ public final class TapsetLibrary {
 	 * @since 2.0
 	 */
 	public static boolean addProbeListener(IUpdateListener listener) {
-		if(null == probeParser) {
+		if(null == probeParser)
 			return false;
-		}
 		probeParser.addListener(listener);
 		return true;
 	}
@@ -242,24 +240,16 @@ public final class TapsetLibrary {
 
 
 	private static Job cacheFunctionManpages = new Job(Localization.getString("TapsetLibrary.0")){ //$NON-NLS-1$
-		private boolean cancelled;
-
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			TreeNode node = functionParser.getFunctions();
 			int n = node.getChildCount();
-			for (int i = 0; i < n && !this.cancelled; i++) {
+			for (int i = 0; i < n; i++) {
 				getDocumentation("function::" + (node.getChildAt(i).toString())); //$NON-NLS-1$
 			}
 
 			return new Status(IStatus.OK, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$;
 		}
-
-		@Override
-		protected void canceling() {
-			this.cancelled = true;
-		}
-
 	};
 
 	private static Job cacheProbeManpages = new Job(Localization.getString("TapsetLibrary.1")){ //$NON-NLS-1$
@@ -333,7 +323,6 @@ public final class TapsetLibrary {
 	public static void stop(){
 		if(null != functionParser){
 			functionParser.cancel();
-			cacheFunctionManpages.cancel();
 			try {
 				functionParser.join();
 			} catch (InterruptedException e) {
