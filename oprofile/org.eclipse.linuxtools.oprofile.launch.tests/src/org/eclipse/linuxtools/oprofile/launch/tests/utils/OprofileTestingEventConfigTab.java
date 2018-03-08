@@ -40,6 +40,11 @@ public class OprofileTestingEventConfigTab extends AbstractEventConfigTab {
 	}
 
 	@Override
+	protected boolean hasPermissions(IProject project) {
+		return true;
+	}
+
+	@Override
 	protected IProject getOprofileProject() {
 		return project;
 	}
