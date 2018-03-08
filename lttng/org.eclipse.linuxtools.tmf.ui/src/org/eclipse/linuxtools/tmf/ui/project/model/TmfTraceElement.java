@@ -468,20 +468,4 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
         return false;
     }
 
-    /**
-     * Copy this trace in the trace folder. No other parameters are mentioned so
-     * the trace is copied in this element's project trace folder
-     *
-     * @param string
-     *            The new trace name
-     * @return the new Resource object
-     * @since 2.0
-     */
-    public TmfTraceElement copy(String string) {
-        TmfTraceFolder folder = this.getProject().getTracesFolder();
-        IResource res = super.copy(string, folder.getResource(), false);
-        return new TmfTraceElement(string, res, folder);
-    }
-
-
 }

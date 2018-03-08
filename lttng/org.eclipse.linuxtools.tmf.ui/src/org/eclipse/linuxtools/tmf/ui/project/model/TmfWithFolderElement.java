@@ -13,14 +13,13 @@
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
+
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 
 
 /**
@@ -201,45 +200,6 @@ public abstract class TmfWithFolderElement extends TmfProjectModelElement {
         } catch (CoreException e) {
             Activator.getDefault().logError("Error setting persistant property " + TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, e); //$NON-NLS-1$
         }
-
-    }
-
-    /**
-     * Copy this model element
-     *
-     * @param newName The name of the new element
-     * @param parentFolder The parent folder (either experiment or trace folder)
-     * @param copySuppFiles Whether to copy supplementary files or not
-     * @return the new Resource object
-     */
-    public IResource copy(final String newName, final IFolder parentFolder, final boolean copySuppFiles) {
-
-        IPath oldPath = getResource().getFullPath();
-        final IPath newPath = oldPath.append("../" + newName); //$NON-NLS-1$
-
-        // Copy supplementary files first, only if needed
-        if (copySuppFiles) {
-            copySupplementaryFolder(newName);
-        }
-        // Copy the trace
-        try {
-            getResource().copy(newPath, IResource.FORCE | IResource.SHALLOW, null);
-
-            // Delete any bookmarks file found in copied trace folder
-            IFolder folder = parentFolder.getFolder(newName);
-            if (folder.exists()) {
-                for (IResource member : folder.members()) {
-                    if (TmfTrace.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
-                        member.delete(true, null);
-                    }
-                }
-            }
-            return folder;
-        } catch (CoreException e) {
-
-        }
-
-        return null;
 
     }
 
