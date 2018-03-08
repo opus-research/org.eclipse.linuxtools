@@ -31,9 +31,11 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfMipMapStateProvider;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
+import org.eclipse.linuxtools.tmf.core.util.Pair;
 
 /**
  * This is the core class of the Generic State System. It contains all the
@@ -683,6 +685,137 @@ public class StateSystem implements ITmfStateSystemBuilder {
         return intervals;
     }
 
+    @Override
+    public long queryRangeMipmapMax(long t1, long t2, int quark) {
+        long max = Long.MIN_VALUE;
+        try {
+            List<ITmfStateInterval> intervals = queryMipmapAttribute(t1, t2, quark, AbstractTmfMipMapStateProvider.MAX_STRING);
+            for (ITmfStateInterval si : intervals) {
+                max = Math.max(max, si.getStateValue().unboxLong());
+            }
+        } catch (StateValueTypeException e) {
+        }
+        return max;
+    }
+
+    @Override
+    public long queryRangeMipmapMin(long t1, long t2, int quark) {
+        long min = Long.MAX_VALUE;
+        try {
+            List<ITmfStateInterval> intervals = queryMipmapAttribute(t1, t2, quark, AbstractTmfMipMapStateProvider.MIN_STRING);
+            for (ITmfStateInterval si : intervals) {
+                min = Math.min(min, si.getStateValue().unboxLong());
+            }
+        } catch (StateValueTypeException e) {
+        }
+        return min;
+    }
+
+    @Override
+    public long queryRangeMipmapAverage(long t1, long t2, int quark) {
+        double avg = 0;
+        try {
+            List<ITmfStateInterval> intervals = queryMipmapAttribute(t1, t2, quark, AbstractTmfMipMapStateProvider.AVG_STRING);
+            for (ITmfStateInterval si : intervals) {
+                long startTime = Math.max(t1, si.getStartTime());
+                long endTime = Math.min(t2, si.getEndTime());
+                long delta = endTime - startTime + 1;
+                avg += si.getStateValue().unboxLong() * ((double) delta / (double) (t2 - t1 + 1));
+            }
+        } catch (StateValueTypeException e) {
+        }
+        return (long) Math.ceil(avg);
+    }
+
+    List<ITmfStateInterval> queryMipmapAttribute(long t1, long t2, int quark, String attributeType) {
+        Pair<Long, Long> timeRange = new Pair<Long, Long>(t1, t2);
+        int maxLevelQuark;
+        List<ITmfStateInterval> intervals = new ArrayList<ITmfStateInterval>();
+        try {
+            maxLevelQuark = getQuarkRelative(quark, AbstractTmfMipMapStateProvider.getMimapNbLevelString(attributeType));
+            ITmfStateInterval maxLevelInterval = querySingleState(timeRange.getSecond(), maxLevelQuark);
+            long levelMax = maxLevelInterval.getStateValue().unboxLong();
+            queryRangeMipmapAttribute(0L, levelMax, quark, maxLevelQuark, timeRange, intervals, attributeType);
+        } catch (AttributeNotFoundException e) {
+        } catch (TimeRangeException e) {
+        } catch (StateSystemDisposedException e) {
+        } catch (StateValueTypeException e) {
+        }
+        return intervals;
+    }
+
+    void queryRangeMipmapAttribute(long currentLevel, long levelMax, int attributeQuark, int maxLevelQuark, Pair<Long, Long> timeRange, List<ITmfStateInterval> intervals, String attributeType) {
+        long level = currentLevel;
+        Pair<Long, Long> range = timeRange;
+        ITmfStateInterval currentLevelInterval = null, nextLevelInterval = null;
+        if (range == null || range.getFirst() > range.getSecond()) {
+            return;
+        }
+        if (level > levelMax || level < 0) {
+            return;
+        }
+        try {
+            if (range.getFirst().longValue() == range.getSecond().longValue()) {
+                level = 0;
+                currentLevelInterval = querySingleState(range.getFirst(), attributeQuark);
+                intervals.add(currentLevelInterval);
+                range = null;
+                return;
+            }
+            if (level == 0) {
+                currentLevelInterval = querySingleState(range.getFirst(), attributeQuark);
+            } else {
+                int quark = getQuarkRelative(maxLevelQuark, attributeType + String.valueOf(level));
+                currentLevelInterval = querySingleState(range.getFirst(), quark);
+            }
+
+            if (level < levelMax) {
+                int quark = getQuarkRelative(maxLevelQuark, attributeType + String.valueOf(level + 1));
+                nextLevelInterval = querySingleState(range.getFirst(), quark);
+            }
+
+            if (nextLevelInterval != null && isFullyOverlapped(range.getFirst(), range.getSecond(), nextLevelInterval.getStartTime(), nextLevelInterval.getEndTime())) {
+                level++;
+            } else if (currentLevelInterval != null && isFullyOverlapped(range.getFirst(), range.getSecond(), currentLevelInterval.getStartTime(), currentLevelInterval.getEndTime())) {
+                intervals.add(currentLevelInterval);
+                range = updateTimeRange(range, currentLevelInterval);
+            } else {
+                if (level == 0) {
+                    intervals.add(currentLevelInterval);
+                    range = updateTimeRange(range, currentLevelInterval);
+                } else {
+                    level--;
+                }
+            }
+            queryRangeMipmapAttribute(level, levelMax, attributeQuark, maxLevelQuark, range, intervals, attributeType);
+        } catch (AttributeNotFoundException e) {
+        } catch (TimeRangeException e) {
+        } catch (StateSystemDisposedException e) {
+        }
+    }
+
+    Pair<Long, Long> updateTimeRange(Pair<Long, Long> timeRange, ITmfStateInterval currentLevelInterval) {
+        if (timeRange.getFirst() >= timeRange.getSecond()) {
+            return null;
+        }
+        if (timeRange.getFirst() != currentLevelInterval.getStartTime()) {
+            return null;
+        }
+        if (timeRange.getSecond() <= currentLevelInterval.getEndTime()) {
+            return null;
+        }
+        return new Pair<Long, Long>(currentLevelInterval.getEndTime() + 1L, timeRange.getSecond());
+    }
+
+    static boolean isFullyOverlapped(long t1, long t2, long startTime, long endTime) {
+        if (t1 >= t2 || startTime >= endTime) {
+            return false;
+        }
+        if (t1 <= startTime && t2 >= endTime) {
+            return true;
+        }
+        return false;
+    }
     //--------------------------------------------------------------------------
     //        Debug methods
     //--------------------------------------------------------------------------
