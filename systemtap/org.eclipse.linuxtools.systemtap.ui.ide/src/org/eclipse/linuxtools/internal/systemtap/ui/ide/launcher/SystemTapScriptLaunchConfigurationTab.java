@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2012 Red Hat.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - Sami Wagiaalla
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
 import org.eclipse.core.resources.IFile;
@@ -30,12 +41,12 @@ import org.eclipse.ui.ide.ResourceUtil;
 public class SystemTapScriptLaunchConfigurationTab extends
 		AbstractLaunchConfigurationTab {
 
-	static final String SCRIPT_PATH_ATTR = "ScriptPath";
-	static final String CURRENT_USER_ATTR = "executeAsCurrentUser";
-	static final String USER_NAME_ATTR = "userName";
-	static final String USER_PASS_ATTR = "userPassword";
-	static final String LOCAL_HOST_ATTR = "executeOnLocalHost";
-	static final String HOST_NAME_ATTR = "hostName";
+	private static final String SCRIPT_PATH_ATTR = "ScriptPath";
+	private static final String CURRENT_USER_ATTR = "executeAsCurrentUser";
+	private static final String USER_NAME_ATTR = "userName";
+	private static final String USER_PASS_ATTR = "userPassword";
+	private static final String LOCAL_HOST_ATTR = "executeOnLocalHost";
+	private static final String HOST_NAME_ATTR = "hostName";
 
 	private Text scriptPathText;
 	private Button currentUserCheckButton;
