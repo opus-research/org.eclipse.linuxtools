@@ -12,8 +12,9 @@
 package org.eclipse.linuxtools.systemtap.ui.consolelog;
 
 import org.eclipse.linuxtools.systemtap.ui.structures.IPasswordPrompt;
+import org.eclipse.linuxtools.systemtap.ui.structures.runnable.LoggedCommand;
 
-public class LocalLoggedCommand extends LoggedCommand2 {
+public class LocalLoggedCommand extends LoggedCommand {
 	public LocalLoggedCommand(String[] cmd, String[] envVars,
 			IPasswordPrompt prompt, int monitorDelay) {
 		super(cmd, envVars, prompt, monitorDelay);
