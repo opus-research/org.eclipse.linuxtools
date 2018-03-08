@@ -86,7 +86,7 @@ public class Utils {
     /**
      * Update the time and date formats to use the current time zone
      *
-     * @since 2.1
+     * @since 3.0
      */
     public static void updateTimeZone() {
         TimeZone timeZone = TmfTimePreferences.getInstance().getTimeZone();
@@ -408,7 +408,13 @@ public class Utils {
      */
     public static String formatNs(long srcTime, Resolution res) {
         StringBuffer str = new StringBuffer();
-        long ns = Math.abs(srcTime % SEC_IN_NS);
+        long time = srcTime;
+        if (time < 0) {
+            time = -time;
+        }
+
+        long ns = time;
+        ns %= SEC_IN_NS;
         String nanos = Long.toString(ns);
         str.append("000000000".substring(nanos.length())); //$NON-NLS-1$
         str.append(nanos);

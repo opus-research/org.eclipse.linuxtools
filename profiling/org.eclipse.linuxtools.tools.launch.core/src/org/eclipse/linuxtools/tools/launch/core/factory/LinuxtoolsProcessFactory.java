@@ -41,22 +41,19 @@ public abstract class LinuxtoolsProcessFactory {
 	 * project property page.
 	 * */
 	protected String[] updateEnvironment(String[] envp, IProject project) {
-		if (project == null) {
+		if (project == null)
 			return envp;
-		}
-		if (envp == null) {
+		if (envp == null)
 			envp = new String[0];
-		}
 		String ltPath = LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project);
 		String envpPath = getEnvpPath(envp);
-		String systemPath = null;
+		String systemPath = null;	
 		Map<String, String> systemEnvMap = null;
 		try {
 			systemEnvMap = RemoteEnvProxyManager.class.newInstance().getEnv(project);
 			systemPath = systemEnvMap.get(PATH);
-			if (systemPath==null) {
+			if (systemPath==null)
 				systemPath = System.getenv(PATH);
-			}
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
@@ -67,15 +64,15 @@ public abstract class LinuxtoolsProcessFactory {
 		StringBuffer newPath = new StringBuffer();
 		newPath.append(PATH_EQUAL);
 
-		if (ltPath != null && !ltPath.isEmpty()) {
+		if (ltPath != null && ltPath.length() > 0) {
 			newPath.append(ltPath);
 			newPath.append(SEPARATOR);
 		}
-		if (envpPath != null && !envpPath.isEmpty()) {
+		if (envpPath != null && envpPath.length() > 0) {
 			newPath.append(envpPath);
 			newPath.append(SEPARATOR);
 		}
-		if (systemPath != null && !systemPath.isEmpty()) {
+		if (systemPath != null && systemPath.length() > 0) {
 			newPath.append(systemPath);
 			newPath.append(SEPARATOR);
 		}
@@ -84,33 +81,22 @@ public abstract class LinuxtoolsProcessFactory {
 			//there is nothing to add
 			return envp;
 
-		String[] newEnvp = new String[] {};
-
+		String[] newEnvp;
 		if (envpPath != null) {
 			newEnvp = new String[envp.length];
-			for (int i = 0; i < envp.length; i++) {
-				if (envp[i].startsWith(PATH_EQUAL)) {
+			for (int i = 0; i < envp.length; i++)
+				if (envp[i].startsWith(PATH_EQUAL))
 					newEnvp[i] = newPath.toString();
-				} else {
+				else
 					newEnvp[i] = envp[i];
-				}
-			}
 		} else if (systemEnvMap != null) {
-			Map<String, String> envVars = systemEnvMap;
+			Map<String, String> envVars = System.getenv();
 			Set<String> keySet = envVars.keySet();
 			newEnvp = new String[envVars.size()];
 
 			int i = 0;
 			for (String key : keySet) {
-				if(key.startsWith(PATH)) {
-					if (ltPath!=null) {
-						newEnvp[i] = key + "=" + ltPath + SEPARATOR + envVars.get(key); //$NON-NLS-1$
-					} else {
-						newEnvp[i] = key + "=" + envVars.get(key); //$NON-NLS-1$
-					}
-				} else {
-					newEnvp[i] = key + "=" + envVars.get(key); //$NON-NLS-1$
-				}
+				newEnvp[i] = key + "=" + envVars.get(key);
 				i++;
 			}
 		} else {
