@@ -157,6 +157,14 @@ public class TmfTimestampTest extends TestCase {
 
     private static class MyTimestamp extends TmfTimestamp {
 
+        public MyTimestamp() {
+            super();
+        }
+
+        public MyTimestamp(long value, int scale, int precision) {
+            super(value, scale, precision);
+        }
+
         @Override
         public boolean equals(final Object other) {
             return super.equals(other);
@@ -164,7 +172,7 @@ public class TmfTimestampTest extends TestCase {
 
         @Override
         public MyTimestamp clone() {
-            return (MyTimestamp) super.clone();
+            return new MyTimestamp(getValue(), getScale(), getPrecision());
         }
     }
 

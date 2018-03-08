@@ -27,6 +27,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 public class CtfTmfTimestamp extends TmfTimestamp {
 
     /**
+     * How to display this timestamp
      */
     public enum TimestampType {
         /**
@@ -54,7 +55,7 @@ public class CtfTmfTimestamp extends TmfTimestamp {
      * @param timestamp long
      */
     public CtfTmfTimestamp(long timestamp) {
-        setValue(timestamp, -9, 0);
+        super(timestamp, -9, 0);
         type = TimestampType.DAY;
     }
 

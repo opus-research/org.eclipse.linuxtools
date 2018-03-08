@@ -79,7 +79,7 @@ public class TmfSimpleTimestampTest extends TestCase {
      *
      */
     public void testCopyConstructor() {
-        final ITmfTimestamp copy = new TmfSimpleTimestamp(ts1);
+        final ITmfTimestamp copy = TmfSimpleTimestamp.copyFrom(ts1);
 
         assertEquals("getValue", ts1.getValue(), copy.getValue());
         assertEquals("getscale", ts1.getScale(), copy.getScale());
@@ -98,19 +98,19 @@ public class TmfSimpleTimestampTest extends TestCase {
         final ITmfTimestamp ts0b = new TmfTimestamp(0, 0, 1);
 
         try {
-            new TmfSimpleTimestamp(null);
+            TmfSimpleTimestamp.copyFrom(null);
             fail("TmfSimpleTimestamp: null argument");
         } catch (final IllegalArgumentException e) {
         }
 
         try {
-            new TmfSimpleTimestamp(ts0a);
+            TmfSimpleTimestamp.copyFrom(ts0a);
             fail("TmfSimpleTimestamp: bad scale");
         } catch (final IllegalArgumentException e) {
         }
 
         try {
-            new TmfSimpleTimestamp(ts0b);
+            TmfSimpleTimestamp.copyFrom(ts0b);
             fail("TmfSimpleTimestamp: bad precision");
         } catch (final IllegalArgumentException e) {
         }
@@ -122,6 +122,14 @@ public class TmfSimpleTimestampTest extends TestCase {
 
     private static class MyTimestamp extends TmfSimpleTimestamp {
 
+        public MyTimestamp() {
+            super();
+        }
+
+        public MyTimestamp(long value) {
+            super(value);
+        }
+
         @Override
         public boolean equals(final Object other) {
             return super.equals(other);
@@ -129,7 +137,7 @@ public class TmfSimpleTimestampTest extends TestCase {
 
         @Override
         public MyTimestamp clone() {
-            return (MyTimestamp) super.clone();
+            return new MyTimestamp(getValue());
         }
     }
 
@@ -186,11 +194,11 @@ public class TmfSimpleTimestampTest extends TestCase {
      *
      */
     public void testEqualsSymmetry() {
-        final ITmfTimestamp ts0copy = new TmfSimpleTimestamp(ts0);
+        final ITmfTimestamp ts0copy = TmfSimpleTimestamp.copyFrom(ts0);
         assertTrue("equals", ts0.equals(ts0copy));
         assertTrue("equals", ts0copy.equals(ts0));
 
-        final ITmfTimestamp ts1copy = new TmfSimpleTimestamp(ts1);
+        final ITmfTimestamp ts1copy = TmfSimpleTimestamp.copyFrom(ts1);
         assertTrue("equals", ts1.equals(ts1copy));
         assertTrue("equals", ts1copy.equals(ts1));
     }
@@ -199,14 +207,14 @@ public class TmfSimpleTimestampTest extends TestCase {
      *
      */
     public void testEqualsTransivity() {
-        final ITmfTimestamp ts0copy1 = new TmfSimpleTimestamp(ts0);
-        final ITmfTimestamp ts0copy2 = new TmfSimpleTimestamp(ts0copy1);
+        final ITmfTimestamp ts0copy1 = TmfSimpleTimestamp.copyFrom(ts0);
+        final ITmfTimestamp ts0copy2 = TmfSimpleTimestamp.copyFrom(ts0copy1);
         assertTrue("equals", ts0.equals(ts0copy1));
         assertTrue("equals", ts0copy1.equals(ts0copy2));
         assertTrue("equals", ts0.equals(ts0copy2));
 
-        final ITmfTimestamp ts1copy1 = new TmfSimpleTimestamp(ts1);
-        final ITmfTimestamp ts1copy2 = new TmfSimpleTimestamp(ts1copy1);
+        final ITmfTimestamp ts1copy1 = TmfSimpleTimestamp.copyFrom(ts1);
+        final ITmfTimestamp ts1copy2 = TmfSimpleTimestamp.copyFrom(ts1copy1);
         assertTrue("equals", ts1.equals(ts1copy1));
         assertTrue("equals", ts1copy1.equals(ts1copy2));
         assertTrue("equals", ts1.equals(ts1copy2));
