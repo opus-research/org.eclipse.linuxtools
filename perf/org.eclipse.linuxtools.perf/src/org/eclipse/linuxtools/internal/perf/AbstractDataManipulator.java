@@ -13,10 +13,10 @@ package org.eclipse.linuxtools.internal.perf;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.Path;
@@ -62,9 +62,6 @@ public abstract class AbstractDataManipulator implements IPerfData {
 	}
 
 	public void performCommand(String[] cmd, int fd) {
-		BufferedReader buffData = null;
-		BufferedReader buffTmp = null;
-
 		try {
 
 			Process proc;
@@ -77,97 +74,89 @@ public abstract class AbstractDataManipulator implements IPerfData {
 			}
 			StringBuffer strBuffData = new StringBuffer();
 			StringBuffer strBuffTmp = new StringBuffer();
-			String line = ""; //$NON-NLS-1$
 
 			switch (fd) {
-			case 1:
-				buffData = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-				buffTmp = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-
-				// If the buffer is not being consumed, the other one may block.
-				while ((line = buffData.readLine()) != null) {
-					strBuffData.append(line);
-					strBuffData.append("\n"); //$NON-NLS-1$
-				}
-
-				while ((line = buffTmp.readLine()) != null) {
-					strBuffTmp.append(line);
-					strBuffTmp.append("\n"); //$NON-NLS-1$
-				}
-				break;
 			case 2:
-				buffData = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-				buffTmp = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-
-				// If the buffer is not being consumed, the other one may block.
-				while ((line = buffTmp.readLine()) != null) {
-					strBuffTmp.append(line);
-					strBuffTmp.append("\n"); //$NON-NLS-1$
-				}
-
-				while ((line = buffData.readLine()) != null) {
-					strBuffData.append(line);
-					strBuffData.append("\n"); //$NON-NLS-1$
-				}
+				strBuffTmp = readStream(proc.getInputStream());
+				strBuffData = readStream(proc.getErrorStream());
 				break;
+			case 1:
+				// fall through to default case
 			default:
-				buffData = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-				buffTmp = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-
-				// If the buffer is not being consumed, the other one may block.
-				while ((line = buffData.readLine()) != null) {
-					strBuffData.append(line);
-					strBuffData.append("\n"); //$NON-NLS-1$
-				}
-
-				while ((line = buffTmp.readLine()) != null) {
-					strBuffTmp.append(line);
-					strBuffTmp.append("\n"); //$NON-NLS-1$
-				}
+				strBuffData = readStream(proc.getInputStream());
+				strBuffTmp = readStream(proc.getErrorStream());
 			}
 
 			text = strBuffData.toString();
+			printConsole(proc, strBuffTmp.toString());
 
-			if (launch != null) {
-				String configName = launch.getLaunchConfiguration().getName();
-				// Console will try to read from stream so create afterwards
-				// Console will have the configuration name as a substring
-				DebugPlugin.newProcess(launch, proc, ""); //$NON-NLS-1$
-
-				ConsolePlugin plugin = ConsolePlugin.getDefault();
-				IConsoleManager conMan = plugin.getConsoleManager();
-				IConsole[] existing = conMan.getConsoles();
-				IOConsole binaryOutCons = null;
-				PrintStream print;
-
-				// Find the console
-				for (IConsole x : existing) {
-					if (x.getName().contains(configName) &&
-							x instanceof IOConsole) {
-						binaryOutCons = (IOConsole) x;
-					}
-				}
-
-				// Get the printstream via the outputstream.
-				// Get ouput stream
-				if (binaryOutCons != null) {
-					OutputStream outputTo = binaryOutCons.newOutputStream();
-					print = new PrintStream(outputTo);
-					print.println(strBuffTmp.toString());
-				}
-			}
 		} catch (IOException e) {
 			text = ""; //$NON-NLS-1$
+		}
+	}
+
+	/**
+	 * Read entire stream contents.
+	 *
+	 * @param stream InputStream to read from.
+	 * @return a StringBuffer containing the contents of the stream.
+	 * @throws IOException if I/O exception occurs.
+	 */
+	private StringBuffer readStream(InputStream stream) throws IOException {
+		BufferedReader buff = new BufferedReader(new InputStreamReader(stream));
+		StringBuffer strBuff = new StringBuffer();
+
+		try {
+			String line;
+			while ((line = buff.readLine()) != null) {
+				strBuff.append(line);
+				strBuff.append("\n"); //$NON-NLS-1$
+			}
 		} finally {
 			try {
-				if (buffData != null) {
-					buffData.close();
-				}
-				if (buffTmp != null) {
-					buffTmp.close();
+				if (buff != null) {
+					buff.close();
 				}
 			} catch (IOException e) {
-				// continue
+				/* continue */
+			}
+		}
+		return strBuff;
+	}
+
+	/**
+	 * Print string to process console.
+	 *
+	 * @param p Process to retrieve console from.
+	 * @param s String to be printed.
+	 */
+	private void printConsole(Process p, String s) {
+
+		if (launch != null) {
+			String configName = launch.getLaunchConfiguration().getName();
+			// Console will try to read from stream so create afterwards
+			// Console will have the configuration name as a substring
+			DebugPlugin.newProcess(launch, p, ""); //$NON-NLS-1$
+
+			ConsolePlugin plugin = ConsolePlugin.getDefault();
+			IConsoleManager conMan = plugin.getConsoleManager();
+			IConsole[] existing = conMan.getConsoles();
+			IOConsole binaryOutCons = null;
+			PrintStream print;
+
+			// Find the console
+			for (IConsole x : existing) {
+				if (x.getName().contains(configName) && x instanceof IOConsole) {
+					binaryOutCons = (IOConsole) x;
+				}
+			}
+
+			// Get the printstream via the outputstream.
+			// Get ouput stream
+			if (binaryOutCons != null) {
+				OutputStream outputTo = binaryOutCons.newOutputStream();
+				print = new PrintStream(outputTo);
+				print.println(s);
 			}
 		}
 	}
