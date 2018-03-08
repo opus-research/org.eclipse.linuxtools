@@ -17,18 +17,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-
 /**
  * An entry for use in the time graph views
  *
  * @since 2.1
  */
 public class TimeGraphEntry implements ITimeGraphEntry {
-
-    /** Id field that may be used by views, so they don't have to extend this class if they don't need to */
-    private final int fEntryId;
-    private final ITmfTrace fTrace;
 
     /** Entry's parent */
     private TimeGraphEntry fParent = null;
@@ -40,27 +34,20 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     private String fName;
     private long fStartTime = -1;
     private long fEndTime = -1;
-    private EventList fEventList = new EventList(new ArrayList<ITimeEvent>(), Long.MIN_VALUE, Long.MAX_VALUE);
-    private EventList fZoomedEventList = null;
+    private List<ITimeEvent> fEventList = null;
+    private List<ITimeEvent> fZoomedEventList = null;
 
     /**
      * Constructor
      *
-     * @param entryid
-     *            Some id attribute for the entry whose state is shown on this
-     *            row
-     * @param trace
-     *            The trace on which we are working
      * @param name
-     *            The exec_name of this entry
+     *            The name of this entry
      * @param startTime
-     *            The start time of this process's lifetime
+     *            The start time of this entry
      * @param endTime
-     *            The end time of this process
+     *            The end time of this entry
      */
-    public TimeGraphEntry(int entryid, ITmfTrace trace, String name, long startTime, long endTime) {
-        fEntryId = entryid;
-        fTrace = trace;
+    public TimeGraphEntry(String name, long startTime, long endTime) {
         fName = name;
         fStartTime = startTime;
         fEndTime = endTime;
@@ -141,32 +128,27 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     }
 
     /**
-     * Get the id of this entry
-     *
-     * @return The entry id
-     */
-    public int getEntryId() {
-        return fEntryId;
-    }
-
-    /**
-     * Get the trace object
-     *
-     * @return The trace
-     */
-    public ITmfTrace getTrace() {
-        return fTrace;
-    }
-
-    /**
-     * Add an event to this process's timeline
+     * Add an event to this entry's event list. If necessary, update the start
+     * and end time of the entry.
      *
      * @param event
      *            The time event
-     * @deprecated As of 2.1, don't use
      */
-    @Deprecated
     public void addEvent(ITimeEvent event) {
+        if (fEventList == null) {
+            fEventList = new ArrayList<ITimeEvent>();
+        }
+        long start = event.getTime();
+        long end = start + event.getDuration();
+        synchronized (fEventList) {
+            fEventList.add(event);
+            if (fStartTime == -1 || start < fStartTime) {
+                fStartTime = start;
+            }
+            if (fEndTime == -1 || end > fEndTime) {
+                fEndTime = end;
+            }
+        }
     }
 
     /**
@@ -176,7 +158,7 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      *            The list of time events
      */
     public void setEventList(List<ITimeEvent> eventList) {
-        fEventList = new EventList(eventList, Long.MAX_VALUE, Long.MIN_VALUE);
+        fEventList = eventList;
     }
 
     /**
@@ -186,40 +168,11 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      *            The list of time events
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
-        fZoomedEventList = new EventList(eventList, Long.MAX_VALUE, Long.MIN_VALUE);
+        fZoomedEventList = eventList;
     }
 
     /**
-     * Set the general event list of this entry.
-     *
-     * @param eventList
-     *            The list of time events
-     * @param startTime
-     *            The start time
-     * @param endTime
-     *            The end time
-     */
-    public void setEventList(List<ITimeEvent> eventList, long startTime, long endTime) {
-        fEventList = new EventList(eventList, startTime, endTime);
-    }
-
-    /**
-     * Set the zoomed event list of this entry.
-     *
-     * @param eventList
-     *            The list of time events
-     * @param startTime
-     *            The start time
-     * @param endTime
-     *            The end time
-     */
-    public void setZoomedEventList(List<ITimeEvent> eventList, long startTime, long endTime) {
-        fZoomedEventList = new EventList(eventList, startTime, endTime);
-    }
-
-    /**
-     * Add a child entry to this one (to show relationships between processes as
-     * a tree)
+     * Add a child entry to this one
      *
      * @param child
      *            The child entry

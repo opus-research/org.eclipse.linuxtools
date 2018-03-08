@@ -70,6 +70,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphViewer;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.NullTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphSelection;
@@ -441,7 +442,7 @@ public class CallStackView extends TmfView {
                     } else {
                         List<ITimeEvent> zoomedEventList = getEventList(entry, fZoomStartTime, fZoomEndTime, resolution, fMonitor);
                         if (zoomedEventList != null) {
-                            entry.setZoomedEventList(zoomedEventList, fZoomStartTime, fZoomEndTime);
+                            entry.setZoomedEventList(zoomedEventList);
                         }
                     }
                     redraw();
@@ -863,6 +864,7 @@ public class CallStackView extends TmfView {
                     if (lastEndTime != time && lastEndTime != -1 && lastIsNull) {
                         eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime));
                     }
+                    eventList.add(new NullTimeEvent(entry, time, duration));
                     lastIsNull = true;
                 }
                 lastEndTime = time + duration;
