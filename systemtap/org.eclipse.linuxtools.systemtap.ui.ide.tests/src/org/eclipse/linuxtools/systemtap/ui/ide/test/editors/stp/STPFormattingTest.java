@@ -89,7 +89,6 @@ public class STPFormattingTest extends SystemtapTest{
 		tester.setAutoEditStrategy(IDocument.DEFAULT_CONTENT_TYPE, s);
 		tester.setAutoEditStrategy(STPPartitionScanner.STP_COMMENT, s);
 		tester.setAutoEditStrategy(STPPartitionScanner.STP_CONDITIONAL, s);
-		tester.setAutoEditStrategy(STPPartitionScanner.STP_STRING, s);
 		return tester;
 	}
 	
