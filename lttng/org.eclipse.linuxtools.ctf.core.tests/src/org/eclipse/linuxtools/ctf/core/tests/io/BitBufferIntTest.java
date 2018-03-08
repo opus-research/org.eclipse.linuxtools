@@ -219,7 +219,118 @@ public class BitBufferIntTest {
     public void testGetLong_pos8() {
         fixture.position(8);
         long result = fixture.getLong();
-        assertEquals(0x0102030405060708L, result);
+        assertEquals(result, 0x0102030405060708L);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong_pos0LE() {
+        fixture.position(0);
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        long result = fixture.getLong();
+        assertEquals(result, 0x0706050403020100L);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong_pos7LE() {
+        fixture.position(7);
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        long result = fixture.getLong();
+        assertEquals(result, 0x100e0c0a08060402L);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong_pos8LE() {
+        fixture.position(8);
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        long result = fixture.getLong();
+        assertEquals(result, 0x0807060504030201L);
+    }
+
+    /**
+     * Run the long getLong(int) method test.
+     */
+    @Test
+    public void testGetLong35_pos0BE() {
+        fixture.position(0);
+        long result = fixture.getLong(35, false);
+
+        assertEquals(result, 0x8101800000000L);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong35_pos0LE() {
+        fixture.position(0);
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        long result = fixture.getLong(35, false);
+
+        assertEquals(result, 0x0403020100L);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong35_pos7LE() {
+        fixture.position(7);
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        long result = fixture.getLong(35, false);
+        assertEquals(result, 0x0208060402L);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong35_pos8LE() {
+        fixture.position(8);
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        long result = fixture.getLong(35, false);
+        assertEquals(result, 0x0504030201L);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong35s_pos0LE() {
+        fixture.position(0);
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        long result = fixture.getLong(35, true);
+        assertEquals(result, 0xfffffffc03020100L);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong35s_pos7LE() {
+        fixture.position(7);
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        long result = fixture.getLong(35, true);
+        assertEquals(result, 0x0208060402L);
+    }
+
+    /**
+     * Run the int getLong(int) method test.
+     */
+    @Test
+    public void testGetLong35s_pos8LE() {
+        fixture.position(8);
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        long result = fixture.getLong(35, true);
+        assertEquals(result, 0xfffffffd04030201L);
     }
 
     /**

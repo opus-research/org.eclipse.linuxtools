@@ -110,21 +110,59 @@ public final class BitBuffer {
      * @return The long value read from the buffer
      */
     public long getLong() {
-        /*
-         * TODO: add a check if the alignment is 0, use bytebuffer.getLong()... maybe it's faster?
-         */
-        /* safe fall-back for non-aligned longs */
-        long a = getInt();
-        long b = getInt();
+        return getLong(BIT_LONG, true);// whether it's signed or not does not
+                                       // matter for 64 bits
+    }
 
+    /**
+     * Relative <i>get</i> method for reading long of <i>length</i> bits.
+     *
+     * Reads <i>length</i> bits starting at the current position. The result is
+     * signed extended if <i>signed</i> is true. The current position is
+     * increased of <i>length</i> bits.
+     *
+     * @param length
+     *            The length in bits of this integer
+     * @param signed
+     *            The sign extended flag
+     * @return The long value read from the buffer
+     */
+
+    public long getLong(int length, boolean signed) {
+        /*
+         * TODO: add a check if the alignment is 0, use bytebuffer.getLong()...
+         * maybe it's faster?
+         */
+        if (length > BIT_LONG) {
+            throw new IllegalArgumentException("Cannot read a long longer than 64 bits. Rquested: " + length); //$NON-NLS-1$
+        }
+        if (length == BIT_LONG) {
+            /* safe fall-back for non-aligned longs */
+            long a = getInt();
+            long b = getInt();
+
+            /* Cast the signed-extended int into a unsigned int. */
+            a &= 0xFFFFFFFFL;
+            b &= 0xFFFFFFFFL;
+
+            if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
+                return (a << 32) | b;
+            }
+            return (b << 32) | a;
+        }
+        long a = getInt() & 0x00000000FFFFFFFFL;
+        long b = getInt(length - BIT_INT, false);
+        long retVal;
         /* Cast the signed-extended int into a unsigned int. */
         a &= 0xFFFFFFFFL;
-        b &= 0xFFFFFFFFL;
+        b &= ((1 << (length - BIT_INT)) - 1);
 
-        if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
-            return (a << 32) | b;
+        retVal = (this.byteOrder == ByteOrder.BIG_ENDIAN) ? ((a << length) | b) : ((b << BIT_INT) | a);
+        /* sign extend */
+        if (signed && ((retVal & (1L << (length - 1))) != 0L)) {
+            retVal |= ~((1L << length) - 1L);
         }
-        return (b << 32) | a;
+        return retVal;
     }
 
     /**
@@ -141,7 +179,6 @@ public final class BitBuffer {
      * @return The int value read from the buffer
      */
     public int getInt(int length, boolean signed) {
-
 
         /* Nothing to read. */
         if (length == 0) {
