@@ -15,6 +15,7 @@
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -163,30 +164,37 @@ public class TimeGraphScale extends TimeGraphBaseControl implements
     private static TimeDraw TIMEDRAW_ABS_DAY = new TimeDrawAbsDay();
     private static TimeDraw TIMEDRAW_ABS_MONTH = new TimeDrawAbsMonth();
     private static TimeDraw TIMEDRAW_ABS_YEAR = new TimeDrawAbsYear();
+    private static TimeDraw TIMEDRAW_CYCLE = new TimeDrawCycle();
 
     TimeDraw getTimeDraw(long timeDelta) {
         TimeDraw timeDraw;
-        if (_timeProvider != null && _timeProvider.isCalendarFormat()) {
-            if (timeDelta >= YEAR_IN_NS) {
-                timeDraw = TIMEDRAW_ABS_YEAR;
-            } else if (timeDelta >= MONTH_IN_NS) {
-                timeDraw = TIMEDRAW_ABS_MONTH;
-            } else if (timeDelta >= DAY_IN_NS) {
-                timeDraw = TIMEDRAW_ABS_DAY;
-            } else if (timeDelta >= HOUR_IN_NS) {
-                timeDraw = TIMEDRAW_ABS_HRS;
-            } else if (timeDelta >= MIN_IN_NS) {
-                timeDraw = TIMEDRAW_ABS_MIN;
-            } else if (timeDelta >= SEC_IN_NS) {
-                timeDraw = TIMEDRAW_ABS_SEC;
-            } else if (timeDelta >= 1000000) {
-                timeDraw = TIMEDRAW_ABS_MILLISEC;
-            } else if (timeDelta >= 1000) {
-                timeDraw = TIMEDRAW_ABS_MICROSEC;
-            } else {
-                timeDraw = TIMEDRAW_ABS_NANOSEC;
+        if (_timeProvider != null) {
+            if (_timeProvider.isCalendarFormat()) {
+                if (timeDelta >= YEAR_IN_NS) {
+                    timeDraw = TIMEDRAW_ABS_YEAR;
+                } else if (timeDelta >= MONTH_IN_NS) {
+                    timeDraw = TIMEDRAW_ABS_MONTH;
+                } else if (timeDelta >= DAY_IN_NS) {
+                    timeDraw = TIMEDRAW_ABS_DAY;
+                } else if (timeDelta >= HOUR_IN_NS) {
+                    timeDraw = TIMEDRAW_ABS_HRS;
+                } else if (timeDelta >= MIN_IN_NS) {
+                    timeDraw = TIMEDRAW_ABS_MIN;
+                } else if (timeDelta >= SEC_IN_NS) {
+                    timeDraw = TIMEDRAW_ABS_SEC;
+                } else if (timeDelta >= 1000000) {
+                    timeDraw = TIMEDRAW_ABS_MILLISEC;
+                } else if (timeDelta >= 1000) {
+                    timeDraw = TIMEDRAW_ABS_MICROSEC;
+                } else {
+                    timeDraw = TIMEDRAW_ABS_NANOSEC;
+                }
+                return timeDraw;
+            } else if (_timeProvider.isCycleFormat()) {
+                timeDraw = TIMEDRAW_CYCLE;
+                return timeDraw;
             }
-            return timeDraw;
+
         }
         if (timeDelta >= 1000000000) {
             timeDraw = TIMEDRAW_SEC;
@@ -836,5 +844,30 @@ class TimeDrawAbsNanoSec extends TimeDraw {
     @Override
     public String hint() {
         return _hint;
+    }
+}
+
+
+class TimeDrawCycle extends TimeDraw {
+
+    @Override
+    public void draw(GC gc, long time, Rectangle rect) {
+        String stime = NumberFormat.getInstance().format(time);
+        Utils.drawText(gc, stime, rect, true);
+    }
+
+    @Override
+    public void drawAbsHeader(GC gc, long time, Rectangle rect) {
+        String header = NumberFormat.getInstance().format(time);
+        int headerwidth = gc.stringExtent(header).x + 4;
+        if (headerwidth <= rect.width) {
+            rect.x += (rect.width - headerwidth);
+            Utils.drawText(gc, header, rect, true);
+        }
+    }
+
+    @Override
+    public String hint() {
+        return "cycle"; //$NON-NLS-1$
     }
 }

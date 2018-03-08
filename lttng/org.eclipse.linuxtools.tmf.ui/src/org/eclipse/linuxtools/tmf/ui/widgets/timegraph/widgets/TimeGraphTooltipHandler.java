@@ -1,3 +1,4 @@
+
 /*****************************************************************************
  * Copyright (c) 2007 Intel Corporation, 2009, 2012 Ericsson.
  * All rights reserved. This program and the accompanying materials
@@ -14,6 +15,7 @@
  *****************************************************************************/
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
 
+import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -213,7 +215,21 @@ public class TimeGraphTooltipHandler {
                     }
 
                     Resolution res = Resolution.NANOSEC;
-                    if (_timeDataProvider.isCalendarFormat()) {
+                    if (_timeDataProvider.isCycleFormat()) {
+                        if (eventDuration > 0) {
+                            addItem(Messages.TmfTimeTipHandler_TRACE_START_TIME, eventStartTime > -1 ?
+                                    NumberFormat.getInstance().format(eventStartTime)
+                                    : "?"); //$NON-NLS-1$
+
+                            addItem(Messages.TmfTimeTipHandler_TRACE_STOP_TIME, eventEndTime > -1 ?
+                                    NumberFormat.getInstance().format(eventEndTime)
+                                    : "?"); //$NON-NLS-1$
+                        } else {
+                            addItem(Messages.TmfTimeTipHandler_TRACE_EVENT_TIME, eventStartTime > -1 ?
+                                    NumberFormat.getInstance().format(eventStartTime)
+                                    : "?"); //$NON-NLS-1$
+                        }
+                    } else if (_timeDataProvider.isCalendarFormat()) {
                         addItem(Messages.TmfTimeTipHandler_TRACE_DATE, eventStartTime > -1 ?
                                 Utils.formatDate(eventStartTime)
                                 : "?"); //$NON-NLS-1$
@@ -247,10 +263,17 @@ public class TimeGraphTooltipHandler {
                     }
 
                     if (eventDuration > 0) {
-                        // Duration in relative format in any case
-                        addItem(Messages.TmfTimeTipHandler_DURATION, eventDuration > -1 ?
-                                Utils.formatTime(eventDuration, TimeFormat.RELATIVE, res)
-                                : "?"); //$NON-NLS-1$
+                        if (_timeDataProvider.isCycleFormat()) {
+                            // Duration in relative format in any case
+                            addItem(Messages.TmfTimeTipHandler_DURATION, eventDuration > -1 ?
+                                    NumberFormat.getInstance().format(eventDuration)
+                                    : "?"); //$NON-NLS-1$
+                        } else {
+                            // Duration in relative format in any case
+                            addItem(Messages.TmfTimeTipHandler_DURATION, eventDuration > -1 ?
+                                    Utils.formatTime(eventDuration, TimeFormat.RELATIVE, res)
+                                    : "?"); //$NON-NLS-1$
+                        }
                     }
                 }
             }
@@ -295,5 +318,6 @@ public class TimeGraphTooltipHandler {
         }
         shell.setBounds(shellBounds);
     }
+
 
 }
