@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
- *   Geneviève Bastien - Experiment instantiated with experiment type
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.editors;
@@ -54,7 +53,6 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
@@ -126,9 +124,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                 }
                 if (traceTypeId.equals(TmfExperiment.class.getCanonicalName())) {
                     // Special case: experiment bookmark resource
-                    final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
-                    ncp.getChildren(fFile.getProject()); // force the model to be populated
-                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject());
+                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject(), true);
                     if (project == null) {
                         throw new PartInitException(Messages.TmfOpenTraceHelper_NoTraceType);
                     }
@@ -139,15 +135,13 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                             setPartName(experimentElement.getName());
                             super.setSite(site);
                             super.setInput(fileEditorInput);
-                            TmfOpenTraceHelper.reopenTraceFromElement(experimentElement, this);
+                            TmfOpenTraceHelper.reopenExperimentFromElement(experimentElement, this);
                             return;
                         }
                     }
                 } else if (traceTypeId.equals(TmfTrace.class.getCanonicalName())) {
                     // Special case: trace bookmark resource
-                    final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
-                    ncp.getChildren(fFile.getProject()); // force the model to be populated
-                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject());
+                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject(), true);
                     for (final ITmfProjectModelElement projectElement : project.getTracesFolder().getChildren()) {
                         final String traceName = fFile.getParent().getName();
                         if (projectElement.getName().equals(traceName)) {
@@ -160,9 +154,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                         }
                     }
                 } else {
-                    final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
-                    ncp.getChildren(fFile.getProject()); // force the model to be populated
-                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject());
+                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject(), true);
                     for (final ITmfProjectModelElement projectElement : project.getTracesFolder().getChildren()) {
                         if (projectElement.getResource().equals(fFile)) {
                             final TmfTraceElement traceElement = (TmfTraceElement) projectElement;
@@ -306,6 +298,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     }
 
     private TmfEventsTable getEventsTable(final Composite parent, final int cacheSize) {
+        if (fTrace instanceof TmfExperiment) {
+            return getExperimentEventsTable((TmfExperiment) fTrace, parent, cacheSize);
+        }
         TmfEventsTable eventsTable = null;
         try {
             if (fTrace.getResource() == null) {
@@ -321,13 +316,8 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
             if (traceType.startsWith(CustomXmlTrace.class.getCanonicalName())) {
                 return new CustomEventsTable(((CustomXmlTrace) fTrace).getDefinition(), parent, cacheSize);
             }
-            String type = TmfTraceType.TYPE_ELEM;
-            if (fTrace instanceof TmfExperiment) {
-                type = TmfTraceType.EXPERIMENT_ELEM;
-            }
-            for (final IConfigurationElement ce : TmfTraceType.getTypeOrExperimentElements(type)) {
-                if (ce.getName().equals(type) &&
-                        ce.getAttribute(TmfTraceType.ID_ATTR).equals(traceType)) {
+            for (final IConfigurationElement ce : TmfTraceType.getTypeElements()) {
+                if (ce.getAttribute(TmfTraceType.ID_ATTR).equals(traceType)) {
                     final IConfigurationElement[] eventsTableTypeCE = ce.getChildren(TmfTraceType.EVENTS_TABLE_TYPE_ELEM);
                     if (eventsTableTypeCE.length != 1) {
                         break;
@@ -344,9 +334,6 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                     eventsTable = (TmfEventsTable) constructor.newInstance(args);
                     break;
                 }
-            }
-            if (fTrace instanceof TmfExperiment && (eventsTable == null)) {
-                eventsTable = getExperimentEventsTable((TmfExperiment) fTrace, parent, cacheSize);
             }
         } catch (final InvalidRegistryObjectException e) {
             Activator.getDefault().logError("Error getting TmfEventsTable", e); //$NON-NLS-1$

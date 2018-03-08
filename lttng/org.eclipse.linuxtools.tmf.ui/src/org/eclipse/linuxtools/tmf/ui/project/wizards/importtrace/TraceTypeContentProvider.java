@@ -30,8 +30,8 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
  */
 public class TraceTypeContentProvider implements ITreeContentProvider {
 
-    private final List<String> fTraceCategory = new ArrayList<String>();
-    private final Map<String, List<TraceTypeHelper>> fTraceType = new HashMap<String, List<TraceTypeHelper>>();
+    private final List<String> fTraceCategory = new ArrayList<>();
+    private final Map<String, List<TraceTypeHelper>> fTraceType = new HashMap<>();
 
     /**
      * Default Constructor
@@ -40,13 +40,14 @@ public class TraceTypeContentProvider implements ITreeContentProvider {
         fTraceType.clear();
         fTraceCategory.clear();
 
-        for (String category : TmfTraceType.getInstance().getTraceCategories()) {
-            List<TraceTypeHelper> value = TmfTraceType.getInstance().getTraceTypes(category);
-            if (!value.isEmpty()) {
-                fTraceCategory.add(category);
-                fTraceType.put(category, value);
-            }
+        for (String elem : TmfTraceType.getInstance().getTraceCategories()) {
+            fTraceCategory.add(elem);
         }
+        for (String key : fTraceCategory) {
+            List<TraceTypeHelper> value = TmfTraceType.getInstance().getTraceTypes(key);
+            fTraceType.put(key, value);
+        }
+
     }
 
     @Override

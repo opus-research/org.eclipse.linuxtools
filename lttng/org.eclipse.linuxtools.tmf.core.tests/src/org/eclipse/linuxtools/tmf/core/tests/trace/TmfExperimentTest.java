@@ -142,35 +142,6 @@ public class TmfExperimentTest {
     }
 
     // ------------------------------------------------------------------------
-    // Experiment setup
-    // ------------------------------------------------------------------------
-
-    @Test
-    public void testExperimentInitialization() {
-        /*
-         * Calling default constructor, then init should be equivalent to
-         * calling the full constructor
-         */
-
-        TmfExperimentStub experiment = new TmfExperimentStub();
-        experiment.initExperiment(ITmfEvent.class, EXPERIMENT, fTestTraces, 5000, null);
-        experiment.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, true);
-
-        assertEquals("GetId", EXPERIMENT, fExperiment.getName());
-        assertEquals("GetNbEvents", NB_EVENTS, fExperiment.getNbEvents());
-
-        final long nbExperimentEvents = fExperiment.getNbEvents();
-        assertEquals("GetNbEvents", NB_EVENTS, nbExperimentEvents);
-
-        final long nbTraceEvents = fExperiment.getTraces()[0].getNbEvents();
-        assertEquals("GetNbEvents", NB_EVENTS, nbTraceEvents);
-
-        final TmfTimeRange timeRange = fExperiment.getTimeRange();
-        assertEquals("getStartTime", 1, timeRange.getStartTime().getValue());
-        assertEquals("getEndTime", NB_EVENTS, timeRange.getEndTime().getValue());
-    }
-
-    // ------------------------------------------------------------------------
     // getTimestamp
     // ------------------------------------------------------------------------
 
@@ -855,7 +826,7 @@ public class TmfExperimentTest {
     @Test
     public void testProcessRequestForNbEvents() throws InterruptedException {
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -883,7 +854,7 @@ public class TmfExperimentTest {
     @Test
     public void testProcessRequestForAllEvents() throws InterruptedException {
         final int nbEvents  = ITmfEventRequest.ALL_DATA;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
         final long nbExpectedEvents = NB_EVENTS;
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
@@ -917,7 +888,7 @@ public class TmfExperimentTest {
     public void testCancel() throws InterruptedException {
         final int nbEvents = NB_EVENTS;
         final int limit = BLOCK_SIZE;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
