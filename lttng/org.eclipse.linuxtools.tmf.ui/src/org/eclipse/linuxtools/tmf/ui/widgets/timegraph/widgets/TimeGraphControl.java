@@ -2418,10 +2418,8 @@ public class TimeGraphControl extends TimeGraphBaseControl
     @Override
     public void colorSettingsChanged(StateItem[] stateItems) {
         /* Destroy previous colors from the resource manager */
-        if (fEventColorMap != null) {
-            for (Color color : fEventColorMap) {
-                fResourceManager.destroyColor(color.getRGB());
-            }
+        for (Color color : fEventColorMap) {
+            fResourceManager.destroyColor(color.getRGB());
         }
         if (stateItems != null) {
             fEventColorMap = new Color[stateItems.length];
