@@ -81,7 +81,7 @@ public final class TmfTraceManager {
      *
      * @return the current time stamp
      */
-    public ITmfTimestamp getCurrentTime() {
+    public synchronized ITmfTimestamp getCurrentTime() {
         return getCurrentTraceContext().getTimestamp();
     }
 
@@ -90,7 +90,7 @@ public final class TmfTraceManager {
      *
      * @return the current time range
      */
-    public TmfTimeRange getCurrentRange() {
+    public synchronized TmfTimeRange getCurrentRange() {
         return getCurrentTraceContext().getTimerange();
     }
 
@@ -99,7 +99,7 @@ public final class TmfTraceManager {
      *
      * @return The active trace
      */
-    public ITmfTrace getActiveTrace() {
+    public synchronized ITmfTrace getActiveTrace() {
         return fCurrentTrace;
     }
 
@@ -110,7 +110,7 @@ public final class TmfTraceManager {
      *
      * @return The active trace set
      */
-    public ITmfTrace[] getActiveTraceSet() {
+    public synchronized ITmfTrace[] getActiveTraceSet() {
         final ITmfTrace trace = fCurrentTrace;
         if (trace instanceof TmfExperiment) {
             final TmfExperiment exp = (TmfExperiment) trace;
@@ -268,7 +268,7 @@ public final class TmfTraceManager {
      *
      * @param trace
      *            The trace to check for
-     * @return The valid time span
+     * @return The valid time span, or 'null' if the trace is not valid
      */
     private TmfTimeRange getValidTimeRange(ITmfTrace trace) {
         if (!fTraces.containsKey(trace)) {
@@ -280,6 +280,10 @@ public final class TmfTraceManager {
             return trace.getTimeRange();
         }
         final ITmfTrace[] traces = ((TmfExperiment) trace).getTraces();
+        if (traces.length == 0) {
+            /* We are being trolled */
+            return null;
+        }
         if (traces.length == 1) {
             /* Trace is an experiment with only 1 trace */
             return traces[0].getTimeRange();
@@ -292,10 +296,10 @@ public final class TmfTraceManager {
         ITmfTimestamp end = traces[0].getEndTime();
         for (int i = 1; i < traces.length; i++) {
             ITmfTrace curTrace = traces[i];
-            if (curTrace.getStartTime().compareTo(start) < 1) {
+            if (curTrace.getStartTime().compareTo(start) < 0) {
                 start = curTrace.getStartTime();
             }
-            if (curTrace.getEndTime().compareTo(end) > 1) {
+            if (curTrace.getEndTime().compareTo(end) > 0) {
                 end = curTrace.getEndTime();
             }
         }

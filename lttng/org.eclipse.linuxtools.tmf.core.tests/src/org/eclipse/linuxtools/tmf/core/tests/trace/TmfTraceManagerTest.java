@@ -36,7 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Test sweet for the {@link TmfTraceManager}.
+ * Test suite for the {@link TmfTraceManager}.
  *
  * @author Alexandre Montplaisir
  */
@@ -45,8 +45,8 @@ public class TmfTraceManagerTest {
     private static final int SCALE = ITmfTimestamp.NANOSECOND_SCALE;
 
     private static ITmfTrace trace1;
-//  private static final long t1start = 1331668247314038062L;
-//  private static final long t1end =   1331668259054285979L;
+    private static final long t1start = 1331668247314038062L;
+    private static final long t1end =   1331668259054285979L;
 
     private static ITmfTrace trace2;
     private static final long t2start = 1332170682440133097L;
@@ -109,7 +109,7 @@ public class TmfTraceManagerTest {
         TmfSignalManager.dispatchSignal(new TmfTimeSynchSignal(this, ts));
     }
 
-    private void selectTimerange(TmfTimeRange tr) {
+    private void selectTimeRange(TmfTimeRange tr) {
         TmfSignalManager.dispatchSignal(new TmfRangeSynchSignal(this, tr, null));
     }
 
@@ -196,7 +196,7 @@ public class TmfTraceManagerTest {
         TmfTimeRange range = new TmfTimeRange(
                 new TmfTimestamp(t2start + ONE_SECOND, SCALE),
                 new TmfTimestamp(t2end - ONE_SECOND, SCALE));
-        selectTimerange(range);
+        selectTimeRange(range);
 
         TmfTimeRange curRange = tm.getCurrentRange();
         assertEquals(range.getStartTime(), curRange.getStartTime());
@@ -213,7 +213,7 @@ public class TmfTraceManagerTest {
         TmfTimeRange range = new TmfTimeRange(
                 new TmfTimestamp(t2start - ONE_SECOND, SCALE), // minus here
                 new TmfTimestamp(t2end - ONE_SECOND, SCALE));
-        selectTimerange(range);
+        selectTimeRange(range);
 
         TmfTimeRange curRange = tm.getCurrentRange();
         assertEquals(t2start, curRange.getStartTime().getValue());
@@ -230,7 +230,7 @@ public class TmfTraceManagerTest {
         TmfTimeRange range = new TmfTimeRange(
                 new TmfTimestamp(t2start + ONE_SECOND, SCALE),
                 new TmfTimestamp(t2end + ONE_SECOND, SCALE)); // plus here
-        selectTimerange(range);
+        selectTimeRange(range);
 
         TmfTimeRange curRange = tm.getCurrentRange();
         assertEquals(range.getStartTime(), curRange.getStartTime());
@@ -248,7 +248,7 @@ public class TmfTraceManagerTest {
         TmfTimeRange range = new TmfTimeRange(
                 new TmfTimestamp(t2start - ONE_SECOND, SCALE), // minus here
                 new TmfTimestamp(t2end + ONE_SECOND, SCALE)); // plus here
-        selectTimerange(range);
+        selectTimeRange(range);
 
         TmfTimeRange curRange = tm.getCurrentRange();
         assertEquals(t2start, curRange.getStartTime().getValue());
@@ -286,6 +286,45 @@ public class TmfTraceManagerTest {
 
         assertEquals(traceInitialRange, actualRange);
         assertEquals(expInitialRange, actualRange);
+    }
+
+    /**
+     * Test the range clamping when both the start and end times of the signal's
+     * range are outside of the trace's range. The range should clamp to the
+     * experiment's range.
+     */
+    @Test
+    public void testExperimentRangeClampingBoth() {
+        TmfExperiment exp = createExperiment(trace1, trace2);
+        openTrace(exp);
+
+        final TmfTimeRange range = new TmfTimeRange(
+                new TmfTimestamp(t1start - ONE_SECOND, SCALE),
+                new TmfTimestamp(t2end + ONE_SECOND, SCALE));
+        selectTimeRange(range);
+
+        TmfTimeRange actualRange = tm.getCurrentRange();
+        assertEquals(t1start, actualRange.getStartTime().getValue());
+        assertEquals(t2end, actualRange.getEndTime().getValue());
+    }
+
+    /**
+     * Test selecting a range in-between two disjoint traces in an experiment.
+     * The range should still get correctly selected, even if no trace has any
+     * events in that range.
+     */
+    @Test
+    public void testExperimentRangeInBetween() {
+        TmfExperiment exp = createExperiment(trace1, trace2);
+        openTrace(exp);
+
+        final TmfTimeRange range = new TmfTimeRange(
+                new TmfTimestamp(t1end + ONE_SECOND, SCALE),
+                new TmfTimestamp(t2start - ONE_SECOND, SCALE));
+        selectTimeRange(range);
+
+        TmfTimeRange actualRange = tm.getCurrentRange();
+        assertEquals(range, actualRange);
     }
 
     // ------------------------------------------------------------------------
