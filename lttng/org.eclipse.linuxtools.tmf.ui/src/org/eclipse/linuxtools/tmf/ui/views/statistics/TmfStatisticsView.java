@@ -149,7 +149,7 @@ public class TmfStatisticsView extends TmfView {
                 fStatsViewers.layout();
 
                 if (fRequestData) {
-                    TmfExperimentRangeUpdatedSignal updateSignal = new TmfExperimentRangeUpdatedSignal(this, fExperiment, fExperiment.getTimeRange());
+                    TmfExperimentRangeUpdatedSignal updateSignal = new TmfExperimentRangeUpdatedSignal(null, fExperiment, fExperiment.getTimeRange());
                     TmfStatisticsViewer statsViewer;
                     // Synchronizes the request to make them coalesced
                     fExperiment.startSynch(new TmfStartSynchSignal(0));
@@ -163,22 +163,6 @@ public class TmfStatisticsView extends TmfView {
                     }
                     fExperiment.endSynch(new TmfEndSynchSignal(0));
                     fRequestData = false;
-                }
-            } else {
-                /*
-                 * If the same experiment is reselected, sends a notification to
-                 * the viewers to make sure they reload correctly their partial
-                 * event count.
-                 */
-                TmfStatisticsViewer statsViewer;
-                for (ITmfViewer viewer : fStatsViewers.getViewers()) {
-                    if (!(viewer instanceof TmfStatisticsViewer)) {
-                        Activator.getDefault().logError("Error - cannot cast viewer to a statistics viewer"); //$NON-NLS-1$
-                        continue;
-                    }
-                    statsViewer = (TmfStatisticsViewer) viewer;
-                    // Will update the partial event count if needed.
-                    statsViewer.sendPartialRequestOnNextUpdate();
                 }
             }
         }
@@ -228,12 +212,10 @@ public class TmfStatisticsView extends TmfView {
         Composite folder = fStatsViewers.getParentFolder();
 
         // Instantiation of the global viewer
-        TmfStatisticsViewer globalViewer = getGlobalViewer();
+        TmfStatisticsViewer globalViewer = new TmfStatisticsViewer();
         if (fExperiment != null) {
-            if (globalViewer != null) {
-                // Shows the name of the experiment in the global tab
-                globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
-            }
+            // Shows the name of the experiment in the global tab
+            globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName + " - " + fExperiment.getName(), fExperiment); //$NON-NLS-1$
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
 
             String traceName;
@@ -254,10 +236,8 @@ public class TmfStatisticsView extends TmfView {
                 }
             }
         } else {
-            if (globalViewer != null) {
-                // There is no experiment selected. Shows an empty global tab
-                globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fExperiment);
-            }
+            // There is no experiment selected. Shows an empty global tab
+            globalViewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fExperiment);
             fStatsViewers.addTab(globalViewer, Messages.TmfStatisticsView_GlobalTabName, defaultStyle);
         }
         // Makes the global viewer visible
@@ -280,13 +260,5 @@ public class TmfStatisticsView extends TmfView {
      */
     protected static TmfStatisticsViewer getStatisticsViewer(IResource resource) {
         return (TmfStatisticsViewer) TmfTraceType.getTraceTypeElement(resource, TmfTraceType.STATISTICS_VIEWER_ELEM);
-    }
-
-    /**
-     * @return The class to use to instantiate the global statistics viewer
-     * @since 2.0
-     */
-    protected TmfStatisticsViewer getGlobalViewer() {
-        return new TmfStatisticsViewer();
     }
 }

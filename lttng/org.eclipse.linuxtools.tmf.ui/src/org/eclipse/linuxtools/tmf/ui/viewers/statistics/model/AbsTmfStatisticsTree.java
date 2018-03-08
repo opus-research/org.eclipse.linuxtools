@@ -151,29 +151,7 @@ public abstract class AbsTmfStatisticsTree {
     }
 
     /**
-     * Register an event and increase his value by <i>qty</i>
-     *
-     * @param event
-     *            Current event.
-     * @param extraInfo
-     *            Extra information to pass along with the event.
-     * @param qty
-     *            The number of events that must be counted.
-     */
-    public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo, int qty);
-
-    /**
-     * Register an event.
-     *
-     * @param event
-     *            Current event.
-     * @param extraInfo
-     *            Extra information to pass along with the event.
-     */
-    public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo);
-
-    /**
-     * Register an event within a time range and increase his value by qty
+     * Increase any kind of counter.
      *
      * This method must be implemented by subclasses.
      *
@@ -181,11 +159,22 @@ public abstract class AbsTmfStatisticsTree {
      *            Current event.
      * @param extraInfo
      *            Extra information to pass along with the event.
-     * @param qty
-     *            The number of events that must be counted.
-     * @since 2.0
+     * @param values
+     *            Values desired.
      */
-    public abstract void registerEventInTimeRange(ITmfEvent event, ITmfExtraEventInfo extraInfo, int qty);
+    public abstract void increase(ITmfEvent event, ITmfExtraEventInfo extraInfo, int values);
+
+    /**
+     * Register an event.
+     *
+     * This method must be implemented by subclasses.
+     *
+     * @param event
+     *            Current event.
+     * @param extraInfo
+     *            Extra information to pass along with the event.
+     */
+    public abstract void registerEvent(ITmfEvent event, ITmfExtraEventInfo extraInfo);
 
     /**
      * Register an event within a time range.
@@ -223,21 +212,6 @@ public abstract class AbsTmfStatisticsTree {
         for (TmfStatisticsTreeNode node : getAllChildren(path)) {
             reset(node.getPath());
             fNodes.remove(node.getPath());
-        }
-    }
-
-    /**
-     * Reset the global value of a node.
-     *
-     * Works recursively.
-     *
-     * @param path
-     *            Path to the node.
-     * @since 2.0
-     */
-    public void resetGlobalValue(final TmfFixedArray<String> path) {
-        for (TmfStatisticsTreeNode node : getChildren(path)) {
-            node.resetGlobalValue();
         }
     }
 
