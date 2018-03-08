@@ -10,6 +10,7 @@
  *   Francois Chouinard - Initial API and implementation
  *   Patrick Tasse - Close editors to release resources
  *   Geneviève Bastien - Moved the delete code to element model's classes
+ *   Marc-Andre Laperle - Use MessageDialog instead of a MessageBox (bug 420203)
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -25,6 +26,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.TreeSelection;
@@ -34,7 +36,6 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -108,10 +109,7 @@ public class DeleteTraceHandler extends AbstractHandler {
 
         // Confirm the operation
         Shell shell = window.getShell();
-        MessageBox confirmOperation = new MessageBox(shell, SWT.ICON_QUESTION | SWT.CANCEL | SWT.OK);
-        confirmOperation.setText(Messages.DeleteDialog_Title);
-        confirmOperation.setMessage(Messages.DeleteTraceHandler_Message);
-        if (confirmOperation.open() != SWT.OK) {
+        if (!MessageDialog.openConfirm(shell, Messages.DeleteDialog_Title, Messages.DeleteTraceHandler_Message)) {
             return null;
         }
 
