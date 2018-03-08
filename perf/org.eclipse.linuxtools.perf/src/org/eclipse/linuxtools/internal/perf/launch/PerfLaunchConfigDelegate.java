@@ -63,7 +63,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 		// check if Perf exists in $PATH
 		if (! PerfCore.checkPerfInPath()) {
 			IStatus status = new Status(IStatus.ERROR, PerfPlugin.PLUGIN_ID,
-					Messages.PerfLaunchConfigDelegate_perf_not_found);
+					Messages.PerfLaunchConfigDelegate_perf_not_found); //$NON-NLS-1$
 			throw new CoreException(status);
 		}
 
@@ -148,7 +148,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				}
 
 				PerfCore.Report(config, getEnvironment(config), workingDir, monitor, null, print);
-				PerfPlugin.getDefault().getPerfProfileData().toFile().setReadOnly();
 				PerfCore.RefreshView(renderProcessLabel(exePath.toOSString()));
 
 				if (config.getAttribute(PerfPlugin.ATTR_ShowSourceDisassembly,
