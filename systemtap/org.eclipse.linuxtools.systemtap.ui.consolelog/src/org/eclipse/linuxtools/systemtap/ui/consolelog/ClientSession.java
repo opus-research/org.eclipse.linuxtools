@@ -219,7 +219,15 @@ public final class ClientSession extends Thread {
 				new ErrorMessage("I/O Error Check host!", "See stderr for more details").open();
 				System.err.println ("i/o error: " + ioe.getMessage());
 				return;
+
+			} catch (Exception e) {
+				new ErrorMessage("Check if DMD is running", "See stderr for more details").open();
+				System.err.println ("Server terminated unexpectedly?," + e.getMessage());
+				return;
 			}
+
+
+
 		} // while
 		this.destroyConnection();
 

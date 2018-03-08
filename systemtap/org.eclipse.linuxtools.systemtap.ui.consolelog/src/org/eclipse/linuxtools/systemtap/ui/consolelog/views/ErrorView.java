@@ -60,7 +60,7 @@ public class ErrorView extends ViewPart {
 				try {
 					PlatformUI.getWorkbench().getWorkbenchWindows()[0].getActivePage().showView(ID);
 				} catch(PartInitException pie) {
-				}
+				} catch(NullPointerException npe) {}
 			}
 		});
 	}
