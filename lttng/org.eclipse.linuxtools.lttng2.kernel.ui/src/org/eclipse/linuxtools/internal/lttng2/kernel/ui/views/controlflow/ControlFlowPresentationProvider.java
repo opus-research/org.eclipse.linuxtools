@@ -42,11 +42,12 @@ import org.eclipse.swt.graphics.Rectangle;
 public class ControlFlowPresentationProvider extends TimeGraphPresentationProvider {
 
     private enum State {
-        UNKNOWN     (new RGB(100, 100, 100)),
-        WAIT        (new RGB(200, 200, 0)),
-        USERMODE    (new RGB(0, 200, 0)),
-        SYSCALL     (new RGB(0, 0, 200)),
-        INTERRUPTED (new RGB(200, 100, 100));
+        UNKNOWN      (new RGB(100, 100, 100)),
+        WAIT_FOR_CPU (new RGB(100,   0,   0)),
+        WAIT_BLOCKED (new RGB(200, 200,   0)),
+        USERMODE     (new RGB(  0, 200,   0)),
+        SYSCALL      (new RGB(  0,   0, 200)),
+        INTERRUPTED  (new RGB(200, 100, 100));
 
         public final RGB rgb;
 
@@ -74,14 +75,16 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
     public int getStateTableIndex(ITimeEvent event) {
         if (event instanceof ControlFlowEvent) {
             int status = ((ControlFlowEvent) event).getStatus();
-            if (status == StateValues.PROCESS_STATUS_WAIT) {
-                return State.WAIT.ordinal();
+            if (status == StateValues.PROCESS_STATUS_WAIT_FOR_CPU) {
+                return State.WAIT_FOR_CPU.ordinal();
             } else if (status == StateValues.PROCESS_STATUS_RUN_USERMODE) {
                 return State.USERMODE.ordinal();
             } else if (status == StateValues.PROCESS_STATUS_RUN_SYSCALL) {
                 return State.SYSCALL.ordinal();
             } else if (status == StateValues.PROCESS_STATUS_INTERRUPTED) {
                 return State.INTERRUPTED.ordinal();
+            } else if (status == StateValues.PROCESS_STATUS_WAIT_BLOCKED) {
+                return State.WAIT_BLOCKED.ordinal();
             }
         }
         return State.UNKNOWN.ordinal();
@@ -91,14 +94,16 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
     public String getEventName(ITimeEvent event) {
         if (event instanceof ControlFlowEvent) {
             int status = ((ControlFlowEvent) event).getStatus();
-            if (status == StateValues.PROCESS_STATUS_WAIT) {
-                return State.WAIT.toString();
+            if (status == StateValues.PROCESS_STATUS_WAIT_FOR_CPU) {
+                return State.WAIT_FOR_CPU.toString();
             } else if (status == StateValues.PROCESS_STATUS_RUN_USERMODE) {
                 return State.USERMODE.toString();
             } else if (status == StateValues.PROCESS_STATUS_RUN_SYSCALL) {
                 return State.SYSCALL.toString();
             } else if (status == StateValues.PROCESS_STATUS_INTERRUPTED) {
                 return State.INTERRUPTED.toString();
+            } else if (status == StateValues.PROCESS_STATUS_WAIT_BLOCKED) {
+                return State.WAIT_BLOCKED.toString();
             }
         }
         return State.UNKNOWN.toString();
