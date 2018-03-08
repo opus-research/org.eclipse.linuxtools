@@ -24,9 +24,8 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
  * @author Francois Chouinard
  *
  * @see TmfEventProvider
- * @see TmfEventProvider
  */
-public interface ITmfDataProvider extends ITmfComponent {
+public interface ITmfEventProvider extends ITmfComponent {
 
     /**
      * Queue the request for processing.

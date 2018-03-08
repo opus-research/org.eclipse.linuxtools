@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.internal.tmf.core.request;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -72,6 +73,18 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
             ExecutionType priority) {
         super(ITmfEvent.class, null, index, nbRequested, priority);
         fRange = range;
+
+        if (TmfCoreTracer.isRequestTraced()) {
+            String type = getClass().getName();
+            type = type.substring(type.lastIndexOf('.') + 1);
+            @SuppressWarnings("nls")
+            String message = "CREATED "
+                    + (getExecType() == ITmfEventRequest.ExecutionType.BACKGROUND ? "(BG)" : "(FG)")
+                    + " Type=" + type + " Index=" + getIndex() + " NbReq=" + getNbRequested()
+                    + " Range=" + getRange()
+                    + " DataType=" + getDataType().getSimpleName();
+            TmfCoreTracer.traceRequest(this, message);
+        }
     }
 
     @Override
@@ -91,7 +104,6 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
      */
     public void addRequest(ITmfEventRequest request) {
         fRequests.add(request);
-        merge2(request);
         merge(request);
     }
 
@@ -104,14 +116,14 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
      */
     public boolean isCompatible(ITmfEventRequest request) {
         if (request.getExecType() == getExecType() &&
-                overlaps2(request) &&
-                overlaps(request)) {
+                ranksOverlap(request) &&
+                timeRangesOverlap(request)) {
             return true;
         }
         return false;
     }
 
-    private boolean overlaps2(ITmfEventRequest request) {
+    private boolean ranksOverlap(ITmfEventRequest request) {
         long start = request.getIndex();
         long end = start + request.getNbRequested();
 
@@ -120,15 +132,14 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
         return (start <= (fIndex + fNbRequested + 1) && (end >= fIndex - 1));
     }
 
-
-    private boolean overlaps(ITmfEventRequest request) {
+    private boolean timeRangesOverlap(ITmfEventRequest request) {
         ITmfTimestamp startTime = request.getRange().getStartTime();
         ITmfTimestamp endTime = request.getRange().getEndTime();
         return (startTime.compareTo(endTime) <= 0) &&
                 (fRange.getStartTime().compareTo(fRange.getEndTime()) <= 0);
     }
 
-    private void merge2(ITmfEventRequest request) {
+    private void merge(ITmfEventRequest request) {
         long start = request.getIndex();
         long end = Math.min(start + request.getNbRequested(), ITmfEventRequest.ALL_DATA);
 
@@ -139,15 +150,12 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
             fIndex = start;
         }
         if ((request.getNbRequested() == ITmfEventRequest.ALL_DATA) ||
-                (fNbRequested == ITmfEventRequest.ALL_DATA))
-        {
+                (fNbRequested == ITmfEventRequest.ALL_DATA)) {
             fNbRequested = ITmfEventRequest.ALL_DATA;
         } else {
             fNbRequested = (int) Math.max(end - fIndex, fNbRequested);
         }
-    }
 
-    private void merge(ITmfEventRequest request) {
         ITmfTimestamp startTime = request.getRange().getStartTime();
         ITmfTimestamp endTime = request.getRange().getEndTime();
         if (!fRange.contains(startTime) && fRange.getStartTime().compareTo(startTime) > 0) {
@@ -175,7 +183,7 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
     }
 
     // ------------------------------------------------------------------------
-    // ITmfDataRequest
+    // ITmfEventRequest
     // ------------------------------------------------------------------------
 
     @Override
@@ -199,10 +207,6 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
             }
         }
     }
-
-    // ------------------------------------------------------------------------
-    // ITmfEventRequest
-    // ------------------------------------------------------------------------
 
     @Override
     public void start() {
@@ -288,11 +292,6 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
         return false;
 
     }
-//
-//    @Override
-//    public void setStartIndex(int index) {
-//        setIndex(index);
-//    }
 
     // ------------------------------------------------------------------------
     // Object

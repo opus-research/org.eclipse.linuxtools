@@ -27,7 +27,7 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedEventRequest;
-import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
@@ -397,7 +397,7 @@ public class TmfCoalescedEventRequestTest {
     TmfEventRequest request2;
     TmfEventRequest request3;
 
-    ITmfDataProvider[] providers;
+    ITmfEventProvider[] providers;
 
     private static class TmfTestTriggerSignal extends TmfSignal {
         public final boolean forceCancel;
