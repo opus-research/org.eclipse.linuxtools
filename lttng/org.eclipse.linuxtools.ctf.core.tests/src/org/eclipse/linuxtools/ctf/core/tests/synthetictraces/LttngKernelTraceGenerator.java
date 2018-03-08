@@ -28,7 +28,8 @@ import java.util.Random;
  *
  * @author Matthew Khouzam
  */
-class LttngKernelTraceGenerator {
+public class LttngKernelTraceGenerator {
+
     private static final String metadata = "/* CTF 1.8 */ \n" +
             "typealias integer { size = 8; align = 8; signed = false; } := uint8_t;\n" +
             "typealias integer { size = 16; align = 8; signed = false; } := uint16_t;\n" +
@@ -161,6 +162,52 @@ class LttngKernelTraceGenerator {
             "ST: The game"
     };
 
+
+    private static final String DIRECTORY_NAME = "synthetic-trace";
+    // not using createTempFile as this is a directory
+    private static final String PATH = System.getProperty("java.io.tmpdir") + File.separator + DIRECTORY_NAME;
+
+    /**
+     * Main, not always needed
+     *
+     * @param args
+     *            args
+     */
+    public static void main(String[] args) {
+        generateLttngKernelTrace();
+    }
+
+    /**
+     * Gets the name of the trace (top directory name)
+     *
+     * @return the name of the trace
+     */
+    public static String getName() {
+        return DIRECTORY_NAME;
+    }
+
+    /**
+     * Get the path
+     *
+     * @return the path
+     */
+    public static String getPath() {
+        final File file = new File(PATH);
+        if (!file.exists()) {
+            generateLttngKernelTrace();
+        }
+        return file.getAbsolutePath();
+    }
+
+    /**
+     * Generate a trace
+     */
+    public static void generateLttngKernelTrace() {
+        final int cpus = 25;
+        LttngKernelTraceGenerator gt = new LttngKernelTraceGenerator(2l * Integer.MAX_VALUE - 100, 500000, cpus);
+        gt.writeTrace(PATH);
+    }
+
     /**
      * Make a kernel trace
      *
@@ -193,10 +240,10 @@ class LttngKernelTraceGenerator {
             if (fPath.isFile()) {
                 fPath.delete();
                 fPath.mkdir();
-            }else{
+            } else {
                 // the ctf parser doesn't recurse, so we don't need to.
                 final File[] listFiles = fPath.listFiles();
-                for( File child : listFiles){
+                for (File child : listFiles) {
                     child.delete();
                 }
             }
@@ -317,7 +364,15 @@ class LttngKernelTraceGenerator {
     }
 
     private class EventWriter {
-        public static final int SIZE = 4 + 16 + 4 + 4 + 4 + 16 + 4 + 4;
+        public static final int SIZE =
+                4 +  // timestamp
+                16 + // prev_comm
+                4 +  // prev_tid
+                4 +  // prev_prio
+                4 +  // prev_state
+                16 + // current_comm
+                4 +  // next_tid
+                4;   // next_prio
         private ByteBuffer data;
 
         public EventWriter(ByteBuffer bb) {
@@ -399,5 +454,7 @@ class LttngKernelTraceGenerator {
         }
 
     }
+
+
 
 }
