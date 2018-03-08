@@ -13,13 +13,18 @@
  *   Francois Chouinard - Moved from LTTng to TMF
  *   Francois Chouinard - Added support for empty initial buckets
  *   Patrick Tasse - Support selection range
+ *   Jean-Christian Kouamé and Simon Delisle - Added support to manage lost events
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.util.Pair;
 
 /**
  * Histogram-independent data model.
@@ -50,9 +55,9 @@ import org.eclipse.core.runtime.ListenerList;
  * <i>basetime</i>, the buckets will be moved to the right to account for the
  * new smaller timestamp. The new <i>basetime</i> is a multiple of the bucket
  * duration smaller then the previous <i>basetime</i>. Note that the <i>basetime</i>
- * might not be anymore a timestamp of an event. If necessary, the buckets will
+ * might no longer be anymore a timestamp of an event. If necessary, the buckets will
  * be compacted before moving to the right. This might be necessary to not
- * loose any event counts at the end of the buckets array.
+ * lose any event counts at the end of the buckets array.
  * <p>
  * The mapping from the model to the UI is performed by the <i>scaleTo()</i>
  * method. By keeping the number of buckets <i>n</i> relatively large with
@@ -86,6 +91,7 @@ public class HistogramDataModel implements IHistogramDataModel {
     // Bucket management
     private final int fNbBuckets;
     private final long[] fBuckets;
+    private final long[] fLostEventsBuckets;
     private long fBucketDuration;
     private long fNbEvents;
     private int fLastBucket;
@@ -100,6 +106,9 @@ public class HistogramDataModel implements IHistogramDataModel {
 
     // Private listener lists
     private final ListenerList fModelListeners;
+
+    // Lost events
+    private List<Pair<Integer, TmfTimeRange>> lostEventInfos = new LinkedList<Pair<Integer, TmfTimeRange>>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -139,6 +148,7 @@ public class HistogramDataModel implements IHistogramDataModel {
         fFirstBucketTime = fFirstEventTime = fLastEventTime = startTime;
         fNbBuckets = nbBuckets;
         fBuckets = new long[nbBuckets];
+        fLostEventsBuckets = new long[nbBuckets];
         fModelListeners = new ListenerList();
         clear();
     }
@@ -150,6 +160,7 @@ public class HistogramDataModel implements IHistogramDataModel {
     public HistogramDataModel(HistogramDataModel other) {
         fNbBuckets = other.fNbBuckets;
         fBuckets = Arrays.copyOf(other.fBuckets, fNbBuckets);
+        fLostEventsBuckets = Arrays.copyOf(other.fLostEventsBuckets, fNbBuckets);
         fBucketDuration = Math.max(other.fBucketDuration, 1);
         fNbEvents = other.fNbEvents;
         fLastBucket = other.fLastBucket;
@@ -159,6 +170,7 @@ public class HistogramDataModel implements IHistogramDataModel {
         fSelectionBegin = other.fSelectionBegin;
         fSelectionEnd = other.fSelectionEnd;
         fTimeLimit = other.fTimeLimit;
+        lostEventInfos = other.lostEventInfos;
         fModelListeners = new ListenerList();
         Object[] listeners = other.fModelListeners.getListeners();
         for (Object listener : listeners) {
@@ -269,6 +281,23 @@ public class HistogramDataModel implements IHistogramDataModel {
         return fTimeLimit;
     }
 
+    /**
+     * @return a list with all lost events time range
+     * @since 2.1
+     */
+    public List<Pair<Integer, TmfTimeRange>> getLostEventInfos() {
+        return lostEventInfos;
+    }
+
+    /**
+     * @param lostEventInfos
+     *            a list with lost events time range
+     * @since 2.1
+     */
+    public void setLostEventInfos(List<Pair<Integer, TmfTimeRange>> lostEventInfos) {
+        this.lostEventInfos = lostEventInfos;
+    }
+
     // ------------------------------------------------------------------------
     // Listener handling
     // ------------------------------------------------------------------------
@@ -321,6 +350,7 @@ public class HistogramDataModel implements IHistogramDataModel {
     @Override
     public void clear() {
         Arrays.fill(fBuckets, 0);
+        Arrays.fill(fLostEventsBuckets, 0);
         fNbEvents = 0;
         fFirstBucketTime = 0;
         fLastEventTime = 0;
@@ -330,6 +360,7 @@ public class HistogramDataModel implements IHistogramDataModel {
         fBucketDuration = 1;
         updateEndTime();
         fireModelUpdateNotification();
+        lostEventInfos.clear();
     }
 
     /**
@@ -450,6 +481,56 @@ public class HistogramDataModel implements IHistogramDataModel {
     }
 
     /**
+     * Add lost event to the correct bucket, compacting the if needed.
+     *
+     * @param timeRange
+     *            time range of a lost event
+     * @param nbLostEvents
+     *            the number of lost events
+     * @param fullRange
+     *            Full range or time range for histogram request
+     * @since 2.1
+     */
+    public void countLostEvent(TmfTimeRange timeRange, int nbLostEvents, boolean fullRange) {
+
+        // Validate
+        if (timeRange.getStartTime().getValue() < 0 || timeRange.getEndTime().getValue() < 0) {
+            return;
+        }
+
+        int indexStart = (int) ((timeRange.getStartTime().getValue() - fFirstBucketTime) / fBucketDuration);
+        int indexEnd = (int) ((timeRange.getEndTime().getValue() - fFirstBucketTime) / fBucketDuration);
+        if (!fullRange) {
+            if (timeRange.getEndTime().getValue() > fTimeLimit) {
+                indexEnd = (int) ((fTimeLimit - fFirstBucketTime) / fBucketDuration);
+            }
+        }
+
+        int nbBucketRange = (indexEnd - indexStart) + 1;
+        int lostEventPerBucket = nbLostEvents / nbBucketRange;
+        int remainLostEvent = nbLostEvents % nbBucketRange;
+
+        // Compact as needed
+        if (fullRange && timeRange.getEndTime().getValue() >= fTimeLimit) {
+            while (timeRange.getEndTime().getValue() >= fTimeLimit) {
+                mergeBuckets();
+            }
+        }
+
+        // Increment the right bucket
+        for (int index = indexStart; index <= indexEnd; index++) {
+            fLostEventsBuckets[index] += lostEventPerBucket;
+            if ((index - indexStart) < remainLostEvent) {
+                fLostEventsBuckets[index]++;
+            }
+        }
+
+        fNbEvents++;
+
+        fireModelUpdateNotification(nbLostEvents);
+    }
+
+    /**
      * Scale the model data to the width, height and bar width requested.
      *
      * @param width A width of the histogram canvas
@@ -478,22 +559,31 @@ public class HistogramDataModel implements IHistogramDataModel {
         result.fBucketDuration = Math.max(bucketsPerBar * fBucketDuration,1);
         for (int i = 0; i < nbBars; i++) {
             int count = 0;
+            int countLostEvent = 0;
             for (int j = i * bucketsPerBar; j < ((i + 1) * bucketsPerBar); j++) {
                 if (fNbBuckets <= j) {
                     break;
                 }
                 count += fBuckets[j];
+                countLostEvent += fLostEventsBuckets[j];
             }
             result.fData[i] = count;
+            result.fLostEventsData[i] = countLostEvent;
             result.fLastBucket = i;
             if (result.fMaxValue < count) {
                 result.fMaxValue = count;
+            }
+            if(result.fMaxCombinedValue < count + countLostEvent) {
+                result.fMaxCombinedValue = count + countLostEvent;
             }
         }
 
         // Scale vertically
         if (result.fMaxValue > 0) {
             result.fScalingFactor = (double) height / result.fMaxValue;
+        }
+        if(result.fMaxCombinedValue > 0 ) {
+            result.fScalingFactorCombined = (double) height / result.fMaxCombinedValue;
         }
 
         fBucketDuration = Math.max(fBucketDuration, 1);
@@ -529,8 +619,10 @@ public class HistogramDataModel implements IHistogramDataModel {
     private void mergeBuckets() {
         for (int i = 0; i < (fNbBuckets / 2); i++) {
             fBuckets[i] = fBuckets[2 * i] + fBuckets[(2 * i) + 1];
+            fLostEventsBuckets[i] = fLostEventsBuckets[2 * i] + fLostEventsBuckets[(2 * i) + 1];
         }
         Arrays.fill(fBuckets, fNbBuckets / 2, fNbBuckets, 0);
+        Arrays.fill(fLostEventsBuckets, fNbBuckets / 2, fNbBuckets, 0);
         fBucketDuration *= 2;
         updateEndTime();
         fLastBucket = (fNbBuckets / 2) - 1;
@@ -539,10 +631,12 @@ public class HistogramDataModel implements IHistogramDataModel {
     private void moveBuckets(int offset) {
         for(int i = fNbBuckets - 1; i >= offset; i--) {
             fBuckets[i] = fBuckets[i-offset];
+            fLostEventsBuckets[i] = fLostEventsBuckets[i-offset];
         }
 
         for (int i = 0; i < offset; i++) {
             fBuckets[i] = 0;
+            fLostEventsBuckets[i] = 0;
         }
     }
 
@@ -553,5 +647,4 @@ public class HistogramDataModel implements IHistogramDataModel {
         }
         return offset;
     }
-
 }
