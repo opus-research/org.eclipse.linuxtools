@@ -920,13 +920,6 @@ public class CTFTrace implements IDefinitionScope {
         if( pos >= candidates.size()) {
             return null;
         }
-        if(pos == -1 ){
-            // we are either too far up or down
-            if( ip > candidates.getLast().getIp()) {
-                return candidates.getLast();
-            }
-            return candidates.getFirst();
-        }
         return candidates.get(pos);
     }
 
