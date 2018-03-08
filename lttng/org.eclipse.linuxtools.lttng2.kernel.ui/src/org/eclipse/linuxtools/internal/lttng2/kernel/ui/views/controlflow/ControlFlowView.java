@@ -102,11 +102,6 @@ public class ControlFlowView extends TmfView {
             TRACE_COLUMN
     };
 
-    private final String[] FILTER_COLUMN_NAMES = new String[] {
-            PROCESS_COLUMN,
-            TID_COLUMN
-    };
-
     /**
      * Redraw state enum
      */
@@ -350,12 +345,6 @@ public class ControlFlowView extends TmfView {
         fTimeGraphCombo.setTimeGraphProvider(new ControlFlowPresentationProvider());
 
         fTimeGraphCombo.setTreeColumns(COLUMN_NAMES);
-        
-        fTimeGraphCombo.setFilterContentProvider(new TreeContentProvider());
-        
-        fTimeGraphCombo.setFilterLabelProvider(new TreeLabelProvider());
-        
-        fTimeGraphCombo.setFilterColumns(FILTER_COLUMN_NAMES);
 
         fTimeGraphCombo.getTimeGraphViewer().addRangeListener(new ITimeGraphRangeListener() {
             @Override
@@ -801,7 +790,6 @@ public class ControlFlowView extends TmfView {
     }
 
     private void fillLocalToolBar(IToolBarManager manager) {
-        manager.add(fTimeGraphCombo.getShowFilterAction());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getShowLegendAction());
         manager.add(new Separator());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());
