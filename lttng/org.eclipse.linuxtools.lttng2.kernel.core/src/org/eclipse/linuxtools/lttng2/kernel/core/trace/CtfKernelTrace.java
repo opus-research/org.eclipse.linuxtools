@@ -41,12 +41,6 @@ public class CtfKernelTrace extends CtfTmfTrace {
     public final static String HISTORY_TREE_FILE_NAME = "stateHistory.ht"; //$NON-NLS-1$
 
     /**
-     * ID of the state system we will build
-     * @since 2.0
-     * */
-    public static final String STATE_ID = "org.eclipse.linuxtools.lttng2.kernel"; //$NON-NLS-1$
-
-    /**
      * Default constructor
      */
     public CtfKernelTrace() {
@@ -90,6 +84,6 @@ public class CtfKernelTrace extends CtfTmfTrace {
         final File htFile = new File(supplDirectory + File.separator + HISTORY_TREE_FILE_NAME);
         final IStateChangeInput htInput = new CtfKernelStateInput(this);
 
-        this.ss = StateSystemManager.loadStateHistory(htFile, htInput, STATE_ID, false);
+        this.ss = StateSystemManager.loadStateHistory(htFile, htInput, false);
     }
 }
