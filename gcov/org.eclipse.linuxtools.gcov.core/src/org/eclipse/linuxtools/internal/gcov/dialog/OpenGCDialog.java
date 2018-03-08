@@ -29,6 +29,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.binutils.utils.STSymbolManager;
 import org.eclipse.linuxtools.internal.gcov.Activator;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -121,20 +122,20 @@ public class OpenGCDialog extends Dialog {
 
     @Override
 	protected Control createDialogArea(Composite parent) {
-    	this.getShell().setText("Gcov - Open coverage results...");
+		this.getShell().setText(Messages.OpenGCDialog_open_results);
         Composite composite = (Composite) super.createDialogArea(parent);
 
     	/* first line */
         Group c = new Group(composite, SWT.NONE);
-        c.setText("Binary File");
-        c.setToolTipText("Please enter here the binary file which produced the coverage data.");
+        c.setText(Messages.OpenGCDialog_bin_group_header);
+        c.setToolTipText(Messages.OpenGCDialog_bin_group_tooltip);
         GridLayout layout = new GridLayout(2,false);
         c.setLayout(layout);
         GridData data = new GridData(GridData.FILL_BOTH);
         c.setLayoutData(data);
         
         Label binLabel = new Label(c,SWT.NONE);
-        binLabel.setText("Please enter here the binary file which produced the coverage data.");
+        binLabel.setText(Messages.OpenGCDialog_bin_group_label);
         data = new GridData();
         data.horizontalSpan = 2;
         binLabel.setLayoutData(data);
@@ -151,33 +152,33 @@ public class OpenGCDialog extends Dialog {
         cbBin.setLayoutData(data);
         cbBin.setLayout(new GridLayout(2, true));
         binBrowseWorkspaceButton = new Button(cbBin, SWT.PUSH);
-        binBrowseWorkspaceButton.setText("&Workspace...");
+        binBrowseWorkspaceButton.setText(Messages.OpenGCDialog_bin_browser_button_text);
         binBrowseWorkspaceButton.addSelectionListener(
                 new SelectionAdapter()
                 {
                     @Override
 					public void widgetSelected(SelectionEvent sev)
                     {
-                    	handleBrowseWorkspace("Open Binary file...", binText);
+				handleBrowseWorkspace(Messages.OpenGCDialog_bin_browser_handler_text, binText);
                     }
                 }
         );
         binBrowseFileSystemButton = new Button(cbBin, SWT.PUSH);
-        binBrowseFileSystemButton.setText("&File System...");
+        binBrowseFileSystemButton.setText(Messages.OpenGCDialog_bin_browser_fs_button_text);
         binBrowseFileSystemButton.addSelectionListener(
                 new SelectionAdapter()
                 {
                     @Override
 					public void widgetSelected(SelectionEvent sev)
                     {
-                        handleBrowse("Open Binary file...", binText);
+                        handleBrowse(Messages.OpenGCDialog_bin_browser_handler_text, binText);
                     }
                 }
         );
         
         Group covMode = new Group(composite, SWT.NONE);
-        covMode.setText("Coverage result");
-        covMode.setToolTipText("Please choose the result scope.");
+        covMode.setText(Messages.OpenGCDialog_coverage_mode_header);
+        covMode.setToolTipText(Messages.OpenGCDialog_coverage_mode_tooltip);
         GridData covModeData = new GridData(GridData.FILL_BOTH);
         covMode.setLayoutData(covModeData);
         covMode.setLayout(new GridLayout());
@@ -185,10 +186,10 @@ public class OpenGCDialog extends Dialog {
         openThisFileOnlyButton.setLayoutData(new GridData());
         openCoverageSummaryButton = new Button(covMode, SWT.RADIO);
         openCoverageSummaryButton.setLayoutData(new GridData());
-        String cFile = gcFile.removeFileExtension().lastSegment() + ".c";
+        String cFile = gcFile.removeFileExtension().lastSegment() + ".c"; //$NON-NLS-1$
         
-        openThisFileOnlyButton.setText("Show coverage details for \"" + cFile + "\" only.");
-        openCoverageSummaryButton.setText("Show coverage for the whole selected binary file");
+        openThisFileOnlyButton.setText(NLS.bind(Messages.OpenGCDialog_open_file_button_text, cFile));
+        openCoverageSummaryButton.setText(Messages.OpenGCDialog_summ_button_text);
         
         openCoverageSummaryButton.setSelection(true);
         
@@ -230,8 +231,8 @@ public class OpenGCDialog extends Dialog {
     		if (binary == null) {
     			MessageDialog.openError(
     					PlatformUI.getWorkbench().getDisplay().getActiveShell(),
-    					"Invalid binary file",
-    					binText.getText() + " is not a valid binary file.");
+								Messages.OpenGCDialog_invalid_bin_error_title,
+								NLS.bind(Messages.OpenGCDialog_invalid_bin_error_message,binText.getText()));
     			return;
     		}
         	binaryValid = true;
@@ -241,9 +242,9 @@ public class OpenGCDialog extends Dialog {
         	binaryValid = false;
             getButton(IDialogConstants.OK_ID).setEnabled(false);
             if (!binValue.equals("")) { //$NON-NLS-1$
-            	errorLabel.setText("\"" + binText.getText() + "\" doesn't exist");
+				errorLabel.setText(NLS.bind(Messages.OpenGCDialog_bin_dne_error_label, binText.getText()));
             } else {
-            	errorLabel.setText("Please enter a binary file");
+				errorLabel.setText(Messages.OpenGCDialog_no_bin_error_label);
             }
             return;
         }
