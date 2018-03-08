@@ -1228,10 +1228,9 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
         }
 
         private void removeInput(int inputNumber) {
-            int nb = inputNumber;
-            if (--nb < inputs.size()) {
-                inputs.remove(nb).dispose();
-                for (int i = nb; i < inputs.size(); i++) {
+            if (--inputNumber < inputs.size()) {
+                inputs.remove(inputNumber).dispose();
+                for (int i = inputNumber; i < inputs.size(); i++) {
                     inputs.get(i).setInputNumber(i+1);
                 }
                 lineContainer.layout();

@@ -1161,10 +1161,9 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
         }
 
         private void removeAttribute(int attributeNumber) {
-            int nb = attributeNumber;
-            if (--nb < attributes.size()) {
-                attributes.remove(nb).dispose();
-                for (int i = nb; i < attributes.size(); i++) {
+            if (--attributeNumber < attributes.size()) {
+                attributes.remove(attributeNumber).dispose();
+                for (int i = attributeNumber; i < attributes.size(); i++) {
                     attributes.get(i).setAttributeNumber(i + 1);
                 }
                 elementContainer.layout();
@@ -1383,16 +1382,15 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
     }
 
     private Element getPreviewElement(InputElement inputElement) {
-        InputElement currentElement = inputElement;
         Element element = documentElement;
         if (element != null) {
             if (!documentElement.getNodeName().equals(definition.rootInputElement.elementName)) {
                 return null;
             }
             ArrayList<String> elementNames = new ArrayList<String>();
-            while (currentElement != null) {
-                elementNames.add(currentElement.elementName);
-                currentElement = currentElement.parentElement;
+            while (inputElement != null) {
+                elementNames.add(inputElement.elementName);
+                inputElement = inputElement.parentElement;
             }
             for (int i = elementNames.size() - 1; --i >= 0;) {
                 NodeList childList = element.getChildNodes();
