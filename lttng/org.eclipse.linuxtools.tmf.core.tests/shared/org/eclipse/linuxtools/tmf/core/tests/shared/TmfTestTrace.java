@@ -19,7 +19,6 @@ import java.net.URL;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -82,13 +81,17 @@ public enum TmfTestTrace {
             try {
                 File test = new File(FileLocator.toFileURL(location).toURI());
                 trace = new TmfTraceStub(test.toURI().getPath(), ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, false, null);
-                trace.initTrace(null, test.toURI().getPath(), ITmfEvent.class);
+
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (TmfTraceException e) {
                 throw new RuntimeException(e);
+            } finally {
+                if (trace != null) {
+                    trace.dispose();
+                }
             }
             fTrace = trace;
         }
