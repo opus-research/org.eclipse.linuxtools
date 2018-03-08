@@ -10,9 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -61,7 +59,7 @@ public class STJunitUtils {
 			} while (true);
 
 			if (!equals) {
- 				assertEquals(message + ": not correspond ", true, false);
+ 				junit.framework.Assert.assertEquals(message + ": not correspond ", true, false);
 			}
 
 			is1.close();
@@ -72,11 +70,11 @@ public class STJunitUtils {
 			}
 		}catch (FileNotFoundException _) {
 			message += "... FAILED: One of these files may not exist";
-			assertNull(message, _);
+			junit.framework.Assert.assertNull(message, _);
 		}
 		catch (Exception _) {
 			message += ": exception raised ... FAILED";
-			assertNull(message, _);
+			junit.framework.Assert.assertNull(message, _);
 		}
 		return equals;
 	}
