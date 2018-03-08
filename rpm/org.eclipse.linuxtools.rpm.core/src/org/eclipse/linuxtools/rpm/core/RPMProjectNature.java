@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public class RPMProjectNature implements IProjectNature {
 
-	private IProject project;
+	IProject project;
 	
 	/**
 	 * Adds the RPM project nature to a given workspace project.
