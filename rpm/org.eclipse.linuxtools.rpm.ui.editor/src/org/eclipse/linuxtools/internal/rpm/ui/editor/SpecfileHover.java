@@ -65,7 +65,8 @@ public class SpecfileHover implements ITextHover, ITextHoverExtension {
         String value = currentSelection + ": "; //$NON-NLS-1$
 
 		if (define != null) {
-			return value + define.getStringValue();
+			value += define.getStringValue();
+			return value;
 		}
 
 		String macroLower = currentSelection.toLowerCase();
@@ -74,13 +75,13 @@ public class SpecfileHover implements ITextHover, ITextHoverExtension {
 		// a Source or Patch declaration
 		String retrivedValue = getSourceOrPatchValue(spec, macroLower);
 		if (retrivedValue != null) {
-			return value + retrivedValue;
+			return value += retrivedValue;
 		} else {
 			// If it does not correspond to a Patch or Source macro, try to find it
 			// in the macro proposals list.
 			retrivedValue = getMacroValueFromMacroList(currentSelection);
 			if (retrivedValue != null) {
-				return value + retrivedValue;
+				return value += retrivedValue;
 			} else {
 				// If it does not correspond to a macro in the list, try to find it
 				// in the RPM list.

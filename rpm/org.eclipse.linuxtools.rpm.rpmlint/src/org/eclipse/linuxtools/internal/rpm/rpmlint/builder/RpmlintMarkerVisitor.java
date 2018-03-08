@@ -28,8 +28,6 @@ import org.eclipse.linuxtools.internal.rpm.rpmlint.RpmlintLog;
 import org.eclipse.linuxtools.internal.rpm.rpmlint.parser.RpmlintItem;
 import org.eclipse.linuxtools.internal.rpm.rpmlint.parser.RpmlintParser;
 import org.eclipse.linuxtools.rpm.ui.editor.markers.SpecfileErrorHandler;
-import org.eclipse.linuxtools.rpm.ui.editor.markers.SpecfileTaskHandler;
-import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileParser;
 
 /**
  * Visitor that generates markers for rpmlint found warnings and errors.
@@ -39,18 +37,18 @@ public class RpmlintMarkerVisitor implements IResourceVisitor {
 
 	private List<RpmlintItem> rpmlintItems;
 
+	private RpmlintBuilder builder;
+
 	private boolean firstWarningInResource;
-	private SpecfileParser parser;
-	private SpecfileErrorHandler errorHandler;
-	private SpecfileTaskHandler taskHandler;
 
 	/**
 	 * Creates a visitor for handling .rpm and .spec files and adding markers for rpmlint warnings/errors.
+	 * @param builder The rpmlint project builder.
 	 * @param rpmlintItems The rpmlint identified warnings and errors.
 	 */
-	public RpmlintMarkerVisitor(List<RpmlintItem> rpmlintItems) {
+	public RpmlintMarkerVisitor(RpmlintBuilder builder, List<RpmlintItem> rpmlintItems) {
 		this.rpmlintItems = rpmlintItems;
-		parser = new SpecfileParser();
+		this.builder = builder;
 	}
 
 	/**
@@ -92,9 +90,9 @@ public class RpmlintMarkerVisitor implements IResourceVisitor {
 					// end workaround
 
 					// BTW we mark specfile with the internal marker.
-					parser.setErrorHandler(getSpecfileErrorHandler(currentFile, specContent));
-					parser.setTaskHandler(getSpecfileTaskHandler(currentFile, specContent));
-					parser.parse(specContent);
+					builder.getSpecfileParser().setErrorHandler(builder.getSpecfileErrorHandler(currentFile, specContent));
+					builder.getSpecfileParser().setTaskHandler(builder.getSpecfileTaskHandler(currentFile, specContent));
+					builder.getSpecfileParser().parse(specContent);
 
 					IDocument document = new Document(specContent);
 					int charStart = getLineOffset(document, lineNumber);
@@ -126,30 +124,6 @@ public class RpmlintMarkerVisitor implements IResourceVisitor {
 			}
 		}
 		return true;
-	}
-
-	private SpecfileErrorHandler getSpecfileErrorHandler(IFile file,
-			String specContent) {
-		if (errorHandler == null) {
-			errorHandler = new SpecfileErrorHandler(file, new Document(
-					specContent));
-		} else {
-			errorHandler.setFile(file);
-			errorHandler.setDocument(new Document(specContent));
-		}
-		return errorHandler;
-	}
-
-	private SpecfileTaskHandler getSpecfileTaskHandler(IFile file,
-			String specContent) {
-		if (taskHandler == null) {
-			taskHandler = new SpecfileTaskHandler(file, new Document(
-					specContent));
-		} else {
-			taskHandler.setFile(file);
-			taskHandler.setDocument(new Document(specContent));
-		}
-		return taskHandler;
 	}
 
 	private static int getLineOffset(IDocument document, int lineNumber) {
