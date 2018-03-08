@@ -155,13 +155,9 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         final Job job = new Job("Indexing " + fTrace.getName() + "...") { //$NON-NLS-1$ //$NON-NLS-2$
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
-                monitor.beginTask("", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
                 while (!monitor.isCanceled()) {
                     try {
                         Thread.sleep(100);
-                        setName("Indexing " + fTrace.getName() + " (" + fTrace.getNbEvents() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        // setName doesn't refresh the UI, setTaskName does
-                        monitor.setTaskName(""); //$NON-NLS-1$
                     } catch (final InterruptedException e) {
                         return Status.OK_STATUS;
                     }
@@ -357,7 +353,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         ITmfEvent[] trcEvts = expCtx.getEvents();
         for (int i = 0; i < size; i++) {
             ITmfEvent event = expContext.getEvents()[i];
-            trcEvts[i] = (event != null) ? event.clone() : null;
+            trcEvts[i] = event;
         }
         return expCtx;
     }
@@ -387,7 +383,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         ITmfEvent[] trcEvts = expContext.getEvents();
         for (int i = 0; i < size; i++) {
             ITmfEvent event = trcEvts[i];
-            ctx.getEvents()[i] = (event != null) ? event.clone() : null;
+            ctx.getEvents()[i] = event;
         }
         return ctx;
     }
