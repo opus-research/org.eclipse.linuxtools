@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
- *   Geneviève Bastien - Experiment instantiated with experiment type
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.editors;
@@ -139,7 +138,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                             setPartName(experimentElement.getName());
                             super.setSite(site);
                             super.setInput(fileEditorInput);
-                            TmfOpenTraceHelper.reopenTraceFromElement(experimentElement, this);
+                            TmfOpenTraceHelper.reopenExperimentFromElement(experimentElement, this);
                             return;
                         }
                     }
@@ -306,6 +305,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     }
 
     private TmfEventsTable getEventsTable(final Composite parent, final int cacheSize) {
+        if (fTrace instanceof TmfExperiment) {
+            return getExperimentEventsTable((TmfExperiment) fTrace, parent, cacheSize);
+        }
         TmfEventsTable eventsTable = null;
         try {
             if (fTrace.getResource() == null) {
@@ -321,13 +323,8 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
             if (traceType.startsWith(CustomXmlTrace.class.getCanonicalName())) {
                 return new CustomEventsTable(((CustomXmlTrace) fTrace).getDefinition(), parent, cacheSize);
             }
-            String type = TmfTraceType.TYPE_ELEM;
-            if (fTrace instanceof TmfExperiment) {
-                type = TmfTraceType.EXPERIMENT_ELEM;
-            }
-            for (final IConfigurationElement ce : TmfTraceType.getTypeAndExperimentElements()) {
-                if (ce.getName().equals(type) &&
-                        ce.getAttribute(TmfTraceType.ID_ATTR).equals(traceType)) {
+            for (final IConfigurationElement ce : TmfTraceType.getTypeElements()) {
+                if (ce.getAttribute(TmfTraceType.ID_ATTR).equals(traceType)) {
                     final IConfigurationElement[] eventsTableTypeCE = ce.getChildren(TmfTraceType.EVENTS_TABLE_TYPE_ELEM);
                     if (eventsTableTypeCE.length != 1) {
                         break;
@@ -344,9 +341,6 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                     eventsTable = (TmfEventsTable) constructor.newInstance(args);
                     break;
                 }
-            }
-            if (fTrace instanceof TmfExperiment && (eventsTable == null)) {
-                eventsTable = getExperimentEventsTable((TmfExperiment) fTrace, parent, cacheSize);
             }
         } catch (final InvalidRegistryObjectException e) {
             Activator.getDefault().logError("Error getting TmfEventsTable", e); //$NON-NLS-1$

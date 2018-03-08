@@ -26,18 +26,17 @@ import java.util.Vector;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
-import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedDataRequest;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedEventRequest;
-import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.tests.stubs.request.TmfEventRequestStub;
@@ -74,7 +73,7 @@ public class TmfCoalescedEventRequestTest {
 
     @Before
     public void setUp() {
-        TmfDataRequest.reset();
+        TmfEventRequest.reset();
         fRequest1 = new TmfCoalescedEventRequest(ITmfEvent.class, range1, 0, 100, ExecutionType.FOREGROUND);
         fRequest2 = new TmfCoalescedEventRequest(ITmfEvent.class, range2, 0, 100, ExecutionType.FOREGROUND);
         fRequest3 = new TmfCoalescedEventRequest(ITmfEvent.class, range2, 0, 200, ExecutionType.FOREGROUND);
@@ -172,30 +171,6 @@ public class TmfCoalescedEventRequestTest {
     public void testEqualsNull() {
         assertFalse("equals", fRequest1.equals(null));
         assertFalse("equals", fRequest2.equals(null));
-    }
-
-    @Test
-    public void testEqualsSuper() {
-        TmfCoalescedDataRequest dataRequest1 = new TmfCoalescedDataRequest(
-                fRequest1.getDataType(),
-                fRequest1.getIndex(),
-                fRequest1.getNbRequested(),
-                ExecutionType.FOREGROUND);
-        TmfCoalescedDataRequest dataRequest2 = new TmfCoalescedDataRequest(
-                fRequest1.getDataType(),
-                fRequest1.getIndex(),
-                fRequest1.getNbRequested(),
-                ExecutionType.FOREGROUND);
-        TmfCoalescedDataRequest dataRequest3 = new TmfCoalescedDataRequest(
-                fRequest3.getDataType(),
-                fRequest3.getIndex(),
-                fRequest3.getNbRequested(),
-                ExecutionType.FOREGROUND);
-
-        assertTrue("equals", fRequest1.equals(dataRequest2));
-        assertTrue("equals", fRequest2.equals(dataRequest1));
-        assertFalse("equals", fRequest1.equals(dataRequest3));
-        assertFalse("equals", fRequest3.equals(dataRequest1));
     }
 
     // ------------------------------------------------------------------------
@@ -391,8 +366,7 @@ public class TmfCoalescedEventRequestTest {
     // Coalescing
     // ------------------------------------------------------------------------
 
-    private static final String DIRECTORY = "testfiles";
-    private static final String TEST_STREAM = "A-Test-10K";
+    private static final TmfTestTrace TEST_TRACE = TmfTestTrace.A_TEST_10K;
     private static final int NB_EVENTS = 5000;
 
     // Initialize the test trace
@@ -403,7 +377,7 @@ public class TmfCoalescedEventRequestTest {
             try {
                 URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
                 File test = new File(FileLocator.toFileURL(location).toURI());
-                fTrace = new TmfTraceStub(test.getPath(), 500, false, null, null);
+                fTrace = new TmfTraceStub(test.getPath(), 500, false, null);
             } catch (TmfTraceException e) {
                 e.printStackTrace();
             } catch (URISyntaxException e) {
@@ -423,7 +397,7 @@ public class TmfCoalescedEventRequestTest {
     TmfEventRequest request2;
     TmfEventRequest request3;
 
-    ITmfDataProvider[] providers;
+    ITmfEventProvider[] providers;
 
     private static class TmfTestTriggerSignal extends TmfSignal {
         public final boolean forceCancel;
@@ -489,7 +463,7 @@ public class TmfCoalescedEventRequestTest {
 
     public void runCoalescedRequest(long startIndex) throws InterruptedException {
 
-        fTrace = setupTrace(DIRECTORY + File.separator + TEST_STREAM);
+        fTrace = setupTrace(TEST_TRACE.getFullPath());
 
         TmfSignalManager.register(this);
         TmfTestTriggerSignal signal = new TmfTestTriggerSignal(this, startIndex, false);
@@ -536,7 +510,7 @@ public class TmfCoalescedEventRequestTest {
     @Test
     public void testCancelCoalescedRequest() throws InterruptedException {
 
-        fTrace = setupTrace(DIRECTORY + File.separator + TEST_STREAM);
+        fTrace = setupTrace(TEST_TRACE.getFullPath());
 
         TmfSignalManager.register(this);
         TmfTestTriggerSignal signal = new TmfTestTriggerSignal(this, 0, true);

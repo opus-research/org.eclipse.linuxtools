@@ -24,32 +24,11 @@ public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.project.model.messages"; //$NON-NLS-1$
 
-    /** Error message when closing editor */
-    public static String TmfCommonProjectElement_ErrorClosingEditor;
+    /** Instantiate analysis message box title */
+    public static String TmfAnalysisElement_InstantiateAnalysis;
 
-    /** Error message when copying supplementary folder */
-    public static String TmfCommonProjectElement_ErrorCopyingSF;
-
-    /** Error message when creating supplementary resource */
-    public static String TmfCommonProjectElement_ErrorCreateSuppRes;
-
-    /** Error message when deleting supplementary folder */
-    public static String TmfCommonProjectElement_ErrorDeletingSF;
-
-    /** Error message when deleting supplementary resource */
-    public static String TmfCommonProjectElement_ErrorDeletingSR;
-
-    /** Error message when refreshing persistent property */
-    public static String TmfCommonProjectElement_ErrorRefreshingProperty;
-
-    /** Error message when renaming supplementary folder */
-    public static String TmfCommonProjectElement_ErrorRenamingSF;
-
-    /** Error message when setting persistent property */
-    public static String TmfCommonProjectElement_ErrorSettingProperty;
-
-    /** Error message when instantiating trace */
-    public static String TmfExperimentElement_ErrorInstantiatingTrace;
+    /** The message when analysis view is not available */
+    public static String TmfAnalysisViewOutput_ViewUnavailable;
 
     /** The category of the resource properties */
     public static String TmfTraceElement_ResourceProperties;
@@ -71,6 +50,11 @@ public class Messages extends NLS {
 
     /** The description for the linked property */
     public static String TmfTraceElement_IsLinked;
+    /**
+     * The title for the select trace type dialog
+     * @since 2.2
+     * */
+    public static String TmfTraceType_SelectTraceType;
 
     /** Error opening a trace */
     public static String TmfOpenTraceHelper_ErrorOpeningTrace;
@@ -88,14 +72,15 @@ public class Messages extends NLS {
     public static String TmfOpenTraceHelper_ReduceError;
     /** No trace type */
     public static String TmfOpenTraceHelper_NoTraceType;
-    /** No experiment type */
-    public static String TmfOpenTraceHelper_NoExperimentType;
     /** Error opening trace*/
     public static String TmfOpenTraceHelper_ErrorTrace;
     /** Error opening experiment */
     public static String TmfOpenTraceHelper_ErrorExperiment;
     /** Init error */
     public static String TmfOpenTraceHelper_InitError;
+
+    /** Analysis view title */
+    public static String TmfAnalysisViewOutput_Title;
 
     static {
         // initialize resource bundle

@@ -12,18 +12,18 @@
 
 package org.eclipse.linuxtools.tmf.ui.tests.project.model;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
@@ -34,11 +34,11 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 /**
  * Creates objects used for this package's testing purposes
+ *
+ * @author Geneviève Bastien
  */
 public class ProjectModelTestData {
 
@@ -56,6 +56,8 @@ public class ProjectModelTestData {
      */
     public static TmfProjectElement getFilledProject() throws CoreException {
 
+        assumeTrue(CtfTmfTestTrace.KERNEL.exists());
+
         IProject project = TmfProjectRegistry.createProject(PROJECT_NAME, null, null);
         IFolder traceFolder = project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
 
@@ -68,56 +70,13 @@ public class ProjectModelTestData {
             return null;
         }
         linkedTrace.setPersistentProperty(TmfCommonConstants.TRACETYPE,
-                "org.eclipse.linuxtools.tmf.ui.type.ctf");
+                "org.eclipse.linuxtools.tmf.tests.ctf.tracetype");
 
         final TmfProjectElement projectElement = TmfProjectRegistry.getProject(project, true);
         TmfTraceElement traceElement = projectElement.getTracesFolder().getTraces().get(0);
         traceElement.refreshTraceType();
 
         return projectElement;
-    }
-
-    /**
-     * Adds a new experiment to the project
-     *
-     * @param projectElement
-     *            The project to add to
-     * @param experimentName
-     *            Name of the experiment
-     * @return The newly created experiment
-     */
-    public static TmfExperimentElement addExperiment(TmfProjectElement projectElement, String experimentName) {
-        IFolder experimentFolder = projectElement.getExperimentsFolder().getResource();
-        IWorkspaceRoot workspaceRoot = experimentFolder.getWorkspace().getRoot();
-        IPath folderPath = experimentFolder.getFullPath().append(experimentName);
-        final IFolder folder = workspaceRoot.getFolder(folderPath);
-
-        WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
-            @Override
-            public void execute(IProgressMonitor monitor) throws CoreException {
-                monitor.beginTask("", 1000);
-                folder.create(false, true, monitor);
-                monitor.done();
-            }
-        };
-        try {
-            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(operation);
-        } catch (InterruptedException exception) {
-
-        } catch (InvocationTargetException exception) {
-
-        } catch (RuntimeException exception) {
-
-        }
-
-        TmfImportHelper.forceFolderRefresh(experimentFolder);
-
-        for (ITmfProjectModelElement el : projectElement.getExperimentsFolder().getChildren()) {
-            if (el.getName().equals(experimentName) && (el instanceof TmfExperimentElement)) {
-                return (TmfExperimentElement) el;
-            }
-        }
-        return null;
     }
 
     /**
@@ -137,10 +96,8 @@ public class ProjectModelTestData {
      *
      * @param project
      *            Project to delete
-     * @throws CoreException
-     *             Thrown by the resource deletion
      */
-    public static void deleteProject(TmfProjectElement project) throws CoreException {
+    public static void deleteProject(TmfProjectElement project) {
         /* Delete experiments */
         for (ITmfProjectModelElement element : project.getExperimentsFolder().getChildren()) {
             if (element instanceof TmfExperimentElement) {
@@ -157,7 +114,11 @@ public class ProjectModelTestData {
                 }
 
                 /* Finally, delete the experiment */
-                resource.delete(true, null);
+                try {
+                    resource.delete(true, null);
+                } catch (CoreException e) {
+                    Activator.getDefault().logError("Error deleting experiment element", e);
+                }
             }
         }
 
@@ -177,12 +138,20 @@ public class ProjectModelTestData {
                 }
 
                 /* Finally, delete the trace */
-                resource.delete(true, new NullProgressMonitor());
+                try {
+                    resource.delete(true, new NullProgressMonitor());
+                } catch (CoreException e) {
+                    Activator.getDefault().logError("Error deleting trace element", e);
+                }
             }
         }
 
         /* Delete the project itself */
-        project.getResource().delete(true, null);
+        try {
+            project.getResource().delete(true, null);
+        } catch (CoreException e) {
+            Activator.getDefault().logError("Error deleting project", e);
+        }
     }
 
     /**

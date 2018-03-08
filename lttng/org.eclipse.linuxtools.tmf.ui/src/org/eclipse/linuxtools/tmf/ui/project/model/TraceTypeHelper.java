@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
-import java.io.File;
-
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -29,7 +27,6 @@ public class TraceTypeHelper {
     private final String fName;
     private final String fCategoryName;
     private final String fCanonicalName;
-    private final boolean fExperimentType;
     private final ITmfTrace fTrace;
 
     /**
@@ -45,15 +42,12 @@ public class TraceTypeHelper {
      *            the name of the trace
      * @param trace
      *            an object of the trace type
-     * @param experiment
-     *            True if this helper is for an experiment type
      */
-    public TraceTypeHelper(String canonicalName, String categoryName, String name, ITmfTrace trace, boolean experiment) {
+    public TraceTypeHelper(String canonicalName, String categoryName, String name, ITmfTrace trace) {
         fName = name;
         fCategoryName = categoryName;
         fCanonicalName = canonicalName;
         fTrace = trace;
-        fExperimentType = experiment;
     }
 
     /**
@@ -94,8 +88,6 @@ public class TraceTypeHelper {
         boolean valid = false;
         if (fTrace != null) {
             valid = standardValidate(path);
-        } else if (fCategoryName.equals(TmfTraceType.CUSTOM_TXT_CATEGORY) || fCategoryName.equals(TmfTraceType.CUSTOM_XML_CATEGORY)) {
-            valid = customValidate(path);
         }
         return valid;
     }
@@ -109,23 +101,19 @@ public class TraceTypeHelper {
         return fTrace;
     }
 
-    /**
-     * Return whether this helper applies to a trace type or experiment type
-     *
-     * @return True if experiment type, false otherwise
-     */
-    public boolean isExperimentType() {
-        return fExperimentType;
-    }
-
     private boolean standardValidate(String path) {
         final boolean valid = fTrace.validate(null, path).equals(Status.OK_STATUS);
         return valid;
     }
 
-    private static boolean customValidate(String path) {
-        File f = new File(path);
-        return f.exists() && f.isFile();
+    /**
+     * Get the class associated with this trace type
+     *
+     * @return The trace class
+     * @since 3.0
+     */
+    public Class<? extends ITmfTrace> getTraceClass() {
+        return fTrace.getClass();
     }
 
     @Override
