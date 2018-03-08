@@ -52,7 +52,6 @@ public final class TreeSettings {
 	 * Allows access to the Tapset Function tree, which contains information about all
 	 * functions stored in the tapset library.
 	 * @return The <code>TreeNode</code> root of the Function tree.
-	 * @since 2.0
 	 */
 	public static TreeNode getFunctionTree() {
 		if (!readData()) {
@@ -65,7 +64,6 @@ public final class TreeSettings {
 	 * Allows access to the Tapset Probe Alias tree, which contains a list of all probe aliases
 	 * in the tapset library.
 	 * @return The <code>TreeNode</code> root of the Probe Alias tree.
-	 * @since 2.0
 	 */
 	public static TreeNode getProbeTree() {
 		if (!readData()) {
@@ -79,7 +77,6 @@ public final class TreeSettings {
 	 * @param func The Function tree to store in cache.
 	 * @param probe The Probe Alias tree to store in cache.
 	 * @return True if the caching is successful.
-	 * @since 2.0
 	 */
 	public static boolean setTrees(TreeNode func, TreeNode probe) {
 		if (null == func || null == probe) {
