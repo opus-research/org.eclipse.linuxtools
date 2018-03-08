@@ -19,9 +19,6 @@
    <feature url="features/org.eclipse.linuxtools.changelog_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.changelog" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
-   <feature url="features/org.eclipse.linuxtools.changelog.c_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.changelog.c" version="0.0.0">
-      <category name="Linux Tools"/>
-   </feature>
    <feature url="features/org.eclipse.linuxtools.dataviewers.feature_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.dataviewers.feature" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
@@ -61,12 +58,6 @@
    <feature url="features/org.eclipse.linuxtools.gcov_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.gcov" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
-   <feature url="features/org.eclipse.linuxtools.lttng2_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng2" version="0.0.0" os="linux">
-      <category name="Linux Tools"/>
-   </feature>
-   <feature url="features/org.eclipse.linuxtools.lttng2.kernel_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng2.kernel" version="0.0.0" os="linux">
-      <category name="Linux Tools"/>
-   </feature>
    <feature url="features/org.eclipse.linuxtools.perf_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.perf.feature" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
@@ -82,10 +73,6 @@
    <feature url="features/org.eclipse.linuxtools.perf.remote_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.perf.remote.feature" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
-   <!-- Orbit Dependencies -->
-   <iu id="org.swtchart" version="0.0.0">
-      <category name="Linux Tools"/>
-   </iu>
    <feature url="features/org.eclipse.linuxtools.cdt.libhover.feature.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.cdt.libhover.feature.source" version="0.0.0">
       <category name="Linux Tools Sources"/>
    </feature>
@@ -160,6 +147,12 @@
    </feature>
    <feature url="features/org.eclipse.linuxtools.perf.remote.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.perf.remote.feature.source" version="0.0.0">
       <category name="Linux Tools Sources"/>
+   </feature>
+   <feature url="features/org.eclipse.linuxtools.lttng2_1.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng2" version="1.0.0.qualifier">
+      <category name="Linux Tools"/>
+   </feature>
+   <feature url="features/org.eclipse.linuxtools.lttng2.kernel_1.1.0.qualifier.jar" id="org.eclipse.linuxtools.lttng2.kernel" version="1.1.0.qualifier">
+      <category name="Linux Tools"/>
    </feature>
    <category-def name="Linux Tools" label="Linux Tools">
       <description>
