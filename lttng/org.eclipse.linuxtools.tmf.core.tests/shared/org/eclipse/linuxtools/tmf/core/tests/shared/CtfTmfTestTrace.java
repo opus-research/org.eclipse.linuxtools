@@ -62,12 +62,10 @@ public enum CtfTmfTestTrace {
 
     /**
      * Return a CtfTmfTraceStub object of this test trace. It will be already
-     * initTrace()'ed.
+     * initTrace()'ed. You do not have to .dispose() the trace after use (the
+     * old one is disposed automatically when this method is called again).
      *
      * Make sure you call {@link #exists()} before calling this!
-     *
-     * After being used by unit tests, traces must be properly disposed of by
-     * calling the {@link CtfTmfTestTrace#dispose()} method.
      *
      * @return A CtfTmfTrace reference to this trace
      */
@@ -92,15 +90,5 @@ public enum CtfTmfTestTrace {
      */
     public boolean exists() {
         return CtfTestTrace.valueOf(this.name()).exists();
-    }
-
-    /**
-     * Dispose of the trace
-     */
-    public void dispose() {
-        if (fTrace != null) {
-            fTrace.dispose();
-            fTrace = null;
-        }
     }
 }
