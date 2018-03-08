@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 /**
  * An entry for use in the time graph views
  *
- * @since 3.0
+ * @since 2.1
  */
 public class TimeGraphEntry implements ITimeGraphEntry {
 
@@ -187,7 +187,12 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      *            The list of time events
      */
     public void setEventList(List<ITimeEvent> eventList) {
-        fEventList = new ArrayList<ITimeEvent>(eventList);
+        if (eventList != null) {
+            fEventList = new ArrayList<ITimeEvent>(eventList);
+        } else {
+            // the event list should never be null
+            fEventList = new ArrayList<ITimeEvent>();
+        }
     }
 
     /**
@@ -199,7 +204,12 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      *            The list of time events
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
-        fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
+        if (eventList != null) {
+            fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
+        } else {
+            // the zoomed event list can be null
+            fZoomedEventList = null;
+        }
     }
 
     /**

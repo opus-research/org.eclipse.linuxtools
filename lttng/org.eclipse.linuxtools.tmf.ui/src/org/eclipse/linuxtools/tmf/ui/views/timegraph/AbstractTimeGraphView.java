@@ -27,10 +27,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.ITableColorProvider;
-import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -59,9 +56,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -363,12 +357,9 @@ public abstract class AbstractTimeGraphView extends TmfView {
     /**
      * Base class to provide the labels for the left tree view entry. Views
      * extending this class typically need to override the getColumnText method
-     * if they have more than one column to display.
-     *
-     * Views can also override the getFonts and get*Color methods for additional
-     * layout options
+     * if they have more than one column to display
      */
-    protected static class TreeLabelProvider implements ITableLabelProvider, ITableFontProvider, ITableColorProvider {
+    protected static class TreeLabelProvider implements ITableLabelProvider {
 
         @Override
         public void addListener(ILabelProviderListener listener) {
@@ -399,27 +390,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 return entry.getName();
             }
             return ""; //$NON-NLS-1$
-        }
-
-        @Override
-        public Font getFont(Object element, int columnIndex) {
-            /* Example font modification (setting size to 6):
-             *
-             * FontData[] fD = Display.getCurrent().getSystemFont().getFontData();
-             * fD[0].setHeight(6);
-             * return new Font(Display.getCurrent(),fD[0]);
-             */
-            return null;
-        }
-
-        @Override
-        public Color getForeground(Object element, int columnIndex) {
-            return Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
-        }
-
-        @Override
-        public Color getBackground(Object element, int columnIndex) {
-            return Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
         }
 
     }
