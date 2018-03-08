@@ -33,7 +33,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
  * TODO: Implement me. Please.
  */
 @SuppressWarnings({"nls","javadoc"})
-public class TmfEventParserStub implements ITmfEventParser {
+public class TmfEventParserStub implements ITmfEventParser<TmfEvent> {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -41,13 +41,13 @@ public class TmfEventParserStub implements ITmfEventParser {
 
     private static final int NB_TYPES = 10;
     private final TmfEventType[] fTypes;
-    private final ITmfTrace fEventStream;
+    private ITmfTrace<TmfEvent> fEventStream;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    public TmfEventParserStub(final ITmfTrace eventStream) {
+    public TmfEventParserStub(final ITmfTrace<TmfEvent> eventStream) {
         fEventStream = eventStream;
         fTypes = new TmfEventType[NB_TYPES];
         for (int i = 0; i < NB_TYPES; i++) {
@@ -83,7 +83,7 @@ public class TmfEventParserStub implements ITmfEventParser {
 
         long location = 0;
         if (context != null && context.getLocation() != null) {
-            location = ((TmfLocation<Long>) (context.getLocation())).getLocationData();
+            location = ((TmfLocation<Long>) (context.getLocation())).getLocation();
             try {
                 stream.seek(location);
 

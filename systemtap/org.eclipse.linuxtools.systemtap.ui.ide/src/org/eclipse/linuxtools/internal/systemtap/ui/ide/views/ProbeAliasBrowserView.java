@@ -45,7 +45,6 @@ public class ProbeAliasBrowserView extends BrowserView {
 	/**
 	 * Creates the UI on the given <code>Composite</code>
 	 */
-	@Override
 	public void createPartControl(Composite parent) {
 		LogManager.logDebug("Start createPartControl: parent-" + parent, this); //$NON-NLS-1$
 		super.createPartControl(parent);
@@ -59,7 +58,6 @@ public class ProbeAliasBrowserView extends BrowserView {
 	/**
 	 * Refreshes the list of probe aliases in the viewer.
 	 */
-	@Override
 	public void refresh() {
 		LogManager.logDebug("Start refresh:", this); //$NON-NLS-1$
 		super.viewer.setInput(TapsetLibrary.getProbes());
@@ -89,7 +87,6 @@ public class ProbeAliasBrowserView extends BrowserView {
 		LogManager.logDebug("End makeActions:", this); //$NON-NLS-1$
 	}
 	
-	@Override
 	public void dispose() {
 		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		super.dispose();

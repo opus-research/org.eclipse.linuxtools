@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.internal.valgrind.tests;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
@@ -36,7 +37,7 @@ public class ValgrindStubProcess implements IProcess {
 		return attributes.get(key);
 	}
 
-	public int getExitValue() {
+	public int getExitValue() throws DebugException {
 		return 0;
 	}
 
@@ -69,7 +70,7 @@ public class ValgrindStubProcess implements IProcess {
 		return true;
 	}
 
-	public void terminate() {
+	public void terminate() throws DebugException {
 	}
 
 }

@@ -1,21 +1,21 @@
 package org.eclipse.linuxtools.systemtap.ui.structures;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.eclipse.linuxtools.systemtap.ui.structures.CCodeFileFilter;
 
-public class CCodeFileFilterTest {
+import junit.framework.TestCase;
 
-	@Before
-	public void setUp(){
+public class CCodeFileFilterTest extends TestCase {
+	public CCodeFileFilterTest(String name) {
+		super(name);
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
 		filter = new CCodeFileFilter();
 	}
 
-	@Test
 	public void testAccept() {
 		assertFalse(filter.accept(null));
 		assertFalse(filter.accept(new File("test")));
@@ -25,10 +25,13 @@ public class CCodeFileFilterTest {
 		assertTrue(filter.accept(new File("test.c")));
 	}
 	
-	@Test
 	public void testGetDescription() {
 		filter.getDescription();
 	}
-
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
+	
 	CCodeFileFilter filter;
 }

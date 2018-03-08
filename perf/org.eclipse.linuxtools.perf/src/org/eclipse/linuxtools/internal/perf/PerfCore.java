@@ -113,7 +113,7 @@ public class PerfCore {
 		} catch (CoreException e) {
 			return null;
 		}
-		if (projectName.equals("")) {
+		if (projectName == null) {
 			return null;
 		}
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
@@ -134,12 +134,7 @@ public class PerfCore {
 		} else {
 			ConfigUtils configUtils = new ConfigUtils(config);
 			try {
-				String projectName = configUtils.getProjectName();
-				// an empty string is not a legal path to file argument for ConfigUtils.getProject
-				if(projectName != null && !projectName.equals("")){
-					project = ConfigUtils.getProject(projectName);
-				}
-
+				project = ConfigUtils.getProject(configUtils.getProjectName());
 			} catch (CoreException e1) {
 				e1.printStackTrace();
 			}
@@ -492,14 +487,9 @@ public class PerfCore {
 				if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 				// line containing report information
 				if ((line.startsWith("#"))) {
-					if (line.contains("Events:") || line.contains("Samples:")) {
+					if (line.contains("Events:")) {
 						String[] tmp = line.trim().split(" ");
-						String event = tmp[tmp.length - 1];
-						// In this case, the event name is single quoted
-						if (line.contains("Samples:")){
-							event = event.substring(1, event.length() -1);
-						}
-						currentEvent = new PMEvent(event);
+						currentEvent = new PMEvent(tmp[tmp.length - 1]);
 						invisibleRoot.addChild(currentEvent);
 						currentCommand = null;
 						currentDso = null;

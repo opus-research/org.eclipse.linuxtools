@@ -41,7 +41,7 @@ import org.eclipse.ui.progress.UIJob;
 
 /**
  * The Kernel Source Browser module for the SystemTap GUI. This browser provides a list of kernel source
- * files and allows the user to open those files in an editor in order to place probes in arbitrary locations.
+ * files and allows the user to open those files in an editor in order to place probes in arbitary locations.
  * @author Henry Hughes
  * @author Ryan Morse
  */
@@ -61,7 +61,6 @@ public class KernelBrowserView extends BrowserView {
 			this.kernelSource = kernelSource;
 		}
 
-		@Override
 		public IStatus run(IProgressMonitor monitor) {
 			IPreferenceStore p = IDEPlugin.getDefault().getPreferenceStore();
 			KernelSourceTree kst = new KernelSourceTree();
@@ -86,7 +85,6 @@ public class KernelBrowserView extends BrowserView {
 			this.kst = kst;
 		}
 
-		@Override
 		public IStatus runInUIThread(IProgressMonitor monitor) {
 			monitor.beginTask(Localization.getString("KernelBrowserView.UpdateKernelBrowser"), 100); //$NON-NLS-1$
 			if (kst == null)
@@ -110,7 +108,6 @@ public class KernelBrowserView extends BrowserView {
 	/**
 	 * Creates the UI on the given <code>Composite</code>
 	 */
-	@Override
 	public void createPartControl(Composite parent) {
 		LogManager.logDebug("Start createPartControl: parent-" + parent, this); //$NON-NLS-1$
 		super.createPartControl(parent);
@@ -143,7 +140,6 @@ public class KernelBrowserView extends BrowserView {
 	 * a response to the user changing the preferences related to the kernel source location, requiring
 	 * that the application update the kernel source information.
 	 */
-	@Override
 	public void refresh() {
 		LogManager.logDebug("Start refresh:", this); //$NON-NLS-1$
 		
@@ -221,7 +217,6 @@ public class KernelBrowserView extends BrowserView {
 		}
 	};
 	
-	@Override
 	public void dispose() {
 		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
 		super.dispose();

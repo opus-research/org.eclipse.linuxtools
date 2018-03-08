@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.cdt.libhover;
 import org.eclipse.core.resources.ISaveContext;
 import org.eclipse.core.resources.ISaveParticipant;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -50,17 +51,16 @@ public class LibhoverPlugin extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
-	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 		ResourcesPlugin.getWorkspace().addSaveParticipant(PLUGIN_ID,
 				new ISaveParticipant() {
-					public void saving(ISaveContext saveContext) {
+					public void saving(ISaveContext saveContext) throws CoreException {
 						LibhoverPlugin.getDefault().save(saveContext);
 					}				
 					public void rollback(ISaveContext saveContext) {}
-					public void prepareToSave(ISaveContext saveContext) {}
+					public void prepareToSave(ISaveContext saveContext) throws CoreException {}
 					public void doneSaving(ISaveContext saveContext) {}
 				});
 		IPreferenceStore ps = getPreferenceStore();
@@ -78,7 +78,6 @@ public class LibhoverPlugin extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
-	@Override
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);

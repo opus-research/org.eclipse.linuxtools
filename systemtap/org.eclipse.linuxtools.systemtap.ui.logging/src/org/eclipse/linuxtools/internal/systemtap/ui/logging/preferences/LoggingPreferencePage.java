@@ -31,7 +31,6 @@ public class LoggingPreferencePage extends FieldEditorPreferencePage implements 
 		setDescription(Localization.getString("LoggingPreferencePage.LoggingDescription"));
 	}
 
-	@Override
 	public void createFieldEditors() {
 		BooleanFieldEditor logging = 
 			new BooleanFieldEditor(PreferenceConstants.P_LOG_ENABLED, Localization.getString("LoggingPreferencePage.EnableLogging"), getFieldEditorParent());
@@ -60,7 +59,6 @@ public class LoggingPreferencePage extends FieldEditorPreferencePage implements 
 	public void init(IWorkbench workbench) {
 	}
 
-	@Override
 	public void dispose() {
 		super.dispose();
 	}

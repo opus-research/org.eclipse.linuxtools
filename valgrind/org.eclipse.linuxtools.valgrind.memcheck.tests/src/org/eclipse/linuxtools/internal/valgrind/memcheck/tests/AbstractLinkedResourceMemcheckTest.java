@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -32,7 +33,7 @@ public abstract class AbstractLinkedResourceMemcheckTest extends AbstractMemchec
 		final Exception[] ex = new Exception[1];
 		ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
 
-			public void run(IProgressMonitor monitor) {
+			public void run(IProgressMonitor monitor) throws CoreException {
 				try {					
 					URL location = FileLocator.find(getBundle(), new Path("resources/linkedTest/src"), null); //$NON-NLS-1$
 					IFolder srcFolder = proj.getProject().getFolder("src"); //$NON-NLS-1$

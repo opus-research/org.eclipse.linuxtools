@@ -34,7 +34,6 @@ public class UniqueFilterWizardPage extends FilterWizardPage {
 		aggregateID = "";
 	}
 	
-	@Override
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 
@@ -85,12 +84,10 @@ public class UniqueFilterWizardPage extends FilterWizardPage {
 		setControl(comp);
 	}
 	
-	@Override
 	public boolean canFlipToNextPage() {
 		return false;
 	}
 
-	@Override
 	protected void createFilter() {
 		int selected = cboColumn.getSelectionIndex();
 		int style = 0;
@@ -100,7 +97,6 @@ public class UniqueFilterWizardPage extends FilterWizardPage {
 		}
 	}
 
-	@Override
 	public void dispose() {
 		if(null != cboColumn) {
 			cboColumn.removeSelectionListener(selectionListener);

@@ -38,7 +38,6 @@ public abstract class OpenWksRelFilePathAction extends AbstractOpenSourceFileAct
 	@Override
 	public abstract AbstractSTAnnotatedSourceEditorInput getInput(IFileStore fs);
 	
-	@Override
 	public IFileStore getFileStore(){
 		 File file = new File(filepath);
 	        IFile f = null;

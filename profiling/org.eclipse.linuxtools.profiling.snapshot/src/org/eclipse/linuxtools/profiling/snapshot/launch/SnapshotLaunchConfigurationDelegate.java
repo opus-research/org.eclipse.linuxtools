@@ -10,23 +10,46 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.snapshot.launch;
 
-import org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate;
-import org.eclipse.linuxtools.profiling.snapshot.SnapshotConstants;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 
-/**
- * The launch configuration delegate for this plug-in.
- * 
- */
 public class SnapshotLaunchConfigurationDelegate extends
-		ProviderLaunchConfigurationDelegate {
+		ProfileLaunchConfigurationDelegate {
 
 	@Override
 	protected String getPluginID() {
-		return SnapshotConstants.PLUGIN_ID;
+		return "org.eclipse.linuxtools.profiling.snapshot";
 	}
 
 	@Override
-	public String getProfilingType() {
-		return SnapshotConstants.PROFILING_TYPE;
+	public void launch(ILaunchConfiguration config, String mode, ILaunch launch,
+			IProgressMonitor monitor) {
+		try {
+
+			if (config != null) {
+				// get provider id from configuration.
+				String providerId = config.getAttribute("provider", "");
+				if (providerId.equals("")) {
+					return;
+				}
+				// get configuration delegate associated with provider id.
+				ProfileLaunchConfigurationDelegate delegate = getConfigurationDelegateFromId(providerId);
+				if (delegate != null) {
+					delegate.launch(config, mode, launch, monitor);
+				}
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		return;
 	}
+
+	@Override
+	public String generateCommand(ILaunchConfiguration config) {
+		return null;
+	}
+
 }

@@ -72,17 +72,14 @@ public class SelectFilterWizardPage extends WizardPage {
 		setControl(comp);
 	}
 	
-	@Override
 	public IWizardPage getNextPage() {
 		return AvailableFilterTypes.getFilterWizardPage(filterID);
 	}
 
-	@Override
 	public boolean canFlipToNextPage() {
 		return (filterID.length() > 0);
 	}
 	
-	@Override
 	public void dispose() {
 		super.dispose();
 		if(null != btnFilters)
