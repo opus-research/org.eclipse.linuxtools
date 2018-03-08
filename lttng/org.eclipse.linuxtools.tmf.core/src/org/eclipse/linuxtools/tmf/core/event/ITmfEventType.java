@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import java.util.Set;
-
 /**
  * The generic event type in TMF. It contains a reference to the full field structure
  * for that event type.
@@ -63,13 +61,12 @@ public interface ITmfEventType {
 
     /**
      * @return the event field names (labels)
-     * @since 2.0
      */
-    public Set<String> getFieldNames();
+    public String[] getFieldNames();
 
     /**
-     * @return a clone of the event type
+     * @param index the event field index
+     * @return the corresponding event field label
      */
-    public ITmfEventType clone();
-
+    public String getFieldName(int index);
 }

@@ -13,9 +13,6 @@
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 /**
  * A basic implementation of ITmfEventType.
  *
@@ -25,15 +22,15 @@ import java.util.Set;
  * @see ITmfEvent
  * @see ITmfEventField
  */
-public class TmfEventType implements ITmfEventType, Cloneable {
+public class TmfEventType implements ITmfEventType {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private String fContext;
-    private String fTypeId;
-    private ITmfEventField fRootField;
+    private final String fContext;
+    private final String fTypeId;
+    private final ITmfEventField fRootField;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -83,54 +80,53 @@ public class TmfEventType implements ITmfEventType, Cloneable {
     // ITmfEventType
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventType#getContext()
+     */
     @Override
     public String getContext() {
         return fContext;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventType#getName()
+     */
     @Override
     public String getName() {
         return fTypeId;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventType#getRootField()
+     */
     @Override
     public ITmfEventField getRootField() {
         return fRootField;
     }
 
-    /**
-     * @since 2.0
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventType#getFieldNames()
      */
     @Override
-    public Set<String> getFieldNames() {
-        if (fRootField == null) {
-            return new LinkedHashSet<String>();
-        }
-        return fRootField.getFields().keySet();
+    public String[] getFieldNames() {
+        return (fRootField != null) ? fRootField.getFieldNames() : new String[0];
     }
 
-    // ------------------------------------------------------------------------
-    // Cloneable
-    // ------------------------------------------------------------------------
-
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfEventType#getFieldName(int)
+     */
     @Override
-    public TmfEventType clone() {
-        TmfEventType clone = null;
-        try {
-            clone = (TmfEventType) super.clone();
-            clone.fContext = fContext;
-            clone.fTypeId = fTypeId;
-            clone.fRootField = fRootField;
-        }
-        catch (final CloneNotSupportedException e) {
-        }
-        return clone;
+    public String getFieldName(final int index) {
+        return (fRootField != null) ? fRootField.getFieldName(index) : null;
     }
 
     // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -140,6 +136,9 @@ public class TmfEventType implements ITmfEventType, Cloneable {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -161,6 +160,9 @@ public class TmfEventType implements ITmfEventType, Cloneable {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     @SuppressWarnings("nls")
     public String toString() {
