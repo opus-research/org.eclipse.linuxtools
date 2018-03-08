@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
@@ -69,37 +68,38 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     /**
      * Rebuild independently so we can benchmark it. Too bad JUnit doesn't allow
      * us to @Test the @BeforeClass...
+     *
+     * @throws TmfTraceException
+     *             Fails the test
      */
     @Test
-    public void testBuild() {
-        try {
-            IStateChangeInput input2 = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
-            ITmfStateSystem ssb2 = StateSystemManager.loadStateHistory(stateFileBenchmark, input2, true);
+    public void testBuild() throws TmfTraceException {
+        IStateChangeInput input2;
+        ITmfStateSystem ssb2;
 
-            assertEquals(startTime, ssb2.getStartTime());
-            assertEquals(endTime, ssb2.getCurrentEndTime());
+        input2 = new CtfKernelStateInput(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
+        ssb2 = StateSystemManager.loadStateHistory(stateFileBenchmark, input2, true);
 
-        } catch (TmfTraceException e) {
-            fail();
-        }
+        assertEquals(startTime, ssb2.getStartTime());
+        assertEquals(endTime, ssb2.getCurrentEndTime());
     }
 
     /**
      * Test re-opening the existing file.
+     *
+     * @throws TmfTraceException
+     *             Fails the test
      */
     @Test
-    public void testOpenExistingStateFile() {
-        try {
-            /* 'newStateFile' should have already been created */
-            ITmfStateSystem ssb2 = StateSystemManager.loadStateHistory(stateFile, null, true);
+    public void testOpenExistingStateFile() throws TmfTraceException {
+        ITmfStateSystem ssb2;
 
-            assertNotNull(ssb2);
-            assertEquals(startTime, ssb2.getStartTime());
-            assertEquals(endTime, ssb2.getCurrentEndTime());
+        /* 'newStateFile' should have already been created */
+        ssb2 = StateSystemManager.loadStateHistory(stateFile, null, true);
 
-         } catch (TmfTraceException e) {
-             fail();
-         }
+        assertNotNull(ssb2);
+        assertEquals(startTime, ssb2.getStartTime());
+        assertEquals(endTime, ssb2.getCurrentEndTime());
     }
 
 }
