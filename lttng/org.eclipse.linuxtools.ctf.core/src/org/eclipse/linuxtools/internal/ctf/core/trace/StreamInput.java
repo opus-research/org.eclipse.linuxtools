@@ -21,8 +21,11 @@ import java.util.UUID;
 
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
+import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.Utils;
@@ -71,6 +74,11 @@ public class StreamInput implements IDefinitionScope {
      */
     StructDefinition streamPacketContextDef = null;
 
+    /*
+     * Total number of lost events in this stream
+     */
+    long lostSoFar = 0;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -98,6 +106,7 @@ public class StreamInput implements IDefinitionScope {
 
     /**
      * Gets the stream the streamInput wrapper is wrapping
+     *
      * @return the stream the streamInput wrapper is wrapping
      */
     public Stream getStream() {
@@ -106,6 +115,7 @@ public class StreamInput implements IDefinitionScope {
 
     /**
      * the common streamInput Index
+     *
      * @return the stream input Index
      */
     public StreamInputPacketIndex getIndex() {
@@ -113,7 +123,9 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * Gets the filechannel of the streamInput. This is a limited Java ressource.
+     * Gets the filechannel of the streamInput. This is a limited Java
+     * ressource.
+     *
      * @return the filechannel
      */
     public FileChannel getFileChannel() {
@@ -122,6 +134,7 @@ public class StreamInput implements IDefinitionScope {
 
     /**
      * Gets the filename of the streamInput file.
+     *
      * @return the filename of the streaminput file.
      */
     public String getFilename() {
@@ -129,7 +142,9 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * gets the last read timestamp of a stream. (this is not necessarily the last time in the stream.)
+     * gets the last read timestamp of a stream. (this is not necessarily the
+     * last time in the stream.)
+     *
      * @return the last read timestamp
      */
     public long getTimestampEnd() {
@@ -137,8 +152,11 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * Sets the last read timestamp of a stream. (this is not necessarily the last time in the stream.)
-     * @param timestampEnd the last read timestamp
+     * Sets the last read timestamp of a stream. (this is not necessarily the
+     * last time in the stream.)
+     *
+     * @param timestampEnd
+     *            the last read timestamp
      */
     public void setTimestampEnd(long timestampEnd) {
         this.timestampEnd = timestampEnd;
@@ -167,12 +185,11 @@ public class StreamInput implements IDefinitionScope {
      */
     public void setupIndex() {
 
-
         /*
          * The BitBuffer to extract data from the StreamInput
          */
         BitBuffer bitBuffer = new BitBuffer();
-        bitBuffer.order(this.getStream().getTrace().getByteOrder());
+        bitBuffer.setByteOrder(this.getStream().getTrace().getByteOrder());
 
         /*
          * Create the definitions we need to read the packet headers + contexts
@@ -206,7 +223,7 @@ public class StreamInput implements IDefinitionScope {
         long fileSize = getStreamSize();
         if (currentPos < fileSize) {
             BitBuffer bitBuffer = new BitBuffer();
-            bitBuffer.order(this.getStream().getTrace().getByteOrder());
+            bitBuffer.setByteOrder(this.getStream().getTrace().getByteOrder());
             StreamInputPacketIndexEntry packetIndex = new StreamInputPacketIndexEntry(
                     currentPos);
             createPacketIndexEntry(fileSize, currentPos, packetIndex,
@@ -226,8 +243,8 @@ public class StreamInput implements IDefinitionScope {
             StructDefinition tracePacketHeaderDef,
             StructDefinition streamPacketContextDef, BitBuffer bitBuffer)
             throws CTFReaderException {
-            @SuppressWarnings("unused")
-            MappedByteBuffer bb = createPacketBitBuffer(fileSizeBytes,
+        @SuppressWarnings("unused")
+        MappedByteBuffer bb = createPacketBitBuffer(fileSizeBytes,
                 packetOffsetBytes, packetIndex, bitBuffer);
 
         /*
@@ -266,8 +283,7 @@ public class StreamInput implements IDefinitionScope {
         /*
          * Update the counting packet offset
          */
-        packetOffsetBytes = computeNextOffset(packetIndex);
-        return packetOffsetBytes;
+        return computeNextOffset(packetIndex);
     }
 
     /**
@@ -389,24 +405,43 @@ public class StreamInput implements IDefinitionScope {
             StreamInputPacketIndexEntry packetIndex) {
         streamPacketContextDef.read(bitBuffer);
 
-        /*
-         * Read the content size in bits
-         */
-        IntegerDefinition contentSizeDef = (IntegerDefinition) streamPacketContextDef
-                .lookupDefinition("content_size"); //$NON-NLS-1$
-        if (contentSizeDef != null) {
-            packetIndex.setContentSizeBits((int) contentSizeDef.getValue());
+        for (String field : streamPacketContextDef.getDeclaration()
+                .getFieldsList()) {
+            Definition id = streamPacketContextDef.lookupDefinition(field);
+            if (id instanceof IntegerDefinition) {
+                packetIndex.addAttribute(field,
+                        ((IntegerDefinition) id).getValue());
+            } else if (id instanceof FloatDefinition) {
+                packetIndex.addAttribute(field,
+                        ((FloatDefinition) id).getValue());
+            } else if (id instanceof EnumDefinition) {
+                packetIndex.addAttribute(field,
+                        ((EnumDefinition) id).getValue());
+            } else if (id instanceof StringDefinition) {
+                packetIndex.addAttribute(field,
+                        ((StringDefinition) id).getValue());
+            }
+        }
+
+        Long contentSize = (Long) packetIndex.lookupAttribute("content_size"); //$NON-NLS-1$
+        Long packetSize = (Long) packetIndex.lookupAttribute("packet_size"); //$NON-NLS-1$
+        Long timestampBegin = (Long) packetIndex.lookupAttribute("timestamp_begin"); //$NON-NLS-1$
+        Long timestampEnd = (Long) packetIndex.lookupAttribute("timestamp_end"); //$NON-NLS-1$
+        String device = (String) packetIndex.lookupAttribute("device"); //$NON-NLS-1$
+        // LTTng Specific
+        Long CPU_ID = (Long) packetIndex.lookupAttribute("cpu_id"); //$NON-NLS-1$
+        Long lostEvents = (Long) packetIndex.lookupAttribute("events_discarded");  //$NON-NLS-1$
+
+        /* Read the content size in bits */
+        if (contentSize != null) {
+            packetIndex.setContentSizeBits(contentSize.intValue());
         } else {
             packetIndex.setContentSizeBits((int) (fileSizeBytes * 8));
         }
 
-        /*
-         * Read the packet size in bits
-         */
-        IntegerDefinition packetSizeDef = (IntegerDefinition) streamPacketContextDef
-                .lookupDefinition("packet_size"); //$NON-NLS-1$
-        if (packetSizeDef != null) {
-            packetIndex.setPacketSizeBits((int) packetSizeDef.getValue());
+        /* Read the packet size in bits */
+        if (packetSize != null) {
+            packetIndex.setPacketSizeBits(packetSize.intValue());
         } else {
             if (packetIndex.getContentSizeBits() != 0) {
                 packetIndex.setPacketSizeBits(packetIndex.getContentSizeBits());
@@ -415,23 +450,31 @@ public class StreamInput implements IDefinitionScope {
             }
         }
 
-        /*
-         * Read the begin timestamp
-         */
-        IntegerDefinition timestampBeginDef = (IntegerDefinition) streamPacketContextDef
-                .lookupDefinition("timestamp_begin"); //$NON-NLS-1$
-        if (timestampBeginDef != null) {
-            packetIndex.setTimestampBegin(timestampBeginDef.getValue());
+        /* Read the begin timestamp */
+        if (timestampBegin != null) {
+            packetIndex.setTimestampBegin(timestampBegin.longValue());
         }
 
-        /*
-         * Read the end timestamp
-         */
-        IntegerDefinition timestampEndDef = (IntegerDefinition) streamPacketContextDef
-                .lookupDefinition("timestamp_end"); //$NON-NLS-1$
-        if (timestampEndDef != null) {
-            packetIndex.setTimestampEnd(timestampEndDef.getValue());
+        /* Read the end timestamp */
+        if (timestampEnd != null) {
+            if( timestampEnd == -1 ) {
+                timestampEnd = Long.MAX_VALUE;
+            }
+            packetIndex.setTimestampEnd(timestampEnd.longValue());
             setTimestampEnd(packetIndex.getTimestampEnd());
+        }
+
+        if (device != null) {
+            packetIndex.setTarget(device);
+        }
+
+        if (CPU_ID != null) {
+            packetIndex.setTarget("CPU" + CPU_ID.toString()); //$NON-NLS-1$
+        }
+
+        if (lostEvents != null) {
+            packetIndex.setLostEvents(lostEvents - lostSoFar);
+            this.lostSoFar = lostEvents;
         }
     }
 

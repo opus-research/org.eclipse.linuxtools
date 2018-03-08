@@ -7,10 +7,10 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis      (mathieu.denis@polymtl.ca)  - Initial API
+ *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.views.statistics.model;
+package org.eclipse.linuxtools.tmf.ui.viewers.statistics.model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,27 +18,20 @@ import java.util.Map;
 /**
  * Factory class to create and store TMF statistic trees.
  *
- * Based on a given tree node ID a TMF statistic tree is stored internally.
- * A root node is created for each tree. Using the tree node ID the statistics
+ * Based on a given tree node ID a TMF statistic tree is stored internally. A
+ * root node is created for each tree. Using the tree node ID the statistics
  * tree can be retrieved.
  *
- * @version 1.0
+ * @version 2.0
+ * @since 2.0
  * @author Mathieu Denis
- *
  */
 public class TmfStatisticsTreeRootFactory {
 
-    // -----------------------------------------------------------------------
-    // Data
-    // -----------------------------------------------------------------------
     /**
      * Contains the experiment name as the key and the traces data
      */
     private static final Map<String, AbsTmfStatisticsTree> fTreeInstances = new HashMap<String, AbsTmfStatisticsTree>();
-
-    // -----------------------------------------------------------------------
-    // Methods
-    // -----------------------------------------------------------------------
 
     /**
      * Provide a statisticsTree instance per trace
