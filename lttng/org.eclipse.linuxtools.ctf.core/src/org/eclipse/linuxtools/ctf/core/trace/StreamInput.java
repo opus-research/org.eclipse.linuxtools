@@ -115,7 +115,7 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * The common streamInput Index
+     * the common streamInput Index
      *
      * @return the stream input Index
      */
@@ -125,7 +125,7 @@ public class StreamInput implements IDefinitionScope {
 
     /**
      * Gets the filechannel of the streamInput. This is a limited Java
-     * resource.
+     * ressource.
      *
      * @return the filechannel
      */
@@ -143,7 +143,7 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * Gets the last read timestamp of a stream. (this is not necessarily the
+     * gets the last read timestamp of a stream. (this is not necessarily the
      * last time in the stream.)
      *
      * @return the last read timestamp
@@ -164,7 +164,7 @@ public class StreamInput implements IDefinitionScope {
     }
 
     /**
-     * Useless for streaminputs
+     * useless for streaminputs
      */
     @Override
     public String getPath() {
@@ -352,6 +352,7 @@ public class StreamInput implements IDefinitionScope {
                 throw new CTFReaderException(
                         "CTF magic mismatch " + Integer.toHexString(magic) + " vs " + Integer.toHexString(Utils.CTF_MAGIC)); //$NON-NLS-1$//$NON-NLS-2$
             }
+
         }
 
         /*
@@ -395,13 +396,13 @@ public class StreamInput implements IDefinitionScope {
          * If there is no packet context, infer the content and packet size from
          * the file size (assume that there is only one packet and no padding)
          */
-        packetIndex.setContentSizeBits(fileSizeBytes * 8);
-        packetIndex.setPacketSizeBits(fileSizeBytes * 8);
+        packetIndex.setContentSizeBits((int) (fileSizeBytes * 8));
+        packetIndex.setPacketSizeBits((int) (fileSizeBytes * 8));
     }
 
     private void parsePacketContext(long fileSizeBytes,
             StructDefinition streamPacketContextDef, BitBuffer bitBuffer,
-            StreamInputPacketIndexEntry packetIndex) throws CTFReaderException {
+            StreamInputPacketIndexEntry packetIndex) {
         streamPacketContextDef.read(bitBuffer);
 
         for (String field : streamPacketContextDef.getDeclaration()
@@ -456,7 +457,7 @@ public class StreamInput implements IDefinitionScope {
 
         /* Read the end timestamp */
         if (tsEnd != null) {
-            if (tsEnd == -1) {
+            if( tsEnd == -1 ) {
                 tsEnd = Long.MAX_VALUE;
             }
             packetIndex.setTimestampEnd(tsEnd.longValue());
