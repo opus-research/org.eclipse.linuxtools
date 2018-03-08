@@ -238,10 +238,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     /**
-     * @since 2.0
+     * Index the trace
+     *
+     * @param waitForCompletion index synchronously (true) or not (false)
      */
-    @Override
-    public void indexTrace(boolean waitForCompletion) {
+    protected void indexTrace(boolean waitForCompletion) {
         getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, waitForCompletion);
     }
 
