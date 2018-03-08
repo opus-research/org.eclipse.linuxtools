@@ -14,15 +14,12 @@ package org.eclipse.linuxtools.tmf.ui.project.model;
 
 import java.net.URL;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.ISharedImages;
@@ -120,27 +117,6 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
 
         if (element instanceof TmfTraceFolder) {
             return fTraceFolderIcon;
-        }
-
-        if (element instanceof TmfExperiment) {
-            return fExperimentIcon;
-        }
-
-        if (element instanceof ITmfTrace) {
-            ITmfTrace trace = (ITmfTrace) element;
-            try {
-                IResource resource = trace.getResource();
-                if (resource != null) {
-                    String name = resource.getPersistentProperty(TmfCommonConstants.TRACEBUNDLE);
-                    String icon = resource.getPersistentProperty(TmfCommonConstants.TRACEICON);
-                    if (name != null && icon != null) {
-                        Bundle bundle = Platform.getBundle(name);
-                        return loadIcon(bundle, icon);
-                    }
-                }
-            } catch (CoreException e) {
-            }
-            return fDefaultTraceIcon;
         }
 
         return null;
