@@ -20,16 +20,17 @@ import java.util.Map;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
+import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleSource;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisModuleHelperCE;
 
 /**
- * Utility class for accessing TMF analysis type extensions from the platform's
- * extensions registry.
+ * Utility class for accessing TMF analysis module extensions from the
+ * platform's extensions registry.
  *
  * @author Geneviève Bastien
  * @since 3.0
  */
-public final class TmfAnalysisType {
+public final class TmfAnalysisModuleSourceCE implements IAnalysisModuleSource {
 
     /** Extension point ID */
     public static final String TMF_ANALYSIS_TYPE_ID = "org.eclipse.linuxtools.tmf.core.analysis"; //$NON-NLS-1$
@@ -71,9 +72,7 @@ public final class TmfAnalysisType {
      * The mapping of available trace type IDs to their corresponding
      * configuration element
      */
-    private final Map<String, IAnalysisModuleHelper> fAnalysisTypeAttributes = new HashMap<String, IAnalysisModuleHelper>();
-
-    private static TmfAnalysisType fInstance = null;
+    private final Map<String, IAnalysisModuleHelper> fAnalysisHelpers = new HashMap<String, IAnalysisModuleHelper>();
 
     /**
      * Retrieves all configuration elements from the platform extension registry
@@ -93,40 +92,27 @@ public final class TmfAnalysisType {
         return typeElements.toArray(new IConfigurationElement[typeElements.size()]);
     }
 
-    private TmfAnalysisType() {
-        populateAnalysisTypes();
+    /**
+     * Constructor
+     */
+    public TmfAnalysisModuleSourceCE() {
+        populateAnalysisList();
     }
 
-    /**
-     * The analysis type instance
-     *
-     * @return the analysis type instance
-     */
-    public static synchronized TmfAnalysisType getInstance() {
-        if (fInstance == null) {
-            fInstance = new TmfAnalysisType();
-        }
-        return fInstance;
-    }
-
-    /**
-     * Get the list of analysis modules
-     *
-     * @return list of analysis modules
-     */
+    @Override
     public Map<String, IAnalysisModuleHelper> getAnalysisModules() {
-        return fAnalysisTypeAttributes;
+        return fAnalysisHelpers;
     }
 
-    private void populateAnalysisTypes() {
-        if (fAnalysisTypeAttributes.isEmpty()) {
-            // Populate the Categories and Trace Types
+    private void populateAnalysisList() {
+        if (fAnalysisHelpers.isEmpty()) {
+            // Populate the analysis module list
             IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(TMF_ANALYSIS_TYPE_ID);
             for (IConfigurationElement ce : config) {
                 String elementName = ce.getName();
-                if (elementName.equals(TmfAnalysisType.MODULE_ELEM)) {
-                    String analysisTypeId = ce.getAttribute(TmfAnalysisType.ID_ATTR);
-                    fAnalysisTypeAttributes.put(analysisTypeId, new TmfAnalysisModuleHelperCE(ce));
+                if (elementName.equals(TmfAnalysisModuleSourceCE.MODULE_ELEM)) {
+                    String analysisTypeId = ce.getAttribute(TmfAnalysisModuleSourceCE.ID_ATTR);
+                    fAnalysisHelpers.put(analysisTypeId, new TmfAnalysisModuleHelperCE(ce));
                 }
             }
         }

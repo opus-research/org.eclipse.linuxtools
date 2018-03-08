@@ -17,7 +17,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.InvalidRegistryObjectException;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
-import org.eclipse.linuxtools.internal.tmf.core.analysis.TmfAnalysisType;
+import org.eclipse.linuxtools.internal.tmf.core.analysis.TmfAnalysisModuleSourceCE;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.osgi.util.NLS;
@@ -49,17 +49,17 @@ public class TmfAnalysisModuleHelperCE implements IAnalysisModuleHelper {
 
     @Override
     public String getId() {
-        return fCe.getAttribute(TmfAnalysisType.ID_ATTR);
+        return fCe.getAttribute(TmfAnalysisModuleSourceCE.ID_ATTR);
     }
 
     @Override
     public String getName() {
-        return fCe.getAttribute(TmfAnalysisType.NAME_ATTR);
+        return fCe.getAttribute(TmfAnalysisModuleSourceCE.NAME_ATTR);
     }
 
     @Override
     public boolean isAutomatic() {
-        return Boolean.valueOf(fCe.getAttribute(TmfAnalysisType.AUTOMATIC_ATTR));
+        return Boolean.valueOf(fCe.getAttribute(TmfAnalysisModuleSourceCE.AUTOMATIC_ATTR));
     }
 
     @Override
@@ -69,7 +69,7 @@ public class TmfAnalysisModuleHelperCE implements IAnalysisModuleHelper {
 
     @Override
     public String getIcon() {
-        return fCe.getAttribute(TmfAnalysisType.ICON_ATTR);
+        return fCe.getAttribute(TmfAnalysisModuleSourceCE.ICON_ATTR);
     }
 
     @Override
@@ -82,12 +82,12 @@ public class TmfAnalysisModuleHelperCE implements IAnalysisModuleHelper {
         boolean applies = false;
 
         /* Get the module's applying tracetypes */
-        final IConfigurationElement[] tracetypeCE = fCe.getChildren(TmfAnalysisType.TRACETYPE_ELEM);
+        final IConfigurationElement[] tracetypeCE = fCe.getChildren(TmfAnalysisModuleSourceCE.TRACETYPE_ELEM);
         for (IConfigurationElement element : tracetypeCE) {
             Class<?> applyclass;
             try {
-                applyclass = getBundle().loadClass(element.getAttribute(TmfAnalysisType.CLASS_ATTR));
-                String classAppliesVal = element.getAttribute(TmfAnalysisType.APPLIES_ATTR);
+                applyclass = getBundle().loadClass(element.getAttribute(TmfAnalysisModuleSourceCE.CLASS_ATTR));
+                String classAppliesVal = element.getAttribute(TmfAnalysisModuleSourceCE.APPLIES_ATTR);
                 boolean classApplies = true;
                 if (classAppliesVal != null) {
                     classApplies = Boolean.valueOf(classAppliesVal);
@@ -120,18 +120,18 @@ public class TmfAnalysisModuleHelperCE implements IAnalysisModuleHelper {
 
         IAnalysisModule module = null;
         try {
-            module = (IAnalysisModule) fCe.createExecutableExtension(TmfAnalysisType.ANALYSIS_MODULE_ATTR);
+            module = (IAnalysisModule) fCe.createExecutableExtension(TmfAnalysisModuleSourceCE.ANALYSIS_MODULE_ATTR);
             module.setName(getName());
             module.setId(getId());
             module.setAutomatic(isAutomatic());
 
             /* Get the module's parameters */
-            final IConfigurationElement[] parametersCE = fCe.getChildren(TmfAnalysisType.PARAMETER_ELEM);
+            final IConfigurationElement[] parametersCE = fCe.getChildren(TmfAnalysisModuleSourceCE.PARAMETER_ELEM);
             for (IConfigurationElement element : parametersCE) {
-                module.addParameter(element.getAttribute(TmfAnalysisType.NAME_ATTR));
-                String defaultValue = element.getAttribute(TmfAnalysisType.DEFAULT_VALUE_ATTR);
+                module.addParameter(element.getAttribute(TmfAnalysisModuleSourceCE.NAME_ATTR));
+                String defaultValue = element.getAttribute(TmfAnalysisModuleSourceCE.DEFAULT_VALUE_ATTR);
                 if (defaultValue != null) {
-                    module.setParameter(element.getAttribute(TmfAnalysisType.NAME_ATTR), defaultValue);
+                    module.setParameter(element.getAttribute(TmfAnalysisModuleSourceCE.NAME_ATTR), defaultValue);
                 }
             }
             module.setTrace(trace);
