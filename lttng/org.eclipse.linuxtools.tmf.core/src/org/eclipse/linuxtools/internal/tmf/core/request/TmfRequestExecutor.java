@@ -18,6 +18,7 @@ import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -37,7 +38,7 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
  * @author Simon Delisle
  * @version 1.1
  */
-public class TmfRequestScheduler implements ITmfRequestExecutor {
+public class TmfRequestExecutor implements Executor {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -61,7 +62,7 @@ public class TmfRequestScheduler implements ITmfRequestExecutor {
     // The tasks
     private TmfEventThread fActiveTask;
 
-    private final Timer fTimer = new Timer();
+    private final Timer fTimer = new Timer(true);
     private TimerTask fTimerTask;
 
     private int fForegroundCycle = 0;
@@ -73,7 +74,7 @@ public class TmfRequestScheduler implements ITmfRequestExecutor {
     /**
      * Default constructor
      */
-    public TmfRequestScheduler() {
+    public TmfRequestExecutor() {
         String canonicalName = fExecutor.getClass().getCanonicalName();
         fExecutorName = canonicalName.substring(canonicalName.lastIndexOf('.') + 1);
         if (TmfCoreTracer.isComponentTraced()) {
@@ -92,7 +93,7 @@ public class TmfRequestScheduler implements ITmfRequestExecutor {
      *            The executor service to use
      */
     @Deprecated
-    public TmfRequestScheduler(ExecutorService executor) {
+    public TmfRequestExecutor(ExecutorService executor) {
         this();
     }
 
@@ -111,7 +112,6 @@ public class TmfRequestScheduler implements ITmfRequestExecutor {
     /**
      * @return the shutdown state (i.e. if it is accepting new requests)
      */
-    @Override
     public synchronized boolean isShutdown() {
         return fExecutor.isShutdown();
     }
@@ -119,7 +119,6 @@ public class TmfRequestScheduler implements ITmfRequestExecutor {
     /**
      * @return the termination state
      */
-    @Override
     public synchronized boolean isTerminated() {
         return fExecutor.isTerminated();
     }
@@ -177,8 +176,7 @@ public class TmfRequestScheduler implements ITmfRequestExecutor {
     /**
      * Executes the next pending request, if applicable.
      */
-    @Override
-    public synchronized void scheduleNext() {
+    protected synchronized void scheduleNext() {
         if (!isShutdown()) {
             if (fActiveTask == null) {
                 schedule();
@@ -210,8 +208,10 @@ public class TmfRequestScheduler implements ITmfRequestExecutor {
     /**
      * Stops the executor
      */
-    @Override
     public synchronized void stop() {
+        fTimerTask.cancel();
+        fTimer.cancel();
+
         if (fActiveTask != null) {
             fActiveTask.cancel();
         }
@@ -284,8 +284,7 @@ public class TmfRequestScheduler implements ITmfRequestExecutor {
     /**
      * Check if the scheduler has tasks
      */
-    @Override
-    public boolean hasTasks() {
+    private boolean hasTasks() {
         return !(fForegroundTasks.isEmpty() && fBackgroundTasks.isEmpty());
     }
 
