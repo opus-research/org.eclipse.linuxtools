@@ -15,9 +15,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
+import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
+import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
 public class SnapshotLaunchConfigurationDelegate extends
 		ProfileLaunchConfigurationDelegate {
+
+	private static final String SNAPSHOT = "snapshot"; //$NON-NLS-1$
 
 	@Override
 	protected String getPluginID() {
@@ -25,15 +29,15 @@ public class SnapshotLaunchConfigurationDelegate extends
 	}
 
 	@Override
-	public void launch(ILaunchConfiguration config, String mode, ILaunch launch,
-			IProgressMonitor monitor) {
+	public void launch(ILaunchConfiguration config, String mode,
+			ILaunch launch, IProgressMonitor monitor) {
 		try {
 
 			if (config != null) {
 				// get provider id from configuration.
 				String providerId = config.getAttribute("provider", "");
 				if (providerId.equals("")) {
-					return;
+					providerId = getProviderIdToRun();
 				}
 				// get configuration delegate associated with provider id.
 				ProfileLaunchConfigurationDelegate delegate = getConfigurationDelegateFromId(providerId);
@@ -45,6 +49,18 @@ public class SnapshotLaunchConfigurationDelegate extends
 			e.printStackTrace();
 		}
 		return;
+	}
+
+	private String getProviderIdToRun() {
+		// Get self assigned default
+		String providerId = ProfileLaunchConfigurationTabGroup
+				.getHighestProviderId(SNAPSHOT);
+		if (providerId == null) {
+			// Get highest priority provider
+			providerId = ProfileLaunchShortcut
+					.getDefaultLaunchShortcutProviderId(SNAPSHOT);
+		}
+		return providerId;
 	}
 
 	@Override
