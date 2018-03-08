@@ -225,6 +225,7 @@ public class TmfSchedulerBenchmark {
     // ------------------------------------------------------------------------
 
     private static class BackgroundRequest extends TmfEventRequest {
+        private static final int CHUNK_SIZE = 0;
         private long startTime;
         private long endTimeLatency = -1;
         private long completedTime = 0;
@@ -235,10 +236,9 @@ public class TmfSchedulerBenchmark {
         private boolean isWaiting = false;
 
         BackgroundRequest(TmfTimeRange timeRange) {
-            super(trace.getEventType(),
-                    timeRange,
-                    0,
+            super(trace.getEventType(), timeRange,
                     TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ExecutionType.BACKGROUND);
             startTime = System.nanoTime();
         }
@@ -290,6 +290,7 @@ public class TmfSchedulerBenchmark {
     }
 
     private static class ForegroundRequest extends TmfEventRequest {
+        private static final int CHUNK_SIZE = 0;
         private long startTime = 0;
         private long endTimeLatency = -1;
         private long completedTime = 0;
@@ -300,10 +301,9 @@ public class TmfSchedulerBenchmark {
         private boolean isWaiting = false;
 
         ForegroundRequest(TmfTimeRange timeRange) {
-            super(trace.getEventType(),
-                    timeRange,
-                    0,
+            super(trace.getEventType(), timeRange,
                     TmfDataRequest.ALL_DATA,
+                    CHUNK_SIZE,
                     ExecutionType.FOREGROUND);
             startTime = System.nanoTime();
         }
