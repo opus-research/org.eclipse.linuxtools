@@ -142,12 +142,12 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		setControl(comp);
 
 		ProfileLaunchPlugin
-		.getDefault()
-		.getWorkbench()
-		.getHelpSystem()
-		.setHelp(
-				getControl(),
-				ICDTLaunchHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
+				.getDefault()
+				.getWorkbench()
+				.getHelpSystem()
+				.setHelp(
+						getControl(),
+						ICDTLaunchHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
 
 		GridLayout topLayout = new GridLayout();
 		comp.setLayout(topLayout);
@@ -301,10 +301,10 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	protected void handleSearchButtonSelected() {
 		if (getCProject() == null) {
 			MessageDialog
-			.openInformation(
-					getShell(),
-					LaunchMessages.CMainTab_Project_required,
-					LaunchMessages.CMainTab_Enter_project_before_searching_for_program);
+					.openInformation(
+							getShell(),
+							LaunchMessages.CMainTab_Project_required,
+							LaunchMessages.CMainTab_Enter_project_before_searching_for_program);
 			return;
 		}
 
@@ -539,22 +539,13 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 			}
 
 			if (workingDir.equals(EMPTY_STRING)){
-				if(this.fProjText != null){
-					IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-					IProject project = root.getProject(this.fProjText.getText());
-					if(project != null){
-						IRemoteFileProxy remoteFileProxy = null;
-						try {
-							remoteFileProxy = RemoteProxyManager.getInstance().getFileProxy(project);
-						} catch (CoreException e) {
-							e.printStackTrace();
+					if(this.fProjText != null){
+						IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+						IProject project = root.getProject(this.fProjText.getText());
+						if(project != null){
+							workingDir = project.getLocationURI().toString();
 						}
-						//workingDir = project.getLocationURI().toString();
-
-						URI workingDirURI = remoteFileProxy.getWorkingDir();
-						workingDir = workingDirURI.toString();
 					}
-				}
 			}
 
 			workingDirText.setText(workingDir);
@@ -604,9 +595,9 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		}
 		fPreviouslyCheckedCopyFromExe = name;
 		fPreviouslyCheckedCopyFromExeIsValid = true; // we'll flip this below if
-		// not true
+												// not true
 		fPreviouslyCheckedCopyFromExeErrorMsg = null; // we'll set this below if
-		// there's an error
+												// there's an error
 		IPath exePath;
 		URI exeURI = null;
 		boolean passed = false;
@@ -624,7 +615,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 				URI projectURI = project.getLocationURI();
 				exeURI = new URI(projectURI.getScheme(),
 						projectURI.getAuthority(), projectURI.getRawPath() + '/'
-						+ exePath.toString(), EMPTY_STRING);
+								+ exePath.toString(), EMPTY_STRING);
 			}
 			if (exeURI != null) {
 				passed = true;
@@ -654,7 +645,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 					if (exeFI != null) {
 						if (exeFI.exists()) {
 							if (exeFI.getAttribute(EFS.ATTRIBUTE_EXECUTABLE) &&
-									!exeFI.isDirectory()) {
+								!exeFI.isDirectory()) {
 								passed = true;
 							} else {
 								setErrorMessage(fPreviouslyCheckedCopyFromExeErrorMsg = ProxyLaunchMessages.copy_from_exe_does_not_have_execution_rights);
@@ -699,9 +690,9 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		}
 		fPreviouslyCheckedProgram = name;
 		fPreviouslyCheckedProgramIsValid = true; // we'll flip this below if
-		// not true
+												// not true
 		fPreviouslyCheckedProgramErrorMsg = null; // we'll set this below if
-		// there's an error
+												// there's an error
 		IPath exePath;
 		URI exeURI = null;
 		boolean passed = false;
@@ -720,7 +711,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 				URI projectURI = project.getLocationURI();
 				exeURI = new URI(projectURI.getScheme(),
 						projectURI.getAuthority(), projectURI.getRawPath() + '/'
-						+ exePath.toString(), EMPTY_STRING);
+								+ exePath.toString(), EMPTY_STRING);
 			}
 			if (exeURI != null) {
 				passed = true;
@@ -754,7 +745,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 						} else {
 							if (exeFI.exists()) {
 								if (exeFI.getAttribute(EFS.ATTRIBUTE_EXECUTABLE) &&
-										!exeFI.isDirectory()) {
+									!exeFI.isDirectory()) {
 									passed = true;
 								} else {
 									setErrorMessage(fPreviouslyCheckedProgramErrorMsg = ProxyLaunchMessages.executable_does_not_have_execution_rights);
@@ -798,9 +789,9 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		}
 		fPreviouslyCheckedWorkingDir = name;
 		fPreviouslyCheckedWorkingDirIsValid = true; // we'll flip this below if
-		// not true
+												// not true
 		fPreviouslyCheckedWorkingDirErrorMsg = null; // we'll set this below if
-		// there's an error
+												// there's an error
 		IPath wdPath;
 		URI wdURI = null;
 		boolean passed = false;
@@ -819,7 +810,7 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 				URI projectURI = project.getLocationURI();
 				wdURI = new URI(projectURI.getScheme(),
 						projectURI.getAuthority(), projectURI.getRawPath() + '/'
-						+ wdPath.toString(), EMPTY_STRING);
+								+ wdPath.toString(), EMPTY_STRING);
 			}
 			if (wdURI != null) {
 				passed = true;
@@ -1102,31 +1093,10 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		}
 
 		if (binary != null) {
-			String workingDir = EMPTY_STRING;
-			ConfigUtils configUtils = new ConfigUtils(config);
-			IProject project = null;
-			try {
-				project = ConfigUtils.getProject(configUtils.getProjectName());
-			} catch (CoreException e1) {
-				e1.printStackTrace();
-			}
-			if(project != null){
-				IRemoteFileProxy remoteFileProxy = null;
-				try {
-					remoteFileProxy = RemoteProxyManager.getInstance().getFileProxy(project);
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
-				//workingDir = project.getLocationURI().toString();
-
-				URI workingDirURI = remoteFileProxy.getWorkingDir();
-				workingDir = workingDirURI.toString();
-			}
-
 			String path;
 			path = binary.getResource().getProjectRelativePath().toOSString();
 			config.setAttribute(
-					ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, workingDir+path);
+					ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, path);
 			if (!renamed) {
 				String name = binary.getElementName();
 				int index = name.lastIndexOf('.');
