@@ -57,15 +57,12 @@
 
   <properties>
     <mirror-repo-name>updates-nightly</mirror-repo-name>
-    <tycho-version>0.16.0</tycho-version>
-    <tycho-extras-version>0.16.0</tycho-extras-version>
+    <tycho-version>0.15.0</tycho-version>
+    <tycho-extras-version>0.15.0</tycho-extras-version>
     <platform-version-name>juno</platform-version-name>
     <eclipse-site>http://download.eclipse.org/releases/${platform-version-name}</eclipse-site>
     <swtbot-site>http://download.eclipse.org/technology/swtbot/snapshots</swtbot-site>
     <orbit-site>http://download.eclipse.org/tools/orbit/downloads/drops/R20120526062928/repository</orbit-site>
-    <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
-    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-    <sonar.jacoco.reportPath>${project.basedir}/../../target/jacoco.exec</sonar.jacoco.reportPath>
   </properties>
   <pluginRepositories>
     <pluginRepository>
@@ -114,28 +111,6 @@
       </repositories>
     </profile>
     <profile>
-      <id>platform-kepler</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-        <property>
-          <name>platform-version-name</name>
-          <value>kepler</value>
-        </property>
-      </activation>
-      <properties>
-        <eclipse-site>http://download.eclipse.org/releases/staging</eclipse-site>
-        <platform-version>[4.3,)</platform-version>
-        <sdk-version>4.3</sdk-version>
-      </properties>
-      <repositories>
-        <repository>
-          <id>kepler</id>
-          <layout>p2</layout>
-          <url>${eclipse-site}</url>
-        </repository>
-      </repositories>
-    </profile>
-    <profile>
       <id>build-server</id>
       <build>
         <plugins>
@@ -154,7 +129,7 @@
                 </dependency>
               </dependencies>
               <product>org.eclipse.sdk.ide</product>
-	      <argLine>-Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m -Declipse.valgrind.tests.runValgrind=no -Dorg.eclipse.linuxtools.oprofile.launch.tests.runOprofile=no -Dorg.eclipse.linuxtools.oprofile.core.tests.runOprofile=no -Dorg.eclipse.linuxtools.perf.tests.runPerf=no -Dorg.eclipse.swt.browser.UseWebKitGTK=true</argLine>
+	      <argLine>-Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m -Declipse.valgrind.tests.runValgrind=no -Dorg.eclipse.linuxtools.oprofile.launch.tests.runOprofile=no -Dorg.eclipse.linuxtools.oprofile.core.tests.runOprofile=no -Dorg.eclipse.swt.browser.UseWebKitGTK=true</argLine>
 	    </configuration>
 	  </plugin>
         </plugins>
@@ -170,12 +145,12 @@
     <module>lttng</module>
     <module>man</module>
     <module>oprofile</module>
-    <module>perf</module>
     <module>profiling</module>
     <module>rpm</module>
     <module>rpmstubby</module>
     <module>systemtap</module>
     <module>valgrind</module>
+    <module>perf</module>
     <module>releng</module>
   </modules>
 
@@ -230,34 +205,6 @@
           </descriptors>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.6.0.201210061924</version>
-        <executions>
-          <execution>
-           <id>pre-test</id>
-           <goals>
-             <goal>prepare-agent</goal>
-           </goals>
-	   <configuration>
-              <!-- Where to put jacoco coverage report -->
-              <destFile>${sonar.jacoco.reportPath}</destFile> 
-              <includes>
-                <include>org.eclipse.linuxtools.*</include>
-              </includes>
-              <append>true</append>
-            </configuration>
-          </execution>
-          <execution>
-            <id>post-test</id>
-            <phase>test</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
@@ -284,7 +231,7 @@
                </dependency>
             </dependencies>
             <product>org.eclipse.sdk.ide</product>
- 	    <argLine>${tycho.testArgLine} -Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m</argLine> 
+	    <argLine>-Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m -Dorg.eclipse.swt.browser.UseWebKitGTK=true</argLine>
 	  </configuration>
 	</plugin>
         <plugin>
@@ -316,17 +263,17 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.2</version>
+          <version>3.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>2.6</version>
+          <version>2.5.1</version>
         </plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-	  <version>2.9</version>
+	  <version>2.8.1</version>
           <configuration>
             <excludePackageNames>org.eclipse.linuxtools.internal.*:*.test*</excludePackageNames>
           </configuration>
