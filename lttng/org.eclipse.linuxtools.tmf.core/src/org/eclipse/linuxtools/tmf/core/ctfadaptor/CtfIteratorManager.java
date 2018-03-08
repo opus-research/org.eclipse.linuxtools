@@ -83,7 +83,7 @@ class CtfTraceManager {
      * Cache size. Under 1023 on linux32 systems. Number of file handles
      * created.
      */
-    private final static int MAX_SIZE = 100;
+    private final static int MAX_SIZE = 1;
     /*
      * The map of the cache.
      */
