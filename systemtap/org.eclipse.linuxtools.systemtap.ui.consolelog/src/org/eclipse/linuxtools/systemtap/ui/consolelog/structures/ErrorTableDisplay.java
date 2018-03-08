@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.ui.consolelog.structures;
 
-import java.util.Arrays;
-
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor;
 import org.eclipse.swt.SWT;
@@ -38,7 +36,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  */
 public class ErrorTableDisplay {
 	public ErrorTableDisplay(Composite parent, String[] titles) {
-		this.titles = Arrays.copyOf(titles, titles.length);
+		this.titles = titles;
 		createControl(parent);
 	}
 

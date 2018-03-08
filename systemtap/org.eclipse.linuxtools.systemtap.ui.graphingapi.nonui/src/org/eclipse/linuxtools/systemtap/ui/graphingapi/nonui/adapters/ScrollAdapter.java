@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.adapters;
 
-import java.util.Arrays;
-
 import org.eclipse.linuxtools.internal.systemtap.ui.graphingapi.nonui.Localization;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.datasets.IHistoricalDataSet;
@@ -21,7 +19,7 @@ public class ScrollAdapter implements IAdapter {
 	public ScrollAdapter(IHistoricalDataSet data, int xSeries, int[] ySeries, String key) {
 		this.data = data;
 		this.xSeries = xSeries;
-		this.ySeries = Arrays.copyOf(ySeries, ySeries.length);
+		this.ySeries = ySeries;
 		this.key = key;
 	}
 
