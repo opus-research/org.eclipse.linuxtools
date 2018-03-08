@@ -28,7 +28,6 @@ public class CoverageLaunchShortcut extends ProviderLaunchShortcut {
 
 	@Override
 	public String getProfilingType() {
-		// TODO Auto-generated method stub
 		return CoverageProfileConstants.PROFILING_TYPE;
 	}
 
