@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
@@ -28,16 +29,19 @@ import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseE
  */
 public class DeclarationScope {
 
+    //FIXME externalize?
+    private static final String HAS_BEEN_DEFINED = " has already been defined"; //$NON-NLS-1$
+
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
     private DeclarationScope parentScope = null;
 
-    private final HashMap<String, StructDeclaration> structs = new HashMap<String, StructDeclaration>();
-    private final HashMap<String, EnumDeclaration> enums = new HashMap<String, EnumDeclaration>();
-    private final HashMap<String, VariantDeclaration> variants = new HashMap<String, VariantDeclaration>();
-    private final HashMap<String, IDeclaration> types = new HashMap<String, IDeclaration>();
+    private final Map<String, StructDeclaration> structs = new HashMap<String, StructDeclaration>();
+    private final Map<String, EnumDeclaration> enums = new HashMap<String, EnumDeclaration>();
+    private final Map<String, VariantDeclaration> variants = new HashMap<String, VariantDeclaration>();
+    private final Map<String, IDeclaration> types = new HashMap<String, IDeclaration>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -90,8 +94,7 @@ public class DeclarationScope {
             throws ParseException {
         /* Check if the type has been defined in the current scope */
         if (types.containsKey(name)) {
-            throw new ParseException("Type " + name //$NON-NLS-1$
-                    + " has already been defined."); //$NON-NLS-1$
+            throw new ParseException("Type " + name + HAS_BEEN_DEFINED); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
@@ -120,8 +123,8 @@ public class DeclarationScope {
         structs.put(name, declaration);
 
         /* It also defined a new type, so add it to the type declarations. */
-        String struct_prefix = "struct "; //$NON-NLS-1$
-        registerType(struct_prefix + name, declaration);
+        String structPrefix = "struct "; //$NON-NLS-1$
+        registerType(structPrefix + name, declaration);
     }
 
     /**
@@ -146,8 +149,8 @@ public class DeclarationScope {
         enums.put(name, declaration);
 
         /* It also defined a new type, so add it to the type declarations. */
-        String enum_prefix = "enum "; //$NON-NLS-1$
-        registerType(enum_prefix + name, declaration);
+        String enumPrefix = "enum "; //$NON-NLS-1$
+        registerType(enumPrefix + name, declaration);
     }
 
     /**
@@ -172,8 +175,8 @@ public class DeclarationScope {
         variants.put(name, declaration);
 
         /* It also defined a new type, so add it to the type declarations. */
-        String variant_prefix = "variant "; //$NON-NLS-1$
-        registerType(variant_prefix + name, declaration);
+        String variantPrefix = "variant "; //$NON-NLS-1$
+        registerType(variantPrefix + name, declaration);
     }
 
     // ------------------------------------------------------------------------
