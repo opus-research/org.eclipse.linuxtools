@@ -14,8 +14,6 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
@@ -27,7 +25,6 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
 
 /**
  * Abstract implementation of ITmfTrace.
@@ -49,6 +46,8 @@ import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
  * TmfCheckpointIndexer (default). In this case, the trace cache size will be
  * used as checkpoint interval.
  *
+ * @param <T> The trace event type
+ *
  * @version 1.0
  * @author Francois Chouinard
  *
@@ -56,7 +55,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.IStateSystemQuerier;
  * @see ITmfTraceIndexer
  * @see ITmfEventParser
  */
-public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
+public abstract class TmfTrace<T extends ITmfEvent> extends TmfEventProvider<T> implements ITmfTrace<T> {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -82,17 +81,10 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     private long fStreamingInterval = 0;
 
     // The trace indexer
-    private ITmfTraceIndexer fIndexer;
+    private ITmfTraceIndexer<ITmfTrace<ITmfEvent>> fIndexer;
 
     // The trace parser
-    private ITmfEventParser fParser;
-
-    /**
-     * The state systems associated with this trace
-     * @since 2.0
-     */
-    protected final Map<String, IStateSystemQuerier> stateSystems =
-          new HashMap<String, IStateSystemQuerier>();
+    private ITmfEventParser<T> fParser;
 
     // ------------------------------------------------------------------------
     // Construction
@@ -115,7 +107,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param cacheSize the trace cache size
      * @throws TmfTraceException
      */
-    protected TmfTrace(final IResource resource, final Class<? extends ITmfEvent> type, final String path, final int cacheSize) throws TmfTraceException {
+    protected TmfTrace(final IResource resource, final Class<T> type, final String path, final int cacheSize) throws TmfTraceException {
         this(resource, type, path, cacheSize, 0);
     }
 
@@ -130,7 +122,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param interval the trace streaming interval
      * @throws TmfTraceException
      */
-    protected TmfTrace(final IResource resource, final Class<? extends ITmfEvent> type, final String path, final int cacheSize, final long interval) throws TmfTraceException {
+    protected TmfTrace(final IResource resource, final Class<T> type, final String path, final int cacheSize, final long interval) throws TmfTraceException {
         this(resource, type, path, cacheSize, interval, null);
     }
 
@@ -145,8 +137,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param indexer the trace indexer
      * @throws TmfTraceException
      */
-    protected TmfTrace(final IResource resource, final Class<? extends ITmfEvent> type, final String path, final int cacheSize,
-            final long interval, final ITmfTraceIndexer indexer) throws TmfTraceException {
+    protected TmfTrace(final IResource resource, final Class<T> type, final String path, final int cacheSize,
+            final long interval, final ITmfTraceIndexer<?> indexer) throws TmfTraceException {
         this(resource, type, path, cacheSize, interval, indexer, null);
     }
 
@@ -161,8 +153,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param parser the trace event parser
      * @throws TmfTraceException
      */
-    protected TmfTrace(final IResource resource, final Class<? extends ITmfEvent> type, final String path, final int cacheSize,
-            final long interval, final ITmfTraceIndexer indexer, final ITmfEventParser parser) throws TmfTraceException {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected TmfTrace(final IResource resource, final Class<T> type, final String path, final int cacheSize,
+            final long interval, final ITmfTraceIndexer<?> indexer, final ITmfEventParser<T> parser) throws TmfTraceException {
         super();
         fCacheSize = (cacheSize > 0) ? cacheSize : ITmfTrace.DEFAULT_TRACE_CACHE_SIZE;
         fStreamingInterval = interval;
@@ -177,7 +170,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @param trace the original trace
      * @throws TmfTraceException Should not happen usually
      */
-    public TmfTrace(final TmfTrace trace) throws TmfTraceException {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public TmfTrace(final TmfTrace<T> trace) throws TmfTraceException {
         super();
         if (trace == null) {
             throw new IllegalArgumentException();
@@ -197,7 +191,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#initTrace(org.eclipse.core.resources.IResource, java.lang.String, java.lang.Class)
      */
     @Override
-    public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void initTrace(final IResource resource, final String path, final Class<T> type) throws TmfTraceException {
         fIndexer = new TmfCheckpointIndexer(this, fCacheSize);
         initialize(resource, path, type);
     }
@@ -211,7 +206,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *
      * @throws TmfTraceException
      */
-    protected void initialize(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
+    @SuppressWarnings("unchecked")
+    protected void initialize(final IResource resource, final String path, final Class<T> type) throws TmfTraceException {
         if (path == null) {
             throw new TmfTraceException("Invalid trace path"); //$NON-NLS-1$
         }
@@ -225,12 +221,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         }
         if (fParser == null) {
             if (this instanceof ITmfEventParser) {
-                fParser = (ITmfEventParser) this;
+                fParser = (ITmfEventParser<T>) this;
             } else {
                 throw new TmfTraceException("Invalid trace parser"); //$NON-NLS-1$
             }
         }
-
         super.init(traceName, type);
     }
 
@@ -255,18 +250,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     /**
-     * Build the state system that is specific to this trace type. Sub-classes
-     * can add their own, but don't forget to call super.buildStateSystem() if
-     * you also want to use the upstream ones.
-     *
-     * @since 2.0
-     */
-    @SuppressWarnings("unused")
-    protected void buildStateSystem() throws TmfTraceException {
-        /* No state system for generic TMF traces yet */
-    }
-
-    /**
      * Clears the trace
      */
     @Override
@@ -286,8 +269,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#getEventType()
      */
     @Override
-    public Class<ITmfEvent> getEventType() {
-        return (Class<ITmfEvent>) super.getType();
+    public Class<T> getEventType() {
+        return (Class<T>) super.getType();
     }
 
     /* (non-Javadoc)
@@ -325,14 +308,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     /**
      * @return the trace indexer
      */
-    protected ITmfTraceIndexer getIndexer() {
+    protected ITmfTraceIndexer<ITmfTrace<ITmfEvent>> getIndexer() {
         return fIndexer;
     }
 
     /**
      * @return the trace parser
      */
-    protected ITmfEventParser getParser() {
+    protected ITmfEventParser<T> getParser() {
         return fParser;
     }
 
@@ -370,14 +353,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     @Override
     public ITmfTimestamp getEndTime() {
         return fEndTime.clone();
-    }
-
-    /**
-     * @since 2.0
-     */
-    @Override
-    public IStateSystemQuerier getStateSystem(String id) {
-        return stateSystems.get(id);
     }
 
     // ------------------------------------------------------------------------
@@ -445,7 +420,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *
      * @param indexer the trace indexer
      */
-    protected void setIndexer(final ITmfTraceIndexer indexer) {
+    protected void setIndexer(final ITmfTraceIndexer<ITmfTrace<ITmfEvent>> indexer) {
         fIndexer = indexer;
     }
 
@@ -454,7 +429,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *
      * @param parser the new trace parser
      */
-    protected void setParser(final ITmfEventParser parser) {
+    protected void setParser(final ITmfEventParser<T> parser) {
         fParser = parser;
     }
 
@@ -470,7 +445,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
         // A rank <= 0 indicates to seek the first event
         if (rank <= 0) {
-            ITmfContext context = seekEvent((ITmfLocation) null);
+            ITmfContext context = seekEvent((ITmfLocation<?>) null);
             context.setRank(0);
             return context;
         }
@@ -497,7 +472,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
         // A null timestamp indicates to seek the first event
         if (timestamp == null) {
-            ITmfContext context = seekEvent((ITmfLocation) null);
+            ITmfContext context = seekEvent((ITmfLocation<?>) null);
             context.setRank(0);
             return context;
         }
@@ -527,9 +502,9 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#readNextEvent(org.eclipse.linuxtools.tmf.core.trace.ITmfContext)
      */
     @Override
-    public synchronized ITmfEvent getNext(final ITmfContext context) {
+    public synchronized T getNext(final ITmfContext context) {
         // parseEvent() does not update the context
-        final ITmfEvent event = fParser.parseEvent(context);
+        final T event = fParser.parseEvent(context);
         if (event != null) {
             updateAttributes(context, event.getTimestamp());
             context.setLocation(getCurrentLocation());
@@ -579,13 +554,13 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @see org.eclipse.linuxtools.tmf.core.component.TmfDataProvider#armRequest(org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest)
      */
     @Override
-    protected ITmfContext armRequest(final ITmfDataRequest request) {
-        if ((request instanceof ITmfEventRequest)
-            && !TmfTimestamp.BIG_BANG.equals(((ITmfEventRequest) request).getRange().getStartTime())
+    protected ITmfContext armRequest(final ITmfDataRequest<T> request) {
+        if ((request instanceof ITmfEventRequest<?>)
+            && !TmfTimestamp.BIG_BANG.equals(((ITmfEventRequest<T>) request).getRange().getStartTime())
             && (request.getIndex() == 0))
         {
-            final ITmfContext context = seekEvent(((ITmfEventRequest) request).getRange().getStartTime());
-            ((ITmfEventRequest) request).setStartIndex((int) context.getRank());
+            final ITmfContext context = seekEvent(((ITmfEventRequest<T>) request).getRange().getStartTime());
+            ((ITmfEventRequest<T>) request).setStartIndex((int) context.getRank());
             return context;
 
         }

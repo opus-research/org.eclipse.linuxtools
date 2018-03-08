@@ -34,6 +34,17 @@ public abstract class ProviderLaunchConfigurationDelegate extends
 				String providerId = config.getAttribute(
 						ProviderOptionsTab.PROVIDER_CONFIG_ATT, "");
 
+				// the provider attribute is only set when launching from the
+				// dialog menu, if it's not set then we are launching from a
+				// shortcut.
+				if (providerId.equals("")) {
+					// acquire a provider id to run. 
+					providerId = getProviderIdToRun();
+					// get configuration shortcut associated with provider id.
+					ProfileLaunchShortcut shortcut= ProfileLaunchShortcut.getLaunchShortcutProviderFromId(providerId);
+					// set attributes related to the specific profiling shortcut configuration.
+					shortcut.setDefaultProfileLaunchShortcutAttributes(config);
+				}
 				// get delegate associated with provider id.
 				ProfileLaunchConfigurationDelegate delegate = getConfigurationDelegateFromId(providerId);
 
@@ -48,30 +59,18 @@ public abstract class ProviderLaunchConfigurationDelegate extends
 		return;
 	}
 
-	/**
-	 * Get a provider id to run for the given profiling type.
-	 *
-	 * This first checks for a provider in the preferences, and if
-	 * none can be found it will look for the provider with the
-	 * highest priority for the specified type. If this fails,
-	 * it will look for the default provider.
-	 *
-	 * @param type a profiling type
-	 * @return a provider id that contributes to the specified type
-	 */
-	public static String getProviderIdToRun(String type) {
-		// Look in the preferences for a provider
+	private String getProviderIdToRun() {
+		// Get self assigned default
 		String providerId = ConfigurationScope.INSTANCE.getNode(
-				type).get(
+				getProfilingType()).get(
 				AbstractProviderPreferencesPage.PREFS_KEY, "");
 		if (providerId.equals("")) {
-			// Get highest priority provider
 			providerId = ProfileLaunchConfigurationTabGroup
-					.getHighestProviderId(type);
+					.getHighestProviderId(getProfilingType());
 			if (providerId == null) {
-				// Get default provider
+				// Get highest priority provider
 				providerId = ProfileLaunchShortcut
-						.getDefaultLaunchShortcutProviderId(type);
+						.getDefaultLaunchShortcutProviderId(getProfilingType());
 			}
 		}
 		return providerId;

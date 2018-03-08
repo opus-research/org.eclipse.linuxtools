@@ -507,13 +507,7 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 
 		if (checkVersion) {
 			try {
-				IProject project;
-				try {
-					project = CDebugUtils.verifyCProject(configuration).getProject();
-				} catch (Exception e1) {
-					// no project is still a possibility the validator handles
-					project = null;
-				}
+				IProject project = CDebugUtils.verifyCProject(configuration).getProject();
 				valgrindVersion = getPlugin().getValgrindVersion(project);
 			} catch (CoreException e) {
 				ex = e;
@@ -632,10 +626,7 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 		launchConfigurationWorkingCopy = configuration;
 		
-		if (noToolCombo)
-			configuration.setAttribute(LaunchConfigurationConstants.ATTR_TOOL, tool);
-		else	
-			configuration.setAttribute(LaunchConfigurationConstants.ATTR_TOOL, LaunchConfigurationConstants.DEFAULT_TOOL);
+		configuration.setAttribute(LaunchConfigurationConstants.ATTR_TOOL, LaunchConfigurationConstants.DEFAULT_TOOL);
 		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_TRACECHILD, LaunchConfigurationConstants.DEFAULT_GENERAL_TRACECHILD);
 		configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_FREERES, LaunchConfigurationConstants.DEFAULT_GENERAL_FREERES);
 
