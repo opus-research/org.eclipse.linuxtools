@@ -248,8 +248,8 @@ public class Metadata {
     private boolean isPacketBased(FileChannel metadataFileChannel)
             throws CTFReaderException {
         /*
-         * Create a ByteBuffer to read the TSDL magic number (default is big
-         * endian)
+         * Create a ByteBuffer to read the TSDL magic number (default is
+         * big-endian)
          */
         ByteBuffer magicByteBuffer = ByteBuffer.allocate(Utils.TSDL_MAGIC_LEN);
 
@@ -269,7 +269,7 @@ public class Metadata {
             return true;
         }
 
-        /* Try the same thing, but with little endian */
+        /* Try the same thing, but with little-endian */
         magicByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
         magic = magicByteBuffer.getInt(0);
 
