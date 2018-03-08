@@ -187,6 +187,7 @@ public class FunkyTraceTest {
                     TmfTimeRange.ETERNITY,
                     index,
                     1,
+                    1,
                     ExecutionType.FOREGROUND);
         }
 
