@@ -188,7 +188,7 @@ public class TmfRequestExecutorTest {
     // Dummy request
     private static class MyRequest extends TmfDataRequest {
         public MyRequest(ExecutionType priority, int requested) {
-            super(ITmfEvent.class, 0, requested, priority);
+            super(ITmfEvent.class, 0, requested, DEFAULT_BLOCK_SIZE, priority);
         }
 
         @Override
