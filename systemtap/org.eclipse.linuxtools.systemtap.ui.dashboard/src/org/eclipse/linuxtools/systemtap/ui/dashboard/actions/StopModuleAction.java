@@ -79,13 +79,13 @@ public class StopModuleAction extends Action implements IViewActionDelegate, IWo
 		});
 	}
 
-	private void stopmodule(DashboardModule module)
+	private boolean stopmodule(DashboardModule module)
 	{
 		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ActiveModuleBrowserView.ID);
 		ActiveModuleBrowserView ambv = (ActiveModuleBrowserView)ivp;
 		GraphTreeNode graphNode;
 		DashboardGraphData graphData;
-
+		boolean stop = false;
 		if(ambv.isActive(module)) {
 			ActiveModuleTreeNode node = ambv.remove(module);
 			ActiveModuleData amd = (ActiveModuleData)node.getData();
@@ -114,6 +114,7 @@ public class StopModuleAction extends Action implements IViewActionDelegate, IWo
 
 		setEnablement(false);
 		buildEnablementChecks();
+		return stop;
 	}
 
 	/**
