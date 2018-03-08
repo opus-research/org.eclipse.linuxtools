@@ -10,8 +10,8 @@
     <property name="ug.title" value="LTTng Plug-in User Guide" />
 
 	<!-- Replace dir with the dir you have eclipse installed into.-->
-	<property name="eclipse.dir" value="/home/ematkho/dev/eclipse" />
-	<property name="temp.dir" value="/tmp" />
+	<property name="eclipse.dir" value="/home/francois/Eclipse/Indigo" />
+	<property name="temp.dir" value="/home/francois/tmp" />
 
     <path id="wikitext.tasks.classpath">
         <fileset dir="${eclipse.dir}/plugins">
@@ -20,7 +20,9 @@
     </path>
 	
 	<!-- Uncomment and set proxy host and port if necessary -->
-	<setproxy proxyhost="http://proxy-lmc.exu.ericsson.se/" proxyport="8080"/>
+	<!--
+	<setproxy proxyhost="host" proxyport="port"/>
+	-->
 	
     <taskdef classpathref="wikitext.tasks.classpath" resource="org/eclipse/mylyn/internal/wikitext/mediawiki/core/tasks/tasks.properties" />
     <taskdef classpathref="wikitext.tasks.classpath" resource="org/eclipse/mylyn/wikitext/core/util/anttask/tasks.properties" />
