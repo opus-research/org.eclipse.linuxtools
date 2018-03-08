@@ -70,25 +70,15 @@ public class UiModelSample implements IUiModelElement {
 	}
 
 	/**
-<<<<<<< HEAD
 	 * Returns this element children
 	 * @return An array of IUiModelElements
-=======
-	 * Return null because this element does not have children
-	 * @return null
->>>>>>> Some work to add javadoc to Oprofile Ui model
 	 */
 	public IUiModelElement[] getChildren() {
 		return null;
 	}
 	/**
-<<<<<<< HEAD
 	 * Returns if the element has any children.
 	 * @return true if the element has children, false otherwise
-=======
-	 * Returns false because this is the bottom level element
-	 * @return false
->>>>>>> Some work to add javadoc to Oprofile Ui model
 	 */
 	public boolean hasChildren() {
 		return false;		//bottom level element
