@@ -13,6 +13,8 @@ package org.eclipse.linuxtools.systemtap.ui.structures;
 
 import org.eclipse.linuxtools.systemtap.ui.structures.runnable.CommandTest;
 import org.eclipse.linuxtools.systemtap.ui.structures.runnable.StreamGobblerTest;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.ConditionalExpressionValidatorTest;
+import org.eclipse.linuxtools.systemtap.ui.structures.validators.DirectoryValidatorTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -22,6 +24,9 @@ import org.junit.runners.Suite;
 		LoggingStreamDaemonTest.class, SortTest.class, StreamGobblerTest.class,
 		StringFormatterTest.class, TreeDefinitionNodeTest.class,
 		TreeNodeTest.class,
-		ZipArchiveTest.class})
+		ZipArchiveTest.class,
+
+		// structures.validators
+		ConditionalExpressionValidatorTest.class, DirectoryValidatorTest.class })
 public class AllTests {
 }
