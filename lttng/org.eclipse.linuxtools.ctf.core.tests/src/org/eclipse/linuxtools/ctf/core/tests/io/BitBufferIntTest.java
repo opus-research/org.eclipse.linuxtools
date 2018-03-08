@@ -193,6 +193,26 @@ public class BitBufferIntTest {
     }
 
     /**
+     * Run the int getInt(int) method test.
+     */
+    @Test
+    public void testGetLong_pos0() {
+        fixture.position(0);
+        long result = fixture.getLong();
+        assertEquals(0x01020304050607L, result);
+    }
+
+    /**
+     * Run the int getInt(int) method test.
+     */
+    @Test
+    public void testGetLong_pos1() {
+        fixture.position(1);
+        long result = fixture.getLong();
+        assertEquals(0x0102030405060708L, result);
+    }
+
+    /**
      * Run the void putInt(int) method test.
      */
     @Test
