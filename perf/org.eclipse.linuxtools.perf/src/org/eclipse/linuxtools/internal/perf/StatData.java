@@ -10,19 +10,14 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.perf.handlers.PerfSaveStatsHandler;
-import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
-import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 
 /**
  * This class handles the execution of the perf stat command
@@ -35,7 +30,7 @@ public class StatData extends AbstractDataManipulator {
 	private int runCount;
 	private String [] events;
 
-	public StatData(String title, IPath workDir, String prog, String [] args, int runCount, String[] events) {
+	public StatData(String title, File workDir, String prog, String [] args, int runCount, String[] events) {
 		super(title, workDir);
 		this.prog = prog;
 		this.args = args;
@@ -83,8 +78,7 @@ public class StatData extends AbstractDataManipulator {
 	 * report data files.
 	 */
 	public void updateStatData() {
-		URI curStatPathURI = null;
-		URI oldStatPathURI = null;
+
 		// build file name format
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(PerfPlugin.PERF_COMMAND);
@@ -93,32 +87,26 @@ public class StatData extends AbstractDataManipulator {
 		String statNameFormat = stringBuilder.toString();
 
 		// get current stat file
-		IPath workingDir = getWorkDir();
+		Path workingDir = new Path(getWorkDir().getAbsolutePath());
 		String curStatName = String.format(statNameFormat, ""); //$NON-NLS-1$
 		IPath curStatPath = workingDir.append(curStatName);
-		IRemoteFileProxy proxy = null;
-		try {
-			curStatPathURI = new URI(curStatPath.toPortableString());
-			proxy = RemoteProxyManager.getInstance().getFileProxy(curStatPathURI);
+		File curStatFile = new File(curStatPath.toOSString());
 
-			IFileStore curFileStore = proxy.getResource(curStatPathURI.getPath());
-			if (curFileStore.fetchInfo().exists()) {
-				// get previous stat file
-				String oldStatName = String.format(statNameFormat, ".old"); //$NON-NLS-1$
-				IPath oldStatPath = workingDir.append(oldStatName);
-				oldStatPathURI = new URI(oldStatPath.toPortableString());
-				IFileStore oldFileStore = proxy.getResource(oldStatPathURI.getPath());
-				if (oldFileStore.fetchInfo().exists()) {
-					oldFileStore.delete(EFS.NONE, null);
-				}
-				curFileStore.copy(oldFileStore, EFS.NONE, null);
+		if (curStatFile.exists()) {
+			// get previous stat file
+			String oldStatName = String.format(statNameFormat, ".old"); //$NON-NLS-1$
+			IPath oldStatPath = workingDir.append(oldStatName);
+			File oldStatFile = oldStatPath.toFile();
+
+			if (oldStatFile.exists()) {
+				oldStatFile.delete();
 			}
-			PerfSaveStatsHandler saveStats = new PerfSaveStatsHandler();
-			saveStats.saveData(PerfPlugin.PERF_COMMAND);
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		} catch (CoreException e) {
-			e.printStackTrace();
+
+			curStatFile.renameTo(oldStatFile);
 		}
+
+		PerfSaveStatsHandler saveStats = new PerfSaveStatsHandler();
+		saveStats.saveData(PerfPlugin.PERF_COMMAND);
 	}
+
 }
