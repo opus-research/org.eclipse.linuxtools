@@ -94,12 +94,16 @@ public class StubbyPomGenerator extends AbstractGenerator {
 	}
 
 	private void generateRequires(StringBuilder buffer) {
-        for (Map.Entry<String, String> entry : model.getDependencies()
-                .entrySet()) {
-            buffer.append("BuildRequires: mvn(" + entry.getKey() + ":"
-                    + entry.getValue() + ")\n");
-        }
-		buffer.append("BuildRequires: maven-local\n");
+		for (Map.Entry<String, String> entry : model.getDependencies()
+				.entrySet()) {
+			buffer.append("BuildRequires: mvn(" + entry.getKey() + ":"
+					+ entry.getValue() + ")\n");
+		}
+		for (Map.Entry<String, String> entry : model.getDependencies()
+				.entrySet()) {
+			buffer.append("Requires: mvn(" + entry.getKey() + ":"
+					+ entry.getValue() + ")\n");
+		}
 	}
 
 	private void generateJavadocSubpackage(StringBuilder buffer) {
