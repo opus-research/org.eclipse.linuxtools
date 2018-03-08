@@ -23,16 +23,8 @@ public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.gdbtrace.core.trace.messages"; //$NON-NLS-1$
 
-    public static String GdbTrace_ExecutableNotSet;
-
-    public static String GdbTrace_FailedToInitializeTrace;
-
     /** File not found */
     public static String GdbTrace_FileNotFound;
-
-    public static String GdbTrace_GdbTracesMustBeAFile;
-
-    public static String GdbTrace_IsNotAFile;
 
     static {
         // initialize resource bundle
