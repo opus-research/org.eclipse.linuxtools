@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-<extension
+
+   <extension
          id="application"
          point="org.eclipse.core.runtime.applications">
       <application>org.eclipse.linuxtools.tracing.rcp.product
@@ -11,6 +12,39 @@
       </application>
    </extension>
    
+      <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.eclipse.linuxtools.tracing.rcp.ui.application"
+            name="Linux Tools Trace Viewer">
+            <property
+               name="appName"
+               value="Linux Tools Trace Viewer">
+            </property>
+            <property
+               name="cssTheme"
+               value="org.eclipse.e4.ui.css.theme.e4_default">
+            </property>
+            
+            <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+            </property>
+            <property
+                  name="aboutImage"
+                  value="icons/alt_about.gif">
+            </property>
+            <property
+                  name="aboutText"
+                  value="Linux Tools Trace Viewer&#x0A;&#x0A;Version: 0.0.1&#x0A;&#x0A;Copyright (c) 2013 Ericsson&#x0A;&#x0A;All rights reserved. This program and the accompanying materials are&#x0A;made available under the terms of the Eclipse Public License v1.0 which&#x0A;accompanies this distribution, and is available at&#x0A;http://www.eclipse.org/legal/epl-v10.html">
+            </property>
+            <property
+                  name="windowImages"
+                  value="icons/alt_window_16.gif,icons/alt_window_32.gif">
+            </property>
+      </product>
+   </extension>
    <extension
          point="org.eclipse.ui.commands">
       <command
@@ -155,28 +189,5 @@
             sequence="F1">
       </key>
    </extension>
-   <extension
-         id="product"
-         point="org.eclipse.core.runtime.products">
-      <product
-            application="org.eclipse.linuxtools.tracing.rcp.ui.application"
-            name="DX Log &amp; Trace Analyzer">
-         <property
-               name="windowImages"
-               value="platform:/plugin/com.ericsson.dx.lta.rcp.branding/icons/alt_window_16.gif,platform:/plugin/com.ericsson.dx.lta.rcp.branding/icons/alt_window_32.gif">
-         </property>
-         <property
-               name="aboutText"
-               value="DX Log &amp; Trace Analyzer (LTA) Trace Viewer&#x0A;&#x0A;Version: 1.0.0&#x0A;&#x0A;Copyright Ericsson AB 2013.&#x0A;&#x0A;All Rights Reserved. No part of this software may be reproduced&#x0A;in any form without the written permission of the copyright owner.">
-         </property>
-         <property
-               name="aboutImage"
-               value="platform:/plugin/com.ericsson.dx.lta.rcp.branding/icons/alt_about.gif">
-         </property>
-         <property
-               name="appName"
-               value="DX Log &amp; Trace Analyzer">
-         </property>
-      </product>
-   </extension>
+
 </plugin>
