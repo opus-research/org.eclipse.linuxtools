@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
@@ -30,9 +29,9 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 
 /**
@@ -51,11 +50,6 @@ public class CtfTmfTrace extends TmfTrace
      * Default cache size for CTF traces
      */
     protected static final int DEFAULT_CACHE_SIZE = 50000;
-
-    /*
-     * The Ctf clock unique identifier field
-     */
-    private static final String CLOCK_HOST_PROPERTY = "uuid"; //$NON-NLS-1$
 
     // -------------------------------------------
     // Fields
@@ -283,20 +277,6 @@ public class CtfTmfTrace extends TmfTrace
      */
     public CTFTrace getCTFTrace() {
         return fTrace;
-    }
-
-    /**
-     * Ctf traces have a clock with a unique uuid that will be used to identify
-     * the host. Traces with the same clock uuid will be known to have been made
-     * on the same machine.
-     */
-    @Override
-    public String getHostId() {
-        CTFClock clock = getCTFTrace().getClock();
-        if (clock != null) {
-            return (String) clock.getProperty(CLOCK_HOST_PROPERTY);
-        }
-        return getName();
     }
 
     // -------------------------------------------
