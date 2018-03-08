@@ -103,7 +103,6 @@ public class DashboardView extends ViewPart {
 		updater = new UpdateManager(delay);
 	}*/
 	
-	@Override
 	public void createPartControl(Composite parent) {
 		LogManager.logDebug("Start createPartControl: parent-" + parent, this); //$NON-NLS-1$
 	     //bar.pack();
@@ -203,7 +202,6 @@ public class DashboardView extends ViewPart {
 	}
 
 
-	@Override
 	public void setFocus() {}
 
 	/*public Composite getComposite() {
@@ -319,7 +317,6 @@ public class DashboardView extends ViewPart {
 	 * Removes all internal references in this class.  Nothing should make any references
 	 * to anyting in this class after calling the dispose method.
 	 */
-	@Override
 	public void dispose() {
 		LogManager.logDebug("Start dispose:", this); //$NON-NLS-1$
 		LogManager.logInfo("Disposing", this); //$NON-NLS-1$
@@ -352,7 +349,7 @@ public class DashboardView extends ViewPart {
 	private ArrayList<ITabListener> tabListeners;
 	private UpdateManager updater;
 	private CTabFolder scriptFolder;
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardView"; //$NON-NLS-1$
+	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.dashboard.views.DashboardView";
 	
 }
 
