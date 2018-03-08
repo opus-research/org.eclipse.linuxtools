@@ -45,8 +45,9 @@ public class PythonEggParser {
 		setupOptions = new HashMap<String, String>();
 		variables = new HashMap<String, String>();
 		// end if file is empty or cannot get its contents
-		if (file.getContents().available() <= 0)
+		if (file.getContents().available() <= 0) {
 			return;
+		}
 		this.file = file;
 		parse();
 	}
@@ -67,13 +68,15 @@ public class PythonEggParser {
 
 			// end if cannot find setup(
 			long bytesToSkip = findStartSetup(raf);
-			if (bytesToSkip == -1)
+			if (bytesToSkip == -1) {
 				return;
+			}
 
 			// end if the end of setup cannot be found
 			long stop = findEndSetup(raf, bytesToSkip);
-			if (stop == -1)
+			if (stop == -1) {
 				return;
+			}
 
 			raf.seek(0);
 			while ((line = raf.readLine()) != null) {
@@ -93,15 +96,16 @@ public class PythonEggParser {
 			while ((line = raf.readLine()) != null && raf.getFilePointer() <= stop) {
 				line = line.trim();
 				if (!line.startsWith("#")) {
-					if (setupLine.equals(""))
+					if (setupLine.equals("")) {
 						setupLine = line.trim();
-					else
+					} else {
 						setupLine = setupLine.concat(line.trim());
+					}
 				}
 			}
-			
+
 			list = prepareSetupOptions(setupLine);
-						
+
 			for (String str : vars) {
 				variables.putAll(parseLine(str));
 			}
@@ -121,6 +125,24 @@ public class PythonEggParser {
 	}
 
 	/**
+	 * Check to see if the string passed in is a function
+	 *
+	 * @param str The string to check
+	 * @return True if the string matches the function regex
+	 */
+	public boolean checkFunction(String str) {
+		boolean rc = false;
+		Pattern pattern = Pattern.compile("\\s*\\w*\\s*?\\(.*\\)\\s*");
+		Matcher variableMatcher = pattern.matcher(str);
+
+		if (variableMatcher.matches()) {
+			rc = true;
+		}
+
+		return rc;
+	}
+
+	/**
 	 * Get the value of the variable
 	 *
 	 * @param key The variable to get the value of
@@ -128,9 +150,16 @@ public class PythonEggParser {
 	 */
 	public String getValue(String key) {
 		String rc = "";
+		Pattern pattern = Pattern.compile("\\s*\\((.+)\\)\\s*");
+		Matcher variableMatcher = null;
 
-		if (setupOptions.containsKey(key))
+		if (setupOptions.containsKey(key)) {
 			rc = setupOptions.get(key).replaceAll("('|\")", "").trim();
+			variableMatcher = pattern.matcher(rc);
+			if (variableMatcher.matches()) {
+				rc = variableMatcher.group(1);
+			}
+		}
 
 		return rc;
 	}
@@ -151,9 +180,11 @@ public class PythonEggParser {
 			Matcher variableMatcher = pattern.matcher(setupOptions.get(key).trim());
 			if (variableMatcher.find()) {
 				temp = variableMatcher.group(1).replaceAll("('|\")", "").split(",");
-				for (String str : temp)
-					if (!str.isEmpty() && !str.trim().startsWith("#"))
+				for (String str : temp) {
+					if (!str.isEmpty() && !str.trim().startsWith("#")) {
 						rc.add(str.trim());
+					}
+				}
 			}
 		}
 
@@ -172,21 +203,24 @@ public class PythonEggParser {
 		// match the setup(...) pattern
 		Pattern pattern = Pattern.compile("\\bsetup\\b(\\s+)?\\((.*)\\)");
 		Matcher variableMatcher = pattern.matcher(setupLine);
-		
-		if (variableMatcher.find())
+
+		if (variableMatcher.find()) {
 			setupLine = variableMatcher.group(2);
+		}
 
 		tempList = setupLine.split("(?=,)");
-		
-		for (String str : tempList) {			
+
+		for (String str : tempList) {
 			if (isOptionLineKeyValuePair(str) && !str.trim().startsWith("#")) {
-				if (str.startsWith(","))
+				if (str.startsWith(",")) {
 					str = str.substring(1, str.length()).trim();
+				}
 				rc.add(str);
-			} else if (!str.trim().startsWith("#") && !rc.isEmpty())
+			} else if (!str.trim().startsWith("#") && !rc.isEmpty()) {
 				rc.set(rc.size() - 1, rc.get(rc.size() - 1).concat(str.trim()));
+			}
 		}
-		
+
 		return rc;
 	}
 
@@ -216,8 +250,9 @@ public class PythonEggParser {
 		Pattern pattern = Pattern.compile("(\\w+)(\\s+)?=[^=].*");
 		Matcher variableMatcher = pattern.matcher(line.toLowerCase());
 
-		if (variableMatcher.find())
+		if (variableMatcher.find()) {
 			rc = true;
+		}
 
 		return rc;
 	}
@@ -233,8 +268,9 @@ public class PythonEggParser {
 		Pattern pattern = Pattern.compile("^(\\w+)(\\s+)?=(\\s+)?");
 		Matcher variableMatcher = pattern.matcher(line.toLowerCase());
 
-		if (variableMatcher.find())
+		if (variableMatcher.find()) {
 			rc = true;
+		}
 
 		return rc;
 	}
@@ -252,8 +288,9 @@ public class PythonEggParser {
 		Pattern pattern = Pattern.compile(".*[\'\"](/s+)?$");
 		Matcher variableMatcher = pattern.matcher(line.toLowerCase());
 
-		if (variableMatcher.find())
+		if (variableMatcher.find()) {
 			rc = true;
+		}
 
 		return rc;
 	}
@@ -269,11 +306,11 @@ public class PythonEggParser {
 		Pattern pattern = Pattern.compile("(\\s+)?(\\w+)(\\s+)?=(\\s+)?(.*)");
 		Matcher variableMatcher = pattern.matcher(line);
 
-		if (variableMatcher.find())
-		{
+		if (variableMatcher.find()) {
 			String value = variableMatcher.group(5);
-			if (value.charAt(value.length()-1) == ',')
+			if (value.charAt(value.length()-1) == ',') {
 				value = value.substring(0, value.length()-1);
+			}
 			rc.put(variableMatcher.group(2), value);
 		}
 
@@ -297,9 +334,10 @@ public class PythonEggParser {
 		reader.seek(0);
 		while ((line = reader.readLine()) != null && rc == -1) {
 			variableMatcher = pattern.matcher(line.toLowerCase());
-			if (variableMatcher.find())
+			if (variableMatcher.find()) {
 				// get the previous line's file pointer location
 				rc = previous;
+			}
 			previous = reader.getFilePointer();
 		}
 
@@ -324,16 +362,18 @@ public class PythonEggParser {
 		reader.seek(startPosition);
 		while ((line = reader.readLine()) != null && stop == false) {
 			for (char x : line.toCharArray()) {
-				if (x == '(')
+				if (x == '(') {
 					bracketCounter++;
-				else if (x == ')')
+				} else if (x == ')') {
 					bracketCounter--;
+				}
 				if (flag && bracketCounter == 0) {
 					stop = true;
 				}
 				// prevent ending prematurely
-				if (bracketCounter != 0)
+				if (bracketCounter != 0) {
 					flag = true;
+				}
 			}
 		}
 
