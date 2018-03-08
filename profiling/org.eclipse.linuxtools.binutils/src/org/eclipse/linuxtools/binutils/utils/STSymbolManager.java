@@ -107,9 +107,6 @@ public class STSymbolManager {
         // used ?
     }
 
-    /**
-	 * @since 4.1
-	 */
     public synchronized void reset() {
         Iterator<Entry<IBinaryObject, AutoDisposeAddr2line>> iter = addr2lines.entrySet().iterator();
         while (iter.hasNext()) {

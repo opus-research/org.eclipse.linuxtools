@@ -13,7 +13,6 @@
  *   Yuriy Vashchuk - Histogram Canvas Heritage correction
  *   Francois Chouinard - Cleanup and refactoring
  *   Francois Chouinard - Moved from LTTng to TMF
- *   Patrick Tasse - Update for mouse wheel zoom
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -36,7 +35,6 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -247,10 +245,6 @@ public class HistogramView extends TmfView {
         // Histogram
         fFullTraceHistogram = new FullTraceHistogram(this, fullRangeComposite);
 
-        // Add mouse wheel listener to time span control
-        MouseWheelListener listener = fFullTraceHistogram.getZoom();
-        fTimeSpanControl.addMouseWheelListener(listener);
-
         ITmfTrace trace = getActiveTrace();
         if (trace != null) {
             traceSelected(new TmfTraceSelectedSignal(this, trace));
@@ -378,7 +372,7 @@ public class HistogramView extends TmfView {
     /**
      * Handles trace opened signal. Loads histogram if new trace time range is not
      * equal <code>TmfTimeRange.NULL_RANGE</code>
-     * @param signal the trace opened signal
+     * @param signal the trace selected signal
      * @since 2.0
      */
     @TmfSignalHandler

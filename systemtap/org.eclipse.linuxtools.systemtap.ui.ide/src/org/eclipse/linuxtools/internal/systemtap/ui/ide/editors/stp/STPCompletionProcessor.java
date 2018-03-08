@@ -382,8 +382,6 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 		case ',':
 		case '{':
 		case '}':
-		case ']':
-		case '[':
 			return true;
 		}
 		return false;
