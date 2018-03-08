@@ -14,11 +14,12 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.eclipse.linuxtools.ssh.proxy.Activator;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.window.Window;
-import org.eclipse.linuxtools.ssh.proxy.Activator;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
@@ -78,9 +79,9 @@ public class SSHBase {
 	private String askPassword(String user, String host) throws CoreException {
 		IWorkbenchWindow w = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		if (w == null)
-			return ""; //$NON-NLS-1$
+			return "";
 		SSHPasswordDialog d = new SSHPasswordDialog(w.getShell(), user, host);
-		if (d.open() == Window.OK)
+		if (d.open() == SSHPasswordDialog.OK)
 			return d.getPassword();
 		else
 			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.SSHBase_CreateSessionCancelled));
