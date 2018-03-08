@@ -32,14 +32,18 @@ import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
- * Default implementation of an ITmfStatisticsProvider. It uses a state system
- * underneath to store its information.
+ * Implementation of ITmfStatistics which uses a state history for storing its
+ * information.
+ *
+ * It requires building the history first, but gives very fast response times
+ * when built : Queries are O(log n) wrt the size of the trace, and O(1) wrt to
+ * the size of the time interval selected.
  *
  * @author Alexandre Montplaisir
  * @since 2.0
  */
 
-public class TmfStatistics  implements ITmfStatistics {
+public class TmfStateStatistics implements ITmfStatistics {
 
     /** ID for the statistics state system */
     public static final String STATE_ID = "org.eclipse.linuxtools.tmf.statistics"; //$NON-NLS-1$
@@ -58,7 +62,7 @@ public class TmfStatistics  implements ITmfStatistics {
      * Empty constructor. The resulting TmfStatistics object will not be usable,
      * but it might be needed for sub-classes.
      */
-    public TmfStatistics() {
+    public TmfStateStatistics() {
         stats = null;
     }
 
@@ -70,7 +74,7 @@ public class TmfStatistics  implements ITmfStatistics {
      * @throws TmfTraceException
      *             If something went wrong trying to initialize the statistics
      */
-    public TmfStatistics(ITmfTrace trace) throws TmfTraceException {
+    public TmfStateStatistics(ITmfTrace trace) throws TmfTraceException {
         /* Set up the path to the history tree file we'll use */
         IResource resource = trace.getResource();
         String supplDirectory = null;
