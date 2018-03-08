@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -76,9 +76,7 @@ public class TmfEnvironmentView extends TmfView {
             return;
         }
 
-        ITmfTrace[] traces = fTrace.getTraces();
-
-        for (ITmfTrace trace : traces) {
+        for (ITmfTrace trace : fTraceManager.getActiveTraceSet()) {
             if (trace instanceof CtfTmfTrace) {
                 TreeItem item = new TreeItem(fTree, SWT.NONE);
                 item.setText(0, trace.getName());
@@ -101,9 +99,6 @@ public class TmfEnvironmentView extends TmfView {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-     */
     @Override
     public void setFocus() {
         fTree.setFocus();

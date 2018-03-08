@@ -133,7 +133,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
         }
         setParser(new TmfEventParserStub(this));
         if (waitForCompletion) {
-            indexTrace();
+            indexTrace(true);
         }
     }
 
@@ -182,10 +182,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
             throw new TmfTraceException(e.getMessage());
         }
         setParser(new TmfEventParserStub(this));
-    }
-
-    public void indexTrace() {
-        indexTrace(true);
     }
 
     @Override
@@ -370,15 +366,12 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
         super.dispose();
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(org.eclipse.core.resources.IProject, java.lang.String)
-     */
     @Override
     public IStatus validate(IProject project, String path) {
         if (fileExists(path)) {
             return Status.OK_STATUS;
         }
-        return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TmfTraceStub_FileNotFound + ": " + path); //$NON-NLS-1$
+        return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "File does not exist: " + path);
     }
 
 }
