@@ -23,7 +23,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.rpm.ui.Activator;
-import org.eclipse.linuxtools.internal.rpm.ui.BuildType;
 import org.eclipse.linuxtools.internal.rpm.ui.Messages;
 import org.eclipse.linuxtools.rpm.core.IRPMConstants;
 import org.eclipse.linuxtools.rpm.core.RPMProject;
@@ -49,13 +48,10 @@ public class SpecfileEditorRPMBuildHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IResource resource = getResource(event);
 		final String eventBuildType = event.getParameter("buildType"); //$NON-NLS-1$
-		if (eventBuildType != null) {
-			final BuildType buildType = BuildType.valueOf(eventBuildType);
-			rpj = getRPMProject(resource);
-			Job job = new RPMExportOperation(rpj, buildType);
-			job.setUser(true);
-			job.schedule();
-		}
+		rpj = getRPMProject(resource);
+		Job job = new RPMExportOperation(rpj, eventBuildType);
+		job.setUser(true);
+		job.schedule();
 		return null;
 	}
 
@@ -121,7 +117,7 @@ public class SpecfileEditorRPMBuildHandler extends AbstractHandler {
 				rc = new RPMProject(parentProject, RPMProjectLayout.FLAT);
 			}
 		} catch (CoreException e) {
-			Activator.logError(Messages.getString("AbstractSpecfileEditorBuildDelegate.logRPMProjectError"), e); //$NON-NLS-1$
+			Activator.logError(Messages.getString("SpecfileEditorRPMBuildHandler.logRPMProjectError"), e); //$NON-NLS-1$
 		}
 		return rc;
 	}

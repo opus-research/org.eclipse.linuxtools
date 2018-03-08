@@ -25,7 +25,7 @@ import org.osgi.framework.FrameworkUtil;
 
 /**
  * Job for handling rpm exports.
- *
+ * @since 1.0.0
  */
 public class RPMExportOperation extends Job {
 	private RPMProject rpmProject;
@@ -35,12 +35,12 @@ public class RPMExportOperation extends Job {
 	 * Creates the job for exporting rpms.
 	 *
 	 * @param rpmProject The project to use as base for the export operation.
-	 * @param exportType The export type.
+	 * @param exportType The export type. [SOURCE, BINARY, ALL]
 	 */
-	public RPMExportOperation(RPMProject rpmProject, BuildType exportType) {
+	public RPMExportOperation(RPMProject rpmProject, String exportType) {
 		super(Messages.getString("RPMExportWizard.0")); //$NON-NLS-1$
 		this.rpmProject = rpmProject;
-		this.exportType = exportType;
+		this.exportType = BuildType.valueOf(exportType);
 	}
 
 	/**
