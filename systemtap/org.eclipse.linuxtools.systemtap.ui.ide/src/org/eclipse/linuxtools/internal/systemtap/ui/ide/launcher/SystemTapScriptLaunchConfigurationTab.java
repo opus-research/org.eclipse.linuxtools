@@ -1,12 +1,20 @@
+/*******************************************************************************
+ * Copyright (c) 2012 Red Hat.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - Sami Wagiaalla
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -19,23 +27,6 @@ import org.eclipse.swt.widgets.Text;
 
 public class SystemTapScriptLaunchConfigurationTab extends
 		AbstractLaunchConfigurationTab {
-
-	private static final String SCRIPT_PATH_ATTR = "ScriptPath";
-	private static final String CURRENT_USER_ATTR = "executeAsCurrentUser";
-	private static final String USER_NAME_ATTR = "userName";
-	private static final String USER_PASS_ATTR = "userPassword";
-	private static final String LOCAL_HOST_ATTR = "executeOnLocalHost";
-	private static final String HOST_NAME_ATTR = "hostName";
-
-	private Text scriptPathText;
-	private Button currentUserCheckButton;
-	private Text userNameText;
-	private Text userPasswordText;
-	private Button localHostCheckButton;
-	private Text hostNameText;
-	private Label userNameLabel;
-	private Label userPasswordLabel;
-	private Label hostNamelabel;
 
 	public void createControl(Composite parent) {
 		
@@ -52,13 +43,9 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		layout = new GridLayout();
 		layout.numColumns = 2;
 		scriptSettingsGroup.setLayout(layout);
-		this.scriptPathText = new Text(scriptSettingsGroup,  SWT.SINGLE | SWT.BORDER);
+		Text scriptPathText = new Text(scriptSettingsGroup,  SWT.SINGLE | SWT.BORDER);
 		scriptPathText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		scriptPathText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				updateLaunchConfigurationDialog();
-			}
-		});
+
 		Button selectScriptButon = new Button(scriptSettingsGroup, 0);
 		GridData gridData = new GridData();
 		gridData.widthHint = 110;
@@ -72,21 +59,21 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		layout.numColumns = 2;
 		userSettingsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-		this.currentUserCheckButton = new Button(userSettingsGroup, SWT.CHECK);
+		final Button currentUserCheckButton = new Button(userSettingsGroup, SWT.CHECK);
 		currentUserCheckButton.setText(Messages.SystemTapScriptLaunchConfigurationTab_2);
 		currentUserCheckButton.setSelection(true);
 		gridData = new GridData();
 		gridData.horizontalSpan = 2;
 		currentUserCheckButton.setLayoutData(gridData);
 
-		this.userNameLabel = new Label(userSettingsGroup, SWT.NONE);
+		final Label userNameLabel = new Label(userSettingsGroup, SWT.NONE);
 		userNameLabel.setText(Messages.SystemTapScriptLaunchConfigurationTab_3);
-		this.userNameText = new Text(userSettingsGroup, SWT.SINGLE | SWT.BORDER);
+		final Text userNameText = new Text(userSettingsGroup, SWT.SINGLE | SWT.BORDER);
 		userNameText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-		this.userPasswordLabel = new Label(userSettingsGroup, SWT.NONE);
+		final Label userPasswordLabel = new Label(userSettingsGroup, SWT.NONE);
 		userPasswordLabel.setText(Messages.SystemTapScriptLaunchConfigurationTab_4);
-		this.userPasswordText = new Text(userSettingsGroup, SWT.SINGLE | SWT.BORDER | SWT.PASSWORD);
+		final Text userPasswordText = new Text(userSettingsGroup, SWT.SINGLE | SWT.BORDER | SWT.PASSWORD);
 		userPasswordText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		userSettingsGroup.setLayoutData( new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -107,24 +94,11 @@ public class SystemTapScriptLaunchConfigurationTab extends
 				userNameLabel.setEnabled(enable);
 				userPasswordText.setEnabled(enable);
 				userPasswordLabel.setEnabled(enable);
-				SystemTapScriptLaunchConfigurationTab.this.updateLaunchConfigurationDialog();
-				
 			}
 		});
-		
 		userNameText.setEnabled(false);
-		userNameText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				updateLaunchConfigurationDialog();
-			}
-		});
 		userNameLabel.setEnabled(false);
 		userPasswordText.setEnabled(false);
-		userPasswordText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				updateLaunchConfigurationDialog();
-			}
-		});
 		userPasswordLabel.setEnabled(false);
 
 		// Host settings
@@ -135,14 +109,14 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		hostSettingsGroup.setLayout(layout);
 		layout.numColumns = 2;
 
-		this.localHostCheckButton = new Button(hostSettingsGroup, SWT.CHECK);
+		final Button localHostCheckButton = new Button(hostSettingsGroup, SWT.CHECK);
 		localHostCheckButton.setText(Messages.SystemTapScriptLaunchConfigurationTab_7);
 		gridData = new GridData();
 		gridData.horizontalSpan = 2;
 		
-		this.hostNamelabel = new Label(hostSettingsGroup, SWT.NONE);
+		final Label hostNamelabel = new Label(hostSettingsGroup, SWT.NONE);
 		hostNamelabel.setText(Messages.SystemTapScriptLaunchConfigurationTab_8);
-		this.hostNameText = new Text(hostSettingsGroup, SWT.SINGLE | SWT.BORDER);
+		final Text hostNameText = new Text(hostSettingsGroup, SWT.SINGLE | SWT.BORDER);
 		hostNameText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		localHostCheckButton.setLayoutData(gridData);
 		localHostCheckButton.addSelectionListener(new SelectionListener() {
@@ -155,55 +129,29 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			}
 			
 			private void update(){
-				updateLaunchConfigurationDialog();
+				boolean enable = !localHostCheckButton.getSelection();
+				hostNamelabel.setEnabled(enable);
+				hostNameText.setEnabled(enable);
 			}
 		});
-		hostNameText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				updateLaunchConfigurationDialog();
-			}
-		});
+		localHostCheckButton.setSelection(true);
+		hostNamelabel.setEnabled(false);
+		hostNameText.setEnabled(false);
 	}
 
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(SCRIPT_PATH_ATTR, "");
-		configuration.setAttribute(CURRENT_USER_ATTR, true);
-		configuration.setAttribute(USER_NAME_ATTR, "");
-		configuration.setAttribute(USER_PASS_ATTR, "");
-		configuration.setAttribute(LOCAL_HOST_ATTR, true);
-		configuration.setAttribute(HOST_NAME_ATTR, "");
+		// TODO Auto-generated method stub
+
 	}
 
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		try {
-			this.scriptPathText.setText(configuration.getAttribute(SCRIPT_PATH_ATTR, ""));
-			this.currentUserCheckButton.setSelection(configuration.getAttribute(CURRENT_USER_ATTR, true));
-			this.userNameText.setText(configuration.getAttribute(USER_NAME_ATTR, ""));
-			this.userPasswordText.setText(configuration.getAttribute(USER_PASS_ATTR, ""));
-			this.localHostCheckButton.setSelection(configuration.getAttribute(LOCAL_HOST_ATTR, true));
-			this.hostNameText.setText(configuration.getAttribute(HOST_NAME_ATTR, ""));
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
+		// TODO Auto-generated method stub
+
 	}
 
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(SCRIPT_PATH_ATTR, this.scriptPathText.getText());
-		configuration.setAttribute(CURRENT_USER_ATTR, this.currentUserCheckButton.getSelection());
-		configuration.setAttribute(USER_NAME_ATTR, this.userNameText.getText());
-		configuration.setAttribute(USER_PASS_ATTR, this.userPasswordText.getText());
-		configuration.setAttribute(LOCAL_HOST_ATTR, this.localHostCheckButton.getSelection());
-		configuration.setAttribute(HOST_NAME_ATTR, this.hostNameText.getText());
-		
-		boolean enable = !currentUserCheckButton.getSelection();
-		userNameText.setEnabled(enable);
-		userNameLabel.setEnabled(enable);
-		userPasswordText.setEnabled(enable);
-		userPasswordLabel.setEnabled(enable);
-		
-		enable = !localHostCheckButton.getSelection();
-		hostNamelabel.setEnabled(enable);
-		hostNameText.setEnabled(enable);
+		// TODO Auto-generated method stub
+
 	}
 
 	public String getName() {
