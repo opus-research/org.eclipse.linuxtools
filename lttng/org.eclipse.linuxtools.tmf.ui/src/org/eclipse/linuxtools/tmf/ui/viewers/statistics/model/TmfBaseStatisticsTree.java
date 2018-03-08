@@ -61,21 +61,21 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
         super();
         Map<String, Set<String>> keys = getKeys();
 
-        /********* Adding category sets */
-        /* common */
+        // //////////// Adding category sets
+        // common
         keys.put(HEADER_EVENT_TYPES, new HashSet<String>());
 
-        /********* Adding value sets */
-        /* Under a trace */
+        // /////////// Adding value sets
+        // Under a trace
         Set<String> temp = new HashSet<String>(8);
         temp.add(HEADER_EVENT_TYPES);
         keys.put(ROOT_NODE_KEY, temp);
-        /* Under an event type */
+        // Under an event type
         temp = new HashSet<String>(16);
         keys.put(mergeString(HEADER_EVENT_TYPES, NODE), temp);
 
-        /********* CREATE root */
-        keys.put(ROOT.get(0), new HashSet<String>(2)); /* 1 trace at the time */
+        // //////////// CREATE root
+        keys.put(ROOT.get(0), new HashSet<String>(2)); // 1 trace at the time
         getOrCreate(ROOT);
     }
 
@@ -89,7 +89,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     public Collection<TmfStatisticsTreeNode> getChildren(TmfFixedArray<String> path) {
         LinkedList<TmfStatisticsTreeNode> result = new LinkedList<TmfStatisticsTreeNode>();
 
-        if (path.size() % 2 == 0) { /* if we are at a Category */
+        if (path.size() % 2 == 0) { // if we are at a Category
             TmfStatisticsTreeNode current = null;
             for (String value : getKeys().get(path.get(path.size() - 1))) {
                 current = get(path.append(value));
@@ -97,20 +97,20 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
                     result.add(current);
                 }
             }
-        } else if (path.size() == 1) { /* Special case. */
+        } else if (path.size() == 1) { // Special case.
             if (path.equals(ROOT)) {
                 for (String value : getKeys().get(ROOT.get(0))) {
                     result.add(getOrCreate(new TmfFixedArray<String>(value)));
                 }
             } else {
-                /* Get value under the root */
+                // Get value under the root
                 for (String value : getKeys().get(ROOT_NODE_KEY)) {
                     result.add(getOrCreate(path.append(value)));
                 }
             }
-        } else { /* If we are at a value */
+        } else {// If we are at a value
             for (String value : getKeys().get(mergeString(path.get(path.size() - 2), NODE))) {
-                /* Search the parent name + NODE */
+                // Search the parent name + NODE
                 result.add(getOrCreate(path.append(value)));
             }
         }
@@ -128,7 +128,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     public Collection<TmfStatisticsTreeNode> getAllChildren(TmfFixedArray<String> path) {
         LinkedList<TmfStatisticsTreeNode> result = new LinkedList<TmfStatisticsTreeNode>();
 
-        if (path.size() % 2 == 0) { /* if we are at a Category */
+        if (path.size() % 2 == 0) { // if we are at a Category
             TmfStatisticsTreeNode current = null;
             for (String value : getKeys().get(path.get(path.size() - 1))) {
                 current = get(path.append(value));
@@ -136,20 +136,20 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
                     result.add(current);
                 }
             }
-        } else if (path.size() == 1) { /* Special case. */
+        } else if (path.size() == 1) { // Special case.
             if (path.equals(ROOT)) {
                 for (String value : getKeys().get(ROOT.get(0))) {
                     result.add(getOrCreate(new TmfFixedArray<String>(value)));
                 }
             } else {
-                /* Get value under the root */
+                // Get value under the root
                 for (String value : getKeys().get(ROOT_NODE_KEY)) {
                     result.add(getOrCreate(path.append(value)));
                 }
             }
-        } else { /* If we are at a value */
+        } else {// If we are at a value
             for (String value : getKeys().get(mergeString(path.get(path.size() - 2), NODE))) {
-                /* Search the parent name + NODE */
+                // Search the parent name + NODE
                 result.add(getOrCreate(path.append(value)));
             }
         }
@@ -164,7 +164,7 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
      */
     @Override
     public void increase(ITmfEvent event, ITmfExtraEventInfo extraInfo, int values) {
-        /* Do nothing */
+        // Do nothing
     }
 
     /*
@@ -217,6 +217,8 @@ public class TmfBaseStatisticsTree extends AbsTmfStatisticsTree {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected TmfFixedArray<String>[] getTypePaths(ITmfEvent event, ITmfExtraEventInfo extraInfo) {
         String trace = extraInfo.getTraceName();
+        // String type = event.getType().getTypeId(); // Add too much
+        // informations
         String type = event.getType().toString();
 
         TmfFixedArray[] paths = { new TmfFixedArray<String>(trace, HEADER_EVENT_TYPES, type) };

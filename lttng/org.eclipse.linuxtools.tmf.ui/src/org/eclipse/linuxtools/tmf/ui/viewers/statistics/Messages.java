@@ -31,7 +31,7 @@ public class Messages extends NLS {
     public static String TmfStatisticsView_UnknownTraceName;
 
     static {
-        /* Initialize resource bundle */
+        // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
     }
 

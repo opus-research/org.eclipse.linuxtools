@@ -67,6 +67,7 @@ public class TmfStatisticsRequest extends TmfEventRequest {
         fLastEventIndex = index;
     }
 
+
     @Override
     public void handleData(ITmfEvent data) {
         ++fLastEventIndex;
