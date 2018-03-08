@@ -153,8 +153,8 @@ public class ResourcesView extends TmfView {
         }
 
         @Override
-        public List<ResourcesEntry> getChildren() {
-            return fChildren;
+        public ResourcesEntry[] getChildren() {
+            return fChildren.toArray(new ResourcesEntry[0]);
         }
 
         @Override
@@ -449,7 +449,7 @@ public class ResourcesView extends TmfView {
         for (ITmfTrace trace : experiment.getTraces()) {
             if (trace instanceof CtfKernelTrace) {
                 CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;
-                IStateSystemQuerier ssq = ctfKernelTrace.getStateSystem();
+                IStateSystemQuerier ssq = ctfKernelTrace.getKernelStateSystem();
                 long startTime = ssq.getStartTime();
                 long endTime = ssq.getCurrentEndTime() + 1;
                 TraceEntry groupEntry = new TraceEntry(ctfKernelTrace, trace.getName(), startTime, endTime);
@@ -491,7 +491,7 @@ public class ResourcesView extends TmfView {
         refresh(INITIAL_WINDOW_OFFSET);
         for (TraceEntry traceEntry : entryList) {
             CtfKernelTrace ctfKernelTrace = traceEntry.getTrace();
-            IStateSystemQuerier ssq = ctfKernelTrace.getStateSystem();
+            IStateSystemQuerier ssq = ctfKernelTrace.getKernelStateSystem();
             long startTime = ssq.getStartTime();
             long endTime = ssq.getCurrentEndTime() + 1;
             long resolution = (endTime - startTime) / fDisplayWidth;
@@ -506,7 +506,7 @@ public class ResourcesView extends TmfView {
     private static List<ITimeEvent> getEventList(ResourcesEntry entry,
             long startTime, long endTime, long resolution, boolean includeNull,
             IProgressMonitor monitor) {
-        IStateSystemQuerier ssq = entry.getTrace().getStateSystem();
+        IStateSystemQuerier ssq = entry.getTrace().getKernelStateSystem();
         startTime = Math.max(startTime, ssq.getStartTime());
         endTime = Math.min(endTime, ssq.getCurrentEndTime() + 1);
         if (endTime <= startTime) {

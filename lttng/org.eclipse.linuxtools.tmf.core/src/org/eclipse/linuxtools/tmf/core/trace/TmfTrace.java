@@ -14,6 +14,8 @@
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
@@ -84,6 +86,13 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     // The trace parser
     private ITmfEventParser fParser;
+
+    /**
+     * The state systems associated with this trace
+     * @since 2.0
+     */
+    protected final Map<String, IStateSystemQuerier> stateSystems =
+          new HashMap<String, IStateSystemQuerier>();
 
     // ------------------------------------------------------------------------
     // Construction
@@ -221,6 +230,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
                 throw new TmfTraceException("Invalid trace parser"); //$NON-NLS-1$
             }
         }
+
         super.init(traceName, type);
     }
 
@@ -242,6 +252,18 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     protected void indexTrace(boolean waitForCompletion) {
         getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, waitForCompletion);
+    }
+
+    /**
+     * Build the state system that is specific to this trace type. Sub-classes
+     * can add their own, but don't forget to call super.buildStateSystem() if
+     * you also want to use the upstream ones.
+     *
+     * @since 2.0
+     */
+    @SuppressWarnings("unused")
+    protected void buildStateSystem() throws TmfTraceException {
+        /* No state system for generic TMF traces yet */
     }
 
     /**
@@ -354,9 +376,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      */
     @Override
-    public IStateSystemQuerier getStateSystem() {
-        /* By default, no state system is used */
-        return null;
+    public Map<String, IStateSystemQuerier> getStateSystems() {
+        return stateSystems;
     }
 
     // ------------------------------------------------------------------------
