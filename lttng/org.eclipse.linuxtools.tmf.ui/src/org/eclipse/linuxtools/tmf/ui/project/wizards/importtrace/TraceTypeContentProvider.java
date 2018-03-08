@@ -78,11 +78,10 @@ public class TraceTypeContentProvider implements ITreeContentProvider {
     @Override
     public Object getParent(Object element) {
         if (element instanceof TraceTypeHelper) {
-            TraceTypeHelper traceTypeHelper = (TraceTypeHelper) element;
             for (String key : fTraceCategory) {
                 List<TraceTypeHelper> traceSet = fTraceType.get(key);
                 if (traceSet != null) {
-                    if (traceSet.contains(traceTypeHelper)) {
+                    if (traceSet.contains(element)) {
                         return key;
                     }
                 }
