@@ -147,23 +147,25 @@ The perspective can be opened from the Eclipse Open Perspective dialog ('''Windo
 
 [[Image:images/ShowTracingPerspective.png]]
 
-On top to these views, the '''Tracing and Monitoring Framework (TMF)''' feature provides a set of generic tracing specific views, such as: 
+In addition to these views, the '''Tracing and Monitoring Framework (TMF)''' feature provides a set of generic tracing specific views, such as: 
 
 * [[#Colors_View | Colors View]]
 * [[#Filters_View | Filters View]]
 * [[#Time_Chart_View  | Time Chart View]]
 * [[#Environment_Variables_View  | Environment Variables View]]
-* [[#Custom Parser  | Custom Parser]]
 
-To open one of the above '''Tracing''' view, use the Eclipse Show View dialog ('''Window > Show View > Other...'''. Then select the relevant view from the '''Tracing'''. 
+The framework also supports user creation of [[#Custom_Parsers  | Custom Parsers]].
+
+To open one of the above '''Tracing''' views, use the Eclipse Show View dialog ('''Window > Show View > Other...'''). Then select the relevant view from the '''Tracing''' category. 
 
 [[Image:images/ShowTracingViews.png]]
 
-Additionally, the '''LTTng''' feature provides a '''LTTng Tracer Control'''. It comes with a  dedicated '''Control View'''.  
+Additionally, the '''LTTng''' feature provides an '''LTTng Tracer Control''' functionality. It comes with a dedicated '''Control View'''.  
 
 * [[#LTTng_Tracer_Control | LTTng Tracer Control]]
 
 == Project View ==
+
 The project view is the standard Eclipse Project Explorer. '''Tracing''' projects are well integrated in the Eclipse's Common Navigator Framework. The Project Explorer shows '''Tracing''' project with a small "T" decorator in the upper right of the project folder icon. 
 
 === Creating a Tracing Project ===
@@ -511,7 +513,7 @@ A new feature of CTF traces is their ability to store user defined data that is 
 [[Image:images/LTTng2EnvironmentsView.png]]<br>
 The above picture shows a trace loaded that was collevcted with the '''lttng-modules''' version '''2'''.'''0'''.'''0''' tracer. It is a '''kernel''' trace of the '''3.2.0-18-generic''' '''linux''' kernel.
 
-== Custom Parser ==
+== Custom Parsers ==
 
 Custom parser wizards allow the user to define their own parsers for text or XML traces. The user defines how the input should be parsed into internal trace events and identifies the event fields that should be created and displayed. Traces created using a custom parser can be correlated with other built-in traces or traces added by plug-in extension.
 
@@ -520,7 +522,7 @@ Custom parser wizards allow the user to define their own parsers for text or XML
 The '''New Custom Text Parser''' wizard can be used to create a custom parser for text logs. It can be launched several ways:
  
 * Select '''File''' &gt; '''New''' &gt; '''Other...''' &gt; '''Tracing''' &gt; '''Custom Text Parser'''
-* Open the '''Manage Custom Parsers''' dialog from the '''Project Explorer''' view menu, select the '''Text''' radio button and click the '''New...''' button
+* Open the '''[[#Managing_custom_parsers | Manage Custom Parsers]]''' dialog, select the '''Text''' radio button and click the '''New...''' button
 
 [[Image:images/CustomTextParserInput.png]]
 
@@ -587,7 +589,7 @@ Click the '''Finish''' button to close the wizard and save the custom parser.
 The '''New Custom XML Parser''' wizard can be used to create a custom parser for XML logs. It can be launched several ways:
 
 * Select '''File''' &gt; '''New''' &gt; '''Other...''' &gt; '''Tracing''' &gt; '''Custom XML Parser'''
-* Open the '''Manage Custom Parsers''' dialog from the '''Project Explorer''' view menu, select the '''XML''' radio button and click the '''New...''' button
+* Open the '''[[#Managing_custom_parsers | Manage Custom Parsers]]''' dialog, select the '''XML''' radio button and click the '''New...''' button
 
 [[Image:images/CustomXMLParserInput.png]]
 
@@ -657,7 +659,8 @@ Click the '''Finish''' button to close the wizard and save the custom parser.
 
 The '''Manage Custom Parsers''' dialog is used to manage the list of custom parsers used by the tool. To open the dialog:
 
-* Select '''Manage Custom Parsers''' from the '''Project Explorer''' view menu.
+* Open the '''Project Explorer''' view.
+* Select '''Manage Custom Parsers...''' from the '''Traces''' folder context menu, or from a trace's '''Select Trace Type...''' context sub-menu.
 
 [[Image:images/ManageCustomParsers.png]]
  
