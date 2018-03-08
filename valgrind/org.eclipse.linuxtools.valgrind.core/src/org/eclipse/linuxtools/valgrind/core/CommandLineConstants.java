@@ -36,5 +36,8 @@ public interface CommandLineConstants {
 	// 3.6.0 specific
 	String OPT_DSYMUTIL = "--dsymutil"; //$NON-NLS-1$
 
+	// 3.8.0 specific
+	String OPT_CUSTOM_MALLOC_STATIC = "NONE"; //$NON-NLS-1$
+
 	String LOG_PREFIX = "valgrind_"; //$NON-NLS-1$
 }
