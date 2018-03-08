@@ -10,6 +10,11 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.snapshot;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -31,45 +36,69 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 	Combo providerCombo;
 	AbstractLaunchConfigurationTab[] tabs;
 	ILaunchConfiguration initial;
+	HashMap<String, String> comboItems;
+	CTabFolder tabgroup;
+	Boolean initialized;
 
 	public void createControl(Composite parent) {
 		top = new Composite(parent, SWT.NONE);
 		setControl(top);
 		top.setLayout(new GridLayout(1, true));
 		providerCombo = new Combo(top, SWT.READ_ONLY);
-		providerCombo.setItems(ProfileLaunchConfigurationTabGroup
-				.getTabGroupIdsForType("snapshot"));
+		comboItems = ProfileLaunchConfigurationTabGroup
+				.getProviderNamesForType("snapshot");
+		Set<String> providerNames = comboItems.keySet();
+		providerCombo.setItems(providerNames.toArray(new String[0]));
 
-		final CTabFolder tabgroup = new CTabFolder(top, SWT.NONE);
+		tabgroup = new CTabFolder(top, SWT.NONE);
 
 		providerCombo.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				// dispose of old tabs
-				for (CTabItem item : tabgroup.getItems()) {
-					item.dispose();
-				}
-
-				// get the tabs associated with the selected ID
-				tabs = ProfileLaunchConfigurationTabGroup
-						.getTabGroupProviderFromId(providerCombo.getText())
-						.getProfileTabs();
-
-				// create the tab item, and load the specified tab inside
-				for (ILaunchConfigurationTab tab : tabs) {
-					CTabItem item = new CTabItem(tabgroup, SWT.NONE);
-					item.setText(tab.getName());
-					item.setImage(tab.getImage());
-
-					tab.createControl(tabgroup);
-					item.setControl(tab.getControl());
-				}
-
-				// initialize all tab widgets based on the configuration
+				String curProviderId = comboItems.get(providerCombo.getText());
+				loadTabGroupItems(tabgroup, curProviderId);
 				initializeFrom(initial);
+				top.layout();
 			}
 		});
+	}
 
+	public void loadTabGroupItems(CTabFolder tabgroup, String curProviderId){
+		// dispose of old tabs
+		for (CTabItem item : tabgroup.getItems()) {
+			item.dispose();
+		}
+
+		ProfileLaunchConfigurationTabGroup tabGroupConfig;
+
+		if (curProviderId == null || "".equals(curProviderId)) {
+			// get id of highest priority provider
+			curProviderId = ProfileLaunchConfigurationTabGroup
+					.getHighestProviderId("snapshot");
+		}
+		tabGroupConfig = ProfileLaunchConfigurationTabGroup
+				.getTabGroupProviderFromId(curProviderId);
+		if (tabGroupConfig == null) {
+			// no provider found
+			return;
+		}
+		tabs = tabGroupConfig.getProfileTabs();
+		setProvider(curProviderId);
+
+		// Show provider name in combo.
+		int itemIndex = getComboItemIndexFromId(curProviderId);
+		providerCombo.select(itemIndex);
+
+		// create the tab item, and load the specified tab inside
+		for (ILaunchConfigurationTab tab : tabs) {
+			tab.setLaunchConfigurationDialog(getLaunchConfigurationDialog());
+			CTabItem item = new CTabItem(tabgroup, SWT.NONE);
+			item.setText(tab.getName());
+			item.setImage(tab.getImage());
+
+			tab.createControl(tabgroup);
+			item.setControl(tab.getControl());
+		}
 	}
 
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
@@ -89,18 +118,41 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 		 *  about them. We get access to this launch configuration to ensure
 		 *  that we can properly load the widgets the first time.
 		 */
-		if (initial == null){
-			initial = configuration;
+
+		// starting initialization of this tab's controls
+		initialized = false;
+
+		// update current configuration (initial) with configuration being
+		// passed in
+		initial = configuration;
+
+		// check if there exists a launch provider id in the configuration
+		if (initial != null) {
+			try {
+				String providerId = initial.getAttribute("provider", "");
+				if (providerId != null && !providerId.equals("")) {
+					// load provider corresponding to specified id
+					loadTabGroupItems(tabgroup, providerId);
+				} else {
+					// load highest priority provider if none found
+					loadTabGroupItems(tabgroup, null);
+				}
+			} catch (CoreException e) {
+				// continue, initialize tabs
+			}
 		}
-		if (providerCombo != null && !providerCombo.getText().equals("")) {
+		if (tabs != null) {
 			for (AbstractLaunchConfigurationTab tab : tabs) {
 				tab.initializeFrom(configuration);
 			}
 		}
+		// finished initialization
+		initialized = true;
 	}
 
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		if (providerCombo != null && !providerCombo.getText().equals("")) {
+		// make sure tabs are not null, and the tab's controls have been initialized.
+		if (tabs != null && initialized) {
 			for (AbstractLaunchConfigurationTab tab : tabs) {
 				tab.performApply(configuration);
 			}
@@ -111,4 +163,59 @@ public class SnapshotOptionsTab extends ProfileLaunchConfigurationTab {
 		return "Snapshot";
 	}
 
+	/**
+	 * Set the provider attribute in the specified configuration.
+	 * @param configuration a configuration
+	 */
+	public void setProvider(String providerId) {
+		try {
+			ILaunchConfigurationWorkingCopy wc = initial.getWorkingCopy();
+			wc.setAttribute("provider", providerId);
+			initial = wc.doSave();
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	/**
+	 * Get Combo item name from specified id
+	 *
+	 * @param id provider id
+	 * @return name of item, <code>null</code> if no entry found with given id.
+	 */
+	private String getComboItemNameFromId(String id) {
+		for (Entry<String, String> entry : comboItems.entrySet()) {
+			if (id.equals(entry.getValue())) {
+				return entry.getKey();
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Get index of specific name in the combo items list
+	 *
+	 * @param name name of item
+	 * @return index of given name, -1 if it not found
+	 */
+	private int getItemIndex(String name) {
+		int itemCount = providerCombo.getItemCount();
+		for (int i = 0; i < itemCount; i++) {
+			if (providerCombo.getItem(i).equals(name)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Get index of specific id in the combo items list
+	 *
+	 * @param id
+	 * @return index of given id in combo items list, -1 if it not found.
+	 */
+	private int getComboItemIndexFromId(String id) {
+		String providerName = getComboItemNameFromId(id);
+		return getItemIndex(providerName);
+	}
 }

@@ -20,9 +20,9 @@ import java.util.HashMap;
 import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
@@ -99,8 +99,6 @@ public class StreamInputPacketReader implements IDefinitionScope {
     /**
      * number of lost events in this packet
      */
-    private int lostEvents;
-
     private int lostSoFar;
 
     private int lostEventsInThisPacket;
@@ -130,7 +128,6 @@ public class StreamInputPacketReader implements IDefinitionScope {
          */
         createDefinitions();
 
-        lostEvents = 0;
         lostSoFar = 0;
     }
 
@@ -290,29 +287,16 @@ public class StreamInputPacketReader implements IDefinitionScope {
              */
             if (getStreamPacketContextDef() != null) {
                 getStreamPacketContextDef().read(getBitBuffer());
-                /*
-                 * Read CPU ID
-                 */
 
-                Definition cpuiddef = getStreamPacketContextDef()
-                        .lookupDefinition("cpu_id"); //$NON-NLS-1$
-                if (cpuiddef instanceof IntegerDefinition) {
-                    currentCpu = (int) ((IntegerDefinition) cpuiddef)
-                            .getValue();
+                /* Read CPU ID */
+                if (this.getCurrentPacket().getTarget() != null) {
+                    this.currentCpu = (int) this.getCurrentPacket().getTargetId();
                 }
-                /*
-                 * Read number of lost events
-                 */
-                Definition lostEventsdef = getStreamPacketContextDef()
-                        .lookupDefinition("events_discarded"); //$NON-NLS-1$
-                if (cpuiddef instanceof IntegerDefinition) {
-                    int totalLostEvents = (int) ((IntegerDefinition) lostEventsdef)
-                            .getValue();
-                    lostEventsInThisPacket = totalLostEvents - lostEvents;
-                    lostEvents = totalLostEvents;
-                    currentPacket.setLostEvents(lostEventsInThisPacket);
-                    lostSoFar = 0;
-                }
+
+                /* Read number of lost events */
+                lostEventsInThisPacket = (int) this.getCurrentPacket().getLostEvents();
+                lostSoFar = 0;
+
             }
 
             /*
@@ -349,99 +333,77 @@ public class StreamInputPacketReader implements IDefinitionScope {
      *             If there was a problem reading the trace
      */
     public EventDefinition readNextEvent() throws CTFReaderException {
-        /* WARNING: This is very LTTng-specific. */
-        Long eventID = null;
+        /* Default values for those fields */
+        long eventID = 0;
         long timestamp = 0;
 
         if (lostEventsInThisPacket > lostSoFar) {
-            EventDefinition eventDef = EventDeclaration
-                    .getLostEventDeclaration().createDefinition(
-                            streamInputReader);
+            EventDefinition eventDef = EventDeclaration.getLostEventDeclaration().createDefinition(
+                    streamInputReader);
             eventDef.setTimestamp(this.lastTimestamp);
             ++lostSoFar;
             return eventDef;
         }
-        StructDefinition sehd = getStreamEventHeaderDef(); // acronym for a long
-                                                           // variable name
-        BitBuffer currentBitBuffer = getBitBuffer();
-        /*
-         * Read the stream event header.
-         */
 
+        final StructDefinition sehd = getStreamEventHeaderDef();
+        final BitBuffer currentBitBuffer = getBitBuffer();
+
+        /* Read the stream event header. */
         if (sehd != null) {
             sehd.read(currentBitBuffer);
 
-            /*
-             * Check for an event id.
-             */
-            EnumDefinition idEnumDef = (EnumDefinition) sehd
-                    .lookupDefinition("id"); //$NON-NLS-1$
-            assert (idEnumDef != null);
+            /* Check for the event id. */
+            Definition idDef = sehd.lookupDefinition("id"); //$NON-NLS-1$
+            if (idDef instanceof SimpleDatatypeDefinition) {
+                eventID = ((SimpleDatatypeDefinition) idDef).getIntegerValue();
+            } // else, eventID remains 0
 
-            eventID = idEnumDef.getIntegerValue();
+            /* Get the timestamp from the event header (may be overridden later on) */
+            Definition timestampDef = sehd.lookupInteger("timestamp"); //$NON-NLS-1$
 
-            /*
-             * Check for the variant v.
-             */
-            VariantDefinition variantDef = (VariantDefinition) sehd
-                    .lookupDefinition("v"); //$NON-NLS-1$
-            assert (variantDef != null);
+            /* Check for the variant v. */
+            VariantDefinition variantDef = (VariantDefinition) sehd.lookupDefinition("v"); //$NON-NLS-1$
+            if (variantDef != null) {
 
-            /*
-             * Get the variant current field
-             */
-            StructDefinition variantCurrentField = (StructDefinition) variantDef
-                    .getCurrentField();
-            assert (variantCurrentField != null);
+                /* Get the variant current field */
+                StructDefinition variantCurrentField = (StructDefinition) variantDef.getCurrentField();
 
-            /*
-             * Try to get the id field in the current field of the variant. If
-             * it is present, it overrides the previously read event id.
-             */
-            IntegerDefinition idIntegerDef = (IntegerDefinition) variantCurrentField
-                    .lookupDefinition("id"); //$NON-NLS-1$
-            if (idIntegerDef != null) {
-                eventID = idIntegerDef.getValue();
+                /*
+                 * Try to get the id field in the current field of the variant.
+                 * If it is present, it overrides the previously read event id.
+                 */
+                IntegerDefinition idIntegerDef = (IntegerDefinition) variantCurrentField.lookupDefinition("id"); //$NON-NLS-1$
+                if (idIntegerDef != null) {
+                    eventID = idIntegerDef.getValue();
+                }
+
+                /* Get the timestamp. */
+                timestampDef = variantCurrentField.lookupDefinition("timestamp"); //$NON-NLS-1$
             }
 
-            /*
-             * Get the timestamp.
-             */
-            IntegerDefinition timestampDef = (IntegerDefinition) variantCurrentField
-                    .lookupDefinition("timestamp"); //$NON-NLS-1$
-            assert (timestampDef != null);
-
-            /*
-             * Calculate the event timestamp.
-             */
-            timestamp = calculateTimestamp(timestampDef);
+            /* Calculate the event timestamp. */
+            if (timestampDef instanceof IntegerDefinition) {
+                timestamp = calculateTimestamp((IntegerDefinition) timestampDef);
+            } // else timestamp remains 0
         }
 
-        /*
-         * Read the stream event context.
-         */
-        if (getStreamEventContextDef() != null) {
-            getStreamEventContextDef().read(currentBitBuffer);
+        /* Read the stream event context. */
+        if (streamEventContextDef != null) {
+            streamEventContextDef.read(currentBitBuffer);
         }
 
-        /*
-         * Get the right event definition using the event id.
-         */
+        /* Get the right event definition using the event id. */
         EventDefinition eventDef = events.get(eventID);
         if (eventDef == null) {
             throw new CTFReaderException("Incorrect event id : " + eventID); //$NON-NLS-1$
         }
 
-        /*
-         * Read the event context.
-         */
+        /* Read the event context. */
         if (eventDef.getContext() != null) {
             eventDef.getContext().read(currentBitBuffer);
         }
 
-        /*
-         * Read the event fields.
-         */
+        /* Read the event fields. */
         if (eventDef.getFields() != null) {
             eventDef.getFields().read(currentBitBuffer);
         }
