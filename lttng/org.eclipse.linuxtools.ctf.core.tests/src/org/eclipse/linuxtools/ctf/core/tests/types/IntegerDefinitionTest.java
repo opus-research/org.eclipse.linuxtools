@@ -21,7 +21,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,37 +34,16 @@ import org.junit.Test;
 public class IntegerDefinitionTest {
 
     private IntegerDefinition fixture;
-    String name = "testInt"; //$NON-NLS-1$
-    String clockName = "clock"; //$NON-NLS-1$
-    /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(IntegerDefinitionTest.class);
-    }
+    String name = "testInt";
+    String clockName = "clock";
 
     /**
-     * Perform pre-test initialization. We know the structDef won't be null (or
-     * else the tests will fail), so we can safely suppress the warning.
+     * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
-
-//        StructDefinition structDef = null;
-//        boolean found = false;
         IntegerDeclaration id = new IntegerDeclaration( 1, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
         fixture = id.createDefinition(null, name);
-    }
-
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
     }
 
     /**
@@ -77,7 +55,7 @@ public class IntegerDefinitionTest {
         IntegerDeclaration declaration = new IntegerDeclaration(1, true, 1,
                 ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
         IDefinitionScope definitionScope = null;
-        String fieldName = ""; //$NON-NLS-1$
+        String fieldName = "";
 
         IntegerDefinition result = new IntegerDefinition(declaration,
                 definitionScope, fieldName);
