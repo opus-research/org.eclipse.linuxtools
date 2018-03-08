@@ -129,7 +129,17 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	private Button OKButton;
 	private boolean testMode = false;
 	protected String secondaryID = ""; //$NON-NLS-1$
-	private final String [] escapableChars = new String []  {"(", ")", " "}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	private final String [] escapableChars = new String []  {"(", ")", " "}; //$NON-NLS-1$
+
+	/**
+	 * Provides access to the Profiling Frameworks' launch method
+	 *
+	 * @param editor
+	 * @param mode
+	 */
+	public void reLaunch(IEditorPart editor, String mode) {
+		launch(editor, mode);
+	}
 
 	/**
 	 * Initialize variables. Highly recommend calling this function within the
@@ -693,7 +703,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 						output += numberOfValidFiles(((ICContainer) ele)
 								.getChildren());
 					}
-					if (validElement(ele)) {
+					if ((ele instanceof ICElement) && validElement(ele)) {
 						output++;
 					}
 				}
