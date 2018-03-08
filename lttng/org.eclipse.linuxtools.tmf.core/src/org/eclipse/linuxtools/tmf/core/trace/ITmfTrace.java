@@ -20,6 +20,8 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 
 /**
  * The event stream structure in TMF. In its basic form, a trace has:
@@ -170,6 +172,18 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @return the trace cache size
      */
     public int getCacheSize();
+
+    /**
+     * @return The statistics provider for this trace
+     * @since 2.0
+     */
+    public ITmfStatistics getStatistics();
+
+    /**
+     * @return The state system that is associated with this trace
+     * @since 2.0
+     */
+    public ITmfStateSystem getStateSystem();
 
     // ------------------------------------------------------------------------
     // Trace characteristics getters

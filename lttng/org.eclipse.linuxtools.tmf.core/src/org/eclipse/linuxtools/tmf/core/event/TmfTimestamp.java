@@ -10,16 +10,17 @@
  *   Francois Chouinard - Initial API and implementation
  *   Thomas Gatterweh	- Updated scaling / synchronization
  *   Francois Chouinard - Refactoring to align with TMF Event Model 1.0
+ *   Francois Chouinard - Implement augmented interface
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-
 /**
  * A generic timestamp implementation. The timestamp is represented by the
- * tuple { value, scale, precision }.
+ * tuple { value, scale, precision }. By default, timestamps are scaled in
+ * seconds.
  *
- * @version 1.0
+ * @version 1.1
  * @author Francois Chouinard
  */
 public class TmfTimestamp implements ITmfTimestamp {
@@ -39,6 +40,18 @@ public class TmfTimestamp implements ITmfTimestamp {
      */
     public static final ITmfTimestamp BIG_CRUNCH =
             new TmfTimestamp(Long.MAX_VALUE, Integer.MAX_VALUE, 0);
+
+    /**
+     * A more practical definition of "beginning of time"
+     * @since 2.0
+     */
+    public static final ITmfTimestamp PROJECT_IS_FUNDED = BIG_BANG;
+
+    /**
+     * A more practical definition of "end of time"
+     * @since 2.0
+     */
+    public static final ITmfTimestamp PROJECT_IS_CANNED = BIG_CRUNCH;
 
     /**
      * Zero
@@ -73,7 +86,7 @@ public class TmfTimestamp implements ITmfTimestamp {
      * Default constructor
      */
     public TmfTimestamp() {
-        this(0, 0, 0);
+        this(0, ITmfTimestamp.SECOND_SCALE, 0);
     }
 
     /**
@@ -82,7 +95,7 @@ public class TmfTimestamp implements ITmfTimestamp {
      * @param value the timestamp value
      */
     public TmfTimestamp(final long value) {
-        this(value, 0, 0);
+        this(value, ITmfTimestamp.SECOND_SCALE, 0);
     }
 
     /**
@@ -183,7 +196,7 @@ public class TmfTimestamp implements ITmfTimestamp {
 
         // Handle the trivial case
         if (fScale == scale && offset == 0) {
-            return new TmfTimestamp(this);
+            return this;
         }
 
         // In case of big bang and big crunch just return this (no need to normalize)
@@ -328,9 +341,25 @@ public class TmfTimestamp implements ITmfTimestamp {
      * @see java.lang.Object#toString()
      */
     @Override
-    @SuppressWarnings("nls")
     public String toString() {
-        return "TmfTimestamp [fValue=" + fValue + ", fScale=" + fScale + ", fPrecision=" + fPrecision + "]";
+        return toString(TmfTimestampFormat.getDefaulTimeFormat());
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp#toString(org.eclipse.linuxtools.tmf.core.event.TmfTimestampFormat)
+     */
+    /**
+     * @since 2.0
+     */
+    @Override
+    public String toString(final TmfTimestampFormat format) {
+        try {
+            ITmfTimestamp ts = normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
+            return format.format(ts.getValue());
+        }
+        catch (ArithmeticException e) {
+            return format.format(0);
+        }
     }
 
 }

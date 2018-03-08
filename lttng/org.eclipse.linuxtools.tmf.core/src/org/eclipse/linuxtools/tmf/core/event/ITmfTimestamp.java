@@ -28,13 +28,41 @@ package org.eclipse.linuxtools.tmf.core.event;
  * timestamps in different scales). Default: 0.
  * </ul>
  *
- * @version 1.0
+ * @version 2.0
  * @author Francois Chouinard
  *
  * @see ITmfEvent
  * @see TmfTimeRange
  */
 public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
+
+    // ------------------------------------------------------------------------
+    // Constants
+    // ------------------------------------------------------------------------
+
+    /**
+     * The millisecond scale factor (10e0)
+     * @since 2.0
+     */
+    public static final int SECOND_SCALE = 0;
+
+    /**
+     * The millisecond scale factor (10e-3)
+     * @since 2.0
+     */
+    public static final int MILLISECOND_SCALE = -3;
+
+    /**
+     * The microsecond scale factor (10e-6)
+     * @since 2.0
+     */
+    public static final int MICROSECOND_SCALE = -6;
+
+    /**
+     * The nanosecond scale factor (10e-9)
+     * @since 2.0
+     */
+    public static final int NANOSECOND_SCALE = -9;
 
     // ------------------------------------------------------------------------
     // Getters
@@ -60,7 +88,7 @@ public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
     // ------------------------------------------------------------------------
 
     /**
-     * Normalize (adjust scale and offset) of the timerstamp
+     * Normalize (adjust scale and offset) of the timestamp
      *
      * @param offset the offset to apply to the timestamp value (after scaling)
      * @param scale the new timestamp scale
@@ -94,5 +122,14 @@ public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
      */
     @Override
     int compareTo(ITmfTimestamp ts);
+
+    /**
+     * Format the timestamp as per the format provided
+     *
+     * @param format the timestamp formatter
+     * @return the formatted timestamp
+     * @since 2.0
+     */
+    public String toString(final TmfTimestampFormat format);
 
 }

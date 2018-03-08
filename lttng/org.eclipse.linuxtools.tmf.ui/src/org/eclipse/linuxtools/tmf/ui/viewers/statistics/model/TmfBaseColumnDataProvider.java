@@ -86,13 +86,13 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
         fColumnData.add(new TmfBaseColumnData(LEVEL_COLUMN, 200, SWT.LEFT, LEVEL_COLUMN_TIP, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                return ((TmfStatisticsTreeNode) element).getKey();
+                return ((TmfStatisticsTreeNode) element).getName();
             }
 
             @Override
             public Image getImage(Object element) {
                 TmfStatisticsTreeNode node = (TmfStatisticsTreeNode) element;
-                if (fFolderLevels.contains(node.getKey())) {
+                if (fFolderLevels.contains(node.getName())) {
                     return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
                 }
                 return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
@@ -103,7 +103,7 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
                 TmfStatisticsTreeNode n1 = (TmfStatisticsTreeNode) e1;
                 TmfStatisticsTreeNode n2 = (TmfStatisticsTreeNode) e2;
 
-                return n1.getKey().compareTo(n2.getKey());
+                return n1.getName().compareTo(n2.getName());
             }
         }, null));
 
@@ -112,8 +112,8 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
             @Override
             public String getText(Object element) {
                 TmfStatisticsTreeNode node = (TmfStatisticsTreeNode) element;
-                if (!fFolderLevels.contains(node.getKey())) {
-                    return Long.toString(node.getValue().getTotal());
+                if (!fFolderLevels.contains(node.getName())) {
+                    return Long.toString(node.getValues().getTotal());
                 }
                 return ""; //$NON-NLS-1$
             }
@@ -123,7 +123,7 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
                 TmfStatisticsTreeNode n1 = (TmfStatisticsTreeNode) e1;
                 TmfStatisticsTreeNode n2 = (TmfStatisticsTreeNode) e2;
 
-                return (int) (n1.getValue().getTotal() - n2.getValue().getTotal());
+                return (int) (n1.getValues().getTotal() - n2.getValues().getTotal());
             }
         }, new ITmfColumnPercentageProvider() {
 
@@ -132,12 +132,12 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
                 TmfStatisticsTreeNode parent = node;
                 do {
                     parent = parent.getParent();
-                } while (parent != null && parent.getValue().getTotal() == 0);
+                } while (parent != null && parent.getValues().getTotal() == 0);
 
                 if (parent == null) {
                     return 0;
                 }
-                return (double) node.getValue().getTotal() / parent.getValue().getTotal();
+                return (double) node.getValues().getTotal() / parent.getValues().getTotal();
             }
         }));
 
@@ -147,8 +147,8 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
             @Override
             public String getText(Object element) {
                 TmfStatisticsTreeNode node = (TmfStatisticsTreeNode) element;
-                if (!fFolderLevels.contains(node.getKey())) {
-                    return Long.toString(node.getValue().getPartial());
+                if (!fFolderLevels.contains(node.getName())) {
+                    return Long.toString(node.getValues().getPartial());
                 }
                 return ""; //$NON-NLS-1$
             }
@@ -158,7 +158,7 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
                 TmfStatisticsTreeNode n1 = (TmfStatisticsTreeNode) e1;
                 TmfStatisticsTreeNode n2 = (TmfStatisticsTreeNode) e2;
 
-                return (int) (n1.getValue().getPartial() - n2.getValue().getPartial());
+                return (int) (n1.getValues().getPartial() - n2.getValues().getPartial());
             }
         }, new ITmfColumnPercentageProvider() {
 
@@ -167,12 +167,12 @@ public class TmfBaseColumnDataProvider implements ITmfColumnDataProvider {
                 TmfStatisticsTreeNode parent = node;
                 do {
                     parent = parent.getParent();
-                } while (parent != null && parent.getValue().getPartial() == 0);
+                } while (parent != null && parent.getValues().getPartial() == 0);
 
                 if (parent == null) {
                     return 0;
                 }
-                return (double) node.getValue().getPartial() / parent.getValue().getPartial();
+                return (double) node.getValues().getPartial() / parent.getValues().getPartial();
             }
         }));
     }

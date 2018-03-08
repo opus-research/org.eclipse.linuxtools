@@ -36,8 +36,7 @@ public final class TmfTimeRange {
     /**
      * The null time range
      */
-    public static final TmfTimeRange NULL_RANGE =
-            new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_BANG);
+    public static final TmfTimeRange NULL_RANGE = new TmfTimeRange();
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -49,6 +48,14 @@ public final class TmfTimeRange {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
+
+    /**
+     * Default constructor
+     */
+    private TmfTimeRange() {
+        fStartTime = TmfTimestamp.BIG_BANG;
+        fEndTime = TmfTimestamp.BIG_BANG;
+    }
 
     /**
      * Full constructor
