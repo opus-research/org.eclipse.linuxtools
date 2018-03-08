@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
@@ -63,7 +64,7 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
  */
 public class BatchImportTraceWizard extends ImportTraceWizard {
 
-    private static final Status CANCEL_STATUS = new Status(IStatus.CANCEL, Activator.PLUGIN_ID, "");
+    private static final Status CANCEL_STATUS = new Status(IStatus.CANCEL, Activator.PLUGIN_ID, ""); //$NON-NLS-1$
     private static final int TOTALWORK = 65536;
     // -----------------
     // Constants
@@ -181,8 +182,8 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         sm = SubMonitor.convert(monitor);
                         sm.setTaskName(taskName);
                         sm.setWorkRemaining(TOTALWORK);
-                        if (updateFiles(sm, fileName).getSeverity() == IStatus.CANCEL) {
-                            ;
+                        if ((updateFiles(sm, fileName).getSeverity() & IStatus.CANCEL) != 0) {
+                            // leaving the if statement as a snippet
                         }
 
                         sm.done();
@@ -369,8 +370,15 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     public void setTraceTypesToScan(List<String> tracesToScan) {
         // intersection to know if there's a diff.
         // if there's a diff, we need to re-enque everything
+        List<String> added = new ArrayList<String>();
+        for (String traceLoc : tracesToScan) {
+            if (!fTraceTypesToScan.contains(traceLoc)) {
+                added.add(traceLoc);
+            }
+        }
         fTraceTypesToScan.clear();
         fTraceTypesToScan.addAll(tracesToScan);
+        updateTracesToScan(added);
     }
 
     /**
@@ -532,6 +540,18 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         return fResults.size();
     }
 
+    private void updateTracesToScan(final List<String> added) {
+        final Set<String> filesToScan = new TreeSet<String>();
+        for (String name : fParentFiles.keySet()) {
+            filesToScan.addAll(fParentFiles.get(name));
+        }
+        IProgressMonitor pm = new NullProgressMonitor();
+        try {
+            updateScanQueue(pm, filesToScan, added);
+        } catch (InterruptedException e) {
+        }
+    }
+
     /*
      * I am a job. Make me work
      */
@@ -545,7 +565,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             parentFiles = fParentFiles.keySet().toArray(new String[0]);
         }
 
-        final String[] traceTypes = fTraceTypesToScan.toArray(new String[0]);
+        final List<String> traceTypes = fTraceTypesToScan;
         int workToDo = 1;
         for (String name : parentFiles) {
 
@@ -572,22 +592,10 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                 filesToScan.addAll(fParentFiles.get(name));
                 fParentFilesToScan.add(name);
             }
-            for (String fileToScan : filesToScan) {
-                for (String traceCat : traceTypes) {
-                    TraceValidationHelper tv = new TraceValidationHelper(fileToScan, traceCat);
-                    // for thread safety, keep checks in this order.
-                    if (!fResults.containsKey(tv)) {
-                        if (!fTracesToScan.contains(tv)) {
-                            fTracesToScan.put(tv);
-                            monitor.subTask(tv.getTraceToScan());
-                            if (monitor.isCanceled()) {
-                                fParentFilesToScan.remove(traceToScan);
-                                fParentFiles.remove(traceToScan);
-                                return CANCEL_STATUS;
-                            }
-                        }
-                    }
-                }
+            IStatus cancelled = updateScanQueue(monitor, filesToScan, traceTypes);
+            if ((cancelled.getSeverity() & IStatus.CANCEL) != 0) {
+                fParentFilesToScan.remove(traceToScan);
+                fParentFiles.remove(traceToScan);
             }
         } catch (InterruptedException e) {
             monitor.done();
@@ -595,6 +603,25 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
         }
 
         monitor.done();
+        return Status.OK_STATUS;
+    }
+
+    private IStatus updateScanQueue(IProgressMonitor monitor, final Set<String> filesToScan, final List<String> traceTypes) throws InterruptedException {
+        for (String fileToScan : filesToScan) {
+            for (String traceCat : traceTypes) {
+                TraceValidationHelper tv = new TraceValidationHelper(fileToScan, traceCat);
+                // for thread safety, keep checks in this order.
+                if (!fResults.containsKey(tv)) {
+                    if (!fTracesToScan.contains(tv)) {
+                        fTracesToScan.put(tv);
+                        monitor.subTask(tv.getTraceToScan());
+                        if (monitor.isCanceled()) {
+                            return CANCEL_STATUS;
+                        }
+                    }
+                }
+            }
+        }
         return Status.OK_STATUS;
     }
 
@@ -610,7 +637,7 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         return CANCEL_STATUS;
                     }
                     IStatus retVal = recurse(filesToScan, child, monitor);
-                    if (retVal.getSeverity() == IStatus.CANCEL) {
+                    if ((retVal.getSeverity() & IStatus.CANCEL) != 0) {
                         return retVal;
                     }
                     monitor.worked(step);
@@ -628,10 +655,10 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             if (null != listFiles) {
                 for (File child : listFiles) {
                     if (monitor.isCanceled()) {
-                        return CANCEL_STATUS; //$NON-NLS-1$
+                        return CANCEL_STATUS;
                     }
                     IStatus retVal = recurse(filesToScan, child, monitor);
-                    if (retVal.getSeverity() == IStatus.CANCEL) {
+                    if ((retVal.getSeverity() & IStatus.CANCEL) != 0) {
                         return retVal;
                     }
                 }
