@@ -22,7 +22,7 @@ public class ReportComparisonViewTest extends AbstractStyledTextViewTest {
 
 	@Override
 	@Test
-	public void runPerfViewTest() {
+	public void runPerfViewTest() throws Exception {
 		/*
 		 * No need to create project or open launch dialog,
 		 * just need to open view and run test.

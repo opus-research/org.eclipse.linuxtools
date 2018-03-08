@@ -39,10 +39,10 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 			if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
 				//check if user has NOPASSWD sudo permission for opcontrol
 				//if the Linux Tools Path property was changed
-				if(!LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).isEmpty()){
+				if(!LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).equals("")){
 					IOpcontrolProvider provider = OprofileCorePlugin.getDefault().getOpcontrolProvider();
 					if (!provider.hasPermissions(project)){
-						throw new OpcontrolException(OprofileCorePlugin.createErrorStatus("opcontrolSudo", null)); //$NON-NLS-1$
+						throw new OpcontrolException(OprofileCorePlugin.createErrorStatus("opcontrolSudo", null));
 					}
 				}
 
@@ -89,7 +89,6 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 			launch = il;
 			this.executions = executions;
 		}
-		@Override
 		public void launchesTerminated(ILaunch[] launches) {
 			try {
 				for (ILaunch l : launches) {
@@ -108,7 +107,6 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 						//need to run this in the ui thread otherwise get SWT Exceptions
 						// based on concurrency issues
 						Display.getDefault().syncExec(new Runnable() {
-							@Override
 							public void run() {
 								refreshOprofileView();
 							}
@@ -119,11 +117,8 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 				OprofileCorePlugin.showErrorDialog("opcontrolProvider", oe); //$NON-NLS-1$
 			}
 		}
-		@Override
 		public void launchesAdded(ILaunch[] launches) { /* dont care */}
-		@Override
 		public void launchesChanged(ILaunch[] launches) { /* dont care */ }
-		@Override
 		public void launchesRemoved(ILaunch[] launches) { /* dont care */ }
 	}
 
