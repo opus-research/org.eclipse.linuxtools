@@ -72,8 +72,14 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			}
 		}
 
+		//Add the title widgets
+		//data1 = new FormData();
+		//data1.top = new FormAttachment(cmpGraphOptsGraph, 10);
+
 		Group cmpGraphOptsSeries = new Group(comp, SWT.SHADOW_ETCHED_IN);
-		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		//rowLayout = new RowLayout(SWT.VERTICAL);
+		//rowLayout.fill = true;
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
 		cmpGraphOptsSeries.setLayout(layout);
