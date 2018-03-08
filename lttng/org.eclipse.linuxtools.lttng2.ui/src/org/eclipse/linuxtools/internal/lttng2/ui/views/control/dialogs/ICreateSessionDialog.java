@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -75,16 +76,6 @@ public interface ICreateSessionDialog {
      * @return The data URL or null.
      */
     public String getDataUrl();
-
-    /**
-     * @return for not activating a consumer for this session
-     */
-    public boolean isNoConsumer();
-
-    /**
-     * @return for disabling a consumer for this session
-     */
-    public boolean isDisableConsumer();
 
     // ------------------------------------------------------------------------
     // Operations

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.handlers;
 
@@ -73,11 +74,10 @@ public class CreateSessionHandler extends BaseControlViewHandler {
                     try {
                         if (dialog.isStreamedTrace()) {
                             sessionGroup.createSession(dialog.getSessionName(), dialog.getNetworkUrl(), dialog.getControlUrl(),
-                                    dialog.getDataUrl(), dialog.isNoConsumer(), dialog.isDisableConsumer(), monitor);
+                                    dialog.getDataUrl(), monitor);
                         } else {
                             String sessionPath = dialog.isDefaultSessionPath() ? null : dialog.getSessionPath();
-                            sessionGroup.createSession(dialog.getSessionName(), sessionPath, dialog.isNoConsumer(),
-                                    dialog.isDisableConsumer(), monitor);
+                            sessionGroup.createSession(dialog.getSessionName(), sessionPath, monitor);
                         }
                     } catch (ExecutionException e) {
                         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_CreateSessionFailure, e);

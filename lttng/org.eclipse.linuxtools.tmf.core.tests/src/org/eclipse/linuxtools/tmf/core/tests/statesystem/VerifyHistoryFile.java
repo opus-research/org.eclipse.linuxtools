@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -23,6 +23,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 
 /**
@@ -31,13 +32,12 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
  * trigger NPE's elsewhere in the stack.
  *
  * @author alexmont
- *
  */
 @SuppressWarnings({"nls","javadoc"})
 public class VerifyHistoryFile {
 
     // Enter the .ht file name to test here
-    public final static String pathToHistoryFile = "";
+    public static final String pathToHistoryFile = "";
 
     private static File htFile;
     private static IStateHistoryBackend htBackend;
@@ -51,7 +51,7 @@ public class VerifyHistoryFile {
             TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException {
         htFile = new File(pathToHistoryFile);
-        htBackend = new HistoryTreeBackend(htFile);
+        htBackend = new HistoryTreeBackend(htFile, IStateChangeInput.IGNORE_PROVIDER_VERSION);
         ss = HistoryBuilder.openExistingHistory(htBackend);
 
         startTime = ss.getStartTime();

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -100,6 +100,7 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
      */
     @Override
     public void setChannels(List<IChannelInfo> channels) {
+        fChannels.clear();
         for (Iterator<IChannelInfo> iterator = channels.iterator(); iterator.hasNext();) {
             IChannelInfo channelInfo = iterator.next();
             fChannels.add(channelInfo);
@@ -123,7 +124,7 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((fChannels == null) ? 0 : fChannels.hashCode());
+        result = prime * result + fChannels.hashCode();
         result = prime * result + (fIsKernel ? 1231 : 1237);
         return result;
     }
@@ -144,11 +145,7 @@ public class DomainInfo extends TraceInfo implements IDomainInfo {
             return false;
         }
         DomainInfo other = (DomainInfo) obj;
-        if (fChannels == null) {
-            if (other.fChannels != null) {
-                return false;
-            }
-        } else if (!fChannels.equals(other.fChannels)) {
+        if (!fChannels.equals(other.fChannels)) {
             return false;
         }
         if (fIsKernel != other.fIsKernel) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,8 +17,8 @@ import java.util.concurrent.BlockingQueue;
 
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 
@@ -48,7 +48,7 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
     private ITmfEvent currentEvent;
 
     /** State system in which to insert the state changes */
-    protected ITmfStateSystemBuilder ss;
+    protected ITmfStateSystemBuilder ss = null;
 
     /**
      * Instantiate a new state provider plugin.

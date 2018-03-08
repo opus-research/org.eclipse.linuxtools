@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -105,6 +105,7 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
      */
     @Override
     public void setEvents(List<IBaseEventInfo> events) {
+        fEvents.clear();
         for (Iterator<IBaseEventInfo> iterator = events.iterator(); iterator.hasNext();) {
             IBaseEventInfo eventInfo = iterator.next();
             fEvents.add(eventInfo);
@@ -132,7 +133,7 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((fEvents == null) ? 0 : fEvents.hashCode());
+        result = prime * result + fEvents.hashCode();
         result = prime * result + fPid;
         return result;
     }
@@ -153,11 +154,7 @@ public class UstProviderInfo extends TraceInfo implements IUstProviderInfo {
             return false;
         }
         UstProviderInfo other = (UstProviderInfo) obj;
-        if (fEvents == null) {
-            if (other.fEvents != null) {
-                return false;
-            }
-        } else if (!fEvents.equals(other.fEvents)) {
+        if (!fEvents.equals(other.fEvents)) {
             return false;
         }
         if (fPid != other.fPid) {

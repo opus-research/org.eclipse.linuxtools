@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012, 2013 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -34,14 +34,14 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentLocation;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;

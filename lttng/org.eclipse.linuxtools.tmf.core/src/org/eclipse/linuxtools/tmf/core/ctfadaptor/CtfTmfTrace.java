@@ -18,9 +18,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -76,6 +76,8 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
          */
         setCacheSize();
 
+        super.initTrace(resource, path, eventType);
+
         @SuppressWarnings("unused")
         CtfTmfEventType type;
 
@@ -103,8 +105,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
              */
             throw new TmfTraceException(e.getMessage(), e);
         }
-
-        super.initTrace(resource, path, eventType);
     }
 
     /* (non-Javadoc)
