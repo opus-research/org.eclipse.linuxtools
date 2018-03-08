@@ -10,12 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -54,7 +49,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.Version;
 
 public class ModelTest extends AbstractTest {
 	private ILaunchConfiguration config;
@@ -359,15 +353,9 @@ public class ModelTest extends AbstractTest {
 		String[] recordString = PerfCore.getRecordString(tempConfig);
 		assertNotNull(recordString);
 
-		Version perfVersion = PerfCore.getPerfVersion(tempConfig, null, null);
-		String [] expectedString = new String [] { PerfPlugin.PERF_COMMAND, "record", "-f",
+		String[] expectedString = { PerfPlugin.PERF_COMMAND, "record", "-f",
 				"-r", "-v", "-M", "-e", "cpu-cycles", "-e", "cache-misses",
 				"-e", "cpu-clock" };
-		if (new Version(3, 11, 0).compareTo(perfVersion) <= 0) {
-			List<String> tmp = new ArrayList<String>(Arrays.asList(expectedString));
-			tmp.remove("-f");
-			expectedString = tmp.toArray(new String [0]);
-		}
 		assertArrayEquals(expectedString, recordString);
 	}
 
