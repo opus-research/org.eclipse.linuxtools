@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.eclipse.linuxtools.valgrind.remote"
+      id="org.eclipse.linuxtools.oprofile.remote.feature"
       label="%featureName"
       version="1.0.0.qualifier"
-      provider-name="%featureProvider"
-      os="linux,macosx">
+      provider-name="%provider"
+      os="linux">
 
    <description>
       %description
@@ -23,26 +23,26 @@
    </url>
 
    <requires>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.runtime" version="3.4.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui" version="3.4.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.cdt.core"/>
       <import plugin="org.eclipse.cdt.debug.core"/>
       <import plugin="org.eclipse.cdt.launch"/>
-      <import plugin="org.eclipse.core.filesystem"/>
       <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.debug.core"/>
       <import plugin="org.eclipse.debug.ui"/>
-      <import plugin="org.eclipse.linuxtools.profiling.launch.remote"/>
-      <import plugin="org.eclipse.linuxtools.valgrind.core"/>
-      <import plugin="org.eclipse.linuxtools.valgrind.launch"/>
-      <import plugin="org.eclipse.linuxtools.valgrind.ui"/>
       <import plugin="org.eclipse.linuxtools.profiling.launch"/>
-      <import feature="org.eclipse.linuxtools.valgrind" version="0.8.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.linuxtools.profiling.ui"/>
+      <import plugin="org.eclipse.ui.editors" version="3.4.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.help"/>
+      <import feature="org.eclipse.linuxtools.oprofile.feature" version="0.1.0" match="greaterOrEqual"/>
       <import feature="org.eclipse.linuxtools.profiling.remote" version="0.8.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
-         id="org.eclipse.linuxtools.valgrind.launch.remote"
+         id="org.eclipse.linuxtools.oprofile.remote.launch"
          download-size="0"
          install-size="0"
          version="0.0.0"

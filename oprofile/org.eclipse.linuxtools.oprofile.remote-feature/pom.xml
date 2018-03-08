@@ -12,17 +12,17 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>linuxtools-valgrind-parent</artifactId>
-    <groupId>org.eclipse.linuxtools.valgrind</groupId>
+    <artifactId>linuxtools-oprofile-parent</artifactId>
+    <groupId>org.eclipse.linuxtools.oprofile</groupId>
     <version>0.11.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>org.eclipse.linuxtools.valgrind.remote</artifactId>
+  <artifactId>org.eclipse.linuxtools.oprofile.remote.feature</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-feature</packaging>
 
-  <name>Linux Tools Valgrind Tools Remote Integration Feature</name>
-
+  <name>Linux Tools Remote OProfile Integration Feature</name>
+  
   <build>
     <plugins>
       <plugin>
@@ -37,7 +37,7 @@
             </goals>
             <configuration>
               <excludes>
-                <plugin id="org.eclipse.linuxtools.valgrind.doc"/>
+                <plugin id="org.eclipse.linuxtools.oprofile.doc"/>
               </excludes>
             </configuration>
           </execution>
