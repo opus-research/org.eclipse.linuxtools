@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.ctf.core.trace;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -473,28 +472,5 @@ public class CTFTraceReader {
      */
     public CTFTrace getTrace() {
         return trace;
-    }
-
-    /**
-     * Gets the relative position for progress bars
-     *
-     * @return the position in the trace between 0.0 to 1.0
-     * @since 2.0
-     */
-    public double getApproxPosition(){
-        double retVal = 0.0;
-        long totalSize = 0;
-        long pos = 0;
-        for(StreamInputReader sir: streamInputReaders){
-            try {
-                totalSize += sir.getStreamInput().getFileChannel().size();
-                pos += sir.getPacketReader().getCurrentPacket().getOffsetBytes();
-                retVal = (double)pos / totalSize;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-        return retVal;
     }
 }
