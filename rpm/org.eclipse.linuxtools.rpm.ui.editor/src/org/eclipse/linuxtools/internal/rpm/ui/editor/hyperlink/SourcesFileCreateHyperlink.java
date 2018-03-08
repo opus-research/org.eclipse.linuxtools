@@ -37,9 +37,9 @@ import org.eclipse.ui.ide.IDE;
  */
 public class SourcesFileCreateHyperlink implements IHyperlink {
 
-	private String fileName;
-	private IFile original;
-	private IRegion region;
+	String fileName;
+	IFile original;
+	IRegion region;
 
 	/**
 	 * Creates hyperlink for the following file name, region and file whether
@@ -62,7 +62,6 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkRegion()
 	 */
-	@Override
 	public IRegion getHyperlinkRegion() {
 		return region;
 	}
@@ -70,7 +69,6 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkText()
 	 */
-	@Override
 	public String getHyperlinkText() {
 		return Messages.SourcesFileHyperlink_2 + ' ' + fileName;
 	}
@@ -78,7 +76,6 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getTypeLabel()
 	 */
-	@Override
 	public String getTypeLabel() {
 		return null;
 	}
@@ -89,7 +86,6 @@ public class SourcesFileCreateHyperlink implements IHyperlink {
 	 *
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#open()
 	 */
-	@Override
 	public void open() {
 		IContainer container = original.getParent();
 		IResource resourceToOpen = container.findMember(fileName);
