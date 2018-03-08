@@ -3,7 +3,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		<title>LTTng Plug-in User Guide - LTTng Kernel Analysis</title>
-		<link type="text/css" rel="stylesheet" href="../../../book.css"/>
+		<link type="text/css" rel="stylesheet" href="book.css"/>
 	</head>
 	<body>
 		<table class="navigation" style="width: 100%;" border="0" summary="navigation">
@@ -13,13 +13,13 @@
 			<tr>
 				<td style="width: 20%" align="left">
 					<a href="LTTng.html" title="LTTng">
-						<img alt="Previous" border="0" src="../../../images/prev.gif"/>
+						<img alt="Previous" border="0" src="images/prev.gif"/>
 					</a>
 				</td>
 				<td style="width: 60%" align="center"></td>
 				<td style="width: 20%" align="right">
 					<a href="Limitations.html" title="Limitations">
-						<img alt="Next" border="0" src="../../../images/next.gif"/>
+						<img alt="Next" border="0" src="images/next.gif"/>
 					</a>
 				</td>
 			</tr>
@@ -46,13 +46,13 @@
 			</li>
 		</ul>
 		<p>
-			<img border="0" src="images/LTTngKernelPerspective.png"/>
+			<img border="0" src="LTTngKernelPerspective.png"/>
 		</p>
 		<p>The perspective can be opened from the Eclipse Open Perspective dialog (
 			<b>Window &gt; Open Perspective... &gt; Other</b>).
 		</p>
 		<p>
-			<img border="0" src="images/OpenLTTngKernelPerspective.png"/>
+			<img border="0" src="OpenLTTngKernelPerspective.png"/>
 		</p>
 		<h2 id="Control_Flow_View">Control Flow View</h2>
 		<p>The 
@@ -67,11 +67,11 @@
 			<b>Other...</b>):
 		</p>
 		<p>
-			<img border="0" src="images/Cfv_show_view.png"/>
+			<img border="0" src="Cfv_show_view.png"/>
 		</p>
 		<p>You should get something like this:</p>
 		<p>
-			<img border="0" src="images/Cfv_global.png"/>
+			<img border="0" src="Cfv_global.png"/>
 		</p>
 		<p>The view is divided into the following important sections: 
 			<b><span style="color: #C84545;">process tree</span></b>, 
@@ -83,7 +83,7 @@
 		<h3 id="Process_tree_and_informations">Process tree and informations</h3>
 		<p>Processes are organized as a tree within this view. This way, child and parent processes are easy to identify.</p>
 		<p>
-			<img border="0" src="images/Cfv_process_tree.png"/>
+			<img border="0" src="Cfv_process_tree.png"/>
 		</p>
 		<p>The layout is based on the states computed from the trace events.</p>
 		<p>A given process may be shown at different places within the tree since the nodes are 
@@ -101,7 +101,7 @@
 			<a href="LTTng-Kernel-Analysis.html#Toolbar">toolbar button</a>:
 		</p>
 		<p>
-			<img border="0" src="images/Cfv_legend.png"/>
+			<img border="0" src="Cfv_legend.png"/>
 		</p>
 		<p>This dark yellow is what you'll see most of the time since scheduling puts processes on hold while others run.</p>
 		<p>The vertical blue line is the 
@@ -139,14 +139,14 @@
 			<b>small dots</b> over the colored bars at some places:
 		</p>
 		<p>
-			<img border="0" src="images/Cfv_small_dots.png"/>
+			<img border="0" src="Cfv_small_dots.png"/>
 		</p>
 		<p>Those dots mean the underlying region is 
 			<b>incomplete</b>: there's not enough pixels to view all the events. In other words, you have to zoom in.
 		</p>
 		<p>When zooming in, small dots start to disappear:</p>
 		<p>
-			<img border="0" src="images/Cfv_zoom.png"/>
+			<img border="0" src="Cfv_zoom.png"/>
 		</p>
 		<p>When no dots are left, you are viewing 
 			<b>all the events and states</b> within that region.
@@ -156,7 +156,7 @@
 			<b>right-click and drag the time ruler</b> in order to draw a time range:
 		</p>
 		<p>
-			<img border="0" src="images/Cfv_zoom_region.png"/>
+			<img border="0" src="Cfv_zoom_region.png"/>
 		</p>
 		<p>The states flow horizontal space will only show the selected region.</p>
 		<h4 id="Tooltips">Tooltips</h4>
@@ -164,7 +164,7 @@
 			<b>tooltip</b> will pop up:
 		</p>
 		<p>
-			<img border="0" src="images/Cfv_tooltip.png"/>
+			<img border="0" src="Cfv_tooltip.png"/>
 		</p>
 		<p>The tooltip indicates:</p>
 		<ul>
@@ -178,7 +178,7 @@
 			<b>toolbar</b>, located at the top right of the view, has shortcut buttons to perform common actions:
 		</p>
 		<p>
-			<img border="0" src="images/Cfv_toolbar.png"/>
+			<img border="0" src="Cfv_toolbar.png"/>
 		</p>
 		<p>The 
 			<b>Previous event</b> and 
@@ -196,7 +196,7 @@
 			<b>LTTng/Resources</b> in the list.
 		</p>
 		<p>
-			<img title=" Example of resources view with all trace points and syscalls enabled" alt=" Example of resources view with all trace points and syscalls enabled" border="0" src="images/Rv_example.png"/>
+			<img title=" Example of resources view with all trace points and syscalls enabled" alt=" Example of resources view with all trace points and syscalls enabled" border="0" src="Rv_example.png"/>
 		</p>
 		<p>This view shows the state of system resources i.e. if changes occured during the trace either on 
 			<b>CPUs</b>, 
@@ -206,17 +206,17 @@
 		<p>Just like other views, according to which trace points and system calls are activated, the content of this view may change from one trace to another.</p>
 		<p>Each state are represented by one color so it is faster to say what is happening.</p>
 		<p>
-			<img title="Color for each state" alt="Color for each state" border="0" src="images/Rv_legend.png"/>
+			<img title="Color for each state" alt="Color for each state" border="0" src="Rv_legend.png"/>
 		</p>
 		<p>To go through the state of a resource, you first have to select the resource and the timestamp that interest you. For the latter, you can pick some time before the interesting part of the trace.</p>
 		<p>
-			<img title="Shows the state of an IRQ" alt="Shows the state of an IRQ" border="0" src="images/RV_infobox1.png"/>
+			<img title="Shows the state of an IRQ" alt="Shows the state of an IRQ" border="0" src="RV_infobox1.png"/>
 		</p>
 		<p>Then, by selecting 
 			<b>Next Event</b>, it will show the next state transition and the event that occured at this time.
 		</p>
 		<p>
-			<img title="Shows the next state of the IRQ" alt="Shows the next state of the IRQ" border="0" src="images/RV_infobox2.png"/>
+			<img title="Shows the next state of the IRQ" alt="Shows the next state of the IRQ" border="0" src="RV_infobox2.png"/>
 		</p>
 		<p>This view is also synchronized with the others : 
 			<a href="LTTng.html#Histogram_View">histogram</a>, 
@@ -264,23 +264,23 @@
 			</li>
 		</ul>
 		<p>
-			<img border="0" src="images/LTTngKernelEventsViewer.png"/>
+			<img border="0" src="LTTngKernelEventsViewer.png"/>
 		</p><hr/>
 		<table class="navigation" style="width: 100%;" border="0" summary="navigation">
 			<tr>
 				<td style="width: 20%" align="left">
 					<a href="LTTng.html" title="LTTng">
-						<img alt="Previous" border="0" src="../../../images/prev.gif"/>
+						<img alt="Previous" border="0" src="images/prev.gif"/>
 					</a>
 				</td>
 				<td style="width: 60%" align="center">
 					<a href="User-Guide.html" title="LTTng Plug-in User Guide">
-						<img alt="LTTng Plug-in User Guide" border="0" src="../../../images/home.gif"/>
+						<img alt="LTTng Plug-in User Guide" border="0" src="images/home.gif"/>
 					</a>
 				</td>
 				<td style="width: 20%" align="right">
 					<a href="Limitations.html" title="Limitations">
-						<img alt="Next" border="0" src="../../../images/next.gif"/>
+						<img alt="Next" border="0" src="images/next.gif"/>
 					</a>
 				</td>
 			</tr>
