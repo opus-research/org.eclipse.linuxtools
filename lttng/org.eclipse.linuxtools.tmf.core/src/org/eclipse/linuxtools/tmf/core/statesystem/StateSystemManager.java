@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.HistoryBuilder;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.InMemoryBackend;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.NullBackend;
@@ -64,7 +65,6 @@ public abstract class StateSystemManager extends TmfComponent {
     public static ITmfStateSystem loadStateHistory(File htFile,
             IStateChangeInput htInput, boolean buildManually)
             throws TmfTraceException {
-        ITmfStateSystem ss;
         IStateHistoryBackend htBackend;
 
         /* If the target file already exists, do not rebuild it uselessly */
@@ -72,9 +72,12 @@ public abstract class StateSystemManager extends TmfComponent {
         // at least if its range matches the trace's range.
         if (htFile.exists()) {
             /* Load an existing history */
+            final int version = (htInput == null) ?
+                    IStateChangeInput.IGNORE_PROVIDER_VERSION :
+                    htInput.getVersion();
             try {
-                htBackend = new HistoryTreeBackend(htFile);
-                ss = HistoryBuilder.openExistingHistory(htBackend);
+                htBackend = new HistoryTreeBackend(htFile, version);
+                ITmfStateSystem ss = HistoryBuilder.openExistingHistory(htBackend);
                 return ss;
             } catch (IOException e) {
                 /*
@@ -93,8 +96,10 @@ public abstract class StateSystemManager extends TmfComponent {
         }
         try {
             htBackend = new ThreadedHistoryTreeBackend(htFile,
-                    htInput.getStartTime(), QUEUE_SIZE);
-            builder = new HistoryBuilder(htInput, htBackend, buildManually);
+                    htInput.getStartTime(), htInput.getVersion(), QUEUE_SIZE);
+            StateSystem ss = new StateSystem(htBackend);
+            htInput.assignTargetStateSystem(ss);
+            builder = new HistoryBuilder(htInput, ss, htBackend, buildManually);
         } catch (IOException e) {
             /*
              * If it fails here however, it means there was a problem writing to
@@ -120,9 +125,11 @@ public abstract class StateSystemManager extends TmfComponent {
      */
     public static ITmfStateSystem newNullHistory(IStateChangeInput input) {
         IStateHistoryBackend backend = new NullBackend();
-        HistoryBuilder builder = new HistoryBuilder(input, backend, true);
-        ITmfStateSystem ss = builder.getStateSystemQuerier();
-        return ss;
+        StateSystem ss = new StateSystem(backend);
+        input.assignTargetStateSystem(ss);
+
+        HistoryBuilder builder = new HistoryBuilder(input, ss, backend, true);
+        return builder.getStateSystemQuerier();
     }
 
     /**
@@ -144,7 +151,10 @@ public abstract class StateSystemManager extends TmfComponent {
     public static ITmfStateSystem newInMemHistory(IStateChangeInput input,
             boolean buildManually) {
         IStateHistoryBackend backend = new InMemoryBackend(input.getStartTime());
-        HistoryBuilder builder = new HistoryBuilder(input, backend, buildManually);
+        StateSystem ss = new StateSystem(backend);
+        input.assignTargetStateSystem(ss);
+
+        HistoryBuilder builder = new HistoryBuilder(input, ss, backend, buildManually);
         return builder.getStateSystemQuerier();
     }
 }

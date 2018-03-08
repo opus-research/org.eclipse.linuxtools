@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,7 +15,7 @@ package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor.headless;
 import java.util.Vector;
 
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfLightweightContext;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfContext;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 
@@ -55,7 +55,7 @@ public class Benchmark {
 
             start = System.nanoTime();
             if (nbEvent != -1) {
-                final CtfTmfLightweightContext traceReader = (CtfTmfLightweightContext) trace.seekEvent(0);
+                final CtfTmfContext traceReader = (CtfTmfContext) trace.seekEvent(0);
 
                 start = System.nanoTime();
                 CtfTmfEvent current = traceReader.getCurrentEvent();

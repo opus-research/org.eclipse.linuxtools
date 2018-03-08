@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -220,28 +220,24 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        int size = this.declaration.getFieldsList().size();
-        int n = 0;
-
-        if (size > 1) {
-            builder.append("{ "); //$NON-NLS-1$
-        }
+        builder.append("{ "); //$NON-NLS-1$
 
         ListIterator<String> listIterator = this.declaration.getFieldsList()
                 .listIterator();
 
         while (listIterator.hasNext()) {
             String field = listIterator.next();
+
+            builder.append(field);
+            builder.append(" = "); //$NON-NLS-1$
             builder.append(lookupDefinition(field).toString());
-            n++;
-            if (n != size) {
+
+            if (listIterator.hasNext()) {
                 builder.append(", "); //$NON-NLS-1$
             }
         }
 
-        if (size > 1) {
-            builder.append(" }"); //$NON-NLS-1$
-        }
+        builder.append(" }"); //$NON-NLS-1$
 
         return builder.toString();
     }

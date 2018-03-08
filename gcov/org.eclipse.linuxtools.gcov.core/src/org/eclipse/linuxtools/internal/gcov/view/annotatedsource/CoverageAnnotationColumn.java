@@ -19,7 +19,7 @@ import org.eclipse.linuxtools.internal.gcov.parser.SourceFile;
 
 
 public class CoverageAnnotationColumn implements ISTAnnotationColumn {
-	
+
 
 	private final ArrayList<Line> lines;
 
@@ -31,37 +31,20 @@ public class CoverageAnnotationColumn implements ISTAnnotationColumn {
 	public String getAnnotation(int index) {
 		try {
 			Line l = lines.get(index+1);
-			if (!l.isExists()) {
-				return "";
-			} else {
+			if (l.exists()) {
 				return Long.toString(l.getCount());
 			}
 		} catch (IndexOutOfBoundsException _) {
-			return "";
+			//ignore as empty string will be returned anyway
 		}
-	}
-
-	@Override
-	public String getLongDescription(int line) {
-		return null;
-	}
-
-	@Override
-	public String getTitle() {
-		return "Coverage";
-	}
-
-	
-	@Override
-	public String getHeaderTooltip() {
-		return "Coverage";
+		return ""; //$NON-NLS-1$
 	}
 
 	@Override
 	public String getTooltip(int index) {
 		try {
 			Line l = lines.get(index+1);
-			if (!l.isExists()) {
+			if (!l.exists()) {
 				return "non executable line";
 			} else {
 				long count = l.getCount();

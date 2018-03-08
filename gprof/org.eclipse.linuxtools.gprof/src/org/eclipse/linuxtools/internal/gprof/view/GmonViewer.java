@@ -19,7 +19,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.binutils.link2source.STLink2SourceSupport;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField;
-import org.eclipse.linuxtools.gprof.Activator;
+import org.eclipse.linuxtools.internal.gprof.Activator;
 import org.eclipse.linuxtools.internal.gprof.view.fields.CallsProfField;
 import org.eclipse.linuxtools.internal.gprof.view.fields.NameProfField;
 import org.eclipse.linuxtools.internal.gprof.view.fields.RatioProfField;
@@ -92,7 +92,7 @@ public class GmonViewer extends AbstractSTTreeViewer {
 		TreeElement element = (TreeElement) selection.getFirstElement();
 		if (element != null){
 			String s = element.getSourcePath();
-			if (s == null || "??".equals(s)) {
+			if (s == null || "??".equals(s)) { //$NON-NLS-1$
 				return; // nothing to do here.
 			}
 			else {

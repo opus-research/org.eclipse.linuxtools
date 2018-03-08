@@ -16,7 +16,6 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
-import org.eclipse.linuxtools.systemtap.ui.editor.RecentFileMenuManager;
 import org.eclipse.linuxtools.systemtap.ui.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.ui.structures.listeners.IUpdateListener;
 import org.eclipse.swt.SWT;
@@ -24,6 +23,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.FilteredTree;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.handlers.CollapseAllHandler;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
@@ -40,6 +41,7 @@ import org.eclipse.ui.part.ViewPart;
  */
 public abstract class BrowserView extends ViewPart {
 	protected TreeViewer viewer;
+
 	private CollapseAllHandler collapseHandler;
 
 	public BrowserView() {
@@ -52,18 +54,23 @@ public abstract class BrowserView extends ViewPart {
 	 *
 	 */
 	static class ViewContentProvider implements ITreeContentProvider {
+		@Override
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {}
 
+		@Override
 		public void dispose() {}
 
+		@Override
 		public Object[] getElements(Object parent) {
 			return getChildren(parent);
 		}
 
+		@Override
 		public Object getParent(Object child) {
 			return null;
 		}
 
+		@Override
 		public Object[] getChildren(Object par) {
 			TreeNode parent = ((TreeNode)par);
 
@@ -76,6 +83,7 @@ public abstract class BrowserView extends ViewPart {
 			return children;
 		}
 
+		@Override
 		public boolean hasChildren(Object parent) {
 			return ((TreeNode)parent).getChildCount() > 0;
 		}
@@ -146,13 +154,14 @@ public abstract class BrowserView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		parent.getShell().setCursor(parent.getShell().getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
-		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		PatternFilter filter = new PatternFilter();
+		FilteredTree filteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+		viewer = filteredTree.getViewer();
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
 		collapseHandler = new CollapseAllHandler(getViewer());
 		handlerService.activateHandler(CollapseAllHandler.COMMAND_ID, collapseHandler);
-		RecentFileMenuManager.getInstance().registerActionBar(getViewSite().getActionBars());
 	}
 
 	public TreeViewer getViewer() {
@@ -176,8 +185,10 @@ public abstract class BrowserView extends ViewPart {
 	abstract void refresh();
 
 	protected class ViewUpdater implements IUpdateListener {
+		@Override
 		public void handleUpdateEvent() {
 			viewer.getControl().getDisplay().asyncExec(new Runnable() {
+				@Override
 				public void run() {
 					refresh();
 				}

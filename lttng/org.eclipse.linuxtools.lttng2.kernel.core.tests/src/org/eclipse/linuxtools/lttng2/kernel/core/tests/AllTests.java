@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,8 +16,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * <b><u>AllTests</u></b>
- * <p>
+ * Runner for the lttng2.kernel unit tests.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({

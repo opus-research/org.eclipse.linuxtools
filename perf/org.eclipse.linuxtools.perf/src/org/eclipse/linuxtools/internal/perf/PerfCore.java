@@ -28,6 +28,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.internal.perf.model.PMCommand;
 import org.eclipse.linuxtools.internal.perf.model.PMDso;
@@ -35,6 +36,7 @@ import org.eclipse.linuxtools.internal.perf.model.PMEvent;
 import org.eclipse.linuxtools.internal.perf.model.PMFile;
 import org.eclipse.linuxtools.internal.perf.model.PMSymbol;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
+import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
 import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
@@ -373,16 +375,22 @@ public class PerfCore {
 		BufferedReader error = null;
 		Process p = null;
 
-		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
+		if (monitor != null && monitor.isCanceled()) {
+			return;
+		}
 
 		try {
 			if (workingDir==null) {
 				p = RuntimeProcessFactory.getFactory().exec(getReportString(config, perfDataLoc), project);
+				PerfPlugin.getDefault().setPerfProfileData(new Path(perfDataLoc));
+				PerfPlugin.getDefault().setWorkingDir(project.getLocation());
 			} else {
-				p = RuntimeProcessFactory.getFactory().exec(getReportString(config, workingDir.toOSString() + PerfPlugin.PERF_DEFAULT_DATA), project);
+				String defaultPerfDataLoc = workingDir.toOSString() + PerfPlugin.PERF_DEFAULT_DATA;
+				p = RuntimeProcessFactory.getFactory().exec(getReportString(config, defaultPerfDataLoc), project);
+				PerfPlugin.getDefault().setPerfProfileData(new Path(defaultPerfDataLoc));
+				PerfPlugin.getDefault().setWorkingDir(workingDir);
 			}
 
-			//			p.waitFor();
 			input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			//spitting error stream moved to end of while loop, due to commenting of p.waitFor()
@@ -396,7 +404,6 @@ public class PerfCore {
 		PerfCore.parseRemoteReport(config, workingDir, monitor, perfDataLoc, print,
 				invisibleRoot, OldPerfVersion, input, error, project);
 
-		RefreshView();
 	}
 
 	/**
@@ -423,7 +430,10 @@ public class PerfCore {
 			IPath workingDir, IProgressMonitor monitor, String perfDataLoc,
 			PrintStream print, TreeParent invisibleRoot,
 			boolean OldPerfVersion, BufferedReader input, BufferedReader error, IProject project) {
-		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
+
+		if (monitor != null && monitor.isCanceled()) {
+			return;
+		}
 		String line = null;
 		String items[];
 		float percent;
@@ -439,7 +449,9 @@ public class PerfCore {
 		PMSymbol currentSym = null;
 		try {
 			while (( line = input.readLine()) != null){
-				if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
+				if (monitor != null && monitor.isCanceled()) {
+					return;
+				}
 				// line containing report information
 				if ((line.startsWith("#"))) {
 					if (line.contains("Events:") || line.contains("Samples:")) {
@@ -515,7 +527,9 @@ public class PerfCore {
 			SourceLineNumbers = false;
 		}
 
-		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
+		if (monitor != null && monitor.isCanceled()) {
+			return;
+		}
 
 		boolean hasProfileData = invisibleRoot.getChildren().length != 0;
 
@@ -531,7 +545,9 @@ public class PerfCore {
 						for (TreeParent s : currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren()) {
 							if (!(s instanceof PMSymbol)) continue;
 
-							if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
+							if (monitor != null && monitor.isCanceled()) {
+								return;
+							}
 
 
 							currentSym = (PMSymbol)s;
@@ -585,7 +601,10 @@ public class PerfCore {
 	public static void parseAnnotation(IProgressMonitor monitor,
 			BufferedReader input, IPath workingDir, PMDso currentDso,
 			PMSymbol currentSym) {
-		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
+
+		if (monitor != null && monitor.isCanceled()) {
+			return;
+		}
 
 		boolean grabBlock = false;
 		boolean blockStarted = false;
@@ -628,7 +647,13 @@ public class PerfCore {
 						//if (PerfPlugin.DEBUG_ON) System.err.println("Parsed line ref without being in valid block, shouldn't happen.");
 						break;
 					} else {
-						currentSym.addPercent(Integer.parseInt(items[1]), percent);
+						int lineNum = -1;
+						try {
+							lineNum = Integer.parseInt(items[1]);
+						} catch (NumberFormatException e) {
+							// leave line number as -1
+						}
+						currentSym.addPercent(lineNum, percent);
 						// Symbol currently in 'Unfiled Symbols' but we now know the actual parent
 						if (currentSym.getParent().getName().equals(PerfPlugin.STRINGS_UnfiledSymbols)) {
 							currentSym.getParent().removeChild(currentSym);
@@ -647,21 +672,21 @@ public class PerfCore {
 		}
 	}
 
-	public static void RefreshView()
-	{
+	public static void RefreshView (final String title) {
 		Display.getDefault().syncExec(new Runnable() {
+
 			@Override
 			public void run() {
-				//Try to switch the active view to Perf.
 				try {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PerfPlugin.VIEW_ID);
-					PerfPlugin.getDefault().getProfileView().refreshModel();
-				} catch (NullPointerException e) {
-					e.printStackTrace();					
+					PerfProfileView view = PerfPlugin.getDefault().getProfileView();
+					view.setContentDescription(title);
+					view.refreshModel();
 				} catch (PartInitException e) {
 					e.printStackTrace();
 				}
 			}
 		});
 	}
+
 }

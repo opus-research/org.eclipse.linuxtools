@@ -35,6 +35,14 @@
         name="%view.probe.name"/>
 	</extension>
 	<extension point="org.eclipse.ui.menus">
+       <menuContribution
+             allPopups="true"
+             locationURI="toolbar:org.eclipse.ui.workbench.file">
+          <separator
+                name="runGroup"
+                visible="true">
+          </separator>
+       </menuContribution>
        <menuContribution locationURI="toolbar:org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView">
            <command
                  commandId="org.eclipse.ui.navigate.collapseAll" />
@@ -46,6 +54,22 @@
        <menuContribution locationURI="toolbar:org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView">
            <command
                  commandId="org.eclipse.ui.navigate.collapseAll" />
+       </menuContribution>
+       <menuContribution
+             allPopups="true"
+             locationURI="toolbar:org.eclipse.ui.workbench.file?after=runGroup">
+          <command
+                commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand"
+                icon="icons/actions/run/run_exc.gif"
+                label="%action.run.name"
+                style="push">
+          </command>
+          <command
+                commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptWithChart"
+                icon="icons/actions/run/run_chart.gif"
+                label="%action.runChart.name"
+                style="push">
+          </command>
        </menuContribution>
     </extension>
 	
@@ -164,6 +188,18 @@
 			name="%category.popup.name"
 			description="%category.popup.desc"
 			id="org.eclipse.linuxtools.systemtap.ui.ide.category.popup"/>
+  <command
+        defaultHandler="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptHandler"
+        description="%action.run.desc"
+        id="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand"
+        name="%action.run.name">
+  </command>
+  <command
+        defaultHandler="org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptChartHandler"
+        description="%action.runChart.desc"
+        id="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptWithChart"
+        name="%action.runChart.name">
+  </command>
 	</extension>
 	<extension
 		point="org.eclipse.ui.actionSets">
@@ -179,32 +215,6 @@
 				toolbarPath="org.eclipse.ui.workbench.file/import.ext"
 				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.ImportTapsetAction"
 				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.ImportTapset"
-				style="push"
-				state="false"/>
-		</actionSet>
-		<actionSet
-			label="%actionset.run.name"
-			visible="false"
-			id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet">
-			<!--action
-				label="%action.runOptions.name"
-				tooltip="%action.runOptions.desc"
-				id="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptOptions"
-				icon="icons/actions/run/run_tool.gif"
-				toolbarPath="org.eclipse.ui.workbench.file/build.group"
-				menubarPath="launch/wbStart"
-				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptOptionsAction"
-				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScriptOptions"
-				style="push"
-				state="false"/-->
-			<action
-				label="%action.run.name"
-				tooltip="%action.run.desc"
-				id="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScript"
-				icon="icons/actions/run/run_exc.gif"
-				toolbarPath="org.eclipse.ui.workbench.file/build.group"
-				class="org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptLocallyAction"
-				definitionId="org.eclipse.linuxtools.systemtap.ui.ide.commands.RunScript"
 				style="push"
 				state="false"/>
 		</actionSet>
@@ -239,14 +249,12 @@
 		point="org.eclipse.ui.perspectiveExtensions">
 		<perspectiveExtension
 			targetID="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective">
-			<actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet"/>
 			<actionSet id="org.eclipse.linuxtools.systemtap.ui.editor.FileActionSet"/>
 			<actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.FileActionSet"/>
 
 		</perspectiveExtension>
 		<perspectiveExtension
            targetID="org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective">
-           <actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet"/>
                         <view
                                 ratio="0.40f"
                                 relative="org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView"
@@ -260,10 +268,6 @@
 			targetID="org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective">
 			<perspectiveShortcut id="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective"/>
 		</perspectiveExtension>
-		<perspectiveExtension
-           targetID="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective">
-           <actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.RunActionSet"/>
-         </perspectiveExtension>
 	</extension>
  <extension
        point="org.eclipse.ui.newWizards">

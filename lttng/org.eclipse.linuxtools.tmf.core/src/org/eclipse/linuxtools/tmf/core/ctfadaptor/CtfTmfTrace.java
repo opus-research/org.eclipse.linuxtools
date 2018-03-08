@@ -1,12 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors:
+ *   Matthew Khouzam - Initial API and implementation
+ *   Patrick Tasse - Updated for removal of context clone
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -16,9 +18,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
@@ -74,15 +76,17 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
          */
         setCacheSize();
 
+        super.initTrace(resource, path, eventType);
+
         @SuppressWarnings("unused")
         CtfTmfEventType type;
 
         try {
             this.fTrace = new CTFTrace(path);
             CtfIteratorManager.addTrace(this);
-            CtfTmfLightweightContext ctx;
+            CtfTmfContext ctx;
             /* Set the start and (current) end times for this trace */
-            ctx = (CtfTmfLightweightContext) seekEvent(0L);
+            ctx = (CtfTmfContext) seekEvent(0L);
             CtfTmfEvent event = getNext(ctx);
             if((ctx.getLocation().equals(CtfIterator.NULL_LOCATION)) || (ctx.getCurrentEvent() == null)) {
                 /* Handle the case where the trace is empty */
@@ -101,8 +105,6 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
              */
             throw new TmfTraceException(e.getMessage(), e);
         }
-
-        super.initTrace(resource, path, eventType);
     }
 
     /* (non-Javadoc)
@@ -151,10 +153,10 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     @Override
     public double getLocationRatio(ITmfLocation location) {
         final CtfLocation curLocation = (CtfLocation) location;
-        final CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
+        final CtfTmfContext context = new CtfTmfContext(this);
         context.setLocation(curLocation);
         context.seek(curLocation.getLocationInfo());
-        final CtfLocationData currentTime = ((CtfLocationData)context.getLocation().getLocationInfo());
+        final CtfLocationInfo currentTime = ((CtfLocationInfo)context.getLocation().getLocationInfo());
         final long startTime = getIterator(this, context).getStartTime();
         final long endTime = getIterator(this, context).getEndTime();
         return ((double) currentTime.getTimestamp() - startTime)
@@ -169,7 +171,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     @Override
     public synchronized ITmfContext seekEvent(final ITmfLocation location) {
         CtfLocation currentLocation = (CtfLocation) location;
-        CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
+        CtfTmfContext context = new CtfTmfContext(this);
         if (fTrace == null) {
             context.setLocation(null);
             context.setRank(ITmfContext.UNKNOWN_RANK);
@@ -181,7 +183,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
          * by rank for now.
          */
         if (currentLocation == null) {
-            currentLocation = new CtfLocation(new CtfLocationData(0L, 0L));
+            currentLocation = new CtfLocation(new CtfLocationInfo(0L, 0L));
             context.setRank(0);
         }
         if (currentLocation.getLocationInfo() == CtfLocation.INVALID_LOCATION) {
@@ -203,7 +205,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
 
     @Override
     public synchronized ITmfContext seekEvent(double ratio) {
-        CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
+        CtfTmfContext context = new CtfTmfContext(this);
         if (fTrace == null) {
             context.setLocation(null);
             context.setRank(ITmfContext.UNKNOWN_RANK);
@@ -230,11 +232,11 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
             return null;
         }
         CtfTmfEvent event = null;
-        if (context instanceof CtfTmfLightweightContext) {
+        if (context instanceof CtfTmfContext) {
             if (context.getLocation() == null || CtfLocation.INVALID_LOCATION.equals(context.getLocation().getLocationInfo())) {
                 return null;
             }
-            CtfTmfLightweightContext ctfContext = (CtfTmfLightweightContext) context;
+            CtfTmfContext ctfContext = (CtfTmfContext) context;
             event = ctfContext.getCurrentEvent();
 
             if (event != null) {
@@ -311,9 +313,9 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     @Override
     public CtfTmfEvent parseEvent(ITmfContext context) {
         CtfTmfEvent event = null;
-        if( context instanceof CtfTmfLightweightContext ){
-            CtfTmfLightweightContext itt = (CtfTmfLightweightContext) context.clone();
-            event = itt.getCurrentEvent();
+        if (context instanceof CtfTmfContext) {
+            final ITmfContext tmpContext = seekEvent(context.getLocation());
+            event = getNext(tmpContext);
         }
         return event;
     }
@@ -329,7 +331,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser {
     //          Helpers
     //-------------------------------------------
 
-    private static CtfIterator getIterator(CtfTmfTrace trace,  CtfTmfLightweightContext context) {
+    private static CtfIterator getIterator(CtfTmfTrace trace,  CtfTmfContext context) {
         return CtfIteratorManager.getIterator(trace, context);
     }
 
