@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2010 Ericsson
- * 
+ *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *******************************************************************************/
@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputAttribute;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputElement;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.io.BufferedRandomAccessFile;
@@ -44,7 +45,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEventParser<CustomXmlEvent> {
+public class CustomXmlTrace extends TmfTrace implements ITmfEventParser {
 
     private static final TmfLocation<Long> NULL_LOCATION = new TmfLocation<Long>((Long) null);
     private static final int DEFAULT_CACHE_SIZE = 100;
@@ -68,7 +69,7 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
     }
 
     @Override
-    public void initTrace(final IResource resource, final String path, final Class<CustomXmlEvent> eventType) throws TmfTraceException {
+    public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> eventType) throws TmfTraceException {
         super.initTrace(resource, path, eventType);
         try {
             fFile = new BufferedRandomAccessFile(getPath(), "r"); //$NON-NLS-1$
@@ -100,8 +101,8 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
         try {
             if (location == null) {
                 fFile.seek(0);
-            } else if (location.getLocation() instanceof Long) {
-                fFile.seek((Long) location.getLocation());
+            } else if (location.getLocationData() instanceof Long) {
+                fFile.seek((Long) location.getLocationData());
             }
             String line;
             final String recordElementStart = "<" + fRecordInputElement.elementName; //$NON-NLS-1$
@@ -153,8 +154,8 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
             return 0;
         }
         try {
-            if (location.getLocation() instanceof Long) {
-                return (double) ((Long) location.getLocation()) / fFile.length();
+            if (location.getLocationData() instanceof Long) {
+                return (double) ((Long) location.getLocationData()) / fFile.length();
             }
         } catch (final IOException e) {
             Activator.getDefault().logError("Error getting location ration. File: " + getPath(), e); //$NON-NLS-1$
@@ -194,15 +195,15 @@ public class CustomXmlTrace extends TmfTrace<CustomXmlEvent> implements ITmfEven
         }
 
         final CustomXmlTraceContext context = (CustomXmlTraceContext) tmfContext;
-        if (!(context.getLocation().getLocation() instanceof Long) || NULL_LOCATION.equals(context.getLocation())) {
+        if (!(context.getLocation().getLocationData() instanceof Long) || NULL_LOCATION.equals(context.getLocation())) {
             return null;
         }
 
         CustomXmlEvent event = null;
         try {
-            if (fFile.getFilePointer() != (Long)context.getLocation().getLocation() + 1)
+            if (fFile.getFilePointer() != (Long)context.getLocation().getLocationData() + 1)
             {
-                fFile.seek((Long)context.getLocation().getLocation() + 1); // +1 is for the <
+                fFile.seek((Long)context.getLocation().getLocationData() + 1); // +1 is for the <
             }
             final StringBuffer elementBuffer = new StringBuffer("<"); //$NON-NLS-1$
             readElement(elementBuffer, fFile);
