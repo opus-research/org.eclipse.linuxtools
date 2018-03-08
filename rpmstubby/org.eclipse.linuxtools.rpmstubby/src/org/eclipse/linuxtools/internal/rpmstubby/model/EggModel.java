@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.internal.rpmstubby.parser.ValidLicenses;
  */
 public class EggModel {
 
-	private static final String[] VALID_LICENSES = {
+	private static final String[] validLicenses = {
 		ValidLicenses.GPL,
 		ValidLicenses.ARTISTIC,
 		ValidLicenses.MIT,
@@ -90,6 +90,17 @@ public class EggModel {
 	}
 
 	/**
+	 * Get the list of values from one of the setup options
+	 * that stores a list of strings
+	 *
+	 * @param option The option from the setup(...) function to get value of
+	 * @return The list of values of the option
+	 */
+	private List<String> getValueList(String option) {
+		return pyEggParser.getValueList(option);
+	}
+
+	/**
 	 * Get the values from the classifiers option and
 	 * check to see if the keyword is in one of them
 	 *
@@ -98,7 +109,7 @@ public class EggModel {
 	 */
 	private String getClassifiersList(String keyword) {
 		String rc = "";
-		List<String> list = pyEggParser.getValueList(CLASSIFIERS);
+		List<String> list = getValueList(CLASSIFIERS);
 
 		for (String str : list) {
 			if (str.toLowerCase().contains(keyword)) {
@@ -115,7 +126,7 @@ public class EggModel {
 	 * @return The values within install_requires
 	 */
 	public List<String> getInstallRequiresList() {
-		return pyEggParser.getValueList(INSTALL_REQUIRES);
+		return getValueList(INSTALL_REQUIRES);
 	}
 
 	/**
@@ -128,7 +139,7 @@ public class EggModel {
 	}
 
 	/**
-	 * The simple package name with "eclipse-" prepended to make better RPM package name.
+	 * The simple package name with "python-" prepended to make better RPM package name.
 	 *
 	 * @return The package
 	 */
@@ -141,9 +152,9 @@ public class EggModel {
 	}
 
 	/**
-	 * Returns the version as retrieved by /feature/@version xpath with .qualifier removed if any.
+	 * Returns the version
 	 *
-	 * @return The version of the feature.
+	 * @return The version
 	 */
 	public String getVersion() {
 		String version = getValue(CommonMetaData.VERSION);
@@ -184,7 +195,7 @@ public class EggModel {
 		String rawLicense = getClassifiersList(CommonMetaData.LICENSE).toLowerCase();
 		String license = "";
 
-		for (String valid : VALID_LICENSES) {
+		for (String valid : validLicenses) {
 			if (rawLicense.contains(valid.toLowerCase())) {
 					license += valid + ", ";
 			}
