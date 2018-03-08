@@ -53,6 +53,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
     private long fLastThreadId = -1; // used to draw the process name label only once per thread id
 
     private enum State {
+        UNKNOWN         (new RGB(100, 100, 100)),
         IDLE            (new RGB(200, 200, 200)),
         USERMODE        (new RGB(0, 200, 0)),
         SYSCALL         (new RGB(0, 0, 200)),
@@ -120,10 +121,10 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 }
                 return State.SOFT_IRQ_ACTIVE.ordinal();
             } else {
-                return INVISIBLE; // NULL
+                return -1; // NULL
             }
         }
-        return TRANSPARENT;
+        return State.UNKNOWN.ordinal();
     }
 
     @Override
@@ -155,7 +156,7 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 return null;
             }
         }
-        return Messages.ResourcesView_multipleStates;
+        return State.UNKNOWN.toString();
     }
 
     @Override
