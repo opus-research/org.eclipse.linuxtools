@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.internal.gcov.utils.BEDataInputStream;
 import org.eclipse.linuxtools.internal.gcov.utils.GcovStringReader;
 import org.eclipse.linuxtools.internal.gcov.utils.LEDataInputStream;
 import org.eclipse.linuxtools.internal.gcov.utils.MasksGenerator;
+import org.eclipse.osgi.util.NLS;
 
 
 public class GcnoRecordsParser {
@@ -76,7 +77,7 @@ public class GcnoRecordsParser {
 			if (magic == GCOV_NOTE_MAGIC){
 				stream = new LEDataInputStream((DataInputStream) stream);
 			}else{
-				String message = magic + " :desn't correspond to a correct note file header\n";
+				String message = NLS.bind(Messages.GcnoRecordsParser_magic_num_error, magic);
 				Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 				throw new CoreException(status);
 			}
@@ -224,7 +225,7 @@ public class GcnoRecordsParser {
 							}
 						} else {
 							String fileName = GcovStringReader.readString(stream);
-							if (fileName == "NULL string") 
+							if (fileName == Messages.GcnoRecordsParser_null_string)
 								break;
 
 								source = findOrAdd (fileName, currentAllSrcs);

@@ -21,7 +21,7 @@ public class FieldName extends AbstractSTDataViewersField {
 	 */
 	@Override
 	public String getColumnHeaderText() {
-		return "Name";
+		return Messages.FieldName_column_header;
 	}
 
 	/*
