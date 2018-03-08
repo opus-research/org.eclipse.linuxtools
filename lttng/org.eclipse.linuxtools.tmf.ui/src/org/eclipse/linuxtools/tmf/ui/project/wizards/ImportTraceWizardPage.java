@@ -90,12 +90,11 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
  * A variant of the standard resource import wizard with the following changes:
  * <ul>
  * <li>A folder/file combined checkbox tree viewer to select traces
- * <li>Cherry-picking of traces in the file structure without re-creating the
- * file hierarchy
+ * <li>Cherry-picking of traces in the file structure without re-creating the file hierarchy
  * <li>A trace types dropbox for optional characterization
  * </ul>
- * For our purpose, a trace can either be a single file or a whole directory
- * sub-tree, whichever is reached first from the root directory.
+ * For our purpose, a trace can either be a single file or a whole directory sub-tree, whichever is reached first from
+ * the root directory.
  * <p>
  *
  * @version 1.0
@@ -133,12 +132,11 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor. Creates the trace wizard page.
+     * Constructor.
+     * Creates the trace wizard page.
      *
-     * @param name
-     *            The name of the page.
-     * @param selection
-     *            The current selection
+     * @param name The name of the page.
+     * @param selection The current selection
      */
     protected ImportTraceWizardPage(String name, IStructuredSelection selection) {
         super(name, selection);
@@ -146,11 +144,8 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /**
      * Constructor
-     *
-     * @param workbench
-     *            The workbench reference.
-     * @param selection
-     *            The current selection
+     * @param workbench The workbench reference.
+     * @param selection The current selection
      */
     public ImportTraceWizardPage(IWorkbench workbench, IStructuredSelection selection) {
         this(IMPORT_WIZARD_PAGE, selection);
@@ -188,10 +183,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
     // ------------------------------------------------------------------------
     /*
      * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.ui.dialogs.WizardResourceImportPage#createControl(org.eclipse
-     * .swt.widgets.Composite)
+     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#createControl(org.eclipse.swt.widgets.Composite)
      */
     @Override
     public void createControl(Composite parent) {
@@ -205,10 +197,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.ui.dialogs.WizardResourceImportPage#createSourceGroup(org
-     * .eclipse.swt.widgets.Composite)
+     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#createSourceGroup(org.eclipse.swt.widgets.Composite)
      */
     @Override
     protected void createSourceGroup(Composite parent) {
@@ -220,10 +209,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.ui.dialogs.WizardResourceImportPage#createFileSelectionGroup
-     * (org.eclipse.swt.widgets.Composite)
+     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#createFileSelectionGroup(org.eclipse.swt.widgets.Composite)
      */
     @Override
     protected void createFileSelectionGroup(Composite parent) {
@@ -270,7 +256,6 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     *
      * @see org.eclipse.ui.dialogs.WizardResourceImportPage#getFolderProvider()
      */
     @Override
@@ -280,7 +265,6 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     *
      * @see org.eclipse.ui.dialogs.WizardResourceImportPage#getFileProvider()
      */
     @Override
@@ -330,9 +314,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.ui.dialogs.WizardResourceImportPage#getSelectedResources()
+     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#getSelectedResources()
      */
     @Override
     protected List<FileSystemElement> getSelectedResources() {
@@ -362,9 +344,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /**
      * creates the directory selection group.
-     *
-     * @param parent
-     *            the parent composite
+     * @param parent the parent composite
      */
     protected void createDirectorySelectionGroup(Composite parent) {
 
@@ -441,10 +421,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.ui.dialogs.WizardResourceImportPage#handleEvent(org.eclipse
-     * .swt.widgets.Event)
+     * @see org.eclipse.ui.dialogs.WizardResourceImportPage#handleEvent(org.eclipse.swt.widgets.Event)
      */
     @Override
     public void handleEvent(Event event) {
@@ -621,8 +598,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         });
     }
 
-    // The mapping of available trace type IDs to their corresponding
-    // configuration element
+    // The mapping of available trace type IDs to their corresponding configuration element
     private final Map<String, IConfigurationElement> fTraceTypeAttributes = new HashMap<String, IConfigurationElement>();
     private final Map<String, IConfigurationElement> fTraceCategories = new HashMap<String, IConfigurationElement>();
     private final Map<String, IConfigurationElement> fTraceAttributes = new HashMap<String, IConfigurationElement>();
@@ -686,10 +662,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.ui.dialogs.WizardDataTransferPage#createOptionsGroupButtons
-     * (org.eclipse.swt.widgets.Group)
+     * @see org.eclipse.ui.dialogs.WizardDataTransferPage#createOptionsGroupButtons(org.eclipse.swt.widgets.Group)
      */
     @Override
     protected void createOptionsGroupButtons(Group optionsGroup) {
@@ -722,7 +695,6 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /*
      * (non-Javadoc)
-     *
      * @see org.eclipse.ui.dialogs.WizardDataTransferPage#validateSourceGroup()
      */
     @Override
@@ -764,23 +736,19 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         // Perform trace validation
         String traceTypeName = fTraceTypes.getText();
         if (traceTypeName != null && !"".equals(traceTypeName) && //$NON-NLS-1$
-                !traceTypeName.startsWith(CUSTOM_TXT_CATEGORY) && !traceTypeName.startsWith(CUSTOM_XML_CATEGORY)) {
+            !traceTypeName.startsWith(CUSTOM_TXT_CATEGORY) && !traceTypeName.startsWith(CUSTOM_XML_CATEGORY)) {
 
             List<File> traces = isolateTraces();
             for (File trace : traces) {
                 ITmfTrace tmfTrace = null;
-
                 try {
                     IConfigurationElement ce = fTraceAttributes.get(traceTypeName);
                     tmfTrace = (ITmfTrace) ce.createExecutableExtension(TmfTraceType.TRACE_TYPE_ATTR);
-                    if ( tmfTrace != null) {
-                        IStatus status = tmfTrace.validate(fProject, trace.getAbsolutePath());
-                        if (!status.isOK()) {
-                            setMessage(null);
-                            setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
-                            tmfTrace.dispose();
-                            return false;
-                        }
+                    if (tmfTrace != null && !tmfTrace.validate(fProject, trace.getAbsolutePath())) {
+                        setMessage(null);
+                        setErrorMessage(Messages.ImportTraceWizard_TraceValidationFailed);
+                        tmfTrace.dispose();
+                        return false;
                     }
                 } catch (CoreException e) {
                 } finally {
@@ -833,7 +801,6 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     /**
      * Finish the import.
-     *
      * @return <code>true</code> if successful else false
      */
     public boolean finish() {
@@ -858,8 +825,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         List<FileSystemElement> selectedResources = getSelectedResources();
         Iterator<FileSystemElement> resources = selectedResources.iterator();
 
-        // Use a map to end up with unique resources (getSelectedResources() can
-        // return duplicates)
+        // Use a map to end up with unique resources (getSelectedResources() can return duplicates)
         Map<String, File> fileSystemObjects = new HashMap<String, File>();
         while (resources.hasNext()) {
             File file = (File) resources.next().getFileSystemObject();
@@ -968,10 +934,8 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             }
         });
 
-        // Perform a distinct import operation for everything that has the same
-        // prefix
-        // (distinct prefixes correspond to traces - we don't want to re-create
-        // parent structures)
+        // Perform a distinct import operation for everything that has the same prefix
+        // (distinct prefixes correspond to traces - we don't want to re-create parent structures)
         boolean ok = true;
         boolean isLinked = createLinksInWorkspaceButton.getSelection();
         for (int i = 0; i < fileList.size(); i++) {
