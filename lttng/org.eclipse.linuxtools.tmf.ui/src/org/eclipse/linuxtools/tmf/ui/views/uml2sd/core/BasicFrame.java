@@ -44,68 +44,68 @@ public class BasicFrame extends GraphNode {
     /**
      * Contains the max elapsed time between two consecutive messages in the whole frame
      */
-    private ITmfTimestamp fMaxTime = new TmfTimestamp(0);
+    protected ITmfTimestamp fMaxTime = new TmfTimestamp(0);
     /**
      * Contains the min elapsed time between two consecutive messages in the whole frame
      */
-    private ITmfTimestamp fMinTime = new TmfTimestamp(0);
+    protected ITmfTimestamp fMinTime = new TmfTimestamp(0);
     /**
      * Indicate if the min and max elapsed time between two consecutive messages in the whole frame need to be computed
      */
-    private boolean fComputeMinMax = true;
+    protected boolean fComputeMinMax = true;
     /**
      * Store the preference set by the user regarding the external time. This flag is used determine if the min and max
      * need to be recomputed in case this preference is changed.
      */
-    private boolean fLastExternalTimePref = SDViewPref.getInstance().excludeExternalTime();
+    protected boolean fLastExternalTimePref = SDViewPref.getInstance().excludeExternalTime();
     /**
      * The greater event occurrence created on graph nodes drawn in this Frame This directly impact the Frame height
      */
-    private int fVerticalIndex = 0;
+    protected int fVerticalIndex = 0;
     /**
      * The index along the x axis where the next lifeline will is drawn This directly impact the Frame width
      */
-    private int fHorizontalIndex = 0;
+    protected int fHorizontalIndex = 0;
     /**
      * The time information flag.
      */
-    private boolean fHasTimeInfo = false;
+    protected boolean fHasTimeInfo = false;
     /**
      * The current Frame visible area - x coordinates
      */
-    private int fVisibleAreaX;
+    protected int fVisibleAreaX;
     /**
      * The current Frame visible area - y coordinates
      */
-    private int fVisibleAreaY;
+    protected int fVisibleAreaY;
     /**
      * The current Frame visible area - width
      */
-    private int fVisibleAreaWidth;
+    protected int fVisibleAreaWidth;
     /**
      * The current Frame visible area - height
      */
-    private int fVisibleAreaHeight;
+    protected int fVisibleAreaHeight;
     /**
      * The event occurrence spacing (-1 for none)
      */
-    private int fForceEventOccurrenceSpacing = -1;
+    protected int fForceEventOccurrenceSpacing = -1;
     /**
      * Flag to indicate customized minumum and maximum.
      */
-    private boolean fCustomMinMax = false;
+    protected boolean fCustomMinMax = false;
     /**
      * The minimum time between messages of the sequence diagram frame.
      */
-    private ITmfTimestamp fMinSDTime = new TmfTimestamp();
+    protected ITmfTimestamp fMinSDTime = new TmfTimestamp();
     /**
      * The maximum time between messages of the sequence diagram frame.
      */
-    private ITmfTimestamp fMaxSDTime = new TmfTimestamp();
+    protected ITmfTimestamp fMaxSDTime = new TmfTimestamp();
     /**
      * Flag to indicate that initial minimum has to be computed.
      */
-    private boolean fInitSDMin = true;
+    protected boolean fInitSDMin = true;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -165,7 +165,7 @@ public class BasicFrame extends GraphNode {
 
     @Override
     public void addNode(GraphNode nodeToAdd) {
-        setComputeMinMax(true);
+        fComputeMinMax = true;
         super.addNode(nodeToAdd);
     }
 
@@ -199,32 +199,6 @@ public class BasicFrame extends GraphNode {
         }
         return fVerticalIndex * (Metrics.getMessagesSpacing() + Metrics.getMessageFontHeigth()) + Metrics.LIFELINE_NAME_H_MARGIN + Metrics.FRAME_NAME_H_MARGIN + Metrics.getFrameFontHeigth() + Metrics.LIFELINE_VT_MAGIN + Metrics.LIFELINE_VB_MAGIN
                 + Metrics.LIFELINE_NAME_H_MARGIN + Metrics.FRAME_NAME_H_MARGIN + Metrics.getLifelineFontHeigth() * 2;
-    }
-
-    /**
-     * @return true if mininum and maximum time needs to be calculated else false
-     * @since 2.0
-     */
-    protected boolean isComputeMinMax() {
-        return fComputeMinMax;
-    }
-
-    /**
-     * @return true if mininum and maximum time needs to be calculated else false
-     * @since 2.0
-     */
-    protected boolean isCustomMinMax() {
-        return fCustomMinMax;
-    }
-
-    /**
-     * gets the initialization flag for SD minimum.
-     *
-     * @return the initialization flag for SD minimum
-     * @since 2.0
-     */
-    protected boolean getInitSDMin() {
-        return fInitSDMin;
     }
 
     /**
@@ -397,11 +371,11 @@ public class BasicFrame extends GraphNode {
     public ITmfTimestamp getMinTime() {
         if (fLastExternalTimePref != SDViewPref.getInstance().excludeExternalTime()) {
             fLastExternalTimePref = SDViewPref.getInstance().excludeExternalTime();
-            setComputeMinMax(true);
+            fComputeMinMax = true;
         }
         if ((fComputeMinMax) && (!fCustomMinMax)) {
             computeMinMax();
-            setComputeMinMax(false);
+            fComputeMinMax = false;
         }
         return fMinTime;
     }
@@ -435,7 +409,7 @@ public class BasicFrame extends GraphNode {
      */
     public void resetCustomMinMax() {
         fCustomMinMax = false;
-        setComputeMinMax(true);
+        fComputeMinMax = true;
     }
 
     /**
@@ -447,11 +421,11 @@ public class BasicFrame extends GraphNode {
     public ITmfTimestamp getMaxTime() {
         if (fLastExternalTimePref != SDViewPref.getInstance().excludeExternalTime()) {
             fLastExternalTimePref = SDViewPref.getInstance().excludeExternalTime();
-            setComputeMinMax(true);
+            fComputeMinMax = true;
         }
         if (fComputeMinMax) {
             computeMinMax();
-            setComputeMinMax(false);
+            fComputeMinMax = false;
         }
         return fMaxTime;
     }
@@ -536,7 +510,7 @@ public class BasicFrame extends GraphNode {
                 fMinTime = new TmfTimestamp(0, m1.getTime().getScale(), m1.getTime().getPrecision());
             }
             fMaxTime = fMinTime;
-            setComputeMinMax(false);
+            fComputeMinMax = false;
         }
 
         if ((delta.compareTo(fMinTime, true) < 0) && (delta.compareTo(TmfTimestamp.ZERO, false) > 0)) {
@@ -554,15 +528,15 @@ public class BasicFrame extends GraphNode {
      * @return the time array else empty list.
      */
     protected List<SDTimeEvent> buildTimeArray() {
-        if (!hasChildren()) {
+        if (!fHasChilden) {
             return new ArrayList<SDTimeEvent>();
         }
 
-        Iterator<String> it = getForwardSortMap().keySet().iterator();
+        Iterator<String> it = fForwardSort.keySet().iterator();
         List<SDTimeEvent> timeArray = new ArrayList<SDTimeEvent>();
         while (it.hasNext()) {
             String nodeType = it.next();
-            List<GraphNode> list = getNodeMap().get(nodeType);
+            List<GraphNode> list = fNodes.get(nodeType);
             for (int i = 0; i < list.size(); i++) {
                 Object timedNode = list.get(i);
                 if ((timedNode instanceof ITimeRange) && ((ITimeRange) timedNode).hasTimeInfo()) {
@@ -571,7 +545,7 @@ public class BasicFrame extends GraphNode {
                     SDTimeEvent f = new SDTimeEvent(time, event, (ITimeRange) list.get(i));
                     timeArray.add(f);
                     if (event != list.get(i).getEndOccurrence()) {
-                        event = (list.get(i)).getEndOccurrence();
+                        event = ((AsyncMessage) list.get(i)).getEndOccurrence();
                         time = ((ITimeRange) list.get(i)).getEndTime();
                         f = new SDTimeEvent(time, event, (ITimeRange) list.get(i));
                         timeArray.add(f);
@@ -590,44 +564,5 @@ public class BasicFrame extends GraphNode {
     @Override
     public boolean contains(int x, int y) {
         return false;
-    }
-
-    /**
-     * @return true if frame has time info else false
-     * @since 2.0
-     */
-    public boolean hasTimeInfo() {
-        return fHasTimeInfo;
-    }
-
-    /**
-     * Sets the flag whether the frame has time info or not
-     * @since 2.0
-     * @param hasTimeInfo
-     *          true if frame has time info else false
-     */
-    public void setHasTimeInfo(boolean hasTimeInfo) {
-        fHasTimeInfo = hasTimeInfo;
-    }
-
-    /**
-     * Sets the flag for minimum and maximum computation.
-     * @param computeMinMax
-     *          true if mininum and maximum time needs to be calculated else false
-     * @since 2.0
-     */
-    public void setComputeMinMax(boolean computeMinMax) {
-        fComputeMinMax = computeMinMax;
-    }
-
-    /**
-     * Sets the initialization flag for SD minimum.
-     *
-     * @param initSDMin
-     *          the flag to set
-     * @since 2.0
-     */
-    public void setInitSDMin(boolean initSDMin) {
-        fInitSDMin = initSDMin;
     }
 }

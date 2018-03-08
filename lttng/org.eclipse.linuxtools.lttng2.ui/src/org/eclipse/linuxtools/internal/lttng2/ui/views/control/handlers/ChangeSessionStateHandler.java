@@ -72,7 +72,7 @@ abstract public class ChangeSessionStateHandler extends BaseControlViewHandler {
      * @throws ExecutionException
      *             If the command fails
      */
-    public abstract void changeState(TraceSessionComponent session, IProgressMonitor monitor) throws ExecutionException;
+    abstract public void changeState(TraceSessionComponent session, IProgressMonitor monitor) throws ExecutionException;
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

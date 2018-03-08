@@ -119,7 +119,6 @@ public class ImportTraceWizardSelectTraceTypePage extends AbstractImportTraceWiz
                 getWizard().getContainer().updateButtons();
             }
         });
-        fTreeView.expandAll();
     }
 
     @Override
