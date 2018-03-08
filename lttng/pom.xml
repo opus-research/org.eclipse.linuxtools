@@ -73,7 +73,6 @@
     <module>org.eclipse.linuxtools.tmf</module>
     <module>org.eclipse.linuxtools.tmf.core</module>
     <module>org.eclipse.linuxtools.tmf.core.tests</module>
-    <module>org.eclipse.linuxtools.tmf.help</module>
     <module>org.eclipse.linuxtools.tmf.ui</module>
     <module>org.eclipse.linuxtools.tmf.ui.tests</module>
 
