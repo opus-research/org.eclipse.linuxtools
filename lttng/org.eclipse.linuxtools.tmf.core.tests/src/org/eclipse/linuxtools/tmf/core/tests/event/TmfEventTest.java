@@ -10,6 +10,7 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adjusted for new Event Model
  *   Alexandre Montplaisir - Port to JUnit4
+ *   Bernd Hufmann - Updated for call site support
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
@@ -28,9 +29,11 @@ import java.net.URL;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.linuxtools.tmf.core.event.ITmfCallsite;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
+import org.eclipse.linuxtools.tmf.core.event.TmfCallsite;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
@@ -61,6 +64,11 @@ public class TmfEventTest {
     private final String[] fLabels = new String[] { fLabel1, fLabel2 };
     private final TmfEventType fType = new TmfEventType(fContext, fTypeId, TmfEventField.makeRoot(fLabels));
 
+    private final static  String fFileName1 = "filename1";
+    private final static  String fFunctionName1 = "func1";
+    private final static  long fLine1 = 10;
+    private final ITmfCallsite fCallsite1 = new TmfCallsite(fFileName1, fFunctionName1, fLine1);
+
     private final Object fValue1a = "Some string";
     private final Object fValue1b = Integer.valueOf(10);
     private final ITmfEventField fField1a = new TmfEventField(fLabel1, fValue1a);
@@ -70,7 +78,12 @@ public class TmfEventTest {
     private final ITmfEventField fContent1 = new TmfEventField(fRawContent1, fFields1);
     private final TmfTimestamp fTimestamp1 = new TmfTimestamp(12345, 2, 5);
     private final String fReference1 = "Some reference";
-    private final ITmfEvent fEvent1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+    private final ITmfEvent fEvent1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1, fCallsite1);
+
+    private final static  String fFileName2 = "filename2";
+    private final static  String fFunctionName2 = "func2";
+    private final static  long fLine2 = 25;
+    private final ITmfCallsite fCallsite2 = new TmfCallsite(fFileName2, fFunctionName2, fLine2);
 
     private final Object fValue2a = "Another string";
     private final Object fValue2b = Integer.valueOf(-4);
@@ -81,7 +94,7 @@ public class TmfEventTest {
     private final ITmfEventField fContent2 = new TmfEventField(fRawContent2, fFields2);
     private final TmfTimestamp fTimestamp2 = new TmfTimestamp(12350, 2, 5);
     private final String fReference2 = "Some other reference";
-    private final ITmfEvent fEvent2 = new TmfEvent(null, 1, fTimestamp2, fSource, fType, fContent2, fReference2);
+    private final ITmfEvent fEvent2 = new TmfEvent(null, 1, fTimestamp2, fSource, fType, fContent2, fReference2, fCallsite2);
 
     // ------------------------------------------------------------------------
     // Helper functions
@@ -121,6 +134,7 @@ public class TmfEventTest {
         assertNull("getType", event.getType());
         assertNull("getContent", event.getContent());
         assertNull("getReference", event.getReference());
+        assertNull("getCallsite", event.getCallsite());
     }
 
     @Test
@@ -132,6 +146,7 @@ public class TmfEventTest {
         assertEquals("getType", fType, fEvent1.getType());
         assertEquals("getContent", fContent1, fEvent1.getContent());
         assertEquals("getReference", fReference1, fEvent1.getReference());
+        assertEquals("getCallsite", fCallsite1, fEvent1.getCallsite());
 
         assertNull("getTrace", fEvent2.getTrace());
         assertEquals("getRank", 1, fEvent2.getRank());
@@ -140,6 +155,7 @@ public class TmfEventTest {
         assertEquals("getType", fType, fEvent2.getType());
         assertEquals("getContent", fContent2, fEvent2.getContent());
         assertEquals("getReference", fReference2, fEvent2.getReference());
+        assertEquals("getCallsite", fCallsite2, fEvent2.getCallsite());
     }
 
     @Test
@@ -152,12 +168,13 @@ public class TmfEventTest {
         assertEquals("getType", fType, event.getType());
         assertEquals("getContent", fContent1, event.getContent());
         assertEquals("getReference", fReference1, event.getReference());
+        assertNull("getCallsite", event.getCallsite());
     }
 
     @Test
     public void testConstructorWithTrace() {
         final ITmfTrace trace = openTrace();
-        final ITmfEvent event = new TmfEvent(trace, 0, fTimestamp1, fSource, fType, fContent1, fReference1);
+        final ITmfEvent event = new TmfEvent(trace, 0, fTimestamp1, fSource, fType, fContent1, fReference1, fCallsite1);
         assertNotNull("getTrace", event.getTrace());
         assertEquals("getRank", 0, event.getRank());
         assertEquals("getTimestamp", fTimestamp1, event.getTimestamp());
@@ -165,6 +182,7 @@ public class TmfEventTest {
         assertEquals("getType", fType, event.getType());
         assertEquals("getContent", fContent1, event.getContent());
         assertEquals("getReference", fReference1, event.getReference());
+        assertEquals("getCallsite", fCallsite1, fEvent1.getCallsite());
         trace.dispose();
     }
 
@@ -178,6 +196,7 @@ public class TmfEventTest {
         assertEquals("getType", fType, event.getType());
         assertEquals("getContent", fContent1, event.getContent());
         assertEquals("getReference", fReference1, event.getReference());
+        assertEquals("getCallsite", fCallsite1, event.getCallsite());
     }
 
     @Test
@@ -382,6 +401,22 @@ public class TmfEventTest {
         assertFalse("equals", event2.equals(event1));
     }
 
+    @Test
+    public void testNonEqualCallsite() {
+        final ITmfEvent event1 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1, fCallsite1);
+        ITmfEvent event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1, fCallsite1);
+        assertTrue("equals", event1.equals(event2));
+        assertTrue("equals", event2.equals(event1));
+
+        event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1, fCallsite2);
+        assertFalse("equals", event1.equals(event2));
+        assertFalse("equals", event2.equals(event1));
+
+        event2 = new TmfEvent(null, 0, fTimestamp1, fSource, fType, fContent1, fReference1, null);
+        assertFalse("equals", event1.equals(event2));
+        assertFalse("equals", event2.equals(event1));
+    }
+
     // ------------------------------------------------------------------------
     // toString
     // ------------------------------------------------------------------------
@@ -389,12 +424,17 @@ public class TmfEventTest {
     @Test
     public void testToString() {
         final String expected1 = "TmfEvent [fTimestamp=" + fTimestamp1 + ", fTrace=null, fRank=0, fSource=" + fSource
-                + ", fType=" + fType + ", fContent=" + fContent1 + ", fReference=" + fReference1 + "]";
+                + ", fType=" + fType + ", fContent=" + fContent1 + ", fReference=" + fReference1 + ", fCallsite=filename1:10 func1()]";
         assertEquals("toString", expected1, fEvent1.toString());
 
         final String expected2 = "TmfEvent [fTimestamp=" + fTimestamp2 + ", fTrace=null, fRank=1, fSource=" + fSource
-                + ", fType=" + fType + ", fContent=" + fContent2 + ", fReference=" + fReference2 + "]";
+                + ", fType=" + fType + ", fContent=" + fContent2 + ", fReference=" + fReference2 + ", fCallsite=filename2:25 func2()]";
         assertEquals("toString", expected2, fEvent2.toString());
+
+        final ITmfEvent event3 = new TmfEvent(null, 1, fTimestamp2, fSource, fType, fContent2, fReference2, null);
+        final String expected3 = "TmfEvent [fTimestamp=" + fTimestamp2 + ", fTrace=null, fRank=1, fSource=" + fSource
+                + ", fType=" + fType + ", fContent=" + fContent2 + ", fReference=" + fReference2 + "]";
+        assertEquals("toString", expected3, event3.toString());
     }
 
     /**
@@ -412,7 +452,7 @@ public class TmfEventTest {
         String expected = "ExtendedEvent [fTimestamp=" + fTimestamp1
                 + ", fTrace=null, fRank=0, fSource=" + fSource
                 + ", fType=" + fType + ", fContent=" + fContent1
-                + ", fReference=" + fReference1 + "]";
+                + ", fReference=" + fReference1 + ", fCallsite=filename1:10 func1()]";
 
         assertEquals(expected, event.toString());
     }

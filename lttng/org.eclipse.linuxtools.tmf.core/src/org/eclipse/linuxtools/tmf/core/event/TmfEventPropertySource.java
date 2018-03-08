@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
+ *   Bernd Hufmann - Added call site properties
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
@@ -32,11 +33,13 @@ public class TmfEventPropertySource implements IPropertySource {
     private static final String ID_TYPE = "event_type"; //$NON-NLS-1$
     private static final String ID_REFERENCE = "event_reference"; //$NON-NLS-1$
     private static final String ID_CONTENT = "event_content"; //$NON-NLS-1$
+    private static final String ID_CALLSITE = "event_callsite"; //$NON-NLS-1$
     private static final String NAME_TIMESTAMP = "Timestamp"; //$NON-NLS-1$
     private static final String NAME_SOURCE = "Source"; //$NON-NLS-1$
     private static final String NAME_TYPE = "Type"; //$NON-NLS-1$
     private static final String NAME_REFERENCE = "Reference"; //$NON-NLS-1$
     private static final String NAME_CONTENT = "Content"; //$NON-NLS-1$
+    private static final String NAME_CALLSITE = "Callsite"; //$NON-NLS-1$
 
     private ITmfEvent fEvent;
 
@@ -140,6 +143,63 @@ public class TmfEventPropertySource implements IPropertySource {
         }
     }
 
+    private class CallsitePropertySource implements IPropertySource {
+
+        private static final String ID_FILE_NAME = "callsite_file"; //$NON-NLS-1$
+        private static final String ID_FUNCTION_NAME = "callsite_function"; //$NON-NLS-1$
+        private static final String ID_LINE_NUMBER = "callsite_line"; //$NON-NLS-1$
+
+        private static final String NAME_FILE_NAME = "file"; //$NON-NLS-1$
+        private static final String NAME_FUNCTION_NAME = "function"; //$NON-NLS-1$
+        private static final String NAME_LINE_NUMBER = "line"; //$NON-NLS-1$
+
+        private ITmfCallsite fCallsite;
+
+        public CallsitePropertySource(ITmfCallsite callsite) {
+            fCallsite = callsite;
+        }
+
+        @Override
+        public Object getEditableValue() {
+            return fCallsite.toString();
+        }
+
+        @Override
+        public IPropertyDescriptor[] getPropertyDescriptors() {
+            List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>();
+            descriptors.add(new PropertyDescriptor(ID_FILE_NAME, NAME_FILE_NAME));
+            descriptors.add(new PropertyDescriptor(ID_FUNCTION_NAME, NAME_FUNCTION_NAME));
+            descriptors.add(new PropertyDescriptor(ID_LINE_NUMBER, NAME_LINE_NUMBER));
+            return descriptors.toArray(new IPropertyDescriptor[0]);
+        }
+
+        @Override
+        public Object getPropertyValue(Object id) {
+            if  (id.equals(ID_FILE_NAME) && fCallsite.getFileName() != null) {
+                return fCallsite.getFileName();
+            } else if (id.equals(ID_FUNCTION_NAME) && fCallsite.getFunctionName() != null) {
+                return fCallsite.getFunctionName();
+            } else if (id.equals(ID_LINE_NUMBER)) {
+                return Long.valueOf(fCallsite.getLineNumber());
+            }
+            return null;
+        }
+
+        @Override
+        public boolean isPropertySet(Object id) {
+            return false;
+        }
+
+        @Override
+        public void resetPropertyValue(Object id) {
+
+        }
+
+        @Override
+        public void setPropertyValue(Object id, Object value) {
+        }
+    }
+
     /**
      * Default constructor
      *
@@ -157,13 +217,16 @@ public class TmfEventPropertySource implements IPropertySource {
 
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        IPropertyDescriptor[] descriptors = new IPropertyDescriptor[5];
-        descriptors[0] = new PropertyDescriptor(ID_TIMESTAMP, NAME_TIMESTAMP);
-        descriptors[1] = new PropertyDescriptor(ID_SOURCE, NAME_SOURCE);
-        descriptors[2] = new PropertyDescriptor(ID_TYPE, NAME_TYPE);
-        descriptors[3] = new PropertyDescriptor(ID_REFERENCE, NAME_REFERENCE);
-        descriptors[4] = new PropertyDescriptor(ID_CONTENT, NAME_CONTENT);
-        return descriptors;
+        List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>();
+        descriptors.add(new PropertyDescriptor(ID_TIMESTAMP, NAME_TIMESTAMP));
+        descriptors.add(new PropertyDescriptor(ID_SOURCE, NAME_SOURCE));
+        descriptors.add(new PropertyDescriptor(ID_TYPE, NAME_TYPE));
+        descriptors.add(new PropertyDescriptor(ID_REFERENCE, NAME_REFERENCE));
+        if (fEvent.getCallsite() != null) {
+            descriptors.add(new PropertyDescriptor(ID_CALLSITE, NAME_CALLSITE));
+        }
+        descriptors.add(new PropertyDescriptor(ID_CONTENT, NAME_CONTENT));
+        return descriptors.toArray(new IPropertyDescriptor[0]);
     }
 
     @Override
@@ -176,6 +239,8 @@ public class TmfEventPropertySource implements IPropertySource {
             return fEvent.getType().toString();
         } else if (id.equals(ID_REFERENCE) && fEvent.getReference() != null) {
             return fEvent.getReference().toString();
+        } else if (id.equals(ID_CALLSITE) && fEvent.getCallsite() != null) {
+          return new CallsitePropertySource(fEvent.getCallsite());
         } else if (id.equals(ID_CONTENT) && fEvent.getContent() != null) {
             return new ContentPropertySource(fEvent.getContent());
         }

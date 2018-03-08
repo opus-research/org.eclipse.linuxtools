@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Bernd Hufmann - Added call-site interface
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.event;
@@ -25,10 +26,10 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * <li> a source (reporting component)
  * <li> a type
  * <li> a content (payload)
+ * <li> a reference field (optional)
+ * <li> a call site (source code location, optional)
  * </ul>
- * For convenience, a free-form reference field is also provided. It could be
- * used as e.g. a location marker (filename:lineno) to indicate where the event
- * was generated.
+ * For convenience, a free-form reference field is also provided.
  *
  * @version 1.0
  * @author Francois Chouinard
@@ -36,6 +37,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @see ITmfTimestamp
  * @see ITmfEventType
  * @see ITmfEventField
+ * @see ITmfCallsite
  * @see TmfEvent
  */
 public interface ITmfEvent extends IAdaptable {
@@ -108,5 +110,11 @@ public interface ITmfEvent extends IAdaptable {
      * @return the event reference
      */
     public String getReference();
+
+    /**
+     * @return call site information or null if not available
+     * @since 2.0
+     */
+    public ITmfCallsite getCallsite();
 
 }
