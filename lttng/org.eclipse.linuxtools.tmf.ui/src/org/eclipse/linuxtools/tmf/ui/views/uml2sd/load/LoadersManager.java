@@ -29,8 +29,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * Manager class for the UML2SD extension point.
@@ -163,13 +161,7 @@ public class LoadersManager {
             return null;
         }
 
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        // During Eclipse shutdown the active workbench window is null
-        if (window == null) {
-            return null;
-        }
-
-        IWorkbenchPage persp = window.getActivePage();
+        IWorkbenchPage persp = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
 
         SDView sdView = view;
 
@@ -241,12 +233,7 @@ public class LoadersManager {
 
         if ((currentLoader != null) && (currentLoader != loader)) {
             if (loader != null) {
-                IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-                // During Eclipse shutdown the active workbench window is null
-                if (window == null) {
-                    return;
-                }
-                IWorkbenchPage persp = window.getActivePage();
+                IWorkbenchPage persp = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
                 try {
                     // Search view corresponding to the viewId
                     SDView sdview = null;

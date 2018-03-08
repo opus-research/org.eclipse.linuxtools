@@ -183,9 +183,7 @@ public class AsyncMessage extends BaseMessage implements ITimeRange {
      * Informs the given lifeline about the maximum occurrence if applicable.
      *
      * @param lifeLine
-     *            Concerned lifeline
      * @param occurrence
-     *            Occurrence number
      */
     protected void informFrame(Lifeline lifeLine, int occurrence) {
         if ((lifeLine != null) && (lifeLine.getFrame() != null) && (lifeLine.getFrame().getMaxEventOccurrence() < occurrence)) {
@@ -401,7 +399,7 @@ public class AsyncMessage extends BaseMessage implements ITimeRange {
      * @param time the time when the message end
      */
     public void setEndTime(ITmfTimestamp time) {
-        fEndTime = time;
+        fEndTime = time.clone();
         fHasTime = true;
         if (getStartLifeline() != null && getStartLifeline().getFrame() != null) {
             getStartLifeline().getFrame().setHasTimeInfo(true);
@@ -416,7 +414,7 @@ public class AsyncMessage extends BaseMessage implements ITimeRange {
      * @param time the time when the message start
      */
     public void setStartTime(ITmfTimestamp time) {
-        fStartTime = time;
+        fStartTime = time.clone();
         fHasTime = true;
         if (getStartLifeline() != null && getStartLifeline().getFrame() != null) {
             getStartLifeline().getFrame().setHasTimeInfo(true);

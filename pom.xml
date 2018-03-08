@@ -28,7 +28,7 @@
 
   <groupId>org.eclipse.linuxtools</groupId>
   <artifactId>linuxtools-parent</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>1.2.0</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools Parent</name>
@@ -56,7 +56,7 @@
   </distributionManagement>
 
   <properties>
-    <mirror-repo-name>updates-nightly</mirror-repo-name>
+    <mirror-repo-name>update-1.2</mirror-repo-name>
     <tycho-version>0.16.0</tycho-version>
     <tycho-extras-version>0.16.0</tycho-extras-version>
     <platform-version-name>juno</platform-version-name>
@@ -108,28 +108,6 @@
       <repositories>
         <repository>
           <id>juno</id>
-          <layout>p2</layout>
-          <url>${eclipse-site}</url>
-        </repository>
-      </repositories>
-    </profile>
-    <profile>
-      <id>platform-kepler</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-        <property>
-          <name>platform-version-name</name>
-          <value>kepler</value>
-        </property>
-      </activation>
-      <properties>
-        <eclipse-site>http://download.eclipse.org/releases/staging</eclipse-site>
-        <platform-version>[4.3,)</platform-version>
-        <sdk-version>4.3</sdk-version>
-      </properties>
-      <repositories>
-        <repository>
-          <id>kepler</id>
           <layout>p2</layout>
           <url>${eclipse-site}</url>
         </repository>
@@ -233,7 +211,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.6.1.201212231917</version>
+        <version>0.6.0.201210061924</version>
         <executions>
           <execution>
            <id>pre-test</id>

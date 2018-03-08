@@ -16,7 +16,6 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -41,22 +40,22 @@ import org.eclipse.swt.widgets.Text;
 
 public class StapNewWizardPage extends WizardPage {
 	private Text fileText;
-
+	
 	private Text containerText;
 
 	private ISelection selection;
-
-	private static final ResourceBundle resourceBundle = ResourceBundle.getBundle("org.eclipse.linuxtools.systemtap.ui.ide.wizards.stap_strings"); //$NON-NLS-1$
+	
+	private static final ResourceBundle resourceBundle = ResourceBundle.getBundle("org.eclipse.linuxtools.systemtap.ui.ide.wizards.stap_strings");
 
 	/**
 	 * Constructor for StapNewWizardPage.
-	 *
+	 * 
 	 * @param pageName
 	 */
 	public StapNewWizardPage(ISelection selection) {
-		super(resourceBundle.getString("StapNewWizardPage.WizardPage")); //$NON-NLS-1$
-		setTitle(resourceBundle.getString("StapNewWizardPage.Title")); //$NON-NLS-1$
-		setDescription(resourceBundle.getString("StapNewWizardPage.setDescription")); //$NON-NLS-1$
+		super(resourceBundle.getString("StapNewWizardPage.WizardPage"));
+		setTitle(resourceBundle.getString("StapNewWizardPage.Title"));
+		setDescription(resourceBundle.getString("StapNewWizardPage.setDescription"));
 		this.selection = selection;
 	}
 
@@ -82,7 +81,7 @@ public class StapNewWizardPage extends WizardPage {
 			}
 		});
 		label = new Label(container, SWT.NULL); // XXX just create a new layout with different width
-
+		
 		label = new Label(container, SWT.NULL);
 		label.setText(resourceBundle.getString("StapNewWizardPage.Directory")); //$NON-NLS-1$
 
@@ -96,9 +95,8 @@ public class StapNewWizardPage extends WizardPage {
 		});
 
 		Button button = new Button(container, SWT.PUSH);
-		button.setText(resourceBundle.getString("StapNewWizardPage.Browse")); //$NON-NLS-1$
+		button.setText(resourceBundle.getString("StapNewWizardPage.Browse"));
 		button.addSelectionListener(new SelectionAdapter() {
-			@Override
 			public void widgetSelected(SelectionEvent e) {
 				handleBrowse();
 			}
@@ -128,7 +126,7 @@ public class StapNewWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText(".stp"); //$NON-NLS-1$
+		fileText.setText(".stp");
 	}
 
 	/**
@@ -138,9 +136,13 @@ public class StapNewWizardPage extends WizardPage {
 
 	private void handleBrowse() {
 		DirectoryDialog dialog = new DirectoryDialog(getShell());
-		dialog.open();
-		String result = dialog.getFilterPath();
-		containerText.setText(result);
+		try {
+			dialog.open();
+			String result = dialog.getFilterPath();
+			containerText.setText(result);
+		} catch (Exception e) {
+			System.out.println("Error: " + e);
+		}
 	}
 
 	/**
@@ -151,28 +153,28 @@ public class StapNewWizardPage extends WizardPage {
 		IPath container = Path.fromOSString(getContainerName());
 		String fileName = getFileName();
 		container.isValidPath(getContainerName());
-		if (fileName.length() == 0 || fileName.equals(".stp")) { //$NON-NLS-1$
-			updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus1")); //$NON-NLS-1$
+		if (fileName.length() == 0 || fileName.equals(".stp")) {
+			updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus1"));
 			return;
 		}
 		if (getContainerName().length() == 0) {
-			updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus2")); //$NON-NLS-1$
+			updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus2"));
 			return;
 		}
 		if (container == null
 				|| !container.isValidPath(getContainerName())) {
-			updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus3")); //$NON-NLS-1$
+			updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus3"));
 			return;
 		}
 		if (fileName.replace('\\', '/').indexOf('/', 1) > 0) {
-			updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus4")); //$NON-NLS-1$
+			updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus4"));
 			return;
 		}
 		int dotLoc = fileName.lastIndexOf('.');
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
-			if (ext.equalsIgnoreCase("stp") == false) { //$NON-NLS-1$
-				updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus.5")); //$NON-NLS-1$
+			if (ext.equalsIgnoreCase("stp") == false) {
+				updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus.5"));
 				return;
 			}
 		}

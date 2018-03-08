@@ -6,17 +6,11 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *  Matthew Khouzam - Initial API and implementation
- *  Alexendre Montplaisir - Initial API and implementation
- *  Bernd Hufmann - Add Enum field handling
- *
+ * Contributors: Matthew Khouzam - Initial API and implementation
+ * Contributors: Alexendre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
@@ -33,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 /**
  * The CTF implementation of the TMF event field model
  *
- * @version 2.0
+ * @version 1.0
  * @author Matthew Khouzam
  * @author Alexandre Montplaisir
  */
@@ -55,14 +49,10 @@ public abstract class CtfTmfEventField implements ITmfEventField {
     /** @since 1.2 */
     protected static final int FIELDTYPE_FLOAT = 3;
 
-    /** @since 2.0 */
-    protected static final int FIELDTYPE_ENUM = 4;
-
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    /** The name of this field */
     protected final String name;
 
     // ------------------------------------------------------------------------
@@ -119,7 +109,7 @@ public abstract class CtfTmfEventField implements ITmfEventField {
 
         } else if (fieldDef instanceof EnumDefinition) {
             EnumDefinition enumDef = (EnumDefinition) fieldDef;
-            field = new CTFEnumField(new CtfEnumPair(enumDef.getValue(), enumDef.getIntegerValue()), fieldName);
+            field = new CTFStringField(enumDef.getValue(), fieldName);
 
         } else if (fieldDef instanceof StringDefinition) {
             field = new CTFStringField(
@@ -192,12 +182,10 @@ public abstract class CtfTmfEventField implements ITmfEventField {
                     other.name);
         case FIELDTYPE_INTEGER_ARRAY:
             return new CTFIntegerArrayField(
-                    ((CTFIntegerArrayField) other).getLongValues(), other.name);
+                    ((CTFIntegerArrayField) other).getValue(), other.name);
         case FIELDTYPE_FLOAT:
             return new CTFFloatField(((CTFFloatField) other).getValue(),
                     other.name);
-        case FIELDTYPE_ENUM:
-            return new CTFEnumField(((CTFEnumField) other).getValue(), other.name);
         default:
             return null;
         }
@@ -400,32 +388,22 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
         return FIELDTYPE_INTEGER_ARRAY;
     }
 
-    /**
-     * Gets the values of the array
-     * @return the values in the array
-     *
-     * @since 2.0
-     */
-    long[] getLongValues() {
-        return this.longValues;
-    }
-
     @Override
-    public List<Long> getValue() {
-        List<Long> retVal = new ArrayList<Long>();
-        for( Long l : longValues){
-            retVal.add(l);
-        }
-        return retVal;
+    public long[] getValue() {
+        return this.longValues;
     }
 
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(name);
-        buffer.append('=');
-        buffer.append(getValue());
-        return buffer.toString();
+        buffer.append("{ "); //$NON-NLS-1$
+
+        buffer.append(longValues[0]);
+        for (int i = 1; i < longValues.length; i++) {
+            buffer.append(", " + longValues[i]); //$NON-NLS-1$
+        }
+        buffer.append('}');
+        return name + '=' + buffer.toString();
     }
 }
 
@@ -464,44 +442,6 @@ final class CTFFloatField extends CtfTmfEventField {
     @Override
     public String toString() {
         return name + '=' + value;
-    }
-}
-
-/**
- * The CTF field implementation for Enum fields
- *
- * @author Bernd Hufmann
- */
-final class CTFEnumField extends CtfTmfEventField {
-
-    private final CtfEnumPair value;
-
-    /**
-     * Constructor for CTFEnumField.
-     *
-     * @param enumValue
-     *            The Enum value consisting of a pair of Enum value name and its long value
-     * @param name
-     *            The name of this field
-     */
-    CTFEnumField(CtfEnumPair enumValue, String name) {
-        super(name);
-        this.value = new CtfEnumPair(enumValue.getFirst(), enumValue.getSecond().longValue());
-    }
-
-    @Override
-    public int getFieldType() {
-        return FIELDTYPE_ENUM;
-    }
-
-    @Override
-    public  CtfEnumPair getValue() {
-        return this.value;
-    }
-
-    @Override
-    public String toString() {
-        return name + '=' + value.toString();
     }
 }
 

@@ -26,11 +26,12 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 /**
  * Benchmark the event request subsystem of TMF.
  */
-public class RequestBenchmark extends TmfEventRequest {
+public class RequestBenchmark extends TmfEventRequest<CtfTmfEvent> {
 
+    @SuppressWarnings("unchecked")
     private RequestBenchmark(final Class<? extends ITmfEvent> dataType,
             final TmfTimeRange range, final int nbRequested) {
-        super(dataType, range, nbRequested, 1);
+        super((Class<CtfTmfEvent>) dataType, range, nbRequested, 1);
     }
 
     // Path of the trace
@@ -41,7 +42,7 @@ public class RequestBenchmark extends TmfEventRequest {
 
     // Work variables
     private static int nbEvent = 0;
-    private static TmfExperiment fExperiment = null;
+    private static TmfExperiment<CtfTmfEvent> fExperiment = null;
     private static Vector<Double> benchs = new Vector<Double>();
 
     /**
@@ -54,11 +55,12 @@ public class RequestBenchmark extends TmfEventRequest {
 
         try {
             /* Our experiment will contains ONE trace */
-            final ITmfTrace[] traces = new ITmfTrace[1];
+            @SuppressWarnings("unchecked")
+            final ITmfTrace<CtfTmfEvent>[] traces = new ITmfTrace[1];
             traces[0] = new CtfTmfTrace();
             traces[0].initTrace(null, TRACE_PATH, CtfTmfEvent.class);
             /* Create our new experiment */
-            fExperiment = new TmfExperiment(CtfTmfEvent.class, "Headless", traces); //$NON-NLS-1$
+            fExperiment = new TmfExperiment<CtfTmfEvent>(CtfTmfEvent.class, "Headless", traces); //$NON-NLS-1$
 
             /*
              * We will issue a request for each "pass". TMF will then process
@@ -83,8 +85,8 @@ public class RequestBenchmark extends TmfEventRequest {
     }
 
     @Override
-    public synchronized void handleEvent(final ITmfEvent event) {
-        super.handleEvent(event);
+    public void handleData(final CtfTmfEvent event) {
+        super.handleData(event);
         nbEvent++;
 
     }
@@ -92,7 +94,7 @@ public class RequestBenchmark extends TmfEventRequest {
     static long prev;
     static long done = 0;
     @Override
-    public synchronized void handleCompleted() {
+    public void handleCompleted() {
         final long next = System.nanoTime();
         double val = next - prev;
         final int nbEvent2 = nbEvent;
