@@ -74,27 +74,6 @@ public final class TapsetLibrary {
 	}
 
 	/**
-	 * Returns the documentation for the given possible probe or function but
-	 * will not cache the result. Use this function if the requested element is
-	 * not guaranteed to be a probe or a function. Otherwise use @link
-	 * {@link TapsetLibrary#getDocumentation(String)}
-	 *
-	 * @param element
-	 * @return documentation for the given probe or null if no man page is found.
-	 * @since 2.0
-	 */
-	public static synchronized String getDocumentationNoCache(String element) {
-		String documentation = pages.get(element);
-		if (documentation == null) {
-			documentation = (new ManPage(element)).getStrippedPage().toString();
-			if (documentation.contains("No manual entry")){ //$NON-NLS-1$
-				documentation = null;
-			}
-		}
-		return documentation;
-	}
-
-	/**
 	 * This method will attempt to get the most up-to-date information.
 	 * However, if the TapsetParser is running already it will quit,
 	 * assuming that new information will be available soon.  By registering
@@ -235,9 +214,8 @@ public final class TapsetLibrary {
 	 * @since 2.0
 	 */
 	public static boolean addFunctionListener(IUpdateListener listener) {
-		if(null == functionParser) {
+		if(null == functionParser)
 			return false;
-		}
 		functionParser.addListener(listener);
 		return true;
 	}
@@ -246,9 +224,8 @@ public final class TapsetLibrary {
 	 * @since 2.0
 	 */
 	public static boolean addProbeListener(IUpdateListener listener) {
-		if(null == probeParser) {
+		if(null == probeParser)
 			return false;
-		}
 		probeParser.addListener(listener);
 		return true;
 	}
