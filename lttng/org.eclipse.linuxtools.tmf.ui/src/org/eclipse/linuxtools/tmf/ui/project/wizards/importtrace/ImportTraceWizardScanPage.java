@@ -386,6 +386,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                             if (!control.isDisposed()) {
                                 getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
                                 getMonitor().subTask(Messages.ImportTraceWizardPageScan_done);
+                                ImportTraceWizardScanPage.this.setMessage(Messages.ImportTraceWizardPageScan_scanning + " " + Messages.ImportTraceWizardPageScan_done); //$NON-NLS-1$
                             }
                         }
                     });
@@ -396,6 +397,10 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                     if (!getBatchWizard().hasScanned(traceToScan)) {
                         getBatchWizard().addResult(traceToScan, TmfTraceType.getInstance().validate(traceToScan));
                     }
+
+                    /*
+                     * The following is to update the UI
+                     */
                     validCombo = getBatchWizard().getResult(traceToScan);
                     if (validCombo) {
                         // Synched on it's parent
@@ -403,8 +408,16 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         getBatchWizard().getScannedTraces().addCandidate(traceToScan.getTraceType(), new File(traceToScan.getTraceToScan()));
                         updated = true;
                     }
-                    // position++;
-
+                    final int scanned = getBatchWizard().getNumberOfResults();
+                    final int toScan = fTracesToScan.size();
+                    final int prevVal = (int) ((scanned - 1) * 100.0 / (scanned - 1 + toScan + 1));
+                    final int curVal = (int) ((scanned) * 100.0 / (scanned + toScan));
+                    if (curVal != prevVal) {
+                        updated = true;
+                    }
+                    /*
+                     * update the progress
+                     */
                     if (updated) {
                         if (!control.isDisposed()) {
                             control.getDisplay().asyncExec(new Runnable() {
@@ -414,6 +427,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                                         getMonitor().setTaskName(Messages.ImportTraceWizardPageScan_scanning + " "); //$NON-NLS-1$
                                         getMonitor().subTask(traceToScan.getTraceToScan());
                                         getMonitor().worked(1);
+                                        ImportTraceWizardScanPage.this.setMessage(Messages.ImportTraceWizardPageScan_scanning + " " //$NON-NLS-1$
+                                                + Integer.toString(curVal)
+                                                + "%"); //$NON-NLS-1$
                                     }
                                 }
                             }
@@ -421,6 +437,9 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                         }
                     }
 
+                    /*
+                     * here we update the table
+                     */
                     final boolean editing = traceTypeViewer.isCellEditorActive();
                     if (updated && !editing)
                     {
