@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +50,7 @@ import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceValidationHelper;
 import org.eclipse.ui.IWorkbench;
@@ -79,13 +81,13 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
     // ------------------
 
     private IWizardPage fSelectDirectoriesPage;
-    private ImportTraceWizardScanPage fScanPage;
+    private IWizardPage fScanPage;
     private IWizardPage fSelectTypePage;
 
     private final List<String> fTraceTypesToScan = new ArrayList<String>();
     private final Set<String> fParentFilesToScan = new HashSet<String>();
 
-    private ImportTraceContentProvider fScannedTraces = new ImportTraceContentProvider(fTraceTypesToScan, fParentFilesToScan);
+    private ImportTraceContentProvider fScannedTraces = new ImportTraceContentProvider();
 
     private final Map<TraceValidationHelper, Boolean> fResults = new HashMap<TraceValidationHelper, Boolean>();
     private boolean fOverwrite = true;
@@ -559,7 +561,6 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
             updateScanQueue(pm, filesToScan, added);
         } catch (InterruptedException e) {
         }
-
     }
 
     /*
@@ -626,14 +627,12 @@ public class BatchImportTraceWizard extends ImportTraceWizard {
                         fTracesToScan.put(tv);
                         monitor.subTask(tv.getTraceToScan());
                         if (monitor.isCanceled()) {
-                            fScanPage.refresh();
                             return CANCEL_STATUS;
                         }
                     }
                 }
             }
         }
-        fScanPage.refresh();
         return Status.OK_STATUS;
     }
 
