@@ -240,8 +240,8 @@ public class CustomEvent implements ITmfEvent {
                 fColumnData[i++] = new TmfEventField(outputColumn.name, (value != null ? value : "")); //$NON-NLS-1$
             }
         }
-        CustomEventContent content = (CustomEventContent) getContent();
-        content.setFields(fColumnData);
+        CustomEventContent curContent = (CustomEventContent) fContent;
+        fContent = new CustomEventContent(curContent.getName(), curContent.getValue(), fColumnData);
         fData = null;
     }
 
