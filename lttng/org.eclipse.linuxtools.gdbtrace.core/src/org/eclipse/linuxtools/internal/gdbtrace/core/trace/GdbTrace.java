@@ -17,9 +17,7 @@ package org.eclipse.linuxtools.internal.gdbtrace.core.trace;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.gdbtrace.core.GdbTraceCorePlugin;
 import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -75,11 +73,8 @@ public class GdbTrace extends TmfTrace implements ITmfEventParser {
     }
 
     @Override
-    public IStatus validate(IProject project, String path) {
-        if(fileExists(path)) {
-            return Status.OK_STATUS;
-        }
-        return new Status(IStatus.ERROR, "GDB", "File not found : "+ path);
+    public boolean validate(IProject project, String path) {
+        return fileExists(path);
     }
 
     @Override
