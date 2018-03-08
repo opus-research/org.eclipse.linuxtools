@@ -10,19 +10,18 @@
  *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.tests.project.model;
+package org.eclipse.linuxtools.tmf.core.tests.analysis;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- *  Test suite for org.eclipse.linuxtools.tmf.ui.project.model
+ * Unit tests for the analysis package.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    ProjectModelTraceTest.class,
-    ProjectModelAnalysisTest.class,
-    ProjectModelOutputTest.class
+    AnalysisModuleTest.class,
+    AnalysisManagerTest.class
 })
 public class AllTests {
 

@@ -36,8 +36,11 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
+import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
+import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
@@ -303,6 +306,28 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
          * how/if to register a new state system in derived classes.
          */
         return Status.OK_STATUS;
+    }
+
+    /**
+     * Executes the analysis modules that are meant to be automatically executed
+     *
+     * @return An IStatus indicating whether the analysis could be run
+     *         successfully or not
+     * @since 3.0
+     */
+    protected IStatus executeAnalysis() {
+        MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, null, null);
+        Map<String, IAnalysisModule> modules = TmfAnalysisManager.getAnalysisModules(this);
+        for (IAnalysisModule module : modules.values()) {
+            if (module.isAutomatic()) {
+                try {
+                    module.setTrace(this);
+                } catch (TmfAnalysisException e) {
+                }
+                status.add(module.schedule());
+            }
+        }
+        return status;
     }
 
     /**
@@ -700,6 +725,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, null, null);
         status.add(buildStatistics());
         status.add(buildStateSystem());
+        status.add(executeAnalysis());
         if (!status.isOK()) {
             Activator.log(status);
         }
