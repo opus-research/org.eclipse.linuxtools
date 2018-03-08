@@ -31,9 +31,6 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.MismatchedTokenException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
-import org.antlr.runtime.tree.RewriteCardinalityException;
-import org.antlr.runtime.tree.RewriteEarlyExitException;
-import org.antlr.runtime.tree.RewriteEmptyStreamException;
 import org.eclipse.linuxtools.ctf.parser.CTFLexer;
 import org.eclipse.linuxtools.ctf.parser.CTFParser;
 import org.eclipse.linuxtools.ctf.parser.CTFParser.parse_return;
@@ -183,12 +180,6 @@ public class Metadata {
         } catch (MismatchedTokenException e) {
             tempException = new CtfAntlrException(e);
         } catch (RecognitionException e) {
-            tempException = new CtfAntlrException(e);
-        } catch (RewriteEmptyStreamException e){
-            tempException = new CtfAntlrException(e);
-        } catch (RewriteEarlyExitException e){
-            tempException = new CtfAntlrException(e);
-        } catch (RewriteCardinalityException e){
             tempException = new CtfAntlrException(e);
         }
 
