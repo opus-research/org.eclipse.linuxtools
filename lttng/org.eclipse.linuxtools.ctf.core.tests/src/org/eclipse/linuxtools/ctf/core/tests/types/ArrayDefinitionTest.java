@@ -29,7 +29,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.junit.Before;
 import org.junit.Test;
@@ -111,7 +110,7 @@ public class ArrayDefinitionTest {
             String content = "test" + i;
             defs[i] = new StringDefinition(
                     new StringDeclaration(Encoding.UTF8), null, content);
-            defs[i].setValue(content);
+            defs[i].setString(new StringBuilder(content));
         }
         return defs;
     }
@@ -233,10 +232,9 @@ public class ArrayDefinitionTest {
     }
     /**
      * Run the void read(BitBuffer) method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testRead_noDefs() throws CTFReaderException {
+    public void testRead_noDefs() {
         BitBuffer input = new BitBuffer(ByteBuffer.allocateDirect(128));
 
         charArrayFixture.read(input);
@@ -244,10 +242,9 @@ public class ArrayDefinitionTest {
 
     /**
      * Run the void read(BitBuffer) method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testRead_withDefs() throws CTFReaderException {
+    public void testRead_withDefs() {
         charArrayFixture.setDefinitions(new Definition[] {});
         BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
 
