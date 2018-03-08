@@ -256,19 +256,7 @@
                menuGroupId="org.eclipse.linuxtools.tmf.ui.views.ui.wizards.menuGroupId"
                type="new"
                wizardId="org.eclipse.linuxtools.tmf.ui.views.ui.wizards.newProject">
-               <enablement>
-                  <or>
-                     <with variable="activeWorkbenchWindow.activePerspective">
-                        <equals
-                              value="org.eclipse.linuxtools.tmf.ui.perspective">
-                        </equals>
-                     </with>
-                     <and>
-                        <instanceof value="org.eclipse.core.resources.IProject"/>
-                        <test property="org.eclipse.core.resources.projectNature" value="org.eclipse.linuxtools.tmf.project.nature"/>
-                     </and>
-                  </or>
-               </enablement>
+            <enablement></enablement>
          </commonWizard>
       </navigatorContent>
    </extension>
