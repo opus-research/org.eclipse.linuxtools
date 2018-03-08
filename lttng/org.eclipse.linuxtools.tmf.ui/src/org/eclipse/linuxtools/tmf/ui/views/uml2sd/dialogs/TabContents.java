@@ -13,7 +13,7 @@
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs;
 
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -41,55 +41,55 @@ public class TabContents extends Composite {
     /**
      * A graph node type listener implementation.
      */
-    protected GraphNodeTypeListener fGraphNodeTypeListener = null;
+    private final GraphNodeTypeListener fGraphNodeTypeListener;
     /**
      * A expression listener implementation.
      */
-    protected ExpressionListener fExpressionListener = null;
+    private final ExpressionListener fExpressionListener;
     /**
      * The button for lifelines.
      */
-    protected Button fLifelineButton = null;
+    private Button fLifelineButton;
     /**
      * The button for stops.
      */
-    protected Button fStopButton = null;
+    private Button fStopButton = null;
     /**
      * The button for synchronous messages
      */
-    protected Button fSynMessageButton = null;
+    private Button fSynMessageButton = null;
     /**
      * The button for synchronous return messages
      */
-    protected Button fSynMessageReturnButton = null;
+    private Button fSynMessageReturnButton = null;
     /**
      * The button for asynchronous messages
      */
-    protected Button fAsynMessageButton = null;
+    private Button fAsynMessageButton = null;
     /**
      * The button for asynchronous return messages
      */
-    protected Button fAsynMessageReturnButton = null;
+    private Button fAsynMessageReturnButton = null;
     /**
      * The search text combo box.
      */
-    protected Combo fSearchText = null;
+    private Combo fSearchText = null;
     /**
      * The group for selection kind.
      */
-    protected Group fKindSelection = null;
+    private Group fKindSelection = null;
     /**
      * The button for case sensitive expressions.
      */
-    protected Button fCaseSensitive = null;
+    private Button fCaseSensitive = null;
     /**
      * The label for the result string.
      */
-    protected Label fResult = null;
+    private Label fResult = null;
     /**
      * The button for notifying parent about valid data.
      */
-    protected Button fParentOkButton = null;
+    private Button fParentOkButton = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -113,7 +113,7 @@ public class TabContents extends Composite {
 
         // Inform the user how to fill the string to search
         Label searchTitle = new Label(this, SWT.LEFT);
-        searchTitle.setText(SDMessages._26);
+        searchTitle.setText(Messages.SequenceDiagram_MatchingString);
         Composite searchPart = new Composite(this, SWT.NONE);
         GridData searchPartData = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_FILL);
         GridLayout searchPartLayout = new GridLayout();
@@ -137,11 +137,11 @@ public class TabContents extends Composite {
 
         // Create the case sensitive check button
         fCaseSensitive = new Button(searchPart, SWT.CHECK);
-        fCaseSensitive.setText(SDMessages._27);
+        fCaseSensitive.setText(Messages.SequenceDiagram_CaseSensitive);
 
         // Create the group for searched graph node kind selection
         fKindSelection = new Group(this, SWT.SHADOW_NONE);
-        fKindSelection.setText(SDMessages._25);
+        fKindSelection.setText(Messages.SequenceDiagram_SearchFor);
         // kindSelection.setLayoutData(tabLayoutData2);
         GridLayout kindSelectionLayout = new GridLayout();
         kindSelectionLayout.numColumns = 1;
@@ -156,7 +156,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fLifelineButton.setText(nodeName);
             } else {
-                fLifelineButton.setText(SDMessages._28);
+                fLifelineButton.setText(Messages.SequenceDiagram_Lifeline);
             }
             fLifelineButton.setEnabled(true);
             fLifelineButton.addSelectionListener(fGraphNodeTypeListener);
@@ -169,7 +169,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fStopButton.setText(nodeName);
             } else {
-                fStopButton.setText(SDMessages._29);
+                fStopButton.setText(Messages.SequenceDiagram_Stop);
             }
 
             fStopButton.setEnabled(true);
@@ -183,7 +183,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fSynMessageButton.setText(nodeName);
             } else {
-                fSynMessageButton.setText(SDMessages._30);
+                fSynMessageButton.setText(Messages.SequenceDiagram_SynchronousMessage);
             }
             fSynMessageButton.setEnabled(true);
             fSynMessageButton.addSelectionListener(fGraphNodeTypeListener);
@@ -196,7 +196,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fSynMessageReturnButton.setText(nodeName);
             } else {
-                fSynMessageReturnButton.setText(SDMessages._31);
+                fSynMessageReturnButton.setText(Messages.SequenceDiagram_SynchronousMessageReturn);
             }
             fSynMessageReturnButton.setEnabled(true);
             fSynMessageReturnButton.addSelectionListener(fGraphNodeTypeListener);
@@ -209,7 +209,7 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fAsynMessageButton.setText(nodeName);
             } else {
-                fAsynMessageButton.setText(SDMessages._32);
+                fAsynMessageButton.setText(Messages.SequenceDiagram_AsynchronousMessage);
             }
             fAsynMessageButton.setEnabled(true);
             fAsynMessageButton.addSelectionListener(fGraphNodeTypeListener);
@@ -222,14 +222,14 @@ public class TabContents extends Composite {
             if (nodeName != null) {
                 fAsynMessageReturnButton.setText(nodeName);
             } else {
-                fAsynMessageReturnButton.setText(SDMessages._33);
+                fAsynMessageReturnButton.setText(Messages.SequenceDiagram_AsynchronousMessageReturn);
             }
             fAsynMessageReturnButton.setEnabled(true);
             fAsynMessageReturnButton.addSelectionListener(fGraphNodeTypeListener);
         }
 
         fResult = new Label(this, SWT.LEFT);
-        fResult.setText(SDMessages._23);
+        fResult.setText(Messages.SequenceDiagram_StringNotFound);
         fResult.setVisible(false);
     }
 

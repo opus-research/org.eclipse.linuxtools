@@ -29,7 +29,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessage;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.SyncMessageReturn;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDFindProvider;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.provider.ISDGraphNodeSupporter;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -75,22 +75,22 @@ public class SearchFilterDialog extends Dialog {
     /**
      * The sequence diagram view reference.
      */
-    protected SDView fSdView = null;
+    private final SDView fSdView;
 
     /**
      * The tab with the controls for a Criteria
      */
-    protected TabFolder fTabFolder = null;
+    private final TabFolder fTabFolder = null;
 
     /**
      * The Criteria updated by this dialog
      */
-    protected Criteria fCriteria = null;
+    private Criteria fCriteria = null;
 
     /**
      * The find/filter provider telling which graph nodes are supported
      */
-    protected ISDGraphNodeSupporter fProvider = null;
+    final private ISDGraphNodeSupporter fProvider;
 
     /**
      * The okText is the text for the Ok button and title is the title of the
@@ -183,11 +183,11 @@ public class SearchFilterDialog extends Dialog {
         if (fOkText != null) {
             getButton(IDialogConstants.OK_ID).setText(fOkText);
         } else {
-            getButton(IDialogConstants.OK_ID).setText(SDMessages._21);
+            getButton(IDialogConstants.OK_ID).setText(Messages.SequenceDiagram_Find);
         }
 
         if (fIsFind) {
-            getButton(IDialogConstants.CANCEL_ID).setText(SDMessages._22);
+            getButton(IDialogConstants.CANCEL_ID).setText(Messages.SequenceDiagram_Close);
         }
 
         Button okButton = getButton(IDialogConstants.OK_ID);
@@ -200,7 +200,7 @@ public class SearchFilterDialog extends Dialog {
         if (fTitle != null) {
             getShell().setText(fTitle);
         } else {
-            getShell().setText(SDMessages._24);
+            getShell().setText(Messages.SequenceDiagram_SequenceDiagramFind);
         }
 
         getShell().pack();
