@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,32 +30,32 @@ public interface ISDPagingProvider {
      *
      * @return true if a next page exists false otherwise
      */
-    boolean hasNextPage();
+    public boolean hasNextPage();
 
     /**
      * Return true to enable the previous page button in the coolBar, false otherwise
      *
      * @return true if a previous page exists false otherwise
      */
-    boolean hasPrevPage();
+    public boolean hasPrevPage();
 
     /**
      * Called back when next page button is pressed in the coolBar
      */
-    void nextPage();
+    public void nextPage();
 
     /**
      * Called back when previous page button is pressed in the coolBar
      */
-    void prevPage();
+    public void prevPage();
 
     /**
      * Called back when first page button is pressed in the coolBar
      */
-    void firstPage();
+    public void firstPage();
 
     /**
      * Called back when last page button is pressed in the coolBar
      */
-    void lastPage();
+    public void lastPage();
 }

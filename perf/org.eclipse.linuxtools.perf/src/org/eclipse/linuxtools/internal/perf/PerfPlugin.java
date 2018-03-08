@@ -14,7 +14,6 @@
  *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.perf;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -45,7 +44,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String SOURCE_DISASSEMBLY_VIEW_ID = "org.eclipse.linuxtools.perf.ui.SourceDisassemblyView";
 	public static final String STAT_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatView";
 	public static final String STAT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.StatViewDiff";
-	public static final String REPORT_DIFF_VIEW_ID = "org.eclipse.linuxtools.perf.ui.ReportViewDiff";
 
 	// Launch Config ID
 	public static final String LAUNCHCONF_ID = "org.eclipse.linuxtools.perf.launch.profile";
@@ -101,12 +99,9 @@ public class PerfPlugin extends AbstractUIPlugin {
 	public static final String STRINGS_MultipleFilesForSymbol = "Symbols conflicting in multiple files";
 	public static final String STRINGS_ShowSourceDisassembly = "Show Source Disassembly View";
 	public static final String STRINGS_ShowStat = "Show Stat View";
-	public static final String STRINGS_SearchSourceDisassembly = "Search Source Disassembly";
 	
 	public static final String PERF_COMMAND = "perf";
 	public static final String PERF_DEFAULT_DATA = "perf.data";
-	public static final String PERF_DEFAULT_STAT= "perf.stat";
-	public static final String PERF_DEAFULT_OLD_STAT = "perf.old.stat";
 	public static final boolean DEBUG_ON = false; //Spew debug messages or not.
 
 	
@@ -117,10 +112,10 @@ public class PerfPlugin extends AbstractUIPlugin {
 	private TreeParent _modelRoot;
 
 	// Source Disassembly Data
-	private IPerfData sourceDisassemblyData;
+	private SourceDisassemblyData sourceDisassemblyData;
 
 	// Stat Data
-	private IPerfData statData;
+	private StatData statData;
 
 	// Profile view
 	private PerfProfileView _ProfileView = null;
@@ -132,20 +127,17 @@ public class PerfPlugin extends AbstractUIPlugin {
 	private IPath curWorkingDir;
 
 	// Current stat comparison data
-	private IPerfData statDiffData;
-
-	// Current report comparison data
-	private IPerfData reportDiffData;
+	private StatComparisonData statDiffData;
 
 	public TreeParent getModelRoot() {
 		return _modelRoot;
 	}
 
-	public IPerfData getSourceDisassemblyData () {
+	public SourceDisassemblyData getSourceDisassemblyData () {
 		return sourceDisassemblyData;
 	}
 
-	public IPerfData getStatData () {
+	public StatData getStatData () {
 		return statData;
 	}
 
@@ -153,31 +145,12 @@ public class PerfPlugin extends AbstractUIPlugin {
 		return curProfileData;
 	}
 
-	public IPerfData getStatDiffData() {
+	public StatComparisonData getStatDiffData() {
 		return statDiffData;
-	}
-
-	public IPerfData getReportDiffData(){
-		return reportDiffData;
 	}
 
 	public IPath getWorkingDir(){
 		return curWorkingDir;
-	}
-
-	/**
-	 * Get perf file with specified name under the current profiled project.
-	 *
-	 * @param fileName file name.
-	 * @return File corresponding to given file or null if no working directory
-	 *         has been set.
-	 */
-	public File getPerfFile(String fileName) {
-		if (curWorkingDir != null) {
-			IPath curStatPath = curWorkingDir.append(fileName);
-			return curStatPath.toFile();
-		}
-		return null;
 	}
 
 	/**
@@ -197,11 +170,11 @@ public class PerfPlugin extends AbstractUIPlugin {
 		this._modelRoot = rootnode;
 	}
 
-	public void setSourceDisassemblyData (IPerfData sourceDisassemblyData) {
+	public void setSourceDisassemblyData (SourceDisassemblyData sourceDisassemblyData) {
 		this.sourceDisassemblyData = sourceDisassemblyData;
 	}
 
-	public void setStatData (IPerfData statData) {
+	public void setStatData (StatData statData) {
 		this.statData = statData;
 	}
 
@@ -209,12 +182,8 @@ public class PerfPlugin extends AbstractUIPlugin {
 		this.curProfileData = perfProfileData;
 	}
 
-	public void setStatDiffData(IPerfData diffData){
+	public void setStatDiffData(StatComparisonData diffData){
 		this.statDiffData = diffData;
-	}
-
-	public void setReportDiffData(IPerfData diffData){
-		this.reportDiffData = diffData;
 	}
 
 	public void setWorkingDir(IPath workingDir){

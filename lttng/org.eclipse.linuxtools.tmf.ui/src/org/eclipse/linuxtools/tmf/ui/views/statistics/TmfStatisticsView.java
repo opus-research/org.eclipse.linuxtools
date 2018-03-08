@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.viewers.ITmfViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer;
@@ -93,6 +92,12 @@ public class TmfStatisticsView extends TmfView {
         this(TMF_STATISTICS_VIEW);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     public void createPartControl(Composite parent) {
         fStatsViewers.setParent(parent);
@@ -104,6 +109,11 @@ public class TmfStatisticsView extends TmfView {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.tmf.ui.views.TmfView#dispose()
+     */
     @Override
     public void dispose() {
         super.dispose();
@@ -200,6 +210,11 @@ public class TmfStatisticsView extends TmfView {
         fStatsViewers.layout();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+     */
     @Override
     public void setFocus() {
         fStatsViewers.setFocus();
@@ -236,8 +251,9 @@ public class TmfStatisticsView extends TmfView {
 
             String traceName;
             IResource traceResource;
+            ITmfTrace[] traces = fTrace.getTraces();
             // Creates a statistics viewer for each trace.
-            for (ITmfTrace trace : TmfTraceManager.getTraceSet(fTrace)) {
+            for (ITmfTrace trace : traces) {
                 traceName = trace.getName();
                 traceResource = trace.getResource();
                 TmfStatisticsViewer viewer = getStatisticsViewer(traceResource);

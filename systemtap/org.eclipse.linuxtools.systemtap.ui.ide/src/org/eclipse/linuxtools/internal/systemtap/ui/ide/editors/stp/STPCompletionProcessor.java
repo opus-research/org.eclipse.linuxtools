@@ -85,7 +85,8 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 		try {
 			partition = document.getPartition(offset);
 		} catch (BadLocationException e1) {
-			return NO_COMPLETIONS;
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
 		String prefix = ""; //$NON-NLS-1$
@@ -155,32 +156,25 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 	}
 
 	private ICompletionProposal[] getProbeVariableCompletions(IDocument document, int offset, String prefix){
-		try {
-			String probe;
-			probe = getProbe(document, offset);
-			String[] completionData = stpMetadataSingleton
-					.getProbeVariableCompletions(probe, prefix);
-			ICompletionProposal[] result = new ICompletionProposal[completionData.length];
+		String probe = getProbe(document, offset);
+		String[] completionData = stpMetadataSingleton.getProbeVariableCompletions(probe, prefix);
+		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
 
-			int prefixLength = prefix.length();
-			for (int i = 0; i < completionData.length; i++) {
-				int endIndex = completionData[i].indexOf(':');
-				String variableName = completionData[i].substring(0, endIndex);
-				result[i] = new CompletionProposal(completionData[i].substring(
-						prefixLength, endIndex),
-						offset,
-						0,
-						endIndex - prefixLength,
-						null,
-						completionData[i] + " - variable", //$NON-NLS-1$
-						null,
-						TapsetLibrary
-								.getAndCacheDocumentation("probe::" + probe + "::" + variableName)); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-			return result;
-		} catch (BadLocationException e) {
-			return NO_COMPLETIONS;
+		int prefixLength = prefix.length();
+		for (int i = 0; i < completionData.length; i++){
+			int endIndex = completionData[i].indexOf(':');
+			String variableName = completionData[i].substring(0, endIndex);
+			result[i] = new CompletionProposal(
+							completionData[i].substring(prefixLength, endIndex),
+							offset,
+							0,
+							endIndex - prefixLength,
+							null,
+							completionData[i] + " - variable", //$NON-NLS-1$
+							null,
+							TapsetLibrary.getAndCacheDocumentation("probe::" + probe + "::" + variableName)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
+		return result;
 	}
 
 	/**
@@ -190,18 +184,21 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 	 * @param document
 	 * @param offset
 	 * @return the probe name
-	 * @throws BadLocationException
 	 */
-	private String getProbe(IDocument document, int offset) throws BadLocationException{
+	private String getProbe(IDocument document, int offset){
 		String probePoint = null;
 
-		ITypedRegion partition = document.getPartition(offset);
-		String probe = document.get(partition.getOffset(), partition.getLength());
+		try {
+			ITypedRegion partition = document.getPartition(offset);
+			String probe = document.get(partition.getOffset(), partition.getLength());
 
-		// make sure that we are inside a probe
-		if (probe.startsWith(PROBE_KEYWORD)){
-			probePoint = probe.substring(PROBE_KEYWORD.length(), probe.indexOf('{'));
-			probePoint = probePoint.trim();
+			// make sure that we are inside a probe
+			if (probe.startsWith(PROBE_KEYWORD)){
+				probePoint = probe.substring(PROBE_KEYWORD.length(), probe.indexOf('{'));
+				probePoint = probePoint.trim();
+			}
+		} catch (BadLocationException e) {
+			e.printStackTrace();
 		}
 
 		return probePoint;
@@ -372,7 +369,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 	}
 
 	private boolean isTokenDelimiter(char c) {
-		if (Character.isWhitespace(c)) {
+		if (Character.isSpaceChar(c)) {
 			return true;
 		}
 

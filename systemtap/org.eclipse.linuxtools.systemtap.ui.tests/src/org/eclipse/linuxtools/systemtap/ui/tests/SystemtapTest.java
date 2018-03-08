@@ -22,7 +22,7 @@ public class SystemtapTest {
 	public static boolean stapInstalled;
 
 	@BeforeClass
-	public static void checkStapInstalled() throws IOException {
+	public static void checkStapInstalled() {
 		stapInstalled = SystemtapTest.stapInstalled();
 	}
 
@@ -30,11 +30,15 @@ public class SystemtapTest {
 	 * Check that stap is installed
 	 *
 	 * @return true if stap is installed, false otherwise.
-	 * @throws IOException
 	 */
-	protected static boolean stapInstalled() throws IOException {
-		Process process = RuntimeProcessFactory.getFactory().exec(
-				new String[] { "stap", "-V" }, null); //$NON-NLS-1$ //$NON-NLS-2$
-		return (process != null);
+	public static boolean stapInstalled() {
+		try {
+			Process process = RuntimeProcessFactory.getFactory().exec(
+					new String[] { "stap", "-V" }, null);
+			return (process != null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }

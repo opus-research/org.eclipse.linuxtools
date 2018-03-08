@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -56,7 +56,7 @@ public class AsyncMessageReturn extends AsyncMessage {
      * Default constructor.
      */
     public AsyncMessageReturn() {
-        setColorPrefId(ISDPreferences.PREF_ASYNC_MESS_RET);
+        fPrefId = ISDPreferences.PREF_ASYNC_MESS_RET;
     }
 
     // ------------------------------------------------------------------------
@@ -74,16 +74,10 @@ public class AsyncMessageReturn extends AsyncMessage {
         fMessage = parentMessage;
     }
 
-    /**
-     * Returns the associated message (the message it is the return).<br>
-     *
-     * @return parentMessage the message to associate
-     * @since 2.0
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage#draw(org.eclipse.linuxtools.tmf.ui.views.uml2sd.drawings.IGC)
      */
-    public AsyncMessage getMessage() {
-        return fMessage;
-    }
-
     @Override
     public void draw(IGC context) {
         if (!isVisible()) {
@@ -92,19 +86,23 @@ public class AsyncMessageReturn extends AsyncMessage {
 
         ISDPreferences pref = SDViewPref.getInstance();
 
-        setColorPrefId(ISDPreferences.PREF_ASYNC_MESS_RET);
+        fPrefId = ISDPreferences.PREF_ASYNC_MESS_RET;
         int oldStyle = context.getLineStyle();
         // Message return are dashed
         context.setLineStyle(context.getLineDotStyle());
         if (!isSelected()) {
-            context.setBackground(pref.getBackGroundColor(getColorPrefId()));
-            context.setForeground(pref.getForeGroundColor(getColorPrefId()));
+            context.setBackground(pref.getBackGroundColor(fPrefId));
+            context.setForeground(pref.getForeGroundColor(fPrefId));
         }
         super.draw(context);
         // restore the context
         context.setLineStyle(oldStyle);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.ui.views.uml2sd.core.AsyncMessage#getArrayId()
+     */
     @Override
     public String getArrayId() {
         return ASYNC_MESS_RET_TAG;

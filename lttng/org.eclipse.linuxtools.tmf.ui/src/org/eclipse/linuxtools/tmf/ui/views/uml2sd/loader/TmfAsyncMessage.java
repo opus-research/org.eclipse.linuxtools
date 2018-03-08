@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -28,16 +28,14 @@ public class TmfAsyncMessage extends AsyncMessage implements ITmfAsyncSequenceDi
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * A asynchronous sequence diagram event implementation
      */
-    private ITmfAsyncSequenceDiagramEvent fSdEvent;
+    protected ITmfAsyncSequenceDiagramEvent fSdEvent;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Standard constructor
      *
@@ -56,11 +54,19 @@ public class TmfAsyncMessage extends AsyncMessage implements ITmfAsyncSequenceDi
     // Methods
     // ------------------------------------------------------------------------
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.ust.examples.event.ISequenceDiagramEvent#getSender()
+     */
     @Override
     public String getSender() {
         return fSdEvent.getSender();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.ust.examples.event.ISequenceDiagramEvent#getReceiver()
+     */
     @Override
     public String getReceiver() {
         return fSdEvent.getReceiver();
