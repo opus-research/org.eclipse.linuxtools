@@ -16,6 +16,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
 
 /**
  * TmfDataRequests are used to obtain blocks of contiguous data from a data provider. Open ranges can be used,
@@ -105,6 +106,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
 
     /** The number of reads so far */
     private int fNbRead;
+
 
     private final CountDownLatch startedLatch = new CountDownLatch(1);
     private final CountDownLatch completedLatch = new CountDownLatch(1);
@@ -377,7 +379,7 @@ public abstract class TmfDataRequest implements ITmfDataRequest {
      */
     @Override
     public void handleData(ITmfEvent data) {
-        if (data != null) {
+        if (data != null && !(data instanceof ITmfLostEvent)) {
             fNbRead++;
         }
     }

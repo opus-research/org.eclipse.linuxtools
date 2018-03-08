@@ -97,6 +97,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     private final Color fCurrentEventColor = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
     private final Color fLastEventColor = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_RED);
     private final Color fHistoBarColor = new Color(Display.getDefault(), 74, 112, 139);
+    private final Color fLostEventRangeColor = new Color(Display.getCurrent(), 255, 0, 255);
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -115,6 +116,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
     private Text fMinNbEventsText;
     private Text fTimeRangeStartText;
     private Text fTimeRangeEndText;
+    private Text fMaxNbLostEventsText;
 
     /**
      *  Histogram drawing area
@@ -135,6 +137,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      * The current event value
      */
     protected long fCurrentEventTime = 0L;
+
 
     // ------------------------------------------------------------------------
     // Construction
@@ -170,6 +173,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         TmfSignalManager.deregister(this);
 
         fHistoBarColor.dispose();
+        fLastEventColor.dispose();
         fDataModel.removeHistogramListener(this);
     }
 
@@ -185,7 +189,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         // --------------------------------------------------------------------
 
         final GridLayout gridLayout = new GridLayout();
-        gridLayout.numColumns = 3;
+        gridLayout.numColumns = 4;
         gridLayout.marginHeight = 0;
         gridLayout.marginWidth = 0;
         gridLayout.marginTop = 0;
@@ -226,12 +230,36 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         canvasComposite.setLayout(new FillLayout());
         fCanvas = new Canvas(canvasComposite, SWT.DOUBLE_BUFFERED);
 
+     // Y-axis max lost event
+        gridData = new GridData();
+        gridData.horizontalAlignment = SWT.LEFT;
+        gridData.verticalAlignment = SWT.TOP;
+        fMaxNbLostEventsText = new Text(composite, SWT.READ_ONLY | SWT.RIGHT);
+        fMaxNbLostEventsText.setFont(fFont);
+        fMaxNbLostEventsText.setForeground(fLostEventRangeColor);
+        fMaxNbLostEventsText.setBackground(labelColor);
+        fMaxNbLostEventsText.setEditable(false);
+        fMaxNbLostEventsText.setText("0"); //$NON-NLS-1$
+        fMaxNbLostEventsText.setLayoutData(gridData);
+
         // Y-axis min event (always 0...)
         gridData = new GridData();
         gridData.horizontalAlignment = SWT.RIGHT;
         gridData.verticalAlignment = SWT.BOTTOM;
         fMinNbEventsText = new Text(composite, SWT.READ_ONLY | SWT.RIGHT);
         fMinNbEventsText.setFont(fFont);
+        fMinNbEventsText.setBackground(labelColor);
+        fMinNbEventsText.setEditable(false);
+        fMinNbEventsText.setText("0"); //$NON-NLS-1$
+        fMinNbEventsText.setLayoutData(gridData);
+
+     // Y-axis min lost event (always 0...)
+        gridData = new GridData();
+        gridData.horizontalAlignment = SWT.LEFT;
+        gridData.verticalAlignment = SWT.BOTTOM;
+        fMinNbEventsText = new Text(composite, SWT.READ_ONLY | SWT.RIGHT);
+        fMinNbEventsText.setFont(fFont);
+        fMinNbEventsText.setForeground(fLostEventRangeColor);
         fMinNbEventsText.setBackground(labelColor);
         fMinNbEventsText.setEditable(false);
         fMinNbEventsText.setText("0"); //$NON-NLS-1$
@@ -272,6 +300,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         fMinNbEventsText.addFocusListener(listener);
         fTimeRangeStartText.addFocusListener(listener);
         fTimeRangeEndText.addFocusListener(listener);
+        fMaxNbLostEventsText.addFocusListener(listener);
 
         return composite;
     }
@@ -470,6 +499,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
                         }
                         fDataModel.setCurrentEvent(fCurrentEventTime);
                         fScaledData = fDataModel.scaleTo(canvasWidth, canvasHeight, 1);
+                        fDataModel.getLostEventStartingScaledData(canvasWidth, canvasHeight, 1);
                         synchronized(fDataModel) {
                             if (fScaledData != null) {
                                 fCanvas.redraw();
@@ -482,8 +512,10 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
                                     fTimeRangeEndText.setText(""); //$NON-NLS-1$
                                 }
                                 fMaxNbEventsText.setText(Long.toString(fScaledData.fMaxValue));
+                                fMaxNbLostEventsText.setText(Integer.toString(fDataModel.getMaxAggregateValue()));
                                 // The Y-axis area might need to be re-sized
                                 fMaxNbEventsText.getParent().layout();
+                                fMaxNbLostEventsText.getParent().layout();
                             }
                         }
                     }
@@ -578,6 +610,12 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
                 imageGC.fillRectangle(i, height - value, 1, value);
             }
 
+            // Draw the lost events windows
+            for (int i = 0; i < fDataModel.getLostEventsRangeBars().size(); i++) {
+                int nbLostEvents = fDataModel.getLostEventInfos().get(i).getFirst();
+                drawLostEventsTimeRangeWindow(imageGC, fDataModel.getLostEventsRangeBars().get(i).getFirst(), fDataModel.getLostEventsRangeBars().get(i).getSecond(), nbLostEvents);
+            }
+
             // Draw the current event bar
             final int currentBucket = scaledData.fCurrentBucket;
             if (currentBucket >= 0 && currentBucket < limit) {
@@ -594,6 +632,23 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
         } catch (final Exception e) {
             // Do nothing
         }
+    }
+
+    private void drawLostEventsTimeRangeWindow(GC imageGC, int startingBar, int endingBar, int nbLostEvents) {
+        int height = fCanvas.getSize().y;
+        double heightScalingFactor = (double) height / fDataModel.getMaxAggregateValue();
+
+        // Draw the lost event window
+        imageGC.setForeground(fLostEventRangeColor);
+        imageGC.setLineWidth(1);
+        imageGC.setLineStyle(SWT.LINE_SOLID);
+        imageGC.drawRectangle(startingBar, 0, endingBar - startingBar, Math.max((int) Math.ceil(nbLostEvents * heightScalingFactor), 1) - 1);
+
+        // Fill the lost event window
+        imageGC.setBackground(fLostEventRangeColor);
+        imageGC.setAlpha(80);
+        imageGC.fillRectangle(startingBar + 1, 1, endingBar - startingBar - 1, Math.max((int) Math.ceil(nbLostEvents * heightScalingFactor), 1) - 2);
+        imageGC.setAlpha(255);
     }
 
     private static void drawDelimiter(final GC imageGC, final Color color,
