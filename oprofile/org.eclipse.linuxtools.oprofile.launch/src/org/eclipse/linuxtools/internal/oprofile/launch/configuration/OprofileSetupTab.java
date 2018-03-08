@@ -13,10 +13,7 @@ package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 
 import java.text.MessageFormat;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -65,8 +62,6 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public boolean isValid(ILaunchConfiguration config) {
-		Oprofile.OprofileProject.setProject(getProject(config));
-
 		boolean b = options.isValid();
 		// System.out.println("SetupTab isValid = " + b);
 		return b;
@@ -301,26 +296,5 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
 				kernelImageFileText.setText(newKernel);
 			}
 		}
-	}
-
-	/**
-	 * Get the project associated with this launch configuration
-	 *
-	 * @param config a launch configuration
-	 * @return an IProject representing the project associated with
-	 * the launch configuration.
-	 */
-	protected IProject getProject(ILaunchConfiguration config){
-		String name = null;
-		try {
-			name = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
-		} catch (CoreException e) {
-			return null;
-		}
-		if (name.equals("")) {
-			return null;
-		}
-
-		return ResourcesPlugin.getWorkspace().getRoot().getProject(name);
 	}
 }
