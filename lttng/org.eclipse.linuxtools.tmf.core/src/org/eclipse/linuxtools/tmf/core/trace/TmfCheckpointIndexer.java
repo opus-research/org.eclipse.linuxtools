@@ -19,7 +19,6 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
@@ -76,9 +75,6 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
      * The indexing request
      */
     private ITmfEventRequest fIndexingRequest = null;
-
-    /** The progress sub monitor */
-    private SubMonitor fSubMonitor = null;
 
     // ------------------------------------------------------------------------
     // Construction
@@ -159,7 +155,6 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         final Job job = new Job("Indexing " + fTrace.getName() + "...") { //$NON-NLS-1$ //$NON-NLS-2$
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
-                fSubMonitor = SubMonitor.convert(monitor);
                 while (!monitor.isCanceled()) {
                     try {
                         Thread.sleep(100);
@@ -185,11 +180,6 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
                     // Update the trace status at regular intervals
                     if ((getNbRead() % fCheckpointInterval) == 0) {
                         updateTraceStatus();
-                        if (fSubMonitor != null) {
-                            // advance progress by 5% of remaining work
-                            fSubMonitor.setWorkRemaining(20);
-                            fSubMonitor.worked(1);
-                        }
                     }
                 }
             }
