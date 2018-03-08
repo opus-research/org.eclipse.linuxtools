@@ -15,12 +15,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.linuxtools.internal.profiling.provider.ProviderProfileConstants;
+import org.eclipse.linuxtools.internal.profiling.provider.AbstractProviderPreferencesPage;
+import org.eclipse.linuxtools.internal.profiling.provider.ProviderOptionsTab;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
-public class ProviderLaunchConfigurationDelegate extends
+public abstract class ProviderLaunchConfigurationDelegate extends
 		ProfileLaunchConfigurationDelegate {
 
 	@Override
@@ -31,8 +32,19 @@ public class ProviderLaunchConfigurationDelegate extends
 			if (config != null) {
 				// get provider id from configuration.
 				String providerId = config.getAttribute(
-						ProviderProfileConstants.PROVIDER_CONFIG_ATT, "");
+						ProviderOptionsTab.PROVIDER_CONFIG_ATT, "");
 
+				// the provider attribute is only set when launching from the
+				// dialog menu, if it's not set then we are launching from a
+				// shortcut.
+				if (providerId.equals("")) {
+					// acquire a provider id to run. 
+					providerId = getProviderIdToRun(getProfilingType());
+					// get configuration shortcut associated with provider id.
+					ProfileLaunchShortcut shortcut= ProfileLaunchShortcut.getLaunchShortcutProviderFromId(providerId);
+					// set attributes related to the specific profiling shortcut configuration.
+					shortcut.setDefaultProfileLaunchShortcutAttributes(config);
+				}
 				// get delegate associated with provider id.
 				ProfileLaunchConfigurationDelegate delegate = getConfigurationDelegateFromId(providerId);
 
@@ -60,9 +72,10 @@ public class ProviderLaunchConfigurationDelegate extends
 	 */
 	public static String getProviderIdToRun(String type) {
 		// Look in the preferences for a provider
-		String providerId = ConfigurationScope.INSTANCE.getNode(type).get(
-				ProviderProfileConstants.PREFS_KEY, "");
-		if (providerId.equals("") || getConfigurationDelegateFromId(providerId) == null) {
+		String providerId = ConfigurationScope.INSTANCE.getNode(
+				type).get(
+				AbstractProviderPreferencesPage.PREFS_KEY, "");
+		if (providerId.equals("")) {
 			// Get highest priority provider
 			providerId = ProfileLaunchConfigurationTabGroup
 					.getHighestProviderId(type);
@@ -80,9 +93,6 @@ public class ProviderLaunchConfigurationDelegate extends
 		return null;
 	}
 
-	@Override
-	protected String getPluginID() {
-		return ProviderProfileConstants.PLUGIN_ID;
-	}
+	public abstract String getProfilingType();
 
 }

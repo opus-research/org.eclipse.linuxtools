@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.tmf.ui.viewers.events;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -66,7 +65,7 @@ public class TmfEventsCache {
     private int fCacheStartIndex = 0;
     private int fCacheEndIndex   = 0;
 
-    private ITmfTrace fTrace;
+    private ITmfTrace<?> fTrace;
     private final TmfEventsTable fTable;
     private ITmfFilter fFilter;
     private final List<Integer> fFilterIndex = new ArrayList<Integer>(); // contains the event rank at each 'cache size' filtered events
@@ -91,7 +90,7 @@ public class TmfEventsCache {
      * @param trace
      *            The trace to assign.
      */
-    public void setTrace(ITmfTrace trace) {
+    public void setTrace(ITmfTrace<?> trace) {
         fTrace = trace;
         clear();
     }
@@ -100,7 +99,6 @@ public class TmfEventsCache {
      * Clear the current contents of this cache.
      */
     public synchronized void clear() {
-        Arrays.fill(fCache, null);
         fCacheStartIndex = 0;
         fCacheEndIndex = 0;
         fFilterIndex.clear();
@@ -193,10 +191,11 @@ public class TmfEventsCache {
      *            The rank of the event in the trace
      * @return The position (index) this event should use once cached
      */
+    @SuppressWarnings("unchecked")
     public int getFilteredEventIndex(final long rank) {
         int current;
         int startRank;
-        TmfDataRequest request;
+        TmfDataRequest<ITmfEvent> request;
         final ITmfFilter filter = fFilter;
         synchronized (this) {
             int start = 0;
@@ -232,12 +231,12 @@ public class TmfEventsCache {
 
         final int index = current * fCache.length;
 
-        class DataRequest extends TmfDataRequest {
+        class DataRequest<T extends ITmfEvent> extends TmfDataRequest<T> {
             ITmfFilter fFilter;
             int fRank;
             int fIndex;
 
-            DataRequest(Class<? extends ITmfEvent> dataType, ITmfFilter filter, int start, int nbRequested) {
+            DataRequest(Class<T> dataType, ITmfFilter filter, int start, int nbRequested) {
                 super(dataType, start, nbRequested);
                 fFilter = filter;
                 fRank = start;
@@ -245,7 +244,7 @@ public class TmfEventsCache {
             }
 
             @Override
-            public void handleData(ITmfEvent event) {
+            public void handleData(T event) {
                 super.handleData(event);
                 if (isCancelled()) {
                     return;
@@ -265,11 +264,11 @@ public class TmfEventsCache {
             }
         }
 
-        request = new DataRequest(ITmfEvent.class, filter, startRank, TmfDataRequest.ALL_DATA);
-        ((ITmfDataProvider) fTrace).sendRequest(request);
+        request = new DataRequest<ITmfEvent>(ITmfEvent.class, filter, startRank, TmfDataRequest.ALL_DATA);
+        ((ITmfDataProvider<ITmfEvent>) fTrace).sendRequest(request);
         try {
             request.waitForCompletion();
-            return ((DataRequest) request).getFilteredIndex();
+            return ((DataRequest<ITmfEvent>) request).getFilteredIndex();
         } catch (InterruptedException e) {
             Activator.getDefault().logError("Filter request interrupted!", e); //$NON-NLS-1$
         }
@@ -311,6 +310,7 @@ public class TmfEventsCache {
             private int startIndex = index;
             private int skipCount = 0;
             @Override
+            @SuppressWarnings("unchecked")
             protected IStatus run(final IProgressMonitor monitor) {
 
                 int nbRequested;
@@ -325,7 +325,7 @@ public class TmfEventsCache {
                     }
                 }
 
-                TmfDataRequest request = new TmfDataRequest(ITmfEvent.class, startIndex, nbRequested) {
+                TmfDataRequest<ITmfEvent> request = new TmfDataRequest<ITmfEvent>(ITmfEvent.class, startIndex, nbRequested) {
                     private int count = 0;
                     private long rank = startIndex;
                     @Override
@@ -339,9 +339,6 @@ public class TmfEventsCache {
                         if (event != null) {
                             if (((fFilter == null) || fFilter.matches(event)) && (skipCount-- <= 0)) {
                                 synchronized (TmfEventsCache.this) {
-                                    if (monitor.isCanceled()) {
-                                        return;
-                                    }
                                     fCache[count] = new CachedEvent(event.clone(), rank);
                                     count++;
                                     fCacheEndIndex++;
@@ -360,7 +357,7 @@ public class TmfEventsCache {
                     }
                 };
 
-                ((ITmfDataProvider) fTrace).sendRequest(request);
+                ((ITmfDataProvider<ITmfEvent>) fTrace).sendRequest(request);
                 try {
                     request.waitForCompletion();
                 } catch (InterruptedException e) {

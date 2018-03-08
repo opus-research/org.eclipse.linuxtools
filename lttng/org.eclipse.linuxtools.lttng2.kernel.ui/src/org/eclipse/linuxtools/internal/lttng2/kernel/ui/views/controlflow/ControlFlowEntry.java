@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.linuxtools.tmf.ui.views.timegraph.EventIterator;
+import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.common.EventIterator;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
@@ -81,8 +81,8 @@ public class ControlFlowEntry implements ITimeGraphEntry {
     }
 
     @Override
-    public List<ControlFlowEntry> getChildren() {
-        return fChildren;
+    public ControlFlowEntry[] getChildren() {
+        return fChildren.toArray(new ControlFlowEntry[0]);
     }
 
     @Override

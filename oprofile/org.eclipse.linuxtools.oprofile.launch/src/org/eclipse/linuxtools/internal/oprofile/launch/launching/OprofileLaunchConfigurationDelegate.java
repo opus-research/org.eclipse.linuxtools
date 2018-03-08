@@ -29,14 +29,14 @@ import org.eclipse.swt.widgets.Display;
 public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchConfigurationDelegate {
 
 	@Override
-	protected boolean preExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents, ILaunch launch) {
+	protected boolean preExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents) {
 		//set up and launch the oprofile daemon
 		try {
 			IProject project = getProject();
 
 			//check if user has NOPASSWD sudo permission for opcontrol
 			//if the Linux Tools Path property was changed
-			if(!LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).equals("")){
+			if(project != null && !LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).equals("")){
 				IOpcontrolProvider provider = OprofileCorePlugin.getDefault().getOpcontrolProvider();
 				if (provider instanceof IOpcontrolProvider2 &&
 					!((IOpcontrolProvider2)provider).hasPermissions(project)){
@@ -65,10 +65,6 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 			//note: since the daemon is only profiling for the specific image we told 
 			// it to, no matter to start the daemon before the binary itself is run
 			oprofileStartCollection();
-
-			//add a listener for termination of the launch prior to execution of launch
-			ILaunchManager lmgr = DebugPlugin.getDefault().getLaunchManager();
-			lmgr.addLaunchListener(new LaunchTerminationWatcher(launch));
 		} catch (OpcontrolException oe) {
 			OprofileCorePlugin.showErrorDialog("opcontrolProvider", oe); //$NON-NLS-1$
 			return false;
@@ -77,8 +73,10 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 	}
 
 	@Override
-	protected void postExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents, Process process) {
-		// do nothing here since the termination listener already registered will handle everything needed
+	protected void postExec(LaunchOptions options, OprofileDaemonEvent[] daemonEvents, ILaunch launch, Process process) {
+		//add a listener for termination of the launch
+		ILaunchManager lmgr = DebugPlugin.getDefault().getLaunchManager();
+		lmgr.addLaunchListener(new LaunchTerminationWatcher(launch));
 	}
 	
 	//A class used to listen for the termination of the current launch, and 
