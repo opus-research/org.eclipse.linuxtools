@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.ctf.core.tests.types;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
@@ -116,32 +115,6 @@ public class IntegerDefinitionTest {
         BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
 
         fixture.read(input);
-    }
-
-    /**
-     * Test the read endianness in a big endian bit buffer
-     */
-    @Test
-    public void testReadEndianness() {
-      IntegerDeclaration be = new IntegerDeclaration( 16, false, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
-      IntegerDefinition fixture_be = be.createDefinition(null, name);
-
-      IntegerDeclaration le = new IntegerDeclaration( 16, false, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
-      IntegerDefinition fixture_le = le.createDefinition(null, name);
-
-      ByteBuffer bb = java.nio.ByteBuffer.allocateDirect(2);
-      bb.put((byte) 0xab);
-      bb.put((byte) 0xcd);
-      BitBuffer input = new BitBuffer(bb);
-
-      fixture_be.read(input);
-      assertEquals(0xabcd, fixture_be.getValue());
-
-      bb.position(0);
-      input.position(0);
-      fixture_le.read(input);
-      assertEquals(0xcdab, fixture_le.getValue());
-
     }
 
     /**
