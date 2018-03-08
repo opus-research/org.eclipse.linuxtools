@@ -15,8 +15,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-import java.io.IOException;
-
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
@@ -24,7 +22,8 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPCompletionProcessor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPDocumentProvider;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
+import org.eclipse.linuxtools.systemtap.ui.tests.SystemtapTestUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class STPCompletionProcessorTest {
@@ -37,6 +36,8 @@ public class STPCompletionProcessorTest {
 			"   printf(\"%s fd %d\taddr%d\tcount%dargstr%s\n\", name, fd, buf_uaddr, count, argstr)\n"+
 			"}\n"+
 			"\n";
+
+	private static boolean stapInstalled;
 
 	private static class MockSTPDocumentProvider extends STPDocumentProvider{
 		private IDocument document;
@@ -57,6 +58,11 @@ public class STPCompletionProcessorTest {
 			super();
 			setDocumentProvider(new MockSTPDocumentProvider(document));
 		}
+	}
+
+	@BeforeClass
+	public static void setup(){
+		stapInstalled = SystemtapTestUtil.stapInstalled();
 	}
 
 	@Test
@@ -104,7 +110,7 @@ public class STPCompletionProcessorTest {
 
 	@Test
 	public void testProbeCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
+		assumeTrue(stapInstalled);
 		String prefix = "probe ";
 		ICompletionProposal[] proposals = getCompletionsForPrefix(prefix);
 		assertTrue(proposalsContain(proposals, "syscall"));
@@ -113,7 +119,7 @@ public class STPCompletionProcessorTest {
 
 	@Test
 	public void testMultiProbeCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
+		assumeTrue(stapInstalled);
 		String prefix = "probe begin,e";
 		ICompletionProposal[] proposals = getCompletionsForPrefix(prefix);
 		assertTrue(proposalsContain(proposals, "end"));
@@ -139,7 +145,7 @@ public class STPCompletionProcessorTest {
 
 	@Test
 	public void testEndProbeCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
+		assumeTrue(stapInstalled);
 
 		Document testDocument = new Document(TEST_STP_SCRIPT);
 		@SuppressWarnings("unused")
@@ -163,7 +169,7 @@ public class STPCompletionProcessorTest {
 
 	@Test
 	public void testProbeVariableCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
+		assumeTrue(stapInstalled);
 
 		Document testDocument = new Document(TEST_STP_SCRIPT);
 		@SuppressWarnings("unused")
@@ -217,19 +223,9 @@ public class STPCompletionProcessorTest {
 		return proposals;
 	}
 
-	private boolean stapInstalled(){
-		try {
-			Process process = RuntimeProcessFactory.getFactory().exec(new String[]{"stap", "-V"}, null);
-			return (process != null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
 	@Test
 	public void testFunctionCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
+		assumeTrue(stapInstalled);
 
 		Document testDocument = new Document(TEST_STP_SCRIPT);
 		@SuppressWarnings("unused")
