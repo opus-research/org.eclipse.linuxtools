@@ -2199,65 +2199,43 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     @TmfSignalHandler
     public void currentTimeUpdated(final TmfTimeSynchSignal signal) {
         if ((signal.getSource() != this) && (fTrace != null) && (!fTable.isDisposed())) {
+            TmfTimestamp ts = new TmfTimestamp(signal.getBeginTime());
+            // Verify if the event is within the trace range and adjust if
+            // necessary
+            ITmfTimestamp timestamp = ts;
+            if (timestamp.compareTo(fTrace.getStartTime(), true) == -1) {
+                timestamp = fTrace.getStartTime();
+            }
+            if (timestamp.compareTo(fTrace.getEndTime(), true) == 1) {
+                timestamp = fTrace.getEndTime();
+            }
 
-            // Create a request for one event that will be queued after other ongoing requests. When this request is completed
-            // do the work to select the actual event with the timestamp specified in the signal. This procedure prevents
-            // the method fTrace.getRank() from interfering and delaying ongoing requests.
-            final TmfDataRequest subRequest = new TmfDataRequest(ITmfEvent.class, 0, 1, ExecutionType.FOREGROUND) {
+            // Get the rank of the selected event in the table
+            final ITmfContext context = fTrace.seekEvent(timestamp);
+            final long rank = context.getRank();
+            context.dispose();
+            fSelectedRank = rank;
 
-                TmfTimestamp ts = new TmfTimestamp(signal.getBeginTime());
-
+            fTable.getDisplay().asyncExec(new Runnable() {
                 @Override
-                public void handleData(final ITmfEvent event) {
-                    super.handleData(event);
-                }
-
-                @Override
-                public void handleCompleted() {
-                    super.handleCompleted();
-                    if (fTrace == null) {
+                public void run() {
+                    // Return if table is disposed
+                    if (fTable.isDisposed()) {
                         return;
                     }
 
-                    // Verify if the event is within the trace range and adjust if necessary
-                    ITmfTimestamp timestamp = ts;
-                    if (timestamp.compareTo(fTrace.getStartTime(), true) == -1) {
-                        timestamp = fTrace.getStartTime();
+                    int index = (int) rank;
+                    if (fTable.isDisposed()) {
+                        return;
                     }
-                    if (timestamp.compareTo(fTrace.getEndTime(), true) == 1) {
-                        timestamp = fTrace.getEndTime();
+                    if (fTable.getData(Key.FILTER_OBJ) != null) {
+                        index = fCache.getFilteredEventIndex(rank) + 1; // +1 for top filter status row
                     }
-
-                    // Get the rank of the selected event in the table
-                    final ITmfContext context = fTrace.seekEvent(timestamp);
-                    final long rank = context.getRank();
-                    context.dispose();
-                    fSelectedRank = rank;
-
-                    fTable.getDisplay().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Return if table is disposed
-                            if (fTable.isDisposed()) {
-                                return;
-                            }
-
-                            int index = (int) rank;
-                            if (fTable.isDisposed()) {
-                                return;
-                            }
-                            if (fTable.getData(Key.FILTER_OBJ) != null) {
-                                index = fCache.getFilteredEventIndex(rank) + 1; // +1 for top filter status row
-                            }
-                            fTable.setSelection(index + 1); // +1 for header row
-                            fRawViewer.selectAndReveal(rank);
-                            updateStatusLine(null);
-                        }
-                    });
+                    fTable.setSelection(index + 1); // +1 for header row
+                    fRawViewer.selectAndReveal(rank);
+                    updateStatusLine(null);
                 }
-            };
-
-            ((ITmfDataProvider) fTrace).sendRequest(subRequest);
+            });
         }
     }
 
