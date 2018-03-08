@@ -30,9 +30,7 @@ public class RemoteProxyManager implements IRemoteProxyManager {
 	
 	private static final String EXT_ATTR_CLASS = "class"; //$NON-NLS-1$
 	private static final String LOCALSCHEME = "file"; //$NON-NLS-1$
-	private static final String RDTSCHEME = "remotetools"; //$NON-NLS-1$
-	public final static String SYNC_NATURE = "org.eclipse.ptp.rdt.sync.core.remoteSyncNature"; //$NON-NLS-1$
-
+	
 	private static RemoteProxyManager manager;
 	private LocalFileProxy lfp;
 	private Map<String, IRemoteProxyManager> remoteManagers = new HashMap<String, IRemoteProxyManager>();
@@ -92,11 +90,6 @@ public class RemoteProxyManager implements IRemoteProxyManager {
 		if (project == null) {
 			return getLocalFileProxy();
 		}
-		if (project.hasNature(SYNC_NATURE)) {
-			IRemoteProxyManager manager = getRemoteManager(RDTSCHEME);
-			if (manager != null)
-				return manager.getFileProxy(project);
-		}
 		URI projectURI = project.getLocationURI();
 		return getFileProxy(projectURI);
 	}
@@ -114,10 +107,6 @@ public class RemoteProxyManager implements IRemoteProxyManager {
 	public IRemoteCommandLauncher getLauncher(IProject project) throws CoreException {
 		if (project == null){
 			return new LocalLauncher();
-		}
-		if (project.hasNature(SYNC_NATURE)) {
-			IRemoteProxyManager manager = getRemoteManager(RDTSCHEME);
-			return manager.getLauncher(project);
 		}
 		URI projectURI = project.getLocationURI();
 		return getLauncher(projectURI);
