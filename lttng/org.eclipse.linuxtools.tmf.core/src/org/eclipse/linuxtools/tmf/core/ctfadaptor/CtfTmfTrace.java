@@ -230,11 +230,7 @@ public class CtfTmfTrace extends TmfTrace implements ITmfEventParser{
     @Override
     public ITmfContext seekEvent(double ratio) {
         CtfTmfLightweightContext context = new CtfTmfLightweightContext(this);
-        final long end = this.getEndTime().getValue();
-        final long start = this.getStartTime().getValue();
-        final long diff = end - start;
-        final CtfTmfTimestamp ratioTs = new CtfTmfTimestamp((long) (diff * ratio) + start);
-        context.seek( ratioTs.getValue() );
+        context.seek((long) (this.getNbEvents() * ratio));
         context.setRank(ITmfContext.UNKNOWN_RANK);
         return context;
     }
