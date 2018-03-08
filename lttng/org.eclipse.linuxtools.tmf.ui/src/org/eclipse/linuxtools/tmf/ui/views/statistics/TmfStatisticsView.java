@@ -15,10 +15,15 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
@@ -32,18 +37,17 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfExperimentUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.ui.viewers.TmfViewerFactory;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfStatisticsViewer;
+import org.eclipse.linuxtools.tmf.ui.viewers.statistics.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.AbsTmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeRootFactory;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
-import org.eclipse.linuxtools.tmf.ui.widgets.tabsview.TmfViewerFolder;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.osgi.framework.Bundle;
 
 /**
  * The generic Statistics View displays statistics for any kind of traces.
@@ -69,15 +73,14 @@ public class TmfStatisticsView extends TmfView {
     public static final String TMF_STATISTICS_VIEW = "StatisticsView"; //$NON-NLS-1$
 
     /**
-     * Stores the multiple requests to the experiment
-     * @since 2.0
+     * Stores the request to the experiment
      */
-    protected final List<ITmfEventRequest> fRequests;
+    protected ITmfEventRequest fRequest = null;
 
     /**
      * The viewer that builds the columns to show the statistics
      */
-    private TmfViewerFolder<ITmfStatisticsViewer> fStatsViewers;
+    private TmfStatisticsViewer fStatsViewer;
 
     /**
      * Stores a reference to the parent composite of this view
@@ -85,7 +88,7 @@ public class TmfStatisticsView extends TmfView {
     private Composite fParent;
 
     /**
-     * Stores a reference to the selected experiment
+     * Stores a reference to the experiment
      */
     private TmfExperiment fExperiment;
 
@@ -129,7 +132,6 @@ public class TmfStatisticsView extends TmfView {
      */
     public TmfStatisticsView(String viewName) {
         super(viewName);
-        fRequests = new LinkedList<ITmfEventRequest>();
     }
 
     /**
@@ -157,13 +159,32 @@ public class TmfStatisticsView extends TmfView {
             experimentSelected(signal);
             return;
         }
-        fStatsViewers = createStatisticsViewers();
+        fStatsViewer = createStatisticsViewer();
         /*
          * Updates the experiment field only at the end because
          * experimentSelected signal verifies the old selected experiment to
          * avoid reloading the same trace.
          */
         fExperiment = currentExperiment;
+    }
+
+    /**
+     * Handles the signal about disposal of the current experiment.
+     *
+     * @param signal
+     *            The disposed signal
+     */
+    @TmfSignalHandler
+    public void experimentDisposed(TmfExperimentDisposedSignal signal) {
+        if (signal.getExperiment() != TmfExperiment.getCurrentExperiment()) {
+            return;
+        }
+
+        /*
+         * Make sure there is no request running before removing the statistics
+         * tree
+         */
+        cancelOngoingRequest();
     }
 
     /**
@@ -184,22 +205,18 @@ public class TmfStatisticsView extends TmfView {
                  * Dispose the current viewer and adapt the new one to the trace
                  * type of the experiment selected
                  */
-                if (fStatsViewers != null) {
-                    fStatsViewers.dispose();
+                if (fStatsViewer != null) {
+                    fStatsViewer.dispose();
                 }
                 // Update the current experiment
                 fExperiment = signal.getExperiment();
-                fStatsViewers = createStatisticsViewers();
+                fStatsViewer = createStatisticsViewer();
                 fParent.layout();
 
-                String experimentName;
-                String treeID;
-                for (ITmfStatisticsViewer statViewer : fStatsViewers.getViewers()) {
-                    experimentName = fExperiment.getName();
-                    treeID = statViewer.getTreeID(experimentName);
+                String experimentName = fExperiment.getName();
+                String treeID = fStatsViewer.getTreeID(experimentName);
 
-                    setInput(statViewer, treeID, fExperiment.getTraces());
-                }
+                setInput(treeID, fExperiment.getTraces());
 
                 if (fRequestData) {
                     requestData(fExperiment, fExperiment.getTimeRange());
@@ -210,25 +227,8 @@ public class TmfStatisticsView extends TmfView {
     }
 
     /**
-     * Handles the signal about disposal of the current experiment.
-     *
-     * @param signal
-     *            The disposed signal
-     */
-    @TmfSignalHandler
-    public void experimentDisposed(TmfExperimentDisposedSignal signal) {
-        if (signal.getExperiment() != fExperiment) {
-            return;
-        }
-        cancelOngoingRequests();
-        fRequests.clear();
-    }
-
-    /**
      * Initialize the viewer with the information received.
      *
-     * @param statViewer
-     *            The statistics viewer for which the input will be set
      * @param treeID
      *            The unique ID of the tree that is returned by
      *            {@link TmfStatisticsViewer#getTreeID(String)}
@@ -236,7 +236,7 @@ public class TmfStatisticsView extends TmfView {
      *            The list of the traces to add in the tree.
      * @since 2.0
      */
-    public void setInput(ITmfStatisticsViewer statViewer, String treeID, ITmfTrace[] traces) {
+    public void setInput(String treeID, ITmfTrace[] traces) {
         if (TmfStatisticsTreeRootFactory.containsTreeRoot(treeID)) {
             // The experiment root is already present
             TmfStatisticsTreeNode experimentTreeNode = TmfStatisticsTreeRootFactory.getStatTreeRoot(treeID);
@@ -261,7 +261,7 @@ public class TmfStatisticsView extends TmfView {
 
                 if (same) {
                     // no need to reload data, all traces are already loaded
-                    statViewer.setInput(experimentTreeNode);
+                    fStatsViewer.setInput(experimentTreeNode);
 
                     resetUpdateSynchronization();
 
@@ -270,7 +270,7 @@ public class TmfStatisticsView extends TmfView {
                 experimentTreeNode.reset();
             }
         } else {
-            TmfStatisticsTreeRootFactory.addStatsTreeRoot(treeID, statViewer.getStatisticData());
+            TmfStatisticsTreeRootFactory.addStatsTreeRoot(treeID, fStatsViewer.getStatisticData());
         }
 
         resetUpdateSynchronization();
@@ -283,23 +283,29 @@ public class TmfStatisticsView extends TmfView {
         }
 
         // set input to a clean data model
-        statViewer.setInput(treeModelRoot);
+        fStatsViewer.setInput(treeModelRoot);
     }
 
     /**
      * Refresh the view.
      *
-     * @param viewer
-     *            The viewer for which the content has been change
-     * @param complete
-     *            Should a pending update be sent afterwards or not
-     * @since 2.0
+     * @param complete Should a pending update be sent afterwards or not
      */
-    public void modelInputChanged(ITmfStatisticsViewer viewer, boolean complete) {
-        // Updates only the selected viewer
-        if (viewer != null) {
-            refreshViewer(viewer);
+    public void modelInputChanged(boolean complete) {
+        Control viewerControl = fStatsViewer.getControl();
+        // Ignore update if disposed
+        if (viewerControl.isDisposed()) {
+            return;
         }
+
+        fStatsViewer.getControl().getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (!fStatsViewer.getControl().isDisposed()) {
+                    fStatsViewer.refresh();
+                }
+            }
+        });
 
         if (complete) {
             sendPendingUpdate();
@@ -307,55 +313,26 @@ public class TmfStatisticsView extends TmfView {
     }
 
     /**
-     * Create a new thread to refresh the specified viewer
-     *
-     * @param viewer
-     *            The viewer to refresh
-     * @since 2.0
-     */
-    protected void refreshViewer(final ITmfStatisticsViewer viewer) {
-        final Control viewerControl = viewer.getControl();
-        // Ignore update if disposed
-        if (viewerControl.isDisposed()) {
-            return;
-        }
-
-        viewerControl.getDisplay().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (!viewerControl.isDisposed()) {
-                    viewer.refresh();
-                }
-            }
-        });
-    }
-
-    /**
      * Called when an experiment request has failed or has been cancelled.
      * Remove the data retrieved from the experiment from the statistics tree.
      *
-     * @param viewer
-     *            The viewer for which the content has been change
-     * @since 2.0
+     * @param name
+     *            The experiment name
      */
-    public void modelIncomplete(ITmfStatisticsViewer viewer) {
-        if (viewer == null) {
-            return;
-        }
-        Object input = viewer.getInput();
+    public void modelIncomplete(String name) {
+        Object input = fStatsViewer.getInput();
         if (input != null && input instanceof TmfStatisticsTreeNode) {
             /*
              * The data from this experiment is invalid and shall be removed to
              * refresh upon next selection
              */
-            String treeID = viewer.getTreeID(fExperiment.getName());
-            TmfStatisticsTreeRootFactory.removeStatTreeRoot(treeID);
+            TmfStatisticsTreeRootFactory.removeStatTreeRoot(fStatsViewer.getTreeID(name));
 
             // Reset synchronization information
             resetUpdateSynchronization();
-            modelInputChanged(viewer, false);
+            modelInputChanged(false);
         }
-        viewer.waitCursor(false);
+        fStatsViewer.waitCursor(false);
     }
 
     /**
@@ -383,14 +360,13 @@ public class TmfStatisticsView extends TmfView {
     @Override
     public void dispose() {
         super.dispose();
-        if (fStatsViewers != null) {
-            fStatsViewers.dispose();
-        }
+        fStatsViewer.dispose();
+
         /*
          * Make sure there is no request running before removing the statistics
          * tree.
          */
-        cancelOngoingRequests();
+        cancelOngoingRequest();
         // clean the model
         TmfStatisticsTreeRootFactory.removeAll();
     }
@@ -402,9 +378,7 @@ public class TmfStatisticsView extends TmfView {
      */
     @Override
     public void setFocus() {
-        if (fStatsViewers != null) {
-            fStatsViewers.setFocus();
-        }
+        fStatsViewer.setFocus();
     }
 
     /**
@@ -424,8 +398,7 @@ public class TmfStatisticsView extends TmfView {
         }
 
         int nbEvents = 0;
-        TmfStatisticsTreeNode globalInput = (TmfStatisticsTreeNode) fStatsViewers.getViewer("Global").getInput(); //$NON-NLS-1$
-        for (TmfStatisticsTreeNode node : globalInput.getChildren()) {
+        for (TmfStatisticsTreeNode node : ((TmfStatisticsTreeNode) fStatsViewer.getInput()).getChildren()) {
             nbEvents += (int) node.getValue().nbEvents;
         }
 
@@ -440,54 +413,76 @@ public class TmfStatisticsView extends TmfView {
     }
 
     /**
-     * Creates the statistics viewers for all traces in the experiment. Each
-     * viewers are placed in a different tab and the first one is selected
-     * automatically.
+     * Get the statistics viewer for an experiment. If all traces in the
+     * experiment are of the same type, use the extension point specified.
      *
-     * It uses the extension point that defines the statistics viewer to build
-     * from the trace type. If there is no viewer defined, it will use the
-     * default viewer for the statistics. If the experiment is empty, there will
-     * still be a global statistics viewer created.
-     *
-     * @return a folder viewer containing all the appropriate viewers
+     * @return a statistics viewer of the appropriate type
      * @since 2.0
      */
-    protected TmfViewerFolder<ITmfStatisticsViewer> createStatisticsViewers() {
-        // Default style for the tabs that will be created
-        int defaultStyle = SWT.NONE;
-
-        // Create the list of statistics viewer.
-        TmfViewerFolder<ITmfStatisticsViewer> tabsView = new TmfViewerFolder<ITmfStatisticsViewer>(fParent);
-        // The folder composite that will contain the tabs
-        Composite folder = tabsView.getParentFolder();
-
-        /*
-         * Add a first viewer that will contain statistics for every traces in
-         * the experiment. It gets created even if there is no trace in the
-         * experiment.
-         */
-        ITmfStatisticsViewer viewer = new TmfStatisticsViewer();
-        viewer.init(folder, Messages.TmfStatisticsView_GlobalTabName, fExperiment);
-        tabsView.addTab(viewer, defaultStyle);
-        tabsView.setSelection(0);
-
-        if (fExperiment != null) {
-            String traceName;
-            IResource traceResource;
-            // Create a statistics viewer for each traces
-            for (ITmfTrace trace : fExperiment.getTraces()) {
-                traceName = trace.getName();
-                traceResource = trace.getResource();
-                viewer = TmfViewerFactory.getStatisticsViewer(traceResource);
-                if (viewer == null) {
-                    // Creates a default statistics viewer if there is none defined for the trace type.
-                    viewer = new TmfStatisticsViewer();
-                }
-                viewer.init(folder, traceName, trace);
-                tabsView.addTab(viewer, defaultStyle);
-            }
+    protected TmfStatisticsViewer createStatisticsViewer() {
+        if (fExperiment == null) {
+            return new TmfStatisticsViewer(fParent);
         }
-        return tabsView;
+        String commonTraceType = null;
+        try {
+            /*
+             * Determine if the traces of the experiment are of the same type.
+             * If not, it uses the most generic one.
+             */
+            for (ITmfTrace trace : fExperiment.getTraces()) {
+                IResource resource = trace.getResource();
+                if (resource == null) {
+                    return new TmfStatisticsViewer(fParent);
+                }
+                String traceType = resource.getPersistentProperty(TmfCommonConstants.TRACETYPE);
+                if (commonTraceType != null
+                        && !commonTraceType.equals(traceType)) {
+                    return new TmfStatisticsViewer(fParent);
+                }
+                commonTraceType = traceType;
+            }
+            if (commonTraceType == null) {
+                return new TmfStatisticsViewer(fParent);
+            }
+            /*
+             * Search in the configuration if there is any viewer specified for
+             * this kind of trace type.
+             */
+            for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
+                if (ce.getAttribute(TmfTraceType.ID_ATTR).equals(commonTraceType)) {
+                    IConfigurationElement[] statisticsViewerCE = ce.getChildren(TmfTraceType.STATISTICS_VIEWER_ELEM);
+                    if (statisticsViewerCE.length != 1) {
+                        break;
+                    }
+                    String statisticsViewer = statisticsViewerCE[0].getAttribute(TmfTraceType.CLASS_ATTR);
+                    if (statisticsViewer == null
+                            || statisticsViewer.length() == 0) {
+                        break;
+                    }
+                    Bundle bundle = Platform.getBundle(ce.getContributor().getName());
+                    Class<?> c = bundle.loadClass(statisticsViewer);
+                    Class<?>[] constructorArgs = new Class[] { Composite.class };
+                    Constructor<?> constructor = c.getConstructor(constructorArgs);
+                    Object[] args = new Object[] { fParent };
+                    return (TmfStatisticsViewer) constructor.newInstance(args);
+                }
+            }
+        } catch (CoreException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : cannot find the property TmfCommonConstants.TRACETYPE", e); //$NON-NLS-1$
+        } catch (ClassNotFoundException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : cannot load the statistics viewer class", e); //$NON-NLS-1$
+        } catch (NoSuchMethodException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : constructor of the viewer doesn't exist", e); //$NON-NLS-1$
+        } catch (InstantiationException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : cannot instantiate the statistics viewer", e); //$NON-NLS-1$
+        } catch (IllegalAccessException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : cannot access the constructor of the viewer", e); //$NON-NLS-1$
+        } catch (IllegalArgumentException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : argument(s) sent to the constructor are illegal", e); //$NON-NLS-1$
+        } catch (InvocationTargetException e) {
+            Activator.getDefault().logError("Error creating statistics viewer : the constructor of the viewer sent an exception", e); //$NON-NLS-1$
+        }
+        return new TmfStatisticsViewer(fParent);
     }
 
     /**
@@ -507,74 +502,60 @@ public class TmfStatisticsView extends TmfView {
                 return;
             }
 
-            /*
-             * Send a request for each statistics viewer to handle their data
-             * differently based on their own implementation of the statistics
-             * model.
-             */
-            int index;
-            TmfEventRequest request;
-            for (final ITmfStatisticsViewer viewer : fStatsViewers.getViewers()) {
+            int index = 0;
+            for (TmfStatisticsTreeNode node : ((TmfStatisticsTreeNode) fStatsViewer.getInput()).getChildren()) {
+                index += (int) node.getValue().nbEvents;
+            }
 
-                // Index of the first event to retrieve from the trace
-                index = 0;
-                for (TmfStatisticsTreeNode node : ((TmfStatisticsTreeNode) viewer.getInput()).getChildren()) {
-                    index += (int) node.getValue().nbEvents;
-                }
+            // Preparation of the event request
+            fRequest = new TmfEventRequest(ITmfEvent.class, timeRange, index, TmfDataRequest.ALL_DATA, getIndexPageSize(), ExecutionType.BACKGROUND) {
 
-                // Preparation of the event request
-                request = new TmfEventRequest(ITmfEvent.class, timeRange, index, TmfDataRequest.ALL_DATA, getIndexPageSize(), ExecutionType.BACKGROUND) {
+                private final AbsTmfStatisticsTree statisticsData = TmfStatisticsTreeRootFactory.getStatTree(fStatsViewer.getTreeID(experiment.getName()));
 
-                    private final AbsTmfStatisticsTree statisticsData = TmfStatisticsTreeRootFactory.getStatTree(viewer.getTreeID(experiment.getName()));
-
-                    @Override
-                    public void handleData(ITmfEvent data) {
-                        super.handleData(data);
-                        if (data != null) {
-                            final String traceName = data.getTrace().getName();
-                            ITmfExtraEventInfo extraInfo = new ITmfExtraEventInfo() {
-                                @Override
-                                public String getTraceName() {
-                                    if (traceName == null) {
-                                        return Messages.TmfStatisticsView_UnknownTraceName;
-                                    }
-                                    return traceName;
+                @Override
+                public void handleData(ITmfEvent data) {
+                    super.handleData(data);
+                    if (data != null) {
+                        final String traceName = data.getTrace().getName();
+                        ITmfExtraEventInfo extraInfo = new ITmfExtraEventInfo() {
+                            @Override
+                            public String getTraceName() {
+                                if (traceName == null) {
+                                    return Messages.TmfStatisticsView_UnknownTraceName;
                                 }
-                            };
-                            statisticsData.registerEvent(data, extraInfo);
-                            statisticsData.increase(data, extraInfo, 1);
-                            // Refresh View
-                            if ((getNbRead() % viewer.getInputChangedRefresh()) == 0) {
-                                modelInputChanged(viewer, false);
+                                return traceName;
                             }
+                        };
+                        statisticsData.registerEvent(data, extraInfo);
+                        statisticsData.increase(data, extraInfo, 1);
+                        // Refresh View
+                        if ((getNbRead() % fStatsViewer.getInputChangedRefresh()) == 0) {
+                            modelInputChanged(false);
                         }
                     }
+                }
 
-                    @Override
-                    public void handleSuccess() {
-                        super.handleSuccess();
-                        modelInputChanged(viewer, true);
-                        viewer.waitCursor(false);
-                        super.handleCancel();
-                    }
+                @Override
+                public void handleSuccess() {
+                    super.handleSuccess();
+                    modelInputChanged(true);
+                    fStatsViewer.waitCursor(false);
+                }
 
-                    @Override
-                    public void handleFailure() {
-                        super.handleFailure();
-                        modelIncomplete(viewer);
-                    }
+                @Override
+                public void handleFailure() {
+                    super.handleFailure();
+                    modelIncomplete(experiment.getName());
+                }
 
-                    @Override
-                    public void handleCancel() {
-                        modelIncomplete(viewer);
-                    }
-                }; // End of the request creation
-
-                // Sends the request through the trace/experiment concerned
-                viewer.getTrace().sendRequest(request);
-                viewer.waitCursor(true);
-                fRequests.add(request);
-            }
+                @Override
+                public void handleCancel() {
+                    super.handleCancel();
+                    modelIncomplete(experiment.getName());
+                }
+            };
+            experiment.sendRequest(fRequest);
+            fStatsViewer.waitCursor(true);
         }
     }
 
@@ -588,16 +569,11 @@ public class TmfStatisticsView extends TmfView {
     }
 
     /**
-     * Cancels every ongoing requests if there are not already completed
-     * @since 2.0
+     * Cancels the current ongoing request
      */
-    protected void cancelOngoingRequests() {
-        if (!fRequests.isEmpty()) {
-            for (ITmfEventRequest request : fRequests) {
-                if (!request.isCompleted()) {
-                    request.cancel();
-                }
-            }
+    protected void cancelOngoingRequest() {
+        if (fRequest != null && !fRequest.isCompleted()) {
+            fRequest.cancel();
         }
     }
 
