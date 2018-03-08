@@ -9,12 +9,13 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Standardize on the default toString()
+ *   Patrick Tasse - Updated to use nanosecond scale
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.timestamp;
 
 /**
- * A simplified timestamp where scale and precision are set to 0.
+ * A simplified timestamp where scale is nanoseconds and precision is set to 0.
  *
  * @author Francois Chouinard
  * @version 1.1
@@ -39,20 +40,20 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
      * @param value the timestamp value
      */
     public TmfSimpleTimestamp(final long value) {
-        super(value, 0, 0);
+        super(value, ITmfTimestamp.NANOSECOND_SCALE, 0);
     }
 
     /**
      * Copy constructor.
      *
      * If the parameter is not a TmfSimpleTimestamp, the timestamp will be
-     * scaled to seconds, and the precision will be discarded.
+     * scaled to nanoseconds, and the precision will be discarded.
      *
      * @param timestamp
      *            The timestamp to copy
      */
     public TmfSimpleTimestamp(final ITmfTimestamp timestamp) {
-        super(timestamp.normalize(0, ITmfTimestamp.SECOND_SCALE).getValue(), 0, 0);
+        super(timestamp.normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue(), ITmfTimestamp.NANOSECOND_SCALE, 0);
     }
 
     // ------------------------------------------------------------------------
@@ -61,7 +62,7 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
 
     @Override
     public ITmfTimestamp normalize(final long offset, final int scale) {
-        if (scale == 0) {
+        if (scale == ITmfTimestamp.NANOSECOND_SCALE) {
             return new TmfSimpleTimestamp(getValue() + offset);
         }
         return super.normalize(offset, scale);
@@ -79,7 +80,7 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
     @Override
     public ITmfTimestamp getDelta(final ITmfTimestamp ts) {
         if (ts instanceof TmfSimpleTimestamp) {
-            return new TmfTimestampDelta(getValue() - ts.getValue());
+            return new TmfTimestampDelta(getValue() - ts.getValue(), ITmfTimestamp.NANOSECOND_SCALE);
         }
         return super.getDelta(ts);
     }

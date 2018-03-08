@@ -9,6 +9,7 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Alexandre Montplaisir - Port to JUnit4
+ *   Patrick Tasse - Updated to use nanosecond scale
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.event;
@@ -48,14 +49,14 @@ public class TmfSimpleTimestampTest {
     @Test
     public void testDefaultConstructor() {
         assertEquals("getValue", 0, ts0.getValue());
-        assertEquals("getscale", 0, ts0.getScale());
+        assertEquals("getscale", -9, ts0.getScale());
         assertEquals("getPrecision", 0, ts0.getPrecision());
     }
 
     @Test
     public void testFullConstructor() {
         assertEquals("getValue", 12345, ts1.getValue());
-        assertEquals("getscale", 0, ts1.getScale());
+        assertEquals("getscale", -9, ts1.getScale());
         assertEquals("getPrecision", 0, ts1.getPrecision());
     }
 
@@ -68,7 +69,7 @@ public class TmfSimpleTimestampTest {
         assertEquals("getPrecision", ts1.getPrecision(), copy.getPrecision());
 
         assertEquals("getValue", 12345, copy.getValue());
-        assertEquals("getscale", 0, copy.getScale());
+        assertEquals("getscale", -9, copy.getScale());
         assertEquals("getPrecision", 0, copy.getPrecision());
     }
 
@@ -146,12 +147,12 @@ public class TmfSimpleTimestampTest {
     @Test
     public void testToString() {
         DateFormat df = new SimpleDateFormat("HH:mm:ss.SSS");
-        Date d0 = new Date(ts0.getValue()*1000);
-        Date d1 = new Date(ts1.getValue()*1000);
-        Date d2 = new Date(ts2.getValue()*1000);
+        Date d0 = new Date(ts0.getValue() / 1000000);
+        Date d1 = new Date(ts1.getValue() / 1000000);
+        Date d2 = new Date(ts2.getValue() / 1000000 - 1);
         assertEquals("toString", df.format(d0) + " 000 000", ts0.toString());
-        assertEquals("toString", df.format(d1) + " 000 000", ts1.toString());
-        assertEquals("toString", df.format(d2) + " 000 000", ts2.toString());
+        assertEquals("toString", df.format(d1) + " 012 345", ts1.toString());
+        assertEquals("toString", df.format(d2) + " 998 766", ts2.toString());
     }
 
     // ------------------------------------------------------------------------
@@ -246,8 +247,8 @@ public class TmfSimpleTimestampTest {
     @Test
     public void testCompareTo() {
         final ITmfTimestamp ts0a = new TmfTimestamp(0, 2, 0);
-        final ITmfTimestamp ts1a = new TmfTimestamp(123450, -1);
-        final ITmfTimestamp ts2a = new TmfTimestamp(-12340, -1);
+        final ITmfTimestamp ts1a = new TmfTimestamp(123450, -10);
+        final ITmfTimestamp ts2a = new TmfTimestamp(-12340, -10);
 
         assertTrue(ts1.compareTo(ts1) == 0);
 
@@ -283,7 +284,7 @@ public class TmfSimpleTimestampTest {
     public void testDelta2() {
         // Delta for different scale and same precision (delta > 0)
         final TmfTimestamp tstamp0 = new TmfSimpleTimestamp(10);
-        final TmfTimestamp tstamp1 = new TmfTimestamp(1, 1);
+        final TmfTimestamp tstamp1 = new TmfTimestamp(1, -8);
         final TmfTimestamp expectd = new TmfTimestamp(0, 0);
 
         final ITmfTimestamp delta = tstamp0.getDelta(tstamp1);
