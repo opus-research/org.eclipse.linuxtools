@@ -19,11 +19,9 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 
-/**
- * @since 1.3
- */
 public class LocalResourceSelectorProxy implements IRemoteResourceSelectorProxy {
 
+	@Override
 	public URI selectFile(String scheme, String initialPath, String prompt, Shell shell) {
 		FileDialog dialog = new FileDialog(shell, SWT.SHEET);
 		dialog.setText(prompt);
@@ -39,6 +37,7 @@ public class LocalResourceSelectorProxy implements IRemoteResourceSelectorProxy 
 		}
 	}
 
+	@Override
 	public URI selectDirectory(String scheme, String initialPath, String prompt, Shell shell) {
 		DirectoryDialog dialog = new DirectoryDialog(shell, SWT.SHEET);
 		dialog.setText(prompt);
