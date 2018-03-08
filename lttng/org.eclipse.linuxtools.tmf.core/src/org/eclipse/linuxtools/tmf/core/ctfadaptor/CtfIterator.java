@@ -13,7 +13,7 @@ package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
 /**
  * The CTF trace reader iterator.
@@ -122,7 +122,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * @return boolean
      * @since 2.0
      */
-    public synchronized boolean seek(final CtfLocationInfo ctfLocationData) {
+    public boolean seek(final CtfLocationInfo ctfLocationData) {
         boolean ret = false;
 
         /* Adjust the timestamp depending on the trace's offset */
@@ -139,12 +139,11 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
          * assign the location index correctly
          */
         long index = 0;
-        final CtfTmfEvent currentEvent = this.getCurrentEvent();
-        if (currentEvent != null) {
-            currTimestamp = currentEvent.getTimestamp().getValue();
+        if (this.getCurrentEvent() != null) {
+            currTimestamp = this.getCurrentEvent().getTimestamp().getValue();
 
             for (long i = 0; i < ctfLocationData.getIndex(); i++) {
-                if (currTimestamp == currentEvent.getTimestamp().getValue()) {
+                if (currTimestamp == this.getCurrentEvent().getTimestamp().getValue()) {
                     index++;
                 } else {
                     index = 0;
@@ -202,7 +201,6 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
     /**
      * Method setLocation.
      * @param location ITmfLocation<?>
-     * @since 3.0
      */
     @Override
     public void setLocation(final ITmfLocation location) {
@@ -248,7 +246,7 @@ public class CtfIterator extends CTFTraceReader implements ITmfContext,
      * @return boolean successful or not
      */
     @Override
-    public synchronized boolean advance() {
+    public boolean advance() {
         long index = curLocation.getLocationInfo().getIndex();
         long timestamp = curLocation.getLocationInfo().getTimestamp();
         boolean ret = super.advance();

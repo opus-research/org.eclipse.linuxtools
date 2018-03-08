@@ -31,8 +31,8 @@ import org.eclipse.linuxtools.tmf.ui.editors.TmfEditorInput;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IReusableEditor;
@@ -116,11 +116,11 @@ public class OpenExperimentHandler extends AbstractHandler {
                     file = experimentElement.createBookmarksFile();
                 } catch (final CoreException e) {
                     Activator.getDefault().logError("Error opening experiment " + experimentElement.getName(), e); //$NON-NLS-1$
-                    TraceUtils.displayErrorMsg(Messages.OpenExperimentHandler_Title, Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
+                    displayErrorMsg(Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
                     return;
                 }
 
-                /* FIXME Unlike traces, there is no instanceExperiment, so we call this function
+                /* Unlike traces, there is no instanceExperiment, so we call this function
                  * here alone.  Maybe it would be better to do this on experiment's element
                  * constructor?
                  */
@@ -128,7 +128,6 @@ public class OpenExperimentHandler extends AbstractHandler {
 
                 // Instantiate the experiment's traces
                 final List<TmfTraceElement> traceEntries = experimentElement.getTraces();
-                experimentElement.refreshSupplementaryFolder();
                 final int nbTraces = traceEntries.size();
                 int cacheSize = Integer.MAX_VALUE;
                 String commonEditorId = null;
@@ -142,7 +141,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                     final ITmfTrace trace = element.instantiateTrace();
                     final ITmfEvent traceEvent = element.instantiateEvent();
                     if ((trace == null) || (traceEvent == null)) {
-                        TraceUtils.displayErrorMsg(Messages.OpenExperimentHandler_Title, Messages.OpenExperimentHandler_NoTraceType);
+                        displayErrorMsg(Messages.OpenExperimentHandler_NoTraceType);
                         for (int j = 0; j < i; j++) {
                             traces[j].dispose();
                         }
@@ -154,7 +153,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                     try {
                         trace.initTrace(element.getResource(), element.getLocation().getPath(), traceEvent.getClass());
                     } catch (final TmfTraceException e) {
-                        TraceUtils.displayErrorMsg(Messages.OpenExperimentHandler_Title, Messages.OpenTraceHandler_InitError + '\n'+'\n' + e);
+                        displayErrorMsg(Messages.OpenTraceHandler_InitError + "\n\n" + e); //$NON-NLS-1$
                         for (int j = 0; j < i; j++) {
                             traces[j].dispose();
                         }
@@ -197,7 +196,7 @@ public class OpenExperimentHandler extends AbstractHandler {
                             // editor should dispose the experiment on close
                         } catch (final CoreException e) {
                             Activator.getDefault().logError("Error opening experiment " + experimentElement.getName(), e); //$NON-NLS-1$
-                            TraceUtils.displayErrorMsg(Messages.OpenExperimentHandler_Title, Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
+                            displayErrorMsg(Messages.OpenExperimentHandler_Error + "\n\n" + e.getMessage()); //$NON-NLS-1$
                             experiment.dispose();
                             return;
                         }
@@ -211,4 +210,15 @@ public class OpenExperimentHandler extends AbstractHandler {
         return null;
     }
 
+    private static void displayErrorMsg(final String errorMsg) {
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+                mb.setText(Messages.OpenExperimentHandler_Title);
+                mb.setMessage(errorMsg);
+                mb.open();
+            }
+        });
+    }
 }
