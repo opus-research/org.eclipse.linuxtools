@@ -60,7 +60,6 @@ public class SystemTapScriptLaunchConfigurationTab extends
 	private Label hostNamelabel;
 	private Button runWithChartCheckButton;
 
-	@Override
 	public void createControl(Composite parent) {
 
 		GridLayout layout = new GridLayout();
@@ -79,7 +78,6 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		this.scriptPathText = new Text(scriptSettingsGroup,  SWT.SINGLE | SWT.BORDER);
 		scriptPathText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		scriptPathText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				updateLaunchConfigurationDialog();
 			}
@@ -118,12 +116,10 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		userSettingsGroup.setText(Messages.SystemTapScriptLaunchConfigurationTab_5);
 
 		currentUserCheckButton.addSelectionListener(new SelectionListener() {
-			@Override
 			public void widgetSelected(SelectionEvent e) {
 				update();
 			}
 
-			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				update();
 			}
@@ -136,14 +132,12 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		});
 
 		userNameText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				updateLaunchConfigurationDialog();
 			}
 		});
 
 		userPasswordText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				updateLaunchConfigurationDialog();
 			}
@@ -170,12 +164,10 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		hostNameText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		localHostCheckButton.setLayoutData(gridData);
 		localHostCheckButton.addSelectionListener(new SelectionListener() {
-			@Override
 			public void widgetSelected(SelectionEvent e) {
 				update();
 			}
 
-			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				update();
 			}
@@ -185,7 +177,6 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			}
 		});
 		hostNameText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				updateLaunchConfigurationDialog();
 			}
@@ -202,12 +193,10 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		this.runWithChartCheckButton = new Button(preferencesGroup, SWT.CHECK);
 		runWithChartCheckButton.setText(Messages.SystemTapScriptLaunchConfigurationTab_runWithChart);
 		runWithChartCheckButton.addSelectionListener(new SelectionListener() {
-			@Override
 			public void widgetSelected(SelectionEvent e) {
 				update();
 			}
 
-			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				update();
 			}
@@ -231,7 +220,6 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		hostNameText.setEnabled(enable);
 	}
 
-	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(SCRIPT_PATH_ATTR, this.getSelectedScriptPath());
 		configuration.setAttribute(CURRENT_USER_ATTR, true);
@@ -242,7 +230,6 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		configuration.setAttribute(RUN_WITH_CHART, false);
 	}
 
-	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		try {
 			this.scriptPathText.setText(configuration.getAttribute(SCRIPT_PATH_ATTR, "")); //$NON-NLS-1$
@@ -257,7 +244,6 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		}
 	}
 
-	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(SCRIPT_PATH_ATTR, this.scriptPathText.getText());
 		configuration.setAttribute(CURRENT_USER_ATTR, this.currentUserCheckButton.getSelection());
@@ -274,7 +260,6 @@ public class SystemTapScriptLaunchConfigurationTab extends
 		setHostGroupEnablement(enable);
 	}
 
-	@Override
 	public String getName() {
 		return Messages.SystemTapScriptLaunchConfigurationTab_9;
 	}

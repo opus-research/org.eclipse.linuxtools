@@ -197,7 +197,6 @@ public final class TapsetLibrary {
 	 * the TreeSettings.xml file.
 	 */
 	private static final IUpdateListener completionListener = new IUpdateListener() {
-		@Override
 		public void handleUpdateEvent() {
 			functionTree = stpp.getFunctions();
 			probeTree = stpp.getProbes();

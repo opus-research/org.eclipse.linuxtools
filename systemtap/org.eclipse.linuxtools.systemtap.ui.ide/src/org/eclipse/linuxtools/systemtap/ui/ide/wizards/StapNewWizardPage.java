@@ -64,7 +64,6 @@ public class StapNewWizardPage extends WizardPage {
 	/**
 	 * @see WizardPage#createControl(Composite)
 	 */
-	@Override
 	public void createControl(Composite parent) {
 		Composite container = new Composite(parent, SWT.NULL);
 		GridLayout layout = new GridLayout();
@@ -79,7 +78,6 @@ public class StapNewWizardPage extends WizardPage {
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		fileText.setLayoutData(gd);
 		fileText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
@@ -93,7 +91,6 @@ public class StapNewWizardPage extends WizardPage {
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		containerText.setLayoutData(gd);
 		containerText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}

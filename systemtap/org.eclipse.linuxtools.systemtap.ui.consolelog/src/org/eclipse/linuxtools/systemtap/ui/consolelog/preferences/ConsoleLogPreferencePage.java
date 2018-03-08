@@ -49,6 +49,5 @@ public class ConsoleLogPreferencePage extends FieldEditorPreferencePage implemen
 
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {}
 }
