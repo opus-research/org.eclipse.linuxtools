@@ -84,25 +84,26 @@ public class StreamInputPacketIndex {
     public void addEntry(StreamInputPacketIndexEntry entry)
             throws CTFReaderException {
         assert (entry.getContentSizeBits() != 0);
+        assert (entry.getContentSizeBits() != 0);
 
-        /* Validate consistent entry. */
         if (entry.getTimestampBegin() > entry.getTimestampEnd()) {
             throw new CTFReaderException("Packet begin timestamp is after end timestamp"); //$NON-NLS-1$
         }
 
-        /* Validate entries are inserted in monotonic increasing timestamp order. */
         if (!this.entries.isEmpty()) {
             if (entry.getTimestampBegin() < this.entries.lastElement()
                     .getTimestampBegin()) {
                 throw new CTFReaderException("Packets begin timestamp decreasing"); //$NON-NLS-1$
             }
         }
+
         this.entries.add(entry);
     }
 
     /**
-     * Returns the first PacketIndexEntry that could include the timestamp,
-     * that is the last packet with a begin timestamp smaller than the given timestamp.
+     * This method returns the first packet with the end timestamp greater
+     * or equal to the given timestamp. The returned packet is the first one
+     * that could include the timestamp.
      *
      * @param timestamp
      *            The timestamp to look for.

@@ -258,6 +258,9 @@ public class CTFTraceReader {
      */
     public boolean advance() {
         /*
+         * Index the
+         */
+        /*
          * Remove the reader from the top of the priority queue.
          */
         StreamInputReader top = this.prio.poll();
@@ -303,16 +306,15 @@ public class CTFTraceReader {
     }
 
     /**
-     * Seeks to a given timestamp. It will seek to the nearest event greater or
-     * equal to timestamp. If a trace is [10 20 30 40] and you are looking for
-     * 19, it will give you 20. If you want 20, you will get 20, if you want 21,
-     * you will get 30. The value -inf will seek to the first element and the
-     * value +inf will seek to the end of the file (past the last event).
+     * Seeks to a given timestamp It will go to the event just after the
+     * timestamp or the timestamp itself. if a if a trace is 10 20 30 40 and
+     * you're looking for 19, it'll give you 20, it you want 20, you'll get 20,
+     * if you want 21, you'll get 30. You want -inf, you'll get the first
+     * element, you want +inf, you'll get the end of the file with no events.
      *
      * @param timestamp
      *            the timestamp to seek to
-     * @return true if there are events above or equal the seek timestamp,
-     *         false if seek at the end of the trace (no valid event).
+     * @return true if the trace has more events following the timestamp
      */
     public boolean seek(long timestamp) {
         /*
@@ -328,15 +330,19 @@ public class CTFTraceReader {
             /*
              * Add it to the priority queue if there is a current event.
              */
+
+        }
+        for (StreamInputReader streamInputReader : this.streamInputReaders) {
             if (streamInputReader.getCurrentEvent() != null) {
                 this.prio.add(streamInputReader);
+
             }
         }
         return hasMoreEvents();
     }
 
     /**
-     * Gets the stream with the oldest event
+     * gets the stream with the oldest event
      *
      * @return the stream with the oldest event
      */
@@ -399,7 +405,7 @@ public class CTFTraceReader {
     }
 
     /**
-     * Gets the last event timestamp that was read. This is NOT necessarily the
+     * gets the last event timestamp that was read. This is NOT necessarily the
      * last event in a trace, just the last one read so far.
      *
      * @return the last event
