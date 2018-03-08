@@ -67,10 +67,7 @@ class StatsStateProvider extends AbstractStateChangeInput {
     protected void eventHandle(ITmfEvent event) {
         int quark;
 
-        /* Since this can be used for any trace types, normalize all the
-         * timestamp values to nanoseconds. */
-        final long ts = event.getTimestamp().normalize(0, -9).getValue();
-
+        final long ts = event.getTimestamp().getValue();
         final String eventName = event.getType().getName();
 
         try {
