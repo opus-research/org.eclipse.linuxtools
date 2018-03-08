@@ -39,6 +39,11 @@ final class NullStateValue extends TmfStateValue {
     }
 
     @Override
+    public byte[] toByteArray() {
+        return null;
+    }
+
+    @Override
     public String toString() {
         return "nullValue"; //$NON-NLS-1$
     }
