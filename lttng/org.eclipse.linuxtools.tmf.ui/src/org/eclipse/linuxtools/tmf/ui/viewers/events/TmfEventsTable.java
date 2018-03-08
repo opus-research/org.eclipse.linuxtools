@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2011, 2012 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -11,10 +11,13 @@
  *   Patrick Tasse - Factored out from events view
  *   Francois Chouinard - Replaced Table by TmfVirtualTable
  *   Patrick Tasse - Filter implementation (inspired by www.eclipse.org/mat)
+ *   Ansgar Radermacher - Support navigation to model URIs (Bug 396956)
+ *   Bernd Hufmann - Updated call site and model URI implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.viewers.events;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,12 +30,18 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EValidator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -44,10 +53,13 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.util.OpenStrategy;
 import org.eclipse.jface.util.SafeRunnable;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -58,9 +70,10 @@ import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfCallsite;
+import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfModelLookup;
+import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfSourceLookup;
 import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
 import org.eclipse.linuxtools.tmf.core.filter.model.ITmfFilterTreeNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterAndNode;
@@ -73,6 +86,8 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfEventSearchAppliedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -114,7 +129,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.ListDialog;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.themes.ColorUtil;
 
@@ -566,6 +585,129 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             }
         };
 
+        final IAction openCallsiteAction = new Action(Messages.TmfEventsTable_OpenCallsiteActionText) {
+            @Override
+            public void run() {
+                final TableItem items[] = fTable.getSelection();
+                if (items.length != 1) {
+                    return;
+                }
+                final TableItem item = items[0];
+
+                final Object data = item.getData();
+                if (data instanceof ITmfSourceLookup) {
+                    ITmfSourceLookup event = (ITmfSourceLookup) data;
+                    ITmfCallsite cs = event.getCallsite();
+                    if (cs == null || cs.getFileName() == null) {
+                        return;
+                    }
+                    IMarker marker = null;
+                    try {
+                        String fileName = cs.getFileName();
+                        final String trimmedPath = fileName.replaceAll("\\.\\./", ""); //$NON-NLS-1$ //$NON-NLS-2$
+                        final ArrayList<IFile> files = new ArrayList<IFile>();
+                        ResourcesPlugin.getWorkspace().getRoot().accept(new IResourceVisitor() {
+                            @Override
+                            public boolean visit(IResource resource) throws CoreException {
+                                if (resource instanceof IFile && resource.getFullPath().toString().endsWith(trimmedPath)) {
+                                    files.add((IFile) resource);
+                                }
+                                return true;
+                            }
+                        });
+                        IFile file = null;
+                        if (files.size() > 1) {
+                            ListDialog dialog = new ListDialog(getTable().getShell());
+                            dialog.setContentProvider(ArrayContentProvider.getInstance());
+                            dialog.setLabelProvider(new LabelProvider() {
+                                @Override
+                                public String getText(Object element) {
+                                    return ((IFile) element).getFullPath().toString();
+                                }
+                            });
+                            dialog.setInput(files);
+                            dialog.setTitle(Messages.TmfEventsTable_OpenCallsiteSelectFileDialogTitle);
+                            dialog.setMessage(Messages.TmfEventsTable_OpenCallsiteSelectFileDialogTitle + '\n' + cs.toString());
+                            dialog.open();
+                            Object[] result = dialog.getResult();
+                            if (result != null && result.length > 0) {
+                                file = (IFile) result[0];
+                            }
+                        } else if (files.size() == 1) {
+                            file = files.get(0);
+                        }
+                        if (file != null) {
+                            marker = file.createMarker(IMarker.MARKER);
+                            marker.setAttribute(IMarker.LINE_NUMBER, Long.valueOf(cs.getLineNumber()).intValue());
+                            IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), marker);
+                            marker.delete();
+                        } else if (files.size() == 0){
+                            displayException(new FileNotFoundException('\'' + cs.toString() + '\'' + '\n' + Messages.TmfEventsTable_OpenCallsiteNotFound));
+                        }
+                    } catch (PartInitException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (CoreException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+
+        final IAction openModelAction = new Action(Messages.TmfEventsTable_OpenModelActionText) {
+            @Override
+            public void run() {
+
+                final TableItem items[] = fTable.getSelection();
+                if (items.length != 1) {
+                    return;
+                }
+                final TableItem item = items[0];
+
+                final Object eventData = item.getData();
+                if (eventData instanceof ITmfModelLookup) {
+                    String modelURI = ((ITmfModelLookup) eventData).getModelUri();
+
+                    if (modelURI != null) {
+                        IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+                        IFile file = null;
+                        final URI uri = URI.createURI(modelURI);
+                        if (uri.isPlatformResource()) {
+                            IPath path = new Path(uri.toPlatformString(true));
+                            file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+                        } else if (uri.isFile() && !uri.isRelative()) {
+                            file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(
+                                    new Path(uri.toFileString()));
+                        }
+
+                        if (file != null) {
+                            try {
+                                /*
+                                 * create a temporary validation marker on the
+                                 * model file, remove it afterwards thus,
+                                 * navigation works with all model editors
+                                 * supporting the navigation to a marker
+                                 */
+                                IMarker marker = file.createMarker(EValidator.MARKER);
+                                marker.setAttribute(EValidator.URI_ATTRIBUTE, modelURI);
+                                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+
+                                IDE.openEditor(activePage, marker, OpenStrategy.activateOnOpen());
+                                marker.delete();
+                            }
+                            catch (CoreException e) {
+                                displayException(e);
+                            }
+                        } else {
+                            displayException(new FileNotFoundException('\'' + modelURI + '\'' + '\n' + Messages.TmfEventsTable_OpenModelUnsupportedURI));
+                        }
+                    }
+                }
+            }
+        };
+
         final IAction showSearchBarAction = new Action(Messages.TmfEventsTable_ShowSearchBarActionText) {
             @Override
             public void run() {
@@ -637,6 +779,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         return;
                     }
                 }
+
                 // Right-click on table
                 if (fTable.isVisible() && fRawViewer.isVisible()) {
                     tablePopupMenu.add(hideTableAction);
@@ -647,6 +790,31 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     tablePopupMenu.add(showRawAction);
                 }
                 tablePopupMenu.add(new Separator());
+
+                if (item != null) {
+                    final Object data = item.getData();
+                    Separator separator = null;
+                    if (data instanceof ITmfSourceLookup) {
+                        ITmfSourceLookup event = (ITmfSourceLookup) data;
+                        if (event.getCallsite() != null) {
+                            tablePopupMenu.add(openCallsiteAction);
+                            separator = new Separator();
+                        }
+                    }
+
+                    if (data instanceof ITmfModelLookup) {
+                        ITmfModelLookup event = (ITmfModelLookup) data;
+                        if (event.getModelUri() != null) {
+                            tablePopupMenu.add(openModelAction);
+                            separator = new Separator();
+                        }
+
+                        if (separator != null) {
+                            tablePopupMenu.add(separator);
+                        }
+                    }
+                }
+
                 tablePopupMenu.add(clearFiltersAction);
                 final ITmfFilterTreeNode[] savedFilters = FilterManager.getSavedFilters();
                 if (savedFilters.length > 0) {
@@ -1242,7 +1410,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         final long rank = fFilterCheckCount;
                         final int index = (int) fFilterMatchCount;
                         fFilterMatchCount++;
-                        fCache.storeEvent(event.clone(), rank, index);
+                        fCache.storeEvent(event, rank, index);
                         refreshTable();
                     } else if ((fFilterCheckCount % 100) == 0) {
                         refreshTable();
@@ -1330,8 +1498,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 startIndex = Math.max(0, fTable.getTopIndex() - 1); // -1 for header row
             }
             final ITmfFilterTreeNode eventFilter = (ITmfFilterTreeNode) fTable.getData(Key.FILTER_OBJ);
-            if (eventFilter != null)
-             {
+            if (eventFilter != null) {
                 startIndex = Math.max(0, startIndex - 1); // -1 for top filter status row
             }
             fSearchThread = new SearchThread(searchFilter, eventFilter, startIndex, fSelectedRank, Direction.FORWARD);
@@ -1360,8 +1527,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 startIndex = fTable.getTopIndex() - 2; // -1 for header row, -1 for previous event
             }
             final ITmfFilterTreeNode eventFilter = (ITmfFilterTreeNode) fTable.getData(Key.FILTER_OBJ);
-            if (eventFilter != null)
-             {
+            if (eventFilter != null) {
                 startIndex = startIndex - 1; // -1 for top filter status row
             }
             fSearchThread = new SearchThread(searchFilter, eventFilter, startIndex, fSelectedRank, Direction.BACKWARD);
@@ -1547,6 +1713,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     if (foundTimestamp != null) {
                         broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, foundTimestamp));
                     }
+                    fireSelectionChanged(new SelectionChangedEvent(TmfEventsTable.this, getSelection()));
                     synchronized (fSearchSyncObj) {
                         fSearchThread = null;
                     }
@@ -1827,8 +1994,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             if (tableItem.getData(Key.RANK) != null) {
                 final StringBuffer defaultMessage = new StringBuffer();
                 for (int i = 0; i < fTable.getColumns().length; i++) {
-                    if (i > 0)
-                     {
+                    if (i > 0) {
                         defaultMessage.append(", "); //$NON-NLS-1$
                     }
                     defaultMessage.append(tableItem.getText(i));
@@ -1934,6 +2100,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             } else if (rank >= fTable.getItemCount()) {
                 fPendingGotoRank = rank;
             }
+            fSelectedRank = rank;
             fTable.setSelection(index + 1); // +1 for header row
         }
     }
@@ -2012,7 +2179,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 }
 
                 @Override
-                public synchronized void handleCompleted() {
+                public void handleCompleted() {
                     super.handleCompleted();
                     if (fTrace == null) {
                         return;
@@ -2045,8 +2212,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                             if (fTable.isDisposed()) {
                                 return;
                             }
-                            if (fTable.getData(Key.FILTER_OBJ) != null)
-                             {
+                            if (fTable.getData(Key.FILTER_OBJ) != null) {
                                 index = fCache.getFilteredEventIndex(rank) + 1; // +1 for top filter status row
                             }
                             fTable.setSelection(index + 1); // +1 for header row
@@ -2071,7 +2237,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      */
     private static void displayException(final Exception e) {
         final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-        mb.setText(e.getClass().getName());
+        mb.setText(e.getClass().getSimpleName());
         mb.setMessage(e.getMessage());
         mb.open();
     }

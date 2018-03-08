@@ -24,7 +24,7 @@ import org.eclipse.core.variables.IStringVariableManager;
 import org.eclipse.core.variables.VariablesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.linuxtools.gprof.Activator;
+import org.eclipse.linuxtools.internal.gprof.Activator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -184,11 +184,11 @@ public class OpenGmonDialog extends Dialog {
         if (f.exists()) {
         	binaryValid = true;
             getButton(IDialogConstants.OK_ID).setEnabled(binaryValid);
-            errorLabel.setText("");
+            errorLabel.setText(""); //$NON-NLS-1$
         } else {
         	binaryValid = false;
             getButton(IDialogConstants.OK_ID).setEnabled(false);
-            if (!binValue.equals("")) {
+            if (!binValue.equals("")) { //$NON-NLS-1$
             	errorLabel.setText("\"" + binText.getText() + "\" doesn't exist");
             } else {
             	errorLabel.setText("Please enter a binary file");
@@ -230,7 +230,7 @@ public class OpenGmonDialog extends Dialog {
         });
         if (dialog.open() == IDialogConstants.OK_ID) {
             IResource resource = (IResource) dialog.getFirstResult();
-            text.setText("${resource_loc:" + resource.getFullPath() + "}");
+            text.setText("${resource_loc:" + resource.getFullPath() + "}");  //$NON-NLS-1$//$NON-NLS-2$
         }
     }
 

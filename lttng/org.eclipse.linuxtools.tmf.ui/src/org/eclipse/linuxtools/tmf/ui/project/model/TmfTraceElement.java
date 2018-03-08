@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2011, 2012 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,6 +9,8 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Added supplementary files handling
+ *   Geneviève Bastien - Moved supplementary files handling to parent class, added
+ *                      code to copy trace
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -24,7 +26,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtEvent;
@@ -51,7 +52,7 @@ import org.eclipse.ui.views.properties.TextPropertyDescriptor;
  * @version 1.0
  * @author Francois Chouinard
  */
-public class TmfTraceElement extends TmfProjectModelElement implements IActionFilter, IPropertySource2 {
+public class TmfTraceElement extends TmfWithFolderElement implements IActionFilter, IPropertySource2 {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -332,146 +333,6 @@ public class TmfTraceElement extends TmfProjectModelElement implements IActionFi
         return this;
     }
 
-    /**
-     * Deletes the trace specific supplementary folder.
-     */
-    public void deleteSupplementaryFolder() {
-        IFolder supplFolder = getTraceSupplementaryFolder(fResource.getName());
-        if (supplFolder.exists()) {
-            try {
-                supplFolder.delete(true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error deleting supplementary folder " + supplFolder, e); //$NON-NLS-1$
-            }
-        }
-    }
-
-    /**
-     * Renames the trace specific supplementary folder according to the new trace name.
-     *
-     * @param newTraceName The new trace name
-     */
-    public void renameSupplementaryFolder(String newTraceName) {
-        IFolder oldSupplFolder = getTraceSupplementaryFolder(fResource.getName());
-        IFolder newSupplFolder =  getTraceSupplementaryFolder(newTraceName);
-
-        // Rename supplementary folder
-        if (oldSupplFolder.exists()) {
-            try {
-                oldSupplFolder.move(newSupplFolder.getFullPath(), true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error renaming supplementary folder " + oldSupplFolder, e); //$NON-NLS-1$
-            }
-        }
-    }
-
-    /**
-     * Copies the trace specific supplementary folder to the new trace name.
-     *
-     * @param newTraceName The new trace name
-     */
-    public void copySupplementaryFolder(String newTraceName) {
-        IFolder oldSupplFolder = getTraceSupplementaryFolder(fResource.getName());
-        IFolder newSupplFolder = getTraceSupplementaryFolder(newTraceName);
-
-        // copy supplementary folder
-        if (oldSupplFolder.exists()) {
-            try {
-                oldSupplFolder.copy(newSupplFolder.getFullPath(), true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error renaming supplementary folder " + oldSupplFolder, e); //$NON-NLS-1$
-            }
-        }
-    }
-
-    /**
-     * Copies the trace specific supplementary folder a new folder.
-     *
-     * @param destination The destination folder to copy to.
-     */
-    public void copySupplementaryFolder(IFolder destination) {
-        IFolder oldSupplFolder = getTraceSupplementaryFolder(fResource.getName());
-
-        // copy supplementary folder
-        if (oldSupplFolder.exists()) {
-            try {
-                oldSupplFolder.copy(destination.getFullPath(), true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error copying supplementary folder " + oldSupplFolder, e); //$NON-NLS-1$
-            }
-        }
-    }
-
-
-    /**
-     * Refreshes the trace specific supplementary folder information. It creates the folder if not exists.
-     * It sets the persistence property of the trace resource
-     */
-    public void refreshSupplementaryFolder() {
-        createSupplementaryDirectory();
-    }
-
-    /**
-     * Checks if supplementary resource exist or not.
-     *
-     * @return <code>true</code> if one or more files are under the trace supplementary folder
-     */
-    public boolean hasSupplementaryResources() {
-        IResource[] resources = getSupplementaryResources();
-        return (resources.length > 0);
-    }
-
-    /**
-     * Returns the supplementary resources under the trace supplementary folder.
-     *
-     * @return array of resources under the trace supplementary folder.
-     */
-    public IResource[] getSupplementaryResources() {
-        IFolder supplFolder = getTraceSupplementaryFolder(fResource.getName());
-        if (supplFolder.exists()) {
-            try {
-                return supplFolder.members();
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error deleting supplementary folder " + supplFolder, e); //$NON-NLS-1$
-            }
-        }
-        return new IResource[0];
-    }
-
-    /**
-     * Deletes the given resources.
-     *
-     * @param resources array of resources to delete.
-     */
-    public void deleteSupplementaryResources(IResource[] resources) {
-
-        for (int i = 0; i < resources.length; i++) {
-            try {
-                resources[i].delete(true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error deleting supplementary resource " + resources[i], e); //$NON-NLS-1$
-            }
-        }
-    }
-
-    private void createSupplementaryDirectory() {
-        IFolder supplFolder = getTraceSupplementaryFolder(fResource.getName());
-        if (!supplFolder.exists()) {
-            try {
-                supplFolder.create(true, true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error creating resource supplementary file " + supplFolder, e); //$NON-NLS-1$
-            }
-        }
-
-        try {
-            fResource.setPersistentProperty(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, supplFolder.getLocationURI().getPath());
-        } catch (CoreException e) {
-            Activator.getDefault().logError("Error setting persistant property " + TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, e); //$NON-NLS-1$
-        }
-
-    }
-
     // ------------------------------------------------------------------------
     // IActionFilter
     // ------------------------------------------------------------------------
@@ -527,7 +388,7 @@ public class TmfTraceElement extends TmfProjectModelElement implements IActionFi
      */
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        return (sfDescriptors != null) ? Arrays.copyOf(sfDescriptors, sfDescriptors.length) : null;
+        return Arrays.copyOf(sfDescriptors, sfDescriptors.length);
     }
 
     /*
@@ -607,5 +468,21 @@ public class TmfTraceElement extends TmfProjectModelElement implements IActionFi
     public boolean isPropertySet(Object id) {
         return false;
     }
+
+    /**
+     * Copy this trace in the trace folder. No other parameters are mentioned so
+     * the trace is copied in this element's project trace folder
+     *
+     * @param string
+     *            The new trace name
+     * @return the new Resource object
+     * @since 2.0
+     */
+    public TmfTraceElement copy(String string) {
+        TmfTraceFolder folder = this.getProject().getTracesFolder();
+        IResource res = super.copy(string, false);
+        return new TmfTraceElement(string, res, folder);
+    }
+
 
 }

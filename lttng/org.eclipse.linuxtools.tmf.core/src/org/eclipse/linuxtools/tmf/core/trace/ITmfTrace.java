@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2011, 2012 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,25 +9,21 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Trace Model 1.0
- *   Alexandre Montplaisir - Added State Systems support
- *   Patrick Tasse - Added coincidental cohesion APIs
- *   Francois Chouinard - Added Iterator support
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 
 /**
  * The event stream structure in TMF. In its basic form, a trace has:
@@ -58,13 +54,6 @@ import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
  * while (event != null) {
  *     processEvent(event);
  *     event = trace.getNext(context);
- * }
- * </pre>
- * <b>Example 1b</b>: Process a whole trace using an iterator
- * <pre>
- * Iterator&lt;ITmfEvent&gt; it = trace.iterator();
- * while (it.hasNext()) {
- *     processEvent(it.next());
  * }
  * </pre>
  * <b>Example 2</b>: Process 50 events starting from the 1000th event
@@ -114,8 +103,8 @@ import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
  * }
  * </pre>
  *
+ * @version 1.0
  * @author Francois Chouinard
- * @version 2.0
  *
  * @see ITmfContext
  * @see ITmfEvent
@@ -223,16 +212,19 @@ public interface ITmfTrace extends ITmfDataProvider {
 
     /**
      * @return the trace time range
+     * @since 2.0
      */
     public TmfTimeRange getTimeRange();
 
     /**
      * @return the timestamp of the first trace event
+     * @since 2.0
      */
     public ITmfTimestamp getStartTime();
 
     /**
      * @return the timestamp of the last trace event
+     * @since 2.0
      */
     public ITmfTimestamp getEndTime();
 
@@ -303,6 +295,7 @@ public interface ITmfTrace extends ITmfDataProvider {
      *
      * @param timestamp the timestamp of desired event
      * @return a context which can later be used to read the corresponding event
+     * @since 2.0
      */
     public ITmfContext seekEvent(ITmfTimestamp timestamp);
 
@@ -318,56 +311,6 @@ public interface ITmfTrace extends ITmfDataProvider {
      * @return a context which can later be used to read the corresponding event
      */
     public ITmfContext seekEvent(double ratio);
-
-    // ------------------------------------------------------------------------
-    // Iterator support
-    // ------------------------------------------------------------------------
-
-    /**
-     * Returns an iterator suitable to read a trace from the start
-     *
-     * @return a trace iterator
-     */
-    public Iterator<ITmfEvent> iterator();
-
-    /**
-     * Returns an iterator suitable to read a trace from the requested location
-     *
-     * @param location the first event location in the trace
-     * @return a trace iterator
-     */
-    public Iterator<ITmfEvent> iterator(ITmfLocation location);
-
-    /**
-     * Returns an iterator suitable to read a trace from the requested rank
-     *
-     * @param rank the first event rank
-     * @return a trace iterator
-     */
-    public Iterator<ITmfEvent> iterator(long rank);
-
-    /**
-     * Returns an iterator suitable to read a trace from the requested timestamp
-     *
-     * @param timestamp the first event timestamp
-     * @return a trace iterator
-     */
-    public Iterator<ITmfEvent> iterator(ITmfTimestamp timestamp);
-
-    /**
-     * Returns an iterator suitable to read a trace from the requested 'ratio'
-     *
-     * @param ratio  the first event 'ratio' (see seekEvent(double))
-     * @return a trace iterator
-     */
-    public Iterator<ITmfEvent> iterator(double ratio);
-
-    // ------------------------------------------------------------------------
-    // Coincidental cohesion APIs: current time and range are TMF UI concepts
-    // and have nothing to do with this core API. It can probably be argued
-    // that this is also pathological coupling.
-    // TODO: Stop hacking, start designing.
-    // ------------------------------------------------------------------------
 
     /**
      * Returns the initial range offset

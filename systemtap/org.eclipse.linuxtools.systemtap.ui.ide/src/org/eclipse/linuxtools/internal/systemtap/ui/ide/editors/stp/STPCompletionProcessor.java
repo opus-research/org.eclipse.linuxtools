@@ -24,6 +24,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.linuxtools.systemtap.ui.ide.structures.TapsetLibrary;
 
 public class STPCompletionProcessor implements IContentAssistProcessor {
 
@@ -49,6 +50,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(org.eclipse.jface.text.ITextViewer, int)
 	 */
+	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
 			int offset) {
 		return computeCompletionProposals(viewer.getDocument(), offset);
@@ -90,7 +92,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 		if (partition.getType() == STPPartitionScanner.STP_PROBE){
 			ICompletionProposal[] variableCompletions = getProbeVariableCompletions(document, offset, prefix);
 			ICompletionProposal[] functionCompletions = getFunctionCompletions(offset, prefix);
-			
+
 			ArrayList<ICompletionProposal> completions = new ArrayList<ICompletionProposal>(
 					variableCompletions.length + functionCompletions.length);
 			completions.addAll(Arrays.asList(variableCompletions));
@@ -116,7 +118,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 							null,
 							completionData[i] + " - function", //$NON-NLS-1$
 							null,
-							null);
+							TapsetLibrary.getDocumentation("function::" + completionData[i])); //$NON-NLS-1$
 		}
 
 		return result;
@@ -173,7 +175,26 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	private ICompletionProposal[] getProbeCompletionList(String prefix, int offset){
 		prefix = canonicalizePrefix(prefix);
 		String[] completionData = stpMetadataSingleton.getCompletionResults(prefix);
-		return buildCompletionList(offset, prefix.length(), completionData);
+
+		String manPrefix = "probe::"; //$NON-NLS-1$
+		if (prefix.indexOf('.') == -1){
+			manPrefix = "tapset::"; //$NON-NLS-1$
+		}
+
+		// Build proposals and submit
+		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
+		for (int i = 0; i < completionData.length; i++)
+			result[i] = new CompletionProposal(
+							completionData[i].substring(prefix.length()),
+							offset,
+							0,
+							completionData[i].length() - prefix.length(),
+							null,
+							completionData[i],
+							null,
+							TapsetLibrary.getDocumentation(manPrefix + completionData[i]));
+		return result;
+
 	}
 
 	/**
@@ -217,22 +238,6 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 		}
 
 		return prefix;
-	}
-
-	private ICompletionProposal[] buildCompletionList(int offset, int prefixLength,String[] completionData){
-		// Build proposals and submit
-		ICompletionProposal[] result = new ICompletionProposal[completionData.length];
-		for (int i = 0; i < completionData.length; i++)
-			result[i] = new CompletionProposal(
-							completionData[i].substring(prefixLength),
-							offset,
-							0,
-							completionData[i].length() - prefixLength,
-							null,
-							completionData[i],
-							null,
-							null);
-		return result;
 	}
 
 	private ICompletionProposal[] getGlobalKeywordCompletion(String prefix, int offset) {
@@ -311,9 +316,14 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 		return false;
 	}
 
+	public void waitForInitialization(){
+		this.stpMetadataSingleton.waitForInitialization();
+	}
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeContextInformation(org.eclipse.jface.text.ITextViewer, int)
 	 */
+	@Override
 	public IContextInformation[] computeContextInformation(ITextViewer viewer,
 			int offset) {
 		return NO_CONTEXTS;
@@ -322,6 +332,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getCompletionProposalAutoActivationCharacters()
 	 */
+	@Override
 	public char[] getCompletionProposalAutoActivationCharacters() {
 		return PROPOSAL_ACTIVATION_CHARS;
 	}
@@ -329,6 +340,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationAutoActivationCharacters()
 	 */
+	@Override
 	public char[] getContextInformationAutoActivationCharacters() {
 		return PROPOSAL_ACTIVATION_CHARS;
 	}
@@ -336,6 +348,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationValidator()
 	 */
+	@Override
 	public IContextInformationValidator getContextInformationValidator() {
 		return null;
 	}
@@ -343,6 +356,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getErrorMessage()
 	 */
+	@Override
 	public String getErrorMessage() {
 		// TODO: When does this trigger?
 		return "Error."; //$NON-NLS-1$

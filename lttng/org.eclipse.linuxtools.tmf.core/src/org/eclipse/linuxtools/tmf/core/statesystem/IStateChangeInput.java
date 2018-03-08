@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -26,6 +26,25 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Alexandre Montplaisir
  */
 public interface IStateChangeInput {
+
+    /**
+     * Special state provider version number that will tell the backend to
+     * ignore the version check and open an existing file even if the versions
+     * don't match.
+     * @since 2.0
+     */
+    public final static int IGNORE_PROVIDER_VERSION = -42;
+
+    /**
+     * Event handler plugins should provide a version number. This is used to
+     * determine if a potential existing file can be re-opened later (if the
+     * versions in the file and in the viewer match), or if the file should be
+     * rebuilt from scratch (if the versions don't match).
+     *
+     * @return The version number of the input plugin
+     * @since 2.0
+     */
+    public int getVersion();
 
     /**
      * Get the trace with which this state input plugin is associated.
@@ -69,6 +88,15 @@ public interface IStateChangeInput {
     public void assignTargetStateSystem(ITmfStateSystemBuilder ssb);
 
     /**
+     * Return the currently assigned target state system.
+     *
+     * @return Reference to the currently assigned state system, or null if no
+     *         SS is assigned yet
+     * @since 2.0
+     */
+    public ITmfStateSystem getAssignedStateSystem();
+
+    /**
      * Send an event to this input plugin for processing. The implementation
      * should check the contents, and call the state-modifying methods of its
      * IStateSystemBuilder object accordingly.
@@ -78,6 +106,16 @@ public interface IStateChangeInput {
      *            expectedEventType) that has to be processed.
      */
     public void processEvent(ITmfEvent event);
+
+    /**
+     * Provide a non-initialized copy of this state input plugin. You will need
+     * to call {@link #assignTargetStateSystem} on it to assign its target.
+     *
+     * @return A new state change input object, of the same type, but without an
+     *         assigned target state system
+     * @since 2.0
+     */
+    public IStateChangeInput getNewInstance();
 
     /**
      * Indicate to the state history building process that we are done (for now),

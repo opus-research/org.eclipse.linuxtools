@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,36 +9,43 @@
  * Contributors:
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial design and implementation
  *   Bernd Hufmann - Fixed warnings
+ *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.tests.statistics;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
 
-import junit.framework.TestCase;
-
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTree;
 import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
+import org.junit.Test;
 
 /**
  * TmfBaseStatistics Test Cases.
  */
-@SuppressWarnings("nls")
-public class TmfBaseStatisticsDataTest extends TestCase {
+public class TmfBaseStatisticsDataTest {
 
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
-    private       String fTestName = null;
+
+    private static final String fTestName = "StatisticsDataTest";
 
     private final String fContext = "UnitTest";
     private final String fTypeId1 = "Some type1";
@@ -61,9 +68,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
 
     private final String fReference = "Some reference";
 
-    private final TmfEvent fEvent1;
-    private final TmfEvent fEvent2;
-    private final TmfEvent fEvent3;
+    private final ITmfEvent fEvent1;
+    private final ITmfEvent fEvent2;
+    private final ITmfEvent fEvent3;
 
     private final TmfEventField fContent1;
     private final TmfEventField fContent2;
@@ -76,14 +83,9 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     // ------------------------------------------------------------------------
 
     /**
-     * @param name
-     *            Test name
+     * Constructor
      */
-    public TmfBaseStatisticsDataTest(final String name) {
-        super(name);
-
-        fTestName = name;
-
+    public TmfBaseStatisticsDataTest() {
         fContent1 = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, "Some content");
         fEvent1 = new TmfEvent(null, fTimestamp1, fSource, fType1, fContent1, fReference);
 
@@ -102,12 +104,13 @@ public class TmfBaseStatisticsDataTest extends TestCase {
     }
 
     // ------------------------------------------------------------------------
-    // GetChildren
+    // Test methods
     // ------------------------------------------------------------------------
 
     /**
      * Test getting of children.
      */
+    @Test
     public void testGetChildren() {
         // Getting children of the ROOT
         Collection<TmfStatisticsTreeNode> childrenTreeNode = fStatsTree.getRootNode().getChildren();
@@ -145,13 +148,10 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         assertEquals("getChildren", 0, childrenTreeNode.size());
     }
 
-    // ------------------------------------------------------------------------
-    // RegisterEvent
-    // ------------------------------------------------------------------------
-
     /**
      * Test registering of events.
      */
+    @Test
     public void testRegisterEvent() {
         TmfStatisticsTreeNode trace = fStatsTree.getNode(fTestName);
         assertEquals("registerEvent", 3, trace.getValues().getTotal());
@@ -166,13 +166,10 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         }
     }
 
-    // ------------------------------------------------------------------------
-    // Get a node
-    // ------------------------------------------------------------------------
-
     /**
      * Test getter.
      */
+    @Test
     public void testGet() {
         TmfStatisticsTreeNode traceRoot = fStatsTree.getNode(fTestName);
         assertNotNull("get", traceRoot);
@@ -181,13 +178,10 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         assertEquals("get", 1, traceRoot.getNbChildren());
     }
 
-    // ------------------------------------------------------------------------
-    // GetOrCreate
-    // ------------------------------------------------------------------------
-
     /**
      * Test getting or creating of node entries.
      */
+    @Test
     public void testGetOrCreate() {
         String[] newEventType = new String[] { fTestName, Messages.TmfStatisticsData_EventTypes, "Fancy Type" };
         TmfStatisticsTreeNode newEventTypeNode;
@@ -210,13 +204,10 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         assertTrue(Arrays.equals(newEventType, newEventTypeNode.getPath()));
     }
 
-    // ------------------------------------------------------------------------
-    // GetParent
-    // ------------------------------------------------------------------------
-
     /**
      * Test getting of parent node.
      */
+    @Test
     public void testGetParent() {
         TmfStatisticsTreeNode parentNode = fStatsTree.getRootNode().getParent();
         assertNull(parentNode);
@@ -230,13 +221,10 @@ public class TmfBaseStatisticsDataTest extends TestCase {
         assertEquals(parentNode.getPath().toString(), fStatsTree.getNode(fTestName).getPath().toString());
     }
 
-    // ------------------------------------------------------------------------
-    // Reset
-    // ------------------------------------------------------------------------
-
     /**
      * Test reset method
      */
+    @Test
     public void testReset() {
         fStatsTree.getNode(fTestName, Messages.TmfStatisticsData_EventTypes).reset();
 

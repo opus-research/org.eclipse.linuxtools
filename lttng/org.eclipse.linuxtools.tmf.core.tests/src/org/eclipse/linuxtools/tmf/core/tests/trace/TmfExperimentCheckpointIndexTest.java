@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,9 +8,14 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Alexandre Montplaisir - Port to JUnit4
+ *   Patrick Tasse - Updated for ranks in experiment location
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.trace;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,30 +23,28 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
-import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentLocation;
-import org.eclipse.linuxtools.internal.tmf.core.trace.TmfLocationArray;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test suite for the TmfCheckpointIndexTest class.
  */
-@SuppressWarnings({"nls","javadoc"})
-public class TmfExperimentCheckpointIndexTest extends TestCase {
+@SuppressWarnings("javadoc")
+public class TmfExperimentCheckpointIndexTest {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -61,58 +64,51 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
     // Housekeeping
     // ------------------------------------------------------------------------
 
-    /**
-     * @param name the test name
-     */
-    public TmfExperimentCheckpointIndexTest(final String name) {
-        super(name);
+    @Before
+    public void setUp() {
+        setupTraces();
+        fExperiment = new TmfExperimentStub(EXPERIMENT, fTestTraces, BLOCK_SIZE);
+        fExperiment.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, true);
     }
 
-    @Override
-    protected synchronized void setUp() throws Exception {
-        super.setUp();
-        if (fExperiment == null) {
-            setupTrace(DIRECTORY + File.separator + TEST_STREAM1, DIRECTORY + File.separator + TEST_STREAM2);
-            fExperiment = new TmfExperimentStub(EXPERIMENT, fTestTraces, BLOCK_SIZE);
-            fExperiment.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, true);
-        }
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() {
         fExperiment.dispose();
         fExperiment = null;
+        for (ITmfTrace trace : fTestTraces) {
+            trace.dispose();
+        }
         fTestTraces = null;
     }
 
-    private synchronized static ITmfTrace[] setupTrace(final String path1, final String path2) {
-        if (fTestTraces == null) {
-            fTestTraces = new ITmfTrace[2];
-            try {
-                URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path1), null);
-                File test = new File(FileLocator.toFileURL(location).toURI());
-                final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true);
-                fTestTraces[0] = trace1;
-                location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path2), null);
-                test = new File(FileLocator.toFileURL(location).toURI());
-                final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true);
-                fTestTraces[1] = trace2;
-            } catch (final TmfTraceException e) {
-                e.printStackTrace();
-            } catch (final URISyntaxException e) {
-                e.printStackTrace();
-            } catch (final IOException e) {
-                e.printStackTrace();
-            }
+    private static void setupTraces() {
+        final String path1 = DIRECTORY + File.separator + TEST_STREAM1;
+        final String path2 = DIRECTORY + File.separator + TEST_STREAM2;
+
+        fTestTraces = new ITmfTrace[2];
+        try {
+            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path1), null);
+            File test = new File(FileLocator.toFileURL(location).toURI());
+            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true);
+            fTestTraces[0] = trace1;
+            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path2), null);
+            test = new File(FileLocator.toFileURL(location).toURI());
+            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true);
+            fTestTraces[1] = trace2;
+        } catch (final TmfTraceException e) {
+            e.printStackTrace();
+        } catch (final URISyntaxException e) {
+            e.printStackTrace();
+        } catch (final IOException e) {
+            e.printStackTrace();
         }
-        return fTestTraces;
     }
 
     // ------------------------------------------------------------------------
     // Verify checkpoints
     // ------------------------------------------------------------------------
 
+    @Test
     @SuppressWarnings("null")
     public void testTmfTraceIndexing() {
         assertEquals("getCacheSize",   BLOCK_SIZE, fExperiment.getCacheSize());
@@ -130,16 +126,10 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
         // Validate that each checkpoint points to the right event
         for (int i = 0; i < checkpoints.size(); i++) {
             ITmfCheckpoint checkpoint = checkpoints.get(i);
-            TmfExperimentLocation expLocation = (TmfExperimentLocation) checkpoint.getLocation();
-            TmfLocationArray locations = expLocation.getLocationInfo();
-            ITmfContext[] trcContexts = new ITmfContext[2];
-            trcContexts[0] = new TmfContext(locations.getLocation(0), (i * pageSize) / 2);
-            trcContexts[1] = new TmfContext(locations.getLocation(1), (i * pageSize) / 2);
-            TmfExperimentContext expContext = new TmfExperimentContext(trcContexts);
-            expContext.getEvents()[0] = fTestTraces[0].getNext(fTestTraces[0].seekEvent((i * pageSize) / 2));
-            expContext.getEvents()[1] = fTestTraces[1].getNext(fTestTraces[1].seekEvent((i * pageSize) / 2));
-            ITmfEvent event = fExperiment.parseEvent(expContext);
-            assertTrue(expContext.getRank() == i * pageSize);
+            ITmfLocation location = checkpoint.getLocation();
+            ITmfContext context = fExperiment.seekEvent(location);
+            ITmfEvent event = fExperiment.parseEvent(context);
+            assertTrue(context.getRank() == i * pageSize);
             assertTrue((checkpoint.getTimestamp().compareTo(event.getTimestamp(), false) == 0));
         }
     }
@@ -148,9 +138,9 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
     // Streaming
     // ------------------------------------------------------------------------
 
+    @Test
     @SuppressWarnings("null")
     public void testGrowingIndex() {
-
         ITmfTrace[] testTraces = new TmfTraceStub[2];
         try {
             URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(DIRECTORY + File.separator + TEST_STREAM1), null);
@@ -188,18 +178,18 @@ public class TmfExperimentCheckpointIndexTest extends TestCase {
         assertEquals("Checkpoints size", NB_EVENTS / BLOCK_SIZE, checkpoints.size());
         for (int i = 0; i < checkpoints.size(); i++) {
             ITmfCheckpoint checkpoint = checkpoints.get(i);
-            TmfExperimentLocation expLocation = (TmfExperimentLocation) checkpoint.getLocation();
-            TmfLocationArray locations = expLocation.getLocationInfo();
-            ITmfContext[] trcContexts = new ITmfContext[2];
-            trcContexts[0] = new TmfContext(locations.getLocation(0), (i * pageSize) / 2);
-            trcContexts[1] = new TmfContext(locations.getLocation(1), (i * pageSize) / 2);
-            TmfExperimentContext expContext = new TmfExperimentContext(trcContexts);
-            expContext.getEvents()[0] = testTraces[0].getNext(testTraces[0].seekEvent((i * pageSize) / 2));
-            expContext.getEvents()[1] = testTraces[1].getNext(testTraces[1].seekEvent((i * pageSize) / 2));
-            ITmfEvent event = experiment.parseEvent(expContext);
-            assertTrue(expContext.getRank() == i * pageSize);
+            ITmfLocation location = checkpoint.getLocation();
+            ITmfContext context = experiment.seekEvent(location);
+            ITmfEvent event = experiment.parseEvent(context);
+            assertTrue(context.getRank() == i * pageSize);
             assertTrue((checkpoint.getTimestamp().compareTo(event.getTimestamp(), false) == 0));
             assertEquals("Checkpoint value", i * pageSize + 1, checkpoint.getTimestamp().getValue());
+        }
+
+        /* Clean up (since we didn't use the class-specific fixtures) */
+        experiment.dispose();
+        for (ITmfTrace trace : testTraces) {
+            trace.dispose();
         }
     }
 

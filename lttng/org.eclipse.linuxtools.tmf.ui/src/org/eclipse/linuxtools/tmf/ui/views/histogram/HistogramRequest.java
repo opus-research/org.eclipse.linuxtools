@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2011, 2012 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,10 +16,10 @@
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -29,7 +29,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Francois Chouinard
  * <p>
  */
-@SuppressWarnings("deprecation")
 public class HistogramRequest extends TmfEventRequest {
 
     // ------------------------------------------------------------------------
@@ -60,6 +59,7 @@ public class HistogramRequest extends TmfEventRequest {
      *            The number of events per block
      * @param execType
      *            The requested execution priority
+     * @since 2.0
      *
      */
     public HistogramRequest(HistogramDataModel histogram, TmfTimeRange range,
@@ -82,7 +82,6 @@ public class HistogramRequest extends TmfEventRequest {
      * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
      */
     @Override
-    @SuppressWarnings("javadoc")
     public void handleData(ITmfEvent event) {
         super.handleData(event);
         if (event != null) {
@@ -97,8 +96,7 @@ public class HistogramRequest extends TmfEventRequest {
      * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleCompleted()
      */
     @Override
-    @SuppressWarnings("javadoc")
-    public synchronized void handleCompleted() {
+    public void handleCompleted() {
         fHistogram.complete();
         super.handleCompleted();
     }

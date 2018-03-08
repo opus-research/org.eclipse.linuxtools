@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -17,10 +17,8 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 
 /**
  * <b><u>TmfEventTypeStub</u></b>
- * <p>
- * TODO: Implement me. Please.
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("javadoc")
 public class TmfEventTypeStub extends TmfEventType {
 
     private static final ITmfEventField FIELD_1 = new TmfEventField("Field1", null);

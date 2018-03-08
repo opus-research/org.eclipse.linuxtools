@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,8 +18,8 @@ import java.util.Vector;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 
@@ -34,7 +34,7 @@ public class RequestBenchmark extends TmfEventRequest {
     }
 
     // Path of the trace
-    private static final String TRACE_PATH = "../org.eclipse.linuxtools.ctf.core.tests/traces/kernel"; //$NON-NLS-1$
+    private static final String TRACE_PATH = "../org.eclipse.linuxtools.ctf.core.tests/traces/kernel";
 
     // Change this to run several time over the same trace
     private static final int NB_OF_PASS = 100;
@@ -58,7 +58,7 @@ public class RequestBenchmark extends TmfEventRequest {
             traces[0] = new CtfTmfTrace();
             traces[0].initTrace(null, TRACE_PATH, CtfTmfEvent.class);
             /* Create our new experiment */
-            fExperiment = new TmfExperiment(CtfTmfEvent.class, "Headless", traces); //$NON-NLS-1$
+            fExperiment = new TmfExperiment(CtfTmfEvent.class, "Headless", traces);
 
             /*
              * We will issue a request for each "pass". TMF will then process
@@ -83,8 +83,8 @@ public class RequestBenchmark extends TmfEventRequest {
     }
 
     @Override
-    public synchronized void handleEvent(final ITmfEvent event) {
-        super.handleEvent(event);
+    public void handleData(final ITmfEvent event) {
+        super.handleData(event);
         nbEvent++;
 
     }
@@ -92,7 +92,7 @@ public class RequestBenchmark extends TmfEventRequest {
     static long prev;
     static long done = 0;
     @Override
-    public synchronized void handleCompleted() {
+    public void handleCompleted() {
         final long next = System.nanoTime();
         double val = next - prev;
         final int nbEvent2 = nbEvent;
@@ -103,10 +103,10 @@ public class RequestBenchmark extends TmfEventRequest {
         benchs.add(val);
         if (benchs.size() == NB_OF_PASS) {
             try {
-                System.out.println("Nb events : " + nbEvent2); //$NON-NLS-1$
+                System.out.println("Nb events : " + nbEvent2);
 
                 for (final double value : benchs) {
-                    System.out.print(value + ", "); //$NON-NLS-1$
+                    System.out.print(value + ", ");
                 }
                 fExperiment.sendRequest(null);
 

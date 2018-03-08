@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -32,9 +32,6 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -46,6 +43,10 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.editors.ITmfTraceEditor;
@@ -98,6 +99,11 @@ public class ControlFlowView extends TmfView {
             PTID_COLUMN,
             BIRTH_TIME_COLUMN,
             TRACE_COLUMN
+    };
+
+    private final String[] FILTER_COLUMN_NAMES = new String[] {
+            PROCESS_COLUMN,
+            TID_COLUMN
     };
 
     /**
@@ -227,7 +233,7 @@ public class ControlFlowView extends TmfView {
                     return Integer.toString(entry.getParentThreadId());
                 }
             } else if (columnIndex == 3) {
-                return Utils.formatTime(entry.getBirthTime(), TimeFormat.CALENDAR, Resolution.NANOSEC);
+                return Utils.formatTime(entry.getStartTime(), TimeFormat.CALENDAR, Resolution.NANOSEC);
             } else if (columnIndex == 4) {
                 return entry.getTrace().getName();
             }
@@ -368,6 +374,12 @@ public class ControlFlowView extends TmfView {
 
         fTimeGraphCombo.setTreeColumns(COLUMN_NAMES);
 
+        fTimeGraphCombo.setFilterContentProvider(new TreeContentProvider());
+
+        fTimeGraphCombo.setFilterLabelProvider(new TreeLabelProvider());
+
+        fTimeGraphCombo.setFilterColumns(FILTER_COLUMN_NAMES);
+
         fTimeGraphCombo.getTimeGraphViewer().addRangeListener(new ITimeGraphRangeListener() {
             @Override
             public void timeRangeUpdated(TimeGraphRangeUpdateEvent event) {
@@ -411,6 +423,9 @@ public class ControlFlowView extends TmfView {
                 traceSelected(new TmfTraceSelectedSignal(this, trace));
             }
         }
+
+        // make selection available to other views
+        getSite().setSelectionProvider(fTimeGraphCombo.getTreeViewer());
     }
 
     /* (non-Javadoc)
@@ -649,28 +664,31 @@ public class ControlFlowView extends TmfView {
                         if (monitor.isCanceled()) {
                             return;
                         }
-                        long birthTime = -1;
+                        ControlFlowEntry entry = null;
                         for (ITmfStateInterval execNameInterval : execNameIntervals) {
                             if (monitor.isCanceled()) {
                                 return;
                             }
-                            if (!execNameInterval.getStateValue().isNull() && execNameInterval.getStateValue().getType() == 1) {
+                            if (!execNameInterval.getStateValue().isNull() &&
+                                    execNameInterval.getStateValue().getType() == ITmfStateValue.Type.STRING) {
                                 String execName = execNameInterval.getStateValue().unboxStr();
                                 long startTime = execNameInterval.getStartTime();
                                 long endTime = execNameInterval.getEndTime() + 1;
-                                if (birthTime == -1) {
-                                    birthTime = startTime;
-                                }
                                 int ppid = -1;
                                 if (ppidQuark != -1) {
                                     ITmfStateInterval ppidInterval = ssq.querySingleState(startTime, ppidQuark);
                                     ppid = ppidInterval.getStateValue().unboxInt();
                                 }
-                                ControlFlowEntry entry = new ControlFlowEntry(threadQuark, ctfKernelTrace, execName, threadId, ppid, birthTime, startTime, endTime);
-                                entryList.add(entry);
+                                if (entry == null) {
+                                    entry = new ControlFlowEntry(threadQuark, ctfKernelTrace, execName, threadId, ppid, startTime, endTime);
+                                    entryList.add(entry);
+                                } else {
+                                    // update the name of the entry to the latest execName
+                                    entry.setName(execName);
+                                }
                                 entry.addEvent(new TimeEvent(entry, startTime, endTime - startTime));
                             } else {
-                                birthTime = -1;
+                                entry = null;
                             }
                         }
                     } catch (AttributeNotFoundException e) {
@@ -771,7 +789,7 @@ public class ControlFlowView extends TmfView {
                     e.printStackTrace();
                 }
                 if (lastEndTime != time && lastEndTime != -1) {
-                    eventList.add(new ControlFlowEvent(entry, lastEndTime, time - lastEndTime, 0));
+                    eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime));
                 }
                 eventList.add(new ControlFlowEvent(entry, time, duration, status));
                 lastEndTime = time + duration;
@@ -874,6 +892,7 @@ public class ControlFlowView extends TmfView {
     }
 
     private void fillLocalToolBar(IToolBarManager manager) {
+        manager.add(fTimeGraphCombo.getShowFilterAction());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getShowLegendAction());
         manager.add(new Separator());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());
