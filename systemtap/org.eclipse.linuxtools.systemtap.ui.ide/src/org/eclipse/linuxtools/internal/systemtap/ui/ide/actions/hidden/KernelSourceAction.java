@@ -152,11 +152,12 @@ public class KernelSourceAction extends Action implements ISelectionListener, IW
 					try {
 						IEditorPart editor = wb.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 						if(editor instanceof STPEditor)
-							IDESessionSettings.activeSTPEditor = (STPEditor)editor;
+							IDESessionSettings.setActiveSTPEditor((STPEditor) editor);
 						wb.getActiveWorkbenchWindow().getActivePage().openEditor(input, editorId);
 						LogManager.logDebug("Editor opened", this); //$NON-NLS-1$
 					} catch (PartInitException e) {
 						LogManager.logCritical("PartInitException run: " + e.getMessage(), this); //$NON-NLS-1$
+						e.printStackTrace();
 					}
 					
 				}
