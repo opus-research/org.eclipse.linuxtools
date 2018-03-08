@@ -334,7 +334,7 @@ public class EnableEventsDialog extends Dialog implements IEnableEventsDialog  {
         if (fDomain != null) {
             fIsKernel = fDomain.isKernel();
         } else {
-            fIsKernel = fProviderGroup != null ? fProviderGroup.hasKernelProvider() : true;
+            fIsKernel = true;
         }
     }
 
@@ -380,7 +380,7 @@ public class EnableEventsDialog extends Dialog implements IEnableEventsDialog  {
         fUstButton.setText(Messages.TraceControl_UstDisplayName);
         fUstButton.setSelection(!fIsKernel);
 
-        if ((fDomain != null) || ((fProviderGroup != null) && (!fProviderGroup.hasKernelProvider()))) {
+        if (fDomain != null) {
             fKernelButton.setEnabled(false);
             fUstButton.setEnabled(false);
         }
