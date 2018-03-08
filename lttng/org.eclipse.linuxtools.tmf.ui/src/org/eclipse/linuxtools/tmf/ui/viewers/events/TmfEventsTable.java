@@ -1465,18 +1465,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         if (fPackDone) {
             return;
         }
-        TableColumn tableColumns[] = fTable.getColumns();
-        for (int i = 0; i < tableColumns.length; i++) {
-            final TableColumn column = tableColumns[i];
+        for (final TableColumn column : fTable.getColumns()) {
             final int headerWidth = column.getWidth();
             column.pack();
-            // Workaround for Linux which doesn't consider the image width of
-            // search/filter row in TableColumn.pack() after having executed
-            // TableItem.setImage((Image)null) for other rows than search/filter row.
-            if (i == 0) {
-                column.setWidth(column.getWidth() + SEARCH_IMAGE.getBounds().width);
-            }
-
             if (column.getWidth() < headerWidth) {
                 column.setWidth(headerWidth);
             }
