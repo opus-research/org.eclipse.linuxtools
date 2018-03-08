@@ -25,7 +25,6 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -52,13 +51,6 @@ public class TmfCheckpointTest {
     private TmfCheckpoint fCheckpoint1 = new TmfCheckpoint(fTimestamp1, fLocation1);
     private TmfCheckpoint fCheckpoint2 = new TmfCheckpoint(fTimestamp2, fLocation2);
     private TmfCheckpoint fCheckpoint3 = new TmfCheckpoint(fTimestamp3, fLocation3);
-
-    @Before
-    public void setUp() {
-        fCheckpoint1.setCheckpointRank(1);
-        fCheckpoint2.setCheckpointRank(2);
-        fCheckpoint3.setCheckpointRank(2);
-    }
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -233,11 +225,11 @@ public class TmfCheckpointTest {
     @Test
     public void testToString() {
         final String expected1 = "TmfCheckpoint [fLocation=" + fCheckpoint1.getLocation() +
-                ", fTimestamp=" + fCheckpoint1.getTimestamp() + ", fCheckpointRank=" + fCheckpoint1.getCheckpointRank() + "]";
+                ", fTimestamp=" + fCheckpoint1.getTimestamp() + "]";
         final String expected2 = "TmfCheckpoint [fLocation=" + fCheckpoint2.getLocation() +
-                ", fTimestamp=" + fCheckpoint2.getTimestamp() + ", fCheckpointRank=" + fCheckpoint2.getCheckpointRank() + "]";
+                ", fTimestamp=" + fCheckpoint2.getTimestamp() + "]";
         final String expected3 = "TmfCheckpoint [fLocation=" + fCheckpoint3.getLocation() +
-                ", fTimestamp=" + fCheckpoint3.getTimestamp() + ", fCheckpointRank=" + fCheckpoint3.getCheckpointRank() + "]";
+                ", fTimestamp=" + fCheckpoint3.getTimestamp() + "]";
 
         assertEquals("toString", expected1, fCheckpoint1.toString());
         assertEquals("toString", expected2, fCheckpoint2.toString());
