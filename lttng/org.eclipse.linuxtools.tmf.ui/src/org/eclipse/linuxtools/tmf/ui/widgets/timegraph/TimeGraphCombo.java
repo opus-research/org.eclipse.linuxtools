@@ -112,9 +112,6 @@ public class TimeGraphCombo extends Composite {
     // The filter generated from the filter dialog
     private RawViewerFilter fFilter;
 
-    // Default weight of each part of the sash
-    private static int[] DEFAULT_WEIGHTS = {1, 1};
-
     // ------------------------------------------------------------------------
     // Classes
     // ------------------------------------------------------------------------
@@ -329,23 +326,6 @@ public class TimeGraphCombo extends Composite {
      * @param style the style of widget to construct
      */
     public TimeGraphCombo(Composite parent, int style) {
-        this(parent, style, DEFAULT_WEIGHTS);
-    }
-
-    /**
-     * Constructs a new instance of this class given its parent and a style
-     * value describing its behavior and appearance.
-     *
-     * @param parent
-     *            a widget which will be the parent of the new instance (cannot
-     *            be null)
-     * @param style
-     *            the style of widget to construct
-     * @param weights
-     *            The relative weights of each side of the sash form
-     * @since 2.0
-     */
-    public TimeGraphCombo(Composite parent, int style, int[] weights) {
         super(parent, style);
         setLayout(new FillLayout());
 
@@ -628,7 +608,7 @@ public class TimeGraphCombo extends Composite {
         // to a value that would cause blank space to be drawn at the bottom of the tree.
         fNumFillerRows = Display.getDefault().getBounds().height / getItemHeight(tree);
 
-        sash.setWeights(weights);
+        sash.setWeights(new int[] { 1, 1 });
     }
 
     // ------------------------------------------------------------------------
