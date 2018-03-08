@@ -124,6 +124,17 @@ public class TreeNode {
 		display = null;
 	}
 
+	public TreeNode getChildByName(String name){
+		int n = getChildCount();
+
+		for (int i = 0; i < n; i++) {
+			if (getChildAt(i).toString().equals(name))
+				return getChildAt(i);
+		}
+
+		return null;
+	}
+
 	private ArrayList<TreeNode> children;
 	private Object data;
 	private String display;
