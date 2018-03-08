@@ -17,9 +17,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.analysis.TmfAnalysisType;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -181,6 +183,25 @@ public class TmfAnalysisManager {
             }
         }
         return providerList;
+    }
+
+    /**
+     * Get the list of state systems modules
+     *
+     * @param trace
+     *            The trace to get the modules from
+     * @return List of state system modules
+     */
+    public static List<IAnalysisModule> getStateSystems(ITmfTrace trace) {
+        List<IAnalysisModule> list = new ArrayList<IAnalysisModule>();
+        Map<String, IAnalysisModule> modules = getAnalysisModules(trace);
+
+        for (Entry<String, IAnalysisModule> entry : modules.entrySet()) {
+            if (entry.getValue() instanceof TmfStateSystemAnalysisModule) {
+                list.add(entry.getValue());
+            }
+        }
+        return list;
     }
 
 }
