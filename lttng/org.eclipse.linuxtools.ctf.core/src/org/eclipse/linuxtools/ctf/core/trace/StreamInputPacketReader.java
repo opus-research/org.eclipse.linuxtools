@@ -295,9 +295,10 @@ public class StreamInputPacketReader implements IDefinitionScope {
         long timestamp = 0;
 
         if (lostEventsInThisPacket > lostSoFar) {
-            EventDefinition eventDef = EventDeclaration.getLostEventDeclaration().createDefinition(streamInputReader);
+            EventDefinition eventDef = EventDeclaration.getLostEventDeclaration().createDefinition(streamInputReader);//createLostEventDefinition(streamInputReader,lostEventsInThisPacket);
+            ((IntegerDefinition)eventDef.getFields().getDefinitions().get("Lost events")).setValue(lostEventsInThisPacket); //$NON-NLS-1$
             eventDef.setTimestamp(this.lastTimestamp);
-            ++lostSoFar;
+            lostSoFar = lostEventsInThisPacket;
             return eventDef;
         }
 
