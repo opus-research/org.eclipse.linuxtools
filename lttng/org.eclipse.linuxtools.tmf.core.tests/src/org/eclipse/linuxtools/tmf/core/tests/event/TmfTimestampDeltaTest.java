@@ -92,7 +92,7 @@ public class TmfTimestampDeltaTest {
     @Test
     public void testCopyNullConstructor() {
         try {
-            new TmfTimestamp(null);
+            new TmfTimestamp((TmfTimestamp)null);
             fail("TmfIntervalTimestamp: null argument");
         } catch (final IllegalArgumentException e) {
         }
