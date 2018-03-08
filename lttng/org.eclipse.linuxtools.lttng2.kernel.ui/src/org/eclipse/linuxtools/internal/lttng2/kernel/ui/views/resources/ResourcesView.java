@@ -38,7 +38,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -86,9 +85,6 @@ public class ResourcesView extends TmfView {
 
     // The time graph viewer
     TimeGraphViewer fTimeGraphViewer;
-
-    // The selected trace
-    private ITmfTrace fTrace;
 
     // The time graph entry list
     private ArrayList<TraceEntry> fEntryList;
@@ -358,37 +354,12 @@ public class ResourcesView extends TmfView {
     // ------------------------------------------------------------------------
 
     /**
-     * Handler for the trace opened signal.
-     * @param signal the trace selected signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceOpened(TmfTraceOpenedSignal signal) {
-        fTrace = signal.getTrace();
-        loadTrace();
-    }
-
-    /**
-     * Handler for the trace selected signal
-     *
-     * @param signal
-     *            The incoming signal
-     */
-    @TmfSignalHandler
-    public void traceSelected(final TmfTraceSelectedSignal signal) {
-        if (signal.getTrace() == fTrace) {
-            return;
-        }
-        fTrace = signal.getTrace();
-        loadTrace();
-    }
-
-    /**
      * Trace is disposed: clear the data structures and the view
      *
      * @param signal the signal received
      */
     @TmfSignalHandler
+    @Override
     public void traceClosed(final TmfTraceClosedSignal signal) {
         synchronized (fBuildThreadMap) {
             BuildThread buildThread = fBuildThreadMap.remove(signal.getTrace());
@@ -468,7 +439,8 @@ public class ResourcesView extends TmfView {
     // Internal
     // ------------------------------------------------------------------------
 
-    private void loadTrace() {
+    @Override
+    protected void loadTrace() {
         synchronized (fEntryListMap) {
             fEntryList = fEntryListMap.get(fTrace);
             if (fEntryList == null) {

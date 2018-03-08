@@ -42,7 +42,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
@@ -117,9 +116,6 @@ public class ControlFlowView extends TmfView {
 
     // The timegraph combo
     private TimeGraphCombo fTimeGraphCombo;
-
-    // The selected trace
-    private ITmfTrace fTrace;
 
     // The timegraph entry list
     private ArrayList<ControlFlowEntry> fEntryList;
@@ -431,38 +427,12 @@ public class ControlFlowView extends TmfView {
     // Signal handlers
     // ------------------------------------------------------------------------
     /**
-     * Handler for the trace opened signal.
-     * @param signal
-     *            The incoming signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceOpened(TmfTraceOpenedSignal signal) {
-        fTrace = signal.getTrace();
-        loadTrace();
-    }
-
-    /**
-     * Handler for the trace selected signal
-     *
-     * @param signal
-     *            The incoming signal
-     */
-    @TmfSignalHandler
-    public void traceSelected(final TmfTraceSelectedSignal signal) {
-        if (signal.getTrace() == fTrace) {
-            return;
-        }
-        fTrace = signal.getTrace();
-        loadTrace();
-    }
-
-    /**
      * Trace is closed: clear the data structures and the view
      *
      * @param signal the signal received
      */
     @TmfSignalHandler
+    @Override
     public void traceClosed(final TmfTraceClosedSignal signal) {
         synchronized (fBuildThreadMap) {
             BuildThread buildThread = fBuildThreadMap.remove(signal.getTrace());
@@ -592,7 +562,8 @@ public class ControlFlowView extends TmfView {
     // Internal
     // ------------------------------------------------------------------------
 
-    private void loadTrace() {
+    @Override
+    protected void loadTrace() {
         synchronized (fEntryListMap) {
             fEntryList = fEntryListMap.get(fTrace);
             if (fEntryList == null) {

@@ -109,17 +109,15 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     /**
      * Default title name.
      */
-    protected static final String TITLE = Messages.TmfUml2SDSyncLoader_ViewName;
+    protected final static String TITLE = Messages.TmfUml2SDSyncLoader_ViewName;
     /**
      * Default block size for background request.
      */
-    protected static final int DEFAULT_BLOCK_SIZE = 50000;
+    protected final static int DEFAULT_BLOCK_SIZE = 50000;
     /**
      * Maximum number of messages per page.
      */
-    protected static final int MAX_NUM_OF_MSG = 10000;
-
-    private static final int INDEXING_THREAD_SLEEP_VALUE = 100;
+    protected final static int MAX_NUM_OF_MSG = 10000;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -142,7 +140,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     /**
      * Flag whether the time range signal was sent by this loader class or not
      */
-    protected volatile boolean fIsSignalSent = false;
+    volatile protected boolean fIsSignalSent = false;
 
     // The view and event attributes
     /**
@@ -166,7 +164,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     /**
      * The current page displayed.
      */
-    protected volatile int fCurrentPage = 0;
+    volatile protected int fCurrentPage = 0;
     /**
      * The current time selected.
      */
@@ -174,7 +172,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     /**
      * Flag to specify that selection of message is done by selection or by signal.
      */
-    protected volatile boolean fIsSelect = false;
+    volatile protected boolean fIsSelect = false;
 
     // Search attributes
     /**
@@ -192,7 +190,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     /**
      * The current find index within the list of found nodes (<code>fFindeResults</code> within a page.
      */
-    protected volatile int fCurrentFindIndex = 0;
+    volatile protected int fCurrentFindIndex = 0;
 
     // Filter attributes
     /**
@@ -265,7 +263,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
     /**
      * Handler for the trace opened signal.
-     * @param signal The trace opened signal
+     * @param signal the trace opened signal
      * @since 2.0
      */
     @TmfSignalHandler
@@ -304,69 +302,39 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         fLock.lock();
 
         try {
-            final Job job = new IndexingJob("Indexing " + getName() + "..."); //$NON-NLS-1$ //$NON-NLS-2$
-            job.setUser(false);
-            job.schedule();
+        final Job job = new IndexingJob("Indexing " + getName() + "..."); //$NON-NLS-1$ //$NON-NLS-2$
+        job.setUser(false);
+        job.schedule();
 
-            indexRequest = fIndexRequest;
+        indexRequest = fIndexRequest;
 
-            cancelOngoingRequests();
+        cancelOngoingRequests();
 
-            TmfTimeRange window = TmfTimeRange.ETERNITY;
+        TmfTimeRange window = TmfTimeRange.ETERNITY;
 
-            fIndexRequest = new TmfEventRequest(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, DEFAULT_BLOCK_SIZE, ITmfDataRequest.ExecutionType.BACKGROUND) {
+        fIndexRequest = new TmfEventRequest(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, DEFAULT_BLOCK_SIZE, ITmfDataRequest.ExecutionType.BACKGROUND) {
 
-                private ITmfTimestamp fFirstTime = null;
-                private ITmfTimestamp fLastTime = null;
-                private int fNbSeqEvents = 0;
-                private final List<ITmfSyncSequenceDiagramEvent> fSdEvents = new ArrayList<ITmfSyncSequenceDiagramEvent>(MAX_NUM_OF_MSG);
+            private ITmfTimestamp fFirstTime = null;
+            private ITmfTimestamp fLastTime = null;
+            private int fNbSeqEvents = 0;
+            private final List<ITmfSyncSequenceDiagramEvent> fSdEvents = new ArrayList<ITmfSyncSequenceDiagramEvent>(MAX_NUM_OF_MSG);
 
-                @Override
-                public void handleData(ITmfEvent event) {
-                    super.handleData(event);
+            @Override
+            public void handleData(ITmfEvent event) {
+                super.handleData(event);
 
-                    ITmfSyncSequenceDiagramEvent sdEvent = getSequenceDiagramEvent(event);
+                ITmfSyncSequenceDiagramEvent sdEvent = getSequenceDiagramEvent(event);
 
-                    if (sdEvent != null) {
-                        ++fNbSeqEvents;
+                if (sdEvent != null) {
+                    ++fNbSeqEvents;
 
-                        if (fFirstTime == null) {
-                            fFirstTime = event.getTimestamp();
-                        }
-
-                        fLastTime = event.getTimestamp();
-
-                        if ((fNbSeqEvents % MAX_NUM_OF_MSG) == 0) {
-                            fLock.lock();
-                            try {
-                                fCheckPoints.add(new TmfTimeRange(fFirstTime, fLastTime));
-                                if (fView != null) {
-                                    fView.updateCoolBar();
-                                }
-                            } finally {
-                                fLock.unlock();
-                            }
-                            fFirstTime = null;
-
-                        }
-
-                        if (fNbSeqEvents > MAX_NUM_OF_MSG) {
-                            // page is full
-                            return;
-                        }
-
-                        fSdEvents.add(sdEvent);
-
-                        if (fNbSeqEvents == MAX_NUM_OF_MSG) {
-                            fillCurrentPage(fSdEvents);
-                        }
+                    if (fFirstTime == null) {
+                        fFirstTime = event.getTimestamp();
                     }
-                }
 
-                @Override
-                public void handleSuccess() {
-                    if ((fFirstTime != null) && (fLastTime != null)) {
+                    fLastTime = event.getTimestamp();
 
+                    if ((fNbSeqEvents % MAX_NUM_OF_MSG) == 0) {
                         fLock.lock();
                         try {
                             fCheckPoints.add(new TmfTimeRange(fFirstTime, fLastTime));
@@ -376,44 +344,65 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                         } finally {
                             fLock.unlock();
                         }
+                        fFirstTime = null;
+
                     }
 
-                    if (fNbSeqEvents <= MAX_NUM_OF_MSG) {
+                    if (fNbSeqEvents > MAX_NUM_OF_MSG) {
+                        // page is full
+                        return;
+                    }
+
+                    fSdEvents.add(sdEvent);
+
+                    if (fNbSeqEvents == MAX_NUM_OF_MSG) {
                         fillCurrentPage(fSdEvents);
                     }
-
-                    super.handleSuccess();
                 }
+            }
 
-                @Override
-                public void handleCompleted() {
-                    if (fEvents.isEmpty()) {
-                        fFrame = new Frame();
-                        // make sure that view is not null when setting frame
-                        SDView sdView;
-                        fLock.lock();
-                        try {
-                            sdView = fView;
-                        } finally {
-                            fLock.unlock();
+            @Override
+            public void handleSuccess() {
+                if ((fFirstTime != null) && (fLastTime != null)) {
+
+                    fLock.lock();
+                    try {
+                        fCheckPoints.add(new TmfTimeRange(fFirstTime, fLastTime));
+                        if (fView != null) {
+                            fView.updateCoolBar();
                         }
-                        if (sdView != null) {
-                            sdView.setFrameSync(fFrame);
-                        }
+                    } finally {
+                        fLock.unlock();
                     }
-                    super.handleCompleted();
-                    job.cancel();
                 }
-            };
 
-        } finally {
-            fLock.unlock();
-        }
-        if (indexRequest != null && !indexRequest.isCompleted()) {
-            indexRequest.cancel();
-        }
-        resetLoader();
-        fTrace.sendRequest(fIndexRequest);
+                if (fNbSeqEvents <= MAX_NUM_OF_MSG) {
+                    fillCurrentPage(fSdEvents);
+                }
+
+                super.handleSuccess();
+            }
+
+            @Override
+            public void handleCompleted() {
+                if (fEvents.isEmpty()) {
+                    fFrame = new Frame();
+                    fView.setFrameSync(fFrame);
+                }
+                super.handleCompleted();
+                job.cancel();
+            }
+        };
+
+    } finally {
+        fLock.unlock();
+    }
+    if (indexRequest != null && !indexRequest.isCompleted()) {
+        indexRequest.cancel();
+    }
+    resetLoader();
+    fTrace.sendRequest(fIndexRequest);
+
     }
 
     /**
@@ -1239,7 +1228,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         /**
          * The search event request.
          */
-        protected final SearchEventRequest fSearchRequest;
+        final protected SearchEventRequest fSearchRequest;
 
         /**
          * Constructor
@@ -1325,7 +1314,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         /**
          * The find criteria.
          */
-        private final Criteria fCriteria;
+        final private Criteria fCriteria;
         /**
          * A progress monitor
          */
@@ -1450,7 +1439,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         protected IStatus run(IProgressMonitor monitor) {
             while (!monitor.isCanceled()) {
                 try {
-                    Thread.sleep(INDEXING_THREAD_SLEEP_VALUE);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     return Status.OK_STATUS;
                 }

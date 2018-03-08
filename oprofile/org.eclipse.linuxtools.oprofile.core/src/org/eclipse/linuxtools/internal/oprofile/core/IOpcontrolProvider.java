@@ -95,7 +95,6 @@ public interface IOpcontrolProvider {
 	 * @param project The project to be run
 	 * @return true if the user has sudo permission to run opcontrol, otherwise false
 	 * @throws OpcontrolException
-	 * @since 2.0
 	 */
 	public boolean hasPermissions(IProject project) throws OpcontrolException;
 
