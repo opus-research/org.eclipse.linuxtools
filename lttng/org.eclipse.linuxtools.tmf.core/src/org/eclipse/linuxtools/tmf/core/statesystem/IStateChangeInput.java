@@ -22,10 +22,10 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * Usually a state change input, also called "state provider" is the piece of
  * the pipeline which converts trace events to state changes.
  *
+ * @version 2.0
  * @author Alexandre Montplaisir
- * @since 2.0
  */
-public interface ITmfStateProvider {
+public interface IStateChangeInput {
 
     /**
      * Special state provider version number that will tell the backend to
@@ -115,7 +115,7 @@ public interface ITmfStateProvider {
      *         assigned target state system
      * @since 2.0
      */
-    public ITmfStateProvider getNewInstance();
+    public IStateChangeInput getNewInstance();
 
     /**
      * Indicate to the state history building process that we are done (for now),

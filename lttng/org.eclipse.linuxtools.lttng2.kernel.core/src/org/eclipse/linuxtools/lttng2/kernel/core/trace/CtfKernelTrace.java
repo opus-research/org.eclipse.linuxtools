@@ -23,13 +23,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Activator;
-import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateProvider;
+import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.IStateChangeInput;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
+import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
 
 /**
  * This is the specification of CtfTmfTrace for use with LTTng 2.x kernel
@@ -105,9 +105,9 @@ public class CtfKernelTrace extends CtfTmfTrace {
         }
 
         final File htFile = new File(supplDirectory + File.separator + HISTORY_TREE_FILE_NAME);
-        final ITmfStateProvider htInput = new CtfKernelStateProvider(this);
+        final IStateChangeInput htInput = new CtfKernelStateInput(this);
 
-        ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(htFile, htInput, false);
+        ITmfStateSystem ss = StateSystemManager.loadStateHistory(htFile, htInput, false);
         fStateSystems.put(STATE_ID, ss);
     }
 
