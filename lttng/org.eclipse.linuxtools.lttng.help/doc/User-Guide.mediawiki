@@ -524,6 +524,7 @@ The Histogram View displays the trace events distribution with respect to time. 
 
 [[Image:images/HistogramView.png]]
 
+The '''Hide Lost Events''' toggle button [[Image:images/hide_lost_events.gif]] in the local toolbar allows to hide the bars of lost events. When the button is selected it can be toggled again to show the lost events.
 
 On the top left, there are two data controls:
 
@@ -938,6 +939,15 @@ The text field '''Trace Path''' allows for specifying the path relative to the l
 
 To create a session with advanced options, fill in the relevant parameters and press '''Ok'''. Upon successful operation a new session will be created and added under the tree node '''Sessions'''.
 
+==== Creating a Snapshot Tracing Session ====
+LTTng Tools version v2.3.0 introduces the possibility to create snapshot tracing sessions. After starting tracing the trace events are not stored on disk or over the network. They are only transfered to disk or over the network when the user records a snapshot. To create such a snapshot session, open the trace session dialog as described in chapter [[#Creating a Tracing Session | Creating a Tracing Session]].
+
+[[Image:images/LTTng2CreateSessionDialog_Snapshot.png]]
+
+Fill in all necessary information, select checkbox for '''Snapshot Mode''' and press '''Ok'''. By default, the location for the snapshot output will be on the host where the host is located.
+
+Refer to chapter [[#Recording a Snapshot | Recording a Snapshot]] for how to create a snapshot.
+
 ==== Enabling Channels - General ====
 
 Enabling channels can be done using a session tree node when the domain hasn't be created in the session or, alternatively on a domain tree node of a session in case the domain is already available.
@@ -1199,9 +1209,17 @@ To start tracing, select one or more sessions to start in the Control View and p
 
 Upon successful operation, the tracing session will be '''ACTIVE''' and the icon of the session will be updated.
 
+==== Recording a Snapshot ====
+
+LTTng Tools version v2.3.0 introduces the possibility to create snapshot tracing sessions. After creating a snapshot session (see [[#Creating a Snapshot Tracing Session | Creating a Snapshot Tracing Session]]) and starting tracing (see [[#Start Tracing | Start Tracing]]) it possible to record snapshots. To record a snapshot select one or more sessions and press the '''Record Snapshot''' button. Alternatively, press the right mouse button on the session tree nodes. A context-sensitive menu will show. Then select the '''Recored Snapshot''' menu item.
+
+[[Image:images/LTTng2RecordSnapshotAction.png]]
+
+This action can be executed many times. It is possible to import the recorded snpshots to a tracing project. The trace session might be '''ACTIVE''' or '''INACTIVE''' for that. Refer to section [[#Importing Session Traces to a Tracing Project | Importing Session Traces to a Tracing Project]] on how to import a trace to a tracing project.
+
 ==== Stop Tracing ====
 
-To stop tracing, select one or more sessions to stop in the Control View and press the '''Stop''' button. Alternatively, click the right mouse button on the session tree nodes. A context-sensitive menu will show. Then select the '''Stop''' menu item.
+To stop tracing, select one or more sessions to stop in the Control View and press the '''Stop''' button. Alternatively, click the right mouse button on the session tree node. A context-sensitive menu will show. Then select the '''Stop''' menu item.
 
 [[Image:images/LTTng2StopTracingAction.png]]
 
@@ -1288,8 +1306,11 @@ The Control View provides property information of selected tree component. Depen
 ** '''Log Level''': The log level of the event.
 * '''Session''' Properties
 ** '''Session Name''': The name of the Session.
-** '''Session Path''': The path on the remote host where the traces will be stored.
+** '''Session Path''': The path on the remote host where the traces will be stored. (Not shown for snapshot sessions).
 ** '''State''': The state of the session ('''ACTIVE''' or '''INACTIVE''')
+** '''Snapshot ID''': The snapshot ID. (Only shown for snapshot sessions).
+** '''Snapshot Name''': The name of the snapshot output configuration. (Only shown for snapshot sessions).
+** '''Snapshot Path''': The path where the snapshot session is located. (Only shown for snapshot sessions).
 * '''Domain''' Properties
 ** '''Domain Name''': The name of the domain.
 ** '''Buffer Type''': The buffer type of the domain.
@@ -1580,6 +1601,90 @@ The LTTng Kernel Events editor '''is''' the plain TMF [[#Events_Editor | Events 
 
 
 [[Image:images/LTTng2EventsEditor.png]]
+
+= Trace synchronization =
+
+It is possible to synchronize traces from different machines so that they have the same time reference. Events from the reference trace will have the same timestamps as usual, but the events from traces synchronized with the first one will have their timestamps transformed according to the formula obtained after synchronization.
+
+== Obtain synchronizable traces ==
+
+To synchronize traces from different machines, they need to exchange packets through the network and have events enabled such that the data can be matched from one trace to the other. For now, only TCP packets can be matched between two traces.
+
+LTTng traces that can be synchronized are obtained using one of two methods (both methods are compatible):
+
+=== LTTng-module network tracepoint with complete data ===
+
+The tracepoints '''net_dev_queue''' and '''netif_receive_skb''' will be used for synchronization. Both tracepoints are available in lttng-modules since version 2.2, but they do not contain sufficient data to be used to synchronize traces.
+
+An experimental branch introduces this extra data: lttng-modules will need to be compiled by hand.
+
+Obtain the source code for the experimental lttng-modules
+
+    # git clone git://git.dorsal.polymtl.ca/~gbastien/lttng-modules.git
+    # cd lttng-modules
+
+Checkout the ''net_data_experimental'' branch, compile and install lttng-modules as per the lttng-modules documentation
+
+    # git checkout net_data_experimental
+    # make
+    # sudo make modules_install
+    # sudo depmod -a
+
+This experimental branch adds IP, IPv6 and TCP header data to the tracepoints. Packets received and sent with other protocols do not have this extra header data, but all packets are captured.
+
+=== LTTng-modules addons kernel module with dynamic tracepoints ===
+
+This method adds dynamic instrumentation on TCP packets via extra kernel modules. Only TCP packets are captured.
+
+Obtain the source code, along with lttng-modules
+
+    # git clone https://github.com/giraldeau/lttng-modules.git
+    # cd lttng-modules
+
+Checkout the addons branch, compile and install lttng-modules as per the lttng-modules documentation. The ''make'' command will fail at first with a message about the unset SYSMAP variable. Instructions on how to generate a System.map are mentioned in the error message.
+
+    # git checkout addons
+    # make
+    # (follow the instructions to obtain the System.map file and set the SYSMAP variable)
+    # make
+    # sudo make modules_install
+    # sudo depmod -a
+
+The lttng-addons modules must be inserted manually for the TCP tracepoints to be made available.
+
+    # sudo modprobe lttng-addons
+    # sudo modprobe lttng-probe-addons
+
+The following tracepoints will be available
+
+    # sudo lttng list -k
+    Kernel events:
+    -------------
+      ...
+      inet_sock_create (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_sock_delete (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_sock_clone (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_accept (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_connect (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_sock_local_in (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      inet_sock_local_out (loglevel: TRACE_EMERG (0)) (type: tracepoint)
+      ...
+
+The ones used for trace synchronization are '''inet_sock_local_in''' and '''inet_sock_local_out'''.
+
+== Synchronize traces in TMF ==
+
+In order to synchronize traces, create a new experiment and select all traces that need to be synchronized. Right-click on the experiment and select '''Synchronize traces'''. For each trace whose time needs to be transformed, a new trace named as the original but followed by a '_' will be created with the transformed timestamps, and the original trace will be replaced in the experiment. The original trace can still be accessed under the '''Traces''' folder.
+
+[[Image:images/Sync_menu.png| Right-click synchronize traces to perform the trace synchronization]]
+
+When opening the experiment now, all the views will be synchronized. The following screenshot presents the differences in the filtered Control Flow View before and after the time synchronization.
+
+[[Image:images/Sync_cfv.png| Example of Control Flow View before and after trace synchronization]]
+
+Information on the quality of the synchronization, the timestamp transformation formula and some synchronization statistics can be visualized in the '''Synchronization''' view. To open the '''Synchronization''' view, use the Eclipse Show View dialog ('''Window''' -> '''Show View''' -> '''Other...'''). Then select '''Synchronization''' under '''Tracing'''.
+
+[[Image:images/Sync_view.png| Example of Synchronization view]]
 
 = Timestamp formatting =
 

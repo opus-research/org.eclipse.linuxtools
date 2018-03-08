@@ -49,6 +49,7 @@ import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
+import org.osgi.framework.Version;
 
 public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate {
 
@@ -89,7 +90,8 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 
 			ArrayList<String> command = new ArrayList<String>();
 			// Get the base commandline string (with flags/options based on config)
-			command.addAll(Arrays.asList(PerfCore.getRecordString(config)));
+			Version perfVersion = PerfCore.getPerfVersion(config, null, workingDir);
+			command.addAll(Arrays.asList(PerfCore.getRecordString(config, perfVersion)));
 			// Add the path to the executable
 			command.add(exePath.toOSString());
 			command.addAll(Arrays.asList( arguments));
@@ -148,6 +150,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				}
 
 				PerfCore.Report(config, getEnvironment(config), workingDir, monitor, null, print);
+				PerfPlugin.getDefault().getPerfProfileData().toFile().setReadOnly();
 				PerfCore.RefreshView(renderProcessLabel(exePath.toOSString()));
 
 				if (config.getAttribute(PerfPlugin.ATTR_ShowSourceDisassembly,
@@ -190,7 +193,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 
 		// Get working directory
 		IPath workingDir = PerfPlugin.getDefault().getWorkingDir();
-		File wd = workingDir.toFile();
 
 		int runCount = config.getAttribute(PerfPlugin.ATTR_StatRunCount,
 				PerfPlugin.ATTR_StatRunCount_default);
@@ -201,7 +203,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 		}
 
 		Object[] titleArgs = new Object[]{exePath.toOSString(), args.toString(), String.valueOf(runCount)};
-		String title = MessageFormat.format(Messages.PerfLaunchConfigDelegate_stat_title, titleArgs);
+		String title = renderProcessLabel(MessageFormat.format(Messages.PerfLaunchConfigDelegate_stat_title, titleArgs));
 
 		@SuppressWarnings("unchecked")
 		List<String> configEvents = config.getAttribute(PerfPlugin.ATTR_SelectedEvents,
@@ -214,7 +216,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			statEvents = (configEvents == null) ? statEvents : configEvents.toArray(new String[]{});
 		}
 
-		StatData sd = new StatData(title, wd, exePath.toOSString(), arguments, runCount, statEvents);
+		StatData sd = new StatData(title, workingDir, exePath.toOSString(), arguments, runCount, statEvents);
 		sd.setLaunch(launch);
 		sd.parse();
 		PerfPlugin.getDefault().setStatData(sd);

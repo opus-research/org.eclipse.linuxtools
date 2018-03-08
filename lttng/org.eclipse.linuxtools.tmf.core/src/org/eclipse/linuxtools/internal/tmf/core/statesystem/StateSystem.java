@@ -333,6 +333,10 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throws StateValueTypeException, TimeRangeException,
             AttributeNotFoundException {
         int prevValue = queryOngoingState(attributeQuark).unboxInt();
+        if (prevValue == -1) {
+            /* if the attribute was previously null, start counting at 0 */
+            prevValue = 0;
+        }
         modifyAttribute(t, TmfStateValue.newValueInt(prevValue + 1),
                 attributeQuark);
     }
@@ -403,8 +407,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
         if (stackDepth <= 0) {
             /* This on the other hand should not happen... */
+            /* the case where == -1 was handled previously by .isNull() */
             String message = "A top-level stack attribute cannot " + //$NON-NLS-1$
-                    "have a value of 0 or less."; //$NON-NLS-1$
+                    "have a value of 0 or less (except -1/null)."; //$NON-NLS-1$
             throw new StateValueTypeException(message);
         }
 
@@ -415,7 +420,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         /* Update the state value of the stack-attribute */
         ITmfStateValue nextSV;
         if (--stackDepth == 0 ) {
-            /* Store a null state value */
+            /* Jump over "0" and store -1 (a null state value) */
             nextSV = TmfStateValue.nullValue();
         } else {
             nextSV = TmfStateValue.newValueInt(stackDepth);
@@ -564,10 +569,10 @@ public class StateSystem implements ITmfStateSystemBuilder {
             TimeRangeException, StateSystemDisposedException {
         Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
 
-        if (curStackDepth == 0) {
+        if (curStackDepth == -1) {
             /* There is nothing stored in this stack at this moment */
             return null;
-        } else if (curStackDepth < 0) {
+        } else if (curStackDepth < -1 || curStackDepth == 0) {
             /*
              * This attribute is an integer attribute, but it doesn't seem like
              * it's used as a stack-attribute...

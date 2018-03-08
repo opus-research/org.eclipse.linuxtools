@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 
 /**
@@ -43,7 +44,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
     protected abstract Object getValue();
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(@Nullable Object other) {
         if (this == other) {
             return true;
         }
@@ -103,6 +104,9 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @return The newly-created TmfStateValue object
      */
     public static TmfStateValue newValueInt(int intValue) {
+        if (intValue == -1) {
+            return nullValue();
+        }
         return new IntegerStateValue(intValue);
     }
 
@@ -115,6 +119,9 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @since 2.0
      */
     public static TmfStateValue newValueLong(long longValue) {
+        if (longValue == -1) {
+            return nullValue();
+        }
         return new LongStateValue(longValue);
     }
 
@@ -126,6 +133,9 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @return The newly-created TmfStateValue object
      */
     public static TmfStateValue newValueDouble(double value) {
+        if (value == Double.NaN) {
+            return nullValue();
+        }
         return new DoubleStateValue(value);
     }
 
@@ -136,7 +146,10 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *            The string value to contain
      * @return The newly-created TmfStateValue object
      */
-    public static TmfStateValue newValueString(String strValue) {
+    public static TmfStateValue newValueString(@Nullable String strValue) {
+        if (strValue == null) {
+            return nullValue();
+        }
         return new StringStateValue(strValue);
     }
 

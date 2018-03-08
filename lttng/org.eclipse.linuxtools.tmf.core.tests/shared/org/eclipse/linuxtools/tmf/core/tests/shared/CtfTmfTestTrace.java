@@ -16,6 +16,7 @@ import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.tests.stubs.ctf.CtfTmfTraceStub;
 
 /**
  * Available CTF TMF test traces. Kind-of-extends {@link CtfTestTrace}.
@@ -35,11 +36,17 @@ public enum CtfTmfTestTrace {
     /** Trace synchronization: source trace */
     SYNC_SRC,
     /** Trace synchronization: destination trace */
-    SYNC_DEST;
+    SYNC_DEST,
+    /** UST trace with lots of lost events */
+    HELLO_LOST,
+    /** UST trace with lttng-ust-cyg-profile events (aka -finstrument-functions) */
+    CYG_PROFILE,
+    /** UST trace with lttng-ust-cyg-profile-fast events (no address in func_exit) */
+    CYG_PROFILE_FAST;
 
 
     private final String fPath;
-    private CtfTmfTrace fTrace = null;
+    private CtfTmfTraceStub fTrace = null;
 
     private CtfTmfTestTrace() {
         /* This makes my head spin */
@@ -54,23 +61,26 @@ public enum CtfTmfTestTrace {
     }
 
     /**
-     * Return a CtfTmfTrace object of this test trace. It will be already
+     * Return a CtfTmfTraceStub object of this test trace. It will be already
      * initTrace()'ed.
      *
      * Make sure you call {@link #exists()} before calling this!
      *
+     * After being used by unit tests, traces must be properly disposed of by
+     * calling the {@link CtfTmfTestTrace#dispose()} method.
+     *
      * @return A CtfTmfTrace reference to this trace
      */
-    public CtfTmfTrace getTrace() {
-        if (fTrace == null) {
-            CtfTmfTrace trace = new CtfTmfTrace();
-            try {
-                trace.initTrace(null, fPath, CtfTmfEvent.class);
-            } catch (TmfTraceException e) {
-                /* Should not happen if tracesExist() passed */
-                throw new RuntimeException(e);
-            }
-            fTrace = trace;
+    public synchronized CtfTmfTrace getTrace() {
+        if (fTrace != null) {
+            fTrace.dispose();
+        }
+        fTrace = new CtfTmfTraceStub();
+        try {
+            fTrace.initTrace(null, fPath, CtfTmfEvent.class);
+        } catch (TmfTraceException e) {
+            /* Should not happen if tracesExist() passed */
+            throw new RuntimeException(e);
         }
         return fTrace;
     }
@@ -82,5 +92,15 @@ public enum CtfTmfTestTrace {
      */
     public boolean exists() {
         return CtfTestTrace.valueOf(this.name()).exists();
+    }
+
+    /**
+     * Dispose of the trace
+     */
+    public void dispose() {
+        if (fTrace != null) {
+            fTrace.dispose();
+            fTrace = null;
+        }
     }
 }

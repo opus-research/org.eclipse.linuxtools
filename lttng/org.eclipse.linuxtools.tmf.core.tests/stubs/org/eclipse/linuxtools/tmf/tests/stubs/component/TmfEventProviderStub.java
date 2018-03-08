@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 
@@ -36,9 +37,6 @@ import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 @SuppressWarnings("javadoc")
 public class TmfEventProviderStub extends TmfEventProvider {
 
-    private static final String DIRECTORY   = "testfiles";
-    private static final String TEST_STREAM = "A-Test-10K";
-
     private TmfTraceStub fTrace;
 
     public TmfEventProviderStub(final String path) throws IOException {
@@ -46,7 +44,7 @@ public class TmfEventProviderStub extends TmfEventProvider {
         final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path), null);
         try {
             final File test = new File(FileLocator.toFileURL(location).toURI());
-            fTrace = new TmfTraceStub(test.getPath(), 0, true, null, null);
+            fTrace = new TmfTraceStub(test.getPath(), 0, true, null);
         } catch (final TmfTraceException e) {
             e.printStackTrace();
         } catch (final URISyntaxException e) {
@@ -55,7 +53,7 @@ public class TmfEventProviderStub extends TmfEventProvider {
     }
 
     public TmfEventProviderStub() throws IOException {
-        this(DIRECTORY + File.separator + TEST_STREAM);
+        this(TmfTestTrace.A_TEST_10K.getFullPath());
     }
 
     @Override

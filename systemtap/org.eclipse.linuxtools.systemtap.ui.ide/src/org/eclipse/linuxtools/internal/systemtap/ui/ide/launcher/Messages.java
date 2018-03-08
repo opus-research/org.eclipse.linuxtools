@@ -30,6 +30,8 @@ public class Messages extends NLS {
 	public static String SystemTapScriptGraphOptionsTab_5;
 	public static String SystemTapScriptGraphOptionsTab_6;
 	public static String SystemTapScriptGraphOptionsTab_7;
+	public static String SystemTapScriptGraphOptionsTab_8;
+	public static String SystemTapScriptGraphOptionsTab_9;
 
 	public static String SystemTapScriptGraphOptionsTab_AddGraphButton;
 	public static String SystemTapScriptGraphOptionsTab_AddGraphButtonToolTip;
@@ -37,9 +39,17 @@ public class Messages extends NLS {
 	public static String SystemTapScriptGraphOptionsTab_DuplicateGraphButtonToolTip;
 	public static String SystemTapScriptGraphOptionsTab_EditGraphButton;
 	public static String SystemTapScriptGraphOptionsTab_EditGraphButtonToolTip;
+
+	public static String SystemTapScriptGraphOptionsTab_extractedValueLabel;
 	public static String SystemTapScriptGraphOptionsTab_RemoveGraphButton;
 	public static String SystemTapScriptGraphOptionsTab_RemoveGraphButtonToolTip;
 	public static String SystemTapScriptGraphOptionsTab_graphsTitle;
+
+	public static String SystemTapScriptGraphOptionsTab_regexTooltip;
+
+	public static String SystemTapScriptGraphOptionsTab_sampleOutputLabel;
+
+	public static String SystemTapScriptGraphOptionsTab_sampleOutputTooltip;
 
 	public static String SystemTapScriptLaunchConfigurationTab_0;
 	public static String SystemTapScriptLaunchConfigurationTab_1;
