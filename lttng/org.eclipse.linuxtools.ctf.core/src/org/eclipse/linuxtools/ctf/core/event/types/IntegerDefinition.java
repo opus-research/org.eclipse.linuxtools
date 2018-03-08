@@ -27,7 +27,7 @@ import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class IntegerDefinition extends SimpleDatatypeDefinition {
+public class IntegerDefinition extends Definition {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -77,27 +77,9 @@ public class IntegerDefinition extends SimpleDatatypeDefinition {
         return declaration;
     }
 
-
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition#getLongValue()
-     */
-    @Override
-    public Long getIntegerValue() {
-        return getValue();
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition#getStringValue()
-     */
-    @Override
-    public String getStringValue() {
-        return this.toString();
-    }
 
     @Override
     public void read(BitBuffer input) {
