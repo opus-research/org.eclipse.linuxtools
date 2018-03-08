@@ -37,6 +37,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfEventProvider class.
  */
+@SuppressWarnings("nls")
 public class TmfEventProviderTest {
 
     private TmfEventProviderStub fEventProvider;

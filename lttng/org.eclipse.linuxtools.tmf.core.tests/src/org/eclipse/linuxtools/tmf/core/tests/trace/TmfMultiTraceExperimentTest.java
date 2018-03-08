@@ -49,7 +49,7 @@ import org.junit.Test;
 /**
  * Test suite for the TmfExperiment class (multiple traces).
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"nls","javadoc"})
 public class TmfMultiTraceExperimentTest {
 
     // ------------------------------------------------------------------------

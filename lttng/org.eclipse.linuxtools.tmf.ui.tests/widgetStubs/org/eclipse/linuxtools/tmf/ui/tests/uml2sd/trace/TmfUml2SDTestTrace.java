@@ -56,6 +56,7 @@ public class TmfUml2SDTestTrace implements ITmfEventParser {
     }
 
     @Override
+    @SuppressWarnings({ "nls" })
     public ITmfEvent parseEvent(ITmfContext context) {
         if (! (fEventStream instanceof TmfTraceStub)) {
             return null;
