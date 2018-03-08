@@ -226,9 +226,8 @@ public class StapGraph extends Graph {
 
 		((StapTreeContentProvider) treeViewer.getContentProvider()).setGraph(this);
 
-		if (treeViewer.getLabelProvider() != null){
+		if (treeViewer.getLabelProvider() != null)
 			treeViewer.getLabelProvider().dispose();
-		}
 		StapTreeLabelProvider prov = new StapTreeLabelProvider();
 		treeViewer.setLabelProvider(prov);
 
@@ -280,17 +279,14 @@ public class StapGraph extends Graph {
 		nodeDataMap.put(id, n);
 
 		// Make no assumptions about the order that data is input
-		if (id > idOfLastNode) {
+		if (id > idOfLastNode)
 			idOfLastNode = id;
-		}
 		return id;
 	}
 
 	public void insertMessage(int id, String message) {
 		StapData temp = nodeDataMap.get(id);
-		if (temp == null) {
-			return;
-		}
+		if (temp == null) return;
 		temp.insertMessage(message);
 		nodeDataMap.put(id, temp);
 	}
@@ -333,9 +329,8 @@ public class StapGraph extends Graph {
 		int y = this.getBounds().height / 2;
 		n.setLocation(x, y);
 
-		if (getNodeData(centerNode).isMarked()) {
+		if (getNodeData(centerNode).isMarked())
 			nodeMap.get(centerNode).setBackgroundColor(CONSTANT_MARKED);
-		}
 		radialHelper(centerNode, x, y, radius, 0);
 	}
 
@@ -384,9 +379,8 @@ public class StapGraph extends Graph {
 				getNode(id).makeConnection(SWT.NONE, getNode(callerID), getNodeData(id).timesCalled);
 			}
 
-			if (getNodeData(callerID).isMarked()) {
+			if (getNodeData(callerID).isMarked())
 				nodeMap.get(callerID).setBackgroundColor(CONSTANT_MARKED);
-			}
 		}
 
 
@@ -403,17 +397,16 @@ public class StapGraph extends Graph {
 
 		if (nodeList.size() >= CONSTANT_MAX_NUMBER_OF_RADIAL_SIBLINGS ) {
 			numberOfNodes = CONSTANT_MAX_NUMBER_OF_RADIAL_SIBLINGS;
-		} else {
-			numberOfNodes = nodeList.size();
 		}
+		else
+			numberOfNodes = nodeList.size();
 
 
 		double angle;
-		if (numberOfNodes > 5) {
+		if (numberOfNodes > 5)
 			angle = 2 * Math.PI / numberOfNodes;
-		} else {
+		else
 			angle = 2 * Math.PI / CONSTANT_MAX_NUMBER_OF_RADIAL_SIBLINGS;
-		}
 
 		int i = 0;
 
@@ -434,9 +427,8 @@ public class StapGraph extends Graph {
 				xOffset = (int) (radius * Math.sin((float) angle * i)) - subN.getSize().width/2 + getNode(id).getSize().width/2;
 			}
 
-			if (hasChildren(subID)) {
+			if (hasChildren(subID))
 				subN.setBackgroundColor(CONSTANT_HAS_CHILDREN);
-			}
 			subN.setLocation(x + xOffset, y + yOffset);
 			if (subN.connection == null) {
 				subN.makeConnection(SWT.NONE, nodeMap.get(id), nodeDataMap
@@ -444,9 +436,8 @@ public class StapGraph extends Graph {
 			}
 
 			StapData d = getNodeData(subID);
-			if (d.isMarked()) {
+			if (d.isMarked())
 				subN.setBackgroundColor(CONSTANT_MARKED);
-			}
 		}
 	}
 
@@ -495,9 +486,8 @@ public class StapGraph extends Graph {
 			long time = aggregateTime.get(key);
 			//This is a stupid way to get the times right, but it is almost always guaranteed to work.
 
-			while (time < 0) {
+			while (time < 0)
 				time += endTime;
-			}
 			tempMap.put(key, time);
 		}
 
@@ -567,13 +557,11 @@ public class StapGraph extends Graph {
 
 		//This is the lowest level of nodes to draw, and it still has kids
 		if (getLevelOfNode(id) == bottomLevelToDraw &&
-				getNodeData(id).children.size() > 0) {
+				getNodeData(id).children.size() > 0)
 			n.setBackgroundColor(CONSTANT_HAS_CHILDREN);
-		}
 
-		if (getNodeData(id).isMarked()) {
+		if (getNodeData(id).isMarked())
 			n.setBackgroundColor(CONSTANT_MARKED);
-		}
 
 
 		//-------------Get appropriate list of children
@@ -581,14 +569,12 @@ public class StapGraph extends Graph {
 		int usefulSize = 0;
 
 		// Determine which list of callees to use
-		if (!collapse_mode) {
+		if (!collapse_mode)
 			callees = getNodeData(id).children;
-		} else {
+		else
 			callees = getNodeData(id).collapsedChildren;
-		}
-		if (callees == null) {
+		if (callees == null)
 			return;
-		}
 
 		int cLevel = getLevelOfNode(id) + 1;
 
@@ -598,9 +584,8 @@ public class StapGraph extends Graph {
 			}
 		}
 		else {
-		if (collapsedLevelSize.get(cLevel) != null) {
+		if (collapsedLevelSize.get(cLevel) != null)
 			usefulSize = collapsedLevelSize.get(cLevel);
-		}
 		}
 		//-------------Draw all children
 		for (int i = 0; i < callees.size(); i++) {
@@ -627,9 +612,8 @@ public class StapGraph extends Graph {
 								+ getNode(childID).getSize().width;
 
 				//Leave a small blank space between nodes for aesthetic purposes
-				if (i == callees.size() - 1) {
+				if (i == callees.size() - 1)
 					newSize += CONSTANT_HORIZONTAL_SPACING/3;
-				}
 				currentPositionInLevel.put(getLevelOfNode(childID), newSize);
 			}
 
@@ -640,9 +624,8 @@ public class StapGraph extends Graph {
 	 * Extend the tree downwards
 	 */
 	public void extendTree() {
-		if (bottomLevelToDraw >= lowestLevelOfNodesAdded) {
+		if (bottomLevelToDraw >= lowestLevelOfNodesAdded)
 			return;
-		}
 
 
 		StapData data = getNodeData(rootVisibleNodeNumber);
@@ -651,9 +634,8 @@ public class StapGraph extends Graph {
 		}
 
 		List<Integer> list = data.children;
-		if (isCollapseMode()) {
+		if (isCollapseMode())
 			list = data.collapsedChildren;
-		}
 
 		if (list.size() == 1) {
 			//Special case - only one child of the root node
@@ -683,9 +665,8 @@ public class StapGraph extends Graph {
 	 * Removes nodes from the bottom of the tree
 	 */
 	public void shrinkTree() {
-		if (treeLevelFromRoot < 1) {
+		if (treeLevelFromRoot < 1)
 			return;
-		}
 
 
 		bottomLevelToDraw--;
@@ -707,11 +688,10 @@ public class StapGraph extends Graph {
 			setCollapseMode(false);
 		}
 		int toDraw = getNextCalledNode(getRootVisibleNodeNumber());
-		if (toDraw != -1) {
+		if (toDraw != -1)
 			draw(toDraw);
-		} else {
+		 else
 			proj.pause();
-		}
 	}
 
 
@@ -751,9 +731,8 @@ public class StapGraph extends Graph {
 					if (collapse_mode && data.isPartOfCollapsedNode()) {
 						continue;
 					}
-					if (!collapse_mode && data.isCollapsed) {
+					if (!collapse_mode && data.isCollapsed)
 						continue;
-					}
 				}
 
 				currPixelWidth += data.name.length() * 10 + StapGraph.CONSTANT_HORIZONTAL_SPACING_FOR_LEVEL;
@@ -769,17 +748,15 @@ public class StapGraph extends Graph {
 
 		MaxLevelPixelWidth = (int)(MaxLevelPixelWidth/scale);
 		counter = 0;
-		if (id == getFirstUsefulNode()) {
+		if (id == getFirstUsefulNode())
 			nodeMap.get(id).setLocation(150 + (MaxLevelPixelWidth/2),y);
-		}
 
 		drawFromBottomToTop(bottomLevelToDraw, y
 				+ ((bottomLevelToDraw  - topLevelToDraw ) * 3 * (int)(CONSTANT_VERTICAL_INCREMENT/scale)),
 				MaxLevelPixelWidth);
 
-		if (id == getFirstUsefulNode()) {
+		if (id == getFirstUsefulNode())
 			nodeMap.get(id).setLocation(150 + (MaxLevelPixelWidth/2),y);
-		}
 	}
 
 
@@ -804,9 +781,8 @@ public class StapGraph extends Graph {
 				if (collapse_mode && data.isPartOfCollapsedNode() ) {
 					continue;
 				}
-				if (!collapse_mode && nodeDataMap.get(id).isCollapsed) {
+				if (!collapse_mode && nodeDataMap.get(id).isCollapsed)
 					continue;
-				}
 			}
 
 			if (nodeMap.get(id) == null) {
@@ -820,9 +796,8 @@ public class StapGraph extends Graph {
 			//Placement algorithm
 			if (getAnimationMode() == CONSTANT_ANIMATION_SLOW){
 
-				if (counter <= ANIMATION_TIME) {
+				if (counter <= ANIMATION_TIME)
 					Animation.markBegin();
-				}
 				n.setLocation(150 + (nodeMap.get(getRootVisibleNodeNumber()).getLocation().x),nodeMap.get(getRootVisibleNodeNumber()).getLocation().y);
 				n.setLocation(150 + (MaxLevelPixelWidth / (total + 1) * count),height);
 
@@ -842,24 +817,21 @@ public class StapGraph extends Graph {
 
 
 
-			if (getNodeData(n.id).isMarked()) {
+			if (getNodeData(n.id).isMarked())
 				n.setBackgroundColor(CONSTANT_MARKED);
-			}
 
 
 			// FIND ALL THE NODES THAT THIS NODE CALLS AND MAKE CONNECTIONS
 			List<Integer> setOfCallees = null;
-			if (collapse_mode) {
+			if (collapse_mode)
 				setOfCallees = nodeDataMap.get(id).collapsedChildren;
-			} else {
+			else
 				setOfCallees = nodeDataMap.get(id).children;
-			}
 
 			for (int val : setOfCallees) {
-				if (nodeMap.get(val) != null) {
+				if (nodeMap.get(val) != null)
 					nodeMap.get(val).makeConnection(SWT.NONE, n,
 						nodeDataMap.get(val).timesCalled);
-				}
 			}
 
 			count++;
@@ -901,9 +873,8 @@ public class StapGraph extends Graph {
 		//-------------Delete all nodes
 		for (int i : nodeMap.keySet()) {
 			StapNode node = nodeMap.get(i);
-			if (node == null) {
+			if (node == null)
 				continue;
-			}
 
 			node.unhighlight();
 			node.dispose();
@@ -926,16 +897,14 @@ public class StapGraph extends Graph {
 	 */
 	private void deleteLevelsFromTop(int numberOfLevelsToDelete) {
 
-		if (numberOfLevelsToDelete <= 0) {
+		if (numberOfLevelsToDelete <= 0)
 			return;
-		}
 
 		for (int i = 0; i < numberOfLevelsToDelete; i++) {
 			List<Integer> level = levels.get(topLevelToDraw);
 			for (int j = 0; j < level.size(); j++) {
-				if (nodeMap.get(level.get(j)) != null) {
+				if (nodeMap.get(level.get(j)) != null)
 					nodeMap.remove(level.get(j)).dispose();
-				}
 			}
 			topLevelToDraw++;
 		}
@@ -948,17 +917,15 @@ public class StapGraph extends Graph {
 	 */
 	private void deleteLevelsFromBottom(int numberOfLevelsToDelete) {
 
-		if (numberOfLevelsToDelete <= 0) {
+		if (numberOfLevelsToDelete <= 0)
 			return;
-		}
 
 		for (int i = 0; i < numberOfLevelsToDelete; i++) {
 			List<Integer> level = levels.get(getBottomLevelToDraw());
 
 			for (int j = 0; j < level.size(); j++) {
-				if (nodeMap.get(level.get(j)) != null) {
+				if (nodeMap.get(level.get(j)) != null)
 					nodeMap.remove(level.get(j)).dispose();
-				}
 			}
 			bottomLevelToDraw--;
 		}
@@ -989,9 +956,8 @@ public class StapGraph extends Graph {
 		changeLevelLimits(new_topLevelToDraw);
 
 		int new_bottomLevelToDraw = new_topLevelToDraw + levelBuffer;
-		if (new_bottomLevelToDraw > lowestLevelOfNodesAdded) {
+		if (new_bottomLevelToDraw > lowestLevelOfNodesAdded)
 			new_bottomLevelToDraw = lowestLevelOfNodesAdded;
-		}
 
 		deleteLevelsFromTop(new_topLevelToDraw - topLevelToDraw);
 		deleteLevelsFromBottom(getBottomLevelToDraw() - new_bottomLevelToDraw);
@@ -1009,11 +975,10 @@ public class StapGraph extends Graph {
 
 		for (int level = lvl; level < maxLevel; level++) {
 			for (int id : levels.get(level)) {
-				if (isCollapseMode()) {
+				if (isCollapseMode())
 					list = getNodeData(id).collapsedChildren;
-				} else {
+				else
 					list = getNodeData(id).children;
-				}
 
 				numberOfNodes += list.size();
 
@@ -1064,9 +1029,8 @@ public class StapGraph extends Graph {
 	public void draw(int drawMode, int animationMode, int id) {
 		setDrawMode(drawMode);
 		setAnimationMode(animationMode);
-		if (nodeDataMap.get(id) == null) {
+		if (nodeDataMap.get(id) == null)
 			return;
-		}
 		this.clearSelection();
 		treeLevelFromRoot = 0;
 		currentPositionInLevel.clear();
@@ -1131,9 +1095,8 @@ public class StapGraph extends Graph {
 		//-------------Draw tree
 		if (draw_mode == CONSTANT_DRAWMODE_TREE) {
 			if (animation_mode == CONSTANT_ANIMATION_SLOW) {
-				if (nodeMap.get(id) == null) {
+				if (nodeMap.get(id) == null)
 					nodeMap.put(id, getNodeData(id).makeNode(this));
-				}
 				int tempX = nodeMap.get(id).getLocation().x;
 				int tempY = nodeMap.get(id).getLocation().y;
 				Animation.markBegin();
@@ -1192,9 +1155,8 @@ public class StapGraph extends Graph {
 		else if (draw_mode == CONSTANT_DRAWMODE_LEVEL) {
 			rootVisibleNodeNumber = id;
 			if (animation_mode == CONSTANT_ANIMATION_SLOW) {
-				if (nodeMap.get(id) == null) {
+				if (nodeMap.get(id) == null)
 					nodeMap.put(id, getNodeData(id).makeNode(this));
-				}
 
 				Animation.markBegin();
 				moveAllNodesTo(nodeMap.get(id).getLocation().x, nodeMap.get(id).getLocation().y);
@@ -1205,9 +1167,8 @@ public class StapGraph extends Graph {
 				drawBox(id, 0, 0);
 
 			} else {
-				if (nodeMap.get(id) == null) {
+				if (nodeMap.get(id) == null)
 					nodeMap.put(id, getNodeData(id).makeNode(this));
-				}
 				deleteAll(id);
 				drawBox(id, 0, 0);
 
@@ -1222,9 +1183,8 @@ public class StapGraph extends Graph {
 			drawAggregateView();
 		}
 
-		if (getNode(id) != null) {
+		if (getNode(id) != null)
 			getNode(id).unhighlight();
-		}
 		clearSelection();
 
 		//AFTER FIRST LOADING LET THE GRAPH EXPAND TO FILL THE VIEW
@@ -1240,9 +1200,7 @@ public class StapGraph extends Graph {
 		List<GraphNode> list = this.getSelection();
 
 		for (GraphNode n : list) {
-			if (n != null) {
-				n.unhighlight();
-			}
+			if (n != null) n.unhighlight();
 		}
 		this.setSelection(null);
 
@@ -1270,17 +1228,15 @@ public class StapGraph extends Graph {
 			nodeMap.get(id).setLocation(x + xTarget, y + yTarget);
 		}
 		//If a node is null, then its children must be null
- else {
+		else
 			return;
-		}
 
 		List<Integer> list = null;
 
-		if (collapse_mode) {
+		if (collapse_mode)
 			list = nodeDataMap.get(id).collapsedChildren;
-		} else {
+		else
 			list = nodeDataMap.get(id).children;
-		}
 		for (int i = 0; i < list.size(); i++) {
 			moveRecursive(list.get(i), xTarget, yTarget);
 		}
@@ -1294,9 +1250,7 @@ public class StapGraph extends Graph {
 	 */
 	public void moveAllNodesBy(int xDiff, int yDiff) {
 		for (int id : nodeMap.keySet()) {
-			if (nodeMap.get(id) == null) {
-				continue;
-			}
+			if (nodeMap.get(id) == null) continue;
 
 			int x = nodeMap.get(id).getLocation().x;
 			int y = nodeMap.get(id).getLocation().y;
@@ -1323,9 +1277,8 @@ public class StapGraph extends Graph {
 		//If all nodes have been collapsed, don't do anything
 		setCollapseMode(true);
 
-		if (nodeDataMap.get(id).children.size() == 0) {
+		if (nodeDataMap.get(id).children.size() == 0)
 			return true;
-		}
 		nodeDataMap.get(id).hasCollapsedChildren = true;
 
 
@@ -1346,13 +1299,11 @@ public class StapGraph extends Graph {
 		for (int i = 0; i < size; i++) {
 
 			int childID = nodeDataMap.get(id).children.get(i);
-			if (getNodeData(childID).isPartOfCollapsedNode()) {
+			if (getNodeData(childID).isPartOfCollapsedNode())
 				continue;
-			}
 			int childLevel = getLevelOfNode(childID);
-			if (collapsedLevelSize.get(childLevel) == null) {
+			if (collapsedLevelSize.get(childLevel) == null)
 				collapsedLevelSize.put(childLevel, 0);
-			}
 			String nodeName = nodeDataMap.get(childID).name;
 
 			/*
@@ -1395,11 +1346,10 @@ public class StapGraph extends Graph {
 					nodeDataMap.get(otherChildID).setPartOfCollapsedNode(aggregateID);
 					nodeDataMap.get(aggregateID).uncollapsedPiece = otherChildID;
 
-				} else {
+				} else
 					//-------------Aggregate - third and additional nodes
 					aggregateData(nodeDataMap.get(aggregateID), nodeDataMap
 							.get(childID));
-				}
 
 
 				//-------------Complete aggregation
@@ -1442,9 +1392,8 @@ public class StapGraph extends Graph {
 			//This node is technically a part of itself
 			nodeDataMap.get(childID).setPartOfCollapsedNode(childID);
 
-			if (getNodeData(childID).isMarked()) {
+			if (getNodeData(childID).isMarked())
 				markedCollapsedNodes.add(childID);
-			}
 		}
 
 
@@ -1507,9 +1456,8 @@ public class StapGraph extends Graph {
 	 * @return First node that is not the dummy first node
 	 */
 	public int getFirstUsefulNode() {
-		if (threaded) {
+		if (threaded)
 			return 0;
-		}
 		int id = 0;
 
 		if (nodeDataMap.get(id).name == CONSTANT_TOP_NODE_NAME) {
@@ -1547,9 +1495,8 @@ public class StapGraph extends Graph {
 	 * @return
 	 */
 	public boolean hasChildren(int nodeID) {
-		if (nodeDataMap.get(nodeID).children.size() > 0) {
+		if (nodeDataMap.get(nodeID).children.size() > 0)
 			return true;
-		}
 		return false;
 	}
 
@@ -1581,9 +1528,9 @@ public class StapGraph extends Graph {
 
 	public void setCollapseMode(boolean value) {
 		if (collapse_mode == value ||
-				draw_mode == StapGraph.CONSTANT_DRAWMODE_AGGREGATE) {
+				draw_mode == StapGraph.CONSTANT_DRAWMODE_AGGREGATE)
 			return;
-		}
+
 		if (draw_mode != StapGraph.CONSTANT_DRAWMODE_LEVEL) {
 			if (collapse_mode) {
 				//Collapsed to noncollapsed
@@ -1637,9 +1584,8 @@ public class StapGraph extends Graph {
 	 * @return Time in milliseconds
 	 */
 	public long getTotalTime() {
-		if (totalTime == 0 || totalTime > 1200000000000000000l) {
+		if (totalTime == 0 || totalTime > 1200000000000000000l)
 			return endTime - startTime;
-		}
 		return totalTime;
 	}
 
@@ -1782,9 +1728,8 @@ public class StapGraph extends Graph {
 		for (int count = callOrderList.indexOf(id) + 1;
 			count < callOrderList.size(); count++) {
 			int next = callOrderList.get(count);
-			if (getNodeData(id) == null) {
+			if (getNodeData(id) == null)
 				continue;
-			}
 			if (!getNodeData(next).isCollapsed || getNodeData(next).isOnlyChildWithThisName()) {
 				return next;
 			}
@@ -1805,9 +1750,8 @@ public class StapGraph extends Graph {
 
 		for (int count = callOrderList.indexOf(id) - 1;
 			count > -1; count--) {
-			if (getNodeData(id) == null) {
+			if (getNodeData(id) == null)
 				continue;
-			}
 			if (!getNodeData(id).isCollapsed || getNodeData(id).isOnlyChildWithThisName()) {
 				returnID = callOrderList.get(count);
 				return returnID;
@@ -1828,17 +1772,17 @@ public class StapGraph extends Graph {
 	 */
 	public int getNextMarkedNode() {
 		List<Integer> list = markedNodes;
-		if (collapse_mode) {
+		if (collapse_mode)
 			list = markedCollapsedNodes;
-		}
-		if (list.size() == 0) {
+
+		if (list.size() == 0)
 			return -1;
-		}
+
 
 		nextMarkedNode++;
-		if (nextMarkedNode >= list.size()) {
+		if (nextMarkedNode >= list.size())
 			nextMarkedNode = 0;
-		}
+
 
 		return list.get(nextMarkedNode);
 	}
@@ -1852,17 +1796,16 @@ public class StapGraph extends Graph {
 	 */
 	public int getPreviousMarkedNode() {
 		List<Integer> list = markedNodes;
-		if (collapse_mode) {
+		if (collapse_mode)
 			list = markedCollapsedNodes;
-		}
-		if (list.size() == 0){
+
+		if (list.size() == 0)
 			return -1;
-		}
 
 		nextMarkedNode--;
-		if (nextMarkedNode < 0) {
+		if (nextMarkedNode < 0)
 			nextMarkedNode = list.size() - 1;
-		}
+
 
 		return list.get(nextMarkedNode);
 	}
@@ -1935,16 +1878,12 @@ public class StapGraph extends Graph {
 	}
 
 	public int min(int a, int b) {
-		if (a < b) {
-			return a;
-		}
+		if (a < b) return a;
 		return b;
 	}
 
 	public int max(int a, int b) {
-		if (a > b) {
-			return a;
-		}
+		if (a > b) return a;
 		return b;
 	}
 

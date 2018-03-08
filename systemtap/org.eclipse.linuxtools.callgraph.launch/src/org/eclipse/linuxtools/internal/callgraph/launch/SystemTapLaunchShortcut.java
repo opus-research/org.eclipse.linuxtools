@@ -196,9 +196,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			ILaunchConfiguration second) {
 
 		try {
-			if (first.getAttributes().equals(second.getAttributes())) {
+			if (first.getAttributes().equals(second.getAttributes()))
 				return true;
-			}
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -221,17 +220,15 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 * @throws IOException
 	 */
 	protected void finishLaunch(String name, String mode, ILaunchConfigurationWorkingCopy wc) throws IOException  {
-		if (!finishLaunchHelper()) {
+		if (!finishLaunchHelper())
 			return;
-		}
 
 		if (wc != null) {
 
 			wc.setAttribute(LaunchConfigurationConstants.SCRIPT_PATH,scriptPath);
 
-			if (!invalid(binaryPath)) {
+			if (!invalid(binaryPath))
 				wc.setAttribute(LaunchConfigurationConstants.BINARY_PATH,binaryPath);
-			}
 
 			outputPath = escapeSpecialCharacters(outputPath);
 			wc.setAttribute(LaunchConfigurationConstants.OUTPUT_PATH,outputPath);
@@ -256,9 +253,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				e.printStackTrace();
 			}*/
 
-			if (!testMode) {
+			if (!testMode)
 				DebugUITools.launch(wc, mode);
-			}
 		}
 
 	}
@@ -279,9 +275,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 *
 	 */
 	private boolean finishLaunchHelper() throws IOException {
-		if (invalid(scriptPath)) {
+		if (invalid(scriptPath))
 			scriptPath = setScriptPath();
-		}
 		if (invalid(scriptPath)) {
 			// Setting the variable didn't work, do not launch.
 
@@ -294,9 +289,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			return false;
 		}
 
-		if (invalid(parserID)) {
+		if (invalid(parserID))
 			parserID = setParserID();
-		}
 		if (invalid(parserID)) {
 			SystemTapUIErrorMessages mess = new SystemTapUIErrorMessages(
 					Messages.getString("SystemTapLaunchShortcut.InvalidParser1"), //$NON-NLS-1$
@@ -305,9 +299,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			return false;
 		}
 
-		if (invalid(viewID)) {
+		if (invalid(viewID))
 			viewID = setViewID();
-		}
 		if (invalid(viewID)) {
 			// Setting the variable didn't work, do not launch.
 			SystemTapUIErrorMessages mess = new SystemTapUIErrorMessages(
@@ -318,9 +311,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 		}
 
 		if (needToGenerate) {
-			if (invalid(generatedScript)) {
+			if (invalid(generatedScript))
 				generatedScript = generateScript();
-			}
 			if (invalid(generatedScript)) {
 				// Setting the variable didn't work, do not launch.
 				SystemTapUIErrorMessages mess = new SystemTapUIErrorMessages(
@@ -503,9 +495,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 */
 	protected String getFunctionsFromBinary(IBinary bin, String targetResource) {
 		String funcs = ""; //$NON-NLS-1$
-		if (bin == null) {
+		if (bin == null)
 			return funcs;
-		}
 		try {
 			ArrayList<ICContainer> list = new ArrayList<ICContainer>();
 			TranslationUnitVisitor v = new TranslationUnitVisitor();
@@ -521,9 +512,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 						funcs += v.getFunctions();
 						return funcs;
 					} else {
-						if (!list.contains(c)) {
+						if (!list.contains(c))
 							list.add(c);
-						}
 					}
 				}
 
@@ -541,9 +531,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 								funcs += (v.getFunctions());
 								return funcs;
 							} else {
-								if (!list.contains(c)) {
+								if (!list.contains(c))
 									list.add(c);
-								}
 							}
 						}
 					}
@@ -634,12 +623,10 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 					if (obj instanceof ICContainer) {
 						ICElement[] array = ((ICContainer) obj).getChildren();
 						for (ICElement c : array) {
-							if (!(validElement(c))) {
+							if (!(validElement(c)))
 								continue;
-							}
-							if (c.getElementName().contains("main") && !output.contains(c)) {
+							if (c.getElementName().contains("main") && !output.contains(c)) //$NON-NLS-1$
 								output.add(c);
-							}
 						}
 					}
 				}
@@ -654,15 +641,13 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 			result = output.toArray();
 		} else {
-			if (dialog.open() == Window.CANCEL) {
+			if (dialog.open() == Window.CANCEL)
 				return null;
-			}
 			result = dialog.getResult();
 		}
 
-		if (result == null) {
+		if (result == null)
 			return null;
-		}
 
 		ArrayList<Object> output = new ArrayList<Object>();
 		try {
@@ -670,12 +655,10 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				if (obj instanceof ICContainer) {
 					ICElement[] array = ((ICContainer) obj).getChildren();
 					for (ICElement c : array) {
-						if (!(validElement(c))) {
+						if (!(validElement(c)))
 							continue;
-						}
-						if (!output.contains(c)) {
+						if (!output.contains(c))
 							output.add(c);
-						}
 					}
 				} else if ((obj instanceof ICElement)
 						&& validElement((ICElement) obj)
@@ -786,12 +769,10 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 * @return number if number is in [low,high], low, or high.
 	 */
 	private int cap(int number, int low, int high) {
-		if (number > high) {
+		if (number > high)
 			return high;
-		}
-		if (number < low) {
+		if (number < low)
 			return low;
-		}
 		return number;
 	}
 
@@ -823,9 +804,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			IIndex index = null;
 			IProgressMonitor m = monitor;
 
-			if (m == null) {
+			if (m == null)
 				m = new NullProgressMonitor();
-			}
 			m.worked(1);
 
 			try {

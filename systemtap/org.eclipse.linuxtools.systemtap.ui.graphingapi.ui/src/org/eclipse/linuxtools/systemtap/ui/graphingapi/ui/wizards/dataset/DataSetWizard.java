@@ -60,9 +60,8 @@ public class DataSetWizard extends Wizard implements INewWizard {
 	@Override
 	public boolean canFinish() {
 		IWizardPage page = this.getContainer().getCurrentPage();
-		if((null != dataSet) && (null != parser) && (page instanceof ParsingWizardPage)) {
+		if((null != dataSet) && (null != parser) && (page instanceof ParsingWizardPage))
 			return true;
-		}
 		return false;
 	}
 
@@ -89,9 +88,8 @@ public class DataSetWizard extends Wizard implements INewWizard {
 
 	private boolean writeParsingExpression() {
 		XMLMemento data = copyExisting();
-		if(null == data) {
+		if(null == data)
 			data = XMLMemento.createWriteRoot(IDataSetParser.XMLDataSetSettings);
-		}
 
 		try {
 			IMemento child = data.createChild(IDataSetParser.XMLFile, scriptFile);
@@ -154,9 +152,8 @@ public class DataSetWizard extends Wizard implements INewWizard {
 
 	protected boolean openFile() {
 		try {
-			if (!metaFile.exists()) {
+			if (!metaFile.exists())
 				metaFile.createNewFile();
-			}
 		} catch(IOException ioe) {
 			return false;
 		}
@@ -166,12 +163,10 @@ public class DataSetWizard extends Wizard implements INewWizard {
 
 	@Override
 	public void dispose() {
-		if(null != getContainer()) {
+		if(null != getContainer())
 			((WizardDialog)getContainer()).removePageChangedListener(pageListener);
-		}
-		if(null != dataSetPage) {
+		if(null != dataSetPage)
 			dataSetPage.dispose();
-		}
 		if(null != parsingPages) {
 			for(int i=0; i<parsingPages.length; i++) {
 				if(null != parsingPages[i]) {

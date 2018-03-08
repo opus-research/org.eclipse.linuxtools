@@ -56,9 +56,8 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 
 	@Override
 	protected boolean readParsingExpression() {
-		if(null == wizard.metaFile && !wizard.openFile()) {
+		if(null == wizard.metaFile && !wizard.openFile())
 			return false;
-		}
 
 		try {
 			FileReader reader = new FileReader(wizard.metaFile);
@@ -73,24 +72,20 @@ public class SelectTableParsingWizardPage extends ParsingWizardPage {
 			IMemento[] children = data.getChildren(IDataSetParser.XMLFile);
 			int i;
 			for(i=0; i<children.length; i++) {
-				if(children[i].getID().equals(wizard.scriptFile)) {
+				if(children[i].getID().equals(wizard.scriptFile))
 					break;
-				}
 			}
 
-			if(i>=children.length) {
+			if(i>=children.length)	//Didn't find file
 				return false;
-			}
 
-			if(0 != children[i].getString(IDataSetParser.XMLdataset).compareTo(TableDataSet.ID)) {
+			if(0 != children[i].getString(IDataSetParser.XMLdataset).compareTo(TableDataSet.ID))
 				return false;
-			}
 
 			IMemento[] children2 = children[i].getChildren(IDataSetParser.XMLColumn);
 			txtSeries.setText("" + children2.length); //$NON-NLS-1$
-			for(int j=0; j<children2.length; j++) {
+			for(int j=0; j<children2.length; j++)
 				txtRegExpr[j*COLUMNS].setText(children2[j].getString(IDataSetParser.XMLname));
-			}
 
 			children2 = children[i].getChildren(IDataSetParser.XMLSeries);
 			txtSeries.setText("" + children2.length); //$NON-NLS-1$
