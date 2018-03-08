@@ -26,7 +26,7 @@ package org.eclipse.linuxtools.tmf.core.trace;
  *
  * @see ITmfLocation
  */
-public interface ITmfContext {
+public interface ITmfContext extends Cloneable {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -79,5 +79,10 @@ public interface ITmfContext {
      * Cleanup hook
      */
     public void dispose();
+
+    /**
+     * @return a clone of the context
+     */
+    public ITmfContext clone();
 
 }
