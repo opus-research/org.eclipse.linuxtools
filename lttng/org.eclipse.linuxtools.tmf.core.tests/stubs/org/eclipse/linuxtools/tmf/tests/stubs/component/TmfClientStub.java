@@ -25,14 +25,14 @@ import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfSyntheticEventStub;
 @SuppressWarnings({"nls","javadoc"})
 public class TmfClientStub extends TmfComponent {
 
-    private TmfDataProvider[] fProviders;
+    private TmfDataProvider<TmfSyntheticEventStub>[] fProviders;
 
     public TmfClientStub() {
         super("TmfClientStub");
     }
 
     public void findProvider() {
-        fProviders = TmfProviderManager.getProviders(TmfSyntheticEventStub.class, TmfSyntheticEventProviderStub.class);
+        fProviders = (TmfDataProvider<TmfSyntheticEventStub>[]) TmfProviderManager.getProviders(TmfSyntheticEventStub.class, TmfSyntheticEventProviderStub.class);
         //		TmfEventRequest<TmfEventStub> request;
         System.out.println(fProviders.length);
     }

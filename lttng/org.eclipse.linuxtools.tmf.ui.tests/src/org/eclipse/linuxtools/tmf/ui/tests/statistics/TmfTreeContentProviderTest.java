@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial design and implementation
+ *   Mathieu Denis (mathieu.denis@polymtl.ca)  - Initial design and implementation
  *   Bernd Hufmann - Fixed warnings
  *******************************************************************************/
 
@@ -25,12 +25,12 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.util.TmfFixedArray;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.ITmfExtraEventInfo;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.AbsTmfStatisticsTree;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.Messages;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfBaseStatisticsTree;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfStatisticsTreeNode;
-import org.eclipse.linuxtools.tmf.ui.viewers.statistics.model.TmfTreeContentProvider;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.ITmfExtraEventInfo;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.AbsTmfStatisticsTree;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfBaseStatisticsTree;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfStatisticsTreeNode;
+import org.eclipse.linuxtools.tmf.ui.views.statistics.model.TmfTreeContentProvider;
 
 /**
  * TmfTreeContentProvider Test Cases.
