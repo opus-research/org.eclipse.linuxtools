@@ -10,6 +10,7 @@
  *   Florian Wininger - Initial API and implementation
  *   Alexandre Montplaisir - Refactoring, performance tweaks
  *   Bernd Hufmann - Updated signal handling
+ *   Marc-Andre Laperle - Add time zone preference
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statesystem;
@@ -30,6 +31,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
@@ -374,10 +376,8 @@ public class TmfStateSystemExplorer extends TmfView {
 
             item.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND)) ;
 
-            if (!filterStatus) {
-                if (!value.equals(item.getText(VALUE_COL)) || fCurrentTimestamp == startTime.getValue()) {
+            if (!filterStatus && (!value.equals(item.getText(VALUE_COL)) || fCurrentTimestamp == startTime.getValue())) {
                     item.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_YELLOW));
-                }
             }
 
             item.setText(VALUE_COL, value) ;
@@ -481,7 +481,7 @@ public class TmfStateSystemExplorer extends TmfView {
         Thread thread = new Thread("State system visualizer update") { //$NON-NLS-1$
             @Override
             public void run() {
-                ITmfTimestamp currentTime = signal.getBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
+                ITmfTimestamp currentTime = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
                 fCurrentTimestamp = currentTime.getValue();
 
                 if (filterStatus) {
@@ -499,6 +499,23 @@ public class TmfStateSystemExplorer extends TmfView {
             @Override
             public void run() {
                 createTable();
+            }
+        };
+        thread.start();
+    }
+    
+    /**
+     * Update the display to use the updated timestamp format
+     *
+     * @param signal the incoming signal
+     * @since 2.1
+     */
+    @TmfSignalHandler
+    public void timestampFormatUpdated(TmfTimestampFormatUpdateSignal signal) {
+        Thread thread = new Thread("State system visualizer update") { //$NON-NLS-1$
+            @Override
+            public void run() {
+                updateTable();
             }
         };
         thread.start();

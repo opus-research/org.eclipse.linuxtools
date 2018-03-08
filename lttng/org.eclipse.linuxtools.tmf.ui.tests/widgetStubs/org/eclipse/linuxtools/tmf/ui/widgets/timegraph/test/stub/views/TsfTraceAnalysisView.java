@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Alvaro Sanchez-Leon (alvsan09@gmail.com) - Initial API and implementation
- *   Patrick Tasse - Support selection range
  *******************************************************************************/
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.test.stub.views;
 
@@ -604,18 +603,18 @@ public class TsfTraceAnalysisView extends ViewPart implements
         } else {
             synchViewer = tsfviewer;
         }
-        long selTimens = event.getBeginTime();
+        long selTimens = event.getTime();
         long tms = (long) (selTimens * 1E-6);
         Date date = new Date(tms);
         String fDate = stimeformat.format(date);
         String ns = formatNs(selTimens);
 
         System.out.println("TsfTraceAnalysisView.timeSelected() Selected Event: \nTime: "
-                + event.getBeginTime()
+                + event.getTime()
                 + "\nSelected Time: "
                 + selTimens + " " + fDate + " " + ns);
 
-        synchViewer.setSelectedTime(event.getBeginTime(), true);
+        synchViewer.setSelectedTime(event.getTime(), true);
     }
 
     @Override
