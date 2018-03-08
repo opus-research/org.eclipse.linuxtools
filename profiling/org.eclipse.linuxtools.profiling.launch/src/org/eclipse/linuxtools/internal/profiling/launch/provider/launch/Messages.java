@@ -22,6 +22,7 @@ public class Messages extends NLS {
 	public static String ProjectSettings_0;
 	public static String PreferenceLink_0;
 	public static String ProviderLaunchConfigurationPrompt_0;
+	public static String ProfilingTabName_0;
 
 	static {
 		// initialize resource bundle
