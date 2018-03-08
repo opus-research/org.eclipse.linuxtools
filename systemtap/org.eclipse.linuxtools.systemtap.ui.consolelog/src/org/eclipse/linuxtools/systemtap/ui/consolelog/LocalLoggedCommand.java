@@ -67,7 +67,14 @@ public class LocalLoggedCommand extends LoggedCommand2 {
 
 	public synchronized void stop() {
 		if(!stopped) {
-			process.destroy();
+			try {
+				process.waitFor();
+			} catch (InterruptedException e) {
+				// This thread was interrupted while waiting for
+				// the process to exit. Destroy the process just
+				// to make sure it exits.
+				process.destroy();
+			}
 			stopped = true;
 			if(null != errorGobbler)
 				errorGobbler.stop();
