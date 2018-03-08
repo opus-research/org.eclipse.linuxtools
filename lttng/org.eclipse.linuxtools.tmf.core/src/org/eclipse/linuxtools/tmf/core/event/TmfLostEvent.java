@@ -58,7 +58,8 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
     public TmfLostEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp,
             final String source, final ITmfEventType type, final String reference, final TmfTimeRange timeRange, final long nbLostEvents)
     {
-        super(trace, rank, timestamp, source, type, null, reference);
+        // TODO: need to pass model ref?
+        super(trace, rank, timestamp, source, type, null, reference, null);
         fTimeRange = timeRange;
         fNbLostEvents = nbLostEvents;
     }

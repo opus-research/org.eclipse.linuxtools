@@ -8,6 +8,7 @@
  *
  * Contributors: Matthew Khouzam - Initial Design and Grammar
  * Contributors: Francis Giraldeau - Initial API and implementation
+ * Contributors: Ansgar Radermacher - added modelURI
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
@@ -806,6 +807,10 @@ public class IOStructGen {
         } else if (left.equals(CTFStrings.LOGLEVEL2)) {
             long logLevel = parseUnaryInteger((CommonTree) rightNode.getChild(0));
             event.setLogLevel(logLevel);
+        } else if (left.equals(CTFStrings.MODEL_URI)) {
+            /* URI */
+            String uri = getModelURI(rightNode);
+            event.setModelURI(uri);
         } else {
             /* Unknown event attribute, we'll simply ignore it */
             // FIXME log this?
@@ -2631,6 +2636,19 @@ public class IOStructGen {
             return str;
         }
         throw new ParseException("invalid value for event name"); //$NON-NLS-1$
+    }
+
+    private static String getModelURI(CommonTree rightNode)
+            throws ParseException {
+
+        CommonTree firstChild = (CommonTree) rightNode.getChild(0);
+
+        if (isUnaryString(firstChild)) {
+            String str = concatenateUnaryStrings(rightNode.getChildren());
+
+            return str;
+        }
+        throw new ParseException("invalid value for model.emf.URI"); //$NON-NLS-1$
     }
 
     private static long getEventID(CommonTree rightNode) throws ParseException {

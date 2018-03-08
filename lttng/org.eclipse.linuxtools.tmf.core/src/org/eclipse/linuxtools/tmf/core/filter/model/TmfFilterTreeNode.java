@@ -177,6 +177,9 @@ public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable
         else if (ITmfEvent.EVENT_FIELD_REFERENCE.equals(field)) {
             value = event.getReference();
         }
+        else if (ITmfEvent.EVENT_FIELD_MODEL_URI.equals(field)) {
+            value = event.getModelURI();
+        }
         else {
             ITmfEventField eventField = event.getContent().getField(field);
             if (eventField != null) {

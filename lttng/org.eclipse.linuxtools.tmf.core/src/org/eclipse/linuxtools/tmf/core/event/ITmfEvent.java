@@ -67,6 +67,11 @@ public interface ITmfEvent {
      */
     public static final String EVENT_FIELD_REFERENCE = ":reference:"; //$NON-NLS-1$
 
+    /**
+     * Pre-defined event reference attribute (for searching &filtering purposes)
+     */
+    public static final String EVENT_FIELD_MODEL_URI = ":modelURI:"; //$NON-NLS-1$
+
     // ------------------------------------------------------------------------
     // Getters
     // ------------------------------------------------------------------------
@@ -105,6 +110,11 @@ public interface ITmfEvent {
      * @return the event reference
      */
     public String getReference();
+
+    /**
+     * @return the model URI of the event
+     */
+    public String getModelURI();
 
     /**
      * @return a clone of the event
