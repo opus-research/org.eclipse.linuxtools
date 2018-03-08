@@ -23,7 +23,7 @@ import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 
 /**
@@ -70,7 +70,7 @@ public class TmfUml2SDTestTrace implements ITmfEventParser {
 
         long location = 0;
         if (context != null) {
-            location = ((TmfLongLocation) (context.getLocation())).getLongValue();
+            location = ((TmfLocation<Long>) (context.getLocation())).getLocation();
         }
 
         try {

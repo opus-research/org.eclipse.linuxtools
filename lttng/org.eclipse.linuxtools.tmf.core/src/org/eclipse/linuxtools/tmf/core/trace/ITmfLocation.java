@@ -9,7 +9,6 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Updated as per TMF Trace Model 1.0
- *   Alexandre Montplaisir - Removed generic type, use ITmfLocationData
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -22,13 +21,14 @@ package org.eclipse.linuxtools.tmf.core.trace;
  * enough information to allow the positioning of the trace 'pointer' to read an
  * arbitrary event.
  * <p>
- * This location information type is trace-specific and must implement
- * ITmfLocationData
+ * This location is trace-specific and must be comparable.
  *
- * @version 2.0
+ * @param <L> The trace location type
+ *
+ * @version 1.0
  * @author Francois Chouinard
  */
-public interface ITmfLocation {
+public interface ITmfLocation<L extends Comparable<?>> {
 
     // ------------------------------------------------------------------------
     // Getters
@@ -36,9 +36,8 @@ public interface ITmfLocation {
 
     /**
      * @return the location
-     * @since 2.0
      */
-    public ITmfLocationData getLocationData();
+    public L getLocation();
 
     // ------------------------------------------------------------------------
     // Operations
@@ -47,6 +46,6 @@ public interface ITmfLocation {
     /**
      * @return a clone of the location
      */
-    public ITmfLocation clone();
+    public ITmfLocation<L> clone();
 
 }

@@ -13,34 +13,43 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
+import java.lang.reflect.Method;
+
 /**
  * A convenience implementation on of ITmfLocation. The generic class (L) must
  * be comparable.
  *
+ * @param <L> The trace lcoation type
  *
- * @version 2.0
+ * @version 1.0
  * @author Francois Chouinard
  */
-public class TmfLocation implements ITmfLocation, Cloneable {
+public class TmfLocation<L extends Comparable<L>> implements ITmfLocation<L>, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private ITmfLocationData fLocationData;
+    private L fLocation;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
+     * Default constructor (for the 'null' location)
+     */
+    @SuppressWarnings("unused")
+    private TmfLocation() {
+    }
+
+    /**
      * Standard constructor.
      *
-     * @param locationData the trace location
-     * @since 2.0
+     * @param location the trace location
      */
-    public TmfLocation(final ITmfLocationData locationData) {
-        fLocationData = locationData;
+    public TmfLocation(final L location) {
+        fLocation = location;
     }
 
     /**
@@ -48,20 +57,20 @@ public class TmfLocation implements ITmfLocation, Cloneable {
      *
      * @param location the original location
      */
-    public TmfLocation(final TmfLocation location) {
-        fLocationData = location.fLocationData;
+    public TmfLocation(final TmfLocation<L> location) {
+        fLocation = location.fLocation;
     }
 
     // ------------------------------------------------------------------------
     // Getters
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfLocation#getLocation()
      */
     @Override
-    public ITmfLocationData getLocationData() {
-        return fLocationData;
+    public L getLocation() {
+        return fLocation;
     }
 
     // ------------------------------------------------------------------------
@@ -72,12 +81,22 @@ public class TmfLocation implements ITmfLocation, Cloneable {
      * @see java.lang.Object#clone()
      */
     @Override
-    public TmfLocation clone() {
-        TmfLocation clone = null;
+    @SuppressWarnings("unchecked")
+    public TmfLocation<L> clone() {
+        TmfLocation<L> clone = null;
         try {
-            clone = (TmfLocation) super.clone();
-            clone.fLocationData = this.fLocationData.clone();
-        } catch (CloneNotSupportedException e) {
+            clone = (TmfLocation<L>) super.clone();
+            if (fLocation != null) {
+                final Class<?> clazz = fLocation.getClass();
+                final Method method = clazz.getMethod("clone", new Class[0]); //$NON-NLS-1$
+                final Object copy = method.invoke(this.fLocation, new Object[0]);
+                clone.fLocation = (L) copy;
+            } else {
+                clone.fLocation = null;
+            }
+        } catch (final CloneNotSupportedException e) {
+        } catch (final NoSuchMethodException e) {
+        } catch (final Exception e) {
             throw new InternalError(e.toString());
         }
         return clone;
@@ -94,7 +113,7 @@ public class TmfLocation implements ITmfLocation, Cloneable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fLocationData != null) ? fLocationData.hashCode() : 0);
+        result = prime * result + ((fLocation != null) ? fLocation.hashCode() : 0);
         return result;
     }
 
@@ -102,6 +121,7 @@ public class TmfLocation implements ITmfLocation, Cloneable {
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
@@ -112,12 +132,12 @@ public class TmfLocation implements ITmfLocation, Cloneable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final TmfLocation other = (TmfLocation) obj;
-        if (fLocationData == null) {
-            if (other.fLocationData != null) {
+        final TmfLocation<L> other = (TmfLocation<L>) obj;
+        if (fLocation == null) {
+            if (other.fLocation != null) {
                 return false;
             }
-        } else if (!fLocationData.equals(other.fLocationData)) {
+        } else if (!fLocation.equals(other.fLocation)) {
             return false;
         }
         return true;
@@ -126,8 +146,7 @@ public class TmfLocation implements ITmfLocation, Cloneable {
     @Override
     @SuppressWarnings("nls")
     public String toString() {
-        String loc = fLocationData == null ? "null" : fLocationData.toString();
-        return "TmfLocation [fLocation=" + loc + "]";
+        return "TmfLocation [fLocation=" + fLocation + "]";
     }
 
 }

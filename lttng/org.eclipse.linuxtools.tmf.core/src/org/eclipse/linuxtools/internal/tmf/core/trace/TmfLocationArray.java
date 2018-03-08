@@ -16,7 +16,6 @@ package org.eclipse.linuxtools.internal.tmf.core.trace;
 import java.util.Arrays;
 
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfLocationData;
 
 /**
  * A convenience class to store trace location arrays. The main purpose is to
@@ -25,13 +24,13 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfLocationData;
  * @version 1.0
  * @author Patrick Tasse
  */
-public class TmfLocationArray implements ITmfLocationData {
+public class TmfLocationArray implements Comparable<TmfLocationArray>, Cloneable {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final ITmfLocation[] fLocations;
+    private final ITmfLocation<? extends Comparable<?>>[] fLocations;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -42,7 +41,7 @@ public class TmfLocationArray implements ITmfLocationData {
      *
      * @param locations the locations
      */
-    public TmfLocationArray(ITmfLocation[] locations) {
+    public TmfLocationArray(ITmfLocation<? extends Comparable<?>>[] locations) {
         fLocations = locations;
     }
 
@@ -55,7 +54,7 @@ public class TmfLocationArray implements ITmfLocationData {
      *
      * @return the locations
      */
-    public ITmfLocation[] getLocations() {
+    public ITmfLocation<? extends Comparable<?>>[] getLocations() {
         return fLocations;
     }
 
@@ -68,9 +67,9 @@ public class TmfLocationArray implements ITmfLocationData {
      */
     @Override
     public TmfLocationArray clone() {
-        ITmfLocation[] clones = new ITmfLocation[fLocations.length];
+        ITmfLocation<? extends Comparable<?>>[] clones = new ITmfLocation<?>[fLocations.length];
         for (int i = 0; i < fLocations.length; i++) {
-            ITmfLocation location = fLocations[i];
+            ITmfLocation<?> location = fLocations[i];
             clones[i] = (location != null) ? location.clone() : null;
         }
         return new TmfLocationArray(clones);
@@ -81,16 +80,14 @@ public class TmfLocationArray implements ITmfLocationData {
     // ------------------------------------------------------------------------
 
     @Override
-    public int compareTo(ITmfLocationData other) {
-        if (other instanceof TmfLocationArray) {
-            TmfLocationArray o = (TmfLocationArray) other;
-            for (int i = 0; i < fLocations.length; i++) {
-                ITmfLocationData ld1 = fLocations[i].getLocationData();
-                ITmfLocationData ld2 = o.fLocations[i].getLocationData();
-                int result = ld1.compareTo(ld2);
-                if (result != 0) {
-                    return result;
-                }
+    @SuppressWarnings("rawtypes")
+    public int compareTo(TmfLocationArray o) {
+        for (int i = 0; i < fLocations.length; i++) {
+            ITmfLocation<? extends Comparable> l1 = (ITmfLocation<? extends Comparable>) fLocations[i].getLocation();
+            ITmfLocation<? extends Comparable> l2 = (ITmfLocation<? extends Comparable>) o.fLocations[i].getLocation();
+            int result = l1.getLocation().compareTo(l2.getLocation());
+            if (result != 0) {
+                return result;
             }
         }
         return 0;

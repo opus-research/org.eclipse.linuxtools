@@ -15,12 +15,11 @@ package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import junit.framework.TestCase;
 
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
-import org.eclipse.linuxtools.tmf.tests.stubs.trace.StringLocationStub;
-import org.eclipse.linuxtools.tmf.tests.stubs.trace.TimestampLocationStub;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLocation;
 
 /**
  * Test suite for the TmfContext class.
@@ -36,9 +35,9 @@ public class TmfContextTest extends TestCase {
     final Long aLong = 12345L;
     final TmfTimestamp aTimestamp = new TmfTimestamp();
 
-    final StringLocationStub fLocation1 = new StringLocationStub(aString);
-    final TmfLongLocation fLocation2 = new TmfLongLocation(aLong);
-    final TimestampLocationStub fLocation3 = new TimestampLocationStub(aTimestamp);
+    final TmfLocation<String> fLocation1 = new TmfLocation<String>(aString);
+    final TmfLocation<Long> fLocation2 = new TmfLocation<Long>(aLong);
+    final TmfLocation<ITmfTimestamp> fLocation3 = new TmfLocation<ITmfTimestamp>(aTimestamp);
 
     final long fRank1 = 1;
     final long fRank2 = 2;
