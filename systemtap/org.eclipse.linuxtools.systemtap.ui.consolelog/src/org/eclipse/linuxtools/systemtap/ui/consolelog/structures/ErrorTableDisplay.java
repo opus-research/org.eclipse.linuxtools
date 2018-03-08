@@ -52,9 +52,9 @@ public class ErrorTableDisplay {
 		table.addMouseListener(mouseListener);
 
 		TableColumn column;
-		for(String title: titles) {
+		for(int i = 0; i < titles.length; i++) {
 			column = new TableColumn(table, SWT.NONE);
-			column.setText(title);
+			column.setText(titles[i]);
 		}
 
 		updateColumns();
@@ -90,9 +90,8 @@ public class ErrorTableDisplay {
 			@Override
 			public void run() {
 				item = new TableItem(table, SWT.NULL);
-				for(int i=0; i<row.length; i++) {
+				for(int i=0; i<row.length; i++)
 					item.setText(i+1, row[i]);
-				}
 				item.setImage(img);
 				updateColumns();
 			}
@@ -106,9 +105,9 @@ public class ErrorTableDisplay {
 	 */
 	private void updateColumns() {
 		TableColumn[] columns = table.getColumns();
-		for (TableColumn column: columns) {
-			column.pack();
-			column.setMoveable(true);
+		for (int i = 0; i < columns.length; i++) {
+			columns[i].pack();
+			columns[i].setMoveable(true);
 		}
 	}
 
@@ -126,16 +125,13 @@ public class ErrorTableDisplay {
 			table = null;
 		}
 
-		if(titles != null) {
-			for(int i=0; i<titles.length; i++) {
+		if(titles != null)
+			for(int i=0; i<titles.length; i++)
 				titles[i] = null;
-			}
-		}
 		titles = null;
 
-		if(null != item) {
+		if(null != item)
 			item.dispose();
-		}
 		item = null;
 	}
 
@@ -154,9 +150,8 @@ public class ErrorTableDisplay {
 				if(location.indexOf(':') > 0) {
 					String[] pos = location.split(":"); //$NON-NLS-1$
 					line = Integer.parseInt(pos[0]);
-				} else {
+				} else
 					line = Integer.parseInt(location);
-				}
 
 				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 				IEditorPart ed = page.getActiveEditor();

@@ -106,9 +106,9 @@ public class ScriptConsole extends IOConsole {
 		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		ScriptConsole console;
 
-		for(IConsole con : ic) {
-			if (con instanceof ScriptConsole){
-				console = (ScriptConsole)con;
+		for(int i=0; i<ic.length; i++) {
+			if (ic[i] instanceof ScriptConsole){
+				console = (ScriptConsole)ic[i];
 				if(console.isRunning()){
 					return true;
 				}
@@ -125,9 +125,9 @@ public class ScriptConsole extends IOConsole {
 		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		ScriptConsole console;
 
-		for(IConsole con : ic) {
-			if (con instanceof ScriptConsole){
-				console = (ScriptConsole)con;
+		for(int i=0; i<ic.length; i++) {
+			if (ic[i] instanceof ScriptConsole){
+				console = (ScriptConsole)ic[i];
 				if(console.isRunning()){
 					console.stop();
 				}
@@ -155,9 +155,8 @@ public class ScriptConsole extends IOConsole {
 	protected void createErrorDaemon(IErrorParser parser) {
 		ErrorView errorView = null;
 		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ErrorView.ID);
-		if(ivp instanceof ErrorView) {
+		if(null != ivp && ivp instanceof ErrorView)
 			errorView = ((ErrorView)ivp);
-		}
 		errorDaemon = new ErrorStreamDaemon(this, errorView, parser);
 	}
 
@@ -205,12 +204,10 @@ public class ScriptConsole extends IOConsole {
 
 	private void run(LoggedCommand cmd, IErrorParser errorParser){
 		createConsoleDaemon();
-		if (errorParser != null) {
+		if (errorParser != null)
 			createErrorDaemon(errorParser);
-		}
-	    if (errorDaemon != null) {
+	    if (errorDaemon != null)
 	    	cmd.addErrorStreamListener(errorDaemon);
-	    }
         cmd.addInputStreamListener(consoleDaemon);
         cmd.start();
         activate();
@@ -260,16 +257,13 @@ public class ScriptConsole extends IOConsole {
 	 * @param file The new file to save the output to.
 	 */
 	public void saveStream(File file) {
-		if (isRunning()) {
-			if (!cmd.saveLog(file)) {
+		if (isRunning())
+			if (!cmd.saveLog(file))
 				MessageDialog
 						.openWarning(
 								PlatformUI.getWorkbench()
 										.getActiveWorkbenchWindow().getShell(),
 								Localization.getString("ScriptConsole.Problem"), Localization.getString("ScriptConsole.ErrorSavingLog")); //$NON-NLS-1$//$NON-NLS-2$
-
-			}
-		}
 	}
 
 	/**
@@ -298,11 +292,11 @@ public class ScriptConsole extends IOConsole {
 		if(this.moduleName == null){
 			moduleName = this.getName();
 			int lastSlash = moduleName.lastIndexOf('/')+1;
-			if (lastSlash < 0) {
+			if (lastSlash < 0){
 				lastSlash = 0;
 			}
 			int lastDot = moduleName.indexOf(".stp"); //$NON-NLS-1$
-			if (lastDot > 0) {
+			if (lastDot > 0){
 				moduleName = moduleName.substring(lastSlash, lastDot);
 			}
 		}
@@ -318,17 +312,14 @@ public class ScriptConsole extends IOConsole {
 	@Override
 	public void dispose() {
 		if(!isDisposed()) {
-			if(null != cmd) {
+			if(null != cmd)
 				cmd.dispose();
-			}
 			cmd = null;
-			if(null != errorDaemon) {
+			if(null != errorDaemon)
 				errorDaemon.dispose();
-			}
 			errorDaemon = null;
-			if(null != consoleDaemon) {
+			if(null != consoleDaemon)
 				consoleDaemon.dispose();
-			}
 			consoleDaemon = null;
 		}
 	}
@@ -340,8 +331,7 @@ public class ScriptConsole extends IOConsole {
 	@Override
 	public void setName(String name) {
 		super.setName(name);
-		if(null != ConsolePlugin.getDefault()) {
+		if(null != ConsolePlugin.getDefault())
 			ConsolePlugin.getDefault().getConsoleManager().refresh(this);
-		}
 	}
 }
