@@ -123,9 +123,11 @@ abstract class Attribute {
 
         /* Add recursive parents to the list, but stop at the root node */
         while (curNode.getParent() != null) {
-            list.addFirst(curNode.getName());
+            list.add(curNode.getName());
             curNode = curNode.getParent();
         }
+
+        Collections.reverse(list);
 
         return list.toArray(new String[0]);
     }
