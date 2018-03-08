@@ -39,9 +39,6 @@ public class PieChartPaintListener implements PaintListener {
 			bounds = plotArea.getBounds();
 		}
         double[][] series = this.getPieSeriesArray();
-        if (series.length == 0) {
-            return;
-        }
         int width = (bounds.width - bounds.x) / series.length;
         int x = bounds.x;
 
