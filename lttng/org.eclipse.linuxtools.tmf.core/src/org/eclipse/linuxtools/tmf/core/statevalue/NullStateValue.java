@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-
 /**
  * A state value that contains no particular value. It is sometimes needed over
  * a "null" reference, since we avoid NPE's this way.
@@ -43,20 +41,5 @@ final class NullStateValue extends TmfStateValue {
     @Override
     public String toString() {
         return "nullValue"; //$NON-NLS-1$
-    }
-
-    @Override
-    public int compareTo(ITmfStateValue value) {
-        return 0;
-    }
-
-    @Override
-    public ITmfStateValue add(ITmfStateValue stateValue) throws StateValueTypeException {
-        throw new StateValueTypeException();
-    }
-
-    @Override
-    public ITmfStateValue increment() throws StateValueTypeException {
-        throw new StateValueTypeException();
     }
 }
