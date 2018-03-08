@@ -18,13 +18,14 @@ import org.eclipse.linuxtools.internal.profiling.provider.ProviderOptionsTab;
  */
 public class MemoryOptionsTab extends ProviderOptionsTab {
 
+	@Override
 	public String getName() {
-		return Activator.PLUGIN_NAME;
+		return MemoryProfileConstants.PLUGIN_NAME;
 	}
 
 	@Override
 	protected String getProfilingType() {
-		return Activator.PROFILING_TYPE;
+		return MemoryProfileConstants.PROFILING_TYPE;
 	}
 
 }

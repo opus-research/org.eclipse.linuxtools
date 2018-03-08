@@ -12,33 +12,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>linuxtools-valgrind-parent</artifactId>
-    <groupId>org.eclipse.linuxtools.valgrind</groupId>
+    <artifactId>linuxtools-profiling-parent</artifactId>
+    <groupId>org.eclipse.linuxtools.profiling</groupId>
     <version>1.2.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>org.eclipse.linuxtools.valgrind.launch</artifactId>
+  <artifactId>org.eclipse.linuxtools.profiling.time</artifactId>
   <version>1.2.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 
-  <name>Linux Tools Valgrind Launch Plug-in</name>
-
- <build>
-     <!-- workaround for https://issues.sonatype.org/browse/TYCHO-168 -->
-     <resources>
-      <resource>
-        <directory>src</directory>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-source-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
+  <name>Linux Tools Profiling Time Launch Plug-in</name>
 
 </project>
