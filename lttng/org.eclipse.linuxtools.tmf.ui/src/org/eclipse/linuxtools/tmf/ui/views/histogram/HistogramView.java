@@ -40,6 +40,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * The purpose of this view is to provide graphical time distribution statistics about the trace events.
@@ -246,7 +247,7 @@ public class HistogramView extends TmfView {
         // Histogram
         fFullTraceHistogram = new FullTraceHistogram(this, fullRangeComposite);
 
-        IEditorPart editor = getSite().getPage().getActiveEditor();
+        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (editor instanceof ITmfTraceEditor) {
             ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
             if (trace != null) {

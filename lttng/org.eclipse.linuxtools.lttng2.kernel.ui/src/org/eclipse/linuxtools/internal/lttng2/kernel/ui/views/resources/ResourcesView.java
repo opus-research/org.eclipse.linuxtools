@@ -60,6 +60,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * Main implementation for the LTTng 2.0 kernel Resource view
@@ -348,7 +349,7 @@ public class ResourcesView extends TmfView {
         makeActions();
         contributeToActionBars();
 
-        IEditorPart editor = getSite().getPage().getActiveEditor();
+        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (editor instanceof ITmfTraceEditor) {
             ITmfTrace trace = ((ITmfTraceEditor) editor).getTrace();
             if (trace != null) {
