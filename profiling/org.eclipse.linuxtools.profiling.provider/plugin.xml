@@ -6,7 +6,7 @@
       <page
             class="org.eclipse.linuxtools.internal.profiling.provider.ProviderPreferencesPage"
             id="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
-            name="%page.name">
+            name="Profiling">
       </page>
    </extension>
    <extension
@@ -15,9 +15,8 @@
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
             id="org.eclipse.linuxtools.profiling.provider.TimingLaunchShortcut"
-            label="%shortcut.label"
-            modes="profile"
-            path="/linuxtools/category">
+            label="Profile Timing"
+            modes="profile">
             <class class="org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchShortcut">
                <parameter 
                      name="type"
@@ -86,7 +85,7 @@
             delegate="org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.provider.TimingLaunchConfigurationType"
             modes="profile"
-            name="%launchConfigurationType.name"
+            name="Profile Timing"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
             sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
@@ -97,7 +96,7 @@
       <page
             category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
             id="org.eclipse.linuxtools.profiling.provider.TimingPreferencePage"
-            name="%page.name.0">
+            name="Timing">
             <class class="org.eclipse.linuxtools.internal.profiling.provider.AbstractProviderPreferencesPage">
                <parameter 
                      name="type"
@@ -111,9 +110,8 @@
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
             id="org.eclipse.linuxtools.profiling.provider.MemoryLaunchShortcut"
-            label="%shortcut.label.0"
-            modes="profile"
-            path="/linuxtools/category">
+            label="Profile Memory"
+            modes="profile">
             <class class="org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchShortcut">
                <parameter 
                      name="type"
@@ -182,7 +180,7 @@
             delegate="org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.provider.MemoryLaunchConfigurationType"
             modes="profile"
-            name="%launchConfigurationType.name.0"
+            name="Profile Memory"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
             sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
@@ -193,7 +191,7 @@
       <page
             category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
             id="org.eclipse.linuxtools.profiling.provider.MemoryPreferencePage"
-            name="%page.name.1">
+            name="Memory">
             <class class="org.eclipse.linuxtools.internal.profiling.provider.AbstractProviderPreferencesPage">
                <parameter 
                      name="type"
@@ -207,9 +205,8 @@
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
             id="org.eclipse.linuxtools.profiling.provider.CoverageLaunchShortcut"
-            label="%shortcut.label.1"
-            modes="profile"
-            path="/linuxtools/category">
+            label="Profile Code Coverage"
+            modes="profile">
             <class class="org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchShortcut">
                <parameter 
                      name="type"
@@ -278,7 +275,7 @@
             delegate="org.eclipse.linuxtools.internal.profiling.provider.launch.ProviderLaunchConfigurationDelegate"
             id="org.eclipse.linuxtools.profiling.provider.CoverageLaunchConfigurationType"
             modes="profile"
-            name="%launchConfigurationType.name.1"
+            name="Profile Code Coverage"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
             sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
@@ -289,7 +286,7 @@
       <page
             category="org.eclipse.linuxtools.profiling.provider.MainPreferencePage"
             id="org.eclipse.linuxtools.profiling.provider.CoveragePreferencePage"
-            name="%page.name.2">
+            name="Coverage">
             <class class="org.eclipse.linuxtools.internal.profiling.provider.AbstractProviderPreferencesPage">
                <parameter 
                      name="type"
