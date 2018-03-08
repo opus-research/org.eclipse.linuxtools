@@ -61,6 +61,8 @@ public class PerfCore {
 		if (!str.trim().equals("")) {
 			if (print != null) {
 				print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle);
+			} else {
+				System.out.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle);
 			}
 		}
 		return str;
@@ -237,7 +239,7 @@ public class PerfCore {
 
 		//p.waitFor();
 		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		return spitStream(input, "Perf --version", null);
+		return spitStream(input, "Perf --version STDOUT", null);
 	}
 
 	public static boolean checkPerfInPath()
@@ -358,6 +360,7 @@ public class PerfCore {
 		}
 
 		//(Annotate string per symbol)
+		//if (PerfPlugin.DEBUG_ON) System.out.println(Arrays.toString( (String[])base.toArray( new String[base.size()] ) ));
 		return base.toArray( new String[base.size()] );
 	}
 	//Runs Perf Record on the given binary and records into perf.data before calling Report() to feed in the results. 
@@ -379,7 +382,7 @@ public class PerfCore {
 			}
 			error = new BufferedReader(new InputStreamReader(perfRecord.getErrorStream()));
 			perfRecord.waitFor();			
-			spitStream(error,"Perf Record", null);
+			spitStream(error,"Perf Record STDERR", null);
 		} catch( IOException e ) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -550,7 +553,7 @@ public class PerfCore {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		spitStream(error,"Perf Report", print);
+		spitStream(error,"Perf Report STDERR", print);
 
 		boolean SourceLineNumbers = PerfPlugin.ATTR_SourceLineNumbers_default;
 		boolean Kernel_SourceLineNumbers = PerfPlugin.ATTR_Kernel_SourceLineNumbers_default;
@@ -606,7 +609,7 @@ public class PerfCore {
 						if (currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren().length == 0) {
 							currentDso.removeChild(currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols));
 						}
-						spitStream(error,"Perf Annotate", print);
+						spitStream(error,"Perf Annotate STDERR", print);
 					}
 				}
 			}
