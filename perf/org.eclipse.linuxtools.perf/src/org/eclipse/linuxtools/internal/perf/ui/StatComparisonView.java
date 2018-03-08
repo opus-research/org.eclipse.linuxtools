@@ -74,8 +74,7 @@ public class StatComparisonView extends ViewPart {
 	}
 
 	/**
-	 * Set String input in text display. Adapted from
-	 * org.eclipse.linuxtools.internal.perf.ui.SourceDisassemblyView.
+	 * Set String input in text display
 	 *
 	 * @param input text to display
 	 */

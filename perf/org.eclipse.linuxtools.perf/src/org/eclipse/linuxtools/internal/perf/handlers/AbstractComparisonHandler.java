@@ -64,14 +64,12 @@ public abstract class AbstractComparisonHandler implements IHandler {
 
 	@Override
 	public boolean isEnabled() {
-		// if the workbench listener is not null, then it's being used for the
-		// current comparison.
-		return workbenchListener == null;
+		return true;
 	}
 
 	@Override
 	public boolean isHandled() {
-		return isEnabled();
+		return true;
 	}
 
 	@Override
@@ -196,7 +194,6 @@ public abstract class AbstractComparisonHandler implements IHandler {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 				.getSelectionService()
 				.removeSelectionListener(workbenchListener);
-		workbenchListener = null;
 		selectedFiles.clear();
 	}
 }

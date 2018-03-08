@@ -10,16 +10,14 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.handlers;
 
-import java.io.File;
 import java.text.MessageFormat;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.StatComparisonData;
 import org.eclipse.linuxtools.internal.perf.ui.StatComparisonView;
 
 /**
- * Command handler for comparing perf statistics files.
+ * Command handler for comparins perf statistics files.
  */
 public class PerfStatsComparisonHandler extends AbstractComparisonHandler {
 
@@ -34,12 +32,8 @@ public class PerfStatsComparisonHandler extends AbstractComparisonHandler {
 		String title = MessageFormat.format(Messages.ContentDescription_0,
 				new Object[] { oldData.getName(), newData.getName() });
 
-		// get corresponding files
-		File oldDatum = oldData.getLocation().toFile();
-		File newDatum = newData.getLocation().toFile();
-
 		// create comparison data and run comparison.
-		StatComparisonData diffData = new StatComparisonData(title, oldDatum, newDatum);
+		StatComparisonData diffData = new StatComparisonData(title, oldData, newData);
 		diffData.runComparison();
 
 		PerfPlugin.getDefault().setStatDiffData(diffData);

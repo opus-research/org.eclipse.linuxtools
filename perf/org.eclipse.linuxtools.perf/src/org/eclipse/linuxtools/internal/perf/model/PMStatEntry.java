@@ -14,30 +14,15 @@ package org.eclipse.linuxtools.internal.perf.model;
  * Representation of a single entry in a perf stat report.
  */
 public class PMStatEntry {
-	// Samples of current event.
 	private float samples;
-
-	// Current event.
 	private String event;
-
-	// Metrics for current event.
 	private float metrics;
-
-	// Metrics' units.
 	private String units;
-
-	// Standard deviation of stats.
 	private float deviation;
-
-	// Scaling.
 	private float scaling;
+	public static enum Type{ENTRY_PATTERN, TIME_PATTERN, ENTRY_FORMAT}
 
-	// Types of relevant strings for a perf stat entry.
-	public static enum Type {
-		ENTRY_PATTERN, TIME_PATTERN, ENTRY_FORMAT, PERCENT_FORMAT, METRIC_FORMAT
-	}
-
-	// Reg-ex strings for elements in a perf stat entry.
+	// Reg-ex strings
 	public static final String DECIMAL = "\\d+[\\.\\,\\d]*"; //$NON-NLS-1$
 	public static final String PERCENTAGE = "(\\d+(\\.\\d+)?)\\%"; //$NON-NLS-1$
 	public static final String SAMPLES = "(" + DECIMAL + ")"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -73,7 +58,7 @@ public class PMStatEntry {
 	}
 
 	public String getUnits() {
-		return (units == null) ? "" : units.trim(); //$NON-NLS-1$
+		return (units == null) ? "" : units; //$NON-NLS-1$
 	}
 
 	public float getDeviation() {
@@ -83,33 +68,6 @@ public class PMStatEntry {
 
 	public float getScaling() {
 		return scaling;
-	}
-
-	public String getFormattedMetrics(){
-		return String.format("%.3f", metrics); //$NON-NLS-1$
-	}
-
-	public String getFormattedDeviation(){
-		return String.format("%.2f%%", deviation); //$NON-NLS-1$
-	}
-
-	@Override
-	public boolean equals(Object entry) {
-		PMStatEntry statEntry = (PMStatEntry) entry;
-		if (statEntry == null
-				|| samples != statEntry.getSamples()
-				|| metrics != statEntry.getMetrics()
-				|| deviation != statEntry.getDeviation()
-				|| scaling != statEntry.getScaling()) {
-			return false;
-		}
-
-		if (!getEvent().equals(statEntry.getEvent())
-				|| !getUnits().equals(statEntry.getUnits())) {
-			return false;
-		}
-
-		return true;
 	}
 
 	/**
@@ -126,19 +84,24 @@ public class PMStatEntry {
 	}
 
 	/**
-	 * Auto-generated hashCode method.
+	 * Compared fields of this and the specified objects
+	 *
+	 * @param entry stat entry to compare against
+	 * @return true if all fields are equal, false otherwise
 	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Float.floatToIntBits(deviation);
-		result = prime * result + ((event == null) ? 0 : event.hashCode());
-		result = prime * result + Float.floatToIntBits(metrics);
-		result = prime * result + Float.floatToIntBits(samples);
-		result = prime * result + Float.floatToIntBits(scaling);
-		result = prime * result + ((units == null) ? 0 : units.hashCode());
-		return result;
+	public boolean equals(PMStatEntry entry) {
+		if (samples != entry.getSamples() || metrics != entry.getMetrics()
+				|| deviation != entry.getDeviation()
+				|| scaling != entry.getScaling()) {
+			return false;
+		}
+
+		if (!getEvent().equals(entry.getEvent())
+				|| !getUnits().equals(entry.getUnits())) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -157,30 +120,14 @@ public class PMStatEntry {
 		return new PMStatEntry(occurrenceDiff, event, metricsDiff, units, deviationDiff, scalingDiff);
 	}
 
-	/**
-	 * Return formatted String values of fields in a string array.
-	 *
-	 * @return String[] String array containing string value of fields.
-	 */
 	public String[] toStringArray(){
 		return new String[] { String.valueOf(samples),
-				getEvent(),
-				getFormattedMetrics(),
-				getUnits(),
-				getFormattedDeviation()};
+				getEvent().trim(),
+				String.valueOf(metrics),
+				getUnits().trim(),
+				String.valueOf(deviation) };
 	}
 
-	/**
-	 * Get string related to specified type of perf stat entry:
-	 *	<p>
-	 *		ENTRY_PATTERN: - Regex for a generic entry.</br>
-	 *		TIME_PATTERN: - Regex for total time entry.</br>
-	 *		ENTRY_FORMAT: - Format string for a generic entry.
-	 *	</p>
-	 *
-	 * @param type
-	 * @return
-	 */
 	public static String getString(Type type) {
 		String stringRes = ""; //$NON-NLS-1$
 		switch (type) {
