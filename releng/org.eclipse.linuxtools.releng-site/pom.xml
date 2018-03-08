@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.eclipse.linuxtools.releng</groupId>
     <artifactId>linuxtools-releng-parent</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.releng-site</artifactId>
@@ -43,12 +43,12 @@
                    <target>
                     <delete includeemptydirs="false">
                        <fileset
-                         dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly">
+                         dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly-kepler">
                          <include name="**" />
                        </fileset>
                      </delete>
                      <copy includeemptydirs="false"
-                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly">
+                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly-kepler">
                        <fileset dir="target/repository">
                          <include name="**" />
                        </fileset>
@@ -115,6 +115,6 @@
 
   <name>Eclipse Linux Tools p2 Repository</name>
   <!-- see http://issues.sonatype.org/browse/TYCHO-313 -->
-  <version>2.2.0-SNAPSHOT</version>
+  <version>2.1.0-SNAPSHOT</version>
 
 </project>

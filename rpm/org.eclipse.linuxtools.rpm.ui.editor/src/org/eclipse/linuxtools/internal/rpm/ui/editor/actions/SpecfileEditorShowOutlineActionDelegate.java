@@ -20,7 +20,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public class SpecfileEditorShowOutlineActionDelegate extends AbstractHandler {
 
-	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		SpecfileEditor editor = (SpecfileEditor) HandlerUtil
 				.getActiveEditor(event);

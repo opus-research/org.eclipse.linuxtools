@@ -22,7 +22,6 @@ import org.eclipse.ui.PlatformUI;
 public class ProfilingCategoriesPreferencesPage extends FieldEditorPreferencePage
 		implements IWorkbenchPreferencePage {
 
-	@Override
 	public void init(IWorkbench workbench) {
 		setDescription(Messages.ProviderPreferencesPage_2);
 	}
@@ -40,7 +39,7 @@ public class ProfilingCategoriesPreferencesPage extends FieldEditorPreferencePag
 
 	/**
 	 * Return the help context id to use if the help button is pushed.
-	 *
+	 * 
 	 * @return the help context id
 	 */
 	private String getHelpContextId() {

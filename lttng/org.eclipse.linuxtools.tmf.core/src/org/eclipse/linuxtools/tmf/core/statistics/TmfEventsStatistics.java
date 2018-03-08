@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -236,8 +235,10 @@ public class TmfEventsStatistics implements ITmfStatistics {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            if (!(event instanceof ITmfLostEvent) && event.getTrace() == trace) {
-                total += 1;
+            if (event != null) {
+                if (event.getTrace() == trace) {
+                    total += 1;
+                }
             }
         }
     }
@@ -264,29 +265,20 @@ public class TmfEventsStatistics implements ITmfStatistics {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            if (event != null && event.getTrace() == trace) {
-                /*
-                 * Special handling for lost events: instead of counting just
-                 * one, we will count how many actual events it represents.
-                 */
-                if (event instanceof ITmfLostEvent) {
-                    ITmfLostEvent le = (ITmfLostEvent) event;
-                    incrementStats(Messages.LostEventsName, le.getNbLostEvents());
-                    return;
+            if (event != null) {
+                if (event.getTrace() == trace) {
+                    processEvent(event);
                 }
-
-                /* For standard event types, just increment by one */
-                String eventType = event.getType().getName();
-                incrementStats(eventType, 1L);
             }
         }
 
-        private void incrementStats(String key, long count) {
-            if (stats.containsKey(key)) {
-                long curValue = stats.get(key);
-                stats.put(key, curValue + count);
+        private void processEvent(ITmfEvent event) {
+            String eventType = event.getType().getName();
+            if (stats.containsKey(eventType)) {
+                long curValue = stats.get(eventType);
+                stats.put(eventType, curValue + 1L);
             } else {
-                stats.put(key, count);
+                stats.put(eventType, 1L);
             }
         }
     }

@@ -16,6 +16,7 @@ import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.BeforeClass;
 
 /**
@@ -30,8 +31,8 @@ public class StateSystemInMemoryTest extends StateSystemTest {
      */
     @BeforeClass
     public static void initialize() {
-        assumeTrue(testTrace.exists());
-        input = new LttngKernelStateProvider(testTrace.getTrace());
+        assumeTrue(CtfTmfTestTraces.tracesExist());
+        input = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
         ssq = TmfStateSystemFactory.newInMemHistory(input, true);
     }
 }
