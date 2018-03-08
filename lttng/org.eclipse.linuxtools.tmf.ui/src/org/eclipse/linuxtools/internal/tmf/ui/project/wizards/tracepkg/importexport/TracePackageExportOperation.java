@@ -110,10 +110,6 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
             Node tmfNode = doc.appendChild(createElement);
 
             for (TracePackageTraceElement tracePackageElement : fTraceExportElements) {
-                if (!isFilesChecked(tracePackageElement)) {
-                    continue;
-                }
-
                 exportTrace(progressMonitor, tmfNode, tracePackageElement);
             }
 
