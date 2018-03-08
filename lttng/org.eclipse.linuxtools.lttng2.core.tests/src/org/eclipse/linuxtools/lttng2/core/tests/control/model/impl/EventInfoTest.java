@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,49 +8,52 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  **********************************************************************/
-
 package org.eclipse.linuxtools.lttng2.core.tests.control.model.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEnablement;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.EventInfo;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
- * The class <code>EventInfoTest</code> contains test for the class
- * <code>{@link EventInfo}</code>.
+ * The class <code>BaseEventInfoTest</code> contains test for the class <code>{@link BaseEventInfo}</code>.
  */
-@SuppressWarnings("nls")
-public class EventInfoTest {
+@SuppressWarnings({"nls", "javadoc"})
+public class EventInfoTest extends TestCase {
 
     // ------------------------------------------------------------------------
     // Test data
     // ------------------------------------------------------------------------
-
     private IEventInfo fEventInfo1 = null;
     private IEventInfo fEventInfo2 = null;
 
     // ------------------------------------------------------------------------
     // Housekeeping
     // ------------------------------------------------------------------------
-
     /**
      * Perform pre-test initialization.
+     *
+     * @throws Exception if the initialization fails for some reason
+     *
      */
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
         ModelImplFactory factory = new ModelImplFactory();
         fEventInfo1 = factory.getEventInfo1();
         fEventInfo2 = factory.getEventInfo2();
+    }
+
+    /**
+     * Perform post-test clean-up.
+     *
+     * @throws Exception if the clean-up fails for some reason
+     *
+     */
+    @Override
+    public void tearDown() throws Exception {
     }
 
     // ------------------------------------------------------------------------
@@ -59,8 +62,8 @@ public class EventInfoTest {
 
     /**
      * Run the BaseEventInfo() constructor test.
+     *
      */
-    @Test
     public void testBaseEventInfo() {
         EventInfo fixture = new EventInfo("event");
         assertNotNull(fixture);
@@ -84,7 +87,6 @@ public class EventInfoTest {
     /**
      * Test Copy Constructor
      */
-    @Test
     public void testEventInfoCopy() {
         EventInfo info = new EventInfo((EventInfo)fEventInfo1);
 
@@ -96,7 +98,6 @@ public class EventInfoTest {
     /**
      * Test Copy Constructor
      */
-    @Test
     public void testEventCopy2() {
         try {
             EventInfo info = null;
@@ -111,7 +112,6 @@ public class EventInfoTest {
     /**
      *  Getter/Setter tests
      */
-    @Test
     public void testGetAndSetter() {
         EventInfo fixture = new EventInfo("event");
 
@@ -193,7 +193,6 @@ public class EventInfoTest {
     /**
      * Run the String toString() method test.
      */
-    @Test
     public void testToString_1() {
         EventInfo fixture = new EventInfo("event");
         fixture.setName("testName");
@@ -208,11 +207,6 @@ public class EventInfoTest {
     // ------------------------------------------------------------------------
     // equals
     // ------------------------------------------------------------------------
-
-    /**
-     * Run the equals() method test.
-     */
-    @Test
     public void testEqualsReflexivity() {
         assertTrue("equals", fEventInfo1.equals(fEventInfo1));
         assertTrue("equals", fEventInfo2.equals(fEventInfo2));
@@ -221,10 +215,6 @@ public class EventInfoTest {
         assertTrue("equals", !fEventInfo2.equals(fEventInfo1));
     }
 
-    /**
-     * Run the equals() method test.
-     */
-    @Test
     public void testEqualsSymmetry() {
         EventInfo info1 = new EventInfo((EventInfo)fEventInfo1);
         EventInfo info2 = new EventInfo((EventInfo)fEventInfo2);
@@ -236,10 +226,6 @@ public class EventInfoTest {
         assertTrue("equals", fEventInfo2.equals(info2));
     }
 
-    /**
-     * Run the equals() method test.
-     */
-    @Test
     public void testEqualsTransivity() {
         EventInfo info1 = new EventInfo((EventInfo)fEventInfo1);
         EventInfo info2 = new EventInfo((EventInfo)fEventInfo1);
@@ -250,10 +236,6 @@ public class EventInfoTest {
         assertTrue("equals", info1.equals(info3));
     }
 
-    /**
-     * Run the equals() method test.
-     */
-    @Test
     public void testEqualsNull() {
         assertTrue("equals", !fEventInfo1.equals(null));
         assertTrue("equals", !fEventInfo2.equals(null));
@@ -263,10 +245,6 @@ public class EventInfoTest {
     // hashCode
     // ------------------------------------------------------------------------
 
-    /**
-     * Run the hashCode() method test.
-     */
-    @Test
     public void testHashCode() {
         EventInfo info1 = new EventInfo((EventInfo)fEventInfo1);
         EventInfo info2 = new EventInfo((EventInfo)fEventInfo2);
