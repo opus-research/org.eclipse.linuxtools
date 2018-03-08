@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.rpm.createrepo;
 
-
 /**
  * Common constants used in createrepo.
  */
@@ -28,6 +27,11 @@ public interface ICreaterepoConstants {
 	String REPO_FILE_EXTENSION = "repo"; //$NON-NLS-1$
 
 	/**
+	 * The delimiter of preferences.
+	 */
+	String DELIMITER = ";"; //$NON-NLS-1$
+
+	/**
 	 * The file extension of RPM files.
 	 */
 	String RPM_FILE_EXTENSION = "rpm"; 	//$NON-NLS-1$
@@ -36,5 +40,15 @@ public interface ICreaterepoConstants {
 	 * An empty string.
 	 */
 	String EMPTY_STRING = ""; //$NON-NLS-1$
+
+	/**
+	 * The main createrepo command name.
+	 */
+	String CREATEREPO_COMMAND = "createrepo"; //$NON-NLS-1$
+
+	/**
+	 * Dashes used for commands.
+	 */
+	String DASH = "--"; //$NON-NLS-1$
 
 }
