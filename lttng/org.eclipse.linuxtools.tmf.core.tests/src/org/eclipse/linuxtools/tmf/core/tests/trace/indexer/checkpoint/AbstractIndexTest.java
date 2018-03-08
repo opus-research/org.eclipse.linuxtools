@@ -27,7 +27,6 @@ import java.net.URL;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
@@ -151,12 +150,8 @@ public abstract class AbstractIndexTest {
          *             when error occurs
          */
         public TestTrace(String path, int blockSize) throws TmfTraceException {
-            super(path, blockSize, false, null);
-        }
-
-        @Override
-        protected ITmfTraceIndexer createIndexer(int interval) {
-            return createTestIndexer(this);
+            super(path, blockSize, false, null, null);
+            setIndexer(createTestIndexer(this));
         }
 
         @Override
@@ -168,12 +163,7 @@ public abstract class AbstractIndexTest {
     private class EmptyTestTrace extends TmfEmptyTraceStub {
         public EmptyTestTrace() {
             super();
-            init(getClass().getSimpleName(), TmfEvent.class);
-        }
-
-        @Override
-        protected ITmfTraceIndexer createIndexer(int interval) {
-            return new TestIndexer(this);
+            setIndexer(new TestIndexer(this));
         }
 
         @Override

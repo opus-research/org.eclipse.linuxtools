@@ -13,7 +13,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,10 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -88,7 +84,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 
@@ -134,8 +129,6 @@ public class CallStackView extends TmfView {
     private static final Image THREAD_IMAGE = Activator.getDefault().getImageFromPath("icons/obj16/thread_obj.gif"); //$NON-NLS-1$
     private static final Image STACKFRAME_IMAGE = Activator.getDefault().getImageFromPath("icons/obj16/stckframe_obj.gif"); //$NON-NLS-1$
 
-    private static final String IMPORT_MAPPING_ICON_PATH = "icons/etool16/import.gif"; //$NON-NLS-1$
-
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
@@ -158,9 +151,6 @@ public class CallStackView extends TmfView {
     // The trace to build thread hash map
     private final Map<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<ITmfTrace, BuildThread>();
 
-    /** The map to map function addresses to function names */
-    private Map<String, String> fNameMapping;
-
     // The start time
     private long fStartTime;
 
@@ -181,9 +171,6 @@ public class CallStackView extends TmfView {
 
     // The previous item action
     private Action fPreviousItemAction;
-
-    /** The action to import a function-name mapping file */
-    private Action fImportMappingAction;
 
     // The zoom thread
     private ZoomThread fZoomThread;
@@ -501,7 +488,7 @@ public class CallStackView extends TmfView {
         fTimeGraphCombo.getTreeViewer().getTree().getColumn(3).setWidth(COLUMN_WIDTHS[3]);
         fTimeGraphCombo.getTreeViewer().getTree().getColumn(4).setWidth(COLUMN_WIDTHS[4]);
 
-        fTimeGraphCombo.setTimeGraphProvider(new CallStackPresentationProvider(this));
+        fTimeGraphCombo.setTimeGraphProvider(new CallStackPresentationProvider());
         fTimeGraphCombo.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
 
         fTimeGraphCombo.getTimeGraphViewer().addRangeListener(new ITimeGraphRangeListener() {
@@ -756,7 +743,6 @@ public class CallStackView extends TmfView {
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
-
     private void loadTrace() {
         synchronized (fEntryListMap) {
             fEntryList = fEntryListMap.get(fTrace);
@@ -925,8 +911,7 @@ public class CallStackView extends TmfView {
                     String name = ""; //$NON-NLS-1$
                     try {
                         if (nameValue.getType() == Type.STRING) {
-                            String address = nameValue.unboxStr();
-                            name = getFunctionName(address);
+                            name = nameValue.unboxStr();
                         } else if (nameValue.getType() == Type.INTEGER) {
                             name = "0x" + Integer.toHexString(nameValue.unboxInt()); //$NON-NLS-1$
                         } else if (nameValue.getType() == Type.LONG) {
@@ -1054,7 +1039,6 @@ public class CallStackView extends TmfView {
     }
 
     private void fillLocalToolBar(IToolBarManager manager) {
-        manager.add(getImportMappingAction());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());
         manager.add(getPreviousEventAction());
         manager.add(getNextEventAction());
@@ -1164,76 +1148,6 @@ public class CallStackView extends TmfView {
         }
 
         return fPrevEventAction;
-    }
-
-    // ------------------------------------------------------------------------
-    // Methods related to function name mapping
-    // ------------------------------------------------------------------------
-
-    /**
-     * Toolbar icon to import the function address-to-name mapping file.
-     */
-    private Action getImportMappingAction() {
-        if (fImportMappingAction != null) {
-            return fImportMappingAction;
-        }
-        fImportMappingAction = new Action() {
-            @Override
-            public void run() {
-                FileDialog dialog = new FileDialog(getViewSite().getShell());
-                dialog.setText(Messages.CallStackView_ImportMappingDialogTitle);
-                String filePath = dialog.open();
-                if (filePath == null) {
-                    /* No file was selected, don't change anything */
-                    return;
-                }
-                /*
-                 * Start the mapping import in a separate thread (we do not want
-                 * to UI thread to do this).
-                 */
-                Job job = new ImportMappingJob(new File(filePath));
-                job.schedule();
-            }
-        };
-
-        fImportMappingAction.setText(Messages.CallStackView_ImportMappingButtonText);
-        fImportMappingAction.setToolTipText(Messages.CallStackView_ImportMappingButtonTooltip);
-        fImportMappingAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(IMPORT_MAPPING_ICON_PATH));
-
-        return fImportMappingAction;
-    }
-
-    private class ImportMappingJob extends Job {
-        private final File fMappingFile;
-
-        public ImportMappingJob(File mappingFile) {
-            super(Messages.CallStackView_ImportMappingJobName);
-            fMappingFile = mappingFile;
-        }
-
-        @Override
-        public IStatus run(IProgressMonitor monitor) {
-            fNameMapping = FunctionNameMapper.mapFromNmTextFile(fMappingFile);
-
-            /* Refresh the time graph and the list of entries */
-            buildThreadList(fTrace, new NullProgressMonitor());
-            redraw();
-
-            return Status.OK_STATUS;
-        }
-    }
-
-    String getFunctionName(String address) {
-        if (fNameMapping == null) {
-            /* No mapping available, just print the addresses */
-            return address;
-        }
-        String ret = fNameMapping.get(address);
-        if (ret == null) {
-            /* We didn't find this address in the mapping file, just use the address */
-            return address;
-        }
-        return ret;
     }
 
 }

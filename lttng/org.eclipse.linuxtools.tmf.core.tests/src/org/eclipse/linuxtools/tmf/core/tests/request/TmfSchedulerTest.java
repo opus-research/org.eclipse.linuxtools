@@ -12,13 +12,11 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.request;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,7 +25,7 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
@@ -61,7 +59,7 @@ public class TmfSchedulerTest {
     private long fEndTime;
     private TmfTimeRange fForegroundTimeRange;
 
-    private final List<String> fOrderList = new ArrayList<String>();
+    private final List<String> fOrderList = Collections.synchronizedList(new ArrayList<String>());
     private int fForegroundId = 0;
     private int fBackgroundId = 0;
 
@@ -385,7 +383,7 @@ public class TmfSchedulerTest {
             super(fixture.getEventType(),
                     timeRange,
                     0,
-                    ITmfEventRequest.ALL_DATA,
+                    TmfDataRequest.ALL_DATA,
                     ExecutionType.BACKGROUND);
             backgroundName = getExecType().toString() + ++fBackgroundId;
         }
@@ -393,10 +391,8 @@ public class TmfSchedulerTest {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            synchronized (fOrderList) {
-                if (fOrderList.isEmpty() || !fOrderList.get(fOrderList.size() - 1).equals(backgroundName)) {
-                    fOrderList.add(backgroundName);
-                }
+            if (fOrderList.isEmpty() || !fOrderList.get(fOrderList.size() - 1).equals(backgroundName)) {
+                fOrderList.add(backgroundName);
             }
             ++nbEvents;
         }
@@ -414,7 +410,7 @@ public class TmfSchedulerTest {
             super(fixture.getEventType(),
                     timeRange,
                     0,
-                    ITmfEventRequest.ALL_DATA,
+                    TmfDataRequest.ALL_DATA,
                     ExecutionType.FOREGROUND);
             foregroundName = getExecType().toString() + ++fForegroundId;
         }
@@ -422,10 +418,8 @@ public class TmfSchedulerTest {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            synchronized (fOrderList) {
-                if (fOrderList.isEmpty() || !fOrderList.get(fOrderList.size() - 1).equals(foregroundName)) {
-                    fOrderList.add(foregroundName);
-                }
+            if (fOrderList.isEmpty() || !fOrderList.get(fOrderList.size() - 1).equals(foregroundName)) {
+                fOrderList.add(foregroundName);
             }
             ++nbEvents;
         }

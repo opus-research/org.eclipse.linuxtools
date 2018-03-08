@@ -154,11 +154,6 @@ public class TmfUiTracer {
      *            The event's message
      */
     public static void trace(String msg) {
-        // Leave when there is no place to write the message.
-        if (fTraceLog == null) {
-            return;
-        }
-
         long currentTime = System.currentTimeMillis();
         StringBuilder message = new StringBuilder("[");
         message.append(currentTime / 1000);
@@ -167,12 +162,14 @@ public class TmfUiTracer {
         message.append("] ");
         message.append(msg);
 
-        try {
-            fTraceLog.write(message.toString());
-            fTraceLog.newLine();
-            fTraceLog.flush();
-        } catch (IOException e) {
-            Activator.getDefault().logError("Error writing to log file " + LOGNAME, e); //$NON-NLS-1$
+        if (fTraceLog != null) {
+            try {
+                fTraceLog.write(message.toString());
+                fTraceLog.newLine();
+                fTraceLog.flush();
+            } catch (IOException e) {
+                Activator.getDefault().logError("Error writing to log file " + LOGNAME, e); //$NON-NLS-1$
+            }
         }
     }
 

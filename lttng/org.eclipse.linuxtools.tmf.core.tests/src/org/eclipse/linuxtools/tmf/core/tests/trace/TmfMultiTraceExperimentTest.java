@@ -31,9 +31,9 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -89,12 +89,12 @@ public class TmfMultiTraceExperimentTest {
 
             URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.O_TEST_10K.getFullPath()), null);
             File test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true, null);
+            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true, null, null);
             traces[0] = trace1;
 
             location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TmfTestTrace.E_TEST_10K.getFullPath()), null);
             test = new File(FileLocator.toFileURL(location).toURI());
-            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true, null);
+            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true, null, null);
             traces[1] = trace2;
 
             return traces;
@@ -702,7 +702,7 @@ public class TmfMultiTraceExperimentTest {
 
     @Test
     public void testProcessRequestForAllEvents() throws InterruptedException {
-        final int nbEvents  = ITmfEventRequest.ALL_DATA;
+        final int nbEvents  = TmfDataRequest.ALL_DATA;
         final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
         final long nbExpectedEvents = NB_EVENTS;
 

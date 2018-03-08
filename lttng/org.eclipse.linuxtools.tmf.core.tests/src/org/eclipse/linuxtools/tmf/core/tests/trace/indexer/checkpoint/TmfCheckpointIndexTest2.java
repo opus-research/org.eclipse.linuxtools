@@ -25,13 +25,11 @@ import java.net.URL;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpointIndex;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpointIndexer;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfEmptyTraceStub;
@@ -95,14 +93,9 @@ public class TmfCheckpointIndexTest2 {
 
     private class TestTrace extends TmfTraceStub {
         public TestTrace(String path, int blockSize) throws TmfTraceException {
-            super(path, blockSize, false, null);
+            super(path, blockSize, false, null, null);
+            setIndexer(new TestIndexer(this));
         }
-
-        @Override
-        protected ITmfTraceIndexer createIndexer(int interval) {
-            return new TestIndexer(this);
-        }
-
         @Override
         public TestIndexer getIndexer() {
             return (TestIndexer) super.getIndexer();
@@ -110,17 +103,10 @@ public class TmfCheckpointIndexTest2 {
     }
 
     private class EmptyTestTrace extends TmfEmptyTraceStub {
-
         public EmptyTestTrace() {
             super();
-            init(getClass().getSimpleName(), TmfEvent.class);
+            setIndexer(new TestIndexer(this));
         }
-
-        @Override
-        protected ITmfTraceIndexer createIndexer(int interval) {
-            return new TestIndexer(this);
-        }
-
         @Override
         public TestIndexer getIndexer() {
             return (TestIndexer) super.getIndexer();
