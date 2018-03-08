@@ -159,8 +159,8 @@ public class RunScriptAction extends Action implements IWorkbenchWindowActionDel
 
 	/**
 	 * Checks whether the directory to which the given file
-	 * belons is a valid directory. Currently this function just
-	 * checks if the given file does not belong ot the tapset 
+	 * belongs is a valid directory. Currently this function just
+	 * checks if the given file does not belong to the tapset 
 	 * directory.
 	 * @param fileName
 	 * @return true if the given path is valid false otherwise.
