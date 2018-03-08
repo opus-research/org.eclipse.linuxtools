@@ -60,7 +60,7 @@ import org.eclipse.swt.widgets.TreeColumn;
  * It was necessary to develop this similar dialog to allow multiple columns
  *
  * @version 1.0
- * @since 1.1
+ * @since 2.0
  * @author François Rajotte
  */
 public class TimeGraphFilterDialog extends SelectionStatusDialog {
@@ -225,14 +225,23 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         fHeight = height;
     }
 
+    /**
+     * @param contentProvider The content provider for the table
+     */
     public void setContentProvider(ITreeContentProvider contentProvider) {
         fContentProvider = contentProvider;
     }
 
+    /**
+     * @param labelProvider The label provider for the table
+     */
     public void setLabelProvider(IBaseLabelProvider labelProvider) {
         fLabelProvider = labelProvider;
     }
 
+    /**
+     * @param columnNames An array of column names to display
+     */
     public void setColumnNames(String[] columnNames) {
         fColumnNames = columnNames;
     }
