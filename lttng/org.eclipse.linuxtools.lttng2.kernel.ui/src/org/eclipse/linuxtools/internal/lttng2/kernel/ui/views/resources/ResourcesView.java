@@ -28,6 +28,8 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesEntry.Type;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.CtfKernelTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
@@ -87,7 +89,7 @@ public class ResourcesView extends TmfView {
     TimeGraphViewer fTimeGraphViewer;
 
     // The selected experiment
-    private TmfExperiment fSelectedExperiment;
+    private TmfExperiment<ITmfEvent> fSelectedExperiment;
 
     // The time graph entry list
     private ArrayList<TraceEntry> fEntryList;
@@ -347,7 +349,7 @@ public class ResourcesView extends TmfView {
      *            The incoming signal
      */
     @TmfSignalHandler
-    public void experimentSelected(final TmfExperimentSelectedSignal signal) {
+    public void experimentSelected(final TmfExperimentSelectedSignal<? extends TmfEvent> signal) {
         if (signal.getExperiment().equals(fSelectedExperiment)) {
             return;
         }
@@ -420,11 +422,11 @@ public class ResourcesView extends TmfView {
      */
     @TmfSignalHandler
     public void stateSystemBuildCompleted (final TmfStateSystemBuildCompleted signal) {
-        final TmfExperiment selectedExperiment = fSelectedExperiment;
+        final TmfExperiment<?> selectedExperiment = fSelectedExperiment;
         if (selectedExperiment == null || selectedExperiment.getTraces() == null) {
             return;
         }
-        for (ITmfTrace trace : selectedExperiment.getTraces()) {
+        for (ITmfTrace<?> trace : selectedExperiment.getTraces()) {
             if (trace == signal.getTrace() && trace instanceof CtfKernelTrace) {
                 final Thread thread = new Thread("ResourcesView build") { //$NON-NLS-1$
                     @Override
@@ -442,12 +444,13 @@ public class ResourcesView extends TmfView {
     // Internal
     // ------------------------------------------------------------------------
 
-    private void selectExperiment(TmfExperiment experiment) {
+    @SuppressWarnings("unchecked")
+    private void selectExperiment(TmfExperiment<?> experiment) {
         fStartTime = Long.MAX_VALUE;
         fEndTime = Long.MIN_VALUE;
-        fSelectedExperiment = experiment;
+        fSelectedExperiment = (TmfExperiment<ITmfEvent>) experiment;
         ArrayList<TraceEntry> entryList = new ArrayList<TraceEntry>();
-        for (ITmfTrace trace : experiment.getTraces()) {
+        for (ITmfTrace<?> trace : experiment.getTraces()) {
             if (trace instanceof CtfKernelTrace) {
                 CtfKernelTrace ctfKernelTrace = (CtfKernelTrace) trace;
                 IStateSystemQuerier ssq = ctfKernelTrace.getStateSystem();

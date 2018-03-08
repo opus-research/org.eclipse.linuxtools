@@ -1,17 +1,18 @@
 /*******************************************************************************
  * Copyright (c) 2009 2010 Ericsson
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.lttng.ui.views.timeframe;
 
+import org.eclipse.linuxtools.internal.lttng.core.event.LttngEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
@@ -87,7 +88,7 @@ public class TimeFrameView extends TmfView {
     private Slider fSlider;
 
     // The current experiment
-    TmfExperiment fExperiment = null;
+    TmfExperiment<LttngEvent> fExperiment = null;
 
     // notify external listeners may not be needed if the update originated externally
     private boolean fupdateExternalListeners = true;
@@ -105,7 +106,7 @@ public class TimeFrameView extends TmfView {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets .Composite)
      */
     @Override
@@ -126,7 +127,7 @@ public class TimeFrameView extends TmfView {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
      */
     @Override
@@ -181,7 +182,7 @@ public class TimeFrameView extends TmfView {
         // Compute the new time range
         TmfTimeRange subrange = new TmfTimeRange(startTime, endTime);
 //        int scale = startTime.getScale();
-        ITmfTimestamp interval = startTime.getDelta(endTime);
+        ITmfTimestamp interval = (TmfTimestamp) startTime.getDelta(endTime);
 
         // Update the spinner groups
         fStartGroup.setContent(fTraceTimeRange, startTime);
@@ -246,9 +247,8 @@ public class TimeFrameView extends TmfView {
     private void updateSlider(TmfTimeRange range, ITmfTimestamp timestamp) {
 
         // Ignore update if disposed
-        if (fSlider.isDisposed()) {
+        if (fSlider.isDisposed())
             return;
-        }
 
         // Determine the new relative position
 //        int scale = range.getEndTime().getScale();
@@ -272,7 +272,7 @@ public class TimeFrameView extends TmfView {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -288,11 +288,12 @@ public class TimeFrameView extends TmfView {
     /**
      * @param signal
      */
+    @SuppressWarnings("unchecked")
     @TmfSignalHandler
-    public void experimentSelected(TmfExperimentSelectedSignal signal) {
+    public void experimentSelected(TmfExperimentSelectedSignal<LttngEvent> signal) {
 
         // Update the trace reference
-        fExperiment = signal.getExperiment();
+        fExperiment = (TmfExperiment<LttngEvent>) signal.getExperiment();
 
         // Update the time frame
         fTraceTimeRange = fExperiment.getTimeRange();
