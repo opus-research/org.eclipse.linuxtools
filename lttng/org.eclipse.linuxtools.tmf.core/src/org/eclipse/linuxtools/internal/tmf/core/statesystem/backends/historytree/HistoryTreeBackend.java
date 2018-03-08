@@ -45,7 +45,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     protected boolean isFinishedBuilding = false;
 
     /**
-     * Constructor for new history files. Use this when creating a new history
+     * Construtor for new history files. Use this when creating a new history
      * from scratch.
      *
      * @param newStateFile
@@ -56,43 +56,33 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
      *            multiple of 4096.
      * @param maxChildren
      *            The maximum number of children each core node can have
-     * @param providerVersion
-     *            Version of of the state provider. We will only try to reopen
-     *            existing files if this version matches the one in the
-     *            framework.
      * @param startTime
      *            The earliest time stamp that will be stored in the history
      * @throws IOException
      *             Thrown if we can't create the file for some reason
      */
     public HistoryTreeBackend(File newStateFile, int blockSize,
-            int maxChildren, int providerVersion, long startTime) throws IOException {
-        final HTConfig conf = new HTConfig(newStateFile, blockSize, maxChildren,
-                providerVersion, startTime);
-        sht = new HistoryTree(conf);
+            int maxChildren, long startTime) throws IOException {
+        sht = new HistoryTree(newStateFile, blockSize, maxChildren, startTime);
         treeIO = sht.getTreeIO();
     }
 
     /**
-     * Constructor for new history files. Use this when creating a new history
+     * Construtor for new history files. Use this when creating a new history
      * from scratch. This version supplies sane defaults for the configuration
      * parameters.
      *
      * @param newStateFile
      *            The filename/location where to store the state history (Should
      *            end in .ht)
-     * @param providerVersion
-     *            Version of of the state provider. We will only try to reopen
-     *            existing files if this version matches the one in the
-     *            framework.
      * @param startTime
      *            The earliest time stamp that will be stored in the history
      * @throws IOException
      *             Thrown if we can't create the file for some reason
      */
-    public HistoryTreeBackend(File newStateFile, int providerVersion, long startTime)
+    public HistoryTreeBackend(File newStateFile, long startTime)
             throws IOException {
-        this(newStateFile, 64 * 1024, 50, providerVersion, startTime);
+        this(newStateFile, 64 * 1024, 50, startTime);
     }
 
     /**
@@ -100,16 +90,12 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
      *
      * @param existingStateFile
      *            Filename/location of the history we want to load
-     * @param providerVersion
-     *            Expected version of of the state provider plugin.
      * @throws IOException
-     *             If we can't read the file, if it doesn't exist, is not
-     *             recognized, or if the version of the file does not match the
-     *             expected providerVersion.
+     *             If we can't read the file, if it doesn't exist or is not
+     *             recognized
      */
-    public HistoryTreeBackend(File existingStateFile, int providerVersion)
-            throws IOException {
-        sht = new HistoryTree(existingStateFile, providerVersion);
+    public HistoryTreeBackend(File existingStateFile) throws IOException {
+        sht = new HistoryTree(existingStateFile);
         treeIO = sht.getTreeIO();
         isFinishedBuilding = true;
     }

@@ -22,6 +22,9 @@ import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentLocation;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfLocationArray;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
@@ -29,9 +32,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfClearExperimentSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 
 /**
  * TmfExperiment presents a time-ordered, unified view of a set of ITmfTrace:s
@@ -80,25 +80,8 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      * @param traces the experiment set of traces
      */
     public TmfExperiment(final Class<? extends ITmfEvent> type, final String id, final ITmfTrace[] traces) {
-        this(type, id, traces, DEFAULT_INDEX_PAGE_SIZE, null);
+        this(type, id, traces, DEFAULT_INDEX_PAGE_SIZE);
     }
-
-    /**
-     * Constructor of experiment taking type, path, traces and resource
-     *
-     * @param type
-     *            the event type
-     * @param id
-     *            the experiment id
-     * @param traces
-     *            the experiment set of traces
-     * @param resource
-     *            the resource associated to the experiment
-     */
-    public TmfExperiment(final Class<? extends ITmfEvent> type, final String id, final ITmfTrace[] traces, IResource resource) {
-        this(type, id, traces, DEFAULT_INDEX_PAGE_SIZE, resource);
-    }
-
 
     /**
      * @param type the event type
@@ -107,31 +90,12 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      * @param indexPageSize the experiment index page size
      */
     public TmfExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize) {
-        this(type, path, traces, indexPageSize, null);
-    }
-
-    /**
-     * Full constructor of an experiment, taking the type, path, traces,
-     * indexPageSize and resource
-     *
-     * @param type
-     *            the event type
-     * @param path
-     *            the experiment path
-     * @param traces
-     *            the experiment set of traces
-     * @param indexPageSize
-     *            the experiment index page size
-     * @param resource
-     *            the resource associated to the experiment
-     */
-    public TmfExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
         setCacheSize(indexPageSize);
         setStreamingInterval(0);
         setIndexer(new TmfCheckpointIndexer(this, indexPageSize));
         setParser(this);
         try {
-            super.initialize(resource, path, type);
+            super.initialize(null, path, type);
         } catch (TmfTraceException e) {
             e.printStackTrace();
         }
@@ -206,7 +170,6 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser {
      *
      * @param index the event index (rank)
      * @return the corresponding event timestamp
-     * @since 2.0
      */
     public ITmfTimestamp getTimestamp(final int index) {
         final ITmfContext context = seekEvent(index);
