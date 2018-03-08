@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,8 +18,8 @@ import static org.junit.Assert.assertNotNull;
 
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocation;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfLocationInfo;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -74,7 +74,7 @@ public class CtfLocationTest {
         CtfLocationInfo location = fixture.getLocationInfo();
         Long result = location.getTimestamp();
         assertNotNull(result);
-        assertEquals("1", result.toString()); //$NON-NLS-1$
+        assertEquals("1", result.toString());
         assertEquals((byte) 1, result.byteValue());
         assertEquals((short) 1, result.shortValue());
         assertEquals(1, result.intValue());
@@ -98,7 +98,7 @@ public class CtfLocationTest {
     @Test
     public void testToString_valid(){
         CtfLocation fixture2 = new CtfLocation(new CtfLocationInfo(1337, 7331));
-        assertEquals("CtfLocation [fLocationInfo=Element [1337/7331]]", fixture2.toString()); //$NON-NLS-1$
+        assertEquals("CtfLocation [fLocationInfo=Element [1337/7331]]", fixture2.toString());
     }
 
     /**
@@ -107,6 +107,6 @@ public class CtfLocationTest {
     @Test
     public void testToString_invalid(){
         CtfLocation fixture2 = new CtfLocation(new CtfLocationInfo(-1, -1));
-        assertEquals("CtfLocation [INVALID]", fixture2.toString()); //$NON-NLS-1$
+        assertEquals("CtfLocation [INVALID]", fixture2.toString());
     }
 }

@@ -84,9 +84,6 @@ public class FloatDefinition extends Definition {
     // Operations
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
-     */
     @Override
     public void read(BitBuffer input) {
         int exp = declaration.getExponent();

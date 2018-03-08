@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010, 2012 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -10,6 +10,7 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Adjusted for new Trace Model
  *   Alexandre Montplaisir - Port to JUnit4
+ *   Patrick Tasse - Fix for concurrency
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.trace;
@@ -29,25 +30,26 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * Test suite for the TmfExperiment class (multiple traces).
  */
-@SuppressWarnings({"nls","javadoc"})
+@SuppressWarnings("javadoc")
 public class TmfMultiTraceExperimentTest {
 
     // ------------------------------------------------------------------------
@@ -62,7 +64,6 @@ public class TmfMultiTraceExperimentTest {
     private static int          NB_EVENTS    = 20000;
     private static int          BLOCK_SIZE   = 1000;
 
-    private static ITmfTrace[] fTraces;
     private static TmfExperimentStub fExperiment;
 
     private static byte SCALE = (byte) -3;
@@ -71,39 +72,43 @@ public class TmfMultiTraceExperimentTest {
     // Housekeeping
     // ------------------------------------------------------------------------
 
-    @Before
-    public void setUp() {
-        setupTrace(DIRECTORY + File.separator + TEST_STREAM1, DIRECTORY + File.separator + TEST_STREAM2);
-        if (fExperiment == null) {
-            fExperiment = new TmfExperimentStub(EXPERIMENT, fTraces, BLOCK_SIZE);
-            fExperiment.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, true);
-        }
+    @BeforeClass
+    public static void setUp() {
+        ITmfTrace[] traces = setupTraces();
+        fExperiment = new TmfExperimentStub(EXPERIMENT, traces, BLOCK_SIZE);
+        fExperiment.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, true);
     }
 
-    private synchronized static ITmfTrace[] setupTrace(final String path1, final String path2) {
-        if (fTraces == null) {
-            fTraces = new ITmfTrace[2];
-            try {
-                URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path1), null);
-                File test = new File(FileLocator.toFileURL(location).toURI());
-                final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true);
-                trace1.setInitialRangeOffset(new TmfTimestamp(5, ITmfTimestamp.MILLISECOND_SCALE));
+    @AfterClass
+    public static void tearDown() {
+        fExperiment.dispose();
+    }
 
-                fTraces[0] = trace1;
-                location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path2), null);
-                test = new File(FileLocator.toFileURL(location).toURI());
-                final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true);
-                trace2.setInitialRangeOffset(new TmfTimestamp(2, ITmfTimestamp.MILLISECOND_SCALE));
-                fTraces[1] = trace2;
-            } catch (final TmfTraceException e) {
-                e.printStackTrace();
-            } catch (final URISyntaxException e) {
-                e.printStackTrace();
-            } catch (final IOException e) {
-                e.printStackTrace();
-            }
+    private static ITmfTrace[] setupTraces() {
+        final String path1 = DIRECTORY + File.separator + TEST_STREAM1;
+        final String path2 = DIRECTORY + File.separator + TEST_STREAM2;
+        try {
+            ITmfTrace[] traces = new ITmfTrace[2];
+
+            URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path1), null);
+            File test = new File(FileLocator.toFileURL(location).toURI());
+            final TmfTraceStub trace1 = new TmfTraceStub(test.getPath(), 0, true);
+            traces[0] = trace1;
+
+            location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(path2), null);
+            test = new File(FileLocator.toFileURL(location).toURI());
+            final TmfTraceStub trace2 = new TmfTraceStub(test.getPath(), 0, true);
+            traces[1] = trace2;
+
+            return traces;
+        } catch (final TmfTraceException e) {
+            e.printStackTrace();
+        } catch (final URISyntaxException e) {
+            e.printStackTrace();
+        } catch (final IOException e) {
+            e.printStackTrace();
         }
-        return fTraces;
+        return new ITmfTrace[0];
     }
 
     // ------------------------------------------------------------------------
@@ -119,8 +124,9 @@ public class TmfMultiTraceExperimentTest {
         assertEquals("getStartTime", 1, timeRange.getStartTime().getValue());
         assertEquals("getEndTime", NB_EVENTS, timeRange.getEndTime().getValue());
 
-        TmfTimestamp initRange = new TmfTimestamp(2, ITmfTimestamp.MILLISECOND_SCALE);
+        TmfTimestamp initRange = new TmfTimestamp(DEFAULT_INITIAL_OFFSET_VALUE, ITmfTimestamp.NANOSECOND_SCALE);
         assertEquals("getInitialRangeOffset", initRange, fExperiment.getInitialRangeOffset());
+
         assertEquals("getCurrentTime", fExperiment.getTimeRange().getStartTime(), fExperiment.getCurrentTime());
 
         ITmfTimestamp startTimestamp = fExperiment.getTimeRange().getStartTime();
@@ -822,17 +828,29 @@ public class TmfMultiTraceExperimentTest {
 
     @Test
     public void testDefaultCurrentTimeValues() {
-        // reset to default initial range offset
-        ((TmfTraceStub)fTraces[0]).setInitialRangeOffset(null);
-        ((TmfTraceStub)fTraces[1]).setInitialRangeOffset(null);
-
-        TmfExperimentStub exp = new TmfExperimentStub(EXPERIMENT, fTraces, BLOCK_SIZE);
+        ITmfTrace[] traces = setupTraces();
+        TmfExperimentStub exp = new TmfExperimentStub(EXPERIMENT, traces, BLOCK_SIZE);
 
         // verify initial values
         TmfTimestamp initRange = new TmfTimestamp(DEFAULT_INITIAL_OFFSET_VALUE, ITmfTimestamp.NANOSECOND_SCALE);
         assertEquals("getInitialRangeOffset", initRange, exp.getInitialRangeOffset());
         assertEquals("getCurrentTime", TmfTimestamp.ZERO, exp.getCurrentTime());
         assertEquals("getCurrentRange", TmfTimeRange.NULL_RANGE, exp.getCurrentRange());
+
+        exp.dispose();
+    }
+
+    @Test
+    public void testInitialRangeOffset() {
+        ITmfTrace[] traces = setupTraces();
+        ((TmfTraceStub) traces[0]).setInitialRangeOffset(new TmfTimestamp(5, ITmfTimestamp.MILLISECOND_SCALE));
+        ((TmfTraceStub) traces[1]).setInitialRangeOffset(new TmfTimestamp(2, ITmfTimestamp.MILLISECOND_SCALE));
+        TmfExperimentStub exp = new TmfExperimentStub(EXPERIMENT, traces, BLOCK_SIZE);
+
+        TmfTimestamp initRange = new TmfTimestamp(2, ITmfTimestamp.MILLISECOND_SCALE);
+        assertEquals("getInitialRangeOffset", initRange, exp.getInitialRangeOffset());
+
+        exp.dispose();
     }
 
 }

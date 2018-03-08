@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -32,7 +32,6 @@ import java.util.Random;
  * <li> The number of fields (0 .. NB_TYPES-1) depends on the event type.
  * </ul>
  */
-@SuppressWarnings("nls")
 public class CreateTestFiles {
 
     // ========================================================================

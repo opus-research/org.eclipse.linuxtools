@@ -75,14 +75,12 @@ public final class PreferenceConstants {
 	public static final String DP_RPMTOOLS_RPM = "rpm -qa --qf '%{NAME}\\n'"; //$NON-NLS-1$
 	public static final String DP_RPMTOOLS_YUM = "yum -C list all | grep - | cut -d \".\" -f 1"; //$NON-NLS-1$
 	public static final String DP_RPMTOOLS_URPM = "urpmq --list"; //$NON-NLS-1$
-	// public static final String DP_RPM_LIST_HIDE_PROPOSALS_WARNING = "false";
 	public static final boolean DP_RPM_LIST_BACKGROUND_BUILD = true;
 	public static final int DP_RPM_LIST_BUILD_PERIOD = 1;
-	// public static final String DP_RPM_LIST_LAST_BUILD = "";
 
 	// macro
 	public static final String DP_MACRO_PROPOSALS_FILESPATH = RPMMACRO_FILE
-			+ ";/usr/lib/rpm/macros"; //$NON-NLS-1$
+			+ ";/usr/lib/rpm/macros;/etc/rpm"; //$NON-NLS-1$
 	// changelog
 	public static final String DP_CHANGELOG_LOCAL = "US"; //$NON-NLS-1$
 	public static final String DP_CHANGELOG_ENTRY_FORMAT = P_CHANGELOG_ENTRY_FORMAT_VERSIONED;
@@ -110,7 +108,7 @@ public final class PreferenceConstants {
 	public static final boolean DP_RPMINFO_SOURCERPM = true;
 
 	public static final long DP_RPM_LIST_LAST_BUILD = 0;
-	
+
 	private PreferenceConstants(){
 		super();
 	}

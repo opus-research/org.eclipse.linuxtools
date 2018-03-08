@@ -99,9 +99,6 @@ public class StringDefinition extends Definition {
     // Operations
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
-     */
     @Override
     public void read(BitBuffer input) {
         string.setLength(0);

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -29,7 +29,6 @@ import org.junit.Test;
  * The class <code>ChannelInfoTest</code> contains tests for the class
  * <code>{@link SessionInfo}</code>.
  */
-@SuppressWarnings("nls")
 public class SessionInfoTest {
 
     // ------------------------------------------------------------------------
@@ -190,7 +189,7 @@ public class SessionInfoTest {
         String result = fixture.toString();
 
         // add additional test code here
-        assertEquals("[SessionInfo([TraceInfo(Name=sessionName)],State=INACTIVE,Domains=)]", result);
+        assertEquals("[SessionInfo([TraceInfo(Name=sessionName)],State=INACTIVE,isStreamedTrace=false,Domains=)]", result);
     }
 
     /**
@@ -201,7 +200,7 @@ public class SessionInfoTest {
         String result = fSessionInfo1.toString();
 
         // add additional test code here
-        assertEquals("[SessionInfo([TraceInfo(Name=session1)],State=ACTIVE,Domains=[DomainInfo([TraceInfo(Name=test1)],Channels=[ChannelInfo([TraceInfo(Name=channel1)],State=DISABLED,OverwriteMode=true,SubBuffersSize=13,NumberOfSubBuffers=12,SwitchTimer=10,ReadTimer=11,output=splice(),Events=[EventInfo([BaseEventInfo([TraceInfo(Name=event1)],type=TRACEPOINT,level=TRACE_DEBUG)],State=ENABLED)])],isKernel=false)])]", result);
+        assertEquals("[SessionInfo([TraceInfo(Name=session1)],State=ACTIVE,isStreamedTrace=false,Domains=[DomainInfo([TraceInfo(Name=test1)],Channels=[ChannelInfo([TraceInfo(Name=channel1)],State=DISABLED,OverwriteMode=true,SubBuffersSize=13,NumberOfSubBuffers=12,SwitchTimer=10,ReadTimer=11,output=splice(),Events=[EventInfo([BaseEventInfo([TraceInfo(Name=event1)],type=TRACEPOINT,level=TRACE_DEBUG)],State=ENABLED)])],isKernel=false)])]", result);
     }
 
     // ------------------------------------------------------------------------

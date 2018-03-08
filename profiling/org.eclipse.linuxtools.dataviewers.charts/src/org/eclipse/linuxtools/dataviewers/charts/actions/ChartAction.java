@@ -10,15 +10,16 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.dataviewers.charts.actions;
 
-import org.swtchart.Chart;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
-import org.eclipse.linuxtools.dataviewers.charts.Activator;
-import org.eclipse.linuxtools.dataviewers.charts.dialogs.ChartDialog;
-import org.eclipse.linuxtools.dataviewers.charts.view.ChartView;
+import org.eclipse.linuxtools.internal.dataviewers.charts.Activator;
+import org.eclipse.linuxtools.internal.dataviewers.charts.Messages;
+import org.eclipse.linuxtools.internal.dataviewers.charts.dialogs.ChartDialog;
+import org.eclipse.linuxtools.internal.dataviewers.charts.view.ChartView;
 import org.eclipse.swt.widgets.Shell;
+import org.swtchart.Chart;
 
 /**
  * An action that open a chart dialog from an <code>AbstractSTViewer</code>.
@@ -28,7 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 public class ChartAction extends Action {
 
     /** The dialog */
-    private ChartDialog dialog;
+    private final ChartDialog dialog;
 
     /**
      * The constructor.
@@ -39,8 +40,8 @@ public class ChartAction extends Action {
      *            the viewer inputed to the disalog
      */
     public ChartAction(Shell shell, AbstractSTViewer viewer) {
-        super("Create chart...", Activator.getImageDescriptor("icons/chart_icon.png"));
-        dialog = createDialog(shell, viewer);
+        super(Messages.ChartConstants_CREATE_CHART, Activator.getImageDescriptor("icons/chart_icon.png")); //$NON-NLS-1$
+        dialog = new ChartDialog(shell, viewer);
         setEnabled(!viewer.getViewer().getSelection().isEmpty());
         viewer.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -63,9 +64,5 @@ public class ChartAction extends Action {
             ChartView.createChartView(chart);
 
         }
-    }
-
-    protected ChartDialog createDialog(Shell shell, AbstractSTViewer viewer) {
-        return new ChartDialog(shell, viewer);
     }
 }

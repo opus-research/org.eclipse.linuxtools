@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Ericsson
+ * Copyright (c) 2009, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,11 +18,13 @@ import java.util.Vector;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 
-@SuppressWarnings({"javadoc", "nls"})
+@SuppressWarnings("javadoc")
 public class TraceImpl implements ITimeGraphEntry {
+
     // ========================================================================
     // Data
     // ========================================================================
+
     private String name = "traceDefaultName";
     private long startTime = 0;
     private long stopTime = 1;

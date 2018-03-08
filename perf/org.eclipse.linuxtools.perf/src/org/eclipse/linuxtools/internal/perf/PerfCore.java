@@ -28,6 +28,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.internal.perf.model.PMCommand;
 import org.eclipse.linuxtools.internal.perf.model.PMDso;
@@ -381,11 +382,15 @@ public class PerfCore {
 		try {
 			if (workingDir==null) {
 				p = RuntimeProcessFactory.getFactory().exec(getReportString(config, perfDataLoc), project);
+				PerfPlugin.getDefault().setPerfProfileData(new Path(perfDataLoc));
+				PerfPlugin.getDefault().setWorkingDir(project.getLocation());
 			} else {
-				p = RuntimeProcessFactory.getFactory().exec(getReportString(config, workingDir.toOSString() + PerfPlugin.PERF_DEFAULT_DATA), project);
+				String defaultPerfDataLoc = workingDir.toOSString() + PerfPlugin.PERF_DEFAULT_DATA;
+				p = RuntimeProcessFactory.getFactory().exec(getReportString(config, defaultPerfDataLoc), project);
+				PerfPlugin.getDefault().setPerfProfileData(new Path(defaultPerfDataLoc));
+				PerfPlugin.getDefault().setWorkingDir(workingDir);
 			}
 
-			//			p.waitFor();
 			input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			//spitting error stream moved to end of while loop, due to commenting of p.waitFor()
@@ -434,7 +439,7 @@ public class PerfCore {
 		float percent;
 
 		Process p = null;
-		int samples;
+		double samples;
 		String comm,dso,symbol;
 		boolean kernelFlag;
 		PMEvent currentEvent = null;
@@ -471,7 +476,7 @@ public class PerfCore {
 						continue;
 					}
 					percent = Float.parseFloat(items[0]); //percent column
-					samples = Integer.parseInt(items[1].trim()); //samples column
+					samples = Double.parseDouble(items[1].trim()); //samples column
 					comm = items[2].trim(); //command column
 					dso = items[3].trim(); //dso column
 					symbol = items[4].trim(); //symbol column 
@@ -642,7 +647,13 @@ public class PerfCore {
 						//if (PerfPlugin.DEBUG_ON) System.err.println("Parsed line ref without being in valid block, shouldn't happen.");
 						break;
 					} else {
-						currentSym.addPercent(Integer.parseInt(items[1]), percent);
+						int lineNum = -1;
+						try {
+							lineNum = Integer.parseInt(items[1]);
+						} catch (NumberFormatException e) {
+							// leave line number as -1
+						}
+						currentSym.addPercent(lineNum, percent);
 						// Symbol currently in 'Unfiled Symbols' but we now know the actual parent
 						if (currentSym.getParent().getName().equals(PerfPlugin.STRINGS_UnfiledSymbols)) {
 							currentSym.getParent().removeChild(currentSym);

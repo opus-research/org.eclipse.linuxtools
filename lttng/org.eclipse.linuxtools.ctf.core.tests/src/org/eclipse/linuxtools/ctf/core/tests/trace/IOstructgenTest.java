@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.*;
@@ -17,10 +28,9 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link IOStructGen}
- * @author Matthew Khouzam
  *
+ * @author Matthew Khouzam
  */
-@SuppressWarnings("nls")
 public class IOstructgenTest {
 
 
@@ -281,7 +291,7 @@ public class IOstructgenTest {
                 deltree(f);
             }
             f.mkdirs();
-            f = new File(tempTraceDir + "/metadata"); //$NON-NLS-1$
+            f = new File(tempTraceDir + "/metadata");
             FileWriter fw = new FileWriter(f);
             fw.write(metadata);
             fw.close();
@@ -296,7 +306,7 @@ public class IOstructgenTest {
             for (int i = 0; i < size; i++) {
                 data[i] = 0x00;
             }
-            f = new File(tempTraceDir + "/dummyChan"); //$NON-NLS-1$
+            f = new File(tempTraceDir + "/dummyChan");
             fw = new FileWriter(f);
             FileOutputStream fos = new FileOutputStream(f);
             fos.write(magicLE);
