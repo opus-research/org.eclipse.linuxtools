@@ -35,10 +35,9 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 
-/**
- * Test loader class.
- */
-@SuppressWarnings("javadoc")
+// Referenced classes of package org.eclipse.hyades.uml2sd.ztest:
+//            OpenToolBox
+
 public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterProvider, ISDPagingProvider, ISelectionListener {
 
     public SDView v;
@@ -53,7 +52,6 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         this(""); //$NON-NLS-1$
     }
 
-    @SuppressWarnings("unused")
     public TestLoaders(String name) {
         page = 1;
     }
@@ -439,12 +437,12 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
 
         @SuppressWarnings("nls")
         public Image getResourceImage(String _name) {
-            ImageDescriptor imgage;
+            ImageDescriptor img;
             try {
                 URL BASIC_URL = new URL("platform", "localhost", "plugin");
                 URL url = new URL(BASIC_URL, (new StringBuilder("plugin/org.eclipse.linuxtools.tmf.ui/icons/")).append(_name).toString());
-                imgage = ImageDescriptor.createFromURL(url);
-                return imgage.createImage();
+                img = ImageDescriptor.createFromURL(url);
+                return img.createImage();
             } catch (Exception e) {
                 System.err.println(e);
             }
