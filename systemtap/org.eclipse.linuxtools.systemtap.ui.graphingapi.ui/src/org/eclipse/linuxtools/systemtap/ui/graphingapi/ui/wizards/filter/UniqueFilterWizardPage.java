@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.systemtap.ui.graphingapi.ui.wizards.filter;
 import org.eclipse.linuxtools.internal.systemtap.ui.graphingapi.ui.Localization;
 import org.eclipse.linuxtools.systemtap.ui.graphingapi.nonui.filters.UniqueFilter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
@@ -30,11 +29,11 @@ import org.eclipse.ui.forms.widgets.ColumnLayout;
 
 public class UniqueFilterWizardPage extends FilterWizardPage {
 	public UniqueFilterWizardPage() {
-		super("selectFilterOptions"); //$NON-NLS-1$
-		setTitle(Localization.getString("UniqueFilterWizardPage.CreateUniqueFilter")); //$NON-NLS-1$
-		aggregateID = ""; //$NON-NLS-1$
+		super("selectFilterOptions");
+		setTitle(Localization.getString("UniqueFilterWizardPage.CreateUniqueFilter"));
+		aggregateID = "";
 	}
-
+	
 	@Override
 	public void createControl(Composite parent) {
 		super.createControl(parent);
@@ -52,21 +51,20 @@ public class UniqueFilterWizardPage extends FilterWizardPage {
 		ColumnLayout colLayout = new ColumnLayout();
 		colLayout.maxNumColumns = 1;
 		cmpFilterOpts.setLayout(colLayout);
-
+		
 		//Column
 		Label lblColumn = new Label(cmpFilterOpts, SWT.NONE);
-		lblColumn.setText(Localization.getString("UniqueFilterWizardPage.Column")); //$NON-NLS-1$
+		lblColumn.setText(Localization.getString("UniqueFilterWizardPage.Column"));
 		cboColumn = new Combo(cmpFilterOpts, SWT.DROP_DOWN);
 		cboColumn.addSelectionListener(selectionListener);
-		for (String series : wizard.series) {
-			cboColumn.add(series);
-		}
+		for(int i=0; i<wizard.series.length; i++)
+			cboColumn.add(wizard.series[i]);
 
 		new Label(cmpFilterOpts, SWT.NONE);	//Spacer
-
+		
 		//String to compare to
 		Label lblAggregate = new Label(cmpFilterOpts, SWT.NONE);
-		lblAggregate.setText(Localization.getString("UniqueFilterWizardPage.Aggregate")); //$NON-NLS-1$
+		lblAggregate.setText(Localization.getString("UniqueFilterWizardPage.Aggregate"));
 
 		btnAggregates = new Button[AggregateFactory.aggregateIDs.length];
 		for(int i=0; i<btnAggregates.length; i++) {
@@ -75,18 +73,18 @@ public class UniqueFilterWizardPage extends FilterWizardPage {
 			btnAggregates[i].addSelectionListener(btnSelectionListener);
 			btnAggregates[i].setData(AggregateFactory.aggregateIDs[i]);
 		}
-
+		
 		FormData data2 = new FormData();
 		data2.left = new FormAttachment(cmpFilterOpts);
 		data2.top = new FormAttachment(0, 0);
 		data2.right = new FormAttachment(100, 0);
 		data2.bottom = new FormAttachment(100, 0);
-
+		
 		lblDesc = new Label(comp, SWT.WRAP);
 		lblDesc.setLayoutData(data2);
 		setControl(comp);
 	}
-
+	
 	@Override
 	public boolean canFlipToNextPage() {
 		return false;
@@ -97,11 +95,8 @@ public class UniqueFilterWizardPage extends FilterWizardPage {
 		int selected = cboColumn.getSelectionIndex();
 		int style = 0;
 		if(selected >=0 && selected < cboColumn.getItemCount()) {
-			if(null != aggregateID && aggregateID.length() > 0) {
-				((SelectFilterWizard) super.getWizard()).filter = new UniqueFilter(
-						selected,
-						AggregateFactory.createAggregate(aggregateID), style);
-			}
+			if(null != aggregateID && aggregateID.length() > 0)
+				((SelectFilterWizard)super.getWizard()).filter = new UniqueFilter(selected, AggregateFactory.createAggregate(aggregateID), style);
 		}
 	}
 
@@ -113,11 +108,10 @@ public class UniqueFilterWizardPage extends FilterWizardPage {
 			cboColumn = null;
 		}
 
-		if(null != lblDesc) {
+		if(null != lblDesc)
 			lblDesc.dispose();
-		}
 		lblDesc = null;
-
+		
 		if(null != btnAggregates) {
 			for(int i=0; i<btnAggregates.length; i++) {
 				btnAggregates[i].removeSelectionListener(btnSelectionListener);
@@ -126,24 +120,24 @@ public class UniqueFilterWizardPage extends FilterWizardPage {
 			}
 			btnAggregates = null;
 		}
-
+		
 		aggregateID = null;
 
 		super.dispose();
 	}
-
-	private final SelectionListener btnSelectionListener = new SelectionAdapter() {
-
-		@Override
+	
+	private final SelectionListener btnSelectionListener = new SelectionListener() {
+		public void widgetDefaultSelected(SelectionEvent e) {}
+		
 		public void widgetSelected(SelectionEvent e) {
 			if(e.widget instanceof Button) {
 				Button target = (Button)e.widget;
 
-				for (Button button : btnAggregates) {
-					if(target == button) {
-						lblDesc.setText(AggregateFactory.getAggregateName(button.getData().toString()) + "\n\n" + //$NON-NLS-1$
-								AggregateFactory.getAggregateDescription(button.getData().toString()));
-						aggregateID = button.getData().toString();
+				for(int i=0; i<btnAggregates.length; i++) {
+					if(target == btnAggregates[i]) {
+						lblDesc.setText(AggregateFactory.getAggregateName(btnAggregates[i].getData().toString()) + "\n\n" +
+								AggregateFactory.getAggregateDescription(btnAggregates[i].getData().toString()));
+						aggregateID = btnAggregates[i].getData().toString();
 						createFilter();
 						wizard.getContainer().updateButtons();
 					}

@@ -19,13 +19,12 @@ import org.eclipse.ui.part.FileEditorInput;
 
 public class SystemTapScriptTester extends PropertyTester {
 
-	public static final String STP_SUFFIX = ".stp"; //$NON-NLS-1$
+	public static final String STP_SUFFIX = ".stp";
 
 	public SystemTapScriptTester() {
 		// TODO Auto-generated constructor stub
 	}
 
-	@Override
 	public boolean test(Object receiver, String property, Object[] args,
 			Object expectedValue) {
 

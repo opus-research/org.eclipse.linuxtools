@@ -19,14 +19,6 @@
             name="Remote Perf Profile View"
             restorable="true">
       </view>
-      <view
-            allowMultiple="true"
-            category="org.eclipse.linuxtools.profiling.ui"
-            class="org.eclipse.linuxtools.internal.perf.ui.SourceDisassemblyView"
-            icon="icons/symbol.gif"
-            id="org.eclipse.linuxtools.perf.ui.SourceDisassemblyView"
-            name="Source Disassembly">
-      </view>
    </extension>
    <extension
          point="org.eclipse.help.contexts">
@@ -41,7 +33,7 @@
             icon="icons/symbol.gif"
             id="org.eclipse.linuxtools.perf.launch.profileshortcut"
             label="Profile with Perf"
-            modes="linuxtools">
+            modes="profile">
          <contextualLaunch>
             <enablement>
                <with
@@ -86,7 +78,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigDelegate"
             id="org.eclipse.linuxtools.perf.launch.profile"
-            modes="linuxtools"
+            modes="profile"
             name="Profile with Perf"
             public="true"
             sourceLocatorId="org.eclipse.cdt.launch.DefaultSourceLocator"
@@ -95,7 +87,7 @@
       <launchConfigurationType
             delegate="org.eclipse.linuxtools.internal.perf.remote.launch.PerfLaunchConfigDelegate"
             id="org.eclipse.linuxtools.perf.remote.launch.profile"
-            modes="linuxtools"
+            modes="profile"
             name="Profile with Remote Perf"
             public="true"
             sourceLocatorId="org.eclipse.cdt.launch.DefaultSourceLocator"
@@ -143,11 +135,10 @@
    <extension
          point="org.eclipse.linuxtools.profiling.launch.launchProvider">
       <provider
+            default="true"
             delegate="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigDelegate"
-            description="%perfLaunchConfiguration.description"
             id="org.eclipse.linuxtools.perf.provider"
-            information="%perfLaunchConfiguration.information"
-            name="%perfLaunchConfiguration.name.0"
+            name="Perf"
             priority="1"
             shortcut="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchShortcut"
             tabgroup="org.eclipse.linuxtools.internal.perf.launch.PerfLaunchConfigurationTabGroup"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,33 +8,26 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *   Alexandre Montplaisir - Port to JUnit4
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.statesystem;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import junit.framework.TestCase;
+
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.IStateHistoryBackend;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.HistoryTreeBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.historytree.HistoryTreeBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Unit tests for stack-attributes in the Generic State System (using
@@ -42,7 +35,7 @@ import org.junit.Test;
  *
  * @author Alexandre Montplaisir
  */
-public class StateSystemPushPopTest {
+public class StateSystemPushPopTest extends TestCase{
 
     private ITmfStateSystemBuilder ss;
 
@@ -63,10 +56,13 @@ public class StateSystemPushPopTest {
     /**
      * Test case constructor
      *
+     * @param name
+     *            The test name
      * @throws IOException
      *             If we couldn't create the state history test file
      */
-    public StateSystemPushPopTest() throws IOException {
+    public StateSystemPushPopTest(final String name) throws IOException {
+        super(name);
         testHtFile = File.createTempFile("test", ".ht"); //$NON-NLS-1$ //$NON-NLS-2$
         testHtFile.deleteOnExit();
     }
@@ -85,7 +81,7 @@ public class StateSystemPushPopTest {
      * @throws StateValueTypeException
      *             Fails the test
      */
-    @Before
+    @Override
     public void setUp() throws IOException, TimeRangeException,
             AttributeNotFoundException, StateValueTypeException {
         ITmfStateValue value;
@@ -137,7 +133,7 @@ public class StateSystemPushPopTest {
     /**
      * Clean-up after running a test. Delete the .ht file we created.
      */
-    @After
+    @Override
     public void tearDown() {
         testHtFile.delete();
     }
@@ -146,7 +142,6 @@ public class StateSystemPushPopTest {
      * Test that the value of the stack-attribute at the start and end of the
      * history are correct.
      */
-    @Test
     public void testBeginEnd() {
         try {
             interval = ss.querySingleState(0, attribute);
@@ -163,15 +158,12 @@ public class StateSystemPushPopTest {
             fail(errMsg + e.toString());
         } catch (TimeRangeException e) {
             fail(errMsg + e.toString());
-        } catch (StateSystemDisposedException e) {
-            fail(errMsg + e.toString());
         }
     }
 
     /**
      * Run single queries on the attribute stacks (with .querySingleState()).
      */
-    @Test
     public void testSingleQueries() {
         try {
             final int subAttribute1 = ss.getQuarkRelative(attribute, "1"); //$NON-NLS-1$
@@ -200,15 +192,12 @@ public class StateSystemPushPopTest {
             fail(errMsg + e.toString());
         } catch (TimeRangeException e) {
             fail(errMsg + e.toString());
-        } catch (StateSystemDisposedException e) {
-            fail(errMsg + e.toString());
         }
     }
 
     /**
      * Test the .querySingletStackTop() convenience method.
      */
-    @Test
     public void testStackTop() {
         try {
             interval = ss.querySingleStackTop(10, attribute);
@@ -229,15 +218,12 @@ public class StateSystemPushPopTest {
             fail(errMsg + e.toString());
         } catch (TimeRangeException e) {
             fail(errMsg + e.toString());
-        } catch (StateSystemDisposedException e) {
-            fail(errMsg + e.toString());
         }
     }
 
     /**
      * Test the places where the stack is empty.
      */
-    @Test
     public void testEmptyStack() {
         try {
             /* At the start */
@@ -264,15 +250,12 @@ public class StateSystemPushPopTest {
             fail(errMsg + e.toString());
         } catch (TimeRangeException e) {
             fail(errMsg + e.toString());
-        } catch (StateSystemDisposedException e) {
-            fail(errMsg + e.toString());
         }
     }
 
     /**
      * Test full-queries (.queryFullState()) on the attribute stacks.
      */
-    @Test
     public void testFullQueries() {
         List<ITmfStateInterval> state;
         try {
@@ -310,8 +293,6 @@ public class StateSystemPushPopTest {
         } catch (StateValueTypeException e) {
             fail(errMsg + e.toString());
         } catch (TimeRangeException e) {
-            fail(errMsg + e.toString());
-        } catch (StateSystemDisposedException e) {
             fail(errMsg + e.toString());
         }
     }

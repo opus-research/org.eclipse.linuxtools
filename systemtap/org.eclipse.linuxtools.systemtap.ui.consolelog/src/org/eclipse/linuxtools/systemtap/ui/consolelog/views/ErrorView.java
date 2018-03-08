@@ -33,7 +33,7 @@ public class ErrorView extends ViewPart {
 	}
 	
 	/**
-	 * Creates a new table to contain all of the error messages.
+	 * Greates a new table to contain all of the error messages.
 	 * @param parent The composite to draw all content to.
 	 */
 	@Override
@@ -44,7 +44,7 @@ public class ErrorView extends ViewPart {
 		c.setLayout(grid);
 
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		table = new ErrorTableDisplay(c, new String[] {"", Localization.getString("ErrorView.Type"), Localization.getString("ErrorView.Description"), Localization.getString("ErrorView.Saw"), Localization.getString("ErrorView.Line")}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		table = new ErrorTableDisplay(c, new String[] {"", Localization.getString("ErrorView.Type"), Localization.getString("ErrorView.Description"), Localization.getString("ErrorView.Saw"), Localization.getString("ErrorView.Line")});
 		table.getControl().setLayoutData(gd);
 	}
 
@@ -54,15 +54,21 @@ public class ErrorView extends ViewPart {
 	 */
 	public void add(final String[] log) {
 		table.getControl().getDisplay().syncExec(new Runnable() {
-			@Override
+			boolean stop = false;
 			public void run() {
-				table.addRow(log);
-
+				if(stop) return;
 				try {
-					PlatformUI.getWorkbench().getWorkbenchWindows()[0].getActivePage().showView(ID);
-				} catch(PartInitException pie) {
+					table.addRow(log);
+
+					try {
+						PlatformUI.getWorkbench().getWorkbenchWindows()[0].getActivePage().showView(ID);
+					} catch(PartInitException pie) {
+					} catch(NullPointerException npe) {}
+				} catch (Exception e) {
+					stop = true;
 				}
 			}
+			
 		});
 	}
 		
@@ -89,5 +95,5 @@ public class ErrorView extends ViewPart {
 	}
 	
 	private volatile ErrorTableDisplay table;
-	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.consolelog.views.ErrorView"; //$NON-NLS-1$
+	public static final String ID = "org.eclipse.linuxtools.systemtap.ui.consolelog.views.ErrorView";
 }

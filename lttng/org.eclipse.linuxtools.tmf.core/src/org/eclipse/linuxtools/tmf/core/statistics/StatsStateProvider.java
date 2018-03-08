@@ -13,23 +13,21 @@
 package org.eclipse.linuxtools.tmf.core.statistics;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractStateChangeInput;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics.Attributes;
+import org.eclipse.linuxtools.tmf.core.statistics.TmfStatistics.Attributes;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
- * The state provider for traces statistics that use TmfStateStatistics. It
- * should work with any trace type for which we can use the state system.
+ * The state provider for traces statistics. It should work with any type of
+ * trace TMF can handle.
  *
  * The resulting attribute tree will look like this:
  *
  * <root>
- *   |-- total
  *   \-- event_types
  *        |-- <event name 1>
  *        |-- <event name 2>
@@ -71,15 +69,11 @@ class StatsStateProvider extends AbstractStateChangeInput {
 
         /* Since this can be used for any trace types, normalize all the
          * timestamp values to nanoseconds. */
-        final long ts = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        final long ts = event.getTimestamp().normalize(0, -9).getValue();
 
         final String eventName = event.getType().getName();
 
         try {
-
-            /* Total number of events */
-            quark = ss.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
-            ss.incrementAttribute(ts, quark);
 
             /* Number of events of each type, globally */
             quark = ss.getQuarkRelativeAndAdd(typeAttribute, eventName);

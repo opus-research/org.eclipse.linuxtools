@@ -20,6 +20,15 @@
             name="%views.category.name">
       </category>
       <view
+            allowMultiple="false"
+            category="org.eclipse.linuxtools.tmf.ui.views.category"
+            class="org.eclipse.linuxtools.tmf.ui.views.events.TmfEventsView"
+            icon="icons/eview16/events_view.gif"
+            id="org.eclipse.linuxtools.tmf.ui.views.events"
+            name="%events.view.name"
+            restorable="true">
+      </view>
+      <view
             category="org.eclipse.linuxtools.tmf.ui.views.category"
             class="org.eclipse.linuxtools.tmf.ui.views.timechart.TimeChartView"
             icon="icons/eview16/timechart_view.gif"
@@ -89,6 +98,16 @@
             icon="icons/eview16/events_view.gif"
             id="org.eclipse.linuxtools.tmf.ui.editors.events"
             name="%events.editor.name">
+         <contentTypeBinding
+               contentTypeId="org.eclipse.linuxtools.tmf.ui.content-type.trace">
+         </contentTypeBinding>
+      </editor>
+      <editor
+            class="org.eclipse.linuxtools.tmf.ui.editors.EventsViewEditor"
+            default="false"
+            icon="icons/eview16/events_view.gif"
+            id="org.eclipse.linuxtools.tmf.ui.editors.eventsView"
+            name="%eventsview.editor.name">
          <contentTypeBinding
                contentTypeId="org.eclipse.linuxtools.tmf.ui.content-type.trace">
          </contentTypeBinding>
@@ -247,9 +266,6 @@
             <contentExtension
                   pattern="org.eclipse.ui.navigator.resources.filters.*">
             </contentExtension>
-            <contentExtension
-                  pattern="org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfEditorLinkHelper">
-            </contentExtension>
          </includes>
       </viewerContentBinding>
    </extension>
@@ -303,6 +319,52 @@
    </extension>
    <extension
          point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.navigator.ProjectExplorer">
+         <command
+               commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers"
+               id="org.eclipse.linuxtools.tmf.ui.menu.managecustomparsers"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.eclipse.ui.navigator.ProjectExplorer">
+         <command
+               commandId="org.eclipse.linuxtools.tmf.ui.command.clear_views"
+               icon="icons/etool16/clear.gif"
+               label="%command.clear_views"
+               mnemonic="%command.clear_views.mnemonic"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <or>
+                        <and>
+                           <instanceof
+                                 value="org.eclipse.core.resources.IProject">
+                           </instanceof>
+                           <test
+                                 property="org.eclipse.core.resources.projectNature"
+                                 value="org.eclipse.linuxtools.tmf.project.nature">
+                           </test>
+                        </and>
+                        <instanceof
+                              value="org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement">
+                        </instanceof>
+                     </or>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
       <menuContribution
             locationURI="popup:org.eclipse.ui.popup.any?after=additions">
          <command
@@ -547,27 +609,6 @@
                name="org.eclipse.linuxtools.tmf.ui.separator3"
                visible="true">
          </separator>
-         <command
-               commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers"
-               icon="icons/etool16/customparser_wizard.gif"
-               id="org.eclipse.linuxtools.tmf.ui.menu.managecustomparsers"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="selection">
-                  <count
-                        value="1">
-                  </count>
-                  <iterate
-                        operator="and">
-                     <instanceof
-                           value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder">
-                     </instanceof>
-                  </iterate>
-               </with>
-            </visibleWhen>
-         </command>
          <menu
                label="%command.select_trace_type"
                mnemonic="%command.select_trace_type.mnemonic"
@@ -576,15 +617,6 @@
                   class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.SelectTraceTypeContributionItem"
                   id="org.eclipse.linuxtools.tmf.ui.command.select_trace_type.dynamic">
             </dynamic>
-            <separator
-                  name="org.eclipse.linuxtools.tmf.ui.separator6"
-                  visible="true">
-            </separator>
-            <command
-                  commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers"
-                  icon="icons/etool16/customparser_wizard.gif"
-                  style="push">
-            </command>
             <visibleWhen
                   checkEnabled="false">
                <with
@@ -661,6 +693,35 @@
                </with>
             </visibleWhen>
          </command>
+         <command
+               commandId="org.eclipse.linuxtools.tmf.ui.command.clear_views"
+               icon="icons/etool16/clear.gif"
+               label="%command.clear_views"
+               mnemonic="%command.clear_views.mnemonic"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <and>
+                        <instanceof
+                              value="org.eclipse.core.resources.IProject">
+                        </instanceof>
+                        <test
+                              property="org.eclipse.core.resources.projectNature"
+                              value="org.eclipse.linuxtools.tmf.project.nature">
+                        </test>
+                     </and>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -707,6 +768,12 @@
             description="%command.select_traces.description"
             id="org.eclipse.linuxtools.tmf.ui.command.select_traces"
             name="%command.select_traces">
+      </command>
+      <command
+            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
+            description="%command.clear_views.description"
+            id="org.eclipse.linuxtools.tmf.ui.command.clear_views"
+            name="%command.clear_views">
       </command>
       <category
             description="%commands.parser.category.description"
@@ -1023,6 +1090,10 @@
          </activeWhen>
       </handler>
       <handler
+            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.ClearViewsHandler"
+            commandId="org.eclipse.linuxtools.tmf.ui.command.clear_views">
+      </handler>
+      <handler
             class="org.eclipse.linuxtools.internal.tmf.ui.commands.ManageCustomParsersCommandHandler"
             commandId="org.eclipse.linuxtools.tmf.ui.command.managecustomparsers">
       </handler>
@@ -1111,12 +1182,6 @@
             id="org.eclipse.linuxtools.tmf.ui.views.uml2sd.preferences.SDViewerPage"
             name="%preference.page.uml2sd.name">
       </page>
-      <page
-            category="org.eclipse.linuxtools.tmf.ui.TmfTracingPreferences"
-            class="org.eclipse.linuxtools.tmf.ui.properties.TmfTimestampFormatPage"
-            id="org.eclipse.linuxtools.tmf.ui.preferences.timestamp.format"
-            name="%preferences.page.timestamp.format">
-      </page>
    </extension>
    <extension
          point="org.eclipse.linuxtools.tmf.ui.uml2SDLoader">
@@ -1144,7 +1209,7 @@
             class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.TracePropertyTester"
             id="org.eclipse.linuxtools.tmf.ui.tracePropertyTester"
             namespace="org.eclipse.linuxtools.tmf.ui"
-            properties="isExperimentTrace,hasSupplementaryFiles,traceType"
+            properties="isExperimentTrace,hasSupplementaryFiles"
             type="org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement">
       </propertyTester>
    </extension>
@@ -1162,26 +1227,6 @@
             name="%tracetype.type.ctf"
             trace_type="org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace">
       </type>
-   </extension>
-   <extension
-         point="org.eclipse.ui.navigator.linkHelper">
-      <linkHelper
-            class="org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfEditorLinkHelper"
-            id="org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfEditorLinkHelper">
-         <editorInputEnablement>
-             <instanceof value="org.eclipse.ui.IFileEditorInput"/>
-         </editorInputEnablement>
-         <selectionEnablement>
-             <or>
-                <instanceof
-                      value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
-                </instanceof>
-                <instanceof
-                      value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
-                </instanceof>
-             </or>
-         </selectionEnablement>
-      </linkHelper>
    </extension>
 
 </plugin>

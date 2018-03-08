@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Francois Chouinard - Replace background requests by pre-emptable requests
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.component;
@@ -19,8 +18,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
-import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
+import org.eclipse.linuxtools.internal.tmf.core.component.TmfThread;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfCoalescedDataRequest;
 import org.eclipse.linuxtools.internal.tmf.core.request.TmfRequestExecutor;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -41,9 +40,10 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
  * The concrete class can either re-implement processRequest() entirely or just
  * implement the hooks (initializeContext() and getNext()).
  * <p>
+ * TODO: Add support for providing multiple data types.
  *
+ * @version 1.0
  * @author Francois Chouinard
- * @version 1.1
  */
 public abstract class TmfDataProvider extends TmfComponent implements ITmfDataProvider {
 
@@ -61,21 +61,12 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
     // Attributes
     // ------------------------------------------------------------------------
 
-    /** The type of event handled by this provider */
     protected Class<? extends ITmfEvent> fType;
-
-    /** Is there some data being logged? */
     protected boolean fLogData;
-
-    /** Are errors being logged? */
     protected boolean fLogError;
 
-    /** Queue of events */
-    protected BlockingQueue<ITmfEvent> fDataQueue;
-
-    /** Size of the fDataQueue */
     protected int fQueueSize = DEFAULT_QUEUE_SIZE;
-
+    protected BlockingQueue<ITmfEvent> fDataQueue;
     private TmfRequestExecutor fExecutor;
 
     private int fSignalDepth = 0;
@@ -119,16 +110,6 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         TmfProviderManager.register(fType, this);
     }
 
-    /**
-     * Constructor specifying the event type and the queue size.
-     *
-     * @param name
-     *            Name of the provider
-     * @param type
-     *            Type of event that will be handled
-     * @param queueSize
-     *            Size of the event queue
-     */
     protected TmfDataProvider(String name, Class<? extends ITmfEvent> type, int queueSize) {
         this();
         fQueueSize = queueSize;
@@ -251,16 +232,8 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
     // Coalescing (primitive test...)
     // ------------------------------------------------------------------------
 
-    /** List of coalesced requests */
     protected Vector<TmfCoalescedDataRequest> fPendingCoalescedRequests = new Vector<TmfCoalescedDataRequest>();
 
-    /**
-     * Create a new request from an existing one, and add it to the coalesced
-     * requests
-     *
-     * @param request
-     *            The request to copy
-     */
     protected void newCoalescedDataRequest(ITmfDataRequest request) {
         synchronized (fLock) {
             TmfCoalescedDataRequest coalescedRequest = new TmfCoalescedDataRequest(request.getDataType(), request.getIndex(),
@@ -274,12 +247,6 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         }
     }
 
-    /**
-     * Add an existing requests to the list of coalesced ones
-     *
-     * @param request
-     *            The request to add to the list
-     */
     protected void coalesceDataRequest(ITmfDataRequest request) {
         synchronized (fLock) {
             for (TmfCoalescedDataRequest coalescedRequest : fPendingCoalescedRequests) {
@@ -308,12 +275,6 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
         }
     }
 
-    /**
-     * Queue a request.
-     *
-     * @param request
-     *            The data request
-     */
     protected void queueRequest(final ITmfDataRequest request) {
 
         if (fExecutor.isShutdown()) {
@@ -321,27 +282,162 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
             return;
         }
 
-        TmfEventThread thread = new TmfEventThread(this, request);
+        final TmfDataProvider provider = this;
+
+        // Process the request
+        TmfThread thread = new TmfThread(request.getExecType()) {
+
+            @Override
+            public void run() {
+
+                if (TmfCoreTracer.isRequestTraced()) {
+                    TmfCoreTracer.traceRequest(request, "is being serviced by " + provider.getName()); //$NON-NLS-1$
+                }
+
+                // Extract the generic information
+                request.start();
+                int nbRequested = request.getNbRequested();
+                int nbRead = 0;
+
+                // Initialize the execution
+                ITmfContext context = armRequest(request);
+                if (context == null) {
+                    request.cancel();
+                    return;
+                }
+
+                try {
+                    // Get the ordered events
+                    ITmfEvent data = getNext(context);
+                    if (TmfCoreTracer.isRequestTraced()) {
+                        TmfCoreTracer.traceRequest(request, "read first event"); //$NON-NLS-1$
+                    }
+                    while (data != null && !isCompleted(request, data, nbRead)) {
+                        if (fLogData) {
+                            TmfCoreTracer.traceEvent(provider, request, data);
+                        }
+                        if (request.getDataType().isInstance(data)) {
+                            request.handleData(data);
+                        }
+
+                        // To avoid an unnecessary read passed the last data
+                        // requested
+                        if (++nbRead < nbRequested) {
+                            data = getNext(context);
+                        }
+                    }
+                    if (TmfCoreTracer.isRequestTraced()) {
+                        TmfCoreTracer.traceRequest(request, "COMPLETED"); //$NON-NLS-1$
+                    }
+
+                    if (request.isCancelled()) {
+                        request.cancel();
+                    } else {
+                        request.done();
+                    }
+                } catch (Exception e) {
+                    request.fail();
+                }
+
+                // Cleanup
+                context.dispose();
+            }
+
+            @Override
+            public void cancel() {
+                if (!request.isCompleted()) {
+                    request.cancel();
+                }
+            }
+        };
 
         if (TmfCoreTracer.isRequestTraced()) {
             TmfCoreTracer.traceRequest(request, "QUEUED"); //$NON-NLS-1$
         }
-
         fExecutor.execute(thread);
+
     }
 
-    /**
-     * Queue a background request
-     *
-     * @param request
-     *            The request
-     * @param blockSize
-     *            The request should be split in chunks of this size
-     * @param indexing
-     *            Should we index the chunks
-     */
     protected void queueBackgroundRequest(final ITmfDataRequest request, final int blockSize, final boolean indexing) {
-        queueRequest(request);
+
+        final TmfDataProvider provider = this;
+
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+
+                if (TmfCoreTracer.isRequestTraced()) {
+                    TmfCoreTracer.traceRequest(request, "is being serviced by " + provider.getName()); //$NON-NLS-1$
+                }
+
+                request.start();
+
+                final Integer[] CHUNK_SIZE = new Integer[1];
+                CHUNK_SIZE[0] = Math.min(request.getNbRequested(), blockSize + ((indexing) ? 1 : 0));
+
+                final Integer[] nbRead = new Integer[1];
+                nbRead[0] = 0;
+
+                final Boolean[] isFinished = new Boolean[1];
+                isFinished[0] = Boolean.FALSE;
+
+                while (!isFinished[0]) {
+
+                    TmfDataRequest subRequest = new TmfDataRequest(request.getDataType(), request.getIndex()
+                            + nbRead[0], CHUNK_SIZE[0], blockSize, ExecutionType.BACKGROUND) {
+
+                        @Override
+                        public synchronized boolean isCompleted() {
+                            return super.isCompleted() || request.isCompleted();
+                        }
+
+                        @Override
+                        public void handleData(ITmfEvent data) {
+                            super.handleData(data);
+                            if (request.getDataType().isInstance(data)) {
+                                request.handleData(data);
+                            }
+                            if (getNbRead() > CHUNK_SIZE[0]) {
+                                System.out.println("ERROR - Read too many events"); //$NON-NLS-1$
+                            }
+                        }
+
+                        @Override
+                        public void handleCompleted() {
+                            nbRead[0] += getNbRead();
+                            if (nbRead[0] >= request.getNbRequested() || (getNbRead() < CHUNK_SIZE[0])) {
+                                if (this.isCancelled()) {
+                                    request.cancel();
+                                } else if (this.isFailed()) {
+                                    request.fail();
+                                } else {
+                                    request.done();
+                                }
+                                isFinished[0] = Boolean.TRUE;
+                            }
+                            super.handleCompleted();
+                        }
+                    };
+
+                    if (!isFinished[0]) {
+                        queueRequest(subRequest);
+
+                        try {
+                            subRequest.waitForCompletion();
+                            if (request.isCompleted()) {
+                                isFinished[0] = Boolean.TRUE;
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        CHUNK_SIZE[0] = Math.min(request.getNbRequested() - nbRead[0], blockSize);
+                    }
+                }
+            }
+        };
+
+        thread.start();
     }
 
     /**
@@ -349,12 +445,9 @@ public abstract class TmfDataProvider extends TmfComponent implements ITmfDataPr
      * specific and will be updated by getNext().
      *
      * @param request
-     *            The request
-     * @return An application specific context; null if request can't be
-     *         serviced
-     * @since 2.0
+     * @return an application specific context; null if request can't be serviced
      */
-    public abstract ITmfContext armRequest(ITmfDataRequest request);
+    protected abstract ITmfContext armRequest(ITmfDataRequest request);
 
 //    /**
 //     * Return the next event based on the context supplied. The context

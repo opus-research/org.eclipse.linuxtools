@@ -56,10 +56,6 @@ public class ImportHandler extends BaseControlViewHandler {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
-    /**
-     * The command parameter
-     */
     protected CommandParameter fParam;
 
     // ------------------------------------------------------------------------
@@ -90,7 +86,7 @@ public class ImportHandler extends BaseControlViewHandler {
             final IImportDialog dialog = TraceControlDialogFactory.getInstance().getImportDialog();
             dialog.setSession(param.getSession());
 
-            if ((dialog.open() != Window.OK) || param.getSession().isStreamedTrace()) {
+            if (dialog.open() != Window.OK) {
                 return null;
             }
 

@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.tmf.ui.views;
 
 import org.eclipse.linuxtools.tmf.ui.project.wizards.NewTmfProjectWizard;
+import org.eclipse.linuxtools.tmf.ui.views.events.TmfEventsView;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramView;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.TmfStatisticsView;
 import org.eclipse.ui.IFolderLayout;
@@ -35,6 +36,7 @@ public class TracingPerspectiveFactory implements IPerspectiveFactory {
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.perspective"; //$NON-NLS-1$
 
     // Standard TMF views
+    private static final String EVENTS_VIEW_ID = TmfEventsView.ID;
     private static final String HISTOGRAM_VIEW_ID = HistogramView.ID;
 
     // Standard Eclipse views
@@ -51,17 +53,22 @@ public class TracingPerspectiveFactory implements IPerspectiveFactory {
     @Override
     public void createInitialLayout(IPageLayout layout) {
 
-        // Editor area
-        layout.setEditorAreaVisible(true);
+        // No editor part
+        layout.setEditorAreaVisible(false);
 
         // Create the top left folder
         IFolderLayout topLeftFolder = layout.createFolder(
                 "topLeftFolder", IPageLayout.LEFT, 0.15f, IPageLayout.ID_EDITOR_AREA); //$NON-NLS-1$
         topLeftFolder.addView(PROJECT_VIEW_ID);
 
+        // Create the top right folder
+        IFolderLayout topRightFolder = layout.createFolder(
+                "topRightFolder", IPageLayout.TOP, 0.50f, IPageLayout.ID_EDITOR_AREA); //$NON-NLS-1$
+        topRightFolder.addView(EVENTS_VIEW_ID);
+
         // Create the middle right folder
         IFolderLayout middleRightFolder = layout.createFolder(
-                "middleRightFolder", IPageLayout.BOTTOM, 0.50f, IPageLayout.ID_EDITOR_AREA); //$NON-NLS-1$
+                "middleRightFolder", IPageLayout.BOTTOM, 0.50f, "topRightFolder"); //$NON-NLS-1$//$NON-NLS-2$
         middleRightFolder.addView(STATISTICS_VIEW_ID);
 
         // Create the bottom right folder

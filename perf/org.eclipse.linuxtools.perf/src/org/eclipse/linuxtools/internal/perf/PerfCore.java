@@ -21,9 +21,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.eclipse.cdt.core.parser.util.ArrayUtil;
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -35,7 +37,6 @@ import org.eclipse.linuxtools.internal.perf.model.PMEvent;
 import org.eclipse.linuxtools.internal.perf.model.PMFile;
 import org.eclipse.linuxtools.internal.perf.model.PMSymbol;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
-import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
 import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
@@ -51,21 +52,25 @@ public class PerfCore {
 		String line = null;
 		try {
 			while (( line = br.readLine()) != null){
-				strBuf.append(line);
-				strBuf.append("\n");
+				strBuf.append(line + "\n");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		String str = strBuf.toString();
-		if (!str.trim().equals("") && print != null) {
+		if (!str.trim().equals("")) {
+			if (print != null) {
 				print.println(blockTitle + ": \n" +str + "\n END OF " + blockTitle);
+			}
 		}
 		return str;
 	}
 	// Maps event lists to host names for caching
 	private static HashMap<String,HashMap<String, ArrayList<String>>> eventsHostMap = null;
 	private static HashMap<String,ArrayList<String>> eventList = null;
+	public static HashMap<String,ArrayList<String>> getEventList() { 
+		return getEventList(null);
+	}
 
 	/**
 	 * Gets the list of events for a given launch configuration. Uses a cache for each host
@@ -117,42 +122,33 @@ public class PerfCore {
 
 	}
 
-	private static IProject getProject(ILaunchConfiguration config){
-		if(config == null){
-			return null;
+	public static HashMap<String,ArrayList<String>> loadEventList(ILaunchConfiguration config) {
+		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
+		IProject project = null;
+		if (config==null) {
+			if (!PerfCore.checkPerfInPath()) {
+				return events;
+			}
 		} else {
 			ConfigUtils configUtils = new ConfigUtils(config);
 			try {
 				String projectName = configUtils.getProjectName();
 				// an empty string is not a legal path to file argument for ConfigUtils.getProject
-				if (projectName != null && !projectName.equals("")) {
-					return ConfigUtils.getProject(projectName);
+				if(projectName != null && !projectName.equals("")){
+					project = ConfigUtils.getProject(projectName);
 				}
+
 			} catch (CoreException e1) {
 				e1.printStackTrace();
 			}
-		}
-
-		return null;
-	}
-
-	private static HashMap<String,ArrayList<String>> loadEventList(ILaunchConfiguration config){
-		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
-		IProject project = getProject(config);
-
-		if (project == null) {
-			if (!PerfCore.checkPerfInPath()) {
+			if (!PerfCore.checkRemotePerfInPath(project)) {
 				return events;
 			}
-		} else if (!PerfCore.checkRemotePerfInPath(project)) {
-			return events;
 		}
-
 		Process p = null;
 		BufferedReader input = null;
 		try {
-			// Execute "perf list" to get list of all symbolic event types.
-			// Alternatively can try with -i flag.
+			// Alternatively can try with -i flag
 			p = RuntimeProcessFactory.getFactory().exec(new String[] {PerfPlugin.PERF_COMMAND, "list"}, project); //(char 1 as -t is a custom field seperator
 
 			/*
@@ -164,40 +160,35 @@ public class PerfCore {
 		} catch( IOException e ) {
 			e.printStackTrace();
 		} 
-		return parseEventList(input);
-	}
-
-	public static HashMap<String,ArrayList<String>> parseEventList (BufferedReader input){
-		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		String line;
 		try {
-			// Process list of events. Each line is of the form <event>\s+<category>.
 			while (( line = input.readLine()) != null){
 				if (line.contains("[")) {
 					String event;
-					String category;
+					String cat;
 					if (line.contains(PerfPlugin.STRINGS_HWBREAKPOINTS)) {
-						category = PerfPlugin.STRINGS_HWBREAKPOINTS;
-						event = line.substring(1,line.indexOf('[', 0)).trim();
+						cat = PerfPlugin.STRINGS_HWBREAKPOINTS;
+						event = line.substring(1,line.indexOf("[", 0)).trim();
 					} else if (line.contains(PerfPlugin.STRINGS_RAWHWEvents)) {
-						category = PerfPlugin.STRINGS_RAWHWEvents;
-						event = line.substring(1,line.indexOf('[', 0)).trim();
+						cat = PerfPlugin.STRINGS_RAWHWEvents;
+						event = line.substring(1,line.indexOf("[", 0)).trim();
 					} else {
-						event = line.substring(1,line.indexOf('[', 0)).trim();
+						event = line.substring(1,line.indexOf("[", 0)).trim();
 						if (event.contains("OR")) {
 							event = event.split("OR")[0]; //filter out the abbreviations.
 						}
-						category = line.replaceFirst(".*\\[(.+)\\]", "$1").trim();
+						cat = line.replaceFirst(".*\\[(.+)\\]", "$1").trim();
 					}
-					ArrayList<String> categoryEvents = events.get(category);
-					if (categoryEvents == null) {
-						categoryEvents = new ArrayList<String>();
-						events.put(category, categoryEvents);
+					ArrayList<String> catevs = events.get(cat);
+					if (catevs == null) {
+						catevs = new ArrayList<String>();
+						events.put(cat, catevs);
 					}
-					categoryEvents.add(event.trim());
+					catevs.add(event.trim());
 				}
 			}
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			if (null != input) {
@@ -210,9 +201,16 @@ public class PerfCore {
 		return events;
 	}
 
+
 	//Gets the current version of perf
 	public static String getPerfVersion(ILaunchConfiguration config, String[] environ, IPath workingDir) {
-		IProject project = getProject(config);
+		ConfigUtils configUtils = new ConfigUtils(config);
+		IProject project = null;
+		try {
+			project = ConfigUtils.getProject(configUtils.getProjectName());
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
 		Process p = null;
 		IRemoteFileProxy proxy = null;
 		IFileStore workingDirFileStore = null;
@@ -237,6 +235,7 @@ public class PerfCore {
 			}
 		}			
 
+		//p.waitFor();
 		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		return spitStream(input, "Perf --version", null);
 	}
@@ -265,6 +264,12 @@ public class PerfCore {
 			return false;
 		}
 		return true;
+	}
+
+	public String getRemoteProjectPath(String projectName) {
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		IProject project = root.getProject(projectName);
+		return project.getName();
 	}
 
 	//Generates a perf record command string with the options set in the given config. (If null uses default).
@@ -355,13 +360,54 @@ public class PerfCore {
 		//(Annotate string per symbol)
 		return base.toArray( new String[base.size()] );
 	}
-
+	//Runs Perf Record on the given binary and records into perf.data before calling Report() to feed in the results. 
+	public static void Record(ILaunchConfiguration config, String binaryPath) {
+		ConfigUtils configUtils = new ConfigUtils(config);
+		IProject project = null;
+		try {
+			project = ConfigUtils.getProject(configUtils.getProjectName());
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
+		BufferedReader error = null;
+		Process perfRecord = null;
+		try {
+			if (project==null) {
+				perfRecord = Runtime.getRuntime().exec(ArrayUtil.addAll(getRecordString(null), new String [] {binaryPath}));
+			} else {
+				perfRecord = RuntimeProcessFactory.getFactory().exec(ArrayUtil.addAll(getRecordString(null), new String [] {binaryPath}), project);
+			}
+			error = new BufferedReader(new InputStreamReader(perfRecord.getErrorStream()));
+			perfRecord.waitFor();			
+			spitStream(error,"Perf Record", null);
+		} catch( IOException e ) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		//Report();
+	}
+	public static void Report() {
+		Report(null,null,null,null,null,null);
+	}
 	// Runs assuming perf.data has already been recorded, environ and workingDir can be set to null to use default
 	//perfDataLoc is optional - it is used to provide a pre-existing data file instead of something recorded from
 	//whatever project is being profiled. It is only used for junit tests atm.
 	public static void Report(ILaunchConfiguration config, String[] environ, IPath workingDir, IProgressMonitor monitor, String perfDataLoc, PrintStream print) {
-		IProject project = getProject(config);
-		TreeParent invisibleRoot = PerfPlugin.getDefault().clearModelRoot();
+		ConfigUtils configUtils = new ConfigUtils(config);
+		IProject project = null;
+		try {
+			project = ConfigUtils.getProject(configUtils.getProjectName());
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
+		TreeParent invisibleRoot = PerfPlugin.getDefault().getModelRoot();  
+		if (invisibleRoot == null) {
+			invisibleRoot = new TreeParent("");
+			PerfPlugin.getDefault().setModelRoot(invisibleRoot);
+		} else {
+			invisibleRoot.clear();
+		}
 
 		boolean OldPerfVersion = false;
 		if (getPerfVersion(config, environ, workingDir).contains("perf version 0.0.2.PERF")) {
@@ -374,9 +420,7 @@ public class PerfCore {
 		BufferedReader error = null;
 		Process p = null;
 
-		if (monitor != null && monitor.isCanceled()) {
-			return;
-		}
+		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 
 		try {
 			if (workingDir==null) {
@@ -399,6 +443,7 @@ public class PerfCore {
 		PerfCore.parseRemoteReport(config, workingDir, monitor, perfDataLoc, print,
 				invisibleRoot, OldPerfVersion, input, error, project);
 
+		RefreshView();
 	}
 
 	/**
@@ -425,16 +470,13 @@ public class PerfCore {
 			IPath workingDir, IProgressMonitor monitor, String perfDataLoc,
 			PrintStream print, TreeParent invisibleRoot,
 			boolean OldPerfVersion, BufferedReader input, BufferedReader error, IProject project) {
-
-		if (monitor != null && monitor.isCanceled()) {
-			return;
-		}
+		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 		String line = null;
 		String items[];
 		float percent;
 
 		Process p = null;
-		int samples;
+		double samples;
 		String comm,dso,symbol;
 		boolean kernelFlag;
 		PMEvent currentEvent = null;
@@ -444,9 +486,7 @@ public class PerfCore {
 		PMSymbol currentSym = null;
 		try {
 			while (( line = input.readLine()) != null){
-				if (monitor != null && monitor.isCanceled()) {
-					return;
-				}
+				if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 				// line containing report information
 				if ((line.startsWith("#"))) {
 					if (line.contains("Events:") || line.contains("Samples:")) {
@@ -471,7 +511,7 @@ public class PerfCore {
 						continue;
 					}
 					percent = Float.parseFloat(items[0]); //percent column
-					samples = Integer.parseInt(items[1].trim()); //samples column
+					samples = Double.parseDouble(items[1].trim()); //samples column
 					comm = items[2].trim(); //command column
 					dso = items[3].trim(); //dso column
 					symbol = items[4].trim(); //symbol column 
@@ -503,7 +543,7 @@ public class PerfCore {
 					 *  attach all symbols as children of 'Unfiled Symbols'.
 					 */
 					currentFile = currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols);
-					currentSym = new PMSymbol(symbol, percent, samples);
+					currentSym = new PMSymbol(symbol, samples, percent);
 					currentFile.addChild(currentSym);
 				}
 			}
@@ -522,9 +562,7 @@ public class PerfCore {
 			SourceLineNumbers = false;
 		}
 
-		if (monitor != null && monitor.isCanceled()) {
-			return;
-		}
+		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 
 		boolean hasProfileData = invisibleRoot.getChildren().length != 0;
 
@@ -540,9 +578,7 @@ public class PerfCore {
 						for (TreeParent s : currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren()) {
 							if (!(s instanceof PMSymbol)) continue;
 
-							if (monitor != null && monitor.isCanceled()) {
-								return;
-							}
+							if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 
 
 							currentSym = (PMSymbol)s;
@@ -596,10 +632,7 @@ public class PerfCore {
 	public static void parseAnnotation(IProgressMonitor monitor,
 			BufferedReader input, IPath workingDir, PMDso currentDso,
 			PMSymbol currentSym) {
-
-		if (monitor != null && monitor.isCanceled()) {
-			return;
-		}
+		if (monitor != null && monitor.isCanceled()) { RefreshView(); return; }
 
 		boolean grabBlock = false;
 		boolean blockStarted = false;
@@ -661,21 +694,21 @@ public class PerfCore {
 		}
 	}
 
-	public static void RefreshView (final String title) {
+	public static void RefreshView()
+	{
 		Display.getDefault().syncExec(new Runnable() {
-
 			@Override
 			public void run() {
+				//Try to switch the active view to Perf.
 				try {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PerfPlugin.VIEW_ID);
-					PerfProfileView view = PerfPlugin.getDefault().getProfileView();
-					view.setContentDescription(title);
-					view.refreshModel();
+					PerfPlugin.getDefault().getProfileView().refreshModel();
+				} catch (NullPointerException e) {
+					e.printStackTrace();					
 				} catch (PartInitException e) {
 					e.printStackTrace();
 				}
 			}
 		});
 	}
-
 }

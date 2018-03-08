@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -17,9 +17,8 @@ import java.nio.channels.FileChannel.MapMode;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.eclipse.linuxtools.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
@@ -27,7 +26,8 @@ import org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
+import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.internal.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 /**
@@ -137,22 +137,14 @@ public class StreamInputPacketReader implements IDefinitionScope {
         }
 
         /* Create event definitions */
-        Collection<IEventDeclaration> eventDecls = streamInputReader.getStreamInput().getStream().getEvents().values();
+        Collection<EventDeclaration> eventDecls = streamInputReader.getStreamInput().getStream().getEvents().values();
 
-        for (IEventDeclaration event : eventDecls) {
+        for (EventDeclaration event : eventDecls) {
             if (!events.containsKey(event.getId())) {
                 EventDefinition eventDef = event.createDefinition(streamInputReader);
                 events.put(event.getId(), eventDef);
             }
         }
-    }
-
-    /**
-     * Dispose the StreamInputPacketReader
-     * @since 2.0
-     */
-    public void dispose() {
-        bitBuffer.setByteBuffer(null);
     }
 
     // ------------------------------------------------------------------------
@@ -164,7 +156,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      *
      * @return the current packet
      */
-    StreamInputPacketIndexEntry getCurrentPacket() {
+    public StreamInputPacketIndexEntry getCurrentPacket() {
         return this.currentPacket;
     }
 
@@ -175,15 +167,6 @@ public class StreamInputPacketReader implements IDefinitionScope {
      */
     public StructDefinition getStreamPacketContextDef() {
         return this.streamPacketContextDef;
-    }
-
-    /**
-     * Gets the stream's event context definition.
-     *
-     * @return The streamEventContext definition
-     */
-    public StructDefinition getStreamEventContextDef() {
-        return streamEventContextDef;
     }
 
     /**
@@ -210,7 +193,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
      * @param currentPacket
      *            The index entry of the packet to switch to.
      */
-    void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) {
+    public void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) {
         this.currentPacket = currentPacket;
 
         if (this.currentPacket != null) {
@@ -356,8 +339,8 @@ public class StreamInputPacketReader implements IDefinitionScope {
         }
 
         /* Read the event context. */
-        if (eventDef.getEventContext() != null) {
-            eventDef.getEventContext().read(currentBitBuffer);
+        if (eventDef.getContext() != null) {
+            eventDef.getContext().read(currentBitBuffer);
         }
 
         /* Read the event fields. */
@@ -420,6 +403,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
 
     @Override
     public Definition lookupDefinition(String lookupPath) {
+        // TODO Auto-generated method stub
         return null;
     }
 }

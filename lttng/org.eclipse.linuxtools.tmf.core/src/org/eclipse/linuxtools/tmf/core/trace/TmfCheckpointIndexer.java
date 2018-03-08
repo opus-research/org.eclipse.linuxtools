@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.internal.tmf.core.Messages;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
 import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -57,13 +56,13 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
     // Attributes
     // ------------------------------------------------------------------------
 
-    /** The event trace to index */
+    // The event trace to index
     protected final ITmfTrace fTrace;
 
-    /** The interval between checkpoints */
+    // The interval between checkpoints
     private final int fCheckpointInterval;
 
-    /** The event trace to index */
+    // The event trace to index
     private boolean fIsIndexing;
 
     /**
@@ -156,16 +155,9 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         final Job job = new Job("Indexing " + fTrace.getName() + "...") { //$NON-NLS-1$ //$NON-NLS-2$
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
-                monitor.beginTask("", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
                 while (!monitor.isCanceled()) {
                     try {
-                        long prevNbEvents = fTrace.getNbEvents();
-                        Thread.sleep(250);
-                        long nbEvents = fTrace.getNbEvents();
-                        setName(Messages.TmfCheckpointIndexer_Indexing + ' ' + fTrace.getName() + " (" + nbEvents + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-                        // setName doesn't refresh the UI, setTaskName does
-                        long rate = (nbEvents - prevNbEvents) * 4;
-                        monitor.setTaskName(rate + " " + Messages.TmfCheckpointIndexer_EventsPerSecond); //$NON-NLS-1$
+                        Thread.sleep(100);
                     } catch (final InterruptedException e) {
                         return Status.OK_STATUS;
                     }
@@ -246,7 +238,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
             final long position = rank / fCheckpointInterval;
             // Add new entry at proper location (if empty)
             if (fTraceIndex.size() == position) {
-                fTraceIndex.add(new TmfCheckpoint(timestamp, saveContext(context)));
+                fTraceIndex.add(new TmfCheckpoint(timestamp.clone(), saveContext(context)));
             }
         }
     }
@@ -273,10 +265,6 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         int index = Collections.binarySearch(fTraceIndex, new TmfCheckpoint(timestamp, null));
         if (index < 0) {
             index = Math.max(0, -(index + 2));
-        } else {
-            // If timestamp was in the list, use previous index to be able to find the
-            // first event with the same timestamp before the checkpoint
-            index = Math.max(0, index - 1);
         }
 
         // Position the trace at the checkpoint
@@ -361,7 +349,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         ITmfEvent[] trcEvts = expCtx.getEvents();
         for (int i = 0; i < size; i++) {
             ITmfEvent event = expContext.getEvents()[i];
-            trcEvts[i] = event;
+            trcEvts[i] = (event != null) ? event.clone() : null;
         }
         return expCtx;
     }
@@ -391,7 +379,7 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         ITmfEvent[] trcEvts = expContext.getEvents();
         for (int i = 0; i < size; i++) {
             ITmfEvent event = trcEvts[i];
-            ctx.getEvents()[i] = event;
+            ctx.getEvents()[i] = (event != null) ? event.clone() : null;
         }
         return ctx;
     }

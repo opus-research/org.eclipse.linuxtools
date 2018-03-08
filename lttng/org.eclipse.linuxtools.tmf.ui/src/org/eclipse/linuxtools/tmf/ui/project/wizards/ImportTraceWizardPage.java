@@ -811,8 +811,9 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             return false;
         }
 
+        String sourceDirPath;
         try {
-            sourceDir.getCanonicalPath();
+            sourceDirPath = sourceDir.getCanonicalPath();
         } catch (IOException e) {
             MessageDialog.openInformation(getContainer().getShell(), Messages.ImportTraceWizard_Information,
                     Messages.ImportTraceWizard_InvalidTraceDirectory);
@@ -834,7 +835,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         }
 
         if (fileSystemObjects.size() > 0) {
-            boolean ok = importResources(fileSystemObjects);
+            boolean ok = importResources(sourceDirPath, fileSystemObjects);
             String traceBundle = null;
             String traceTypeId = null;
             String traceIcon = null;
@@ -918,7 +919,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
         return false;
     }
 
-    private boolean importResources(Map<String, File> fileSystemObjects) {
+    private boolean importResources(String rootDirectory, Map<String, File> fileSystemObjects) {
 
         // Determine the sorted canonical list of items to import
         List<File> fileList = new ArrayList<File>();

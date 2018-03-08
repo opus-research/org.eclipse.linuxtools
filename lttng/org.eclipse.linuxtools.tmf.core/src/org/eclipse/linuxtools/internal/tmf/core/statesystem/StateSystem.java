@@ -18,14 +18,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
@@ -54,30 +51,11 @@ public class StateSystem implements ITmfStateSystemBuilder {
     private final TransientState transState;
     private final IStateHistoryBackend backend;
 
-    /* Latch tracking if the state history is done building or not */
-    private final CountDownLatch finishedLatch = new CountDownLatch(1);
-
-    private boolean buildCancelled = false;
-    private boolean isDisposed = false;
-
-    /**
-     * New-file constructor. For when you build a state system with a new file,
-     * or if the back-end does not require a file on disk.
-     *
-     * @param backend
-     *            Back-end plugin to use
-     */
-    public StateSystem(IStateHistoryBackend backend) {
-        this.backend = backend;
-        this.transState = new TransientState(backend);
-        this.attributeTree = new AttributeTree(this);
-    }
-
     /**
      * General constructor
      *
      * @param backend
-     *            The "state history storage" back-end to use.
+     *            The "state history storage" backend to use.
      * @param newFile
      *            Put true if this is a new history started from scratch. It is
      *            used to tell the state system where to get its attribute tree.
@@ -95,28 +73,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             /* We're opening an existing file */
             this.attributeTree = new AttributeTree(this, backend.supplyAttributeTreeReader());
             transState.setInactive();
-            finishedLatch.countDown(); /* The history is already built */
         }
-    }
-
-    @Override
-    public boolean waitUntilBuilt() {
-        try {
-            finishedLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return !buildCancelled;
-    }
-
-    @Override
-    public synchronized void dispose() {
-        isDisposed = true;
-        if (transState.isActive()) {
-            transState.setInactive();
-            buildCancelled = true;
-        }
-        backend.dispose();
     }
 
     //--------------------------------------------------------------------------
@@ -190,7 +147,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
              */
             attributeTree.writeSelf(attributeTreeFile, attributeTreeFilePos);
         }
-        finishedLatch.countDown(); /* Mark the history as finished building */
     }
 
     //--------------------------------------------------------------------------
@@ -477,11 +433,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public synchronized List<ITmfStateInterval> queryFullState(long t)
-            throws TimeRangeException, StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
+            throws TimeRangeException {
         List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(
                 attributeTree.getNbAttributes());
 
@@ -517,13 +469,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public ITmfStateInterval querySingleState(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
+            throws AttributeNotFoundException, TimeRangeException {
         ITmfStateInterval ret;
+
         if (transState.hasInfoAboutStateOf(t, attributeQuark)) {
             ret = transState.getOngoingInterval(attributeQuark);
         } else {
@@ -545,7 +493,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
             throws StateValueTypeException, AttributeNotFoundException,
-            TimeRangeException, StateSystemDisposedException {
+            TimeRangeException {
         Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
 
         if (curStackDepth == -1) {
@@ -567,11 +515,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
             long t1, long t2) throws TimeRangeException,
-            AttributeNotFoundException, StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
+            AttributeNotFoundException {
         List<ITmfStateInterval> intervals;
         ITmfStateInterval currentInterval;
         long ts, tEnd;
@@ -607,19 +551,13 @@ public class StateSystem implements ITmfStateSystemBuilder {
     @Override
     public List<ITmfStateInterval> queryHistoryRange(int attributeQuark,
             long t1, long t2, long resolution, IProgressMonitor monitor)
-            throws TimeRangeException, AttributeNotFoundException,
-            StateSystemDisposedException {
-        if (isDisposed) {
-            throw new StateSystemDisposedException();
-        }
-
+            throws TimeRangeException, AttributeNotFoundException {
         List<ITmfStateInterval> intervals;
         ITmfStateInterval currentInterval;
         long ts, tEnd;
 
-        IProgressMonitor mon = monitor;
-        if (mon == null) {
-            mon = new NullProgressMonitor();
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
         }
 
         /* Make sure the time range makes sense */
@@ -645,7 +583,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          */
         for (ts = t1; (currentInterval.getEndTime() != -1) && (ts < tEnd);
                 ts += resolution) {
-            if (mon.isCanceled()) {
+            if (monitor.isCanceled()) {
                 return intervals;
             }
             if (ts <= currentInterval.getEndTime()) {

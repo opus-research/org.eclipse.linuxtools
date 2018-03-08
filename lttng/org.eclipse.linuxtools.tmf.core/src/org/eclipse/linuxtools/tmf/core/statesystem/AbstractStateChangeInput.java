@@ -15,9 +15,7 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -45,10 +43,8 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
     private final Thread eventHandlerThread;
 
     private boolean ssAssigned;
-    private ITmfEvent currentEvent;
-
-    /** State system in which to insert the state changes */
     protected ITmfStateSystemBuilder ss;
+    private ITmfEvent currentEvent;
 
     /**
      * Instantiate a new state provider plugin.
@@ -80,7 +76,7 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
 
     @Override
     public long getStartTime() {
-        return trace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        return trace.getStartTime().getValue();
     }
 
     @Override
@@ -91,15 +87,10 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
     }
 
     @Override
-    public ITmfStateSystem getAssignedStateSystem() {
-        return ss;
-    }
-
-    @Override
     public void dispose() {
         /* Insert a null event in the queue to stop the event handler's thread. */
         try {
-            eventsQueue.put(CtfTmfEventFactory.getNullEvent());
+            eventsQueue.put(org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent.getNullEvent());
             eventHandlerThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -171,7 +162,7 @@ public abstract class AbstractStateChangeInput implements IStateChangeInput {
                 return;
             }
             try {
-                ss.closeHistory(currentEvent.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue());
+                ss.closeHistory(currentEvent.getTimestamp().getValue());
             } catch (TimeRangeException e) {
                 /*
                  * Since we're using currentEvent.getTimestamp, this shouldn't

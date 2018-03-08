@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.uistructures.StapSettingsDialog;
+import org.eclipse.linuxtools.systemtap.ui.logging.LogManager;
 import org.eclipse.ui.PlatformUI;
 
 
@@ -27,8 +28,19 @@ import org.eclipse.ui.PlatformUI;
 public class RunScriptOptionsAction extends RunScriptAction {
 	public RunScriptOptionsAction() {
 		super();
+		LogManager.logDebug("initialized", this); //$NON-NLS-1$
 	}
-
+	
+	/**
+	 * The <code>buildScript</code> method in this class replaces the one in the superclass and calls
+	 * <code>buildOptionsScript</code> rather than the <code>buildStandardScript</code> method called
+	 * in the parent code.
+	 */
+	@Override
+	protected String[] buildScript() {
+		return buildOptionsScript();
+	}
+	
 	/**
 	 * This method executes the same code as the <code>buildStandardScript</code> with one change,
 	 * being that instead of calling the <code>getImportedTapsets</code> method from the parent class, it
@@ -42,17 +54,17 @@ public class RunScriptOptionsAction extends RunScriptAction {
 		String[] script;
 
 		getImportedTapsets(cmdList);
-
+		
 		if(isGuru())
-			cmdList.add("-g"); //$NON-NLS-1$
+			cmdList.add("-g");
 
 		getCommandLineOptions(cmdList);
-
+		
 		script = finalizeScript(cmdList);
-
+		
 		return script;
 	}
-
+	
 	/**
 	 * This method prompts the user to select optional command line arguments to use when running this
 	 * script, and adds them to the <code>ArrayList</code> passed in.
@@ -61,7 +73,7 @@ public class RunScriptOptionsAction extends RunScriptAction {
 	protected void getCommandLineOptions(ArrayList<String> cmdList) {
 		StapSettingsDialog ssd = new StapSettingsDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 		ssd.open();
-
+		
 		boolean[] cmdOpts = ssd.getStapOpts();
 		String[] cmdOptVals = ssd.getStapOptVals();
 
@@ -76,10 +88,10 @@ public class RunScriptOptionsAction extends RunScriptAction {
 			//Get rest of commandline options
 			for(i=0; i<cmdOptVals.length; i++) {
 				if(null != cmdOptVals[i] && cmdOptVals[i].trim().length() > 0) {
-					if("-v".equals(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0])) { //$NON-NLS-1$
-						cmdList.add("-" + cmdOptVals[i]); //$NON-NLS-1$
-					} else if("-p NUM".equals(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0])) { //$NON-NLS-1$
-						cmdList.add("-p" + cmdOptVals[i]); //$NON-NLS-1$
+					if("-v".equals(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0])) {
+						cmdList.add("-" + cmdOptVals[i]);
+					} else if("-p NUM".equals(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0])) {
+						cmdList.add("-p" + cmdOptVals[i]);
 					} else {
 						cmdList.add(IDEPreferenceConstants.P_STAP[i+cmdOpts.length][0].substring(0,2));
 
