@@ -17,13 +17,13 @@ import java.io.RandomAccessFile;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
-import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfEventStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 
 /**
@@ -101,7 +101,7 @@ public class TmfUml2SDTestTrace implements ITmfEventParser {
             fields[2] = new TmfEventField("signal", signal);
 
             ITmfEventField tmfContent = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content, fields);
-            ITmfEvent tmfEvent = new TmfEvent(fEventStream, new TmfTimestamp(ts, -9), source, tmfEventType, tmfContent, reference);
+            ITmfEvent tmfEvent = new TmfEventStub(fEventStream, new TmfTimestamp(ts, -9), source, tmfEventType, tmfContent, reference);
 
             return tmfEvent;
         } catch (final EOFException e) {
