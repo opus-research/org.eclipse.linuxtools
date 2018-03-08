@@ -159,7 +159,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
         init();
         getBatchWizard().setTracesToScan(fTracesToScan);
         getBatchWizard().setTraceFolder(fTargetFolder);
-        backgroundJob= new Job("Scan job") { //$NON-NLS-1$
+        backgroundJob = new Job("Scan job") { //$NON-NLS-1$
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -448,6 +448,23 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Refresh the view and the corresponding model.
+     */
+    public void refresh() {
+        final Control control = traceTypeViewer.getControl();
+        if (!control.isDisposed()) {
+            control.getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    if (!control.isDisposed()) {
+                        traceTypeViewer.refresh();
+                    }
+                }
+            });
         }
     }
 }
