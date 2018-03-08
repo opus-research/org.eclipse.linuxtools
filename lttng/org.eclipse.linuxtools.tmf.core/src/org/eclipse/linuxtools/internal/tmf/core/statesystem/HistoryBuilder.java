@@ -127,6 +127,7 @@ public class HistoryBuilder extends TmfComponent {
     /**
      * Build the state history without waiting for signals or anything
      */
+    @SuppressWarnings("unchecked")
     private void buildManually() {
         StateSystemBuildRequest request = new StateSystemBuildRequest(this);
 
@@ -154,6 +155,7 @@ public class HistoryBuilder extends TmfComponent {
      *            signal will coalesce this request with the one from the
      *            indexer and histogram.
      */
+    @SuppressWarnings("unchecked")
     @TmfSignalHandler
     public void experimentRangeUpdated(final TmfExperimentRangeUpdatedSignal signal) {
         StateSystemBuildRequest request;
@@ -206,6 +208,7 @@ class StateSystemBuildRequest extends TmfEventRequest<ITmfEvent> {
     private final IStateChangeInput sci;
     private final ITmfTrace<ITmfEvent> trace;
 
+    @SuppressWarnings("unchecked")
     StateSystemBuildRequest(HistoryBuilder builder) {
         super((Class<ITmfEvent>) builder.getInputPlugin().getExpectedEventType().getClass(),
                 TmfTimeRange.ETERNITY,

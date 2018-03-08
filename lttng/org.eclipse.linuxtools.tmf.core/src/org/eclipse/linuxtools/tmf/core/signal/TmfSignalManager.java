@@ -85,8 +85,6 @@ public class TmfSignalManager {
 		return handlers.toArray(new Method[handlers.size()]);
 	}
 
-	static int fSignalId = 0;
-
 	/**
 	 * Invokes the handling methods that listens to signals of a given type.
 	 * 
@@ -99,6 +97,7 @@ public class TmfSignalManager {
 	 * 
 	 * @param signal the signal to dispatch
 	 */
+	static int fSignalId = 0;
 	static public synchronized void dispatchSignal(TmfSignal signal) {
 		int signalId = fSignalId++;
 		sendSignal(new TmfStartSynchSignal(signalId));
