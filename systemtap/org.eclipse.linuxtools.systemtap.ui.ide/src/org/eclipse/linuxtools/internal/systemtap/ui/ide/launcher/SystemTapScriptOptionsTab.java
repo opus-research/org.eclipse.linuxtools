@@ -15,6 +15,7 @@ import static org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPr
 import static org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants.STAP_BOOLEAN_OPTIONS;
 import static org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants.STAP_CMD_OPTION;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -22,7 +23,6 @@ import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.ui.structures.ui.ExceptionErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -44,6 +44,8 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 
 	static final String MISC_COMMANDLINE_OPTIONS = "MiscComandLineOptions"; //$NON-NLS-1$
 
+	private Composite cmpChkBoxes = null;
+	private Composite cmpTxtBoxes = null;
 	private Button checkBox[] = new Button[IDEPreferenceConstants.STAP_BOOLEAN_OPTIONS.length];
 	private Text text[] = new Text[IDEPreferenceConstants.STAP_STRING_OPTIONS.length];
 	private Text targetProgramText;
@@ -93,7 +95,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		targetProgramText.addModifyListener(modifyListiner);
 		Button selectTargetProgramButton = new Button(targetExecutableGroup, 0);
 		GridData gridData = new GridData();
-
+		gridData.widthHint = 110;
 		selectTargetProgramButton.setLayoutData(gridData);
 		selectTargetProgramButton
 				.setText(Messages.SystemTapScriptLaunchConfigurationTab_1);
@@ -110,7 +112,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		});
 
 		// Check boxes
-		Composite cmpChkBoxes = new Composite(comp, SWT.NONE);
+		cmpChkBoxes = new Composite(comp, SWT.NONE);
 		cmpChkBoxes.setLayout(twoColumnGridLayout);
 		cmpChkBoxes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
@@ -140,7 +142,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		}
 
 		// Labels and Text fields
-		Composite cmpTxtBoxes = new Composite(comp, SWT.NONE);
+		cmpTxtBoxes = new Composite(comp, SWT.NONE);
 		cmpTxtBoxes.setLayout(twoColumnGridLayout);
 		cmpTxtBoxes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
@@ -217,11 +219,8 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 			miscCommandsText.setText(configuration.getAttribute(
 					MISC_COMMANDLINE_OPTIONS, "")); //$NON-NLS-1$
 
-		} catch (Exception e) {
-			ExceptionErrorDialog
-					.openError(
-							Messages.SystemTapScriptOptionsTab_initializeConfigurationFailed,
-							e);
+		} catch (CoreException e) {
+			e.printStackTrace();
 		}
 	}
 
