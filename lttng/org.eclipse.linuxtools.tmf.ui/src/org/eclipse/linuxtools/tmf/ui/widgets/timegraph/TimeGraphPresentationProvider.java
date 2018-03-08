@@ -18,7 +18,6 @@ import java.util.Map;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITmfTimeGraphDrawingHelper;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -70,37 +69,13 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
         // Override to add own drawing code
     }
 
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void postDrawControl(ITmfTimeGraphDrawingHelper drawingHelper, Rectangle bounds, GC gc) {
-        // Override to add own drawing code
-    }
-
     @Override
     public void postDrawEntry(ITimeGraphEntry entry, Rectangle bounds, GC gc) {
         // Override to add own drawing code
     }
 
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void postDrawEntry(ITmfTimeGraphDrawingHelper drawingHelper, ITimeGraphEntry entry, Rectangle bounds, GC gc) {
-        // Override to add own drawing code
-    }
-
     @Override
     public void postDrawEvent(ITimeEvent event, Rectangle bounds, GC gc) {
-        // Override to add own drawing code
-    }
-
-    /**
-     * @since 2.0
-     */
-    @Override
-    public void postDrawEvent(ITmfTimeGraphDrawingHelper drawingHelper, ITimeEvent event, Rectangle bounds, GC gc) {
         // Override to add own drawing code
     }
 
