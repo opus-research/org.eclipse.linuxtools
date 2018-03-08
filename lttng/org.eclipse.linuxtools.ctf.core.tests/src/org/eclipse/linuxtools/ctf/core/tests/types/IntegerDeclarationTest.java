@@ -18,6 +18,7 @@ import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,12 +34,30 @@ public class IntegerDeclarationTest {
     private IntegerDeclaration fixture;
 
     /**
+     * Launch the test.
+     *
+     * @param args
+     *            the command line arguments
+     */
+    public static void main(String[] args) {
+        new org.junit.runner.JUnitCore().run(IntegerDeclarationTest.class);
+    }
+
+    /**
      * Perform pre-test initialization.
      */
     @Before
     public void setUp() {
         fixture = new IntegerDeclaration(1, true, 1, ByteOrder.BIG_ENDIAN,
                 Encoding.ASCII, null, 32);
+    }
+
+    /**
+     * Perform post-test clean-up.
+     */
+    @After
+    public void tearDown() {
+        // Add additional tear down code here
     }
 
     /**
@@ -59,7 +78,7 @@ public class IntegerDeclarationTest {
         assertNotNull(result);
         assertEquals(1, result.getBase());
         assertEquals(false, result.isCharacter());
-        String outputValue = "[declaration] integer[";
+        String outputValue = "[declaration] integer["; //$NON-NLS-1$
         assertEquals(outputValue,
                 result.toString().substring(0, outputValue.length()));
         assertEquals(1, result.getLength());
@@ -82,7 +101,7 @@ public class IntegerDeclarationTest {
     public void testGetByteOrder() {
         ByteOrder result = fixture.getByteOrder();
         assertNotNull(result);
-        assertEquals("BIG_ENDIAN", result.toString());
+        assertEquals("BIG_ENDIAN", result.toString()); //$NON-NLS-1$
     }
 
     /**
@@ -92,8 +111,8 @@ public class IntegerDeclarationTest {
     public void testGetEncoding() {
         Encoding result = fixture.getEncoding();
         assertNotNull(result);
-        assertEquals("ASCII", result.name());
-        assertEquals("ASCII", result.toString());
+        assertEquals("ASCII", result.name()); //$NON-NLS-1$
+        assertEquals("ASCII", result.toString()); //$NON-NLS-1$
         assertEquals(1, result.ordinal());
     }
 
@@ -156,6 +175,6 @@ public class IntegerDeclarationTest {
     public void testToString() {
         String result = fixture.toString();
         String trunc = result.substring(0, 22);
-        assertEquals("[declaration] integer[", trunc);
+        assertEquals("[declaration] integer[", trunc); //$NON-NLS-1$
     }
 }
