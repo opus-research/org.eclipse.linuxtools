@@ -100,6 +100,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
     @Override
     public void dispose() {
         fCanRun = false;
+        fRunnable.cancel();
         super.dispose();
     }
 
