@@ -9,6 +9,7 @@
  * Contributors:
  *   Florian Wininger - Initial API and implementation
  *   Alexandre Montplaisir - Refactoring, performance tweaks
+ *   Bernd Hufmann - Updated signal handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.statesystem;
@@ -17,10 +18,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -29,6 +26,7 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
@@ -38,15 +36,12 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IActionBars;
 
 /**
  * Displays the State System at a current time.
@@ -73,9 +68,6 @@ public class TmfStateSystemExplorer extends TmfView {
     private ITmfTrace fTrace;
     private Tree fTree;
     private volatile long fCurrentTimestamp = -1L;
-
-    private boolean highlightStatus = false ;
-    private boolean filterStatus = false ;
 
     /**
      * Default constructor
@@ -124,9 +116,6 @@ public class TmfStateSystemExplorer extends TmfView {
         if (trace != null) {
             traceSelected(new TmfTraceSelectedSignal(this, trace));
         }
-
-        fillToolBar() ;
-
     }
 
     // ------------------------------------------------------------------------
@@ -137,9 +126,6 @@ public class TmfStateSystemExplorer extends TmfView {
      * Create the initial tree from a trace.
      */
     private synchronized void createTable() {
-
-        long ts = fCurrentTimestamp;
-
         if (fTrace == null) {
             return;
         }
@@ -164,9 +150,9 @@ public class TmfStateSystemExplorer extends TmfView {
                 String ssName = entry.getKey();
                 ITmfStateSystem ss = entry.getValue();
                 ss.waitUntilBuilt();
-                ts = (ts == -1 ? ss.getStartTime() : ts);
+                long startTime = ss.getStartTime();
                 try {
-                    fullStates.put(ssName, ss.queryFullState(ts));
+                    fullStates.put(ssName, ss.queryFullState(startTime));
                 } catch (TimeRangeException e) {
                     /* Should not happen since we're querying at start time */
                     throw new RuntimeException();
@@ -206,10 +192,6 @@ public class TmfStateSystemExplorer extends TmfView {
                         item.setExpanded(true);
                     }
                     packColumns();
-
-                    if(filterStatus) {
-                        filterChildren(traceRoot) ;
-                    }
                 }
             });
         }
@@ -330,26 +312,24 @@ public class TmfStateSystemExplorer extends TmfView {
      * Populate an 'item' (a row in the tree) with the information found in the
      * interval. This method should only be called by the UI thread.
      */
-    private void populateColumns(TreeItem item, ITmfStateInterval interval) {
+    private static void populateColumns(TreeItem item, ITmfStateInterval interval) {
         try {
             ITmfStateValue state = interval.getStateValue();
-
-            String value ;
 
             // add the value in the 2nd column
             switch (state.getType()) {
             case INTEGER:
-                value = String.valueOf(state.unboxInt());
+                item.setText(VALUE_COL, String.valueOf(state.unboxInt()));
                 break;
             case LONG:
-                value = String.valueOf(state.unboxLong());
+                item.setText(VALUE_COL, String.valueOf(state.unboxLong()));
                 break;
             case STRING:
-                value = state.unboxStr();
+                item.setText(VALUE_COL, state.unboxStr());
                 break;
             case NULL:
             default:
-                value = emptyString ;
+                item.setText(VALUE_COL, emptyString);
                 break;
             }
 
@@ -358,18 +338,6 @@ public class TmfStateSystemExplorer extends TmfView {
 
             TmfTimestamp endTime = new TmfTimestamp(interval.getEndTime(), ITmfTimestamp.NANOSECOND_SCALE);
             item.setText(END_TIME_COL, endTime.toString());
-
-            item.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND)) ;
-
-            if(highlightStatus)
-            {
-                if(!value.equals(item.getText(VALUE_COL)) || fCurrentTimestamp == startTime.getValue()) {
-                   item.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_YELLOW)) ;
-                }
-            }
-
-            item.setText(VALUE_COL, value) ;
-
 
         } catch (StateValueTypeException e) {
             /* Should not happen, we're case-switching on the specific types */
@@ -414,6 +382,17 @@ public class TmfStateSystemExplorer extends TmfView {
     // ------------------------------------------------------------------------
     // Signal handlers
     // ------------------------------------------------------------------------
+    /**
+     * Handler for the trace opened signal.
+     * @param signal
+     *            The incoming signal
+     * @since 2.0
+     */
+    @TmfSignalHandler
+    public void traceOpened(TmfTraceOpenedSignal signal) {
+        fTrace = signal.getTrace();
+        loadTrace();
+    }
 
     /**
      * Handler for the trace selected signal. This will make the view display
@@ -427,13 +406,7 @@ public class TmfStateSystemExplorer extends TmfView {
         ITmfTrace trace = signal.getTrace();
         if (trace != fTrace) {
             fTrace = trace;
-            Thread thread = new Thread("State system visualizer construction") { //$NON-NLS-1$
-                @Override
-                public void run() {
-                    createTable();
-                }
-            };
-            thread.start();
+            loadTrace();
         }
     }
 
@@ -466,84 +439,20 @@ public class TmfStateSystemExplorer extends TmfView {
             public void run() {
                 ITmfTimestamp currentTime = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
                 fCurrentTimestamp = currentTime.getValue();
-
-                if(filterStatus) {
-                    createTable();
-                }
-                else {
-                    updateTable();
-                }
+                updateTable();
             }
         };
         thread.start();
     }
 
-    /**
-     * Function for the delete TreeItem
-     */
-    private boolean filterChildren(TreeItem root) {
-
-        boolean valid = false ;
-
-        TmfTimestamp startTime = new TmfTimestamp(fCurrentTimestamp, ITmfTimestamp.NANOSECOND_SCALE);
-
-        valid = root.getText(START_TIME_COL).equals(startTime.toString()) ;
-
-        root.setExpanded(true) ;
-
-        for (TreeItem item : root.getItems()) {
-
-           /* Update children recursively */
-           valid = filterChildren(item) || valid ;
-        }
-
-        if(!valid)
-        {
-            root.dispose() ;
-        }
-
-        return valid ;
-
-    }
-
-
-    //// Part For Button Action ////
-
-    private static final Image ADD_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/add_button.gif"); //$NON-NLS-1$
-    private static final Image DELETE_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/delete_button.gif"); //$NON-NLS-1$
-
-    private void fillToolBar() {
-        Action fHighlightAction = new HighlightAction();
-        fHighlightAction.setImageDescriptor(ImageDescriptor.createFromImage(ADD_IMAGE));
-        fHighlightAction.setToolTipText(Messages.HighlightChange) ;
-        fHighlightAction.setChecked(false);
-
-        Action fFilterAction = new FilterAction();
-        fFilterAction.setImageDescriptor(ImageDescriptor.createFromImage(DELETE_IMAGE));
-        fFilterAction.setToolTipText(Messages.FilterButton) ;
-        fFilterAction.setChecked(false);
-
-        IActionBars bars = getViewSite().getActionBars();
-        IToolBarManager manager = bars.getToolBarManager();
-        manager.add(fHighlightAction);
-        manager.add(fFilterAction);
-    }
-
-    private class HighlightAction extends Action {
-        @Override
-        public void run() {
-            highlightStatus = !highlightStatus ;
-        }
-    }
-
-    private class FilterAction extends Action {
-        @Override
-        public void run() {
-            filterStatus = !filterStatus ;
-            if(!filterStatus)
-            {
-                createTable() ;
+    private void loadTrace() {
+        Thread thread = new Thread("State system visualizer construction") { //$NON-NLS-1$
+            @Override
+            public void run() {
+                createTable();
             }
-        }
+        };
+        thread.start();
     }
+
 }

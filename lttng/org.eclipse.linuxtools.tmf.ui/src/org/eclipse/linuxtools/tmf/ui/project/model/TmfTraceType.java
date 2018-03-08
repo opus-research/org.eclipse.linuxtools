@@ -295,7 +295,7 @@ public final class TmfTraceType {
         }
         for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
             String traceTypeName = CUSTOM_XML_CATEGORY + SEPARATOR + def.definitionName;
-            TraceTypeHelper tt = new TraceTypeHelper(traceTypeName, CUSTOM_TXT_CATEGORY, def.definitionName, null);
+            TraceTypeHelper tt = new TraceTypeHelper(traceTypeName, CUSTOM_XML_CATEGORY, def.definitionName, null);
             fTraceTypes.put(traceTypeName, tt);
             traceTypes.add(traceTypeName);
         }
@@ -382,6 +382,7 @@ public final class TmfTraceType {
      */
 
     public List<TraceTypeHelper> getTraceTypes(String category) {
+        init();
         List<TraceTypeHelper> traceNames = new ArrayList<TraceTypeHelper>();
         for (String key : fTraceTypes.keySet()) {
             final String categoryName = fTraceTypes.get(key).getCategoryName();

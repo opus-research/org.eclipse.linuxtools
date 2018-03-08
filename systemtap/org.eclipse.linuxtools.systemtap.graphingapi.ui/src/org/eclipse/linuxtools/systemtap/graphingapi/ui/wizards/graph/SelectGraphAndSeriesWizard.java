@@ -21,9 +21,17 @@ import org.eclipse.ui.IWorkbench;
 
 
 
-public class SelectGraphWizard extends Wizard implements INewWizard {
-	public SelectGraphWizard(IDataSet data) {
+public class SelectGraphAndSeriesWizard extends Wizard implements INewWizard {
+	public SelectGraphAndSeriesWizard(IDataSet data, GraphData gdata) {
 		model = new GraphModel(data);
+		edit = (gdata != null);
+		if (edit) {
+			model.setGraph(gdata.graphID);
+			model.setKey(gdata.key);
+			model.setTitle(gdata.title);
+			model.setXSeries(gdata.xSeries);
+			model.setYSeries(gdata.ySeries);
+		}
 	}
 
 	@Override
@@ -32,17 +40,14 @@ public class SelectGraphWizard extends Wizard implements INewWizard {
 
 	@Override
 	public void addPages() {
-		setWindowTitle(Localization.getString("SelectGraphWizard.CreateGraph")); //$NON-NLS-1$
-		selectGraphPage = new SelectGraphWizardPage();
-		addPage(selectGraphPage);
-		selectSeriesPage = new SelectSeriesWizardPage();
-		addPage(selectSeriesPage);
+		setWindowTitle(Localization.getString(!edit ? "SelectGraphAndSeriesWizard.CreateGraph" : "SelectGraphAndSeriesWizard.EditGraph"));  //$NON-NLS-1$//$NON-NLS-2$
+		selectGraphandSeriesPage = new SelectGraphAndSeriesWizardPage();
+		addPage(selectGraphandSeriesPage);
 	}
 
 	@Override
 	public boolean canFinish() {
-		if (this.getContainer().getCurrentPage() == selectSeriesPage &&
-			selectSeriesPage.isPageComplete())
+		if (selectGraphandSeriesPage.isPageComplete())
 			return true;
 		return false;
 	}
@@ -62,16 +67,11 @@ public class SelectGraphWizard extends Wizard implements INewWizard {
 		return model.getGraphData();
 	}
 
-	@Override
-	public void dispose() {
-		if(null != selectGraphPage)
-			selectGraphPage.dispose();
-		if(null != selectSeriesPage)
-			selectSeriesPage.dispose();
-		super.dispose();
+	public boolean isEditing() {
+		return edit;
 	}
 
-	public SelectGraphWizardPage selectGraphPage;
-	public SelectSeriesWizardPage selectSeriesPage;
+	public SelectGraphAndSeriesWizardPage selectGraphandSeriesPage;
 	public GraphModel model;
+	private boolean edit;
 }

@@ -28,6 +28,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
@@ -219,6 +220,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             }
         }
         super.init(traceName, type);
+        // register as VIP after super.init() because TmfComponent registers to signal manager there
+        TmfSignalManager.registerVIP(this);
     }
 
     /**
@@ -674,8 +677,15 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         }
 
         if (signal.getTrace() == this) {
-            /* Additionally, the signal is directly for this trace or experiment. */
+            /* Additionally, the signal is directly for this trace. */
             if (getNbEvents() == 0) {
+                return;
+            }
+
+            /* For a streaming trace, the range updated signal should be sent
+             * by the subclass when a new safe time is determined.
+             */
+            if (getStreamingInterval() > 0) {
                 return;
             }
 
