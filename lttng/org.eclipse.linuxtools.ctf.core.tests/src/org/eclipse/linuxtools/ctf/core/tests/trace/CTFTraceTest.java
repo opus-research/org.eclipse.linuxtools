@@ -8,6 +8,7 @@
  * Contributors:
  *     Matthew Khouzam - Initial API and implementation
  *     Marc-Andre Laperle - Test in traces directory recursively
+ *     Simon Delisle - Add test for getCallsite(eventName, ip)
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.tests.trace;
@@ -28,7 +29,7 @@ import java.util.UUID;
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
+import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
@@ -48,7 +49,7 @@ public class CTFTraceTest {
 
     private static final String METADATA_FILENAME = "metadata";
 
-    private static final CtfTestTrace testTrace = CtfTestTrace.KERNEL;
+    private static final int TRACE_INDEX = 0;
 
     private static final String CTF_VERSION_NUMBER = "1.8";
     private static final String CTF_SUITE_TEST_DIRECTORY = "ctf-testsuite/tests/" + CTF_VERSION_NUMBER;
@@ -60,13 +61,8 @@ public class CTFTraceTest {
      */
     @Before
     public void setUp() {
-        assumeTrue(testTrace.exists());
-        try {
-            fixture = testTrace.getTraceFromFile();
-        } catch (CTFReaderException e) {
-            /* If the assumeTrue() call passed, this should not happen. */
-            fail();
-        }
+        assumeTrue(CtfTestTraces.tracesExist());
+        fixture = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
         fixture.setMinor(1L);
         fixture.setUUID(UUID.randomUUID());
         fixture.setPacketHeader(new StructDeclaration(1L));
@@ -79,12 +75,8 @@ public class CTFTraceTest {
      */
     @Test
     public void testOpen_existing() {
-        try {
-            CTFTrace result = testTrace.getTraceFromFile();
-            assertNotNull(result.getUUID());
-        } catch (CTFReaderException e) {
-            fail();
-        }
+        CTFTrace result = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
+        assertNotNull(result.getUUID());
     }
 
     /**
@@ -120,7 +112,7 @@ public class CTFTraceTest {
 
         // Add a stream
         try {
-            Stream stream = new Stream(testTrace.getTrace());
+            Stream stream = new Stream(CtfTestTraces.getTestTrace(TRACE_INDEX));
             stream.setId(1234);
             fixture.addStream(stream);
         } catch (CTFReaderException e) {
@@ -268,19 +260,15 @@ public class CTFTraceTest {
      */
     @Test
     public void testPacketHeaderIsSet_invalid() {
-        try {
-            CTFTrace fixture2 = testTrace.getTraceFromFile();
-            fixture2.setMinor(1L);
-            fixture2.setUUID(UUID.randomUUID());
-            fixture2.setPacketHeader((StructDeclaration) null); /* it's null here! */
-            fixture2.setMajor(1L);
-            fixture2.setByteOrder(ByteOrder.BIG_ENDIAN);
+        CTFTrace fixture2 = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
+        fixture2.setMinor(1L);
+        fixture2.setUUID(UUID.randomUUID());
+        fixture2.setPacketHeader((StructDeclaration) null); /* it's null here! */
+        fixture2.setMajor(1L);
+        fixture2.setByteOrder(ByteOrder.BIG_ENDIAN);
 
-            boolean result = fixture2.packetHeaderIsSet();
-            assertFalse(result);
-        } catch (CTFReaderException e) {
-            fail();
-        }
+        boolean result = fixture2.packetHeaderIsSet();
+        assertFalse(result);
     }
 
     /**
@@ -462,6 +450,28 @@ public class CTFTraceTest {
                 parseTracesInDirectory(file, expectException);
             }
         }
+    }
+
+    /**
+     * Test for getCallsite(eventName, ip)
+     */
+    @Test
+    public void callsitePosition(){
+        long ip1 = 2;
+        long ip2 = 5;
+        long ip3 = 7;
+        CTFTrace callsiteTest = CtfTestTraces.getTestTraceFromFile(TRACE_INDEX);
+        callsiteTest.addCallsite("testEvent", null, ip1, null, 23);
+        callsiteTest.addCallsite("testEvent", null, ip2, null, 50);
+        callsiteTest.addCallsite("testEvent", null, ip3, null, 15);
+
+        assertEquals(2, (callsiteTest.getCallsite("testEvent", 1)).getIp());
+        assertEquals(2, (callsiteTest.getCallsite("testEvent", 2)).getIp());
+        assertEquals(5, (callsiteTest.getCallsite("testEvent", 3)).getIp());
+        assertEquals(5, (callsiteTest.getCallsite("testEvent", 5)).getIp());
+        assertEquals(7, (callsiteTest.getCallsite("testEvent", 6)).getIp());
+        assertEquals(7, (callsiteTest.getCallsite("testEvent", 7)).getIp());
+        assertEquals(7, (callsiteTest.getCallsite("testEvent", 8)).getIp());
     }
 
 }

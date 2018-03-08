@@ -35,7 +35,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public class CtfTmfEvent extends TmfEvent
+public final class CtfTmfEvent extends TmfEvent
         implements ITmfSourceLookup, ITmfModelLookup, ITmfCustomAttributes {
 
     // ------------------------------------------------------------------------
@@ -77,6 +77,7 @@ public class CtfTmfEvent extends TmfEvent
         sourceCPU = cpu;
         typeId = declaration.getId();
         eventName = declaration.getName();
+
     }
 
     /**

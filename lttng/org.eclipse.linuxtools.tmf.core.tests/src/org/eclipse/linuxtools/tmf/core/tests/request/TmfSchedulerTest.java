@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -45,7 +45,8 @@ public class TmfSchedulerTest {
     // Constants
     // ------------------------------------------------------------------------
 
-    private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
+    private static final int TRACE_INDEX = 0;
+    private static final String PATH = CtfTmfTestTraces.getTestTracePath(TRACE_INDEX);
     private static final int NB_EVENTS_TRACE = 695319;
     private static final int NB_EVENTS_TIME_RANGE = 155133;
 
@@ -71,9 +72,9 @@ public class TmfSchedulerTest {
      */
     @Before
     public void setUp() throws TmfTraceException {
-        assumeTrue(testTrace.exists());
+        assumeTrue(CtfTmfTestTraces.tracesExist());
         fixture = new CtfTmfTrace();
-        fixture.initTrace((IResource) null, testTrace.getPath(), CtfTmfEvent.class);
+        fixture.initTrace((IResource) null, PATH, CtfTmfEvent.class);
         fixture.indexTrace(true);
         fStartTime = fixture.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         fEndTime = fixture.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
@@ -376,14 +377,14 @@ public class TmfSchedulerTest {
     // ------------------------------------------------------------------------
 
     private class BackgroundRequest extends TmfEventRequest {
-        private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String backgroundName;
 
         BackgroundRequest(TmfTimeRange timeRange) {
-            super(fixture.getEventType(), timeRange,
+            super(fixture.getEventType(),
+                    timeRange,
+                    0,
                     TmfDataRequest.ALL_DATA,
-                    CHUNK_SIZE,
                     ExecutionType.BACKGROUND);
             backgroundName = getExecType().toString() + ++fBackgroundId;
         }
@@ -403,14 +404,14 @@ public class TmfSchedulerTest {
     }
 
     private class ForegroundRequest extends TmfEventRequest {
-        private static final int CHUNK_SIZE = 0;
         private int nbEvents = 0;
         private String foregroundName;
 
         ForegroundRequest(TmfTimeRange timeRange) {
-            super(fixture.getEventType(), timeRange,
+            super(fixture.getEventType(),
+                    timeRange,
+                    0,
                     TmfDataRequest.ALL_DATA,
-                    CHUNK_SIZE,
                     ExecutionType.FOREGROUND);
             foregroundName = getExecType().toString() + ++fForegroundId;
         }

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,6 +21,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.eclipse.linuxtools.internal.perf.BaseDataManipulator;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
@@ -31,11 +31,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class StatsComparisonTest {
-	private PMStatEntry statEntry;
-	private PMStatEntry statEntry2;
-	private PMStatEntry statEntry3;
-	private PMStatEntry statEntry4;
-	private static final String STAT_RES = "resources/stat-data/";
+	PMStatEntry statEntry;
+	PMStatEntry statEntry2;
+	PMStatEntry statEntry3;
+	PMStatEntry statEntry4;
+	public static final String STAT_RES = "resources/stat-data/";
 
 	@Before
 	public void setUp() {
@@ -83,7 +83,7 @@ public class StatsComparisonTest {
 		String[] actualList = statEntry.toStringArray();
 
 		// test string array representation
-		assertArrayEquals(expectedList, actualList);
+		assertTrue(Arrays.equals(expectedList, actualList));
 	}
 
 	@Test
@@ -102,7 +102,7 @@ public class StatsComparisonTest {
 		PMStatEntry actualDiff = statEntry.compare(statEntry2);
 
 		// test stat entry comparison
-		assertEquals(expectedDiff,actualDiff);
+		assertTrue(expectedDiff.equals(actualDiff));
 
 	}
 

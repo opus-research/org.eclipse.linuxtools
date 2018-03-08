@@ -34,24 +34,19 @@ public class SpecfileLabelProvider implements ILabelProvider {
 	private static final String PACKAGE_ICON="icons/package_obj.gif"; //$NON-NLS-1$
 	private IProject project;
 
-	@Override
 	public void addListener(ILabelProviderListener listener) {
 	}
 
-	@Override
 	public void dispose() {
 	}
 
-	@Override
 	public boolean isLabelProperty(Object element, String property) {
 		return false;
 	}
 
-	@Override
 	public void removeListener(ILabelProviderListener listener) {
 	}
 
-	@Override
 	public Image getImage(Object element) {
 		if (element instanceof SpecfilePackage) {
 			return Activator.getDefault().getImage(PACKAGE_ICON);
@@ -65,7 +60,6 @@ public class SpecfileLabelProvider implements ILabelProvider {
 		return null;
 	}
 
-	@Override
 	public String getText(Object element) {
 		String str = ""; //$NON-NLS-1$
 		try {

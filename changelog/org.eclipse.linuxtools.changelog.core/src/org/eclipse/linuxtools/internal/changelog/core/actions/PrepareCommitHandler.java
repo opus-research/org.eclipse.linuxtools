@@ -20,6 +20,7 @@ import org.eclipse.compare.rangedifferencer.RangeDifference;
 import org.eclipse.compare.rangedifferencer.RangeDifferencer;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -56,13 +57,12 @@ import org.eclipse.ui.ide.IContributorResourceAdapter2;
 
 public class PrepareCommitHandler extends AbstractHandler {
 
-	@Override
-	public Object execute(ExecutionEvent event) {
+	public Object execute(ExecutionEvent event) throws ExecutionException {
 
 		IRunnableWithProgress code = new IRunnableWithProgress() {
 
-			@Override
-			public void run(IProgressMonitor monitor) {
+			public void run(IProgressMonitor monitor)
+					throws InvocationTargetException, InterruptedException {
 				// monitor.beginTask("Loading Clipboard", 1000);
 				loadClipboard(monitor);
 				// monitor.done();
