@@ -42,12 +42,10 @@ public class ViewFactory {
 					.getActiveWorkbenchWindow().getActivePage().
 					showView(viewID);
 					if (!(view instanceof SystemTapView))
-						throw new Exception("Miscast type: " + view.getClass().toString());  //$NON-NLS-1$
+						throw new RuntimeException("Miscast type: " + view.getClass().toString());  //$NON-NLS-1$
 					newView = ((SystemTapView) view);
 					newView.setViewID();
 				} catch (PartInitException e) {
-					e.printStackTrace();
-				}  catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -71,12 +69,10 @@ public class ViewFactory {
 					IViewPart view = PlatformUI.getWorkbench()
 					.getActiveWorkbenchWindow().getActivePage().showView(viewID, secondaryID, IWorkbenchPage.VIEW_VISIBLE);
 					if (!(view instanceof SystemTapView))
-						throw new Exception("Miscast type: " + view.getClass().toString());  //$NON-NLS-1$
+						throw new RuntimeException("Miscast type: " + view.getClass().toString());  //$NON-NLS-1$
 					newView = ((SystemTapView) view);
 					newView.setViewID();
 				} catch (PartInitException e) {
-					e.printStackTrace();
-				}  catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
