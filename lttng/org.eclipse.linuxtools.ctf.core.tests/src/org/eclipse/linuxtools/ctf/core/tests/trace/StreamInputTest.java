@@ -19,7 +19,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
@@ -27,7 +26,6 @@ import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTraces;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,16 +44,6 @@ public class StreamInputTest {
     private StreamInput fixture;
 
     /**
-     * Launch the test.
-     *
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        new org.junit.runner.JUnitCore().run(StreamInputTest.class);
-    }
-
-    /**
      * Perform pre-test initialization.
      *
      * @throws CTFReaderException
@@ -68,16 +56,8 @@ public class StreamInputTest {
         fixture.setTimestampEnd(1L);
     }
 
-    /**
-     * Perform post-test clean-up.
-     */
-    @After
-    public void tearDown() {
-        // Add additional tear down code here
-    }
-
     private static File createFile() {
-        return new File("Tests/traces/trace20m/channel_0"); //$NON-NLS-1$
+        return new File("Tests/traces/trace20m/channel_0");
     }
 
     /**
@@ -90,16 +70,11 @@ public class StreamInputTest {
 
     /**
      * Run the FileChannel getFileChannel() method test.
-     *
-     * @throws IOException
      */
     @Test
-    public void testGetFileChannel() throws IOException {
+    public void testGetFileChannel() {
         FileChannel result = fixture.getFileChannel();
         assertNull(result);
-        if (result != null) {
-            result.close();
-        }
     }
 
     /**
@@ -143,7 +118,7 @@ public class StreamInputTest {
      */
     @Test
     public void testLookupDefinition() {
-        Definition result = fixture.lookupDefinition("id"); //$NON-NLS-1$
+        Definition result = fixture.lookupDefinition("id");
         assertNull(result);
     }
 
