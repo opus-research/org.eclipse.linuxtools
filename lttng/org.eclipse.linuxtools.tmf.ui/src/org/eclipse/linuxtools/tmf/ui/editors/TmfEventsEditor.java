@@ -639,6 +639,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
      */
     @Override
     public void partDeactivated(IWorkbenchPart part) {
+        fTraceSelected = false;
     }
 
     /**
@@ -674,8 +675,6 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
         if ((signal.getSource() != this)) {
             if (signal.getTrace().equals(fTrace)) {
                 getSite().getPage().bringToTop(this);
-            } else {
-                fTraceSelected = false;
             }
         }
     }
