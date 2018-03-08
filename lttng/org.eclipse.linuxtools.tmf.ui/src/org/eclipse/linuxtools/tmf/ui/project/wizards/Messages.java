@@ -105,6 +105,107 @@ public class Messages extends NLS {
      */
     public static String ImportTraceWizard_Information;
     /**
+     * Add message "Adding"
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_add;
+
+    /**
+     * The dialog title of the import trace wizard
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_DialogTitle;
+    /**
+     * The title of the file system within the import trace wizard
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_FileSystemTitle;
+    /**
+     * The title of the the import trace wizard page.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_ImportTrace;
+    /**
+     * The label of the directory location (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_DirectoryLocation;
+    /**
+     * The title of the select trace directory dialog (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_SelectTraceDirectoryTitle;
+    /**
+     * The message of the select trace directory dialog (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_SelectTraceDirectoryMessage;
+    /**
+     * The title of the trace type label (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_TraceType;
+    /**
+     * The label of the overwrite checkbox (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_OverwriteExistingTrace;
+    /**
+     * The label of the checkbox to create a link to the trace in workspace (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_CreateLinksInWorkspace;
+    /**
+     * The error message for invalid trace directory (import trace wizard)
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_InvalidTraceDirectory;
+    /**
+     * The error message when a trace validation failed (import trace wizard).
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_TraceValidationFailed;
+    /**
+     * The error message when trace source is empty (import trace wizard).
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_SelectTraceSourceEmpty;
+    /**
+     * The error message when no trace is selected (import trace wizard).
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_SelectTraceNoneSelected;
+    /**
+     * The error message when an error occurred during import operation.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_ImportProblem;
+    /**
+     * The error message if destination directory is a virtual folder.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_CannotImportFilesUnderAVirtualFolder;
+    /**
+     * The error message if destination directory is a virtual folder (for a link).
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_HaveToCreateLinksUnderAVirtualFolder;
+    /**
+     * The label string of the browse button.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_BrowseButton;
+    /**
+     * The information label string.
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_Information;
+    /**
+     * Remove message "Removing"
+     * @since 2.0
+     */
+    public static String BatchImportTraceWizard_remove;
+    /**
      *  The title of the select traces wizard.
      */
     public static String SelectTracesWizard_WindowTitle;
