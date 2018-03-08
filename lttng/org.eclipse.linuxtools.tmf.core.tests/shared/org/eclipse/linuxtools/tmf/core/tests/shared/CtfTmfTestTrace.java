@@ -31,11 +31,7 @@ public enum CtfTmfTestTrace {
     /** Another kernel trace */
     TRACE2,
     /** Kernel trace with event contexts */
-    KERNEL_VM,
-    /** Trace synchronization: source trace */
-    SYNC_SRC,
-    /** Trace synchronization: destination trace */
-    SYNC_DEST;
+    KERNEL_VM;
 
 
     private final String fPath;

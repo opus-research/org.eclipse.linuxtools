@@ -9,13 +9,14 @@
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
+
 package org.eclipse.linuxtools.tmf.ui.tests.trace;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Test suite for custom parsers
+ * Test suite for Xml parser validation
  * @author Matthew Khouzam
  *
  */
@@ -23,9 +24,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         CustomXmlTraceInvalidTest.class,
         CustomXmlTraceBadlyFormedTest.class,
-        CustomXmlTraceValidTest.class,
-        CustomXmlIndexTest.class,
-        CustomTxtIndexTest.class
+        CustomXmlTraceValidTest.class
 })
 public class AllTests {
 }
