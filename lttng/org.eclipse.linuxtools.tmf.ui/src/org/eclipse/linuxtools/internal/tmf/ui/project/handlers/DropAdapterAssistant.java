@@ -209,10 +209,8 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         IResource targetResource = drop(sourceResource, targetExperiment, operation);
 
         if (targetResource != null) {
-            if (! sourceTrace.getProject().equals(targetExperiment.getProject())) {
-                IFolder destinationSupplementaryFolder = targetExperiment.getTraceSupplementaryFolder(targetResource.getName());
-                sourceTrace.copySupplementaryFolder(destinationSupplementaryFolder);
-            }
+            IFolder destinationSupplementaryFolder = targetExperiment.getTraceSupplementaryFolder(targetResource.getName());
+            sourceTrace.copySupplementaryFolder(destinationSupplementaryFolder);
             return true;
         }
         return false;
