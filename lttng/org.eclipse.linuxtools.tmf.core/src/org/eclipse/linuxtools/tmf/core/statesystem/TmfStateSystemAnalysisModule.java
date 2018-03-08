@@ -104,7 +104,11 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             case FULL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
                 final File htFile = new File(directory + getSsFileName());
-                fStateSystem = TmfStateSystemFactory.newFullHistory(htFile, htInput, true);
+                /* If the history is already built then the notify request has to send
+                 * in the calling method. Set the relevant flag here. */
+                boolean[] isNotifyPendingReqNeeded = new boolean[1];
+                fStateSystem = TmfStateSystemFactory.newFullHistory(htFile, htInput, true, isNotifyPendingReqNeeded);
+                setNotifyPendingReqNeeded(isNotifyPendingReqNeeded[0]);
                 break;
             case PARTIAL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
