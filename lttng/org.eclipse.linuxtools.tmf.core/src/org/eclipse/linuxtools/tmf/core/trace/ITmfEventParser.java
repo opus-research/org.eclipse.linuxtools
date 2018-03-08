@@ -18,13 +18,15 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 /**
  * The generic trace parser in TMF.
  *
+ * @param <T> The trace event type
+ *
  * @version 1.0
  * @author Francois Chouinard
  *
  * @see ITmfEvent
  * @see ITmfContext
  */
-public interface ITmfEventParser {
+public interface ITmfEventParser<T extends ITmfEvent> {
 
 	/**
 	 * Parses the trace event referenced by the context.
@@ -33,6 +35,6 @@ public interface ITmfEventParser {
 	 * @param context the trace context
 	 * @return a parsed event (null if none)
 	 */
-	public ITmfEvent parseEvent(ITmfContext context);
+	public T parseEvent(ITmfContext context);
 
 }
