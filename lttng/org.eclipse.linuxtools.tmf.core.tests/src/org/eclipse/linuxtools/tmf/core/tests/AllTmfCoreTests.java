@@ -13,14 +13,14 @@
 
 package org.eclipse.linuxtools.tmf.core.tests;
 
-import org.eclipse.linuxtools.tmf.core.tests.shared.DebugSuite;
 import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
  * Master test suite for TMF Core.
  */
-@RunWith(DebugSuite.class)
-@DebugSuite.SuiteClasses({
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
     TmfCorePluginTest.class,
     org.eclipse.linuxtools.tmf.core.tests.analysis.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.component.AllTests.class,
