@@ -34,7 +34,6 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 
@@ -139,7 +138,6 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 		findAction.setToolTipText(PerfPlugin.STRINGS_SearchSourceDisassembly);
 		IActionBars bars = getViewSite().getActionBars();
 		bars.getToolBarManager().add(findAction);
-		bars.setGlobalActionHandler(ActionFactory.FIND.getId(), findAction);
 	}
 
 	@Override
