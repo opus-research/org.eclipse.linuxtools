@@ -39,7 +39,7 @@ import org.eclipse.ui.PlatformUI;
  *
  * @author Bernd Hufmann
  */
-public abstract class ChangeSessionStateHandler extends BaseControlViewHandler {
+abstract public class ChangeSessionStateHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -56,7 +56,7 @@ public abstract class ChangeSessionStateHandler extends BaseControlViewHandler {
     /**
      * @return new required state.
      */
-    public abstract TraceSessionState getNewState();
+    abstract TraceSessionState getNewState();
 
     // ------------------------------------------------------------------------
     // Operations
