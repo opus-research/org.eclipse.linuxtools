@@ -8,7 +8,7 @@
  * Contributors:
  *    Red Hat initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.profiling.launch.provider;
+package org.eclipse.linuxtools.internal.profiling.provider;
 
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -22,14 +22,15 @@ import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
-import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
-import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.Messages;
-import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.ProviderFramework;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
+import org.eclipse.linuxtools.internal.profiling.provider.launch.Messages;
+import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationTabGroup;
+import org.eclipse.linuxtools.profiling.launch.ProfileLaunchShortcut;
 
 public class AbstractProviderPreferencesPage extends
 		FieldEditorPreferencePage implements IWorkbenchPreferencePage, IExecutableExtension {
@@ -68,8 +69,8 @@ public class AbstractProviderPreferencesPage extends
 
 	public void initializeDefaultPreferences() {
 			super.performDefaults();
-			String providerId = ProviderFramework
-					.getHighestProviderId(type);
+			String providerId = ProfileLaunchShortcut
+					.getDefaultLaunchShortcutProviderId(type);
 			ConfigurationScope.INSTANCE.getNode(ProviderProfileConstants.PLUGIN_ID)
 					.put(ProviderProfileConstants.PREFS_KEY + type, providerId);
 
@@ -77,14 +78,13 @@ public class AbstractProviderPreferencesPage extends
 
 	@Override
 	protected void createFieldEditors() {
-		String providerId = ProviderFramework.getHighestProviderId(type);
+		String providerId = ProfileLaunchShortcut
+				.getDefaultLaunchShortcutProviderId(type);
 
 		getPreferenceStore().setDefault(
 				ProviderProfileConstants.PREFS_KEY + type, providerId);
 
-		getPreferenceStore().setDefault(ProviderProfileConstants.PREFS_KEY, providerId);
-
-		HashMap<String, String> map = ProviderFramework
+		HashMap<String, String> map = ProfileLaunchConfigurationTabGroup
 				.getProviderNamesForType(type);
 		// 2d array containing launch provider names on the first column and
 		// corresponding id's on the second.
