@@ -27,8 +27,7 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
-
+import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

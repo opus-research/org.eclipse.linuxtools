@@ -37,6 +37,9 @@ import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpointIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 
 /**
  * Abstract implementation of ITmfTrace.
@@ -322,6 +325,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @return the trace indexer
+     * @since 3.0
      */
     protected ITmfTraceIndexer getIndexer() {
         return fIndexer;
@@ -467,6 +471,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Set the trace indexer. Must be done at initialization time.
      *
      * @param indexer the trace indexer
+     * @since 3.0
      */
     protected void setIndexer(final ITmfTraceIndexer indexer) {
         fIndexer = indexer;

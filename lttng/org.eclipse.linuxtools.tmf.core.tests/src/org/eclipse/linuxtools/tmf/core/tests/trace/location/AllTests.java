@@ -12,22 +12,16 @@
  *   Alexandre Montplaisir - Port to JUnit4
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.tests.trace;
+package org.eclipse.linuxtools.tmf.core.tests.trace.location;
 
-import org.eclipse.linuxtools.tmf.core.tests.trace.indexer.checkpoint.TmfExperimentCheckpointIndexTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Test suite for org.eclipse.linuxtools.tmf.core.trace
+ * Test suite for org.eclipse.linuxtools.tmf.core.trace.location
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    TmfContextTest.class,
-    TmfExperimentCheckpointIndexTest.class,
-    TmfExperimentTest.class,
-    TmfMultiTraceExperimentTest.class,
-    TmfTraceManagerTest.class,
-    TmfTraceTest.class
+    TmfLocationTest.class,
 })
 public class AllTests {}
