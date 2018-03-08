@@ -2,18 +2,11 @@ package org.eclipse.linuxtools.systemtap.ui.ide.test.editors.stp;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
-import java.io.IOException;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPCompletionProcessor;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPDocumentProvider;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.junit.Test;
 
 public class STPCompletionProcessorTest {
@@ -26,27 +19,6 @@ public class STPCompletionProcessorTest {
 			"   printf(\"%s fd %d\taddr%d\tcount%dargstr%s\n\", name, fd, buf_uaddr, count, argstr)\n"+
 			"}\n"+
 			"\n";
-
-	private static class MockSTPDocumentProvider extends STPDocumentProvider{
-		private IDocument document;
-
-		MockSTPDocumentProvider(IDocument document){
-			this.document = document;
-			this.setupDocument(document);
-		}
-
-		@Override
-		protected IDocument createDocument(Object element) {
-			return document;
-		}
-	}
-
-	private static class MockSTPEditor extends STPEditor{
-		public MockSTPEditor(IDocument document) {
-			super();
-			setDocumentProvider(new MockSTPDocumentProvider(document));
-		}
-	}
 
 	@Test
 	public void testCompletionRequest() {
@@ -98,59 +70,6 @@ public class STPCompletionProcessorTest {
 		assertTrue(proposalsContain(proposals, "probe "));
 		assertTrue(!proposalsContain(proposals, "global "));
 		assertTrue(!proposalsContain(proposals, "function "));
-	}
-	
-	@Test
-	public void testProbeCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
-
-		Document testDocument = new Document(TEST_STP_SCRIPT);
-		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
-		String prefix = "probe ";
-		testDocument.replace(offset, 0, prefix);
-		offset += prefix.length();
-
-		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
-		ICompletionProposal[] proposals = completionProcessor
-				.computeCompletionProposals(testDocument,
-						offset);
-
-		assertTrue(proposalsContain(proposals, "syscall"));
-		assertTrue(!proposalsContain(proposals, "syscall.write"));
-	}
-
-	@Test
-	public void testProbeVariableCompletion() throws BadLocationException {
-		assumeTrue(stapInstalled());
-
-		Document testDocument = new Document(TEST_STP_SCRIPT);
-		@SuppressWarnings("unused")
-		MockSTPEditor editor = new MockSTPEditor(testDocument);
-
-		int offset = TEST_STP_SCRIPT.indexOf("//marker1");
-		String prefix = "probe syscall.write{}";
-		testDocument.replace(offset, 0, prefix);
-		offset += prefix.length() - 1;
-
-		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
-		ICompletionProposal[] proposals = completionProcessor
-				.computeCompletionProposals(testDocument,
-						offset);
-
-		assertTrue(proposalsContain(proposals, "fd:long "));
-		assertTrue(proposalsContain(proposals, "name:string"));
-		assertTrue(proposalsContain(proposals, "buf_uaddr:long "));
-	}
-
-	
-	private boolean stapInstalled(){
-		try {
-			Process process = RuntimeProcessFactory.getFactory().exec(new String[]{"stap", "-V"}, null);
-			return (process != null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
 	}
 
 	@Test
