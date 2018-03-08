@@ -16,7 +16,6 @@ import java.net.URISyntaxException;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
 import org.eclipse.osgi.util.TextProcessor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -32,9 +31,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-/**
- * @since 1.3
- */
 public class ResourceSelectorWidget {
 
 	public enum ResourceType { FILE, DIRECTORY }
@@ -91,11 +87,11 @@ public class ResourceSelectorWidget {
 				break;
 			}
 			default:
-				ProfileLaunchPlugin.log(IStatus.ERROR, ResourceSelectorWidgetMessages.ResourceSelectorWidget_unrecognized_resourceType);
+				Activator.log(IStatus.ERROR, ResourceSelectorWidgetMessages.ResourceSelectorWidget_unrecognized_resourceType);
 				return;
 			}
 		} else {
-			ProfileLaunchPlugin.log(IStatus.ERROR, ResourceSelectorWidgetMessages.ResourceSelectorWidget_getSelectorProxy_returned_null);
+			Activator.log(IStatus.ERROR, ResourceSelectorWidgetMessages.ResourceSelectorWidget_getSelectorProxy_returned_null);
 		}
 
 		if (selectedResource != null) {
@@ -202,6 +198,7 @@ public class ResourceSelectorWidget {
 			 *
 			 * @see org.eclipse.swt.events.ModifyListener#modifyText(org.eclipse.swt.events.ModifyEvent)
 			 */
+			@Override
 			public void modifyText(ModifyEvent e) {
 				updateFilesystemSelector(uriField.getText());
 			}
