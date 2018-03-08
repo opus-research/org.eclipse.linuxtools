@@ -16,7 +16,6 @@ package org.eclipse.linuxtools.internal.perf;
 
 import java.util.List;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
@@ -104,11 +103,8 @@ public class PerfPlugin extends AbstractUIPlugin {
 	// Source Disassembly Data
 	private SourceDisassemblyData sourceDisassemblyData;
 
-	// Profile view
+	//Profile view
 	private PerfProfileView _ProfileView = null;
-
-	// Profile data
-	private IPath perfProfileData;
 
 	public TreeParent getModelRoot() {
 		return _modelRoot;
@@ -116,10 +112,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public SourceDisassemblyData getSourceDisassemblyData () {
 		return sourceDisassemblyData;
-	}
-
-	public IPath getPerfProfileData() {
-		return perfProfileData;
 	}
 
 	/**
@@ -141,10 +133,6 @@ public class PerfPlugin extends AbstractUIPlugin {
 
 	public void setSourceDisassemblyData (SourceDisassemblyData sourceDisassemblyData) {
 		this.sourceDisassemblyData = sourceDisassemblyData;
-	}
-
-	public void setPerfProfileData(IPath perfProfileData) {
-		this.perfProfileData = perfProfileData;
 	}
 
 	public PerfProfileView getProfileView() {
