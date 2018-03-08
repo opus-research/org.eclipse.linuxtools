@@ -10,13 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
 
 /**
  * This class handles the execution of the source disassembly command
@@ -26,25 +20,14 @@ public class SourceDisassemblyData extends AbstractDataManipulator {
 
 	private IPath workingDir;
 
-	public SourceDisassemblyData(String title, IPath workingDir, IProject project) {
-		super(title, workingDir, project);
-		this.workingDir = workingDir;
-	}
-
 	public SourceDisassemblyData(String title, IPath workingDir) {
-		super(title, workingDir);
+		super(title, null);
 		this.workingDir = workingDir;
 	}
 
 	@Override
 	public void parse() {
-		URI workingDirURI = null;
-		try {
-			workingDirURI = new URI(workingDir.toPortableString());
-		} catch (URISyntaxException e) {
-			MessageDialog.openError(Display.getCurrent().getActiveShell(), Messages.MsgProxyError, Messages.MsgProxyError);
-		}
-		String [] cmd = getCommand(workingDirURI.getPath());
+		String [] cmd = getCommand(workingDir.toOSString());
 		// perf annotate prints the data to standard output
 		performCommand(cmd, 1);
 	}
