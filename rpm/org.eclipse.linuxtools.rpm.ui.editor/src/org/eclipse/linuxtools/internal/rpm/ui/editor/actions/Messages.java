@@ -20,12 +20,15 @@ public final class Messages extends NLS {
 	// SpecfileEditorDownloadSourcesActionDelegate
 	public static String DownloadSources_malformedURL;
 	public static String DownloadSources_cannotConnectToURL;
-	
+
 	// SpecfileEditorPrepareSourcesActionDelegate
 	public static String PrepareSources_downloadSourcesMalformedURL;
 	public static String PrepareSources_downloadCancelled;
 	public static String PrepareSources_downloadConnectionFail;
 	public static String PrepareSources_coreException;
+
+	// RPMHandlerUtils
+	public static String RPMHandlerUtils_cannotCreateRPMProject;
 
 	static {
 		// initialize resource bundle

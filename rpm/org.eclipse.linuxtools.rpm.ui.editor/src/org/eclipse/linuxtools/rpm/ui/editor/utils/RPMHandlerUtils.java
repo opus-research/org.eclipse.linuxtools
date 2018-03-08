@@ -11,11 +11,19 @@
 package org.eclipse.linuxtools.rpm.ui.editor.utils;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.actions.Messages;
+import org.eclipse.linuxtools.rpm.core.IRPMConstants;
+import org.eclipse.linuxtools.rpm.core.RPMProject;
+import org.eclipse.linuxtools.rpm.core.RPMProjectLayout;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
@@ -25,7 +33,7 @@ import org.eclipse.ui.part.EditorPart;
 
 /**
  * Utility class for RPM UI Editor Handler related things.
- * 
+ *
  */
 public class RPMHandlerUtils {
 
@@ -71,4 +79,25 @@ public class RPMHandlerUtils {
 		return null;
 	}
 
+	public static RPMProject getRPMProject(IResource resource) {
+		RPMProject rc = null;
+
+		try {
+			IProject parentProject = resource.getProject();
+
+			// determine if project selected is an RPMProject
+			if (parentProject.hasNature(IRPMConstants.RPM_NATURE_ID)) {
+				if (parentProject.getPersistentProperty(new QualifiedName(IRPMConstants.RPM_CORE_ID, IRPMConstants.SPECS_FOLDER)) != null){
+					rc = new RPMProject(parentProject, RPMProjectLayout.RPMBUILD);
+				} else {
+					rc = new RPMProject(parentProject, RPMProjectLayout.FLAT);
+				}
+			} else {
+				rc = new RPMProject(parentProject, RPMProjectLayout.FLAT);
+			}
+		} catch (CoreException e) {
+			SpecfileLog.logError(Messages.RPMHandlerUtils_cannotCreateRPMProject, e);
+		}
+		return rc;
+	}
 }
