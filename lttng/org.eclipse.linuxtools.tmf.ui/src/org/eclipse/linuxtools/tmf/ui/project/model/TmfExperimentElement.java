@@ -312,21 +312,4 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
             }
         }
     }
-
-    /**
-     * Get the list of analysis elements
-     *
-     * @return Array of analysis elements
-     * @since 3.0
-     */
-    public List<TmfAnalysisElement> getAvailableAnalysis() {
-        List<TmfAnalysisElement> list = new ArrayList<TmfAnalysisElement>();
-
-        /**
-         * TODO : implement this cleanly and test it when experiment types are
-         * available
-         */
-
-        return list;
-    }
 }

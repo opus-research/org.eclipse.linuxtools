@@ -16,6 +16,7 @@ import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.tests.stubs.ctf.CtfTmfTraceStub;
 
 /**
  * Available CTF TMF test traces. Kind-of-extends {@link CtfTestTrace}.
@@ -45,7 +46,7 @@ public enum CtfTmfTestTrace {
 
 
     private final String fPath;
-    private CtfTmfTrace fTrace = null;
+    private CtfTmfTraceStub fTrace = null;
 
     private CtfTmfTestTrace() {
         /* This makes my head spin */
@@ -60,11 +61,13 @@ public enum CtfTmfTestTrace {
     }
 
     /**
-     * Return a CtfTmfTrace object of this test trace. It will be already
-     * initTrace()'ed. You do not have to .dispose() the trace after use (the
-     * old one is disposed automatically when this method is called again).
+     * Return a CtfTmfTraceStub object of this test trace. It will be already
+     * initTrace()'ed.
      *
      * Make sure you call {@link #exists()} before calling this!
+     *
+     * After being used by unit tests, traces must be properly disposed of by
+     * calling the {@link CtfTmfTestTrace#dispose()} method.
      *
      * @return A CtfTmfTrace reference to this trace
      */
@@ -72,7 +75,7 @@ public enum CtfTmfTestTrace {
         if (fTrace != null) {
             fTrace.dispose();
         }
-        fTrace = new CtfTmfTrace();
+        fTrace = new CtfTmfTraceStub();
         try {
             fTrace.initTrace(null, fPath, CtfTmfEvent.class);
         } catch (TmfTraceException e) {
@@ -89,5 +92,15 @@ public enum CtfTmfTestTrace {
      */
     public boolean exists() {
         return CtfTestTrace.valueOf(this.name()).exists();
+    }
+
+    /**
+     * Dispose of the trace
+     */
+    public void dispose() {
+        if (fTrace != null) {
+            fTrace.dispose();
+            fTrace = null;
+        }
     }
 }
