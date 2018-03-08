@@ -13,9 +13,9 @@ import org.junit.Test;
 /**
  * Part of the BitBuffet tests with test the methods to read/write integers.
  * These are separated from the main file because the fixture is different.
- * 
+ *
  * @author alexmont
- * 
+ *
  */
 public class BitBufferIntTest {
 
@@ -23,7 +23,7 @@ public class BitBufferIntTest {
 
     /**
      * Launch the test.
-     * 
+     *
      * @param args
      *            the command line arguments
      */
@@ -37,7 +37,7 @@ public class BitBufferIntTest {
     @Before
     public void setUp() {
         fixture = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
-        fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
+        fixture.order(ByteOrder.BIG_ENDIAN);
         createBuffer(fixture);
     }
 
@@ -143,7 +143,7 @@ public class BitBufferIntTest {
     public void testGetInt_le1() {
         BitBuffer le_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
-        le_fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        le_fixture.order(ByteOrder.LITTLE_ENDIAN);
         createBuffer(le_fixture);
         le_fixture.position(1);
         int index = 1;
@@ -162,7 +162,7 @@ public class BitBufferIntTest {
     public void testGetInt_le2() {
         BitBuffer le_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
-        le_fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        le_fixture.order(ByteOrder.LITTLE_ENDIAN);
         createBuffer(le_fixture);
         le_fixture.position(0);
         int index = 0;
@@ -178,7 +178,7 @@ public class BitBufferIntTest {
     public void testGetInt_invalid() {
         BitBuffer small_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
-        small_fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
+        small_fixture.order(ByteOrder.BIG_ENDIAN);
         createBuffer(small_fixture, 2);
         small_fixture.position(10);
         int length = 32;
@@ -195,7 +195,7 @@ public class BitBufferIntTest {
     public void testGetInt_invalid2() {
         BitBuffer small_fixture = new BitBuffer(
                 java.nio.ByteBuffer.allocateDirect(128));
-        small_fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
+        small_fixture.order(ByteOrder.BIG_ENDIAN);
         createBuffer(small_fixture, 2);
         small_fixture.position(1);
         int index = 1;
@@ -274,7 +274,7 @@ public class BitBufferIntTest {
     public void testPutInt_invalid() {
         BitBuffer fixture2;
         fixture2 = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
-        fixture2.setByteOrder(ByteOrder.BIG_ENDIAN);
+        fixture2.order(ByteOrder.BIG_ENDIAN);
         createBuffer(fixture2, 4);
         fixture2.position(1);
 
