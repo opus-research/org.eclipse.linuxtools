@@ -83,10 +83,10 @@
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="default" type="boolean">
+         <attribute name="priority" type="string" use="required">
             <annotation>
                <documentation>
-                  If true, this shortcut is set as the default for the given type.
+                  
                </documentation>
             </annotation>
          </attribute>
