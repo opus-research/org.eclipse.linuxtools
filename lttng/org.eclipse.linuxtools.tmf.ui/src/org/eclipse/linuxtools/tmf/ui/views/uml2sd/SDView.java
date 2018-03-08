@@ -1050,15 +1050,6 @@ public class SDView extends ViewPart {
     }
 
     /**
-     * Gets the initialization flag.
-     * @return the value of the initialization flag.
-     * @since 2.0
-     */
-    private boolean isNeedInit() {
-        return fNeedInit;
-    }
-
-    /**
      * Restores the loader for the view based on the view ID.
      *
      * @return boolean <code>true</code> if initialization is needed else <code>false</code>.
