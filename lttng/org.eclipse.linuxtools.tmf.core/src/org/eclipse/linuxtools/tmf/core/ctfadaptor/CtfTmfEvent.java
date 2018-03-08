@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfTimestamp;
 /**
  * A wrapper class around CTF's Event Definition/Declaration that maps all
  * types of Declaration to native Java types.
- * 
+ *
  * @version 1.0
  * @author Alexandre Montplaisir
  */
@@ -85,8 +85,7 @@ public final class CtfTmfEvent implements ITmfEvent, Cloneable {
         }
 
         /* Read the base event info */
-        Long offset = originTrace.getCTFTrace().getOffset();
-        this.timestamp = eventDef.getTimestamp() + offset;
+        this.timestamp = this.getTrace().getCTFTrace().timestampCyclesToNanos(eventDef.getTimestamp());
         this.sourceCPU = eventDef.getCPU();
         this.typeId = eventDef.getDeclaration().getId();
         this.eventName = eventDef.getDeclaration().getName();
