@@ -23,6 +23,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.eclipse.linuxtools.valgrind.core.CommandLineConstants;
 import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchPlugin;
 import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindOptionsTab;
 import org.eclipse.linuxtools.internal.valgrind.memcheck.MemcheckLaunchConstants;
@@ -33,8 +34,12 @@ import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindViewPart;
 import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.osgi.framework.Version;
 
 public class LaunchConfigTabTest extends AbstractMemcheckTest {
@@ -502,5 +507,101 @@ public class LaunchConfigTabTest extends AbstractMemcheckTest {
 
 		String text = messages[0].getText();
 		assertTrue(text.contains(notExistentFile));
+	}
+
+	public void testAlternateDynamicMalloc() throws Exception {
+		ILaunchConfigurationWorkingCopy wc = initConfig();
+		IProject project = CDebugUtils.verifyCProject(wc).getProject();
+		Version ver = ValgrindLaunchPlugin.getDefault().getValgrindVersion(project);
+		if (ver.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
+			Control customMallocControl = tab.getCustomMallocControl();
+			Button customMallocButton = tab.getCustomMallocButton();
+			assertFalse(customMallocControl.isEnabled());
+			assertFalse(customMallocButton.getSelection());
+
+			Button dynamicLibRadio = tab.getDynamicLibRadio();
+			assertFalse(dynamicLibRadio.isEnabled());
+			assertTrue(dynamicLibRadio.getSelection());
+
+			Button staticLibRadio = tab.getStaticLibRadio();
+			assertFalse(staticLibRadio.isEnabled());
+			assertFalse(staticLibRadio.getSelection());
+
+			customMallocButton.setSelection(true);
+			customMallocButton.notifyListeners(SWT.Selection, null);
+			assertTrue(dynamicLibRadio.isEnabled());
+			assertTrue(staticLibRadio.isEnabled());
+
+			dynamicLibRadio.setSelection(true);
+			dynamicLibRadio.notifyListeners(SWT.Selection, null);
+			assertTrue(customMallocControl.isEnabled());
+
+			if(customMallocControl instanceof Combo){
+				((Combo)customMallocControl).setText("tcmalloc"); //$NON-NLS-1$
+			} else if (customMallocControl instanceof Text){
+				((Text)customMallocControl).setText("tcmalloc"); //$NON-NLS-1$
+			}
+
+			ILaunch launch = saveAndLaunch(wc, "testCustomMalloc"); //$NON-NLS-1$
+			IProcess[] p = launch.getProcesses();
+			if (p.length > 0) {
+				String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+				assertEquals(0, p[0].getExitValue());
+				assertTrue(cmd.contains("--soname-synonyms=somalloc=tcmalloc")); //$NON-NLS-1$
+			}
+			else {
+				fail();
+			}
+		}
+		else {
+			assertFalse(tab.getCustomMallocButton().isVisible());
+			assertFalse(tab.getCustomMallocControl().isVisible());
+		}
+	}
+
+	public void testAlternateStaticMalloc() throws Exception {
+		ILaunchConfigurationWorkingCopy wc = initConfig();
+		IProject project = CDebugUtils.verifyCProject(wc).getProject();
+		Version ver = ValgrindLaunchPlugin.getDefault().getValgrindVersion(project);
+		if (ver.compareTo(ValgrindLaunchPlugin.VER_3_8_0) >= 0) {
+			Control customMallocControl = tab.getCustomMallocControl();
+			Button customMallocButton = tab.getCustomMallocButton();
+			assertFalse(customMallocControl.isEnabled());
+			assertFalse(customMallocButton.getSelection());
+
+			Button dynamicLibRadio = tab.getDynamicLibRadio();
+			assertFalse(dynamicLibRadio.isEnabled());
+			assertTrue(dynamicLibRadio.getSelection());
+
+			Button staticLibRadio = tab.getStaticLibRadio();
+			assertFalse(staticLibRadio.isEnabled());
+			assertFalse(staticLibRadio.getSelection());
+
+			customMallocButton.setSelection(true);
+			customMallocButton.notifyListeners(SWT.Selection, null);
+			assertTrue(dynamicLibRadio.isEnabled());
+			assertTrue(staticLibRadio.isEnabled());
+
+			dynamicLibRadio.setSelection(false);
+			dynamicLibRadio.notifyListeners(SWT.Selection, null);
+			staticLibRadio.setSelection(true);
+			staticLibRadio.notifyListeners(SWT.Selection, null);
+			assertFalse(customMallocControl.isEnabled());
+
+			ILaunch launch = saveAndLaunch(wc, "testCustomMalloc"); //$NON-NLS-1$
+			IProcess[] p = launch.getProcesses();
+			if (p.length > 0) {
+				String cmd = p[0].getAttribute(IProcess.ATTR_CMDLINE);
+				assertEquals(0, p[0].getExitValue());
+				assertTrue(cmd.contains("--soname-synonyms=somalloc=" + CommandLineConstants.OPT_CUSTOM_MALLOC_STATIC)); //$NON-NLS-1$
+			}
+			else {
+				fail();
+			}
+		}
+		else {
+			assertFalse(tab.getCustomMallocButton().isVisible());
+			assertFalse(tab.getCustomMallocControl().isVisible());
+		}
 	}
 }
