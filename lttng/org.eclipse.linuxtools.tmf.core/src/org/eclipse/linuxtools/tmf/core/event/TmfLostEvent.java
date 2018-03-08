@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.event;
 
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -56,7 +54,6 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
      * @param reference the event reference
      * @param timeRange the 'problematic' time range
      * @param nbLostEvents the number of lost events in the time range
-     * @since 2.0
      */
     public TmfLostEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp,
             final String source, final ITmfEventType type, final String reference, final TmfTimeRange timeRange, final long nbLostEvents)
@@ -87,9 +84,6 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
     // ITmfLostEvent
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 2.0
-     */
     @Override
     public TmfTimeRange getTimeRange() {
         return fTimeRange;
@@ -106,7 +100,6 @@ public class TmfLostEvent extends TmfEvent implements ITmfLostEvent {
 
     /**
      * @param timeRange the 'problematic' time range
-     * @since 2.0
      */
     protected void setTimeRange(final TmfTimeRange timeRange) {
         fTimeRange = timeRange;

@@ -10,7 +10,7 @@
  *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.timestamp;
+package org.eclipse.linuxtools.tmf.core.event;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
