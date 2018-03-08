@@ -152,7 +152,7 @@ public class TmfTimeTipHandler {
 //					TimeFormat format = TimeFormat.RELATIVE;
 					Resolution res = Resolution.NANOSEC;
 					if (_timeDataProvider.isCalendarFormat()) {
-//						format = TimeFormat.CALENDAR; // Absolute format
+//						format = TimeFormat.ABSOLUTE; // Absolute format
 //														// (calendar)
 						// Add Date
 						addItem(Messages.TmfTimeTipHandler_TRACE_DATE, eventStartTime > -1 ?

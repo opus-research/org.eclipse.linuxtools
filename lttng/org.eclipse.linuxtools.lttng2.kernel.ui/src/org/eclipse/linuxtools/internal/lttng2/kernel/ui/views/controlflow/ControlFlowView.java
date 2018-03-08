@@ -225,7 +225,7 @@ public class ControlFlowView extends TmfView {
                     return Integer.toString(entry.getParentThreadId());
                 }
             } else if (columnIndex == 3) {
-                return Utils.formatTime(entry.getBirthTime(), TimeFormat.CALENDAR, Resolution.NANOSEC);
+                return Utils.formatTime(entry.getBirthTime(), TimeFormat.ABSOLUTE, Resolution.NANOSEC);
             } else if (columnIndex == 4) {
                 return entry.getTrace().getName();
             }
@@ -376,7 +376,7 @@ public class ControlFlowView extends TmfView {
             }
         });
 
-        fTimeGraphCombo.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
+        fTimeGraphCombo.getTimeGraphViewer().setTimeCalendarFormat(true);
 
         final Thread thread = new Thread("ControlFlowView build") { //$NON-NLS-1$
             @Override
