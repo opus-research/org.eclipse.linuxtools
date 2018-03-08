@@ -445,6 +445,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      * @deprecated See {@link ITmfTrace}
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     @Override
     public final Map<String, ITmfStateSystem> getStateSystems() {
@@ -455,6 +456,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      * @deprecated See {@link ITmfTrace}
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     @Override
     public final void registerStateSystem(String id, ITmfStateSystem ss) {

@@ -14,16 +14,16 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 
 import java.util.Map;
 
-
 /**
- * Interface for analysis modules who provide state systems
+ * Interface for analysis modules providing state systems
  *
  * @author Geneviève Bastien
  */
 public interface ITmfStateSystemAnalysisModule {
 
     /**
-     * Return a map of all state systems this analysis is owner of
+     * Return a map of all state systems this analysis is owner of. The key is
+     * the ID of the state system and the value is the state system itself.
      *
      * @return A map of state sytems
      */

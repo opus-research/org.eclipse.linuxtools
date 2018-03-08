@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAbstractAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
@@ -33,7 +34,8 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
  * @author Geneviève Bastien
  * @since 3.0
  */
-public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisModule implements ITmfStateSystemAnalysisModule {
+public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisModule
+        implements ITmfStateSystemAnalysisModule {
 
     private ITmfStateSystem fStateSystem = null;
     private static final String EXTENSION = ".ht"; //$NON-NLS-1$
@@ -43,7 +45,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
      *
      * @author Geneviève Bastien
      */
-    protected enum StateSystemBackend {
+    protected enum StateSystemBackendType {
         /** Full history in file */
         FULL,
         /** In memory state system */
@@ -59,7 +61,15 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
      *
      * @return the state provider
      */
+    @NonNull
     protected abstract ITmfStateProvider createStateProvider();
+
+    /**
+     * Get the state system backend type used by this module
+     *
+     * @return The {@link StateSystemBackendType}
+     */
+    protected abstract StateSystemBackendType getBackendType();
 
     /**
      * Get the supplementary file name where to save this state system. The
@@ -80,38 +90,26 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         return fStateSystem;
     }
 
-    /**
-     * Get the state system backend used by this module
-     *
-     * @return The {@link StateSystemBackend}
-     */
-    protected StateSystemBackend getBackend() {
-        return StateSystemBackend.NULL;
-    }
-
     @Override
     protected boolean executeAnalysis(final IProgressMonitor monitor) {
 
         final ITmfStateProvider htInput = createStateProvider();
 
-        if (htInput == null) {
-            return false;
-        }
-
         /* FIXME: State systems should make use of the monitor, to be cancelled */
         try {
             /* Get the state system according to backend */
-            StateSystemBackend backend = getBackend();
+            StateSystemBackendType backend = getBackendType();
+            String directory;
             switch (backend) {
             case FULL:
-            case PARTIAL:
-                String directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
+                directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
                 final File htFile = new File(directory + getSsFileName());
-                if (backend.equals(StateSystemBackend.FULL)) {
-                    fStateSystem = TmfStateSystemFactory.newFullHistory(htFile, htInput, true);
-                } else {
-                    fStateSystem = TmfStateSystemFactory.newPartialHistory(htFile, htInput, true);
-                }
+                fStateSystem = TmfStateSystemFactory.newFullHistory(htFile, htInput, true);
+                break;
+            case PARTIAL:
+                directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
+                final File htPartialFile = new File(directory + getSsFileName());
+                fStateSystem = TmfStateSystemFactory.newPartialHistory(htPartialFile, htInput, true);
                 break;
             case INMEM:
                 fStateSystem = TmfStateSystemFactory.newInMemHistory(htInput, true);
