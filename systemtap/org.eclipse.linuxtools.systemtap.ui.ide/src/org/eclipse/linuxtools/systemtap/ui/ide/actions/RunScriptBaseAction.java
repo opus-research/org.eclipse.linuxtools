@@ -46,6 +46,7 @@ import org.eclipse.ui.PlatformUI;
 /**
  * This <code>Action</code> is used to run a SystemTap script that is currently open in the editor.
  * @author Ryan Morse
+ * @since 1.2
  */
 
 abstract public class RunScriptBaseAction extends Action implements IWorkbenchWindowActionDelegate {

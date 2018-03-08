@@ -1,9 +1,10 @@
-package org.eclipse.linuxtools.systemtap.ui.ide.launcher;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
 import org.eclipse.osgi.util.NLS;
 
+
 public class Messages extends NLS {
-	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.systemtap.ui.ide.launcher.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.messages"; //$NON-NLS-1$
 	public static String SystemTapScriptLaunchConfigurationTab_0;
 	public static String SystemTapScriptLaunchConfigurationTab_1;
 	public static String SystemTapScriptLaunchConfigurationTab_2;

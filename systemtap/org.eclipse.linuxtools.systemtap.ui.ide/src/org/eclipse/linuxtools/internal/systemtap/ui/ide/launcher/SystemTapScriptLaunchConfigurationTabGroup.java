@@ -1,4 +1,4 @@
-package org.eclipse.linuxtools.systemtap.ui.ide.launcher;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
