@@ -605,6 +605,7 @@ public class HistogramView extends TmfView {
         TmfTimeRange timeRange = new TmfTimeRange(startTS, endTS);
 
         fTimeRangeHistogram.clear();
+        fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
         fTimeRangeHistogram.setTimeRange(startTime, endTime - startTime);
 
         int cacheSize = fTrace.getCacheSize();
