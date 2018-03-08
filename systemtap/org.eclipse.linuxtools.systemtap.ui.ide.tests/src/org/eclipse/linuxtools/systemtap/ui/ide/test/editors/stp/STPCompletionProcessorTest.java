@@ -182,8 +182,6 @@ public class STPCompletionProcessorTest {
 		offset += prefix.length();
 
 		STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
-		completionProcessor.waitForInitialization();
-
 		ICompletionProposal[] proposals = completionProcessor
 				.computeCompletionProposals(testDocument,
 						offset);
