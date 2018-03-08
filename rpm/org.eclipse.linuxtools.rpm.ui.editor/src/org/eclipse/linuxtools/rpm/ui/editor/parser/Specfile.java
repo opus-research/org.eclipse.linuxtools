@@ -94,6 +94,14 @@ public class Specfile {
 		return " "; //$NON-NLS-1$
 	}
 
+	public String getEvaldName() {
+		SpecfileDefine define = getDefine(RpmTags.NAME.toLowerCase());
+		if (define != null){
+			return define.getEvaldStringValue();
+		}
+		return " "; //$NON-NLS-1$
+	}
+
 	public void addSection(SpecfileSection section) {
 		sections.add(section);
 	}
