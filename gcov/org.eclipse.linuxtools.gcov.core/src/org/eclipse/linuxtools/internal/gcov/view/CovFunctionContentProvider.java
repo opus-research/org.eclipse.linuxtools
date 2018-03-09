@@ -32,7 +32,7 @@ public class CovFunctionContentProvider extends CovFileContentProvider {
 	@Override
 	protected LinkedList<? extends TreeElement> getElementChildrenList(CovRootTreeElement root) {
 		LinkedList<? extends TreeElement> list = super.getElementChildrenList(root);
-		LinkedList<TreeElement> ret = new LinkedList<>();
+		LinkedList<TreeElement> ret = new LinkedList<TreeElement>();
 		for (TreeElement histTreeElem : list) {
 			LinkedList<? extends TreeElement> partialList = histTreeElem.getChildren();
 			ret.addAll(partialList);
