@@ -12,7 +12,6 @@ package org.eclipse.linuxtools.rpm.createrepo.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoUtils;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -33,24 +32,22 @@ public class CreaterepoUtilsTest {
 	private static ConsolePlugin plugin;
 	private static IConsoleManager manager;
 
-	/**
-	 * Setup the console manager.
-	 */
 	@BeforeClass
-	public static void setUpBeforeClass() {
+	public static void setUpBeforeClass() throws Exception {
 		plugin = ConsolePlugin.getDefault();
 		manager = plugin.getConsoleManager();
 	}
 
 	/**
 	 * Find any consoles and remove them.
+	 *
+	 * @throws Exception
 	 */
 	@After
-	public void tearDown() {
+	public void tearDown() throws Exception {
 		if (manager != null) {
 			manager.removeConsoles(manager.getConsoles());
 		}
-		assertEquals(0, manager.getConsoles().length);
 	}
 
 	/**
@@ -64,7 +61,6 @@ public class CreaterepoUtilsTest {
 				createrepoConsole,
 				new MessageConsole("DummyConsole2", null, null, true) //$NON-NLS-1$
 		});
-		assertEquals(3, manager.getConsoles().length);
 		assertEquals(createrepoConsole, CreaterepoUtils.findConsole(CONSOLE_NAME));
 	}
 
@@ -79,7 +75,6 @@ public class CreaterepoUtilsTest {
 				new MessageConsole(CONSOLE_NAME, null, null, true),
 				new MessageConsole("DummyConsole2", null, null, true) //$NON-NLS-1$
 		});
-		assertEquals(3, manager.getConsoles().length);
 		assertNotEquals(createrepoConsole, CreaterepoUtils.findConsole(CONSOLE_NAME));
 		assertEquals(CONSOLE_NAME, CreaterepoUtils.findConsole(CONSOLE_NAME).getName());
 	}
@@ -90,7 +85,7 @@ public class CreaterepoUtilsTest {
 	@Test
 	public void testCreateConsoleIfNotFound() {
 		MessageConsole console = CreaterepoUtils.findConsole(CONSOLE_NAME);
-		assertNotNull(console);
+		assertNotEquals(null, console);
 		assertEquals(CONSOLE_NAME, console.getName());
 	}
 

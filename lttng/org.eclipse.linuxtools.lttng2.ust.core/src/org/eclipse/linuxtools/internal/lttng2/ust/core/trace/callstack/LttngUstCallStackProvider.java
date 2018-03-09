@@ -50,10 +50,10 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
     private static final String FIELD_ADDR = "addr"; //$NON-NLS-1$
 
     /** Event names indicating function entry */
-    private static final Set<String> FUNC_ENTRY_EVENTS = new HashSet<>();
+    private static final Set<String> FUNC_ENTRY_EVENTS = new HashSet<String>();
 
     /** Event names indicating function exit */
-    private static final Set<String> FUNC_EXIT_EVENTS = new HashSet<>();
+    private static final Set<String> FUNC_EXIT_EVENTS = new HashSet<String>();
 
     static {
         /* This seems overkill, but it will be checked every event. Gotta go FAST! */
@@ -128,7 +128,7 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
 
     @Override
     public String functionEntry(ITmfEvent event) {
-        String eventName = event.getType().getName();
+        String eventName = ((CtfTmfEvent) event).getEventName();
         if (!FUNC_ENTRY_EVENTS.contains(eventName)) {
             return null;
         }
@@ -138,7 +138,7 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
 
     @Override
     public String functionExit(ITmfEvent event) {
-        String eventName = event.getType().getName();
+        String eventName = ((CtfTmfEvent) event).getEventName();
         if (!FUNC_EXIT_EVENTS.contains(eventName)) {
             return null;
         }

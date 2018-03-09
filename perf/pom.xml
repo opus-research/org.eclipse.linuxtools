@@ -23,7 +23,7 @@
   <artifactId>linuxtools-perf-parent</artifactId>
   <packaging>pom</packaging>
 
-  <name>Linux Tools Perf Parent</name>
+  <name>Eclipse Linux Tools Perf Parent</name>
 
   <licenses>
     <license>

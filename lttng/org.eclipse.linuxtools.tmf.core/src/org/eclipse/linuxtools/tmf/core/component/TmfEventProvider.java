@@ -42,7 +42,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
  * </p>
  *
  * @author Francois Chouinard
- * @since 3.0
  */
 public abstract class TmfEventProvider extends TmfComponent implements ITmfEventProvider {
 
@@ -50,32 +49,27 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     // Constants
     // ------------------------------------------------------------------------
 
-    /** Default amount of events per request "chunk"
-     * @since 3.0 */
+    /** Default amount of events per request "chunk" */
     public static final int DEFAULT_BLOCK_SIZE = 50000;
 
-    /** Default size of the queue
-     * @since 3.0 */
+    /** Default size of the queue */
     public static final int DEFAULT_QUEUE_SIZE = 1000;
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    /** List of coalesced requests
-     * @since 3.0*/
-    protected final List<TmfCoalescedEventRequest> fPendingCoalescedRequests = new ArrayList<>();
+    /** List of coalesced requests */
+    protected final List<TmfCoalescedEventRequest> fPendingCoalescedRequests =
+            new ArrayList<TmfCoalescedEventRequest>();
 
-    /** The type of event handled by this provider
-     * @since 3.0*/
+    /** The type of event handled by this provider */
     protected Class<? extends ITmfEvent> fType;
 
-    /** Queue of events
-     * @since 3.0*/
+    /** Queue of events */
     protected BlockingQueue<ITmfEvent> fDataQueue;
 
-    /** Size of the fDataQueue
-     * @since 3.0*/
+    /** Size of the fDataQueue */
     protected int fQueueSize = DEFAULT_QUEUE_SIZE;
 
     private final TmfRequestExecutor fExecutor;
@@ -96,7 +90,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     public TmfEventProvider() {
         super();
         fQueueSize = DEFAULT_QUEUE_SIZE;
-        fDataQueue = new LinkedBlockingQueue<>(fQueueSize);
+        fDataQueue = new LinkedBlockingQueue<ITmfEvent>(fQueueSize);
         fExecutor = new TmfRequestExecutor();
     }
 
@@ -191,9 +185,6 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     // ITmfRequestHandler
     // ------------------------------------------------------------------------
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void sendRequest(final ITmfEventRequest request) {
         synchronized (fLock) {
@@ -259,7 +250,6 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
      *
      * @param request
      *            The request to copy
-     * @since 3.0
      */
     protected synchronized void newCoalescedEventRequest(ITmfEventRequest request) {
             TmfCoalescedEventRequest coalescedRequest = new TmfCoalescedEventRequest(
@@ -281,7 +271,6 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
      *
      * @param request
      *            The request to add to the list
-     * @since 3.0
      */
     protected void coalesceEventRequest(ITmfEventRequest request) {
         synchronized (fLock) {
@@ -316,7 +305,6 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
      *
      * @param request
      *            The data request
-     * @since 3.0
      */
     protected void queueRequest(final ITmfEventRequest request) {
 
@@ -355,7 +343,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
      *            The request
      * @return An application specific context; null if request can't be
      *         serviced
-     * @since 3.0
+     * @since 2.0
      */
     public abstract ITmfContext armRequest(ITmfEventRequest request);
 
@@ -369,7 +357,6 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
      * @param nbRead
      *            The number of events read so far
      * @return true if completion criteria is met
-     * @since 3.0
      */
     public boolean isCompleted(ITmfEventRequest request, ITmfEvent event, int nbRead) {
         boolean requestCompleted = isCompleted2(request, nbRead);

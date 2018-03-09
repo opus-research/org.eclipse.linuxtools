@@ -48,7 +48,7 @@ public class Activator extends AbstractUIPlugin {
 	private RpmMacroProposalsList macrosList ;
 
 	// RPM Groups
-	private List<String> rpmGroups = new ArrayList<>() ;
+	private List<String> rpmGroups = new ArrayList<String>() ;
 
 	// RPM package list
 	public static RpmPackageProposalsList packagesList ;

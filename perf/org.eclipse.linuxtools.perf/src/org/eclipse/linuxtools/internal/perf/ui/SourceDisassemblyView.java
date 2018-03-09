@@ -100,7 +100,7 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 	 * @param input text content of widget.
 	 */
 	private void setStyledText (String input) {
-		List<StyleRange> styles = new ArrayList<> ();
+		List<StyleRange> styles = new ArrayList<StyleRange> ();
 		int ptr = 0;
 
 		text.setText(input);
