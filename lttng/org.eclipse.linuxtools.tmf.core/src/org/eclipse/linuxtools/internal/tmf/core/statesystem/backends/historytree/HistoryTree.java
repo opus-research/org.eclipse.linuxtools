@@ -68,8 +68,11 @@ class HistoryTree {
     /** How many nodes exist in this tree, total */
     private int nodeCount;
 
-    /** "Cache" to keep the active nodes in memory */
+    /** "Cache" to keep the active nodes in memory for building */
     private List<CoreNode> latestBranch;
+
+    /** "Cache" to keep the active nodes in memory for the queries */
+    private List<HTNode> cacheBranch;
 
     // ------------------------------------------------------------------------
     // Constructors/"Destructors"
@@ -119,6 +122,7 @@ class HistoryTree {
         int rootNodeSeqNb, res;
         int bs, maxc;
         long startTime;
+        cacheBranch = new ArrayList<HTNode>();
 
         /* Java I/O mumbo jumbo... */
         if (!existingStateFile.exists()) {
@@ -294,6 +298,10 @@ class HistoryTree {
 
     List<CoreNode> getLatestBranch() {
         return Collections.unmodifiableList(latestBranch);
+    }
+
+    List<HTNode> getCacheBranch() {
+        return cacheBranch;
     }
 
     // ------------------------------------------------------------------------
@@ -507,15 +515,7 @@ class HistoryTree {
          */
         assert (potentialNextSeqNb != currentNode.getSequenceNumber());
 
-        /*
-         * Since this code path is quite performance-critical, avoid iterating
-         * through the whole latestBranch array if we know for sure the next
-         * node has to be on disk
-         */
-        if (currentNode.isDone()) {
-            return treeIO.readNodeFromDisk(potentialNextSeqNb);
-        }
-        return treeIO.readNode(potentialNextSeqNb);
+        return treeIO.readNode(potentialNextSeqNb,t);
     }
 
     long getFileSize() {
