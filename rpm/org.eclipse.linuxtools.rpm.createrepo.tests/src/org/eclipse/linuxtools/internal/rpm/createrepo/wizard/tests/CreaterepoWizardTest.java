@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.rpm.createrepo.wizard.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -31,8 +32,13 @@ import org.eclipse.linuxtools.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.linuxtools.rpm.createrepo.IRepoFileConstants;
 import org.eclipse.linuxtools.rpm.createrepo.tests.ICreaterepoTestConstants;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,7 +60,6 @@ public class CreaterepoWizardTest {
 			String.format("[%s]%s=%s%s=%s", REPO_ID, IRepoFileConstants.NAME,  //$NON-NLS-1$
 			REPO_WIZARD_NAME, IRepoFileConstants.BASE_URL, REPO_WIZARD_URL);
 
-	private static SWTWorkbenchBot bot;
 	private static IWorkspaceRoot root;
 	private static NullProgressMonitor monitor;
 	private IProject project;
@@ -64,9 +69,18 @@ public class CreaterepoWizardTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() {
-		bot = new SWTWorkbenchBot();
 		root = ResourcesPlugin.getWorkspace().getRoot();
 		monitor = new NullProgressMonitor();
+		SWTWorkbenchBot bot = new SWTWorkbenchBot();
+		try {
+			bot.viewByTitle("Welcome").close(); //$NON-NLS-1$
+			// hide Subclipse Usage stats popup if present/installed
+			bot.shell("Subclipse Usage").activate(); //$NON-NLS-1$
+			bot.button("Cancel").click(); //$NON-NLS-1$
+		} catch (WidgetNotFoundException e) {
+			// ignore
+		}
+		bot.sleep(1000);
 	}
 
 	/**
@@ -90,18 +104,46 @@ public class CreaterepoWizardTest {
 	 */
 	@Test
 	public void testCreaterepoWizardProjectCreation() throws CoreException, IOException {
+		SWTWorkbenchBot bot = new SWTWorkbenchBot();
+		bot.activeShell().activate();
 		// go through the process of creating a new createrepo project
-		bot.menu(ICreaterepoTestConstants.FILE).menu(ICreaterepoTestConstants.NEW).menu(ICreaterepoTestConstants.OTHER).click();
-		SWTBotShell shell = bot.shell(ICreaterepoTestConstants.NEW);
+		SWTBotMenu fileMenu = bot.menu("File"); //$NON-NLS-1$
+		assertNotNull(fileMenu);
+		fileMenu.menu("New").menu("Other...").click();
+		SWTBotShell shell = bot.shell("New"); //$NON-NLS-1$
 		shell.activate();
-		bot.tree().expandNode(ICreaterepoTestConstants.CREATEREPO_CATEGORY).select(ICreaterepoTestConstants.CREATEREPO_PROJECT_WIZARD);
-		bot.button(ICreaterepoTestConstants.NEXT_BUTTON).click();
-		bot.textWithLabel(ICreaterepoTestConstants.PROJECT_NAME_LABEL).setText(PROJECT_NAME);
-		bot.button(ICreaterepoTestConstants.NEXT_BUTTON).click();
-		bot.textWithLabel(Messages.CreaterepoNewWizardPageTwo_labelID).setText(REPO_ID);
-		bot.textWithLabel(Messages.CreaterepoNewWizardPageTwo_labelName).setText(REPO_WIZARD_NAME);
-		bot.textWithLabel(Messages.CreaterepoNewWizardPageTwo_labelURL).setText(REPO_WIZARD_URL);
-		bot.button(ICreaterepoTestConstants.FINISH_BUTTON).click();
+
+		SWTBotTreeItem treeItem = bot.tree().expandNode("Createrepo"); //$NON-NLS-1$
+		assertNotNull(treeItem);
+		treeItem.select("Createrepo Wizard");
+
+		SWTBotButton button = bot.button("Next >");
+		assertNotNull(button);
+		button.click();
+
+		SWTBotText text = bot.textWithLabel("Project name:");
+		assertNotNull(text);
+		text.setText(PROJECT_NAME);
+
+		button = bot.button("Next >");
+		assertNotNull(button);
+		button.click();
+
+		text = bot.textWithLabel(Messages.CreaterepoNewWizardPageTwo_labelID);
+		assertNotNull(text);
+		text.setText(REPO_ID);
+
+		text = bot.textWithLabel(Messages.CreaterepoNewWizardPageTwo_labelName);
+		assertNotNull(text);
+		text.setText(REPO_WIZARD_NAME);
+
+		text = bot.textWithLabel(Messages.CreaterepoNewWizardPageTwo_labelURL);
+		assertNotNull(text);
+		text.setText(REPO_WIZARD_URL);
+
+		button = bot.button(ICreaterepoTestConstants.FINISH_BUTTON);
+		assertNotNull(button);
+		button.click();
 
 		// verify that project has been initialized properly
 		project = root.getProject(PROJECT_NAME);
