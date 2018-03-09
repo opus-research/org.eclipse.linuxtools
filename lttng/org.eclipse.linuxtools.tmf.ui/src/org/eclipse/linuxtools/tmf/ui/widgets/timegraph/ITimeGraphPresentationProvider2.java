@@ -46,7 +46,6 @@ public interface ITimeGraphPresentationProvider2 extends ITimeGraphPresentationP
      *
      * @param listener
      *            The new listener for color settings changes
-     * @since 3.0
      */
     public void addColorListener(ITimeGraphColorListener listener);
 
@@ -55,7 +54,6 @@ public interface ITimeGraphPresentationProvider2 extends ITimeGraphPresentationP
      *
      * @param listener
      *            The color settings listener to remove
-     * @since 3.0
      */
     public void removeColorListener(ITimeGraphColorListener listener);
 

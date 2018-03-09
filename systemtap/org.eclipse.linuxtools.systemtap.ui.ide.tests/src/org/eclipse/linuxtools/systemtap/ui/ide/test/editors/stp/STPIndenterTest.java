@@ -40,8 +40,16 @@ import org.osgi.framework.BundleReference;
 public class STPIndenterTest extends TestCase {
 
 	private static class MockSTPDocumentProvider extends STPDocumentProvider{
+		private IDocument document;
+
 		MockSTPDocumentProvider(IDocument document){
+			this.document = document;
 			this.setupDocument(document);
+		}
+
+		@Override
+		protected IDocument createDocument(Object element) {
+			return document;
 		}
 	}
 

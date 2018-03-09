@@ -60,7 +60,6 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
      *
      * @param view
      *            The callstack view that will contain the time events
-     * @since 3.0
      */
     public CallStackPresentationProvider(CallStackView view) {
         fView = view;
