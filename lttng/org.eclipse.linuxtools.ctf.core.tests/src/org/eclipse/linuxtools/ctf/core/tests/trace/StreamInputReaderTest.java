@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
@@ -23,7 +24,6 @@ import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.eclipse.linuxtools.ctf.core.trace.CTFResponse;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
@@ -140,10 +140,9 @@ public class StreamInputReaderTest {
 
     /**
      * Run the void goToLastEvent() method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testGoToLastEvent1() throws CTFReaderException {
+    public void testGoToLastEvent1() {
         final long endTimestamp = goToEnd();
         final long endTime = 4287422460315L;
         assertEquals(endTime , endTimestamp  );
@@ -151,38 +150,36 @@ public class StreamInputReaderTest {
 
     /**
      * Run the void goToLastEvent() method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testGoToLastEvent2() throws CTFReaderException {
+    public void testGoToLastEvent2() {
         long timestamp = -1;
-        while(fixture.readNextEvent().equals(CTFResponse.OK)) {
+        while(fixture.readNextEvent()) {
             timestamp = fixture.getCurrentEvent().getTimestamp();
         }
         long endTimestamp = goToEnd();
         assertEquals(0 , timestamp- endTimestamp );
     }
 
-    private long goToEnd() throws CTFReaderException {
+    private long goToEnd() {
         fixture.goToLastEvent();
         return fixture.getCurrentEvent().getTimestamp();
     }
 
     /**
      * Run the boolean readNextEvent() method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testReadNextEvent() throws CTFReaderException {
-        assertEquals(CTFResponse.OK, fixture.readNextEvent());
+    public void testReadNextEvent() {
+        boolean result = fixture.readNextEvent();
+        assertTrue(result);
     }
 
     /**
      * Run the void seek(long) method test. Seek by direct timestamp
-     * @throws CTFReaderException error
      */
     @Test
-    public void testSeek_timestamp() throws CTFReaderException {
+    public void testSeek_timestamp() {
         long timestamp = 1L;
         fixture.seek(timestamp);
     }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,17 +12,17 @@
  *   Francois Chouinard - Cleanup and refactoring
  *   Francois Chouinard - Moved from LTTng to TMF
  *   Simon Delisle - Added a new parameter to the constructor
- *   Xavier Raynaud - Support multi-trace coloring
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
  * Class to request events for given time range from a trace to fill a
@@ -64,14 +64,50 @@ public class HistogramRequest extends TmfEventRequest {
      *            The number of events per block
      * @param execType
      *            The requested execution priority
+     * @since 2.0
+     *
+     */
+    @Deprecated
+    public HistogramRequest(HistogramDataModel histogram, TmfTimeRange range,
+            int rank, int nbEvents, int blockSize,
+            ITmfDataRequest.ExecutionType execType) {
+        super(ITmfEvent.class, range, rank, nbEvents,
+                (blockSize > 0) ? blockSize : ITmfTrace.DEFAULT_TRACE_CACHE_SIZE,
+                execType);
+        fHistogram = histogram;
+        if (execType == ExecutionType.FOREGROUND) {
+            fFullRange = false;
+        } else {
+            fFullRange = true;
+        }
+    }
+
+    /**
+     * Constructor
+     *
+     * @param histogram
+     *            The histogram data model
+     * @param range
+     *            The time range to request data
+     * @param rank
+     *            The index of the first event to retrieve
+     * @param nbEvents
+     *            The number of events requested
+     * @param blockSize
+     *            The number of events per block
+     * @param execType
+     *            The requested execution priority
      * @param fullRange
      *            Full range or time range for histogram request
-     * @since 3.0
+     * @since 2.2
+     *
      */
     public HistogramRequest(HistogramDataModel histogram, TmfTimeRange range,
             int rank, int nbEvents, int blockSize,
-            ITmfEventRequest.ExecutionType execType, boolean fullRange) {
-        super(ITmfEvent.class, range, rank, nbEvents, execType);
+            ITmfDataRequest.ExecutionType execType, boolean fullRange) {
+        super(ITmfEvent.class, range, rank, nbEvents,
+                (blockSize > 0) ? blockSize : ITmfTrace.DEFAULT_TRACE_CACHE_SIZE,
+                execType);
         fHistogram = histogram;
         fFullRange = fullRange;
     }
@@ -85,7 +121,7 @@ public class HistogramRequest extends TmfEventRequest {
      *
      * @param event
      *            a event from the trace
-     * @see org.eclipse.linuxtools.tmf.core.request.TmfEventRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
+     * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleData(org.eclipse.linuxtools.tmf.core.event.ITmfEvent)
      */
     @Override
     public void handleData(ITmfEvent event) {
@@ -98,7 +134,7 @@ public class HistogramRequest extends TmfEventRequest {
 
             } else { /* handle lost event */
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                fHistogram.countEvent(getNbRead(), timestamp, event.getTrace());
+                fHistogram.countEvent(getNbRead(), timestamp);
             }
         }
     }
@@ -107,7 +143,7 @@ public class HistogramRequest extends TmfEventRequest {
      * Complete the request. It also notifies the histogram model about the
      * completion.
      *
-     * @see org.eclipse.linuxtools.tmf.core.request.TmfEventRequest#handleCompleted()
+     * @see org.eclipse.linuxtools.tmf.core.request.TmfDataRequest#handleCompleted()
      */
     @Override
     public void handleCompleted() {

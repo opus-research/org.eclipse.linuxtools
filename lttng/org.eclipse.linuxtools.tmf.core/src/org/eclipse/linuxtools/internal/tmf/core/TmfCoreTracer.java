@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,9 +18,9 @@ import java.io.IOException;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.tmf.core.component.ITmfComponent;
-import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 
 /**
@@ -63,10 +63,10 @@ public class TmfCoreTracer {
     // ------------------------------------------------------------------------
 
     // Classes tracing flags
-    static boolean COMPONENT_CLASS_ENABLED = false;
-    static boolean REQUEST_CLASS_ENABLED   = false;
-    static boolean SIGNAL_CLASS_ENABLED    = false;
-    static boolean EVENT_CLASS_ENABLED     = false;
+    static Boolean COMPONENT_CLASS_ENABLED = Boolean.FALSE;
+    static Boolean REQUEST_CLASS_ENABLED   = Boolean.FALSE;
+    static Boolean SIGNAL_CLASS_ENABLED    = Boolean.FALSE;
+    static Boolean EVENT_CLASS_ENABLED     = Boolean.FALSE;
 
     // Trace log file
     private static BufferedWriter fTraceFile;
@@ -167,10 +167,6 @@ public class TmfCoreTracer {
      * @param msg the trace message to log
      */
     public static synchronized void trace(String msg) {
-        // Leave when there is no place to write the message.
-        if (fTraceFile == null) {
-            return;
-        }
 
         // Set the timestamp (ms resolution)
         long currentTime = System.currentTimeMillis();
@@ -189,12 +185,14 @@ public class TmfCoreTracer {
         message.append(msg);
 
         // Write to file
-        try {
-            fTraceFile.write(message.toString());
-            fTraceFile.newLine();
-            fTraceFile.flush();
-        } catch (IOException e) {
-            Activator.logError("Error writing to log file", e);
+        if (fTraceFile != null) {
+            try {
+                fTraceFile.write(message.toString());
+                fTraceFile.newLine();
+                fTraceFile.flush();
+            } catch (IOException e) {
+                Activator.logError("Error writing to log file", e);
+            }
         }
     }
 
@@ -211,7 +209,7 @@ public class TmfCoreTracer {
     }
 
     @SuppressWarnings("javadoc")
-    public static void traceRequest(ITmfEventRequest request, String msg) {
+    public static void traceRequest(ITmfDataRequest request, String msg) {
         if (REQUEST_CLASS_ENABLED) {
             String message = ("[REQ] Req=" + request.getRequestId() + " " + msg);
             trace(message);
@@ -228,7 +226,7 @@ public class TmfCoreTracer {
     }
 
     @SuppressWarnings("javadoc")
-    public static void traceEvent(ITmfEventProvider provider, ITmfEventRequest request, ITmfEvent event) {
+    public static void traceEvent(ITmfDataProvider provider, ITmfDataRequest request, ITmfEvent event) {
         if (EVENT_CLASS_ENABLED) {
             String message = ("[EVT] Provider=" + provider.toString()
                     + ", Req=" + request.getRequestId() + ", Event=" + event.getTimestamp());

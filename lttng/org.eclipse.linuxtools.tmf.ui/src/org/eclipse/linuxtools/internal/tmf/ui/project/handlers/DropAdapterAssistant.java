@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2012, 2014 Ericsson
+* Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -40,9 +40,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceImportException;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
@@ -50,7 +47,6 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceTypeUIUtils;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
@@ -124,7 +120,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
 
         // If target is a project, use its trace folder
         if (targetToUse instanceof IProject) {
-            TmfProjectElement projectElement = TmfProjectRegistry.getProject((IProject) targetToUse, true);
+            TmfProjectElement projectElement = TmfProjectRegistry.getProject((IProject) targetToUse);
             if (projectElement != null) {
                 targetToUse = projectElement.getTracesFolder();
             }
@@ -264,9 +260,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
             }
         }
         if (traceResource != null && traceResource.exists()) {
-            setTraceType(traceResource);
             createLink(targetExperiment.getResource(), traceResource, traceResource.getName());
-            targetExperiment.deleteSupplementaryResources();
             targetExperiment.closeEditors();
             return traceResource;
         }
@@ -329,9 +323,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
             } else {
                 createLink(traceFolder.getResource(), sourceResource, targetName);
             }
-            IResource traceResource = traceFolder.getResource().findMember(targetName);
-            setTraceType(traceResource);
-            return traceResource;
+            return traceFolder.getResource().findMember(targetName);
         } catch (CoreException e) {
             displayException(e);
         }
@@ -383,9 +375,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
                 resource = targetExperiment.getProject().getTracesFolder().getResource().getFolder(targetName);
             }
             if (resource != null && resource.exists()) {
-                setTraceType(resource);
                 createLink(targetExperiment.getResource(), resource, resource.getName());
-                targetExperiment.deleteSupplementaryResources();
                 targetExperiment.closeEditors();
                 return true;
             }
@@ -420,8 +410,6 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         } else {
             createLink(traceFolder.getResource(), path, targetName);
         }
-        IResource traceResource = traceFolder.getResource().findMember(targetName);
-        setTraceType(traceResource);
         return true;
     }
 
@@ -495,13 +483,17 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         try {
             Map<QualifiedName, String> properties = resource.getPersistentProperties();
+            String bundleName = properties.get(TmfCommonConstants.TRACEBUNDLE);
             String traceType = properties.get(TmfCommonConstants.TRACETYPE);
+            String iconUrl = properties.get(TmfCommonConstants.TRACEICON);
+            String supplFolder = properties.get(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER);
 
             if (resource instanceof IFolder) {
                 IFolder folder = parentFolder.getFolder(targetName);
                 if (workspace.validateLinkLocation(folder, location).isOK()) {
                     folder.createLink(location, IResource.REPLACE, null);
-                    TmfTraceTypeUIUtils.setTraceType(folder, TmfTraceType.getInstance().getTraceType(traceType));
+                    setProperties(folder, bundleName, traceType, iconUrl, supplFolder);
+
                 } else {
                     Activator.getDefault().logError("Invalid Trace Location"); //$NON-NLS-1$
                 }
@@ -509,7 +501,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
                 IFile file = parentFolder.getFile(targetName);
                 if (workspace.validateLinkLocation(file, location).isOK()) {
                     file.createLink(location, IResource.REPLACE, null);
-                    TmfTraceTypeUIUtils.setTraceType(file, TmfTraceType.getInstance().getTraceType(traceType));
+                    setProperties(file, bundleName, traceType, iconUrl, supplFolder);
                 } else {
                     Activator.getDefault().logError("Invalid Trace Location"); //$NON-NLS-1$
                 }
@@ -593,16 +585,23 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         }
     }
 
-    private static void setTraceType(IResource traceResource) {
-        try {
-            TraceTypeHelper traceTypeHelper = TmfTraceTypeUIUtils.selectTraceType(traceResource.getLocationURI().getPath(), null, null);
-            if (traceTypeHelper != null) {
-                TmfTraceTypeUIUtils.setTraceType(traceResource, traceTypeHelper);
-            }
-        } catch (TmfTraceImportException e) {
-        } catch (CoreException e) {
-            displayException(e);
-        }
+    /**
+     * Set the trace persistent properties
+     *
+     * @param resource the trace resource
+     * @param bundleName the bundle name
+     * @param traceType the trace type
+     * @param iconUrl the icon URL
+     * @param supplFolder the directory of the directory for supplementary information or null to ignore the property
+     * @throws CoreException
+     */
+    private static void setProperties(IResource resource, String bundleName,
+            String traceType, String iconUrl, String supplFolder)
+            throws CoreException {
+        resource.setPersistentProperty(TmfCommonConstants.TRACEBUNDLE, bundleName);
+        resource.setPersistentProperty(TmfCommonConstants.TRACETYPE, traceType);
+        resource.setPersistentProperty(TmfCommonConstants.TRACEICON, iconUrl);
+        resource.setPersistentProperty(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, supplFolder);
     }
 
     /**

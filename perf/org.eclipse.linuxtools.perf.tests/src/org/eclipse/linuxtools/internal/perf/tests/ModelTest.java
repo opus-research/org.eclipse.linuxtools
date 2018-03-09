@@ -67,7 +67,7 @@ public class ModelTest extends AbstractTest {
 
 		Class<?>[] klassList = new Class<?>[] { PMSymbol.class, PMFile.class,
 				PMDso.class, PMCommand.class, PMEvent.class };
-		stack = new Stack<>();
+		stack = new Stack<Class<?>>();
 		stack.addAll(Arrays.asList(klassList));
 	}
 
@@ -345,11 +345,10 @@ public class ModelTest extends AbstractTest {
 	public void testRecordString() throws CoreException {
 		ILaunchConfigurationWorkingCopy tempConfig = config.copy("test-config");
 		tempConfig.setAttribute(PerfPlugin.ATTR_Record_Realtime, true);
-		tempConfig.setAttribute(PerfPlugin.ATTR_Record_Realtime_Priority, 2);
 		tempConfig.setAttribute(PerfPlugin.ATTR_Record_Verbose, true);
 		tempConfig.setAttribute(PerfPlugin.ATTR_Multiplex, true);
 
-		ArrayList<String> selectedEvents = new ArrayList<>();
+		ArrayList<String> selectedEvents = new ArrayList<String>();
 		selectedEvents.add("cpu-cycles");
 		selectedEvents.add("cache-misses");
 		selectedEvents.add("cpu-clock");
@@ -361,7 +360,7 @@ public class ModelTest extends AbstractTest {
 		assertNotNull(recordString);
 
 		String[] expectedString = { PerfPlugin.PERF_COMMAND, "record", "-f",
-				"-r", "2", "-v", "-M", "-e", "cpu-cycles", "-e", "cache-misses",
+				"-r", "-v", "-M", "-e", "cpu-cycles", "-e", "cache-misses",
 				"-e", "cpu-clock" };
 		assertArrayEquals(expectedString, recordString);
 	}
@@ -419,7 +418,7 @@ public class ModelTest extends AbstractTest {
 				// tp.getClass() instanceof klass
 				assertTrue(klass.isAssignableFrom(tp.getClass()));
 				// each sibling needs its own stack
-				Stack<Class<?>> newStack = new Stack<>();
+				Stack<Class<?>> newStack = new Stack<Class<?>>();
 				newStack.addAll(Arrays.asList(stack.toArray(new Class<?> [] {})));
 				checkChildrenStructure(tp, newStack);
 			}
@@ -495,7 +494,7 @@ public class ModelTest extends AbstractTest {
 	 * @param cmd root of tree model
 	 */
 	private void checkCommadLabels(String[] cmdLabels, TreeParent cmd) {
-		List<String> cmdList = new ArrayList<>(Arrays.asList(cmdLabels));
+		List<String> cmdList = new ArrayList<String>(Arrays.asList(cmdLabels));
 
 		for (TreeParent dso : cmd.getChildren()) {
 			assertTrue(cmdList.get(0).equals(dso.getName()));

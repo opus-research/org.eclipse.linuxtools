@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -171,7 +171,7 @@ public class TraceControlSnapshotSessionTests {
         IPropertyDescriptor[] descriptors = sessionSource.getPropertyDescriptors();
         assertNotNull(descriptors);
 
-        Map<String,String> map = new HashMap<>();
+        Map<String,String> map = new HashMap<String,String>();
         map.put(TraceSessionPropertySource.TRACE_SESSION_NAME_PROPERTY_ID, "mysession");
         map.put(TraceSessionPropertySource.TRACE_SNAPSHOT_NAME_PROPERTY_ID, "snapshot-1");
         map.put(TraceSessionPropertySource.TRACE_SNAPSHOT_PATH_PROPERTY_ID, "/home/user/lttng-traces/mysession-20130913-141651");

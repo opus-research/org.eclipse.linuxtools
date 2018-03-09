@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -53,8 +53,8 @@ public class LTTngToolsFileShell extends TestCommandShell {
     private String fScenariofile;
     private String fScenario;
 
-    private final Map<String, Map<String, ICommandResult>> fScenarioMap = new HashMap<>();
-    private final Map<String, Integer> fSessionNameMap = new HashMap<>();
+    private final Map<String, Map<String, ICommandResult>> fScenarioMap = new HashMap<String, Map<String, ICommandResult>>();
+    private final Map<String, Integer> fSessionNameMap = new HashMap<String, Integer>();
 
     /**
      * Parse a scenario file with the format:
@@ -101,117 +101,118 @@ public class LTTngToolsFileShell extends TestCommandShell {
         // load from file
 
         // Open the file
-        try (FileInputStream fstream = new FileInputStream(fScenariofile);
-                DataInputStream in = new DataInputStream(fstream);
-                BufferedReader br = new BufferedReader(new InputStreamReader(in));) {
-            String strLine;
+        FileInputStream fstream = new FileInputStream(fScenariofile);
 
-            // Read File Line by Line
+        // Get the object of DataInputStream
+        DataInputStream in = new DataInputStream(fstream);
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        String strLine;
 
-            // Temporary map for generating instance numbers for lttng list
-            // <session> commands.
-            // The numbers are per scenario.
-            Map<String, Integer> tmpSessionNameMap = new HashMap<>();
-            while ((strLine = br.readLine()) != null) {
+        // Read File Line by Line
+
+        // Temporary map for generating instance numbers for lttng list <session> commands.
+        // The numbers are per scenario.
+        Map<String, Integer> tmpSessionNameMap = new HashMap<String, Integer>();
+        while ((strLine = br.readLine()) != null) {
+
+            // Ignore comments
+            if(isComment(strLine)) {
+                continue;
+            }
+
+            if (SCENARIO_KEY.equals(strLine)) {
+                // scenario start
 
                 // Ignore comments
-                if (isComment(strLine)) {
-                    continue;
+                strLine = br.readLine();
+                while (isComment(strLine)) {
+                    strLine = br.readLine();
                 }
 
-                if (SCENARIO_KEY.equals(strLine)) {
-                    // scenario start
-
+                String scenario = strLine;
+                Map<String, ICommandResult> commandMap = new HashMap<String, ICommandResult>();
+                fScenarioMap.put(scenario, commandMap);
+                List<String> output = null;
+                String input = null;
+                boolean inOutput = false;
+                int result = 0;
+                tmpSessionNameMap.clear();
+                while ((strLine = br.readLine()) != null) {
                     // Ignore comments
-                    strLine = br.readLine();
-                    while (isComment(strLine)) {
+                    if(isComment(strLine)) {
+                        continue;
+                    }
+
+                    if (SCENARIO_END_KEY.equals(strLine)) {
+                        // Scenario is finished
+                        break;
+                    }
+                    if (INPUT_KEY.equals(strLine)) {
                         strLine = br.readLine();
-                    }
-
-                    String scenario = strLine;
-                    Map<String, ICommandResult> commandMap = new HashMap<>();
-                    fScenarioMap.put(scenario, commandMap);
-                    List<String> output = null;
-                    String input = null;
-                    boolean inOutput = false;
-                    int result = 0;
-                    tmpSessionNameMap.clear();
-                    while ((strLine = br.readLine()) != null) {
                         // Ignore comments
-                        if (isComment(strLine)) {
-                            continue;
-                        }
-
-                        if (SCENARIO_END_KEY.equals(strLine)) {
-                            // Scenario is finished
-                            break;
-                        }
-                        if (INPUT_KEY.equals(strLine)) {
+                        while (isComment(strLine)) {
                             strLine = br.readLine();
-                            // Ignore comments
-                            while (isComment(strLine)) {
-                                strLine = br.readLine();
-                            }
-                            // Read command
-                            input = strLine;
-
-                            // Handle instances of 'lttng list
-                            // <session"-comamand
-                            Matcher matcher = LTTNG_LIST_SESSION_PATTERN.matcher(strLine);
-                            if (matcher.matches() && !input.matches(LTTNG_LIST_PROVIDER_PATTERN)) {
-                                String sessionName = matcher.group(1).trim();
-                                Integer i = tmpSessionNameMap.get(sessionName);
-                                if (i != null) {
-                                    i++;
-                                } else {
-                                    i = 0;
-                                }
-                                tmpSessionNameMap.put(sessionName, i);
-                                input += String.valueOf(i);
-                            }
-                        } else if (INPUT_END_KEY.equals(strLine)) {
-                            // Initialize output array
-                            output = new ArrayList<>();
-                        } else if (RESULT_KEY.equals(strLine)) {
-                            strLine = br.readLine();
-                            // Ignore comments
-                            while (isComment(strLine)) {
-                                strLine = br.readLine();
-                            }
-                            // Save result value
-                            result = Integer.parseInt(strLine);
-                        } else if (OUTPUT_END_KEY.equals(strLine)) {
-                            // Save output/result in command map
-                            if (output != null) {
-                                commandMap.put(input, new CommandResult(result, output.toArray(new String[output.size()])));
-                            }
-                            inOutput = false;
-                        } else if (OUTPUT_KEY.equals(strLine)) {
-                            // first line of output
-                            inOutput = true;
-                            strLine = br.readLine();
-
-                            // Ignore comments
-                            while (isComment(strLine)) {
-                                strLine = br.readLine();
-                            }
-                            if (output != null) {
-                                output.add(strLine);
-                            }
-                        } else if (inOutput) {
-                            // subsequent lines of output
-                            if (output != null) {
-                                output.add(strLine);
-                            }
                         }
-                        // else {
-                        // if (RESULT_END_KEY.equals(strLine)) {
-                        // nothing to do
-                        // }
+                        // Read command
+                        input = strLine;
+
+                        // Handle instances of 'lttng list <session"-comamand
+                        Matcher matcher = LTTNG_LIST_SESSION_PATTERN.matcher(strLine);
+                        if (matcher.matches() && !input.matches(LTTNG_LIST_PROVIDER_PATTERN)) {
+                            String sessionName = matcher.group(1).trim();
+                            Integer i = tmpSessionNameMap.get(sessionName);
+                            if (i != null) {
+                                i++;
+                            } else {
+                                i = 0;
+                            }
+                            tmpSessionNameMap.put(sessionName, i);
+                            input += String.valueOf(i);
+                        }
+                    } else if (INPUT_END_KEY.equals(strLine)) {
+                        // Initialize output array
+                        output = new ArrayList<String>();
+                    } else if (RESULT_KEY.equals(strLine)) {
+                        strLine = br.readLine();
+                        // Ignore comments
+                        while (isComment(strLine)) {
+                            strLine = br.readLine();
+                        }
+                        // Save result value
+                        result = Integer.parseInt(strLine);
+                    }  else if (OUTPUT_END_KEY.equals(strLine)) {
+                        // Save output/result in command map
+                        if (output != null) {
+                            commandMap.put(input, new CommandResult(result, output.toArray(new String[output.size()])));
+                        }
+                        inOutput = false;
+                    } else if (OUTPUT_KEY.equals(strLine)) {
+                        // first line of output
+                        inOutput = true;
+                        strLine = br.readLine();
+
+                        // Ignore comments
+                        while (isComment(strLine)) {
+                            strLine = br.readLine();
+                        }
+                        if (output != null) {
+                            output.add(strLine);
+                        }
+                    } else if (inOutput) {
+                        // subsequent lines of output
+                        if (output != null) {
+                            output.add(strLine);
+                        }
                     }
+//                    else {
+//                        if (RESULT_END_KEY.equals(strLine)) {
+                        // nothing to do
+//                    }
                 }
             }
         }
+        //Close the input stream
+        in.close();
     }
 
     // Set the scenario to consider in executeCommand()

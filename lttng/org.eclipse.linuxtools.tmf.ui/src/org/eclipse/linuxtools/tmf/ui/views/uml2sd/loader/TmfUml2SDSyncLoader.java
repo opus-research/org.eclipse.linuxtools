@@ -29,7 +29,9 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
@@ -104,12 +106,14 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
-
     /**
      * Default title name.
      */
     protected static final String TITLE = Messages.TmfUml2SDSyncLoader_ViewName;
-
+    /**
+     * Default block size for background request.
+     */
+    protected static final int DEFAULT_BLOCK_SIZE = 50000;
     /**
      * Maximum number of messages per page.
      */
@@ -152,13 +156,13 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     /**
      * The list of sequence diagram events of current page.
      */
-    protected List<ITmfSyncSequenceDiagramEvent> fEvents = new ArrayList<>();
+    protected List<ITmfSyncSequenceDiagramEvent> fEvents = new ArrayList<ITmfSyncSequenceDiagramEvent>();
 
     // Checkpoint and page attributes
     /**
      * The checkpoints of the whole sequence diagram trace (i.e. start time stamp of each page)
      */
-    protected List<TmfTimeRange> fCheckPoints = new ArrayList<>(MAX_NUM_OF_MSG);
+    protected List<TmfTimeRange> fCheckPoints = new ArrayList<TmfTimeRange>(MAX_NUM_OF_MSG);
     /**
      * The current page displayed.
      */
@@ -180,7 +184,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
     /**
      * List of found nodes within a page.
      */
-    protected List<GraphNode> fFindResults = new ArrayList<>();
+    protected List<GraphNode> fFindResults = new ArrayList<GraphNode>();
     /**
      * The current find criteria reference
      */
@@ -310,13 +314,12 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
             TmfTimeRange window = TmfTimeRange.ETERNITY;
 
-            fIndexRequest = new TmfEventRequest(ITmfEvent.class, window, 0,
-                    ITmfEventRequest.ALL_DATA, ITmfEventRequest.ExecutionType.BACKGROUND) {
+            fIndexRequest = new TmfEventRequest(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, DEFAULT_BLOCK_SIZE, ITmfDataRequest.ExecutionType.BACKGROUND) {
 
                 private ITmfTimestamp fFirstTime = null;
                 private ITmfTimestamp fLastTime = null;
                 private int fNbSeqEvents = 0;
-                private final List<ITmfSyncSequenceDiagramEvent> fSdEvents = new ArrayList<>(MAX_NUM_OF_MSG);
+                private final List<ITmfSyncSequenceDiagramEvent> fSdEvents = new ArrayList<ITmfSyncSequenceDiagramEvent>(MAX_NUM_OF_MSG);
 
                 @Override
                 public void handleData(ITmfEvent event) {
@@ -597,7 +600,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             }
 
             if ((fFindResults == null) || (fFindCriteria == null) || !fFindCriteria.compareTo(toSearch)) {
-                fFindResults = new CopyOnWriteArrayList<>();
+                fFindResults = new CopyOnWriteArrayList<GraphNode>();
                 fFindCriteria = toSearch;
                 if (fFindCriteria.isLifeLineSelected()) {
                     for (int i = 0; i < fFrame.lifeLinesCount(); i++) {
@@ -607,7 +610,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
                     }
                 }
 
-                ArrayList<GraphNode> msgs = new ArrayList<>();
+                ArrayList<GraphNode> msgs = new ArrayList<GraphNode>();
                 if (fFindCriteria.isSyncMessageSelected()) {
                     for (int i = 0; i < fFrame.syncMessageCount(); i++) {
                         if (fFindCriteria.matches(fFrame.getSyncMessage(i).getName())) {
@@ -655,10 +658,10 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             cancelOngoingRequests();
 
             if (filters == null) {
-                fFilterCriteria =  new ArrayList<>();
+                fFilterCriteria =  new ArrayList<FilterCriteria>();
             } else {
                 List<FilterCriteria> list = filters;
-                fFilterCriteria =  new ArrayList<>(list);
+                fFilterCriteria =  new ArrayList<FilterCriteria>(list);
             }
 
             fillCurrentPage(fEvents);
@@ -862,7 +865,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
 
         fLock.lock();
         try {
-            fEvents = new ArrayList<>(events);
+            fEvents = new ArrayList<ITmfSyncSequenceDiagramEvent>(events);
             if (fView != null && !events.isEmpty()) {
                 fView.toggleWaitCursorAsync(true);
             }
@@ -873,7 +876,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
         final Frame frame = new Frame();
 
         if (!events.isEmpty()) {
-            Map<String, Lifeline> nodeToLifelineMap = new HashMap<>();
+            Map<String, Lifeline> nodeToLifelineMap = new HashMap<String, Lifeline>();
 
             frame.setName(Messages.TmfUml2SDSyncLoader_FrameName);
 
@@ -1074,9 +1077,8 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
             window = TmfTimeRange.ETERNITY;
         }
 
-        fPageRequest = new TmfEventRequest(ITmfEvent.class, window, 0,
-                ITmfEventRequest.ALL_DATA, ITmfEventRequest.ExecutionType.FOREGROUND) {
-            private final List<ITmfSyncSequenceDiagramEvent> fSdEvent = new ArrayList<>();
+        fPageRequest = new TmfEventRequest(ITmfEvent.class, window, TmfDataRequest.ALL_DATA, 1, ITmfDataRequest.ExecutionType.FOREGROUND) {
+            private final List<ITmfSyncSequenceDiagramEvent> fSdEvent = new ArrayList<ITmfSyncSequenceDiagramEvent>();
 
             @Override
             public void handleData(ITmfEvent event) {
@@ -1246,8 +1248,7 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
          */
         public SearchJob(Criteria findCriteria, TmfTimeRange window) {
             super(Messages.TmfUml2SDSyncLoader_SearchJobDescrition);
-            fSearchRequest = new SearchEventRequest(window, ITmfEventRequest.ALL_DATA,
-                    ITmfEventRequest.ExecutionType.FOREGROUND, findCriteria);
+            fSearchRequest = new SearchEventRequest(window, TmfDataRequest.ALL_DATA, 1, ITmfDataRequest.ExecutionType.FOREGROUND, findCriteria);
         }
 
         @Override
@@ -1340,23 +1341,25 @@ public class TmfUml2SDSyncLoader extends TmfComponent implements IUml2SDLoader, 
          * Constructor
          * @param range @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
          * @param nbRequested @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#handleData(...)
+         * @param blockSize @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#handleData(...)
          * @param execType @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#handleData(...)
          * @param criteria The search criteria
          */
-        public SearchEventRequest(TmfTimeRange range, int nbRequested, ExecutionType execType, Criteria criteria) {
-            this(range, nbRequested, execType, criteria, null);
+        public SearchEventRequest(TmfTimeRange range, int nbRequested, int blockSize, ExecutionType execType, Criteria criteria) {
+            this(range, nbRequested, blockSize, execType, criteria, null);
         }
 
         /**
          * Constructor
          * @param range @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
          * @param nbRequested @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
+         * @param blockSize @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
          * @param execType @see org.eclipse.linuxtools.tmf.request.TmfEventRequest#TmfEventRequest(...)
          * @param criteria The search criteria
          * @param monitor progress monitor
          */
-        public SearchEventRequest(TmfTimeRange range, int nbRequested, ExecutionType execType, Criteria criteria, IProgressMonitor monitor) {
-            super(ITmfEvent.class, range, 0, nbRequested, execType);
+        public SearchEventRequest(TmfTimeRange range, int nbRequested, int blockSize, ExecutionType execType, Criteria criteria, IProgressMonitor monitor) {
+            super(ITmfEvent.class, range, nbRequested, blockSize, execType);
             fCriteria = new Criteria(criteria);
             fMonitor = monitor;
         }

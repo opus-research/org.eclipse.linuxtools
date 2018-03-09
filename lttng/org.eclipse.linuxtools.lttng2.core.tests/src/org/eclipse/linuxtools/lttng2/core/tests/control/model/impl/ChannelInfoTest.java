@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -254,7 +254,7 @@ public class ChannelInfoTest {
         fixture.setNumberOfSubBuffers(1);
         fixture.setOutputType("");
         fixture.setSubBufferSize(1L);
-        List<IEventInfo> events = new LinkedList<>();
+        List<IEventInfo> events = new LinkedList<IEventInfo>();
 
         for (int i = 0; i < 2; i++) {
             IEventInfo info = new EventInfo("event" + i);

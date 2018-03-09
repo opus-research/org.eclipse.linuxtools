@@ -11,20 +11,18 @@
 package org.eclipse.linuxtools.rpm.createrepo.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProjectCreator;
-import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProjectNature;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -32,11 +30,14 @@ import org.junit.Test;
 
 /**
  * Test case for project creation with CreaterepoProjectCreatorTest class.
- * This checks if the project creator is working, but does not check for
- * initializing of .repo file contents and the content folder. These are done
- * via the wizard (SWTBot test should handle this).
+ * This checks if the project creator is working and creating a project with
+ * an empty content folder and un-initialized .repo file.
  */
 public class CreaterepoProjectCreatorTest {
+
+	private static final String PROJECT_NAME = "createrepo-test-project"; //$NON-NLS-1$
+	private static final String REPO_NAME = "createrepo-test-repo.repo"; //$NON-NLS-1$
+	private static final String CONTENT_FOLDER = "content"; //$NON-NLS-1$
 
 	private static IWorkspaceRoot root;
 	private static NullProgressMonitor monitor;
@@ -44,9 +45,11 @@ public class CreaterepoProjectCreatorTest {
 
 	/**
 	 * Initialize workspace root and progress monitor.
+	 *
+	 * @throws Exception
 	 */
 	@BeforeClass
-	public static void setUpBeforeClass() {
+	public static void setUpBeforeClass() throws Exception {
 		root = ResourcesPlugin.getWorkspace().getRoot();
 		monitor = new NullProgressMonitor();
 	}
@@ -54,61 +57,52 @@ public class CreaterepoProjectCreatorTest {
 	/**
 	 * Create the project using CreaterepoProjectCreator.
 	 *
-	 * @throws CoreException
+	 * @throws Exception
 	 */
 	@Before
-	public void setUp() throws CoreException{
+	public void setUp() throws Exception {
 		if (project == null || !project.exists()) {
-			project = CreaterepoProjectCreator.create(ICreaterepoTestConstants.PROJECT_NAME,
-					root.getLocation(), ICreaterepoTestConstants.REPO_NAME, monitor);
+			project = CreaterepoProjectCreator.create(PROJECT_NAME, root.getLocation(), REPO_NAME, monitor);
 		}
-		assertNotNull(project);
-		assertTrue(project.exists());
 	}
 
 	/**
 	 * Forcefully delete the project if it exists.
 	 *
-	 * @throws CoreException
+	 * @throws Exception
 	 */
 	@After
-	public void tearDown() throws CoreException {
+	public void tearDown() throws Exception {
 		if (project != null && project.exists()) {
-			project.delete(true, true, monitor);
+			project.delete(true, monitor);
 		}
-		assertFalse(project.exists());
 	}
 
 	/**
-	 * Test to see if the project has been properly created. Content folder
-	 * should not appear due to CreaterepoWizard handling its creation. Repo
-	 * file should be empty for the same reason.
+	 * Test to see if the project has been properly created and the contents
+	 * initialized.
 	 *
 	 * @throws CoreException
 	 * @throws IOException
 	 */
 	@Test
 	public void testProjectContents() throws CoreException, IOException {
-		// 2 = .project + .repo file
-		assertEquals(2, project.members().length);
+		assertTrue(project.exists());
+		// 3 = .project + content folder + .repo file
+		assertEquals(3, project.members().length);
 
-		// contains the repo file
-		assertTrue(project.findMember(ICreaterepoTestConstants.REPO_NAME).exists());
+		// contains content folder and repo file
+		assertTrue(project.findMember(CONTENT_FOLDER).exists());
+		assertTrue(project.findMember(REPO_NAME).exists());
 
-		IFile repoFile = (IFile) project.findMember(ICreaterepoTestConstants.REPO_NAME);
+		IFolder contentFolder = (IFolder) project.findMember(CONTENT_FOLDER);
+		// content folder should be empty
+		assertEquals(0, contentFolder.members().length);
+
+		IFile repoFile = (IFile) project.findMember(REPO_NAME);
 		// repo file should be empty because test did not go through project creation
 		// to initialize .repo contents
 		assertEquals(repoFile.getContents().available(), 0);
-	}
-
-	/**
-	 * Test to see if the project has the proper nature.
-	 *
-	 * @throws CoreException
-	 */
-	@Test
-	public void testProjectNature() throws CoreException {
-		assertTrue(project.hasNature(CreaterepoProjectNature.CREATEREPO_NATURE_ID));
 	}
 
 }

@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.cdt.libhover.libstdcxx;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,8 +28,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.linuxtools.cdt.libhover.ClassInfo;
 import org.eclipse.linuxtools.cdt.libhover.LibHoverInfo;
+import org.eclipse.linuxtools.cdt.libhover.ClassInfo;
 import org.eclipse.linuxtools.cdt.libhover.MemberInfo;
 import org.eclipse.linuxtools.cdt.libhover.TypedefInfo;
 import org.w3c.dom.Document;
@@ -42,7 +43,7 @@ public class DoxygenCPPInfo {
 
 	private Document document;
 	private LibHoverInfo cppInfo = new LibHoverInfo();
-	private HashMap<String, ClassInfo> classesById = new HashMap<>();
+	private HashMap<String, ClassInfo> classesById = new HashMap<String, ClassInfo>();
 
 	public DoxygenCPPInfo(Document document) {
 		this.document = document;
@@ -83,11 +84,10 @@ public class DoxygenCPPInfo {
 			// Following is a bit of a hack knowing the docs don't add the namespace when the transformed
 			// type is in the same space
 			int namespace = result[1].indexOf("::"); //$NON-NLS-1$
-			if (namespace < 0) {
+			if (namespace < 0)
 				result[0] = def.substring(8, startIndex).trim();
-			} else {
+			else
 				result[0] = result[1].substring(0, namespace) + "::" + def.substring(8, startIndex).trim(); //$NON-NLS-1$
-			}
 		}
 		return result;
 	}
@@ -189,7 +189,7 @@ public class DoxygenCPPInfo {
 									cppInfo.classes.put(hashName, d);
 							}
 						} else if (name2.equals("templateparamlist")) { //$NON-NLS-1$
-							ArrayList<String> templates = new ArrayList<>();
+							ArrayList<String> templates = new ArrayList<String>();
 							NodeList params = n2.getChildNodes();
 							int paramsLength = params.getLength();
 							for (int j2 = 0; j2 < paramsLength; ++j2) {
@@ -253,7 +253,7 @@ public class DoxygenCPPInfo {
 													String type = null;
 													String args = null;
 													String desc = null;
-													ArrayList<String> parms = new ArrayList<>();
+													ArrayList<String> parms = new ArrayList<String>();
 													NodeList nl4 = n3.getChildNodes();
 													int memberLength = nl4.getLength();
 													for (int k = 0; k < memberLength; ++k) {
@@ -462,7 +462,7 @@ public class DoxygenCPPInfo {
 
 	public String[] getTemplateParms(Node classNode) {
 		Node n = null;
-		ArrayList<String> templateArray = new ArrayList<>();
+		ArrayList<String> templateArray = new ArrayList<String>();
 		NodeList list = classNode.getChildNodes();
 		for (int i = 0; i < list.getLength(); ++i) {
 			n = list.item(i);
@@ -517,7 +517,19 @@ public class DoxygenCPPInfo {
 				d.buildDoxygenCPPInfo(args[1]);
 			}
 			System.out.println("Built " + args[1] + " from " + args[0]); //$NON-NLS-1$ //$NON-NLS-2$
-		} catch (URISyntaxException|SAXException|ParserConfigurationException|IOException e) {
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

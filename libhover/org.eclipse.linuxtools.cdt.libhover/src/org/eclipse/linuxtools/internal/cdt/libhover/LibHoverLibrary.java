@@ -155,12 +155,18 @@ public class LibHoverLibrary {
 				haveReadHoverInfo = true;
 				input.close();
 				docStream.close();
-			} catch (URISyntaxException|MalformedURLException|ClassNotFoundException e) {
+			} catch (URISyntaxException e) {
 				e.printStackTrace();
-			} catch (ConnectException|SocketTimeoutException e) {
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (ConnectException e) {
+				// Do nothing..time-out exception
+			} catch (SocketTimeoutException e) {
 				// Do nothing..time-out exception
 			} catch (IOException e) {
 				// Do nothing as empty devhelp causes this
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
 			}
 		}
 		return hoverInfo;

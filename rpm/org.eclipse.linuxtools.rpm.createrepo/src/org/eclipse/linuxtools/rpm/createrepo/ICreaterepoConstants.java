@@ -46,9 +46,4 @@ public interface ICreaterepoConstants {
 	 */
 	String CREATEREPO_COMMAND = "createrepo"; //$NON-NLS-1$
 
-	/**
-	 * Dashes used for commands.
-	 */
-	String DASH = "--"; //$NON-NLS-1$
-
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -15,10 +15,9 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 import java.util.Arrays;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
- * A CTF array definition
+ * A CTF array definiton
  *
  * Arrays are fixed-length. Their length is declared in the type
  * declaration within the meta-data. They contain an array of "inner type"
@@ -128,7 +127,7 @@ public class ArrayDefinition extends Definition {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
         for (Definition definition : definitions) {
             definition.read(input);
         }

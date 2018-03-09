@@ -146,13 +146,12 @@ public class SystemTapLaunchConfigurationDelegate extends
 			temporaryScript.delete();
 			try {
 				temporaryScript.createNewFile();
-				try (FileWriter fstream = new FileWriter(temporaryScript);
-						BufferedWriter out = new BufferedWriter(fstream)) {
-					out.write(config
-							.getAttribute(
-									LaunchConfigurationConstants.GENERATED_SCRIPT,
-									LaunchConfigurationConstants.DEFAULT_GENERATED_SCRIPT));
-				}
+				FileWriter fstream = new FileWriter(temporaryScript);
+				BufferedWriter out = new BufferedWriter(fstream);
+				out.write(config.getAttribute(
+						LaunchConfigurationConstants.GENERATED_SCRIPT,
+						LaunchConfigurationConstants.DEFAULT_GENERATED_SCRIPT));
+				out.close();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -267,8 +266,14 @@ public class SystemTapLaunchConfigurationDelegate extends
 			String cmd = generateCommand(config);
 			File script = File.createTempFile("org.eclipse.linuxtools.profiling.launch" + System.currentTimeMillis(), ".sh"); //$NON-NLS-1$ //$NON-NLS-2$
 			String data = "#!/bin/sh\nexec " + cmd; //$NON-NLS-1$
-			try (FileOutputStream out = new FileOutputStream(script)){
+			FileOutputStream out = null;
+			try {
+				out = new FileOutputStream(script);
 				out.write(data.getBytes());
+			} finally {
+				if (out != null) {
+					out.close();
+				}
 			}
 
 			String [] commandArray = new String [] {"sh", script.getAbsolutePath()}; //$NON-NLS-1$

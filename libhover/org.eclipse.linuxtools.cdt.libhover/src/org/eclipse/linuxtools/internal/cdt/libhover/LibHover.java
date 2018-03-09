@@ -86,7 +86,7 @@ public class LibHover implements ICHelpProvider {
     // see comment in initialize()
     // private static String defaultSearchPath = null;
 
-	private static ConcurrentHashMap<ICHelpBook, LibHoverLibrary> libraries = new ConcurrentHashMap<>();
+	private static ConcurrentHashMap<ICHelpBook, LibHoverLibrary> libraries = new ConcurrentHashMap<ICHelpBook, LibHoverLibrary>();
 
     static final String  constructTypes[] = {
     	"dtype", //$NON-NLS-1$
@@ -106,8 +106,8 @@ public class LibHover implements ICHelpProvider {
     static final int typeIndex          = 5;
     static final int unionIndex         = 6;
 
-    private static ArrayList<ICHelpBook> helpBooks = new ArrayList<>();
-    private static Map<String, ICHelpBook> helpBooksMap = new HashMap<>();
+    private static ArrayList<ICHelpBook> helpBooks = new ArrayList<ICHelpBook>();
+    private static Map<String, ICHelpBook> helpBooksMap = new HashMap<String, ICHelpBook>();
     public static boolean docsFetched = false;
 
     public static Collection<LibHoverLibrary> getLibraries() {
@@ -238,12 +238,10 @@ public class LibHover implements ICHelpProvider {
 		}
 	}
 
-	@Override
 	public void initialize() {
 		getLibHoverDocs();
 	}
 
-	@Override
 	public ICHelpBook[] getCHelpBooks () {
 		ICHelpBook[] chelpbooks = new ICHelpBook[helpBooks.size()];
 		return helpBooks.toArray(chelpbooks);
@@ -265,24 +263,21 @@ public class LibHover implements ICHelpProvider {
         		include = file;
         	}
 
-        	@Override
-			public String getIncludeName() {
+        	public String getIncludeName() {
         		return include;
         	}
 
-        	@Override
-			public boolean isStandard() {
+        	public boolean isStandard() {
         		return true;
         	}
         }
 
-		@Override
 		public int compareTo (FunctionSummary x) {
 			FunctionSummary y = x;
 			return getName().compareTo(y.getName());
 		}
 
-        private ArrayList<RequiredInclude> Includes = new ArrayList<>();
+        private ArrayList<RequiredInclude> Includes = new ArrayList<RequiredInclude>();
 
         private void setIncludeName (String iname) {
         	RequiredInclude nri = new RequiredInclude(iname);
@@ -290,14 +285,10 @@ public class LibHover implements ICHelpProvider {
         }
 
         public class FunctionPrototypeSummary implements IFunctionPrototypeSummary {
-            @Override
-			public String getName()             { return Name; }
-            @Override
-			public String getReturnType()       { return ReturnType; }
-            @Override
-			public String getArguments()        { return Prototype; }
-            @Override
-			public String getPrototypeString(boolean namefirst) {
+            public String getName()             { return Name; }
+            public String getReturnType()       { return ReturnType; }
+            public String getArguments()        { return Prototype; }
+            public String getPrototypeString(boolean namefirst) {
                 if (true == namefirst) {
                 	if (prototypeHasBrackets())
                 		return Name + " " + Prototype + " " + ReturnType; //$NON-NLS-1$ //$NON-NLS-2$
@@ -311,19 +302,14 @@ public class LibHover implements ICHelpProvider {
             }
         }
 
-        @Override
-		public String getName()                         { return Name; }
-        @Override
-		public String getNamespace()                    { return NameSpace; }
-        @Override
-		public String getDescription()                  { return Summary; }
+        public String getName()                         { return Name; }
+        public String getNamespace()                    { return NameSpace; }
+        public String getDescription()                  { return Summary; }
         public boolean prototypeHasBrackets()			{ return prototypeHasBrackets; }
         public void setPrototypeHasBrackets(boolean value)	{ prototypeHasBrackets = value; }
-        @Override
-		public IFunctionPrototypeSummary getPrototype() { return new FunctionPrototypeSummary(); }
+        public IFunctionPrototypeSummary getPrototype() { return new FunctionPrototypeSummary(); }
 
-        @Override
-		public IRequiredInclude[] getIncludes() {
+        public IRequiredInclude[] getIncludes() {
         	IRequiredInclude[] includes = new IRequiredInclude[Includes.size()];
         	for (int i = 0; i < Includes.size(); ++i) {
         		includes[i] = Includes.get(i);
@@ -378,7 +364,6 @@ public class LibHover implements ICHelpProvider {
     	}
 	}
 
-	@Override
 	public IFunctionSummary getFunctionInfo(ICHelpInvocationContext context, ICHelpBook[] helpBooks, String name) {
         IFunctionSummary f;
 
@@ -517,7 +502,7 @@ public class LibHover implements ICHelpProvider {
 	private IFunctionSummary getMemberSummary(LibHoverLibrary l, String className,
 			String memberName, ICPPFunctionType methodType) {
 
-		ArrayList<String> templateTypes = new ArrayList<>();
+		ArrayList<String> templateTypes = new ArrayList<String>();
 		ClassInfo info = l.getClassInfo(className, templateTypes);
 		String[] args = new String[0];
 		@SuppressWarnings("unused")
@@ -636,9 +621,8 @@ public class LibHover implements ICHelpProvider {
 		return result;
 	}
 
-	@Override
 	public IFunctionSummary[] getMatchingFunctions(ICHelpInvocationContext context, ICHelpBook[] helpBooks, String prefix) {
-		ArrayList<IFunctionSummary> fList = new ArrayList<>();
+		ArrayList<IFunctionSummary> fList = new ArrayList<IFunctionSummary>();
 
 		for (int di = 0; di < helpBooks.length; ++di) {
 			LibHoverLibrary l = libraries.get(helpBooks[di]);
@@ -683,11 +667,9 @@ public class LibHover implements ICHelpProvider {
 			this.href = href;
 			this.label = label;
 		}
-		@Override
 		public String getHref() {
 			return href;
 		}
-		@Override
 		public String getLabel() {
 			return label;
 		}
@@ -700,12 +682,10 @@ public class LibHover implements ICHelpProvider {
 			this.helpbook = helpbook;
 		}
 
-		@Override
 		public ICHelpBook getCHelpBook() {
 			return helpbook;
 		}
 
-		@Override
 		public IHelpResource[] getHelpResources() {
 			LibHoverLibrary l = libraries.get(helpbook);
 			if (l != null) {
@@ -717,7 +697,6 @@ public class LibHover implements ICHelpProvider {
 		}
 	}
 
-	@Override
 	public ICHelpResourceDescriptor[] getHelpResources(ICHelpInvocationContext context, ICHelpBook[] helpBooks, String name) {
 		for (int i = 0; i < helpBooks.length; ++i) {
 			IFunctionSummary fs = getFunctionInfo(context, new ICHelpBook[]{helpBooks[i]}, name);

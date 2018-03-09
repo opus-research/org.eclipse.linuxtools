@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -27,19 +27,19 @@ public class CTFClock {
     private static final String FREQ = "freq"; //$NON-NLS-1$
     private static final String OFFSET = "offset"; //$NON-NLS-1$
 
-    private long fClockOffset = 0;
-    private double fClockScale = 1.0;
-    private double fClockAntiScale = 1.0;
+    private long clockOffset = 0;
+    private double clockScale = 1.0;
+    private double clockAntiScale = 1.0;
 
     /**
      * Field properties.
      */
-    private final Map<String, Object> fProperties = new HashMap<>();
+    private final Map<String, Object> properties = new HashMap<String, Object>();
     /**
      * Field name.
      */
-    private String fName;
-    private boolean fIsScaled = false;
+    private String name;
+    private boolean isScaled = false;
 
     /**
      * Default constructor
@@ -56,9 +56,9 @@ public class CTFClock {
      *            Object
      */
     public void addAttribute(String key, Object value) {
-        fProperties.put(key, value);
+        this.properties.put(key, value);
         if (key.equals(NAME)) {
-            fName = (String) value;
+            this.name = (String) value;
         }
         if (key.equals(FREQ)) {
             /*
@@ -68,13 +68,13 @@ public class CTFClock {
              * have a system with a frequency of > 1 600 000 000 GHz with
              * 200 ppm precision
              */
-            fIsScaled = !((Long) getProperty(FREQ)).equals(ONE_BILLION_L);
-            fClockScale = ONE_BILLION_D / ((Long) getProperty(FREQ)).doubleValue();
-            fClockAntiScale = 1.0 / fClockScale;
+            isScaled = !((Long) getProperty(FREQ)).equals(ONE_BILLION_L);
+            clockScale = ONE_BILLION_D / ((Long) getProperty(FREQ)).doubleValue();
+            clockAntiScale = 1.0 / clockScale;
 
         }
         if (key.equals(OFFSET)) {
-            fClockOffset = (Long) getProperty(OFFSET);
+            clockOffset = (Long) getProperty(OFFSET);
         }
     }
 
@@ -84,7 +84,7 @@ public class CTFClock {
      * @return String
      */
     public String getName() {
-        return fName;
+        return name;
     }
 
     /**
@@ -95,7 +95,7 @@ public class CTFClock {
      * @return Object
      */
     public Object getProperty(String key) {
-        return fProperties.get(key);
+        return properties.get(key);
     }
 
     /**
@@ -103,7 +103,7 @@ public class CTFClock {
      * @since 2.0
      */
     public long getClockOffset() {
-        return fClockOffset;
+        return clockOffset;
     }
 
     /**
@@ -111,7 +111,7 @@ public class CTFClock {
      * @since 2.0
      */
     public double getClockScale() {
-        return fClockScale;
+        return clockScale;
     }
 
     /**
@@ -119,7 +119,7 @@ public class CTFClock {
      * @since 2.0
      */
     public double getClockAntiScale() {
-        return fClockAntiScale;
+        return clockAntiScale;
     }
 
     /**
@@ -127,7 +127,7 @@ public class CTFClock {
      * @since 2.0
      */
     public boolean isClockScaled() {
-        return fIsScaled;
+        return isScaled;
     }
 
 }

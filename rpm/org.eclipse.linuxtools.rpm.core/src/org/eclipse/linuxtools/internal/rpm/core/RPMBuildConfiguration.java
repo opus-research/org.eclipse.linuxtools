@@ -35,7 +35,7 @@ public class RPMBuildConfiguration implements IProjectConfiguration {
     private IFolder specsFolder;
     private IFolder sourcesFolder;
     private IFolder buildFolder;
-    private List<String> configDefines = new ArrayList<>();
+    private List<String> configDefines = new ArrayList<String>();
 	
 	/**
 	 * Creates the configuration for the given project.

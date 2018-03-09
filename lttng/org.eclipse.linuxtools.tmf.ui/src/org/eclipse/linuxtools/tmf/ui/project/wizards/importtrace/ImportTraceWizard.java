@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2014 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,13 +12,17 @@
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace;
 
+import java.util.List;
+
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.project.wizards.Messages;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
@@ -69,6 +73,11 @@ public class ImportTraceWizard extends Wizard implements IImportWizard {
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         fWorkbench = workbench;
         fSelection = selection;
+
+        List<?> selectedResources = IDE.computeSelectedResources(selection);
+        if (!selectedResources.isEmpty()) {
+            fSelection = new StructuredSelection(selectedResources);
+        }
 
         setWindowTitle(Messages.ImportTraceWizard_DialogTitle);
         setDefaultPageImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, ICON_PATH));

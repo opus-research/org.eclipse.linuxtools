@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -58,7 +58,7 @@ public class TraceControlComponent implements ITraceControlComponent {
     /**
      * The list if children components.
      */
-    private final List<ITraceControlComponent> fChildren = new ArrayList<>();
+    private final List<ITraceControlComponent> fChildren = new ArrayList<ITraceControlComponent>();
     /**
      * The list of listeners to be notified about changes.
      */
@@ -178,7 +178,7 @@ public class TraceControlComponent implements ITraceControlComponent {
 
     @Override
     public List<ITraceControlComponent> getChildren(Class<? extends ITraceControlComponent> clazz) {
-       List<ITraceControlComponent> list = new ArrayList<>();
+       List<ITraceControlComponent> list = new ArrayList<ITraceControlComponent>();
 
        for (Iterator<ITraceControlComponent> iterator = fChildren.iterator(); iterator.hasNext();) {
            ITraceControlComponent child = iterator.next();

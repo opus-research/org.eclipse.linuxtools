@@ -11,20 +11,16 @@
 package org.eclipse.linuxtools.internal.perf.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.perf.ReportComparisonData;
 import org.eclipse.linuxtools.internal.perf.SourceDisassemblyData;
 import org.eclipse.linuxtools.internal.perf.StatData;
-import org.eclipse.linuxtools.internal.perf.handlers.PerfStatDataOpenHandler;
 import org.junit.Test;
 
 public class DataManipulatorTest {
@@ -96,19 +92,6 @@ public class DataManipulatorTest {
 		assertEquals(expected, diffData.getPerfData().trim());
 	}
 
-	@Test
-	public void testPerfStatDataOpenHandler() {
-		String resourceDirPath = "/resources/stat-data/perf_simple.stat"; //$NON-NLS-1$
-		String path;
-		try {
-			path = FileLocator.toFileURL(this.getClass().getResource(resourceDirPath)).getPath();
-			PerfStatDataOpenHandler handler = new PerfStatDataOpenHandler();
-			handler.open(new Path(path));
-		} catch (IOException e) {
-			fail();
-		}
-	}
-
 	/**
 	 * Used for testing SourceDisassemblyData
 	 */
@@ -120,7 +103,7 @@ public class DataManipulatorTest {
 
 		@Override
 		public String[] getCommand(String workingDir) {
-			List<String> ret = new ArrayList<>();
+			List<String> ret = new ArrayList<String>();
 			// return the same command with 'echo' prepended
 			ret.add("echo"); //$NON-NLS-1$
 			ret.addAll(Arrays.asList(super.getCommand(workingDir)));
@@ -141,7 +124,7 @@ public class DataManipulatorTest {
 		@Override
 		public String[] getCommand(String command, String[] args) {
 			// return the same command with 'echo' prepended
-			List<String> ret = new ArrayList<>();
+			List<String> ret = new ArrayList<String>();
 			ret.add("echo"); //$NON-NLS-1$
 			ret.addAll(Arrays.asList(super.getCommand(command, args)));
 			return ret.toArray(new String[ret.size()]);
@@ -167,7 +150,7 @@ public class DataManipulatorTest {
 		@Override
 		protected String[] getCommand() {
 			// return the same command with 'echo' prepended
-			List<String> ret = new ArrayList<>();
+			List<String> ret = new ArrayList<String>();
 			ret.add("echo"); //$NON-NLS-1$
 			ret.addAll(Arrays.asList(super.getCommand()));
 			return ret.toArray(new String[ret.size()]);

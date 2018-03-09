@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -64,11 +64,11 @@ public class LoadersManager {
     /**
      * Map for caching information (view ID to loader class)
      */
-    private Map<String, IUml2SDLoader> fViewLoaderMap = new HashMap<>();
+    private Map<String, IUml2SDLoader> fViewLoaderMap = new HashMap<String, IUml2SDLoader>();
     /**
      * Map for caching information (view ID to list of configuration elements)
      */
-    private Map<String, ArrayList<IConfigurationElement>> fViewLoadersList = new HashMap<>();
+    private Map<String, ArrayList<IConfigurationElement>> fViewLoadersList = new HashMap<String, ArrayList<IConfigurationElement>>();
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -310,7 +310,7 @@ public class LoadersManager {
             return list;
         }
 
-        ArrayList<IConfigurationElement> ret = new ArrayList<>();
+        ArrayList<IConfigurationElement> ret = new ArrayList<IConfigurationElement>();
         IExtensionPoint iep = Platform.getExtensionRegistry().getExtensionPoint(Activator.PLUGIN_ID, LOADER_TAG);
         if (iep == null) {
             return ret;

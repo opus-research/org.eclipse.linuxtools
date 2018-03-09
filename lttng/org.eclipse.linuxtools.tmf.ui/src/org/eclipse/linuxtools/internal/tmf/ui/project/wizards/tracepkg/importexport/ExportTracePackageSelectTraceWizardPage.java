@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -125,7 +125,9 @@ public class ExportTracePackageSelectTraceWizardPage extends WizardPage {
                 TableItem[] items = projectTable.getSelection();
                 fSelectedProject = (IProject) items[0].getData();
 
-                TmfProjectElement project = TmfProjectRegistry.getProject(fSelectedProject, true);
+                // Make sure all the elements are created
+                new TmfNavigatorContentProvider().getChildren(fSelectedProject);
+                TmfProjectElement project = TmfProjectRegistry.getProject(fSelectedProject);
 
                 TmfTraceFolder tracesFolder = project.getTracesFolder();
                 List<TmfTraceElement> traces = tracesFolder.getTraces();
@@ -182,7 +184,7 @@ public class ExportTracePackageSelectTraceWizardPage extends WizardPage {
 
     private ArrayList<TmfTraceElement> getCheckedTraces() {
         TableItem[] items = fTraceTable.getItems();
-        ArrayList<TmfTraceElement> traces = new ArrayList<>();
+        ArrayList<TmfTraceElement> traces = new ArrayList<TmfTraceElement>();
         for (TableItem item : items) {
             if (item.getChecked()) {
                 TmfTraceElement trace = (TmfTraceElement) item.getData();

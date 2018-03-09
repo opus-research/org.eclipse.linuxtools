@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -69,7 +69,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     /**
      * The contexts to add.
      */
-    private final List<String> fSelectedContexts = new ArrayList<>();
+    private final List<String> fSelectedContexts = new ArrayList<String>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -95,7 +95,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
 
     @Override
     public List<String> getContexts() {
-        List<String> ret = new ArrayList<>();
+        List<String> ret = new ArrayList<String>();
         ret.addAll(fSelectedContexts);
         return ret;
     }
@@ -320,7 +320,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
          *            The contexts to set
          */
         public void setAvalibleContexts(List<String> contexts) {
-            fAvailableContexts = new ArrayList<>();
+            fAvailableContexts = new ArrayList<Context>();
             if (contexts != null) {
                 for (Iterator<String> iterator = contexts.iterator(); iterator.hasNext();) {
                     String name = iterator.next();

@@ -12,10 +12,6 @@
 
 package org.eclipse.linuxtools.internal.gdbtrace.ui.views.events;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEvent;
@@ -26,7 +22,6 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
@@ -80,7 +75,9 @@ public class GdbEventsTable extends TmfEventsTable {
                             GdbTraceEvent event = (GdbTraceEvent) data;
                             GdbTrace gdbTrace = (GdbTrace) event.getTrace();
                             GdbTraceEventContent content = (GdbTraceEventContent) event.getContent();
-                            selectFrame(gdbTrace, content.getFrameNumber());
+                            gdbTrace.selectFrame(content.getFrameNumber());
+                            fSelectedTrace = gdbTrace;
+                            fSelectedFrame = content.getFrameNumber();
                             return;
                         }
                     }
@@ -106,6 +103,13 @@ public class GdbEventsTable extends TmfEventsTable {
     }
 
     @Override
+    protected void populateCompleted() {
+        if (fSelectedTrace != null) {
+            fSelectedTrace.selectFrame(fSelectedFrame);
+        }
+    }
+
+    @Override
     protected ITmfEventField[] extractItemFields(ITmfEvent event) {
         ITmfEventField[] fields = EMPTY_FIELD_ARRAY;
         if (event != null) {
@@ -124,31 +128,5 @@ public class GdbEventsTable extends TmfEventsTable {
     @TmfSignalHandler
     public void currentTimeUpdated(final TmfTimeSynchSignal signal) {
         // do not synchronize on time
-    }
-
-    private void selectFrame(final GdbTrace gdbTrace, final long frameNumber) {
-        Job b = new Job("GDB Trace select frame") { //$NON-NLS-1$
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                // This sends commands to GDB and can potentially wait on the UI
-                // thread (gdb traces console buffer full) so it needs to be
-                // exectued on a non-UI thread
-                gdbTrace.selectFrame(frameNumber);
-                fSelectedTrace = gdbTrace;
-                fSelectedFrame = frameNumber;
-                return Status.OK_STATUS;
-            }
-        };
-        b.setSystem(true);
-        b.schedule();
-    }
-
-    @Override
-    @TmfSignalHandler
-    public void traceUpdated(TmfTraceUpdatedSignal signal) {
-        super.traceUpdated(signal);
-        if (fSelectedTrace.getNbFrames() == fSelectedTrace.getNbEvents()) {
-            selectFrame(fSelectedTrace, fSelectedFrame);
-        }
     }
 }

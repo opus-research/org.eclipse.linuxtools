@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,9 +15,12 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEventFactory;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
+import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 
@@ -44,6 +47,7 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
     private final Thread eventHandlerThread;
 
     private boolean ssAssigned;
+    private ITmfEvent currentEvent;
 
     /** State system in which to insert the state changes */
     protected ITmfStateSystemBuilder ss = null;
@@ -63,11 +67,12 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
             Class<? extends ITmfEvent> eventType, String id) {
         this.trace = trace;
         this.eventType = eventType;
-        eventsQueue = new ArrayBlockingQueue<>(DEFAULT_EVENTS_QUEUE_SIZE);
+        eventsQueue = new ArrayBlockingQueue<ITmfEvent>(DEFAULT_EVENTS_QUEUE_SIZE);
         ssAssigned = false;
 
         String id2 = (id == null ? "Unamed" : id); //$NON-NLS-1$
         eventHandlerThread = new Thread(new EventProcessor(), id2 + " Event Handler"); //$NON-NLS-1$
+
     }
 
     @Override
@@ -96,7 +101,7 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
     public void dispose() {
         /* Insert a null event in the queue to stop the event handler's thread. */
         try {
-            eventsQueue.put(END_EVENT);
+            eventsQueue.put(CtfTmfEventFactory.getNullEvent());
             eventHandlerThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -136,10 +141,12 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
          * the state. That way, when that event leaves the queue, we will know
          * for sure that the state system processed the preceding real event.
          */
+        TmfEvent ev = new EmptyEvent();
+
         try {
-            eventsQueue.put(EMPTY_QUEUE_EVENT);
+            eventsQueue.put(ev);
             while (!eventsQueue.isEmpty()) {
-                Thread.sleep(100);
+                    Thread.sleep(100);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -147,28 +154,24 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
     }
 
     // ------------------------------------------------------------------------
-    // Special event types
-    // ------------------------------------------------------------------------
-
-    /** Fake event indicating the build is over, and the provider should close */
-    private static class EndEvent extends TmfEvent {}
-    /** Fake event indicating we want to clear the current queue */
-    private static class EmptyQueueEvent extends TmfEvent {}
-
-    private static final EndEvent END_EVENT = new EndEvent();
-    private static final EmptyQueueEvent EMPTY_QUEUE_EVENT = new EmptyQueueEvent();
-
-    // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------
+
+    /**
+     * Empty event that should be totally ignored by the event handler. It can
+     * by used for synchronisation purposes.
+     */
+    private class EmptyEvent extends TmfEvent {
+        public EmptyEvent() {
+            super(null, new TmfTimestamp(0), null, null, null, null);
+        }
+    }
 
     /**
      * This is the runner class for the second thread, which will take the
      * events from the queue and pass them through the state system.
      */
     private class EventProcessor implements Runnable {
-
-        private ITmfEvent currentEvent;
 
         @Override
         public void run() {
@@ -180,9 +183,8 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
 
             try {
                 event = eventsQueue.take();
-                /* This is a singleton, we want to do != instead of !x.equals */
-                while (event != END_EVENT) {
-                    if (event == EMPTY_QUEUE_EVENT) {
+                while (event.getTimestamp().getValue() != -1) {
+                    if (event instanceof EmptyEvent) {
                         /* Synchronization event, should be ignored */
                         event = eventsQueue.take();
                         continue;
@@ -198,6 +200,7 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
                 }
                 /* We've received the last event, clean up */
                 closeStateSystem();
+                return;
             } catch (InterruptedException e) {
                 /* We've been interrupted abnormally */
                 System.out.println("Event handler interrupted!"); //$NON-NLS-1$
@@ -206,9 +209,19 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
         }
 
         private void closeStateSystem() {
-            final long endTime = (currentEvent == null) ? 0 :
-                    currentEvent.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-            ss.closeHistory(endTime);
+            /* Close the History system, if there is one */
+            if (currentEvent == null) {
+                return;
+            }
+            try {
+                ss.closeHistory(currentEvent.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue());
+            } catch (TimeRangeException e) {
+                /*
+                 * Since we're using currentEvent.getTimestamp, this shouldn't
+                 * cause any problem
+                 */
+                e.printStackTrace();
+            }
         }
     }
 

@@ -31,7 +31,7 @@ public class TypedefInfo implements Serializable {
 	}
 	
 	private String[] getTemplateArgs(String str) {
-		ArrayList<String> list = new ArrayList<>();
+		ArrayList<String> list = new ArrayList<String>();
 		int index = 0;
 		int lastIndex = 0;
 		int templateCounter = 0;
@@ -99,9 +99,8 @@ public class TypedefInfo implements Serializable {
 	}
 	
 	public void addTypedef(TypedefInfo typedef) {
-		if (children == null) {
-			children = new ArrayList<>();
-		}
+		if (children == null)
+			children = new ArrayList<TypedefInfo>();
 		children.add(typedef);
 	}
 	public ArrayList<TypedefInfo> getChildren() {
@@ -109,9 +108,8 @@ public class TypedefInfo implements Serializable {
 	}
 	public void copyTemplates(String[] newTemplates) {
 		templates = new String[newTemplates.length];
-		for (int i = 0; i < templates.length; ++i) {
+		for (int i = 0; i < templates.length; ++i)
 			templates[i] = newTemplates[i];
-		}
 	}
 	public String[] getTemplates() {
 		return templates;

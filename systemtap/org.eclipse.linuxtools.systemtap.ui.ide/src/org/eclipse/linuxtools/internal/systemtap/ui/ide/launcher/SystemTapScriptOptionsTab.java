@@ -22,7 +22,7 @@ import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -101,10 +101,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				String fileName = fileDialog.open();
-				if (fileName != null) {
-					targetProgramText.setText(fileName);
-				}
+				targetProgramText.setText(fileDialog.open());
 			}
 
 			@Override
@@ -115,7 +112,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		// Check boxes
 		Composite cmpChkBoxes = new Composite(comp, SWT.NONE);
 		cmpChkBoxes.setLayout(twoColumnGridLayout);
-		cmpChkBoxes.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+		cmpChkBoxes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		for (int i = 0; i < IDEPreferenceConstants.STAP_BOOLEAN_OPTIONS.length; i++) {
 			checkBox[i] = new Button(cmpChkBoxes, SWT.CHECK);
@@ -145,7 +142,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		// Labels and Text fields
 		Composite cmpTxtBoxes = new Composite(comp, SWT.NONE);
 		cmpTxtBoxes.setLayout(twoColumnGridLayout);
-		cmpTxtBoxes.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+		cmpTxtBoxes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		Label label;
 		for (int i = 0; i < IDEPreferenceConstants.STAP_STRING_OPTIONS.length; i++) {
@@ -154,7 +151,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 					+ " (" + IDEPreferenceConstants.STAP_STRING_OPTIONS[i][IDEPreferenceConstants.FLAG] + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 			label.setToolTipText(IDEPreferenceConstants.STAP_STRING_OPTIONS[i][IDEPreferenceConstants.TOOLTIP]);
 			text[i] = new Text(cmpTxtBoxes, SWT.BORDER);
-			text[i].setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, true));
+			text[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			text[i].addModifyListener(modifyListiner);
 			text[i].setToolTipText(IDEPreferenceConstants.STAP_STRING_OPTIONS[i][IDEPreferenceConstants.TOOLTIP]);
 
@@ -167,7 +164,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		label = new Label(cmpTxtBoxes, SWT.NONE);
 		label.setText(Messages.SystemTapScriptOptionsTab_2);
 		this.miscCommandsText = new Text(cmpTxtBoxes, SWT.BORDER);
-		this.miscCommandsText.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING,
+		this.miscCommandsText.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
 				true, true));
 	}
 

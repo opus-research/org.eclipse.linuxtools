@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.internal.callgraph;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -114,8 +115,12 @@ public class CallgraphView extends SystemTapView {
 	@Override
 	public IStatus initializeView(Display targetDisplay, IProgressMonitor monitor) {
 
-		if (targetDisplay == null && Display.getCurrent() == null) {
-			Display.getDefault();
+		Display disp = targetDisplay;
+		if (disp == null) {
+			disp = Display.getCurrent();
+		}
+		if (disp == null) {
+			disp = Display.getDefault();
 		}
 
 		treeSize = 200;
@@ -275,10 +280,10 @@ public class CallgraphView extends SystemTapView {
 
 
 	    if (g.aggregateTime == null) {
-	    	g.aggregateTime = new HashMap<>();
+	    	g.aggregateTime = new HashMap<String, Long>();
 	    }
 		if (g.aggregateCount == null) {
-	    	g.aggregateCount = new HashMap<>();
+	    	g.aggregateCount = new HashMap<String, Integer>();
 		}
 
 	    g.aggregateCount.putAll(parser.countMap);
@@ -307,13 +312,13 @@ public class CallgraphView extends SystemTapView {
 	private IStatus finishLoad(IProgressMonitor monitor) {
 
 		if (g.aggregateCount == null) {
-	    	g.aggregateCount = new HashMap<>();
+	    	g.aggregateCount = new HashMap<String, Integer>();
 		}
 
 	    g.aggregateCount.putAll(parser.countMap);
 
 	    if (g.aggregateTime == null) {
-	    	g.aggregateTime = new HashMap<>();
+	    	g.aggregateTime = new HashMap<String, Long>();
 	    }
 	    g.aggregateTime.putAll(parser.aggregateTimeMap);
 
@@ -419,53 +424,7 @@ public class CallgraphView extends SystemTapView {
 		graphComp.setSize(masterComposite.getSize().x ,masterComposite.getSize().y);
 	}
 
-	/**
-	 * The action performed by saveText.
-	 */
-	private void saveTextAction() {
-		//Prints an 80 char table
-        Shell sh = new Shell();
-        FileDialog dialog = new FileDialog(sh, SWT.SAVE);
-        String filePath = dialog.open();
 
-        if (filePath == null) {
-        	return;
-        }
-        File f = new File(filePath);
-        f.delete();
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(f))) {
-        	f.createNewFile();
-			StringBuilder builder = new StringBuilder();
-			builder.append("                           Function                           | Called |  Time\n"); //$NON-NLS-1$
-
-			for (StapData k : g.nodeDataMap.values()) {
-        		if ( (!k.isCollapsed ) && !k.isOnlyChildWithThisName()) {
-        			continue;
-        		}
-				if (k.isCollapsed) {
-					StringBuilder name = new StringBuilder(k.name);
-					name = fixString(name, 60);
-					builder.append(" " + name + " | "); //$NON-NLS-1$ //$NON-NLS-2$
-
-					StringBuilder called = new StringBuilder("" + k.timesCalled); //$NON-NLS-1$
-					called = fixString(called, 6);
-
-					StringBuilder time = new StringBuilder("" + //$NON-NLS-1$
-							StapNode.numberFormat.format((float) k.getTime()/g.getTotalTime() * 100)
-							+ "%"); //$NON-NLS-1$
-					time = fixString(time, 6);
-
-					builder.append(called + " | " + time + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-
-				if (builder.length() > 0) {
-					out.append(builder.toString());
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * This is a callback that will allow us to create the viewer and
@@ -522,7 +481,55 @@ public class CallgraphView extends SystemTapView {
 		saveText = new Action (Messages.getString("CallgraphView.SaveCollapsedAsASCII")) { //$NON-NLS-1$
 			@Override
 			public void run() {
-				saveTextAction();
+				//Prints an 80 char table
+		        Shell sh = new Shell();
+		        FileDialog dialog = new FileDialog(sh, SWT.SAVE);
+		        String filePath = dialog.open();
+
+		        if (filePath == null) {
+		        	return;
+		        }
+		        File f = new File(filePath);
+		        f.delete();
+        		try {
+	            	f.createNewFile();
+					BufferedWriter out = new BufferedWriter(new FileWriter(f));
+					StringBuilder builder = new StringBuilder();
+					builder.append("                           Function                           | Called |  Time\n"); //$NON-NLS-1$
+
+					for (StapData k : g.nodeDataMap.values()) {
+	            		if ( (!k.isCollapsed ) && !k.isOnlyChildWithThisName()) {
+	            			continue;
+	            		}
+						if (k.isCollapsed) {
+							StringBuilder name = new StringBuilder(k.name);
+							name = fixString(name, 60);
+							builder.append(" " + name + " | "); //$NON-NLS-1$ //$NON-NLS-2$
+
+							StringBuilder called = new StringBuilder("" + k.timesCalled); //$NON-NLS-1$
+							called = fixString(called, 6);
+
+							StringBuilder time = new StringBuilder("" + //$NON-NLS-1$
+									StapNode.numberFormat.format((float) k.getTime()/g.getTotalTime() * 100)
+									+ "%"); //$NON-NLS-1$
+							time = fixString(time, 6);
+
+							builder.append(called + " | " + time + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+						}
+						if (builder.length() > 2000) {
+							out.append(builder.toString());
+							out.flush();
+							builder.setLength(0);
+						}
+					}
+
+					if (builder.length() > 0) {
+						out.append(builder.toString());
+					}
+					out.close();
+		        } catch (IOException e) {
+		        	e.printStackTrace();
+		        }
 			}
 		};
 		saveMenu = new MenuManager(Messages.getString("CallgraphView.SaveMenu")); //$NON-NLS-1$
@@ -671,22 +678,26 @@ public class CallgraphView extends SystemTapView {
 
 	public void stapPermissionError() {
 		Process p = null;
-		String user = null;
 		try {
 			p = new ProcessBuilder("/usr/bin/bash", "-c", "whoami").start(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			InputStreamReader isr = new InputStreamReader(p.getInputStream());
-			try (BufferedReader br = new BufferedReader(isr)) {
-				user = br.readLine();
-			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		InputStreamReader isr = new InputStreamReader(p.getInputStream());
+		BufferedReader br = new BufferedReader(isr);
+		String user = null;
+		try {
+			user = br.readLine();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		SystemTapUIErrorMessages message = new SystemTapUIErrorMessages(
-				Messages.getString("CallgraphView.StapError1"), //$NON-NLS-1$
-				Messages.getString("CallgraphView.StapError1"), NLS.bind( //$NON-NLS-1$
-						Messages.getString("CallgraphView.StapError2"), user)); //$NON-NLS-1$
+				Messages.getString("CallgraphView.StapError1"),
+				Messages.getString("CallgraphView.StapError1"), NLS.bind(
+						Messages.getString("CallgraphView.StapError2"), user));
 		message.schedule();
 	}
 	/**
@@ -1048,7 +1059,8 @@ public class CallgraphView extends SystemTapView {
 				return;
 			}
 
-            try (BufferedWriter out = new BufferedWriter(new FileWriter(f))) {
+            try {
+				BufferedWriter out = new BufferedWriter(new FileWriter(f));
 				StringBuilder build = new StringBuilder(""); //$NON-NLS-1$
 
 				out.write("digraph stapgraph {\n"); //$NON-NLS-1$
@@ -1079,6 +1091,9 @@ public class CallgraphView extends SystemTapView {
             	}
             	out.write("}"); //$NON-NLS-1$
             	out.flush();
+            	out.close();
+            } catch (FileNotFoundException e) {
+            	e.printStackTrace();
             } catch (IOException e) {
 				e.printStackTrace();
 			}
