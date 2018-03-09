@@ -23,11 +23,13 @@ import org.swtchart.ISeries;
 
 /**
  * Displays a tooltip on line charts. For each series, it shows the y value at
- * the selected x value.
+ * the selected x value. This tooltip assumes that all series share a common set
+ * of X axis values. If the X series is not common, the tooltip text may not be
+ * accurate.
  *
  * @author Geneviève Bastien
  */
-public class TmfLineChartTooltipProvider extends TmfBaseProvider implements MouseTrackListener {
+public class TmfCommonXLineChartTooltipProvider extends TmfBaseProvider implements MouseTrackListener {
 
     /**
      * Constructor for the tooltip provider
@@ -35,7 +37,7 @@ public class TmfLineChartTooltipProvider extends TmfBaseProvider implements Mous
      * @param tmfChartViewer
      *            The parent chart viewer
      */
-    public TmfLineChartTooltipProvider(ITmfChartTimeProvider tmfChartViewer) {
+    public TmfCommonXLineChartTooltipProvider(ITmfChartTimeProvider tmfChartViewer) {
         super(tmfChartViewer);
         register();
     }
@@ -106,7 +108,8 @@ public class TmfLineChartTooltipProvider extends TmfBaseProvider implements Mous
             /* For each series, get the value at the index */
             for (ISeries serie : series) {
                 double[] yS = serie.getYSeries();
-                if (yS == null) {
+                /* Make sure the series values and the value at index exist */
+                if (yS == null || yS.length <= index) {
                     continue;
                 }
                 buffer.append(serie.getId());

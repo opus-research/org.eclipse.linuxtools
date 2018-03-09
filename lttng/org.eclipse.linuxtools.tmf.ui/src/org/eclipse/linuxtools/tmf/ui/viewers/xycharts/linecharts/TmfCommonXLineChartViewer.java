@@ -38,7 +38,7 @@ import org.swtchart.Range;
  * @author - Geneviève Bastien
  * @since 3.0
  */
-public abstract class TmfLineChartViewer extends TmfXYChartViewer {
+public abstract class TmfCommonXLineChartViewer extends TmfXYChartViewer {
 
     private static final double DEFAULT_MAXY = Double.MIN_VALUE;
     private static final double DEFAULT_MINY = Double.MAX_VALUE;
@@ -61,10 +61,10 @@ public abstract class TmfLineChartViewer extends TmfXYChartViewer {
      * @param yLabel
      *            The label of the yAXIS
      */
-    public TmfLineChartViewer(Composite parent, String title, String xLabel, String yLabel) {
+    public TmfCommonXLineChartViewer(Composite parent, String title, String xLabel, String yLabel) {
         super(parent, title, xLabel, yLabel);
 
-        setTooltipProvider(new TmfLineChartTooltipProvider(this));
+        setTooltipProvider(new TmfCommonXLineChartTooltipProvider(this));
     }
 
     @Override
@@ -165,14 +165,14 @@ public abstract class TmfLineChartViewer extends TmfXYChartViewer {
     /**
      * Update the series data because the time range has changed. The x axis
      * values for this data update can be computed using the
-     * {@link TmfLineChartViewer#getXAxis(long, long, int)} method which will
+     * {@link TmfCommonXLineChartViewer#getXAxis(long, long, int)} method which will
      * return a list of uniformely separated time values.
      *
      * Each series values should be set by calling the
-     * {@link TmfLineChartViewer#setSeries(String, double[], double)}.
+     * {@link TmfCommonXLineChartViewer#setSeries(String, double[])}.
      *
      * This method is responsible for calling the
-     * {@link TmfLineChartViewer#updateDisplay()} when needed for the new values
+     * {@link TmfCommonXLineChartViewer#updateDisplay()} when needed for the new values
      * to be displayed.
      *
      * @param start
