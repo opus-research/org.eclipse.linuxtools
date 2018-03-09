@@ -20,22 +20,21 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 
 /**
- * This class abstracts inputs/outputs of the HistoryTree nodes.
+ * This class exists mainly for code isolation/clarification purposes. It
+ * contains all the methods and descriptors to handle reading/writing to the
+ * tree-file on disk and all the caching mechanisms. Every HistoryTree should
+ * contain 1 and only 1 HT_IO element.
  *
- * It contains all the methods and descriptors to handle reading/writing nodes
- * to the tree-file on disk and all the caching mechanisms.
- *
- * This abstraction is mainly for code isolation/clarification purposes.
- * Every HistoryTree must contain 1 and only 1 HT_IO element.
- *
- * @author Alexandre Montplaisir
+ * @author alexmont
  *
  */
 class HT_IO {
-    /* Configuration of the History Tree */
-    HTConfig fConfig;
+
+    /* reference to the tree to which this IO-object belongs */
+    private final HistoryTree tree;
 
     /* Fields related to the file I/O */
+    private final File historyTreeFile;
     private final FileInputStream fis;
     private final FileOutputStream fos;
     private final FileChannel fcIn;
@@ -48,20 +47,17 @@ class HT_IO {
     /**
      * Standard constructor
      *
-     * @param config
-     *             The configuration object for the StateHistoryTree
+     * @param tree
      * @param newFile
-     *            Flag indicating that the file must be created from scratch
-
+     *            Are we creating a new file from scratch?
      * @throws IOException
-     *             An exception can be thrown when file cannot be accessed
      */
-    HT_IO(HTConfig config, boolean newFile) throws IOException {
-        fConfig = config;
+    HT_IO(HistoryTree tree, boolean newFile) throws IOException {
+        this.tree = tree;
+        historyTreeFile = tree.getConfig().getStateFile();
+        boolean success1 = true;
 
-        File historyTreeFile = config.getStateFile();
         if (newFile) {
-            boolean success1 = true;
             /* Create a new empty History Tree file */
             if (historyTreeFile.exists()) {
                 success1 = historyTreeFile.delete();
@@ -87,6 +83,33 @@ class HT_IO {
     }
 
     /**
+     * Generic "read node" method, which checks if the node is in memory first,
+     * and if it's not it goes to disk to retrieve it.
+     *
+     * @param seqNumber
+     *            Sequence number of the node we want
+     * @return The wanted node in object form
+     * @throws ClosedChannelException
+     *             If the channel was closed before we could read
+     */
+    HTNode readNode(int seqNumber) throws ClosedChannelException {
+        HTNode node = readNodeFromMemory(seqNumber);
+        if (node == null) {
+            return readNodeFromDisk(seqNumber);
+        }
+        return node;
+    }
+
+    private HTNode readNodeFromMemory(int seqNumber) {
+        for (HTNode node : tree.getLatestBranch()) {
+            if (node.getSequenceNumber() == seqNumber) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    /**
      * This method here isn't private, if we know for sure the node cannot be in
      * memory it's a bit faster to use this directly (when opening a file from
      * disk for example)
@@ -96,7 +119,7 @@ class HT_IO {
      *             reading. Instead of using a big reader-writer lock, we'll
      *             just catch this exception.
      */
-    synchronized HTNode readNode(int seqNumber) throws ClosedChannelException {
+    synchronized HTNode readNodeFromDisk(int seqNumber) throws ClosedChannelException {
         /* Do a cache lookup */
         int offset = seqNumber & (CACHE_SIZE - 1);
         HTNode readNode = fNodeCache[offset];
@@ -107,7 +130,7 @@ class HT_IO {
         /* Lookup on disk */
         try {
             seekFCToNodePos(fcIn, seqNumber);
-            readNode = HTNode.readNode(fConfig, fcIn);
+            readNode = HTNode.readNode(tree, fcIn);
 
             /* Put the node in the cache. */
             fNodeCache[offset] = readNode;
@@ -141,17 +164,26 @@ class HT_IO {
         return this.fcOut;
     }
 
-    FileInputStream supplyATReader(int node_offset) {
+    FileInputStream supplyATReader() {
         try {
             /*
              * Position ourselves at the start of the Mapping section in the
              * file (which is right after the Blocks)
              */
-            seekFCToNodePos(fcIn, node_offset);
+            seekFCToNodePos(fcIn, tree.getNodeCount());
         } catch (IOException e) {
             e.printStackTrace();
         }
         return fis;
+    }
+
+    File supplyATWriterFile() {
+        return tree.getConfig().getStateFile();
+    }
+
+    long supplyATWriterFilePos() {
+        return HistoryTree.TREE_HEADER_SIZE
+                + ((long) tree.getNodeCount() * tree.getConfig().getBlockSize());
     }
 
     synchronized void closeFile() {
@@ -166,7 +198,6 @@ class HT_IO {
     synchronized void deleteFile() {
         closeFile();
 
-        File historyTreeFile = fConfig.getStateFile();
         if (!historyTreeFile.delete()) {
             /* We didn't succeed in deleting the file */
             //TODO log it?
@@ -177,18 +208,17 @@ class HT_IO {
      * Seek the given FileChannel to the position corresponding to the node that
      * has seqNumber
      *
-     * @param fc the channel to seek
-     * @param seqNumber the node sequence number to seek the channel to
+     * @param seqNumber
      * @throws IOException
      */
     private void seekFCToNodePos(FileChannel fc, int seqNumber)
             throws IOException {
+        fc.position(HistoryTree.TREE_HEADER_SIZE + (long) seqNumber
+                * tree.getConfig().getBlockSize());
         /*
-         * Cast to (long) is needed to make sure the result is a long too and
+         * cast to (long) is needed to make sure the result is a long too and
          * doesn't get truncated
          */
-        fc.position(HistoryTree.TREE_HEADER_SIZE
-                + ((long) seqNumber)  * fConfig.getBlockSize());
     }
 
 }
