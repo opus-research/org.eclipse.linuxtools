@@ -44,18 +44,14 @@ public class StateSystemAnalysisModuleTest {
     /** ID of the test state system analysis module */
     public static final String MODULE_SS = "org.eclipse.linuxtools.tmf.core.tests.analysis.sstest";
 
-    private TmfStateSystemAnalysisModule module;
+    private TmfTraceStub fTrace;
 
     /**
      * Setup test trace
      */
     @Before
     public void setupTraces() {
-        TmfTraceStub trace = (TmfTraceStub) TmfTestTrace.A_TEST_10K.getTrace();
-        TmfSignalManager.deregister(trace);
-        trace.traceOpened(new TmfTraceOpenedSignal(this, trace, null));
-
-        module = (TmfStateSystemAnalysisModule) trace.getAnalysisModule(MODULE_SS);
+        fTrace = (TmfTraceStub) TmfTestTrace.A_TEST_10K.getTrace();
     }
 
     /**
@@ -71,7 +67,12 @@ public class StateSystemAnalysisModuleTest {
      */
     @Test
     public void testSsModule() {
-        ITmfStateSystem ss = module.getStateSystem();
+        TmfSignalManager.deregister(fTrace);
+        fTrace.traceOpened(new TmfTraceOpenedSignal(this, fTrace, null));
+
+        TmfStateSystemAnalysisModule module = (TmfStateSystemAnalysisModule) fTrace.getAnalysisModule(MODULE_SS);
+        ITmfStateSystem ss = null;
+        ss = module.getStateSystem();
         assertNull(ss);
         module.schedule();
         if (module.waitForCompletion(new NullProgressMonitor())) {
@@ -80,19 +81,6 @@ public class StateSystemAnalysisModuleTest {
         } else {
             fail("Module did not complete properly");
         }
-    }
-
-    /**
-     * Make sure that the state system is initialized after calling 
-     * {@link TmfStateSystemAnalysisModule#waitForInitialization()}.
-     */
-    @Test
-    public void testInitialization() {
-        assertNull(module.getStateSystem());
-        module.schedule();
-
-        module.waitForInitialization();
-        assertNotNull(module.getStateSystem());
     }
 
 }

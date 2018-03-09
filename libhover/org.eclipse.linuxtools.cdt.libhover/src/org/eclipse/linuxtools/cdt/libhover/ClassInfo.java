@@ -26,8 +26,8 @@ public class ClassInfo implements Serializable {
 	private String className;
 	private String id;
 	private String include;
-	private ArrayList<ClassInfo> baseClasses = new ArrayList<>();
-	private HashMap<String, MemberInfo> members = new HashMap<>();
+	private ArrayList<ClassInfo> baseClasses = new ArrayList<ClassInfo>();
+	private HashMap<String, MemberInfo> members = new HashMap<String, MemberInfo>();
 	private transient Document document;
 	public transient Node classNode;
 	private ArrayList<ClassInfo> children = null;
@@ -40,9 +40,8 @@ public class ClassInfo implements Serializable {
 		return className;
 	}
 	public Node getClassNode() {
-		if (classNode == null) {
+		if (classNode == null)
 			classNode = document.getElementById(id);
-		}
 		return classNode;
 	}
 	public void setDocument (Document d) {
@@ -52,9 +51,8 @@ public class ClassInfo implements Serializable {
 		className = newName;
 	}
 	public void addTemplate(ClassInfo child) {
-		if (children == null) {
-			children = new ArrayList<>();
-		}
+		if (children == null)
+			children = new ArrayList<ClassInfo>();
 		children.add(child);
 	}
 	public boolean areTemplateParmsFilled() {
@@ -96,7 +94,7 @@ public class ClassInfo implements Serializable {
 	}
 	
 	public MemberInfo[] getMembers(String nameStart) {
-		ArrayList<MemberInfo> matchList = new ArrayList<>();
+		ArrayList<MemberInfo> matchList = new ArrayList<MemberInfo>();
 		Collection<MemberInfo> values = members.values();
 		for (Iterator<MemberInfo> i = values.iterator(); i.hasNext();) {
 			MemberInfo k = i.next();

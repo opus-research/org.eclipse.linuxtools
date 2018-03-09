@@ -12,20 +12,18 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.statistics;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAbstractAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfAnalysisModuleWithStateSystems;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStatisticsEventTypesModule;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStatisticsTotalsModule;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput;
 
@@ -33,19 +31,18 @@ import org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput;
  * Analysis module to compute the statistics of a trace.
  *
  * @author Alexandre Montplaisir
- * @since 3.0
  */
 public class TmfStatisticsModule extends TmfAbstractAnalysisModule
-        implements ITmfAnalysisModuleWithStateSystems {
+        implements ITmfStateSystemAnalysisModule {
 
     /** ID of this analysis module */
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.statistics.analysis"; //$NON-NLS-1$
 
+    /** Map of the statistics' state systems */
+    private final Map<String, ITmfStateSystem> fStateSystems = new HashMap<String, ITmfStateSystem>();
+
     /** The trace's statistics */
     private ITmfStatistics fStatistics = null;
-
-    private final TmfStateSystemAnalysisModule totalsModule = new TmfStatisticsTotalsModule();
-    private final TmfStateSystemAnalysisModule eventTypesModule = new TmfStatisticsEventTypesModule();
 
     /**
      * Constructor
@@ -70,44 +67,28 @@ public class TmfStatisticsModule extends TmfAbstractAnalysisModule
 
     @Override
     protected boolean executeAnalysis(IProgressMonitor monitor) throws TmfAnalysisException {
+        /*
+         * Initialize the statistics provider, but only if a Resource has been
+         * set (so we don't build it for experiments, for unit tests, etc.)
+         */
         ITmfTrace trace = getTrace();
-        if (trace == null) {
-            /* This analysis's trace should not be null when this is called */
-            throw new IllegalStateException();
-        }
-
-        /*
-         * Since these sub-analyzes are not built from an extension point, we
-         * have to assign the trace ourselves. Very important to do so before
-         * calling schedule()!
-         */
-        totalsModule.setTrace(trace);
-        eventTypesModule.setTrace(trace);
-
-        IStatus status1 = totalsModule.schedule();
-        IStatus status2 = eventTypesModule.schedule();
-        if (!status1.isOK() || !status2.isOK()) {
+        try {
+            /*
+             * FIXME We hard-code the StateStatistics type here, but it could
+             * be configurable via an analysis parameter.
+             */
+            fStatistics = (trace.getResource() == null ? null : new TmfStateStatistics(trace));
+        } catch (TmfTraceException e) {
             return false;
         }
 
-        /*
-         * The "execute" of this trace will encompass the "execute" of the two
-         * sub-analyzes.
-         */
-        if (!totalsModule.waitForCompletion(monitor) ||
-                !eventTypesModule.waitForCompletion(monitor)) {
-            return false;
+        /* Fill the state system map (if relevant) */
+        if (fStatistics instanceof TmfStateStatistics) {
+            TmfStateStatistics stats = (TmfStateStatistics) fStatistics;
+            fStateSystems.put(TmfStateStatistics.TOTALS_STATE_ID, stats.getTotalsSS());
+            fStateSystems.put(TmfStateStatistics.TYPES_STATE_ID, stats.getEventTypesSS());
         }
 
-        ITmfStateSystem totalsSS = totalsModule.getStateSystem();
-        ITmfStateSystem eventTypesSS = eventTypesModule.getStateSystem();
-
-        if (totalsSS == null || eventTypesSS == null) {
-            /* Better safe than sorry... */
-            throw new IllegalStateException();
-        }
-
-        fStatistics = new TmfStateStatistics(trace, totalsSS, eventTypesSS);
         return true;
     }
 
@@ -117,9 +98,6 @@ public class TmfStatisticsModule extends TmfAbstractAnalysisModule
          * FIXME The "right" way to cancel state system construction is not
          * available yet...
          */
-        totalsModule.cancel();
-        eventTypesModule.cancel();
-
         ITmfStatistics stats = fStatistics;
         if (stats != null) {
             stats.dispose();
@@ -131,32 +109,8 @@ public class TmfStatisticsModule extends TmfAbstractAnalysisModule
     // ------------------------------------------------------------------------
 
     @Override
-    public ITmfStateSystem getStateSystem(String id) {
-        switch (id) {
-        case TmfStatisticsTotalsModule.ID:
-            return totalsModule.getStateSystem();
-        case TmfStatisticsEventTypesModule.ID:
-            return eventTypesModule.getStateSystem();
-        default:
-            return null;
-        }
+    public Map<String, ITmfStateSystem> getStateSystems() {
+        return Collections.unmodifiableMap(fStateSystems);
     }
 
-    @Override
-    public String getStateSystemId(ITmfStateSystem ss) {
-        if (ss.equals(totalsModule.getStateSystem())) {
-            return TmfStatisticsTotalsModule.ID;
-        } else if (ss.equals(eventTypesModule.getStateSystem())){
-            return TmfStatisticsEventTypesModule.ID;
-        }
-        return null;
-    }
-
-    @Override
-    public Iterable<ITmfStateSystem> getStateSystems() {
-        List<ITmfStateSystem> list = new LinkedList<>();
-        list.add(totalsModule.getStateSystem());
-        list.add(eventTypesModule.getStateSystem());
-        return list;
-    }
 }

@@ -52,13 +52,13 @@ public class Specfile {
 	public Specfile() {
 		packages = new SpecfilePackageContainer();
 		preamble = new SpecfilePreamble();
-		sections = new ArrayList<>();
-		complexSections = new ArrayList<>();
-		defines = new HashMap<>();
-		sources = new HashMap<>();
-		patches = new HashMap<>();
-		buildRequires = new ArrayList<>();
-		requires = new ArrayList<>();
+		sections = new ArrayList<SpecfileSection>();
+		complexSections = new ArrayList<SpecfileSection>();
+		defines = new HashMap<String, SpecfileDefine>();
+		sources = new HashMap<Integer, SpecfileSource>();
+		patches = new HashMap<Integer, SpecfileSource>();
+		buildRequires = new ArrayList<SpecfileTag>();
+		requires = new ArrayList<SpecfileTag>();
 	}
 
 	public List<SpecfileSection> getSections() {
@@ -169,26 +169,26 @@ public class Specfile {
 	}
 
 	public List<SpecfileSource> getPatches() {
-		List<SpecfileSource> patchesList = new ArrayList<>(patches.values());
+		List<SpecfileSource> patchesList = new ArrayList<SpecfileSource>(patches.values());
 		Collections.sort(patchesList, new SourceComparator());
 		return patchesList;
 	}
 
 	public Collection<SpecfileSource> getSources() {
-		List<SpecfileSource> sourcesList = new ArrayList<>(sources.values());
+		List<SpecfileSource> sourcesList = new ArrayList<SpecfileSource>(sources.values());
 		Collections.sort(sourcesList, new SourceComparator());
 		return sourcesList;
 	}
 
 	public List<SpecfileDefine> getDefines() {
-		return new ArrayList<>(defines.values());
+		return new ArrayList<SpecfileDefine>(defines.values());
 	}
 
 	public void organizePatches() {
 		List<SpecfileSource> patches = getPatches();
 		int newPatchNumber = 0;
 		int oldPatchNumber = -1;
-		Map<Integer, SpecfileSource> newPatches = new HashMap<>();
+		Map<Integer, SpecfileSource> newPatches = new HashMap<Integer, SpecfileSource>();
 		for (SpecfileSource thisPatch: patches) {
 			if (thisPatch.getSpecfile() == null) {
 				thisPatch.setSpecfile(this);

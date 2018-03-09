@@ -506,7 +506,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			return funcs;
 		}
 		try {
-			ArrayList<ICContainer> list = new ArrayList<>();
+			ArrayList<ICContainer> list = new ArrayList<ICContainer>();
 			TranslationUnitVisitor v = new TranslationUnitVisitor();
 
 			for (ICElement b : bin.getCProject().getChildrenOfType(
@@ -627,7 +627,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 		if (testMode) {
 			OKButton.setSelection(true);
 			result = list.toArray();
-			ArrayList<Object> output = new ArrayList<>();
+			ArrayList<Object> output = new ArrayList<Object>();
 			try {
 				for (Object obj : result) {
 					if (obj instanceof ICContainer) {
@@ -663,7 +663,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			return null;
 		}
 
-		ArrayList<Object> output = new ArrayList<>();
+		ArrayList<Object> output = new ArrayList<Object>();
 		try {
 			for (Object obj : result) {
 				if (obj instanceof ICContainer) {
@@ -812,7 +812,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 		public GetFunctionsJob(String name, ICProject p, Object[] o) {
 			super(name);
-			functionList = new ArrayList<>();
+			functionList = new ArrayList<String>();
 			listOfFiles = Arrays.copyOf(o, o.length);
 			project = p;
 		}

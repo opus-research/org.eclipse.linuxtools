@@ -18,7 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -32,6 +31,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 
 /**
  * Implementation of ITmfStatistics which uses a state history for storing its
@@ -50,6 +50,31 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 public class TmfStateStatistics implements ITmfStatistics {
 
     // ------------------------------------------------------------------------
+    // Constants
+    // ------------------------------------------------------------------------
+
+    /**
+     * @deprecated Do not use, it's been replaced by {@link #TOTALS_STATE_ID}
+     *              and {@link #TYPES_STATE_ID}
+     */
+    @Deprecated
+    public static final String STATE_ID = "org.eclipse.linuxtools.tmf.statistics"; //$NON-NLS-1$
+
+    /** ID for the "event totals" statistics state system
+     * @since 2.2 */
+    public static final String TOTALS_STATE_ID = "org.eclipse.linuxtools.tmf.statistics.totals"; //$NON-NLS-1$
+
+    /** ID for the "event types" statistics state system
+     * @since 2.2 */
+    public static final String TYPES_STATE_ID = "org.eclipse.linuxtools.tmf.statistics.types"; //$NON-NLS-1$
+
+    /** Filename for the "event totals" state history file */
+    private static final String TOTALS_STATE_FILENAME = "statistics-totals.ht"; //$NON-NLS-1$
+
+    /** Filename for the "event types" state history file */
+    private static final String TYPES_STATE_FILENAME = "statistics-types.ht"; //$NON-NLS-1$
+
+    // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
 
@@ -66,22 +91,47 @@ public class TmfStateStatistics implements ITmfStatistics {
     // ------------------------------------------------------------------------
 
     /**
+     * Empty constructor. The resulting TmfStatistics object will not be usable,
+     * but it might be needed for sub-classes.
+     */
+    public TmfStateStatistics() {
+        totalsStats = null;
+        typesStats = null;
+        trace = null;
+    }
+
+    /**
      * Constructor
      *
      * @param trace
      *            The trace for which we build these statistics
-     * @param totals
-     *            The state system containing the "totals" information
-     * @param eventTypes
-     *            The state system containing the "event types" information
-     * @since 3.0
+     * @throws TmfTraceException
+     *             If something went wrong trying to initialize the statistics
      */
-    public TmfStateStatistics(@NonNull ITmfTrace trace,
-            @NonNull ITmfStateSystem totals,
-            @NonNull ITmfStateSystem eventTypes) {
+    public TmfStateStatistics(ITmfTrace trace) throws TmfTraceException {
         this.trace = trace;
-        this.totalsStats = totals;
-        this.typesStats = eventTypes;
+        String directory = TmfTraceManager.getSupplementaryFileDir(trace);
+
+        final File totalsFile = new File(directory + TOTALS_STATE_FILENAME);
+        final ITmfStateProvider totalsInput = new StatsProviderTotals(trace);
+        this.totalsStats = TmfStateSystemFactory.newFullHistory(totalsFile, totalsInput, true);
+
+        final File typesFile = new File(directory + TYPES_STATE_FILENAME);
+        final ITmfStateProvider typesInput = new StatsProviderEventTypes(trace);
+        this.typesStats = TmfStateSystemFactory.newFullHistory(typesFile, typesInput, true);
+    }
+
+    /**
+     * Old manual constructor.
+     *
+     * @param trace Trace
+     * @param historyFile Full history file
+     * @deprecated Need to use {@link #TmfStateStatistics(ITmfTrace trace,
+     * File fullHistoryFile, File partialHistoryFile)} now.
+     */
+    @Deprecated
+    public TmfStateStatistics(ITmfTrace trace, File historyFile) {
+        this();
     }
 
     /**
@@ -99,12 +149,11 @@ public class TmfStateStatistics implements ITmfStatistics {
      *             If the file could not be written to
      * @since 2.2
      */
-    @Deprecated
     public TmfStateStatistics(ITmfTrace trace, File totalsHistoryFile,
             File typesHistoryFile) throws TmfTraceException {
         this.trace = trace;
-        final ITmfStateProvider totalsInput = new TmfStatisticsTotalsModule().new StatsProviderTotals(trace);
-        final ITmfStateProvider typesInput = new TmfStatisticsEventTypesModule().new StatsProviderEventTypes(trace);
+        final ITmfStateProvider totalsInput = new StatsProviderTotals(trace);
+        final ITmfStateProvider typesInput = new StatsProviderEventTypes(trace);
         this.totalsStats = TmfStateSystemFactory.newFullHistory(totalsHistoryFile, totalsInput, true);
         this.typesStats = TmfStateSystemFactory.newFullHistory(typesHistoryFile, typesInput, true);
     }
@@ -113,7 +162,6 @@ public class TmfStateStatistics implements ITmfStatistics {
      * Return the state system containing the "totals" values
      *
      * @return The "totals" state system
-     * @since 3.0
      */
     public ITmfStateSystem getTotalsSS() {
         return totalsStats;
@@ -123,7 +171,6 @@ public class TmfStateStatistics implements ITmfStatistics {
      * Return the state system containing the "event types" values
      *
      * @return The "event types" state system
-     * @since 3.0
      */
     public ITmfStateSystem getEventTypesSS() {
         return typesStats;
@@ -171,11 +218,10 @@ public class TmfStateStatistics implements ITmfStatistics {
 
     @Override
     public List<Long> histogramQuery(final long start, final long end, final int nb) {
-        final List<Long> list = new LinkedList<>();
+        final List<Long> list = new LinkedList<Long>();
         final long increment = (end - start) / nb;
 
-        totalsStats.waitUntilBuilt();
-        if (totalsStats.isCancelled()) {
+        if (!totalsStats.waitUntilBuilt()) {
             return list;
         }
 
@@ -238,7 +284,7 @@ public class TmfStateStatistics implements ITmfStatistics {
         /* We need the complete state history to be built to answer this. */
         typesStats.waitUntilBuilt();
 
-        Map<String, Long> map = new HashMap<>();
+        Map<String, Long> map = new HashMap<String, Long>();
         long endTime = typesStats.getCurrentEndTime();
 
         try {
@@ -259,7 +305,11 @@ public class TmfStateStatistics implements ITmfStatistics {
 
         } catch (TimeRangeException e) {
             /* Assume there is no events, nothing will be put in the map. */
-        } catch (AttributeNotFoundException | StateValueTypeException | StateSystemDisposedException e) {
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (StateValueTypeException e) {
+            e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
             e.printStackTrace();
         }
         return map;
@@ -292,7 +342,7 @@ public class TmfStateStatistics implements ITmfStatistics {
         // end time, and answer as soon as possible...
         typesStats.waitUntilBuilt();
 
-        Map<String, Long> map = new HashMap<>();
+        Map<String, Long> map = new HashMap<String, Long>();
 
         /* Make sure the start/end times are within the state history, so we
          * don't get TimeRange exceptions.
@@ -344,11 +394,15 @@ public class TmfStateStatistics implements ITmfStatistics {
 
         } catch (TimeRangeException e) {
             /* Assume there is no events, nothing will be put in the map. */
-        } catch (AttributeNotFoundException | StateValueTypeException | StateSystemDisposedException e) {
+        } catch (AttributeNotFoundException e) {
             /*
              * These other exception types would show a logic problem however,
              * so they should not happen.
              */
+            e.printStackTrace();
+        } catch (StateValueTypeException e) {
+            e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
             e.printStackTrace();
         }
         return map;
@@ -370,7 +424,11 @@ public class TmfStateStatistics implements ITmfStatistics {
 
         } catch (TimeRangeException e) {
             /* Assume there is no events for that range */
-        } catch (AttributeNotFoundException | StateValueTypeException | StateSystemDisposedException e) {
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (StateValueTypeException e) {
+            e.printStackTrace();
+        } catch (StateSystemDisposedException e) {
             e.printStackTrace();
         }
 
@@ -399,10 +457,8 @@ public class TmfStateStatistics implements ITmfStatistics {
      * @return If both state systems were built successfully
      */
     private boolean waitUntilBuilt() {
-        totalsStats.waitUntilBuilt();
-        typesStats.waitUntilBuilt();
-        boolean check1 = !totalsStats.isCancelled();
-        boolean check2 = !typesStats.isCancelled();
+        boolean check1 = totalsStats.waitUntilBuilt();
+        boolean check2 = typesStats.waitUntilBuilt();
         return (check1 && check2);
     }
 

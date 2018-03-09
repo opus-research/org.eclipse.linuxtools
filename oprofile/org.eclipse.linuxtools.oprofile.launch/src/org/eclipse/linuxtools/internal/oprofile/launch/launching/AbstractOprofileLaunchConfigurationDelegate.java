@@ -71,16 +71,14 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 
 		//if daemonEvents null or zero size, the default event will be used
 		OprofileDaemonEvent[] daemonEvents = null;
-		ArrayList<OprofileDaemonEvent> events = new ArrayList<>();
+		ArrayList<OprofileDaemonEvent> events = new ArrayList<OprofileDaemonEvent>();
 		if (!config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, false)) {
 			//get the events to profile from the counters
 			OprofileCounter[] counters = oprofileCounters(config);
 
 			for (int i = 0; i < counters.length; ++i) {
-				if (counters[i].getEnabled()) {
-					OprofileDaemonEvent[] counterEvents  = counters[i].getDaemonEvents();
-					events.addAll(Arrays.asList(counterEvents));
-				}
+				if (counters[i].getEnabled())
+					events.add(counters[i].getDaemonEvent());
 			}
 
 			daemonEvents = new OprofileDaemonEvent[events.size()];
@@ -117,10 +115,10 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 
 			String eventsString=EVENTS;
 			for (int i=0;i<events.size();i++) {
-				eventsString+=events.get(i).getEvent().getText() + ":" + events.get(i).getResetCount() + ","; //$NON-NLS-1$ //$NON-NLS-2$
+				eventsString+=events.get(i).getEvent().getText() + ":" + events.get(i).getEvent().getMinCount() + ","; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 
-			ArrayList<String> argArray = new ArrayList<>(Arrays.asList(getProgramArgumentsArray( config )));
+			ArrayList<String> argArray = new ArrayList<String>(Arrays.asList(getProgramArgumentsArray( config )));
 			IFolder dataFolder = Oprofile.OprofileProject.getProject().getFolder(OPROFILE_DATA);
 			if(!dataFolder.exists()) {
 				dataFolder.create(false, true, null);

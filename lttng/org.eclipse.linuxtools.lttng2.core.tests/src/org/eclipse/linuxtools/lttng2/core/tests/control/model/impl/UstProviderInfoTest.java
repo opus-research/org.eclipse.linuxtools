@@ -141,7 +141,7 @@ public class UstProviderInfoTest {
     public void testSetEvents_1() {
         UstProviderInfo fixture = new UstProviderInfo("test");
         fixture.setPid(2468);
-        List<IBaseEventInfo> events = new LinkedList<>();
+        List<IBaseEventInfo> events = new LinkedList<IBaseEventInfo>();
         events.add(fEventInfo1);
         events.add(fEventInfo2);
         fixture.setEvents(events);

@@ -38,9 +38,8 @@ public abstract class AChart extends GraphCanvas implements IGraph {
 		adapter = adapt;
 
 		elementList = new LinkedList[adapt.getSeriesCount()];
-		for(int i=0; i<elementList.length; i++) {
-			elementList[i] = new LinkedList<>();
-		}
+		for(int i=0; i<elementList.length; i++)
+			elementList[i] = new LinkedList<Object>();
 
 		createLegend();
 		createTitle(title);
@@ -70,12 +69,10 @@ public abstract class AChart extends GraphCanvas implements IGraph {
 
 	protected void paintAll(GC gc) {
 		paintElementList(gc);
-		if(showLegend && legend != null) {
+		if(showLegend && legend != null)
 			legend.paint(gc);
-		}
-		if(showTitle && title != null) {
+		if(showTitle && title != null)
 			title.paint(gc);
-		}
 	}
 
 	@Override

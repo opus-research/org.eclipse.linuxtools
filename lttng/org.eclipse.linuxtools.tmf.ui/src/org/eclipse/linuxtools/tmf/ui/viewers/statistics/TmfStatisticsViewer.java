@@ -451,7 +451,6 @@ public class TmfStatisticsViewer extends TmfViewer {
      *
      * @param request
      *            The request to be canceled
-     * @since 3.0
      */
     protected void cancelOngoingRequest(ITmfEventRequest request) {
         if (request != null && !request.isCompleted()) {
@@ -737,7 +736,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                 }
 
                 /* Retrieve the statistics object */
-                final TmfStatisticsModule statsMod = aTrace.getAnalysisModuleOfClass(TmfStatisticsModule.class, TmfStatisticsModule.ID);
+                final TmfStatisticsModule statsMod = aTrace.getAnalysisModules(TmfStatisticsModule.class).get(TmfStatisticsModule.ID);
                 if (statsMod == null) {
                     /* No statistics module available for this trace */
                     continue;

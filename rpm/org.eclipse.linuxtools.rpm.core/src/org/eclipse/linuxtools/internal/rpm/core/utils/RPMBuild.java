@@ -45,7 +45,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
  */
 public class RPMBuild {
 
-	private List<String> macroDefines = new ArrayList<>();
+	private List<String> macroDefines = new ArrayList<String>();
 
 	private String rpmBuildCmd;
 
@@ -156,7 +156,7 @@ public class RPMBuild {
 					IRPMConstants.RPM_CORE_ID, Messages.Specfile_not_found));
 		}
 
-		List<String> command = new ArrayList<>();
+		List<String> command = new ArrayList<String>();
 		IRemoteProxyManager rmtProxyMgr;
 		IRemoteCommandLauncher rmtCmdLauncher = null;
 		command.addAll(macroDefines);
@@ -183,22 +183,24 @@ public class RPMBuild {
 			MessageConsoleStream stream = console.newMessageStream();
 
 			if (pProxy != null) {
-				try (BufferedReader error = new BufferedReader(
+				BufferedReader error = new BufferedReader(
 						new InputStreamReader(pProxy.getErrorStream()));
-						BufferedReader reader = new BufferedReader(
-								new InputStreamReader(pProxy.getInputStream()))) {
-					String err = error.readLine();
+				String err;
+				try {
+					err = error.readLine();
 					while (err != null) {
 						stream.println(err);
 						err = error.readLine();
 					}
+					error.close();
+					BufferedReader reader = new BufferedReader(
+							new InputStreamReader(pProxy.getInputStream()));
 					String readLine = reader.readLine();
 					while (readLine != null) {
 						stream.println(readLine);
 						readLine = reader.readLine();
 					}
 					reader.close();
-
 				} catch (IOException e) {
 					throw new CoreException(new Status(IStatus.ERROR,
 							IRPMConstants.RPM_CORE_ID, e.getMessage(), e));

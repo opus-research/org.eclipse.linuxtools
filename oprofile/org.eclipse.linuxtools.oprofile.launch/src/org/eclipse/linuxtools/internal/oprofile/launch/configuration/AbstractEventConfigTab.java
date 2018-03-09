@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
+import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -29,7 +30,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpUnitMask;
@@ -115,6 +115,9 @@ AbstractLaunchConfigurationTab {
 		}
 	}
 
+	/**
+	 * @see ILaunchConfigurationTab#initializeFrom(ILaunchConfiguration)
+	 */
 	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
 
@@ -189,6 +192,9 @@ AbstractLaunchConfigurationTab {
 		}
 	}
 
+	/**
+	 * @see ILaunchConfigurationTab#isValid(ILaunchConfiguration)
+	 */
 	@Override
 	public boolean isValid(ILaunchConfiguration config) {
 		IProject project = getProject(config);
@@ -223,8 +229,7 @@ AbstractLaunchConfigurationTab {
 					counters[i].loadConfiguration(config);
 
 					for (CounterSubTab counterSubTab : counterSubTabs){
-						int nr = counterSubTab.counter.getNumber();
-						if(counterSubTab.enabledCheck.getSelection() && config.getAttribute(OprofileLaunchPlugin.ATTR_NUMBER_OF_EVENTS(nr), 0) == 0){
+						if(counterSubTab.enabledCheck.getSelection() && counterSubTab.eventList.getList().getSelectionIndex() == -1){
 							valid = false;
 						}
 					}
@@ -232,25 +237,22 @@ AbstractLaunchConfigurationTab {
 					if (counters[i].getEnabled()) {
 						++numEnabledEvents;
 
-						for (OpEvent event : counters[i].getEvents()) {
-							if (event == null) {
-								valid = false;
-								break;
-							}
+						if (counters[i].getEvent() == null) {
+							valid = false;
+							break;
+						}
 
-							// First check min count
-							int min = event.getMinCount();
-							if (counters[i].getCount() < min) {
-								valid = false;
-								break;
-							}
+						// First check min count
+						int min = counters[i].getEvent().getMinCount();
+						if (counters[i].getCount() < min) {
+							valid = false;
+							break;
+						}
 
-							// Next ask oprofile if it is valid
-							if (!checkEventSetupValidity(
-									counters[i].getNumber(), event.getText(), event.getUnitMask().getMaskValue())) {
-								valid = false;
-								break;
-							}
+						// Next ask oprofile if it is valid
+						if (!checkEventSetupValidity(counters[i].getNumber(), counters[i].getEvent().getText(), counters[i].getEvent().getUnitMask().getMaskValue())) {
+							valid = false;
+							break;
 						}
 					}
 				}
@@ -262,6 +264,9 @@ AbstractLaunchConfigurationTab {
 		return (numEnabledEvents > 0 && valid);
 	}
 
+	/**
+	 * @see ILaunchConfigurationTab#performApply(ILaunchConfigurationWorkingCopy)
+	 */
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		if (getOprofileTimerMode() || counterSubTabs == null) {
@@ -274,6 +279,9 @@ AbstractLaunchConfigurationTab {
 		}
 	}
 
+	/**
+	 * @see ILaunchConfigurationTab#setDefaults(ILaunchConfigurationWorkingCopy)
+	 */
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		boolean useDefault = true;
@@ -293,11 +301,17 @@ AbstractLaunchConfigurationTab {
 		config.setAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, useDefault);
 	}
 
+	/**
+	 * @see ILaunchConfigurationTab#getName()
+	 */
 	@Override
 	public String getName() {
 		return OprofileLaunchMessages.getString("tab.event.name"); //$NON-NLS-1$
 	}
 
+	/**
+	 * @see ILaunchConfigurationTab#getImage()
+	 */
 	@Override
 	public Image getImage() {
 		return OprofileLaunchPlugin.getImageDescriptor(OprofileLaunchPlugin.ICON_EVENT_TAB).createImage();
@@ -550,13 +564,7 @@ AbstractLaunchConfigurationTab {
 				}
 			});
 
-			int options =  SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER;
-			if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
-				options |= SWT.MULTI;
-			} else {
-				options |= SWT.SINGLE;
-			}
-			eventList = new ListViewer(parent, options);
+			eventList = new ListViewer(parent, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 			eventList.getList().setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
 
 			eventList.setLabelProvider(new ILabelProvider(){
@@ -704,18 +712,18 @@ AbstractLaunchConfigurationTab {
 			boolean enabled = counter.getEnabled();
 			enabledCheck.setSelection(enabled);
 
-			if (counter.getEvents().length == 0 || counter.getEvents()[0] == null) {
+			if (counter.getEvent() == null) {
 				// Default to first in list
-				counter.setEvents(new OpEvent [] {counter.getValidEvents()[0]});
+				counter.setEvent(counter.getValidEvents()[0]);
 			}
 
 			//load default states
 			profileKernelCheck.setSelection(counter.getProfileKernel());
 			profileUserCheck.setSelection(counter.getProfileUser());
 			countText.setText(Integer.toString(counter.getCount()));
-			eventDescText.setText(counter.getEvents()[0].getTextDescription());
-			unitMaskViewer.displayEvent(counter.getEvents()[0]);
-			eventList.setSelection(new StructuredSelection(counter.getEvents()));
+			eventDescText.setText(counter.getEvent().getTextDescription());
+			unitMaskViewer.displayEvent(counter.getEvent());
+			eventList.setSelection(new StructuredSelection(counter.getEvent()));
 		}
 
 		/**
@@ -760,33 +768,21 @@ AbstractLaunchConfigurationTab {
 		 * and updates the UnitMask and event description text box.
 		 */
 		private void handleEventListSelectionChange() {
-			int [] indices = eventList.getList().getSelectionIndices();
-			if (indices.length != 0) {
-				ArrayList<OpEvent> tmp = new ArrayList<> ();
-				for (int index : indices) {
-					OpEvent event = (OpEvent) eventList.getElementAt(index);
-					tmp.add(event);
-					eventDescText.setText(event.getTextDescription());
-					unitMaskViewer.displayEvent(event);
-				}
+			int index = eventList.getList().getSelectionIndex();
+			if (index != -1){
+				OpEvent event = (OpEvent) eventList.getElementAt(index);
+				counter.setEvent(event);
+				eventDescText.setText(event.getTextDescription());
+				unitMaskViewer.displayEvent(event);
 
-				// Check the min count to update the error message (events
-				// can have
+				// Check the min count to update the error message (events can have
 				// different minimum reset counts)
-				int min = Integer.MIN_VALUE;
-				for (OpEvent ev : tmp) {
-					// We want the largest of the min values
-					if (ev.getMinCount() > min) {
-						min = ev.getMinCount();
-					}
-				}
-				if ((counter.getCount() < min)
-						&& (!defaultEventCheck.getSelection())) {
+				int min = counter.getEvent().getMinCount();
+				if ((counter.getCount() < min) && (!defaultEventCheck.getSelection())){
 					setErrorMessage(getMinCountErrorMessage(min));
 				}
-
-				counter.setEvents(tmp.toArray(new OpEvent[0]));
 			} else {
+				counter.setEvent(null);
 				eventDescText.setText(""); //$NON-NLS-1$
 				if(unitMaskViewer != null){
 					unitMaskViewer.displayEvent(null);
@@ -825,13 +821,7 @@ AbstractLaunchConfigurationTab {
 				counter.setCount(count);
 
 				// Check minimum count
-				int min = Integer.MIN_VALUE;
-				for (OpEvent event : counter.getEvents()) {
-					// We want the largest of the min values
-					if (event != null && event.getMinCount() > min) {
-						min = event.getMinCount();
-					}
-				}
+				int min = counter.getEvent().getMinCount();
 				if ((count < min) && (!defaultEventCheck.getSelection())) {
 					errorMessage = getMinCountErrorMessage(min);
 				}
@@ -945,7 +935,7 @@ AbstractLaunchConfigurationTab {
 				//creates these buttons with the default masks
 				mask.setDefaultMaskValue();
 
-				ArrayList<Button> maskButtons = new ArrayList<>();
+				ArrayList<Button> maskButtons = new ArrayList<Button>();
 
 				for (int i = 0; i < totalMasks; i++) {
 					Button maskButton;

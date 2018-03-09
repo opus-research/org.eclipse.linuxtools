@@ -45,7 +45,7 @@ public class TestSessionsParse {
 	public void setUp() throws Exception {
 		/* this code mostly taken from OpxmlRunner */
 		XMLReader reader = null;
-		eventList = new ArrayList<>();
+		eventList = new ArrayList<OpModelEvent>();
 		SessionsProcessor.SessionInfo sessioninfo = new SessionsProcessor.SessionInfo(eventList);
 		OprofileSAXHandler handler = OprofileSAXHandler.getInstance(sessioninfo);
 

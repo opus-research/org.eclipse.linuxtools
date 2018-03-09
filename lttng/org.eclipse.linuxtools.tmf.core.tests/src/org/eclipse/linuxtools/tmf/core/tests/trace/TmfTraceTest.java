@@ -16,7 +16,6 @@ package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -25,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -441,23 +442,21 @@ public class TmfTraceTest {
     @Test
     public void testGetModulesByClass() {
         /* There should not be any modules at this point */
-        Iterable<IAnalysisModule> modules = fTrace.getAnalysisModules();
-        assertFalse(modules.iterator().hasNext());
+        Map<String, IAnalysisModule> modules = fTrace.getAnalysisModules();
+        assertTrue(modules.isEmpty());
 
         /* Open the trace, the modules should be populated */
         fTrace.traceOpened(new TmfTraceOpenedSignal(this, fTrace, null));
 
         modules = fTrace.getAnalysisModules();
-        Iterable<TestAnalysis> testModules = fTrace.getAnalysisModulesOfClass(TestAnalysis.class);
-        assertTrue(modules.iterator().hasNext());
-        assertTrue(testModules.iterator().hasNext());
+        Map<String, TestAnalysis> testModules = fTrace.getAnalysisModules(TestAnalysis.class);
+        assertFalse(modules.isEmpty());
+        assertFalse(testModules.isEmpty());
 
         /* Make sure all modules of type TestAnalysis are returned in the second call */
-        for (IAnalysisModule module : modules) {
-            if (module instanceof TestAnalysis) {
-                IAnalysisModule otherModule = fTrace.getAnalysisModule(module.getId());
-                assertNotNull(otherModule);
-                assertTrue(otherModule.equals(module));
+        for (Entry<String, IAnalysisModule> module : modules.entrySet()) {
+            if (module.getValue() instanceof TestAnalysis) {
+                assertTrue(testModules.containsKey(module.getKey()));
             }
         }
 
@@ -1141,7 +1140,7 @@ public class TmfTraceTest {
 
     @Test
     public void testProcessEventRequestForAllEvents() throws InterruptedException {
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -1170,7 +1169,7 @@ public class TmfTraceTest {
     @Test
     public void testProcessEventRequestForNbEvents() throws InterruptedException {
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -1200,7 +1199,7 @@ public class TmfTraceTest {
     public void testProcessEventRequestForSomeEvents() throws InterruptedException {
         final long startTime = 100;
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         final TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(startTime, SCALE), TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -1231,7 +1230,7 @@ public class TmfTraceTest {
         final int startIndex = 99;
         final long startTime = 100;
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         final TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(startTime, SCALE), TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -1261,7 +1260,7 @@ public class TmfTraceTest {
     public void testProcessDataRequestForSomeEvents() throws InterruptedException {
         final int startIndex = 100;
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
                 TmfTimeRange.ETERNITY,
@@ -1296,7 +1295,7 @@ public class TmfTraceTest {
     @Test
     public void testCancel() throws InterruptedException {
         final int limit = 500;
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
