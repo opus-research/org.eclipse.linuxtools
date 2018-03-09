@@ -15,18 +15,18 @@ package org.eclipse.linuxtools.tmf.analysis.xml.core.module;
 import org.eclipse.osgi.util.NLS;
 
 /**
- * Externalized messages for the xml analysis module package
+ * Externalized messages for the XML analysis module package
  *
  * @author Geneviève Bastien
  */
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.analysis.xml.core.module.messages"; //$NON-NLS-1$
 
-    /** Error copying Xml file to workspace folder */
+    /** Error copying XML file to workspace folder */
     public static String XmlUtils_ErrorCopyingFile;
-    /** Xml parse error */
+    /** XML parse error */
     public static String XmlUtils_XmlParseError;
-    /** Xml validation error */
+    /** XML validation error */
     public static String XmlUtils_XmlValidationError;
 
     static {

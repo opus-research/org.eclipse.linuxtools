@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Geneviève Bastien - Initial implementation
+ *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.analysis.xml.core.tests.module;

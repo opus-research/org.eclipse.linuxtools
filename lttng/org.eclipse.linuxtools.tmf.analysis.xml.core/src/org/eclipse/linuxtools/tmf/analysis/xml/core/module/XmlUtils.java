@@ -65,11 +65,11 @@ public class XmlUtils {
     }
 
     /**
-     * Validate the XML file input with the xsd schema
+     * Validate the XML file input with the XSD schema
      *
      * @param xml
-     *            Xml file to validate
-     * @return whether the xml validates
+     *            XML file to validate
+     * @return whether the XML validates
      */
     public static boolean xmlValidate(File xml) {
         URL url = XmlUtils.class.getResource(XSD);
@@ -94,12 +94,12 @@ public class XmlUtils {
     }
 
     /**
-     * Copies an xml file to the plugin's path and refreshes the available
-     * modules. The xml file should have been validated before calling this
-     * method.
+     * Adds an XML file to the plugin's path. The XML file should have been
+     * validated using the {@link XmlUtils#xmlValidate(File)} method before
+     * calling this method.
      *
      * @param fromFile
-     *            The xml file to copy
+     *            The XML file to copy
      * @return Whether the file was successfully added
      */
     public static boolean addXmlFile(File fromFile) {
@@ -140,7 +140,7 @@ public class XmlUtils {
 
     /**
      * Return the last error message that was obtained either when validating an
-     * xml file or manipulating the files. Typically, one of the boolean
+     * XML file or manipulating the files. Typically, one of the boolean
      * functions of this class would have returned false and the error message
      * will have been updated. It can be either logged or displayed to the user
      * by the caller.

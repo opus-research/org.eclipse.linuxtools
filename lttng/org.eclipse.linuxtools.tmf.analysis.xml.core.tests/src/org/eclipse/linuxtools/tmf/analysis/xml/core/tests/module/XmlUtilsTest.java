@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Geneviève Bastien - Initial implementation
+ *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.analysis.xml.core.tests.module;
@@ -35,7 +35,7 @@ import org.junit.Test;
 public class XmlUtilsTest {
 
     /**
-     * Empty the xml directory after the test
+     * Empty the XML directory after the test
      */
     @After
     public void emptyXmlFolder() {

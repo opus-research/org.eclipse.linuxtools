@@ -13,19 +13,19 @@
 package org.eclipse.linuxtools.tmf.analysis.xml.core.module;
 
 /**
- * Interface that xml analysis modules may implement to interpret the header
- * information in the xml
+ * Interface that XML analysis modules may implement to interpret the header
+ * information in the XML
  *
  * @author Geneviève Bastien
  */
 public interface IXmlModule {
 
-	/**
-	 * Set the header information node associated with this module
-	 *
-	 * @param headInfo
-	 *            The header information
-	 */
-	void setHeadInfo(XmlHeadInfo headInfo);
+    /**
+     * Set the header information node associated with this module
+     *
+     * @param headInfo
+     *            The header information
+     */
+    void setHeadInfo(XmlHeadInfo headInfo);
 
 }

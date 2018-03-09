@@ -21,16 +21,16 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 
 /**
- * Module for the xml state systems
+ * Analysis module for the data-driven state systems, defined in XML.
  *
  * @author Geneviève Bastien
  * @since 3.0
  */
 public class XmlStateSystemModule extends TmfStateSystemAnalysisModule
-		implements IXmlModule {
+        implements IXmlModule {
 
-	private IPath fXmlFile;
-	private XmlHeadInfo fHeadInfo = null;
+    private IPath fXmlFile;
+    private XmlHeadInfo fHeadInfo = null;
 
     @Override
     protected StateSystemBackendType getBackendType() {
@@ -38,36 +38,37 @@ public class XmlStateSystemModule extends TmfStateSystemAnalysisModule
     }
 
     @Override
-	protected @NonNull ITmfStateProvider createStateProvider() {
-		if (!(getTrace() instanceof CtfTmfTrace)) {
-		    throw new IllegalStateException("XmlStateSystemModule: trace should be of type CtfTmfTrace"); //$NON-NLS-1$
-		}
-		return new XmlStateProvider((CtfTmfTrace) getTrace(), getId(), fXmlFile);
-	}
+    protected @NonNull
+    ITmfStateProvider createStateProvider() {
+        if (!(getTrace() instanceof CtfTmfTrace)) {
+            throw new IllegalStateException("XmlStateSystemModule: trace should be of type CtfTmfTrace"); //$NON-NLS-1$
+        }
+        return new XmlStateProvider((CtfTmfTrace) getTrace(), getId(), fXmlFile);
+    }
 
-	@Override
+    @Override
     public String getName() {
-	    String name = fHeadInfo.getName();
-	    if (name == null) {
-	        name = getId();
-	    }
-	    return name;
+        String name = fHeadInfo.getName();
+        if (name == null) {
+            name = getId();
+        }
+        return name;
     }
 
     /**
-	 * Sets the file name of the xml file containing the state provider
-	 *
-	 * @param file
-	 *            XML File name
-	 */
-	public void setXmlFile(IPath file) {
-		fXmlFile = file;
-	}
+     * Sets the file path of the XML file containing the state provider
+     *
+     * @param file
+     *            The full path to the XML file
+     */
+    public void setXmlFile(IPath file) {
+        fXmlFile = file;
+    }
 
-	@Override
-	public void setHeadInfo(XmlHeadInfo headInfo) {
-		fHeadInfo = headInfo;
-	}
+    @Override
+    public void setHeadInfo(XmlHeadInfo headInfo) {
+        fHeadInfo = headInfo;
+    }
 
     /**
      * @return file XML File name

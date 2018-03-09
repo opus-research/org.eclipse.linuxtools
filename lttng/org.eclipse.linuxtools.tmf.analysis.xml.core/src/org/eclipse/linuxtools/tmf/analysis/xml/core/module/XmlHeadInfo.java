@@ -23,7 +23,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Class to store the header information of xml-defined analysis
+ * Class to store the header information of XML-defined analysis
  *
  * @author Geneviève Bastien
  */
