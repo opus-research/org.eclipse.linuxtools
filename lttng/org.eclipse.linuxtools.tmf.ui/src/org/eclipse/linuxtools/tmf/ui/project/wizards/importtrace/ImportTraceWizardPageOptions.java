@@ -96,17 +96,15 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
                     IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
                     getBatchWizard().setTraceFolder(folder);
                     ImportTraceWizardPageOptions.this.setErrorMessage(null);
-                } else {
-                    ImportTraceWizardPageOptions.this.setErrorMessage(Messages.SharedSelectProject);
                 }
             }
         });
         if (proj != null) {
             fProjects.setSelection(fProjects.indexOf(proj.getName()));
-        } else if (fProjects.getItemCount() > 0) {
-            fProjects.setSelection(0);
+            this.setErrorMessage(null);
+        } else {
+            this.setErrorMessage(Messages.SharedSelectProject);
         }
-        setMessage(Messages.SharedSelectProject);
         this.setTitle(Messages.ImportTraceWizardPageOptionsTitle);
     }
 }
