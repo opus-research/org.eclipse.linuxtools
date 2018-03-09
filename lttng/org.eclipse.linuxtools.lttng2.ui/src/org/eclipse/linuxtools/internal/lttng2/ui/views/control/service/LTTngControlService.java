@@ -9,7 +9,6 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
- *   Simon Delisle - Updated for support of LTTng Tools 2.2
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.service;
 
@@ -28,20 +27,17 @@ import org.eclipse.linuxtools.internal.lttng2.core.control.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IFieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISessionInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.ISnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.IUstProviderInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceEventType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BaseEventInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.BufferType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.DomainInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.EventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.FieldInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.ProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.SessionInfo;
-import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.SnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.impl.UstProviderInfo;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.logging.ControlCommandLogger;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
@@ -64,12 +60,12 @@ public class LTTngControlService implements ILttngControlService {
     /**
      * The command shell implementation
      */
-    private final ICommandShell fCommandShell;
+    protected ICommandShell fCommandShell = null;
 
     /**
      * The version string.
      */
-    private LttngVersion fVersion = null;
+    protected LttngVersion fVersion = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -109,15 +105,6 @@ public class LTTngControlService implements ILttngControlService {
     public boolean isVersionSupported(String version) {
         LttngVersion tmp = new LttngVersion(version);
         return (fVersion != null && fVersion.compareTo(tmp) >= 0) ? true : false;
-    }
-
-    /**
-     * Returns the command shell implementation.
-     *
-     * @return the command shell implementation
-     */
-    protected ICommandShell getCommandShell() {
-        return fCommandShell;
     }
 
     // ------------------------------------------------------------------------
@@ -176,28 +163,16 @@ public class LTTngControlService implements ILttngControlService {
                 continue;
             }
 
-            matcher = LTTngControlServiceConstants.TRACE_SNAPSHOT_SESSION_PATTERN.matcher(line);
+            matcher = LTTngControlServiceConstants.TRACE_NETWORK_PATH_PATTERN.matcher(line);
             if (matcher.matches()) {
-                sessionInfo.setSessionState(matcher.group(2));
-                // real name will be set later
-                ISnapshotInfo snapshotInfo = new SnapshotInfo(""); //$NON-NLS-1$
-                sessionInfo.setSnapshotInfo(snapshotInfo);
-                index++;
-                continue;
+                sessionInfo.setStreamedTrace(true);
             }
 
-            if (!sessionInfo.isSnapshotSession()) {
-                matcher = LTTngControlServiceConstants.TRACE_NETWORK_PATH_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    sessionInfo.setStreamedTrace(true);
-                }
-
-                matcher = LTTngControlServiceConstants.TRACE_SESSION_PATH_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    sessionInfo.setSessionPath(matcher.group(1).trim());
-                    index++;
-                    continue;
-                }
+            matcher = LTTngControlServiceConstants.TRACE_SESSION_PATH_PATTERN.matcher(line);
+            if (matcher.matches()) {
+                sessionInfo.setSessionPath(matcher.group(1).trim());
+                index++;
+                continue;
             }
 
             matcher = LTTngControlServiceConstants.DOMAIN_KERNEL_PATTERN.matcher(line);
@@ -205,12 +180,9 @@ public class LTTngControlService implements ILttngControlService {
                 // Create Domain
                 IDomainInfo domainInfo = new DomainInfo(Messages.TraceControl_KernelDomainDisplayName);
 
-                // set kernel flag
-                domainInfo.setIsKernel(true);
-
                 // in domain kernel
                 ArrayList<IChannelInfo> channels = new ArrayList<IChannelInfo>();
-                index = parseDomain(result.getOutput(), index, channels, domainInfo);
+                index = parseDomain(result.getOutput(), index, channels);
 
                 if (channels.size() > 0) {
                     // add domain
@@ -218,6 +190,9 @@ public class LTTngControlService implements ILttngControlService {
 
                     // set channels
                     domainInfo.setChannels(channels);
+
+                    // set kernel flag
+                    domainInfo.setIsKernel(true);
                 }
                 continue;
             }
@@ -226,12 +201,9 @@ public class LTTngControlService implements ILttngControlService {
             if (matcher.matches()) {
                 IDomainInfo domainInfo = new DomainInfo(Messages.TraceControl_UstGlobalDomainDisplayName);
 
-                // set kernel flag
-                domainInfo.setIsKernel(false);
-
                 // in domain UST
                 ArrayList<IChannelInfo> channels = new ArrayList<IChannelInfo>();
-                index = parseDomain(result.getOutput(), index, channels, domainInfo);
+                index = parseDomain(result.getOutput(), index, channels);
 
                 if (channels.size() > 0) {
                     // add domain
@@ -239,53 +211,15 @@ public class LTTngControlService implements ILttngControlService {
 
                     // set channels
                     domainInfo.setChannels(channels);
+
+                    // set kernel flag
+                    domainInfo.setIsKernel(false);
                 }
                 continue;
             }
             index++;
         }
-
-        if (sessionInfo.isSnapshotSession()) {
-            ISnapshotInfo snapshot = getSnapshotInfo(sessionName, monitor);
-            sessionInfo.setSnapshotInfo(snapshot);
-        }
-
         return sessionInfo;
-    }
-
-    @Override
-    public ISnapshotInfo getSnapshotInfo(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_SNAPSHOT_OUTPUT, LTTngControlServiceConstants.OPTION_SESSION, sessionName);
-        ICommandResult result = executeCommand(command.toString(), monitor);
-
-        int index = 0;
-
-        // Output:
-        // [1] snapshot-1: /home/user/lttng-traces/my-20130909-114431
-        // or
-        // [3] snapshot-3: net4://172.0.0.1/
-        ISnapshotInfo snapshotInfo = new SnapshotInfo(""); //$NON-NLS-1$
-
-        while (index < result.getOutput().length) {
-            String line = result.getOutput()[index];
-            Matcher matcher = LTTngControlServiceConstants.LIST_SNAPSHOT_OUTPUT_PATTERN.matcher(line);
-            if (matcher.matches()) {
-                snapshotInfo.setId(Integer.valueOf(matcher.group(1)));
-                snapshotInfo.setName(matcher.group(2));
-                snapshotInfo.setSnapshotPath(matcher.group(3));
-
-                Matcher matcher2 = LTTngControlServiceConstants.SNAPSHOT_NETWORK_PATH_PATTERN.matcher(snapshotInfo.getSnapshotPath());
-                if (matcher2.matches()) {
-                    snapshotInfo.setStreamedSnapshot(true);
-                }
-
-                index++;
-                break;
-            }
-            index++;
-        }
-
-        return snapshotInfo;
     }
 
     @Override
@@ -412,7 +346,7 @@ public class LTTngControlService implements ILttngControlService {
     }
 
     @Override
-    public ISessionInfo createSession(String sessionName, String sessionPath, boolean isSnapshot, IProgressMonitor monitor) throws ExecutionException {
+    public ISessionInfo createSession(String sessionName, String sessionPath, IProgressMonitor monitor) throws ExecutionException {
 
         String newName = formatParameter(sessionName);
         String newPath = formatParameter(sessionPath);
@@ -422,10 +356,6 @@ public class LTTngControlService implements ILttngControlService {
         if (newPath != null && !"".equals(newPath)) { //$NON-NLS-1$
             command.append(LTTngControlServiceConstants.OPTION_OUTPUT_PATH);
             command.append(newPath);
-        }
-
-        if (isSnapshot) {
-            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
         }
 
         ICommandResult result = executeCommand(command.toString(), monitor);
@@ -461,34 +391,23 @@ public class LTTngControlService implements ILttngControlService {
         SessionInfo sessionInfo = new SessionInfo(name);
 
         // Verify session path
-        if (!isSnapshot &&
-                ((path == null) || ((sessionPath != null) && (!path.contains(sessionPath))))) {
+        if ((path == null) || ((sessionPath != null) && (!path.contains(sessionPath)))) {
             // Unexpected path
             throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
                     Messages.TraceControl_UnexpectedPathError + ": " + name); //$NON-NLS-1$
         }
 
-        if (isSnapshot) {
-            // Make it a snapshot session - content of snapshot info need to
-            // set afterwards using getSession() or getSnapshotInfo()
-            sessionInfo.setSnapshotInfo(new SnapshotInfo("")); //$NON-NLS-1$
-        } else {
-            sessionInfo.setSessionPath(path);
-        }
+        sessionInfo.setSessionPath(path);
 
         return sessionInfo;
 
     }
 
     @Override
-    public ISessionInfo createSession(String sessionName, String networkUrl, String controlUrl, String dataUrl, boolean isSnapshot, IProgressMonitor monitor) throws ExecutionException {
+    public ISessionInfo createSession(String sessionName, String networkUrl, String controlUrl, String dataUrl, IProgressMonitor monitor) throws ExecutionException {
 
         String newName = formatParameter(sessionName);
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
-
-        if (isSnapshot) {
-            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
-        }
 
         if (networkUrl != null) {
             command.append(LTTngControlServiceConstants.OPTION_NETWORK_URL);
@@ -537,24 +456,20 @@ public class LTTngControlService implements ILttngControlService {
 
         // Verify session path
         if (networkUrl != null) {
-            if (!isSnapshot && (path == null)) {
+            if (path == null) {
                 // Unexpected path
                 throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
                         Messages.TraceControl_UnexpectedPathError + ": " + name); //$NON-NLS-1$
             }
 
-            if (isSnapshot) {
+            sessionInfo.setSessionPath(path);
+
+            // Check file protocol
+            Matcher matcher = LTTngControlServiceConstants.TRACE_FILE_PROTOCOL_PATTERN.matcher(path);
+            if (matcher.matches()) {
                 sessionInfo.setStreamedTrace(false);
-            } else {
-                sessionInfo.setSessionPath(path);
-                // Check file protocol
-                Matcher matcher = LTTngControlServiceConstants.TRACE_FILE_PROTOCOL_PATTERN.matcher(path);
-                if (matcher.matches()) {
-                    sessionInfo.setStreamedTrace(false);
-                }
             }
         }
-
         // When using controlUrl and dataUrl the full session path is not known yet
         // and will be set later on when listing the session
 
@@ -651,53 +566,21 @@ public class LTTngControlService implements ILttngControlService {
             }
 //            --subbuf-size SIZE   Subbuffer size in bytes
 //                                     (default: 4096, kernel default: 262144)
-            if (info.getSubBufferSize() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                command.append(LTTngControlServiceConstants.OPTION_SUB_BUFFER_SIZE);
-                command.append(String.valueOf(info.getSubBufferSize()));
-            }
+            command.append(LTTngControlServiceConstants.OPTION_SUB_BUFFER_SIZE);
+            command.append(String.valueOf(info.getSubBufferSize()));
 
 //            --num-subbuf NUM     Number of subbufers
-            if (info.getNumberOfSubBuffers() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                command.append(LTTngControlServiceConstants.OPTION_NUM_SUB_BUFFERS);
-                command.append(String.valueOf(info.getNumberOfSubBuffers()));
-            }
+//                                     (default: 8, kernel default: 4)
+            command.append(LTTngControlServiceConstants.OPTION_NUM_SUB_BUFFERS);
+            command.append(String.valueOf(info.getNumberOfSubBuffers()));
 
-//            --switch-timer USEC  Switch timer interval in usec
-            if (info.getSwitchTimer() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                command.append(LTTngControlServiceConstants.OPTION_SWITCH_TIMER);
-                command.append(String.valueOf(info.getSwitchTimer()));
-            }
+//            --switch-timer USEC  Switch timer interval in usec (default: 0)
+            command.append(LTTngControlServiceConstants.OPTION_SWITCH_TIMER);
+            command.append(String.valueOf(info.getSwitchTimer()));
 
-//            --read-timer USEC    Read timer interval in usec
-            if (info.getReadTimer() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                command.append(LTTngControlServiceConstants.OPTION_READ_TIMER);
-                command.append(String.valueOf(info.getReadTimer()));
-            }
-
-            if (isVersionSupported("2.2.0")) { //$NON-NLS-1$
-//                --buffers-uid  Every application sharing the same UID use the same buffers
-//                --buffers-pid Buffers are allocated per PID
-                if (!isKernel) {
-                    if (info.getBufferType() == BufferType.BUFFER_PER_PID) {
-                        command.append(LTTngControlServiceConstants.OPTION_PER_PID_BUFFERS);
-
-                    } else if (info.getBufferType() == BufferType.BUFFER_PER_UID) {
-                        command.append(LTTngControlServiceConstants.OPTION_PER_UID_BUFFERS);
-                    }
-                }
-
-//                -C SIZE   Maximum size of trace files in bytes
-                if (info.getMaxSizeTraceFiles() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                    command.append(LTTngControlServiceConstants.OPTION_MAX_SIZE_TRACE_FILES);
-                    command.append(String.valueOf(info.getMaxSizeTraceFiles()));
-                }
-
-//                -W NUM   Maximum number of trace files
-                if (info.getMaxNumberTraceFiles() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                    command.append(LTTngControlServiceConstants.OPTION_MAX_TRACE_FILES);
-                    command.append(String.valueOf(info.getMaxNumberTraceFiles()));
-                }
-            }
+//            --read-timer USEC    Read timer interval in usec (default: 200)
+            command.append(LTTngControlServiceConstants.OPTION_READ_TIMER);
+            command.append(String.valueOf(info.getReadTimer()));
         }
 
         executeCommand(command.toString(), monitor);
@@ -973,7 +856,11 @@ public class LTTngControlService implements ILttngControlService {
 
     @Override
     public void calibrate(boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
+//        String newSessionName = formatParameter(sessionName);
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CALIBRATE);
+//
+//        command.append(OPTION_SESSION);
+//        command.append(newSessionName);
 
         if (isKernel) {
             command.append(LTTngControlServiceConstants.OPTION_KERNEL);
@@ -982,18 +869,6 @@ public class LTTngControlService implements ILttngControlService {
         }
 
         command.append(LTTngControlServiceConstants.OPTION_FUNCTION_PROBE);
-
-        executeCommand(command.toString(), monitor);
-    }
-
-    @Override
-    public void recordSnapshot(String sessionName, IProgressMonitor monitor)
-            throws ExecutionException {
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_RECORD_SNAPSHOT);
-
-        String newSessionName = formatParameter(sessionName);
-        command.append(LTTngControlServiceConstants.OPTION_SESSION);
-        command.append(newSessionName);
 
         executeCommand(command.toString(), monitor);
     }
@@ -1046,7 +921,7 @@ public class LTTngControlService implements ILttngControlService {
         ret.append(result.getResult());
         ret.append("\n"); //$NON-NLS-1$
         for (int i = 0; i < output.length; i++) {
-            ret.append(output[i]).append("\n"); //$NON-NLS-1$
+            ret.append(output[i] + "\n"); //$NON-NLS-1$
         }
         return ret.toString();
     }
@@ -1060,17 +935,10 @@ public class LTTngControlService implements ILttngControlService {
      *            - current index in command output array
      * @param channels
      *            - list for returning channel information
-     * @param domainInfo
-     *            - The domain information
      * @return the new current index in command output array
      */
-    protected int parseDomain(String[] output, int currentIndex, List<IChannelInfo> channels, IDomainInfo domainInfo) {
+    protected int parseDomain(String[] output, int currentIndex, List<IChannelInfo> channels) {
         int index = currentIndex;
-
-        // if kernel set the buffer type to shared
-        if (domainInfo.isKernel()) {
-            domainInfo.setBufferType(BufferType.BUFFER_SHARED);
-        }
 
         // Channels:
         // -------------
@@ -1087,21 +955,6 @@ public class LTTngControlService implements ILttngControlService {
         while (index < output.length) {
             String line = output[index];
 
-            if (isVersionSupported("2.2.0")) { //$NON-NLS-1$
-                Matcher bufferTypeMatcher = LTTngControlServiceConstants.BUFFER_TYPE_PATTERN.matcher(line);
-                if (bufferTypeMatcher.matches()) {
-                    String bufferTypeString = getAttributeValue(line);
-                    if (BufferType.BUFFER_PER_PID.getInName().equals(bufferTypeString)) {
-                        domainInfo.setBufferType(BufferType.BUFFER_PER_PID);
-                    } else if (BufferType.BUFFER_PER_UID.getInName().equals(bufferTypeString)) {
-                        domainInfo.setBufferType(BufferType.BUFFER_PER_UID);
-                    } else {
-                        domainInfo.setBufferType(BufferType.BUFFER_TYPE_UNKNOWN);
-                    }
-                }
-            } else {
-                domainInfo.setBufferType(BufferType.BUFFER_TYPE_UNKNOWN);
-            }
             Matcher outerMatcher = LTTngControlServiceConstants.CHANNELS_SECTION_PATTERN.matcher(line);
             Matcher noKernelChannelMatcher = LTTngControlServiceConstants.DOMAIN_NO_KERNEL_CHANNEL_PATTERN.matcher(line);
             Matcher noUstChannelMatcher = LTTngControlServiceConstants.DOMAIN_NO_UST_CHANNEL_PATTERN.matcher(line);
@@ -1118,9 +971,6 @@ public class LTTngControlService implements ILttngControlService {
 
                         // get channel enablement
                         channelInfo.setState(innerMatcher.group(2));
-
-                        // set BufferType
-                        channelInfo.setBufferType(domainInfo.getBufferType());
 
                         // add channel
                         channels.add(channelInfo);
@@ -1235,8 +1085,7 @@ public class LTTngControlService implements ILttngControlService {
                     eventInfo.setFilterExpression(filter);
                 }
 
-                if ((eventInfo.getEventType() == TraceEventType.PROBE) ||
-                        (eventInfo.getEventType() == TraceEventType.FUNCTION)){
+                if (eventInfo.getEventType() == TraceEventType.PROBE) {
                     IProbeEventInfo probeEvent = new ProbeEventInfo(eventInfo.getName());
                     probeEvent.setLogLevel(eventInfo.getLogLevel());
                     probeEvent.setEventType(eventInfo.getEventType());
@@ -1247,7 +1096,7 @@ public class LTTngControlService implements ILttngControlService {
 
                     // myevent2 (type: probe) [enabled]
                     // addr: 0xc0101340
-                    // myevent0 (type: function) [enabled]
+                    // myevent0 (type: probe) [enabled]
                     // offset: 0x0
                     // symbol: init_post
                     index++;
@@ -1288,6 +1137,10 @@ public class LTTngControlService implements ILttngControlService {
             } else {
                 index++;
             }
+//            else if (line.matches(EVENT_NONE_PATTERN)) {
+                // do nothing
+//            } else
+
         }
 
         return index;

@@ -10,10 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.tests;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -64,7 +60,7 @@ import org.eclipse.ptp.remote.core.IRemoteConnection;
 import org.eclipse.ptp.remote.core.IRemoteConnectionManager;
 import org.eclipse.ptp.remote.core.IRemoteFileManager;
 import org.eclipse.ptp.remote.core.IRemoteServices;
-import org.eclipse.ptp.remote.core.RemoteServices;
+import org.eclipse.ptp.remote.core.PTPRemoteCorePlugin;
 import org.eclipse.ptp.remote.core.exception.RemoteConnectionException;
 import org.eclipse.ptp.services.core.IService;
 import org.eclipse.ptp.services.core.IServiceConfiguration;
@@ -125,7 +121,7 @@ public abstract class AbstractRemoteTest extends AbstractTest {
 		IProjectDescription description = workspace.newProjectDescription(projname);
 
 		// Get services responsible for handling the remote connection
-		fRemoteServices = RemoteServices.getRemoteServices(REMOTE_SERVICES);
+		fRemoteServices = PTPRemoteCorePlugin.getDefault().getRemoteServices(REMOTE_SERVICES);
 		assertNotNull(fRemoteServices);
 
 		// Create connection manager
@@ -276,12 +272,12 @@ public abstract class AbstractRemoteTest extends AbstractTest {
 		protected void deleteResource (String directory) {
 				IRemoteServices fRemoteServices;
 				IRemoteConnection fRemoteConnection;
-				fRemoteServices = RemoteServices.getRemoteServices(REMOTE_SERVICES);
+				fRemoteServices = PTPRemoteCorePlugin.getDefault().getRemoteServices(REMOTE_SERVICES); //$NON-NLS-1$
 				assertNotNull(fRemoteServices);
 
 				IRemoteConnectionManager connMgr = fRemoteServices.getConnectionManager();
 				assertNotNull(connMgr);
-				fRemoteConnection = connMgr.getConnection(CONNECTION_NAME);
+				fRemoteConnection = connMgr.getConnection(CONNECTION_NAME); //$NON-NLS-1$
 				final IRemoteFileManager fileManager = fRemoteServices.getFileManager(fRemoteConnection);
 				final IFileStore dstFileStore = fileManager.getResource(directory);
 				try {

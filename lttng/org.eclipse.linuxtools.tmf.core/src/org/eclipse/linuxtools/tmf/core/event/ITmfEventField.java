@@ -40,56 +40,45 @@ public interface ITmfEventField {
     /**
      * @return the field name
      */
-    String getName();
+    public String getName();
 
     /**
      * @return the field value
      */
-    Object getValue();
+    public Object getValue();
 
     /**
      * @return the value formatted as string
      * @since 2.0
      */
-    String getFormattedValue();
+    public String getFormattedValue();
 
     /**
      * @return the list of subfield names (empty array if none)
      */
-    String[] getFieldNames();
+    public String[] getFieldNames();
 
     /**
      * @param index The index of the field
      * @return the nth field name (null if absent or inexistent)
      */
-    String getFieldName(int index);
+    public String getFieldName(int index);
 
     /**
      * @return the list of subfields (empty array if none)
      */
-    ITmfEventField[] getFields();
+    public ITmfEventField[] getFields();
 
     /**
      * @param name The name of the field
      * @return a specific subfield by name (null if absent or inexistent)
      */
-    ITmfEventField getField(String name);
+    public ITmfEventField getField(String name);
 
     /**
      * @param index The index of the field to return
      * @return a specific subfield by index (null if absent or inexistent)
      */
-    ITmfEventField getField(int index);
-
-    /**
-     * Gets the a sub-field of this field, which may be multiple levels down.
-     *
-     * @param path
-     *            Array of field names to recursively go through
-     * @return The field at the end, or null if a field in the path cannot be
-     *         found
-     * @since 3.0
-     */
-    ITmfEventField getSubField(String[] path);
+    public ITmfEventField getField(int index);
 
 }

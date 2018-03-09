@@ -14,9 +14,7 @@
 
 package org.eclipse.linuxtools.internal.tmf.core.trace;
 
-import java.nio.ByteBuffer;
-
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
 
 
 /**
@@ -75,10 +73,7 @@ public final class TmfExperimentLocation implements ITmfLocation {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((fLocation != null) ? fLocation.hashCode() : 0);
-        return result;
+        return super.hashCode();
     }
 
     @Override
@@ -86,18 +81,10 @@ public final class TmfExperimentLocation implements ITmfLocation {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
+        if (!super.equals(obj)) {
             return false;
         }
         if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TmfExperimentLocation other = (TmfExperimentLocation) obj;
-        if (fLocation == null) {
-            if (other.fLocation != null) {
-                return false;
-            }
-        } else if (!fLocation.equals(other.fLocation)) {
             return false;
         }
         return true;
@@ -108,13 +95,4 @@ public final class TmfExperimentLocation implements ITmfLocation {
         return fLocation;
     }
 
-    @Override
-    public void serialize(ByteBuffer bufferOut) {
-        ITmfLocation[] locations = fLocation.getLocations();
-        long[] ranks = fLocation.getRanks();
-        for (int i = 0; i < locations.length; ++i) {
-            locations[i].serialize(bufferOut);
-            bufferOut.putLong(ranks[i]);
-        }
-    }
 }

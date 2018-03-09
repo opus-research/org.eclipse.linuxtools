@@ -3,9 +3,7 @@
       id="org.eclipse.linuxtools.profiling"
       label="%featureName"
       version="2.0.0.qualifier"
-      provider-name="%featureProvider"
-      license-feature="org.eclipse.linuxtools.license.feature"
-      license-feature-version="1.0.0.qualifier">
+      provider-name="%featureProvider">
 
    <description>
       %description
@@ -38,6 +36,7 @@
       <import plugin="org.eclipse.cdt.launch"/>
       <import plugin="org.eclipse.cdt.ui"/>
       <import plugin="org.eclipse.ui.console"/>
+      <import feature="org.eclipse.cdt" version="7.0.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin

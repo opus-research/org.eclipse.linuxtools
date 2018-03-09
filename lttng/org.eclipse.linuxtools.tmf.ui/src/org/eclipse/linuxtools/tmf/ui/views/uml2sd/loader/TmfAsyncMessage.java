@@ -32,7 +32,7 @@ public class TmfAsyncMessage extends AsyncMessage implements ITmfAsyncSequenceDi
     /**
      * A asynchronous sequence diagram event implementation
      */
-    private ITmfAsyncSequenceDiagramEvent fSdEvent;
+    protected ITmfAsyncSequenceDiagramEvent fSdEvent;
 
     // ------------------------------------------------------------------------
     // Constructors

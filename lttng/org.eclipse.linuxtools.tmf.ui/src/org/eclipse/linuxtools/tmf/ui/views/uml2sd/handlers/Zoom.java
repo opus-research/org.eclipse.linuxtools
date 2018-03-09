@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
@@ -20,7 +21,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Display;
@@ -33,7 +34,7 @@ import org.eclipse.ui.IActionBars;
  * @author sveyrier
  *
  */
-public class Zoom extends BaseSDAction {
+public class Zoom extends Action {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -41,31 +42,39 @@ public class Zoom extends BaseSDAction {
     /**
      * The Action ID for zooming in.
      */
-    public static final String ZOOM_IN_ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ZoomInCoolBar"; //$NON-NLS-1$
+    public final static String ZOOM_IN_ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ZoomInCoolBar"; //$NON-NLS-1$
     /**
      * The Action ID for zooming out.
      */
-    public static final String ZOOM_OUT_ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ZoomOutCoolBar"; //$NON-NLS-1$
+    public final static String ZOOM_OUT_ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ZoomOutCoolBar"; //$NON-NLS-1$
     /**
      * The Action ID for reset zooming.
      */
-    public static final String RESET_ZOOM_ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ResetZoom"; //$NON-NLS-1$
+    public final static String RESET_ZOOM_ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.ResetZoom"; //$NON-NLS-1$
     /**
      * The Action ID for no zoominf.
      */
-    public static final String NO_ZOOM_ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.NoZoom"; //$NON-NLS-1$
+    public final static String NO_ZOOM_ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.NoZoom"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
     /**
+     * The sequence diagram view reference
+     */
+    protected SDView fView = null;
+    /**
      * Flag to indicate last zoom in.
      */
-    private boolean fLastZoomIn = false;
+    protected boolean fLastZoomIn = false;
     /**
      * Flag to indicate last zoom out.
      */
-    private boolean fLastZoomOut = false;
+    protected boolean fLastZoomOut = false;
+    /**
+     * Flag to indicate last zoom.
+     */
+    protected boolean fLastZoom = true;
     /**
      * The cursor used when zooming in.
      */
@@ -99,7 +108,9 @@ public class Zoom extends BaseSDAction {
      * @param type The type of zoom.
      */
     public Zoom(SDView view, ZoomType type) {
-        super(view, "", AS_RADIO_BUTTON); //$NON-NLS-1$
+        super("", AS_RADIO_BUTTON);//$NON-NLS-1$
+
+        fView = view;
 
         // Pre-create zooming cursors
         fZoomInCursor = new Cursor(Display.getCurrent(),
@@ -112,30 +123,30 @@ public class Zoom extends BaseSDAction {
 
         switch (type) {
         case ZOOM_IN:
-            setText(Messages.SequenceDiagram_ZoomIn);
-            setToolTipText(Messages.SequenceDiagram_ZoomInTheDiagram);
+            setText(SDMessages._47);
+            setToolTipText(SDMessages._48);
             setId(ZOOM_IN_ID);
             setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_ZOOM_IN_MENU));
             break;
 
         case ZOOM_OUT:
-            setText(Messages.SequenceDiagram_ZoomOut);
-            setToolTipText(Messages.SequenceDiagram_ZoomOutTheDiagram);
+            setText(SDMessages._51);
+            setToolTipText(SDMessages._52);
             setId(ZOOM_OUT_ID);
             setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_ZOOM_OUT_MENU));
             break;
 
         case ZOOM_RESET:
-            setText(Messages.SequenceDiagram_ResetZoomFactor);
-            setToolTipText(Messages.SequenceDiagram_ResetZoomFactor);
+            setText(SDMessages._49);
+            setToolTipText(SDMessages._50);
             setId(RESET_ZOOM_ID);
             setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_HOME_MENU));
             break;
 
         case ZOOM_NONE:
         default:
-            setText(Messages.SequenceDiagram_Select);
-            setToolTipText(Messages.SequenceDiagram_Select);
+            setText(SDMessages._53);
+            setToolTipText(SDMessages._54);
             setId(NO_ZOOM_ID);
             setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_SELECT_MENU));
             break;
@@ -149,11 +160,11 @@ public class Zoom extends BaseSDAction {
     @Override
     public void run() {
 
-        if ((getView() == null) || (getView().getSDWidget() == null)) {
+        if ((fView == null) || (fView.getSDWidget() == null)) {
             return;
         }
 
-        SDWidget viewer = getView().getSDWidget();
+        SDWidget viewer = fView.getSDWidget();
 
         if (getId().equals(ZOOM_OUT_ID)) {
             // Eclipse 3.0 M7 workaround
@@ -163,6 +174,7 @@ public class Zoom extends BaseSDAction {
 
             viewer.setZoomOutMode(isChecked());
             fLastZoomOut = isChecked();
+            fLastZoom = false;
             if (isChecked()) {
                 viewer.setCursor(fZoomOutCursor);
                 setActionChecked(NO_ZOOM_ID, false);
@@ -178,6 +190,7 @@ public class Zoom extends BaseSDAction {
 
             viewer.setZoomInMode(isChecked());
             fLastZoomIn = isChecked();
+            fLastZoom = false;
             if (isChecked()) {
                 viewer.setCursor(fZoomInCursor);
                 setActionChecked(NO_ZOOM_ID, false);
@@ -191,6 +204,7 @@ public class Zoom extends BaseSDAction {
             // The reset action is a radio button only to uncheck the zoom in and out button
             // when it is clicked. This avoid adding code to do it manually
             // We only have to force it to false every time
+            fLastZoom = false;
             setChecked(false);
             setActionChecked(NO_ZOOM_ID, true);
         } else if (getId().equals(NO_ZOOM_ID)) {
@@ -208,8 +222,8 @@ public class Zoom extends BaseSDAction {
      * @param checked true to check the action, false to uncheck the action
      */
     protected void setActionChecked(String id, boolean checked) {
-        if (getView() != null) {
-            IActionBars bar = getView().getViewSite().getActionBars();
+        if (fView != null) {
+            IActionBars bar = fView.getViewSite().getActionBars();
             if (bar == null) {
                 return;
             }

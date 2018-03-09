@@ -40,10 +40,6 @@ class HT_IO {
     private final FileChannel fcIn;
     private final FileChannel fcOut;
 
-    // TODO test/benchmark optimal cache size
-    private final int CACHE_SIZE = 256;
-    private final HTNode fNodeCache[] = new HTNode[CACHE_SIZE];
-
     /**
      * Standard constructor
      *
@@ -54,15 +50,15 @@ class HT_IO {
      */
     HT_IO(HistoryTree tree, boolean newFile) throws IOException {
         this.tree = tree;
-        historyTreeFile = tree.getConfig().getStateFile();
-        boolean success1 = true;
+        historyTreeFile = tree.config.stateFile;
+        boolean success1 = true, success2;
 
         if (newFile) {
             /* Create a new empty History Tree file */
             if (historyTreeFile.exists()) {
                 success1 = historyTreeFile.delete();
             }
-            boolean success2 = historyTreeFile.createNewFile();
+            success2 = historyTreeFile.createNewFile();
             if (!(success1 && success2)) {
                 /* It seems we do not have permission to create the new file */
                 throw new IOException("Cannot create new file at " + //$NON-NLS-1$
@@ -101,7 +97,7 @@ class HT_IO {
     }
 
     private HTNode readNodeFromMemory(int seqNumber) {
-        for (HTNode node : tree.getLatestBranch()) {
+        for (HTNode node : tree.latestBranch) {
             if (node.getSequenceNumber() == seqNumber) {
                 return node;
             }
@@ -120,20 +116,10 @@ class HT_IO {
      *             just catch this exception.
      */
     synchronized HTNode readNodeFromDisk(int seqNumber) throws ClosedChannelException {
-        /* Do a cache lookup */
-        int offset = seqNumber & (CACHE_SIZE - 1);
-        HTNode readNode = fNodeCache[offset];
-        if (readNode != null && readNode.getSequenceNumber() == seqNumber) {
-          return readNode;
-        }
-
-        /* Lookup on disk */
+        HTNode readNode;
         try {
             seekFCToNodePos(fcIn, seqNumber);
             readNode = HTNode.readNode(tree, fcIn);
-
-            /* Put the node in the cache. */
-            fNodeCache[offset] = readNode;
             return readNode;
         } catch (ClosedChannelException e) {
             throw e;
@@ -146,13 +132,8 @@ class HT_IO {
 
     void writeNode(HTNode node) {
         try {
-            /* Insert the node into the cache. */
-            int seqNumber = node.getSequenceNumber();
-            int offset = seqNumber & (CACHE_SIZE - 1);
-            fNodeCache[offset] = node;
-
             /* Position ourselves at the start of the node and write it */
-            seekFCToNodePos(fcOut, seqNumber);
+            seekFCToNodePos(fcOut, node.getSequenceNumber());
             node.writeSelf(fcOut);
         } catch (IOException e) {
             /* If we were able to open the file, we should be fine now... */
@@ -178,12 +159,12 @@ class HT_IO {
     }
 
     File supplyATWriterFile() {
-        return tree.getConfig().getStateFile();
+        return tree.config.stateFile;
     }
 
     long supplyATWriterFilePos() {
-        return HistoryTree.TREE_HEADER_SIZE
-                + ((long) tree.getNodeCount() * tree.getConfig().getBlockSize());
+        return HistoryTree.getTreeHeaderSize()
+                + ((long) tree.getNodeCount() * tree.config.blockSize);
     }
 
     synchronized void closeFile() {
@@ -198,7 +179,7 @@ class HT_IO {
     synchronized void deleteFile() {
         closeFile();
 
-        if (!historyTreeFile.delete()) {
+        if(!historyTreeFile.delete()) {
             /* We didn't succeed in deleting the file */
             //TODO log it?
         }
@@ -213,8 +194,8 @@ class HT_IO {
      */
     private void seekFCToNodePos(FileChannel fc, int seqNumber)
             throws IOException {
-        fc.position(HistoryTree.TREE_HEADER_SIZE + (long) seqNumber
-                * tree.getConfig().getBlockSize());
+        fc.position(HistoryTree.getTreeHeaderSize() + (long) seqNumber
+                * tree.config.blockSize);
         /*
          * cast to (long) is needed to make sure the result is a long too and
          * doesn't get truncated

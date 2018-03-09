@@ -39,10 +39,6 @@ import org.osgi.framework.Bundle;
  */
 public class STJunitUtils {
 
-	public static final String BINARY_FILE = "a.out";
-	public static final String OUTPUT_FILE = "gmon.out";
-	public static final String DIRECTORY_SUFFIX = "_gprof_input";
-
 
 	/**
 	 * Test CSV export of the given view
@@ -220,18 +216,20 @@ public class STJunitUtils {
 
 	/**
 	 * Utility method
+	 * @param pluginDirectory: the plugin where to look for directories
+	 * @param regexp: the regexp used for matching directories
 	 * @return the list of directories that belong to the pluginDirectory and
 	 * ends with the given extensionSuffix
 	 */
-	public static File[] getTestDirs() {
+	public static File[] getTestDirs(String pluginDirectory, final String regexp) {
 		// load directories containing tests
-		String filename = getAbsolutePath("org.eclipse.linuxtools.gprof.test", ".");
+		String filename = getAbsolutePath(pluginDirectory, ".");
 		File dir = new File(filename);
 		File[] testDirs = dir.listFiles(
 			new FileFilter() {
 				@Override
 				public boolean accept(File arg0) {
-					return (arg0.isDirectory() && arg0.getName().matches(".*" + DIRECTORY_SUFFIX));
+					return (arg0.isDirectory() && arg0.getName().matches(regexp));
 				}
 			}
 		);

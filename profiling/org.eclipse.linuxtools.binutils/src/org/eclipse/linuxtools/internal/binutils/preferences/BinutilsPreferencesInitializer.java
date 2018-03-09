@@ -23,6 +23,9 @@ public class BinutilsPreferencesInitializer extends AbstractPreferenceInitialize
     private static final String ADDR2LINE_CMD = "addr2line"; //$NON-NLS-1$
     private static final String NM_CMD = "nm"; //$NON-NLS-1$
 
+    public BinutilsPreferencesInitializer() {
+    }
+
     @Override
     public void initializeDefaultPreferences() {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();

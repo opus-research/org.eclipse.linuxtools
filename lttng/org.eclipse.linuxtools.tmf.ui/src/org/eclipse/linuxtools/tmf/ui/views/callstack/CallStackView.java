@@ -8,26 +8,19 @@
  *
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
- *   Bernd Hufmann - Updated signal handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -44,6 +37,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.core.callstack.CallStackStateProvider;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -53,13 +47,11 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampDelta;
@@ -88,7 +80,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 
@@ -112,7 +103,7 @@ public class CallStackView extends TmfView {
      */
     private enum State { IDLE, BUSY, PENDING }
 
-    private static final String[] COLUMN_NAMES = new String[] {
+    private final String[] COLUMN_NAMES = new String[] {
             Messages.CallStackView_FunctionColumn,
             Messages.CallStackView_DepthColumn,
             Messages.CallStackView_EntryTimeColumn,
@@ -120,46 +111,30 @@ public class CallStackView extends TmfView {
             Messages.CallStackView_DurationColumn
     };
 
-    private static final int[] COLUMN_WIDTHS = new int[] {
-            200,
-            50,
-            120,
-            120,
-            120
-    };
-
-    // Fraction of a function duration to be added as spacing
-    private static final double SPACING_RATIO = 0.01;
-
     private static final Image THREAD_IMAGE = Activator.getDefault().getImageFromPath("icons/obj16/thread_obj.gif"); //$NON-NLS-1$
     private static final Image STACKFRAME_IMAGE = Activator.getDefault().getImageFromPath("icons/obj16/stckframe_obj.gif"); //$NON-NLS-1$
-
-    private static final String IMPORT_MAPPING_ICON_PATH = "icons/etool16/import.gif"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------
 
     // The time graph combo
-    private TimeGraphCombo fTimeGraphCombo;
+    TimeGraphCombo fTimeGraphCombo;
 
     // The selected trace
     private ITmfTrace fTrace;
 
     // The selected thread map
-    private final Map<ITmfTrace, String> fSelectedThreadMap = new HashMap<ITmfTrace, String>();
+    final private HashMap<ITmfTrace, String> fSelectedThreadMap = new HashMap<ITmfTrace, String>();
 
     // The time graph entry list
-    private List<ThreadEntry> fEntryList;
+    private ArrayList<ThreadEntry> fEntryList;
 
     // The trace to entry list hash map
-    private final Map<ITmfTrace, ArrayList<ThreadEntry>> fEntryListMap = new HashMap<ITmfTrace, ArrayList<ThreadEntry>>();
+    final private HashMap<ITmfTrace, ArrayList<ThreadEntry>> fEntryListMap = new HashMap<ITmfTrace, ArrayList<ThreadEntry>>();
 
     // The trace to build thread hash map
-    private final Map<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<ITmfTrace, BuildThread>();
-
-    /** The map to map function addresses to function names */
-    private Map<String, String> fNameMapping;
+    final private HashMap<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<ITmfTrace, BuildThread>();
 
     // The start time
     private long fStartTime;
@@ -182,9 +157,6 @@ public class CallStackView extends TmfView {
     // The previous item action
     private Action fPreviousItemAction;
 
-    /** The action to import a function-name mapping file */
-    private Action fImportMappingAction;
-
     // The zoom thread
     private ZoomThread fZoomThread;
 
@@ -192,7 +164,7 @@ public class CallStackView extends TmfView {
     private State fRedrawState = State.IDLE;
 
     // The redraw synchronization object
-    private final Object fSyncObj = new Object();
+    final private Object fSyncObj = new Object();
 
     // The saved time sync. signal used when switching off the pinning of a view
     private TmfTimeSynchSignal fSavedTimeSyncSignal;
@@ -241,9 +213,9 @@ public class CallStackView extends TmfView {
                     ITmfStateInterval eventStackInterval = ss.querySingleState(ss.getStartTime(), eventStackQuark);
                     return ! eventStackInterval.getStateValue().isNull() || eventStackInterval.getEndTime() != ss.getCurrentEndTime();
                 } catch (AttributeNotFoundException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 } catch (TimeRangeException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 } catch (StateSystemDisposedException e) {
                     /* Ignored */
                 }
@@ -379,18 +351,26 @@ public class CallStackView extends TmfView {
                 CallStackEntry entry = (CallStackEntry) element;
                 if (columnIndex == 0) {
                     return entry.getFunctionName();
-                } else if (columnIndex == 1 && entry.getFunctionName().length() > 0) {
-                    int depth = entry.getStackLevel();
-                    return Integer.toString(depth);
-                } else if (columnIndex == 2 && entry.getFunctionName().length() > 0) {
-                    ITmfTimestamp ts = new TmfTimestamp(entry.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
-                    return ts.toString();
-                } else if (columnIndex == 3 && entry.getFunctionName().length() > 0) {
-                    ITmfTimestamp ts = new TmfTimestamp(entry.getEndTime(), ITmfTimestamp.NANOSECOND_SCALE);
-                    return ts.toString();
-                } else if (columnIndex == 4 && entry.getFunctionName().length() > 0) {
-                    ITmfTimestamp ts = new TmfTimestampDelta(entry.getEndTime() - entry.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
-                    return ts.toString();
+                } else if (columnIndex == 1) {
+                    if (entry.getFunctionName().length() > 0) {
+                        int depth = entry.getStackLevel();
+                        return Integer.toString(depth);
+                    }
+                } else if (columnIndex == 2) {
+                    if (entry.getFunctionName().length() > 0) {
+                        ITmfTimestamp ts = new TmfTimestamp(entry.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
+                        return ts.toString();
+                    }
+                } else if (columnIndex == 3) {
+                    if (entry.getFunctionName().length() > 0) {
+                        ITmfTimestamp ts = new TmfTimestamp(entry.getEndTime(), ITmfTimestamp.NANOSECOND_SCALE);
+                        return ts.toString();
+                    }
+                } else if (columnIndex == 4) {
+                    if (entry.getFunctionName().length() > 0) {
+                        ITmfTimestamp ts = new TmfTimestampDelta(entry.getEndTime() - entry.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
+                        return ts.toString();
+                    }
                 }
             }
             return ""; //$NON-NLS-1$
@@ -422,12 +402,12 @@ public class CallStackView extends TmfView {
     }
 
     private class ZoomThread extends Thread {
-        private final List<ThreadEntry> fZoomEntryList;
+        private final ArrayList<ThreadEntry> fZoomEntryList;
         private final long fZoomStartTime;
         private final long fZoomEndTime;
         private final IProgressMonitor fMonitor;
 
-        public ZoomThread(List<ThreadEntry> entryList, long startTime, long endTime) {
+        public ZoomThread(ArrayList<ThreadEntry> entryList, long startTime, long endTime) {
             super("ResourcesView zoom"); //$NON-NLS-1$
             fZoomEntryList = entryList;
             fZoomStartTime = startTime;
@@ -495,13 +475,13 @@ public class CallStackView extends TmfView {
 
         fTimeGraphCombo.setTreeColumns(COLUMN_NAMES);
 
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(0).setWidth(COLUMN_WIDTHS[0]);
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(1).setWidth(COLUMN_WIDTHS[1]);
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(2).setWidth(COLUMN_WIDTHS[2]);
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(3).setWidth(COLUMN_WIDTHS[3]);
-        fTimeGraphCombo.getTreeViewer().getTree().getColumn(4).setWidth(COLUMN_WIDTHS[4]);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(0).setWidth(200);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(1).setWidth(50);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(2).setWidth(120);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(3).setWidth(120);
+        fTimeGraphCombo.getTreeViewer().getTree().getColumn(4).setWidth(120);
 
-        fTimeGraphCombo.setTimeGraphProvider(new CallStackPresentationProvider(this));
+        fTimeGraphCombo.setTimeGraphProvider(new CallStackPresentationProvider());
         fTimeGraphCombo.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
 
         fTimeGraphCombo.getTimeGraphViewer().addRangeListener(new ITimeGraphRangeListener() {
@@ -509,8 +489,9 @@ public class CallStackView extends TmfView {
             public void timeRangeUpdated(TimeGraphRangeUpdateEvent event) {
                 long startTime = event.getStartTime();
                 long endTime = event.getEndTime();
-                TmfTimeRange range = new TmfTimeRange(new TmfNanoTimestamp(startTime), new TmfNanoTimestamp(endTime));
-                broadcast(new TmfRangeSynchSignal(CallStackView.this, range));
+                TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
+                TmfTimestamp time = new CtfTmfTimestamp(fTimeGraphCombo.getTimeGraphViewer().getSelectedTime());
+                broadcast(new TmfRangeSynchSignal(CallStackView.this, range, time));
                 startZoomThread(startTime, endTime);
             }
         });
@@ -518,10 +499,9 @@ public class CallStackView extends TmfView {
         fTimeGraphCombo.getTimeGraphViewer().addTimeListener(new ITimeGraphTimeListener() {
             @Override
             public void timeSelected(TimeGraphTimeEvent event) {
-                long beginTime = event.getBeginTime();
-                long endTime = event.getEndTime();
-                selectTime(beginTime);
-                broadcast(new TmfTimeSynchSignal(CallStackView.this, new TmfNanoTimestamp(beginTime), new TmfNanoTimestamp(endTime)));
+                long time = event.getTime();
+                selectTime(time);
+                broadcast(new TmfTimeSynchSignal(CallStackView.this, new CtfTmfTimestamp(time)));
             }
         });
 
@@ -544,11 +524,12 @@ public class CallStackView extends TmfView {
                     if (entry.getFunctionName().length() > 0) {
                         long startTime = entry.getStartTime();
                         long endTime = entry.getEndTime();
-                        long spacingTime = (long) ((endTime - startTime) * SPACING_RATIO);
+                        long spacingTime = (long) ((endTime - startTime) * 0.01);
                         startTime -= spacingTime;
                         endTime += spacingTime;
-                        TmfTimeRange range = new TmfTimeRange(new TmfNanoTimestamp(startTime), new TmfNanoTimestamp(endTime));
-                        broadcast(new TmfRangeSynchSignal(CallStackView.this, range));
+                        TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
+                        TmfTimestamp time = new CtfTmfTimestamp(fTimeGraphCombo.getTimeGraphViewer().getSelectedTime());
+                        broadcast(new TmfRangeSynchSignal(CallStackView.this, range, time));
                         fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
                         startZoomThread(startTime, endTime);
                     }
@@ -567,20 +548,18 @@ public class CallStackView extends TmfView {
                         CallStackEvent event = (CallStackEvent) o;
                         long startTime = event.getTime();
                         long endTime = startTime + event.getDuration();
-                        long spacingTime = (long) ((endTime - startTime) * SPACING_RATIO);
+                        long spacingTime = (long) ((endTime - startTime) * 0.01);
                         startTime -= spacingTime;
                         endTime += spacingTime;
-                        TmfTimeRange range = new TmfTimeRange(new TmfNanoTimestamp(startTime), new TmfNanoTimestamp(endTime));
-                        broadcast(new TmfRangeSynchSignal(CallStackView.this, range));
+                        TmfTimeRange range = new TmfTimeRange(new CtfTmfTimestamp(startTime), new CtfTmfTimestamp(endTime));
+                        TmfTimestamp time = new CtfTmfTimestamp(fTimeGraphCombo.getTimeGraphViewer().getSelectedTime());
+                        broadcast(new TmfRangeSynchSignal(CallStackView.this, range, time));
                         fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
                         startZoomThread(startTime, endTime);
                     }
                 }
             }
         });
-
-        IStatusLineManager statusLineManager = getViewSite().getActionBars().getStatusLineManager();
-        fTimeGraphCombo.getTimeGraphViewer().getTimeGraphControl().setStatusLineManager(statusLineManager);
 
         // View Action Handling
         makeActions();
@@ -603,17 +582,6 @@ public class CallStackView extends TmfView {
     // ------------------------------------------------------------------------
     // Signal handlers
     // ------------------------------------------------------------------------
-    /**
-     * Handler for the trace opened signal.
-     * @param signal
-     *            The incoming signal
-     * @since 2.0
-     */
-    @TmfSignalHandler
-    public void traceOpened(TmfTraceOpenedSignal signal) {
-        fTrace = signal.getTrace();
-        loadTrace();
-    }
 
     /**
      * Handler for the trace selected signal
@@ -627,7 +595,21 @@ public class CallStackView extends TmfView {
             return;
         }
         fTrace = signal.getTrace();
-        loadTrace();
+
+        synchronized (fEntryListMap) {
+            fEntryList = fEntryListMap.get(fTrace);
+            if (fEntryList == null) {
+                synchronized (fBuildThreadMap) {
+                    BuildThread buildThread = new BuildThread(fTrace);
+                    fBuildThreadMap.put(fTrace, buildThread);
+                    buildThread.start();
+                }
+            } else {
+                fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                refresh();
+            }
+        }
     }
 
     /**
@@ -664,25 +646,19 @@ public class CallStackView extends TmfView {
     @TmfSignalHandler
     public void synchToTime(final TmfTimeSynchSignal signal) {
 
-        fSavedTimeSyncSignal = isPinned() ? new TmfTimeSynchSignal(signal.getSource(), signal.getBeginTime(), signal.getEndTime()) : null;
+        fSavedTimeSyncSignal = isPinned() ? new TmfTimeSynchSignal(signal.getSource(), signal.getCurrentTime()) : null;
 
         if (signal.getSource() == this || fTrace == null || isPinned()) {
             return;
         }
-        final long beginTime = signal.getBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-        final long endTime = signal.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
                 if (fTimeGraphCombo.isDisposed()) {
                     return;
                 }
-                if (beginTime == endTime) {
-                    fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(beginTime, true);
-                } else {
-                    fTimeGraphCombo.getTimeGraphViewer().setSelectionRange(beginTime, endTime);
-                }
-                selectTime(beginTime);
+                selectTime(time);
                 startZoomThread(fTimeGraphCombo.getTimeGraphViewer().getTime0(), fTimeGraphCombo.getTimeGraphViewer().getTime1());
                 if (fEntryList == null) {
                     return;
@@ -690,13 +666,13 @@ public class CallStackView extends TmfView {
                 TimeGraphViewer viewer = fTimeGraphCombo.getTimeGraphViewer();
                 for (ThreadEntry threadEntry : fEntryList) {
                     ITmfStateSystem ss = threadEntry.getTrace().getStateSystems().get(CallStackStateProvider.ID);
-                    if (ss == null || beginTime < ss.getStartTime() || beginTime > ss.getCurrentEndTime()) {
+                    if (ss == null || time < ss.getStartTime() || time > ss.getCurrentEndTime()) {
                         continue;
                     }
                     try {
                         int quark = ss.getQuarkRelative(threadEntry.getThreadQuark(), CallStackStateProvider.CALL_STACK);
-                        ITmfStateInterval stackInterval = ss.querySingleState(beginTime, quark);
-                        if (beginTime == stackInterval.getStartTime()) {
+                        ITmfStateInterval stackInterval = ss.querySingleState(time, quark);
+                        if (time == stackInterval.getStartTime()) {
                             int stackLevel = stackInterval.getStateValue().unboxInt();
                             CallStackEntry selectedEntry = threadEntry.getChildren().get(Math.max(0, stackLevel - 1));
                             fTimeGraphCombo.setSelection(selectedEntry);
@@ -704,13 +680,13 @@ public class CallStackView extends TmfView {
                             break;
                         }
                     } catch (AttributeNotFoundException e) {
-                        Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                        e.printStackTrace();
                     } catch (TimeRangeException e) {
-                        Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                        e.printStackTrace();
                     } catch (StateSystemDisposedException e) {
-                        Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                        e.printStackTrace();
                     } catch (StateValueTypeException e) {
-                        Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                        e.printStackTrace();
                     }
                 }
             }
@@ -728,7 +704,7 @@ public class CallStackView extends TmfView {
 
         if (isPinned()) {
             fSavedRangeSyncSignal =
-                    new TmfRangeSynchSignal(signal.getSource(), new TmfTimeRange(signal.getCurrentRange().getStartTime(), signal.getCurrentRange().getEndTime()));
+                    new TmfRangeSynchSignal(signal.getSource(), new TmfTimeRange(signal.getCurrentRange().getStartTime(), signal.getCurrentRange().getEndTime()), signal.getCurrentTime());
 
             fSavedTimeSyncSignal = null;
         }
@@ -741,6 +717,7 @@ public class CallStackView extends TmfView {
         }
         final long startTime = signal.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         final long endTime = signal.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        final long time = signal.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -748,6 +725,7 @@ public class CallStackView extends TmfView {
                     return;
                 }
                 fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
+                fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(time, false);
                 startZoomThread(startTime, endTime);
             }
         });
@@ -756,23 +734,6 @@ public class CallStackView extends TmfView {
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
-
-    private void loadTrace() {
-        synchronized (fEntryListMap) {
-            fEntryList = fEntryListMap.get(fTrace);
-            if (fEntryList == null) {
-                synchronized (fBuildThreadMap) {
-                    BuildThread buildThread = new BuildThread(fTrace);
-                    fBuildThreadMap.put(fTrace, buildThread);
-                    buildThread.start();
-                }
-            } else {
-                fStartTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                fEndTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                refresh();
-            }
-        }
-    }
 
     private void buildThreadList(final ITmfTrace trace, IProgressMonitor monitor) {
         fStartTime = Long.MAX_VALUE;
@@ -819,12 +780,12 @@ public class CallStackView extends TmfView {
                         threadEntry.addChild(callStackEntry);
                     }
                 } catch (AttributeNotFoundException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 }
             }
         }
         synchronized (fEntryListMap) {
-            fEntryListMap.put(trace, new ArrayList<ThreadEntry>(entryList));
+            fEntryListMap.put(trace, (ArrayList<ThreadEntry>) entryList.clone());
         }
         if (trace == fTrace) {
             refresh();
@@ -876,32 +837,23 @@ public class CallStackView extends TmfView {
                 long time = statusInterval.getStartTime();
                 long duration = statusInterval.getEndTime() - time + 1;
                 if (!statusInterval.getStateValue().isNull()) {
-                    final int modulo = CallStackPresentationProvider.NUM_COLORS / 2;
-                    int value = statusInterval.getStateValue().toString().hashCode() % modulo + modulo;
+                    final int MODULO = CallStackPresentationProvider.NUM_COLORS / 2;
+                    int value = statusInterval.getStateValue().toString().hashCode() % MODULO + MODULO;
                     eventList.add(new CallStackEvent(entry, time, duration, value));
                     lastIsNull = false;
                 } else {
-                    if (lastEndTime == -1) {
-                        // add null event if it intersects the start time
-                        eventList.add(new NullTimeEvent(entry, time, duration));
-                    } else {
-                        if (lastEndTime != time && lastIsNull) {
-                            // add unknown event if between two null states
-                            eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime));
-                        }
-                        if (time + duration >= endTime) {
-                            // add null event if it intersects the end time
-                            eventList.add(new NullTimeEvent(entry, time, duration));
-                        }
+                    if (lastEndTime != time && lastEndTime != -1 && lastIsNull) {
+                        eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime));
                     }
+                    eventList.add(new NullTimeEvent(entry, time, duration));
                     lastIsNull = true;
                 }
                 lastEndTime = time + duration;
             }
         } catch (AttributeNotFoundException e) {
-            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (TimeRangeException e) {
-            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (StateSystemDisposedException e) {
             /* Ignored */
         }
@@ -912,6 +864,7 @@ public class CallStackView extends TmfView {
         if (fEntryList == null) {
             return;
         }
+        fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(time, true);
         for (ThreadEntry threadEntry : fEntryList) {
             ITmfStateSystem ss = threadEntry.fThreadTrace.getStateSystems().get(CallStackStateProvider.ID);
             if (ss == null || !ss.waitUntilBuilt()) {
@@ -925,8 +878,7 @@ public class CallStackView extends TmfView {
                     String name = ""; //$NON-NLS-1$
                     try {
                         if (nameValue.getType() == Type.STRING) {
-                            String address = nameValue.unboxStr();
-                            name = getFunctionName(address);
+                            name = nameValue.unboxStr();
                         } else if (nameValue.getType() == Type.INTEGER) {
                             name = "0x" + Integer.toHexString(nameValue.unboxInt()); //$NON-NLS-1$
                         } else if (nameValue.getType() == Type.LONG) {
@@ -940,15 +892,16 @@ public class CallStackView extends TmfView {
                         callStackEntry.setEndTime(stackLevelInterval.getEndTime() + 1);
                     }
                 } catch (AttributeNotFoundException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 } catch (TimeRangeException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 } catch (StateSystemDisposedException e) {
-                    Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                    e.printStackTrace();
                 }
             }
         }
         fTimeGraphCombo.refresh();
+        fTimeGraphCombo.getTimeGraphViewer().setSelectedTime(time, true);
     }
 
     private void refresh() {
@@ -969,14 +922,12 @@ public class CallStackView extends TmfView {
                 fTimeGraphCombo.setInput(entries);
                 fTimeGraphCombo.getTimeGraphViewer().setTimeBounds(fStartTime, fEndTime);
 
-                long selectionBeginTime = fTrace == null ? 0 : fTraceManager.getSelectionBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                long selectionEndTime = fTrace == null ? 0 : fTraceManager.getSelectionEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+                long timestamp = fTrace == null ? 0 : fTraceManager.getCurrentTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 long startTime = fTrace == null ? 0 : fTraceManager.getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 long endTime = fTrace == null ? 0 : fTraceManager.getCurrentRange().getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 startTime = Math.max(startTime, fStartTime);
                 endTime = Math.min(endTime, fEndTime);
-                fTimeGraphCombo.getTimeGraphViewer().setSelectionRange(selectionBeginTime, selectionEndTime);
-                selectTime(selectionBeginTime);
+                selectTime(timestamp);
                 fTimeGraphCombo.getTimeGraphViewer().setStartFinishTime(startTime, endTime);
                 startZoomThread(startTime, endTime);
             }
@@ -1038,15 +989,17 @@ public class CallStackView extends TmfView {
         fPinAction.addPropertyChangeListener(new IPropertyChangeListener(){
             @Override
             public void propertyChange(PropertyChangeEvent event) {
-                if (IAction.CHECKED.equals(event.getProperty()) && !isPinned()) {
-                    if (fSavedRangeSyncSignal != null) {
-                        synchToRange(fSavedRangeSyncSignal);
-                        fSavedRangeSyncSignal = null;
-                    }
+                if (IAction.CHECKED.equals(event.getProperty())) {
+                    if (!isPinned()) {
+                        if (fSavedRangeSyncSignal != null) {
+                            synchToRange(fSavedRangeSyncSignal);
+                            fSavedRangeSyncSignal = null;
+                        }
 
-                    if (fSavedTimeSyncSignal != null) {
-                        synchToTime(fSavedTimeSyncSignal);
-                        fSavedTimeSyncSignal = null;
+                        if (fSavedTimeSyncSignal != null) {
+                            synchToTime(fSavedTimeSyncSignal);
+                            fSavedTimeSyncSignal = null;
+                        }
                     }
                 }
             }
@@ -1054,7 +1007,6 @@ public class CallStackView extends TmfView {
     }
 
     private void fillLocalToolBar(IToolBarManager manager) {
-        manager.add(getImportMappingAction());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());
         manager.add(getPreviousEventAction());
         manager.add(getNextEventAction());
@@ -1082,7 +1034,7 @@ public class CallStackView extends TmfView {
                             CallStackEntry callStackEntry = (CallStackEntry) entry;
                             ITmfTrace trace = callStackEntry.getTrace();
                             ITmfStateSystem ss = trace.getStateSystems().get(CallStackStateProvider.ID);
-                            long time = Math.max(ss.getStartTime(), Math.min(ss.getCurrentEndTime(), viewer.getSelectionBegin()));
+                            long time = Math.max(ss.getStartTime(), Math.min(ss.getCurrentEndTime(), viewer.getSelectedTime()));
                             ThreadEntry threadEntry = (ThreadEntry) callStackEntry.getParent();
                             int quark = ss.getQuarkRelative(threadEntry.getThreadQuark(), CallStackStateProvider.CALL_STACK);
                             ITmfStateInterval stackInterval = ss.querySingleState(time, quark);
@@ -1095,13 +1047,13 @@ public class CallStackView extends TmfView {
                             viewer.getTimeGraphControl().fireSelectionChanged();
                             startZoomThread(viewer.getTime0(), viewer.getTime1());
                         } catch (AttributeNotFoundException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (TimeRangeException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (StateSystemDisposedException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (StateValueTypeException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -1132,7 +1084,7 @@ public class CallStackView extends TmfView {
                             CallStackEntry callStackEntry = (CallStackEntry) entry;
                             ITmfTrace trace = callStackEntry.getTrace();
                             ITmfStateSystem ss = trace.getStateSystems().get(CallStackStateProvider.ID);
-                            long time = Math.max(ss.getStartTime(), Math.min(ss.getCurrentEndTime(), viewer.getSelectionBegin()));
+                            long time = Math.max(ss.getStartTime(), Math.min(ss.getCurrentEndTime(), viewer.getSelectedTime()));
                             ThreadEntry threadEntry = (ThreadEntry) callStackEntry.getParent();
                             int quark = ss.getQuarkRelative(threadEntry.getThreadQuark(), CallStackStateProvider.CALL_STACK);
                             ITmfStateInterval stackInterval = ss.querySingleState(time, quark);
@@ -1146,13 +1098,13 @@ public class CallStackView extends TmfView {
                             viewer.getTimeGraphControl().fireSelectionChanged();
                             startZoomThread(viewer.getTime0(), viewer.getTime1());
                         } catch (AttributeNotFoundException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (TimeRangeException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (StateSystemDisposedException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         } catch (StateValueTypeException e) {
-                            Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -1164,76 +1116,6 @@ public class CallStackView extends TmfView {
         }
 
         return fPrevEventAction;
-    }
-
-    // ------------------------------------------------------------------------
-    // Methods related to function name mapping
-    // ------------------------------------------------------------------------
-
-    /**
-     * Toolbar icon to import the function address-to-name mapping file.
-     */
-    private Action getImportMappingAction() {
-        if (fImportMappingAction != null) {
-            return fImportMappingAction;
-        }
-        fImportMappingAction = new Action() {
-            @Override
-            public void run() {
-                FileDialog dialog = new FileDialog(getViewSite().getShell());
-                dialog.setText(Messages.CallStackView_ImportMappingDialogTitle);
-                String filePath = dialog.open();
-                if (filePath == null) {
-                    /* No file was selected, don't change anything */
-                    return;
-                }
-                /*
-                 * Start the mapping import in a separate thread (we do not want
-                 * to UI thread to do this).
-                 */
-                Job job = new ImportMappingJob(new File(filePath));
-                job.schedule();
-            }
-        };
-
-        fImportMappingAction.setText(Messages.CallStackView_ImportMappingButtonText);
-        fImportMappingAction.setToolTipText(Messages.CallStackView_ImportMappingButtonTooltip);
-        fImportMappingAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(IMPORT_MAPPING_ICON_PATH));
-
-        return fImportMappingAction;
-    }
-
-    private class ImportMappingJob extends Job {
-        private final File fMappingFile;
-
-        public ImportMappingJob(File mappingFile) {
-            super(Messages.CallStackView_ImportMappingJobName);
-            fMappingFile = mappingFile;
-        }
-
-        @Override
-        public IStatus run(IProgressMonitor monitor) {
-            fNameMapping = FunctionNameMapper.mapFromNmTextFile(fMappingFile);
-
-            /* Refresh the time graph and the list of entries */
-            buildThreadList(fTrace, new NullProgressMonitor());
-            redraw();
-
-            return Status.OK_STATUS;
-        }
-    }
-
-    String getFunctionName(String address) {
-        if (fNameMapping == null) {
-            /* No mapping available, just print the addresses */
-            return address;
-        }
-        String ret = fNameMapping.get(address);
-        if (ret == null) {
-            /* We didn't find this address in the mapping file, just use the address */
-            return address;
-        }
-        return ret;
     }
 
 }

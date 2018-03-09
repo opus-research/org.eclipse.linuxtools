@@ -68,15 +68,15 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
     /**
      * The associated message return
      */
-    private SyncMessageReturn fMessageReturn;
+    protected SyncMessageReturn fMessageReturn;
     /**
      * The time when the message occurs
      */
-    private ITmfTimestamp fEventTime = new TmfTimestamp();
+    protected ITmfTimestamp fEventTime = new TmfTimestamp();
     /**
      * Flag whether the message has time information available or not
      */
-    private boolean fHasTimeInfo = false;
+    protected boolean fHasTimeInfo = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -86,7 +86,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      * Default constructor
      */
     public SyncMessage() {
-        setColorPrefId(ISDPreferences.PREF_SYNC_MESS);
+        fPrefId = ISDPreferences.PREF_SYNC_MESS;
     }
 
     // ------------------------------------------------------------------------
@@ -182,8 +182,8 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
      */
     @Override
     protected void setEventOccurrence(int occurrence) {
-        setStartOccurrence(occurrence);
-        setEndOccurrence(occurrence);
+        fStartEventOccurrence = occurrence;
+        fEndEventOccurrence = occurrence;
     }
 
     /**
@@ -251,8 +251,8 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
 
         // Draw it selected?
         if (!isSelected()) {
-            context.setBackground(pref.getBackGroundColor(getColorPrefId()));
-            context.setForeground(pref.getForeGroundColor(getColorPrefId()));
+            context.setBackground(pref.getBackGroundColor(fPrefId));
+            context.setForeground(pref.getForeGroundColor(fPrefId));
         }
         super.draw(context);
     }
@@ -267,7 +267,7 @@ public class SyncMessage extends BaseMessage implements ITimeRange {
 
         // UML2 lost/found message visibility special case
         // Others visibility cases are perform in the ***common*** case
-        if ((getEndLifeline() == null && getStartLifeline() != null) || (getEndLifeline() != null && getStartLifeline() == null)) {
+        if ((fEndLifeline == null && fStartLifeline != null) || (fEndLifeline != null && fStartLifeline == null)) {
             if (x + width > getX() + getWidth() && x < getX() + getWidth()) {
                 return true;
             }

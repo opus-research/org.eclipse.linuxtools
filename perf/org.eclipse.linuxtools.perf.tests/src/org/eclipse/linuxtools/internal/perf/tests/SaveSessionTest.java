@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,22 +36,19 @@ public class SaveSessionTest {
 	private static final String PERF_STATS_FILE_PATH = "stat_data"; //$NON-NLS-1$
 	private static final String DATA_FILE_NAME = "data"; //$NON-NLS-1$
 	private static final String DATA_FILE_EXT = "ext"; //$NON-NLS-1$
-	private ArrayList<IPath> testFiles = new ArrayList<IPath>();
+	private ArrayList<File> testFiles = new ArrayList<File>();
 
 	@After
 	public void tearDown(){
-		for (IPath f : testFiles) {
-			File file = f.toFile();
-			if(!file.delete()){
-				fail();
-			}
+		for (File file : testFiles) {
+			file.delete();
 		}
 	}
 
 	@Test
 	public void testGenericHandler() {
 		GenericSaveDataHandler handler = new GenericSaveDataHandler();
-		assertTrue(handler.canSave(Path.fromOSString(DATA_FILE_PATH)));
+		assertTrue(handler.canSave(new File(DATA_FILE_PATH)));
 		assertEquals(WORKING_DIR, handler.getWorkingDir().toOSString());
 
 		IPath path = handler.getNewDataLocation(DATA_FILE_NAME, DATA_FILE_EXT);
@@ -73,9 +69,8 @@ public class SaveSessionTest {
 				new Path(PERF_DATA_FILE_PATH));
 		assertTrue(handler.verifyData());
 
-		IPath data = handler.saveData(DATA_FILE_NAME);
+		File data = handler.saveData(DATA_FILE_NAME);
 		assertNotNull(data);
-		assertTrue(!data.toFile().canWrite());
 		testFiles.add(data);
 
 	}
@@ -97,21 +92,20 @@ public class SaveSessionTest {
 				});
 		assertTrue(handler.verifyData());
 
-		IPath stats = handler.saveData(DATA_FILE_NAME);
+		File stats = handler.saveData(DATA_FILE_NAME);
 		assertNotNull(stats);
-		assertTrue(!stats.toFile().canWrite());
 
 		testFiles.add(stats);
 	}
 
-	private static class GenericSaveDataHandler extends AbstractSaveDataHandler {
+	private class GenericSaveDataHandler extends AbstractSaveDataHandler {
 		@Override
 		public Object execute(ExecutionEvent event) {
 			return null;
 		}
 
 		@Override
-		public IPath saveData(String filename) {
+		public File saveData(String filename) {
 			return null;
 		}
 
@@ -126,14 +120,14 @@ public class SaveSessionTest {
 		}
 	}
 
-	private static class PerfSaveSessionTestHandler extends PerfSaveSessionHandler {
+	private class PerfSaveSessionTestHandler extends PerfSaveSessionHandler {
 		@Override
 		protected IPath getWorkingDir() {
 			return new Path(WORKING_DIR);
 		}
 	}
 
-	private static class PerfSaveStatsTestHandler extends PerfSaveStatsHandler {
+	private class PerfSaveStatsTestHandler extends PerfSaveStatsHandler {
 		@Override
 		protected IPath getWorkingDir() {
 			return new Path(WORKING_DIR);

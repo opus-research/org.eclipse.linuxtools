@@ -55,7 +55,7 @@ public class RemoteConnection {
 	/**
 	 * Copy a data from a path (can be a file or directory) from the remote host
 	 * to the local host.
-	 *
+	 * 
 	 * @param remotePath
 	 * @param localPath
 	 * @throws CoreException
@@ -81,9 +81,9 @@ public class RemoteConnection {
 	 * local directory is specified as the input, then all folders and files are
 	 * uploaded to the remote target directory. The remote target directory must
 	 * exist prior to calling this method or else failure will occur.
-	 *
+	 * 
 	 * A RemoteConnectionException is thrown on any failure condition.
-	 *
+	 * 
 	 * @param localPath
 	 *            - the local path to file
 	 * @param remotePath
@@ -105,7 +105,7 @@ public class RemoteConnection {
 	/**
 	 * Create a folder on the remote system. A RemoteConnectionException is
 	 * thrown if any failure occurs.
-	 *
+	 * 
 	 * @param remoteFolderPath
 	 *            - path of the remote folder to create
 	 * @param monitor
@@ -155,7 +155,7 @@ public class RemoteConnection {
 	 * Remote delete function. This method is recursive. If a remote directory
 	 * is specified, the remote directory and all its contents are removed. A
 	 * RemoteConnectionException is thrown if failure occurs for any reason.
-	 *
+	 * 
 	 * @param remotePath
 	 *            - the remote path of the file or folder to be deleted
 	 * @param monitor
@@ -179,14 +179,14 @@ public class RemoteConnection {
 	 * downloaded, including folders, and placed under the directory specified
 	 * by the localPath variable. It is assumed that any remote non-binary file
 	 * is UTF-8. A RemoteConnectionException is thrown if any failure occurs.
-	 *
+	 * 
 	 * @param remotePath
 	 *            - path to remote file or folder
 	 * @param localPath
 	 *            - local directory target
 	 * @param monitor
 	 *            - progress monitor
-	 * @throws RemoteConnectionException
+	 * @throws RemoteConnectionExcseption
 	 */
 	public void download(IPath remotePath, IPath localPath,
 			IProgressMonitor monitor) throws RemoteConnectionException {
@@ -236,7 +236,7 @@ public class RemoteConnection {
 		String envLines[] = getLines(stdout.toString());
 		// Skip the first line, which is just env command being issued
 		for (int idx = 1; idx < envLines.length; idx++) {
-			String keyAndVal[] = envLines[idx].split("=", 2); //$NON-NLS-1$
+			String keyAndVal[] = envLines[idx].split("=", 2);
 			// If there's a full "<env_var>=<value>|<null>" expression, add this var to the map
 			// Note: <value> may be an empty string.
 			if (keyAndVal.length == 2)
@@ -257,7 +257,7 @@ public class RemoteConnection {
 		String envArray[] = new String[envMap.size()];
 		int idx = 0;
 		for (Map.Entry<String, String> entry : envMap.entrySet()) {
-			envArray[idx++] = entry.getKey() + "=" + entry.getValue(); //$NON-NLS-1$
+			envArray[idx++] = entry.getKey() + "=" + entry.getValue();
 		}
 		return envArray;
 	}
@@ -266,7 +266,7 @@ public class RemoteConnection {
 	 * Run 'which <b>command</b>' on the remote machine to find where the executable resides.
 	 * Prepend the $PATH variable with the value of <b>toolsPath</b> so that <i>which</i> may find a
 	 * particular version of the command, if it exists.
-	 * @param command the command or tool to locate on the remote system
+	 * @param command the command or tool to locate on the remote system 
 	 * @param toolsPath contains one or more colon-separated paths in which to search for
 	 * for the command, in addition to the default locations in $PATH.
 	 * @return location of command, if found.

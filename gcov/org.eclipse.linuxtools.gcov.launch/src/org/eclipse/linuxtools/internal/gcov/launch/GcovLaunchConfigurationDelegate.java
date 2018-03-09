@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.launch;
 
-import java.io.File;
+import java.net.URI;
 import java.util.List;
 
 import org.eclipse.cdt.debug.core.CDebugUtils;
@@ -54,17 +54,15 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 		//set up and launch the local c/c++ program
 		IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(getProject());
 
-		File workDir = getWorkingDirectory(config);
-		if (workDir == null) {
-			workDir = new File(System.getProperty("user.home", ".")); //$NON-NLS-1$ //$NON-NLS-2$
-		}
+		URI workingDirURI = getProject().getLocationURI();
+		IPath workingDirPath = new Path(workingDirURI.getPath());
 		String arguments[] = getProgramArgumentsArray( config );
 
 		//add a listener for termination of the launch
 		ILaunchManager lmgr = DebugPlugin.getDefault().getLaunchManager();
 		lmgr.addLaunchListener(new LaunchTerminationWatcher(launch, exePath));
 
-		Process process = launcher.execute(exePath, arguments, getEnvironment(config), new Path(workDir.getAbsolutePath()), monitor);
+		Process process = launcher.execute(exePath, arguments, getEnvironment(config), workingDirPath, monitor);
 
 		DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
 
@@ -134,7 +132,8 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 
 	protected IProject getProject(){
 		try{
-			return CDebugUtils.verifyCProject(config).getProject();
+			IProject project = CDebugUtils.verifyCProject(config).getProject();
+			return project;
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -149,7 +148,9 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 	  * @since 1.1
 	  */
 	protected IPath getExePath(ILaunchConfiguration config) throws CoreException{
-		return CDebugUtils.verifyProgramPath( config );
+		IPath exePath = CDebugUtils.verifyProgramPath( config );
+
+		return exePath;
 	}
 
 }

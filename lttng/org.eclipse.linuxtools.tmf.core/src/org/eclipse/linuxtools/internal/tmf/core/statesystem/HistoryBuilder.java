@@ -17,7 +17,8 @@ import java.io.IOException;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -73,7 +74,7 @@ public class HistoryBuilder extends TmfComponent {
         }
         if (stateProvider.getAssignedStateSystem() != ss) {
             /* Logic check to make sure the provider is setup properly */
-            throw new IllegalArgumentException();
+            throw new RuntimeException();
         }
 
         sp = stateProvider;
@@ -224,6 +225,10 @@ public class HistoryBuilder extends TmfComponent {
 }
 
 class StateSystemBuildRequest extends TmfEventRequest {
+
+    /** The amount of events queried at a time through the requests */
+    private final static int chunkSize = 50000;
+
     private final HistoryBuilder builder;
     private final ITmfStateProvider sci;
     private final ITmfTrace trace;
@@ -231,9 +236,9 @@ class StateSystemBuildRequest extends TmfEventRequest {
     StateSystemBuildRequest(HistoryBuilder builder) {
         super(builder.getStateProvider().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
-                0,
-                ITmfEventRequest.ALL_DATA,
-                ITmfEventRequest.ExecutionType.BACKGROUND);
+                TmfDataRequest.ALL_DATA,
+                chunkSize,
+                ITmfDataRequest.ExecutionType.BACKGROUND);
         this.builder = builder;
         this.sci = builder.getStateProvider();
         this.trace = sci.getTrace();
@@ -242,8 +247,10 @@ class StateSystemBuildRequest extends TmfEventRequest {
     @Override
     public void handleData(final ITmfEvent event) {
         super.handleData(event);
-        if (event != null && event.getTrace() == trace) {
-            sci.processEvent(event);
+        if (event != null) {
+            if (event.getTrace() == trace) {
+                sci.processEvent(event);
+            }
         }
     }
 

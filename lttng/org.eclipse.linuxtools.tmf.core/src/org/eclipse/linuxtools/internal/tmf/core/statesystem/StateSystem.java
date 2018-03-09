@@ -32,8 +32,8 @@ import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
+import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
 
 /**
  * This is the core class of the Generic State System. It contains all the
@@ -272,7 +272,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          * If there was no wildcard, we'll only return the one matching
          * attribute, if there is one.
          */
-        if (!split) {
+        if (split == false) {
             int quark;
             try {
                 quark = getQuarkAbsolute(prefixStr);
@@ -332,11 +332,10 @@ public class StateSystem implements ITmfStateSystemBuilder {
     public void incrementAttribute(long t, int attributeQuark)
             throws StateValueTypeException, TimeRangeException,
             AttributeNotFoundException {
-        ITmfStateValue stateValue = queryOngoingState(attributeQuark);
-        int prevValue = 0;
-        /* if the attribute was previously null, start counting at 0 */
-        if (!stateValue.isNull()) {
-            prevValue = stateValue.unboxInt();
+        int prevValue = queryOngoingState(attributeQuark).unboxInt();
+        if (prevValue == -1) {
+            /* if the attribute was previously null, start counting at 0 */
+            prevValue = 0;
         }
         modifyAttribute(t, TmfStateValue.newValueInt(prevValue + 1),
                 attributeQuark);
@@ -346,7 +345,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     public void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException {
-        Integer stackDepth;
+        Integer stackDepth = 0;
         int subAttributeQuark;
         ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
@@ -355,7 +354,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
              * If the StateValue was null, this means this is the first time we
              * use this attribute. Leave stackDepth at 0.
              */
-            stackDepth = 0;
         } else if (previousSV.getType() == Type.INTEGER) {
             /* Previous value was an integer, all is good, use it */
             stackDepth = previousSV.unboxInt();
@@ -408,8 +406,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
         if (stackDepth <= 0) {
             /* This on the other hand should not happen... */
+            /* the case where == -1 was handled previously by .isNull() */
             String message = "A top-level stack attribute cannot " + //$NON-NLS-1$
-                    "have a value of 0 or less."; //$NON-NLS-1$
+                    "have a value of 0 or less (except -1/null)."; //$NON-NLS-1$
             throw new StateValueTypeException(message);
         }
 
@@ -420,7 +419,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         /* Update the state value of the stack-attribute */
         ITmfStateValue nextSV;
         if (--stackDepth == 0 ) {
-            /* Store a null state value */
+            /* Jump over "0" and store -1 (a null state value) */
             nextSV = TmfStateValue.nullValue();
         } else {
             nextSV = TmfStateValue.newValueInt(stackDepth);
@@ -457,7 +456,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
              * Will not happen since we're inserting null values only, but poor
              * compiler has no way of knowing this...
              */
-            throw new IllegalStateException(e);
+            e.printStackTrace();
         }
     }
 
@@ -531,6 +530,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          */
         for (int i = 0; i < stateInfo.size(); i++) {
             if (stateInfo.get(i) == null) {
+                //logMissingInterval(i, t);
                 stateInfo.set(i, new TmfStateInterval(t, t, i, TmfStateValue.nullValue()));
             }
         }
@@ -557,6 +557,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          * We do NOT want to return 'null' here.
          */
         if (ret == null) {
+            //logMissingInterval(attributeQuark, t);
             return new TmfStateInterval(t, this.getCurrentEndTime(),
                     attributeQuark, TmfStateValue.nullValue());
         }
@@ -567,14 +568,12 @@ public class StateSystem implements ITmfStateSystemBuilder {
     public ITmfStateInterval querySingleStackTop(long t, int stackAttributeQuark)
             throws StateValueTypeException, AttributeNotFoundException,
             TimeRangeException, StateSystemDisposedException {
-        ITmfStateValue curStackStateValue = querySingleState(t, stackAttributeQuark).getStateValue();
+        Integer curStackDepth = querySingleState(t, stackAttributeQuark).getStateValue().unboxInt();
 
-        if (curStackStateValue.isNull()) {
+        if (curStackDepth == -1) {
             /* There is nothing stored in this stack at this moment */
             return null;
-        }
-        Integer curStackDepth = curStackStateValue.unboxInt();
-        if (curStackDepth <= 0) {
+        } else if (curStackDepth < -1 || curStackDepth == 0) {
             /*
              * This attribute is an integer attribute, but it doesn't seem like
              * it's used as a stack-attribute...
@@ -583,7 +582,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         int subAttribQuark = getQuarkRelative(stackAttributeQuark, curStackDepth.toString());
-        return querySingleState(t, subAttribQuark);
+        ITmfStateInterval ret = querySingleState(t, subAttribQuark);
+        return ret;
     }
 
     @Override

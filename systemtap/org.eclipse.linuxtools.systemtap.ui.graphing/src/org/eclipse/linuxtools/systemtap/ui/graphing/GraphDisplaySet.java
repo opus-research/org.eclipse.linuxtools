@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.systemtap.graphingapi.ui.datadisplay.DataGrid;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.GraphComposite;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetFactory;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.GraphFactory;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.SelectGraphAndSeriesWizard;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.SelectGraphWizard;
 import org.eclipse.linuxtools.systemtap.structures.UpdateManager;
 import org.eclipse.linuxtools.systemtap.structures.listeners.ITabListener;
 import org.eclipse.swt.SWT;
@@ -118,7 +118,7 @@ public class GraphDisplaySet {
 		//This is a tab/button for opening new graphs
 		CTabItem newGraph = new CTabItem(folder, SWT.NONE);
 		newGraph.setImage(AbstractUIPlugin.imageDescriptorFromPlugin(GraphingPlugin.PLUGIN_ID, "icons/actions/new_wiz.gif").createImage()); //$NON-NLS-1$
-		newGraph.setToolTipText(Localization.getString("GraphDisplaySet.CreateGraph")); //$NON-NLS-1$
+		newGraph.setToolTipText(Localization.getString("GraphDisplaySet.DataView")); //$NON-NLS-1$
 
 		//Tab containing the data table
 		CTabItem item = new CTabItem(folder, SWT.NONE);
@@ -188,7 +188,7 @@ public class GraphDisplaySet {
 
 			if(folder.getSelectionIndex() == 0) {
 				folder.setSelection(lastSelectedTab);
-				SelectGraphAndSeriesWizard wizard = new SelectGraphAndSeriesWizard(dataSet, null);
+				SelectGraphWizard wizard = new SelectGraphWizard(dataSet);
 				IWorkbench workbench = PlatformUI.getWorkbench();
 				wizard.init(workbench, null);
 				WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);

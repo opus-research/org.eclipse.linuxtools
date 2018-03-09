@@ -7,9 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Francois Chouinard - Initial API and implementation
- *     Marc-Andre Laperle - Add time zone preference
- *     Patrick Tasse - Updated for negative value formatting
+ *   Francois Chouinard - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.timestamp;
@@ -21,9 +19,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 
 /**
  * A formatting and parsing facility that can handle timestamps that span the
@@ -213,9 +213,11 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     // ------------------------------------------------------------------------
 
     // The default timestamp pattern
+    private static String fDefaultTimePattern = null;
     private static TmfTimestampFormat fDefaultTimeFormat = null;
 
     // The default time interval format
+    private static String fDefaultIntervalPattern = null;
     private static TmfTimestampFormat fDefaultIntervalFormat = null;
 
     // The timestamp pattern
@@ -251,7 +253,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * The default constructor (uses the default pattern)
      */
     public TmfTimestampFormat() {
-        this(TmfTimePreferences.getInstance().getTimePattern());
+        this(fDefaultTimePattern);
     }
 
     /**
@@ -260,18 +262,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * @param pattern the format pattern
      */
     public TmfTimestampFormat(String pattern) {
-        applyPattern(pattern);
-    }
-
-    /**
-     * The full constructor
-     *
-     * @param pattern the format pattern
-     * @param timeZone the time zone
-     * @since 2.1
-     */
-    public TmfTimestampFormat(String pattern, TimeZone timeZone) {
-        setTimeZone(timeZone);
         applyPattern(pattern);
     }
 
@@ -289,21 +279,12 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     // ------------------------------------------------------------------------
 
     /**
-     * @since 2.1
-     */
-    public static void updateDefaultFormats() {
-        fDefaultTimeFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getTimePattern(), TmfTimePreferences.getInstance().getTimeZone());
-        fDefaultIntervalFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getIntervalPattern());
-    }
-
-    /**
      * @param pattern the new default time pattern
-     * @deprecated The default time pattern depends on the preferences, see
-     *             {@link TmfTimePreferences}. To change the default time
-     *             pattern, modify the preferences and call {@link #updateDefaultFormats()}
      */
-    @Deprecated
     public static void setDefaultTimeFormat(final String pattern) {
+        fDefaultTimePattern = pattern;
+        fDefaultTimeFormat = new TmfTimestampFormat(fDefaultTimePattern);
+        TmfSignalManager.dispatchSignal(new TmfTimestampFormatUpdateSignal(null));
     }
 
     /**
@@ -311,20 +292,18 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      */
     public static TmfTimestampFormat getDefaulTimeFormat() {
         if (fDefaultTimeFormat == null) {
-            fDefaultTimeFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getTimePattern(), TmfTimePreferences.getInstance().getTimeZone());
+            fDefaultTimeFormat = new TmfTimestampFormat(DEFAULT_TIME_PATTERN);
         }
         return fDefaultTimeFormat;
     }
 
     /**
      * @param pattern the new default interval pattern
-     * @deprecated The default interval format pattern depends on the
-     *             preferences, see {@link TmfTimePreferences}. To change the
-     *             default time pattern, modify the preferences and call
-     *             {@link #updateDefaultFormats()}
      */
-    @Deprecated
     public static void setDefaultIntervalFormat(final String pattern) {
+        fDefaultIntervalPattern = pattern;
+        fDefaultIntervalFormat = new TmfTimestampFormat(fDefaultIntervalPattern);
+        TmfSignalManager.dispatchSignal(new TmfTimestampFormatUpdateSignal(null));
     }
 
     /**
@@ -332,7 +311,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      */
     public static TmfTimestampFormat getDefaulIntervalFormat() {
         if (fDefaultIntervalFormat == null) {
-            fDefaultIntervalFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getIntervalPattern());
+            fDefaultIntervalFormat = new TmfTimestampFormat(DEFAULT_INTERVAL_PATTERN);
         }
         return fDefaultIntervalFormat;
     }
@@ -362,23 +341,13 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     public synchronized String format(long value) {
 
         // Split the timestamp value into its sub-components
-        long date = value / 1000000; // milliseconds since January 1, 1970, 00:00:00 GMT
-        long sec = value / 1000000000;    // seconds since January 1, 1970, 00:00:00 GMT
-        long ms  = Math.abs(value) % 1000000000 / 1000000;  // milliseconds
-        long cs  = Math.abs(value) % 1000000    / 1000;     // microseconds
-        long ns  = Math.abs(value) % 1000;                  // nanoseconds
-
-        // Adjust for negative value when formatted as a date
-        if (value < 0 && ms + cs + ns > 0 && !fPattern.contains("T")) { //$NON-NLS-1$
-            date -= 1;
-            long nanosec = 1000000000 - (1000000 * ms + 1000 * cs + ns);
-            ms = nanosec / 1000000;
-            cs = nanosec % 1000000 / 1000;
-            ns = nanosec % 1000;
-        }
+        long sec = value / 1000000000;            // seconds
+        long ms  = value % 1000000000 / 1000000;  // milliseconds
+        long cs  = value % 1000000    / 1000;     // microseconds
+        long ns  = value % 1000;                  // nanoseconds
 
         // Let the base class fill the stuff it knows about
-        StringBuffer result = new StringBuffer(super.format(date));
+        StringBuffer result = new StringBuffer(super.format(sec * 1000 + ms));
 
         // In the case where there is no separation between 2 supplementary
         // fields, the pattern will have the form "..'[pat-1]''[pat-2]'.." and
@@ -406,9 +375,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
             // Format the proper value as per the pattern
             switch (pattern.charAt(0)) {
                 case 'T':
-                    if (value < 0 && sec == 0) {
-                        result.insert(0, '-');
-                    }
                     fmtVal = dfmt.format(sec);
                     break;
                 case 'S':

@@ -36,8 +36,8 @@ public class ControlPreferencePage extends FieldEditorPreferencePage implements 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-    private RadioGroupFieldEditor fVerboseLevel;
-    private BooleanFieldEditor  fIsAppend;
+    RadioGroupFieldEditor fVerboseLevel;
+    BooleanFieldEditor  fIsAppend;
 
     // ------------------------------------------------------------------------
     // Constructors

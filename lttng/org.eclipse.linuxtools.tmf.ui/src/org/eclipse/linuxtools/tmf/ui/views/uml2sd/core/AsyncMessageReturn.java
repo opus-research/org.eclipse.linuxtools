@@ -56,7 +56,7 @@ public class AsyncMessageReturn extends AsyncMessage {
      * Default constructor.
      */
     public AsyncMessageReturn() {
-        setColorPrefId(ISDPreferences.PREF_ASYNC_MESS_RET);
+        fPrefId = ISDPreferences.PREF_ASYNC_MESS_RET;
     }
 
     // ------------------------------------------------------------------------
@@ -74,16 +74,6 @@ public class AsyncMessageReturn extends AsyncMessage {
         fMessage = parentMessage;
     }
 
-    /**
-     * Returns the associated message (the message it is the return).<br>
-     *
-     * @return parentMessage the message to associate
-     * @since 2.0
-     */
-    public AsyncMessage getMessage() {
-        return fMessage;
-    }
-
     @Override
     public void draw(IGC context) {
         if (!isVisible()) {
@@ -92,13 +82,13 @@ public class AsyncMessageReturn extends AsyncMessage {
 
         ISDPreferences pref = SDViewPref.getInstance();
 
-        setColorPrefId(ISDPreferences.PREF_ASYNC_MESS_RET);
+        fPrefId = ISDPreferences.PREF_ASYNC_MESS_RET;
         int oldStyle = context.getLineStyle();
         // Message return are dashed
         context.setLineStyle(context.getLineDotStyle());
         if (!isSelected()) {
-            context.setBackground(pref.getBackGroundColor(getColorPrefId()));
-            context.setForeground(pref.getForeGroundColor(getColorPrefId()));
+            context.setBackground(pref.getBackGroundColor(fPrefId));
+            context.setForeground(pref.getForeGroundColor(fPrefId));
         }
         super.draw(context);
         // restore the context

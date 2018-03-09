@@ -54,7 +54,8 @@ public class STDataViewersHideShowColumnsDialog extends Dialog {
     /**
      * Constructor
      *
-     * @param stViewer
+     * @param parentShell
+     * @param view
      */
     public STDataViewersHideShowColumnsDialog(AbstractSTViewer stViewer) {
         super(stViewer.getViewer().getControl().getShell());

@@ -44,7 +44,7 @@ public class EnvironmentVariablesPreferencePage extends PreferencePage implement
 	 * Creates a ScrolledComposite, sets options on oit, opens string field editors for the
 	 * preferences.
 	 *
-	 * @param parent The parent of the ScrolledComposite object.
+	 * @param The parent of the ScrolledComposite object.
 	 *
 	 * @return The ScrolledComposite object that is created configured.
 	 */

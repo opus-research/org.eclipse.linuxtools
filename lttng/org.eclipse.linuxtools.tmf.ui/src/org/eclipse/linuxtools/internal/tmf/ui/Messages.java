@@ -69,14 +69,12 @@ public class Messages extends NLS {
     public static String TmfEventsTable_ApplyPresetFilterMenuName;
     public static String TmfEventsTable_ClearFiltersActionText;
     public static String TmfEventsTable_ContentColumnHeader;
-
-    public static String TmfEventsTable_Export_to_text;
     public static String TmfEventsTable_FilterHint;
     public static String TmfEventsTable_HideRawActionText;
     public static String TmfEventsTable_HideTableActionText;
-    public static String TmfEventsTable_OpenSourceCodeActionText;
-    public static String TmfEventsTable_OpenSourceCodeNotFound;
-    public static String TmfEventsTable_OpenSourceCodeSelectFileDialogTitle;
+    public static String TmfEventsTable_OpenCallsiteActionText;
+    public static String TmfEventsTable_OpenCallsiteNotFound;
+    public static String TmfEventsTable_OpenCallsiteSelectFileDialogTitle;
     public static String TmfEventsTable_OpenModelActionText;
     public static String TmfEventsTable_OpenModelUnsupportedURI;
     public static String TmfEventsTable_ReferenceColumnHeader;
@@ -136,12 +134,6 @@ public class Messages extends NLS {
     public static String TmfTimeGraphViewer_ZoomInActionToolTipText;
     public static String TmfTimeGraphViewer_ZoomOutActionNameText;
     public static String TmfTimeGraphViewer_ZoomOutActionToolTipText;
-    public static String TmfTimeGraphViewer_HideArrowsActionNameText;
-    public static String TmfTimeGraphViewer_HideArrowsActionToolTipText;
-    public static String TmfTimeGraphViewer_FollowArrowForwardActionNameText;
-    public static String TmfTimeGraphViewer_FollowArrowForwardActionToolTipText;
-    public static String TmfTimeGraphViewer_FollowArrowBackwardActionNameText;
-    public static String TmfTimeGraphViewer_FollowArrowBackwardActionToolTipText;
 
     public static String ColorsView_AddActionToolTipText;
     public static String ColorsView_BackgroundButtonText;
@@ -273,6 +265,7 @@ public class Messages extends NLS {
     public static String FilterViewer_EmptyTreeHintText;
     public static String FilterViewer_CommonCategory;
     public static String FilterViewer_AlphaButtonText;
+    public static String FilterViewer_DeleteActionText;
     public static String FilterViewer_FieldLabel;
     public static String FilterViewer_FilterNameHint;
     public static String FilterViewer_IgnoreCaseButtonText;
@@ -297,15 +290,6 @@ public class Messages extends NLS {
     public static String CallStackView_ExitTimeColumn;
     public static String CallStackView_DurationColumn;
     public static String CallStackView_StackInfoNotAvailable;
-
-    public static String CallStackView_ImportMappingButtonText;
-    public static String CallStackView_ImportMappingButtonTooltip;
-    public static String CallStackView_ImportMappingDialogTitle;
-    public static String CallStackView_ImportMappingJobName;
-
-    public static String ExportToTextJob_Export_to;
-    public static String ExportToTextJob_Export_trace_to;
-    public static String ExportToTextJob_Unable_to_export_trace;
 
     static {
         // initialize resource bundle

@@ -136,7 +136,7 @@ public class SequenceDefinition extends Definition {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
         currentLength = (int) lengthDefinition.getValue();
 
         if ((definitions == null) || (definitions.length < currentLength)) {
@@ -145,13 +145,15 @@ public class SequenceDefinition extends Definition {
             int i = 0;
 
             if (definitions != null) {
-                System.arraycopy(definitions, 0, newDefinitions, 0, definitions.length);
+                for (; i < definitions.length; i++) {
+                    newDefinitions[i] = definitions[i];
+                }
             }
 
             for (; i < currentLength; i++) {
                 newDefinitions[i] = declaration.getElementType()
-                        .createDefinition(getDefinitionScope(),
-                                getFieldName() + "[" + i + "]"); //$NON-NLS-1$ //$NON-NLS-2$
+                        .createDefinition(definitionScope,
+                                fieldName + "[" + i + "]"); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             definitions = newDefinitions;

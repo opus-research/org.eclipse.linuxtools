@@ -29,35 +29,35 @@ public interface INewConnectionDialog {
     /**
      * @return the connection name (alias).
      */
-    String getConnectionName();
+    public String getConnectionName();
 
     /**
      * @return the host name (IP address or DNS name)
      */
-    String getHostName();
+    public String getHostName();
 
     /**
      * @return port of IP connection to be used
      */
-    int getPort();
+    public int getPort();
 
     /**
      * Sets the trace control root
      * @param parent - the trace control parent
      */
-    void setTraceControlParent(ITraceControlComponent parent);
+    public void setTraceControlParent(ITraceControlComponent parent);
 
     /**
      * Sets the available hosts to select.
      * @param hosts - the available hosts
      */
-    void setHosts(IHost[] hosts);
+    public void setHosts(IHost[] hosts);
 
     /**
      * Set the port of the IP connection to be used.
      * @param port - the IP port to set
      */
-    void setPort(int port);
+    public void setPort(int port);
 
     // ------------------------------------------------------------------------
     // Operations

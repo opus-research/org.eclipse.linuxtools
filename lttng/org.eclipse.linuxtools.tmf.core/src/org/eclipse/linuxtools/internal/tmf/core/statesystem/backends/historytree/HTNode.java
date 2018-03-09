@@ -29,21 +29,12 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * The base class for all the types of nodes that go in the History Tree.
  *
  * @author alexmont
+ *
  */
 abstract class HTNode {
 
-    /**
-     * Size of an entry in the data section.
-     *
-     *   16  2 x Timevalue/long (interval start + end)
-     * +  4  int (key)
-     * +  1  byte (type)
-     * +  4  int (valueOffset)
-     */
-    protected static final int DATA_ENTRY_SIZE = 25;
-
     /* Reference to the History Tree to whom this node belongs */
-    private final HistoryTree ownerTree;
+    protected final HistoryTree ownerTree;
 
     /* Time range of this node */
     private final long nodeStart;
@@ -60,7 +51,7 @@ abstract class HTNode {
     private boolean isDone;
 
     /* Vector containing all the intervals contained in this node */
-    private final List<HTInterval> intervals;
+    private final ArrayList<HTInterval> intervals;
 
     HTNode(HistoryTree tree, int seqNumber, int parentSeqNumber, long start) {
         this.ownerTree = tree;
@@ -68,7 +59,7 @@ abstract class HTNode {
         this.sequenceNumber = seqNumber;
         this.parentSequenceNumber = parentSeqNumber;
 
-        this.stringSectionOffset = ownerTree.getConfig().getBlockSize();
+        this.stringSectionOffset = ownerTree.config.blockSize;
         this.isDone = false;
         this.intervals = new ArrayList<HTInterval>();
     }
@@ -84,16 +75,22 @@ abstract class HTNode {
      *            of the node.
      * @throws IOException
      */
-    static final HTNode readNode(HistoryTree tree, FileChannel fc)
+    final static HTNode readNode(HistoryTree tree, FileChannel fc)
             throws IOException {
         HTNode newNode = null;
         int res, i;
 
-        ByteBuffer buffer = ByteBuffer.allocate(tree.getConfig().getBlockSize());
+        ByteBuffer buffer = ByteBuffer.allocate(tree.config.blockSize);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.clear();
         res = fc.read(buffer);
-        assert (res == tree.getConfig().getBlockSize());
+        assert (res == tree.config.blockSize);
+        // This often breaks, so might as well keep this code not too far...
+        // if ( res != tree.config.blockSize ) {
+        // tree.debugPrintFullTree(new PrintWriter(System.out, true), null,
+        // false);
+        // assert ( false );
+        // }
         buffer.flip();
 
         /* Read the common header part */
@@ -118,11 +115,13 @@ abstract class HTNode {
         // case 2:
         // /* Leaf nodes */
         //
+        // break;
         //
         //
         // case 3:
         // /* "Claudette" (extended) nodes */
         //
+        // break;
 
         default:
             /* Unrecognized node type */
@@ -146,10 +145,10 @@ abstract class HTNode {
     }
 
     final void writeSelf(FileChannel fc) throws IOException {
-        final int blockSize = ownerTree.getConfig().getBlockSize();
-        int curStringsEntryEndPos = blockSize;
+        int res, size;
+        int curStringsEntryEndPos = ownerTree.config.blockSize;
 
-        ByteBuffer buffer = ByteBuffer.allocate(blockSize);
+        ByteBuffer buffer = ByteBuffer.allocate(ownerTree.config.blockSize);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.clear();
 
@@ -168,7 +167,7 @@ abstract class HTNode {
 
         /* Back to us, we write the intervals */
         for (HTInterval interval : intervals) {
-            int size = interval.writeInterval(buffer, curStringsEntryEndPos);
+            size = interval.writeInterval(buffer, curStringsEntryEndPos);
             curStringsEntryEndPos -= size;
         }
 
@@ -190,21 +189,16 @@ abstract class HTNode {
         /* Finally, write everything in the Buffer to disk */
 
         // if we don't do this, flip() will lose what's after.
-        buffer.position(blockSize);
+        buffer.position(ownerTree.config.blockSize);
 
         buffer.flip();
-        int res = fc.write(buffer);
-        assert (res == blockSize);
+        res = fc.write(buffer);
+        assert (res == ownerTree.config.blockSize);
     }
 
-    // ------------------------------------------------------------------------
-    // Accessors
-    // ------------------------------------------------------------------------
-
-    protected HistoryTree getTree() {
-        return ownerTree;
-    }
-
+    /**
+     * Accessors
+     */
     long getNodeStart() {
         return nodeStart;
     }
@@ -261,6 +255,12 @@ abstract class HTNode {
      */
     void closeThisNode(long endtime) {
         assert (endtime >= this.nodeStart);
+        // /* This also breaks often too */
+        // if ( endtime.getValue() <= this.nodeStart.getValue() ) {
+        // ownerTree.debugPrintFullTree(new PrintWriter(System.out, true), null,
+        // false);
+        // assert ( false );
+        // }
 
         if (intervals.size() > 0) {
             /*
@@ -389,6 +389,14 @@ abstract class HTNode {
                 && intervals.get(index - 1).compareTo(intervals.get(index)) == 0) {
             index--;
         }
+        // FIXME F*ck all this, just do our own binary search in a saner way...
+
+        // //checks to make sure startIndex works how I think it does
+        // if ( startIndex > 0 ) { assert ( intervals.get(startIndex-1).getEnd()
+        // < t ); }
+        // assert ( intervals.get(startIndex).getEnd() >= t );
+        // if ( startIndex < intervals.size()-1 ) { assert (
+        // intervals.get(startIndex+1).getEnd() >= t ); }
 
         return index;
     }
@@ -397,7 +405,8 @@ abstract class HTNode {
      * @return The offset, within the node, where the Data section ends
      */
     private int getDataSectionEndOffset() {
-        return this.getTotalHeaderSize() + HTNode.DATA_ENTRY_SIZE * intervals.size();
+        return this.getTotalHeaderSize() + HTNode.getDataEntrySize()
+                * intervals.size();
     }
 
     /**
@@ -413,21 +422,28 @@ abstract class HTNode {
      * (used space / total usable space, which excludes the header)
      */
     long getNodeUsagePRC() {
-        final int blockSize = ownerTree.getConfig().getBlockSize();
         float freePercent = (float) this.getNodeFreeSpace()
-                / (float) (blockSize - this.getTotalHeaderSize())
-                * 100F;
+                / (float) (ownerTree.config.blockSize - this.getTotalHeaderSize())
+                * 100f;
         return (long) (100L - freePercent);
     }
 
-    protected static final byte boolToByte(boolean thebool) {
+    protected final static int getDataEntrySize() {
+        return 16 /* 2 x Timevalue/long (interval start + end) */
+        + 4 /* int (key) */
+        + 1 /* byte (type) */
+        + 4; /* int (valueOffset) */
+        /* = 25 */
+    }
+
+    protected final static byte boolToByte(boolean thebool) {
         if (thebool) {
             return (byte) 1;
         }
         return (byte) 0;
     }
 
-    static final boolean byteToBool(byte thebyte) {
+    final static boolean byteToBool(byte thebyte) {
         return (thebyte == (byte) 1);
     }
 
@@ -486,17 +502,19 @@ abstract class HTNode {
         writer.println('\n');
     }
 
-    /**
-     *  1 - byte (type)
-     *
-     * 16 - 2x long (start time, end time)
-     *
-     * 16 - 4x int (seq number, parent seq number, intervalcount, strings
-     * section pos.)
-     *
-     *  1 - byte (done or not)
-     */
-    protected static final int COMMON_HEADER_SIZE = 34;
+    final static int getCommonHeaderSize() {
+        /*
+         * 1 - byte (type)
+         *
+         * 16 - 2x long (start time, end time)
+         *
+         * 16 - 4x int (seq number, parent seq number, intervalcount, strings
+         * section pos.)
+         *
+         * 1 - byte (done or not)
+         */
+        return 34;
+    }
 
     // ------------------------------------------------------------------------
     // Abstract methods

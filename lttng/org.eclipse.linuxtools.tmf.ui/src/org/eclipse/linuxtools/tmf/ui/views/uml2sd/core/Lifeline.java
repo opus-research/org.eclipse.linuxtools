@@ -48,23 +48,23 @@ public class Lifeline extends GraphNode {
     /**
      * The lifeline position in the containing frame
      */
-    private int fIndexInFrame = 0;
+    protected int fIndexInFrame = 0;
     /**
      * The frame where the lifeline is drawn
      */
-    private Frame fFrame = null;
+    protected Frame fFrame = null;
     /**
      * The current event occurrence created in the lifeline
      */
-    private int fEventOccurrence = 0;
+    protected int fEventOccurrence = 0;
     /**
      * The lifeline category.
      */
-    private int fCategory = -1;
+    protected int fCategory = -1;
     /**
      * Flag whether lifeline has time information available or not
      */
-    private boolean fHasTimeInfo = false;
+    protected boolean fHasTimeInfo = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -73,7 +73,7 @@ public class Lifeline extends GraphNode {
      * Default constructor
      */
     public Lifeline() {
-        setColorPrefId(ISDPreferences.PREF_LIFELINE);
+        fPrefId = ISDPreferences.PREF_LIFELINE;
     }
 
     // ------------------------------------------------------------------------
@@ -113,16 +113,6 @@ public class Lifeline extends GraphNode {
     }
 
     /**
-     * Gets the lifeline category for this lifeline.
-     *
-     * @return arrayIndex the index of the category to use
-     * @since 2.0
-     */
-    public int getCategory() {
-        return fCategory;
-    }
-
-    /**
      * Returns the tooltip text for the lifeline. It is the combination between the category name(if any) and the
      * lifeline name
      *
@@ -145,11 +135,11 @@ public class Lifeline extends GraphNode {
      * @return the first visible Execution Occurrence
      */
     public int getExecOccurrenceDrawIndex() {
-        if (!hasChildren()) {
+        if (!fHasChilden) {
             return 0;
         }
-        if (getIndexes().get(BasicExecutionOccurrence.EXEC_OCC_TAG) != null) {
-            return getIndexes().get(BasicExecutionOccurrence.EXEC_OCC_TAG).intValue();
+        if (fIndexes.get(BasicExecutionOccurrence.EXEC_OCC_TAG) != null) {
+            return fIndexes.get(BasicExecutionOccurrence.EXEC_OCC_TAG).intValue();
         }
         return 0;
     }
@@ -240,8 +230,8 @@ public class Lifeline extends GraphNode {
     public void addExecution(BasicExecutionOccurrence exec) {
         exec.setLifeline(this);
         addNode(exec);
-        if ((fFrame != null) && (fFrame.getMaxEventOccurrence() < exec.getEndOccurrence())) {
-            fFrame.setMaxEventOccurrence(exec.getEndOccurrence());
+        if ((fFrame != null) && (fFrame.getMaxEventOccurrence() < exec.fEndEventOccurrence)) {
+            fFrame.setMaxEventOccurrence(exec.fEndEventOccurrence);
         }
     }
 
@@ -271,8 +261,8 @@ public class Lifeline extends GraphNode {
      * @return the execution occurrence list
      */
     public List<GraphNode> getExecutions() {
-        if (hasChildren()) {
-            return getNodeMap().get(BasicExecutionOccurrence.EXEC_OCC_TAG);
+        if (fHasChilden) {
+            return fNodes.get(BasicExecutionOccurrence.EXEC_OCC_TAG);
         }
         return new ArrayList<GraphNode>();
     }

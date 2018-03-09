@@ -28,12 +28,12 @@ public interface ITmfTraceEditor {
      *
      * @return The trace
      */
-    ITmfTrace getTrace();
+    public ITmfTrace getTrace();
 
     /**
      * Get the bookmark file associated to this trace
      *
      * @return The IFile object pointing to the bookmark file
      */
-    IFile getBookmarksFile();
+    public IFile getBookmarksFile();
 }

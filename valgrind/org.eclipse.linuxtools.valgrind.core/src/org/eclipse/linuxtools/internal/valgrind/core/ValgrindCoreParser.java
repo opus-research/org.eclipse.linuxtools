@@ -19,11 +19,12 @@ import java.util.List;
 import java.util.Stack;
 
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.linuxtools.valgrind.core.CommandLineConstants;
 import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 import org.eclipse.linuxtools.valgrind.core.ValgrindParserUtils;
 
 public class ValgrindCoreParser {
+	private static final String SPACE = " "; //$NON-NLS-1$
+	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 	private static final String AT = "at"; //$NON-NLS-1$
 	private static final String BY = "by"; //$NON-NLS-1$
 
@@ -45,14 +46,15 @@ public class ValgrindCoreParser {
 			while ((line = br.readLine()) != null) {
 				// remove PID string
 				// might encounter warnings also #325130
-				line = line.replaceFirst("==\\d+==|\\*\\*\\d+\\*\\*", ""); //$NON-NLS-1$ //$NON-NLS-2$
+				line = line.replaceFirst("==\\d+==|\\*\\*\\d+\\*\\*", EMPTY_STRING); //$NON-NLS-1$
 
 				int indent;
 				for (indent = 0; indent < line.length()
-				&& line.charAt(indent) == ' '; indent++){}
+				&& line.charAt(indent) == ' '; indent++)
+					;
 
 				line = line.trim();
-				if (!line.isEmpty()) { 
+				if (!line.equals(EMPTY_STRING)) { 
 					/*
 					 * indent == 1 -> top level message
 					 * indent > 1 -> child message
@@ -117,7 +119,7 @@ public class ValgrindCoreParser {
 	
 	public void printMessages(IValgrindMessage m, int indent) {
 		for (int i = 0; i < indent; i++) {
-			System.out.print(" "); //$NON-NLS-1$
+			System.out.print(SPACE);
 		}
 		System.out.println(m.getText());
 		for (IValgrindMessage child : m.getChildren()) {

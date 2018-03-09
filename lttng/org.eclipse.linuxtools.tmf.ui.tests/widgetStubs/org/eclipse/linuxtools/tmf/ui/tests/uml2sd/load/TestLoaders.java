@@ -64,11 +64,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
         this("");
     }
 
-    /**
-     * Constructor
-     *
-     * @param name
-     */
+    @SuppressWarnings("unused")
     public TestLoaders(String name) {
         page = 1;
     }
@@ -285,7 +281,8 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             // findResults.addAll(Arrays.asList(temp));
             // }
 
-            List<GraphNode> selection = v.getSDWidget().getSelection();
+            @SuppressWarnings("rawtypes")
+            List selection = v.getSDWidget().getSelection();
             if (selection != null && selection.size() == 1) {
                 currentFindIndex = findResults.indexOf(selection.get(0)) + 1;
             } else {
@@ -339,7 +336,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
     }
 
     @Override
-    public boolean filter(List<FilterCriteria> filters) {
+    public boolean filter(List<?> filters) {
 
         if (savedFrame != null) {
             savedFrame = v.getFrame();
@@ -355,7 +352,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             return false;
         }
 
-        FilterCriteria filterCriteria = filters.get(0);
+        FilterCriteria filterCriteria = (FilterCriteria) filters.get(0);
 
         // One way is to set visiblity of the item, but this only works for messages and not
         // for lifelines! It's better to create a new frame without the filtered messages.

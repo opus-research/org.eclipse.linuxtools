@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2013 Alphonse Van Assche.
+ * Copyright (c) 2007 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Alphonse Van Assche - initial API and implementation
- *    Neil Guzman - autocomplete with "." and "+" in name (B#375195)
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.rpm.ui.editor;
@@ -63,7 +62,7 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	 */
 	private static final class TemplateProposalComparator implements Comparator<TemplateProposal>, Serializable {
 		private static final long serialVersionUID = 1L;
-		@Override
+
 		public int compare(TemplateProposal t1, TemplateProposal t2) {
 			return (t2.getRelevance() - t1.getRelevance());
 		}
@@ -74,7 +73,7 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	 * @author Sami Wagiaalla
 	 */
 	private static final class ProposalComparator implements Comparator<ICompletionProposal>{
-		@Override
+
 		public int compare(ICompletionProposal a, ICompletionProposal b){
 			return a.getDisplayString().compareToIgnoreCase(b.getDisplayString());
 		}
@@ -113,7 +112,6 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(org.eclipse.jface.text.ITextViewer, int)
 	 */
-	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
 			int offset) {
 		List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
@@ -460,7 +458,7 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 		try {
 			while (i > 0) {
 				char ch = document.getChar(i - 1);
-				if (!Character.isLetterOrDigit(ch) && (ch != '%') && (ch != '_') && (ch != '-') && (ch != '{') && (ch != '.') && (ch != '+')) {
+				if (!Character.isLetterOrDigit(ch) && (ch != '%') && (ch != '_') && (ch != '-') && (ch != '{')) {
 					break;
 				}
 				i--;
@@ -582,7 +580,6 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeContextInformation(org.eclipse.jface.text.ITextViewer, int)
 	 */
-	@Override
 	public IContextInformation[] computeContextInformation(ITextViewer viewer,
 			int offset) {
 		return null;
@@ -591,7 +588,6 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getCompletionProposalAutoActivationCharacters()
 	 */
-	@Override
 	public char[] getCompletionProposalAutoActivationCharacters() {
 		return null;
 	}
@@ -599,7 +595,6 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationAutoActivationCharacters()
 	 */
-	@Override
 	public char[] getContextInformationAutoActivationCharacters() {
 		return null;
 	}
@@ -607,7 +602,6 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getErrorMessage()
 	 */
-	@Override
 	public String getErrorMessage() {
 		return null;
 	}
@@ -615,7 +609,6 @@ public class SpecfileCompletionProcessor implements IContentAssistProcessor {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationValidator()
 	 */
-	@Override
 	public IContextInformationValidator getContextInformationValidator() {
 		return null;
 	}

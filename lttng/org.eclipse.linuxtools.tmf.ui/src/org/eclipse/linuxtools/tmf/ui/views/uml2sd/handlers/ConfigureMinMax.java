@@ -12,8 +12,10 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.MinMaxDialog;
+import org.eclipse.ui.IViewPart;
 
 /**
  * Action class implementation to configure minimum and maximum time range values.
@@ -22,24 +24,40 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.MinMaxDialog;
  * @author sveyrier
  *
  */
-public class ConfigureMinMax extends BaseSDAction {
+public class ConfigureMinMax extends Action {
+
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+    /**
+     * The corresponding sequence diagram view reference.
+     */
+    protected SDView fView = null;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /**
-     * Constructor
-     * @param view
-     *          the sequence diagram view reference
-     * @since 2.0
+     * Standard constructor.
+     *
+     * @param view The sequence diagram view for the action
      */
-    public ConfigureMinMax(SDView view) {
-        super(view);
+    public ConfigureMinMax(IViewPart view) {
+        super();
+        if (view instanceof SDView) {
+            fView = (SDView) view;
+        }
     }
+
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
+
     @Override
     public void run() {
-        if ((getView() != null) && (getView().getSDWidget() != null)) {
-            MinMaxDialog minMax = new MinMaxDialog(getView().getSite().getShell(), getView().getSDWidget());
+        if ((fView != null) && (fView.getSDWidget() != null)) {
+            MinMaxDialog minMax = new MinMaxDialog(fView.getSite().getShell(), fView.getSDWidget());
             minMax.open();
         }
     }

@@ -296,7 +296,7 @@ class TransientState {
                  * This shouldn't happen, since we control where the interval's
                  * start time comes from
                  */
-                throw new IllegalStateException(e);
+                e.printStackTrace();
             }
         }
 

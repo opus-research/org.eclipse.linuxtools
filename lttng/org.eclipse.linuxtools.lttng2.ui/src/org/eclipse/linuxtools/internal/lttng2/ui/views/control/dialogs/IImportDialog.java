@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -31,27 +31,18 @@ public interface IImportDialog {
     /**
      * @return a list of trace paths to import.
      */
-    List<ImportFileInfo> getTracePathes();
+    public List<ImportFileInfo> getTracePathes();
 
     /**
      * @return the project to import the traces to
      */
-    IProject getProject();
+    public IProject getProject();
 
     /**
      * Sets the session containing the traces to import
      * @param session The trace session
      */
-    void setSession(TraceSessionComponent session);
-
-    /**
-     * Sets the default project name to use
-     *
-     * @param defaultProject
-     *            the name of the default project to use
-     */
-    void setDefaultProject(String defaultProject);
-
+    public void setSession(TraceSessionComponent session);
 
     // ------------------------------------------------------------------------
     // Operations

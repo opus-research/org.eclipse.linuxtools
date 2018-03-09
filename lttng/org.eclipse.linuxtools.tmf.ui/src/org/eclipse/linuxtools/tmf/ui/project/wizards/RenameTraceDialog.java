@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Francois Chouinard - Copied and adapted from NewFolderDialog
- *   Patrick Tasse - Close editors to release resources
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards;
@@ -30,6 +29,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
@@ -44,9 +46,14 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.dialogs.SelectionStatusDialog;
+import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * Implementation of a dialog box to rename a trace.
@@ -216,7 +223,37 @@ public class RenameTraceDialog extends SelectionStatusDialog {
                         throw new OperationCanceledException();
                     }
                     // Close the trace if open
-                    fTrace.closeEditors();
+                    IFile file = fTrace.getBookmarksFile();
+                    FileEditorInput input = new FileEditorInput(file);
+                    IWorkbench wb = PlatformUI.getWorkbench();
+                    for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
+                        for (IWorkbenchPage wbPage : wbWindow.getPages()) {
+                            for (IEditorReference editorReference : wbPage.getEditorReferences()) {
+                                if (editorReference.getEditorInput().equals(input)) {
+                                    wbPage.closeEditor(editorReference.getEditor(false), false);
+                                }
+                            }
+                        }
+                    }
+                    TmfExperimentFolder experimentFolder = fTrace.getProject().getExperimentsFolder();
+                    for (final ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
+                        for (final ITmfProjectModelElement trace : experiment.getChildren()) {
+                            if (trace.equals(fTrace)) {
+                                // Close the experiment if open
+                                file = ((TmfExperimentElement) experiment).getBookmarksFile();
+                                input = new FileEditorInput(file);
+                                for (IWorkbenchWindow wbWindow : wb.getWorkbenchWindows()) {
+                                    for (IWorkbenchPage wbPage : wbWindow.getPages()) {
+                                        for (IEditorReference editorReference : wbPage.getEditorReferences()) {
+                                            if (editorReference.getEditorInput().equals(input)) {
+                                                wbPage.closeEditor(editorReference.getEditor(false), false);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     if (fTrace.getResource() instanceof IFolder) {
                         IFolder folder = (IFolder) fTrace.getResource();

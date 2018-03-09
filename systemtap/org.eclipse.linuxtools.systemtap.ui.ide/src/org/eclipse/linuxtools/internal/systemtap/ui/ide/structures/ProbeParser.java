@@ -76,9 +76,6 @@ public class ProbeParser extends TapsetParser {
 	protected IStatus run(IProgressMonitor monitor) {
 		String s = collect(null);
 		s = addStaticProbes(s);
-		if (cancelRequested){
-			return new Status(IStatus.OK, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
-		}
 		parseProbes(s);
 		probes.sortTree();
 		fireUpdateEvent();	//Inform listeners that everything is done
@@ -102,12 +99,7 @@ public class ProbeParser extends TapsetParser {
 			options = null;
 		}
 
-		String s = runStap(options, script);
-		if (s == null) {
-			return ""; //$NON-NLS-1$
-		}
-
-		return s;
+		return runStap(options, script);
 	}
 
 	/**
@@ -129,9 +121,7 @@ public class ProbeParser extends TapsetParser {
 		TreeNode group = null;
 
 		StringTokenizer st = new StringTokenizer(s, "\n", false); //$NON-NLS-1$
-		if (st.hasMoreTokens()){
-			st.nextToken(); //skip the stap command itself
-		}
+	    st.nextToken(); //skip the stap command itself
 		while(st.hasMoreTokens() && !cancelRequested){
 			String tokenString = st.nextToken();
 
@@ -198,16 +188,10 @@ public class ProbeParser extends TapsetParser {
 	 * @return
 	 */
 	private String addStaticProbes(String probeList) {
-		if (cancelRequested) {
-			return ""; //$NON-NLS-1$
-		}
 		StringBuilder probes = new StringBuilder(probeList);
 
 		BufferedReader input = null;
 		try {
-			if (IDEPlugin.getDefault() == null) {
-				return ""; //$NON-NLS-1$
-			}
 			URL location = IDEPlugin.getDefault().getBundle().getEntry("completion/static_probe_list.properties"); //$NON-NLS-1$
 			location = FileLocator.toFileURL(location);
 			input = new BufferedReader(new FileReader(new File(location.getFile())));

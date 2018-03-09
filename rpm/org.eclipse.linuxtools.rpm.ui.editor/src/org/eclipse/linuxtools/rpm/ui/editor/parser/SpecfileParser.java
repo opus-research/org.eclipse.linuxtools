@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2013 Red Hat, Inc.
+ * Copyright (c) 2007, 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,18 +27,14 @@ import static org.eclipse.linuxtools.internal.rpm.ui.editor.RpmSections.PRETRANS
 import static org.eclipse.linuxtools.internal.rpm.ui.editor.RpmSections.PREUN_SECTION;
 import static org.eclipse.linuxtools.internal.rpm.ui.editor.RpmSections.PRE_SECTION;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
@@ -161,17 +157,6 @@ public class SpecfileParser {
 						}
 					}
 				}
-
-				// sets the last SpecfileSection's end line to that of the end of
-				// the end of the specfileDocument.
-				// SpecfileParser#parseMacro will handle correcting the end line
-				// if the last SpecfileSection was not truly the last 1
-				// This is for the purpose of making DocumentRangeNode work
-				if (lastSection != null) {
-					lastSection.setSectionEndLine(specfileDocument
-							.getNumberOfLines() - 1);
-				}
-
 				// The +1 is for the line delimiter. FIXME: will we end up off
 				// by one on the last line?
 				lineStartPosition += line.length() + 1;
@@ -181,30 +166,6 @@ public class SpecfileParser {
 			SpecfileLog.logError(e);
 		}
 		return specfile;
-	}
-
-	/**
-	 * Parse a File into a specfile
-	 *
-	 * @param file The File to be parsed
-	 * @return A Specfile object
-	 */
-	public Specfile parse(IFile file) {
-		SpecfileParser parser = new SpecfileParser();
-		StringBuilder sb = new StringBuilder();
-		String line = null;
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					file.getContents()));
-			while ((line = reader.readLine()) != null) {
-				sb.append(line + "\n"); //$NON-NLS-1$
-			}
-		} catch (IOException e) {
-			SpecfileLog.logError(Messages.getString("SpecfileParseFile.1"), e); //$NON-NLS-1$
-		} catch (CoreException e) {
-			SpecfileLog.logError(Messages.getString("SpecfileParseFile.2"), e); //$NON-NLS-1$
-		}
-		return parser.parse(sb.toString());
 	}
 
 	private void generateTaskMarker(int lineNumber, String line) {

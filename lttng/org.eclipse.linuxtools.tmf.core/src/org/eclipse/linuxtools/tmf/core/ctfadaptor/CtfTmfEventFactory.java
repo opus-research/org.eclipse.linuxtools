@@ -16,15 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.linuxtools.ctf.core.CTFStrings;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
@@ -58,10 +54,9 @@ public final class CtfTmfEventFactory {
             String fileName, CtfTmfTrace originTrace) {
 
         /* Prepare what to pass to CtfTmfEvent's constructor */
-        final IEventDeclaration eventDecl = eventDef.getDeclaration();
-        final long ts = eventDef.getTimestamp();
-        final CtfTmfTimestamp timestamp = originTrace.createTimestamp(
-                originTrace.getCTFTrace().timestampCyclesToNanos(ts));
+        long ts = eventDef.getTimestamp();
+        CtfTmfTimestamp timestamp = new CtfTmfTimestamp(
+                    originTrace.getCTFTrace().timestampCyclesToNanos(ts));
 
         int sourceCPU = eventDef.getCPU();
 
@@ -70,43 +65,16 @@ public final class CtfTmfEventFactory {
 
         String reference = fileName == null ? CtfTmfEvent.NO_STREAM : fileName;
 
-        /* Handle the special case of lost events */
-        if (eventDecl.getName().equals(CTFStrings.LOST_EVENT_NAME)) {
-            Definition nbLostEventsDef = eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_FIELD);
-            Definition durationDef = eventDef.getFields().getDefinitions().get(CTFStrings.LOST_EVENTS_DURATION);
-            if (!(nbLostEventsDef instanceof IntegerDefinition) || !(durationDef instanceof IntegerDefinition)) {
-                /*
-                 * One or both of these fields doesn't exist, or is not of the
-                 * right type. The event claims to be a "lost event", but is
-                 * malformed. Log it and return a null event instead.
-                 */
-                return getNullEvent();
-            }
-            long nbLostEvents = ((IntegerDefinition) nbLostEventsDef).getValue();
-            long duration = ((IntegerDefinition) durationDef).getValue();
-            CtfTmfTimestamp timestampEnd = new CtfTmfTimestamp(
-                    originTrace.getCTFTrace().timestampCyclesToNanos(ts) + duration);
-
-            CtfTmfLostEvent lostEvent = new CtfTmfLostEvent(originTrace,
-                    ITmfContext.UNKNOWN_RANK,
-                    content,
-                    reference, // filename
-                    sourceCPU,
-                    eventDecl,
-                    new TmfTimeRange(timestamp, timestampEnd),
-                    nbLostEvents);
-            return lostEvent;
-        }
-
-        /* Handle standard event types */
+        /* Construct and return the object */
         CtfTmfEvent event = new CtfTmfEvent(
                 originTrace,
                 ITmfContext.UNKNOWN_RANK,
                 timestamp,
                 content,
-                reference, // filename
+                reference,
                 sourceCPU,
-                eventDecl);
+                eventDef.getDeclaration()
+        );
         return event;
     }
 

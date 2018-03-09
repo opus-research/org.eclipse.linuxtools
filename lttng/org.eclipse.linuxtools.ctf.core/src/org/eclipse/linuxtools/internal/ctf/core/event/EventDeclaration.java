@@ -12,16 +12,12 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.event;
 
-import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.linuxtools.ctf.core.CTFStrings;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
-import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
@@ -31,12 +27,6 @@ import org.eclipse.linuxtools.ctf.core.trace.StreamInputReader;
  * events.
  */
 public class EventDeclaration implements IEventDeclaration {
-
-    /** Id of lost events */
-    public static final long LOST_EVENT_ID = -1L;
-
-    /** Id of events when not set */
-    public static final long UNSET_EVENT_ID = -2L;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -60,7 +50,7 @@ public class EventDeclaration implements IEventDeclaration {
     /**
      * Event id (can be null if only event in the stream).
      */
-    private Long id = UNSET_EVENT_ID;
+    private Long id = null;
 
     /**
      * Stream to which belongs this event.
@@ -107,17 +97,11 @@ public class EventDeclaration implements IEventDeclaration {
      *
      * @return the lost event
      */
-    public static synchronized EventDeclaration getLostEventDeclaration() {
+    public synchronized static EventDeclaration getLostEventDeclaration() {
         EventDeclaration lostEvent = new EventDeclaration();
-        IntegerDeclaration lostEventsDeclaration = new IntegerDeclaration(32, false, 10, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
-        IntegerDeclaration timestampDeclaration = new IntegerDeclaration(64, false, 10, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
-
         lostEvent.fields = new StructDeclaration(1);
-        lostEvent.fields.addField(CTFStrings.LOST_EVENTS_FIELD, lostEventsDeclaration);
-        lostEvent.fields.addField(CTFStrings.LOST_EVENTS_DURATION, timestampDeclaration);
-        lostEvent.id = LOST_EVENT_ID;
-        lostEvent.name = CTFStrings.LOST_EVENT_NAME;
-
+        lostEvent.id = -1L;
+        lostEvent.name = "Lost event"; //$NON-NLS-1$
         return lostEvent;
     }
 
@@ -171,7 +155,7 @@ public class EventDeclaration implements IEventDeclaration {
     }
 
     /**
-     * Sets the id of an event declaration
+     * Sets the id of am event declaration
      *
      * @param id
      *            the id
@@ -186,7 +170,7 @@ public class EventDeclaration implements IEventDeclaration {
     }
 
     /**
-     * Sets the stream of an event declaration
+     * Sets the stream of am event declaration
      *
      * @param stream
      *            the stream
@@ -234,7 +218,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the id set?
      */
     public boolean idIsSet() {
-        return (id != null && id != UNSET_EVENT_ID);
+        return id != null;
     }
 
     /**

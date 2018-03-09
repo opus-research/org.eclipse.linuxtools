@@ -19,7 +19,6 @@ import org.eclipse.linuxtools.internal.oprofile.core.IOpcontrolProvider;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonEvent;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.LaunchOptions;
 import org.eclipse.linuxtools.tools.launch.core.properties.LinuxtoolsPathProperty;
@@ -32,41 +31,38 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 		//set up and launch the oprofile daemon
 		try {
 			IProject project = getProject();
+
+			//check if user has NOPASSWD sudo permission for opcontrol
+			//if the Linux Tools Path property was changed
+			if(!LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).equals("")){
+				IOpcontrolProvider provider = OprofileCorePlugin.getDefault().getOpcontrolProvider();
+				if (!provider.hasPermissions(project)){
+					throw new OpcontrolException(OprofileCorePlugin.createErrorStatus("opcontrolSudo", null));
+				}
+			}
 			// Set current project to allow using the oprofile path that
 			// was chosen for the project
 			Oprofile.OprofileProject.setProject(project);
 
-			if (!oprofileStatus()) {
-				OprofileCorePlugin.showErrorDialog("opcontrolProvider", null); //$NON-NLS-1$
+			if (!oprofileStatus())
 				return false;
-			}
 
-			if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-				//check if user has NOPASSWD sudo permission for opcontrol
-				//if the Linux Tools Path property was changed
-				if(!LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).isEmpty()){
-					IOpcontrolProvider provider = OprofileCorePlugin.getDefault().getOpcontrolProvider();
-					if (!provider.hasPermissions(project)){
-						throw new OpcontrolException(OprofileCorePlugin.createErrorStatus("opcontrolSudo", null)); //$NON-NLS-1$
-					}
-				}
+			//kill the daemon (it shouldn't be running already, but to be safe)
+			oprofileShutdown();
 
-				//kill the daemon (it shouldn't be running already, but to be safe)
-				oprofileShutdown();
+			//reset data from the (possibly) existing default session,
+			// otherwise multiple runs will combine samples and results
+			// won't make much sense
+			oprofileReset();
 
-				//reset data from the (possibly) existing default session,
-				// otherwise multiple runs will combine samples and results
-				// won't make much sense
-				oprofileReset();
+			//setup the events and other parameters
+			oprofileSetupDaemon(options.getOprofileDaemonOptions(), daemonEvents);
 
-				//setup the events and other parameters
-				oprofileSetupDaemon(options.getOprofileDaemonOptions(), daemonEvents);
+			//start the daemon & collection of samples
+			//note: since the daemon is only profiling for the specific image we told
+			// it to, no matter to start the daemon before the binary itself is run
+			oprofileStartCollection();
 
-				//start the daemon & collection of samples
-				//note: since the daemon is only profiling for the specific image we told
-				// it to, no matter to start the daemon before the binary itself is run
-				oprofileStartCollection();
-			}
 			//add a listener for termination of the launch prior to execution of launch
 			ILaunchManager lmgr = DebugPlugin.getDefault().getLaunchManager();
 			lmgr.addLaunchListener(new LaunchTerminationWatcher(launch, options.getExecutionsNumber()));
@@ -91,7 +87,6 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 			launch = il;
 			this.executions = executions;
 		}
-		@Override
 		public void launchesTerminated(ILaunch[] launches) {
 			try {
 				for (ILaunch l : launches) {
@@ -102,15 +97,12 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 					 * refresh the view (which parses the data/ui model and displays it).
 					 */
 					if (l.equals(launch) && l.getProcesses().length == executions) {
-						if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
-							oprofileDumpSamples();
-							oprofileShutdown();
-						}
+						oprofileDumpSamples();
+						oprofileShutdown();
 
 						//need to run this in the ui thread otherwise get SWT Exceptions
 						// based on concurrency issues
 						Display.getDefault().syncExec(new Runnable() {
-							@Override
 							public void run() {
 								refreshOprofileView();
 							}
@@ -121,11 +113,8 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 				OprofileCorePlugin.showErrorDialog("opcontrolProvider", oe); //$NON-NLS-1$
 			}
 		}
-		@Override
 		public void launchesAdded(ILaunch[] launches) { /* dont care */}
-		@Override
 		public void launchesChanged(ILaunch[] launches) { /* dont care */ }
-		@Override
 		public void launchesRemoved(ILaunch[] launches) { /* dont care */ }
 	}
 

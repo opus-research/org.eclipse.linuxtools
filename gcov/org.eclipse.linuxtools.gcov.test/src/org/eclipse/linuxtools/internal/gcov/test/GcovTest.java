@@ -2,7 +2,6 @@ package org.eclipse.linuxtools.internal.gcov.test;
 
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withText;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.waitForShell;
-import static org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper.contextMenu;
 
 import java.io.File;
 import java.io.InputStream;
@@ -20,17 +19,12 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.dataviewers.actions.STExportToCSVAction;
 import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.actions.AbstractOpenSourceFileAction;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
-import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
-import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotRadio;
@@ -123,7 +117,8 @@ public abstract class GcovTest {
 		
 		SWTBot viewBot = bot.viewByTitle("Project Explorer").bot();
 		SWTBotShell wbShell = bot.activeShell();
-
+//		SWTBotShell wbShell = viewBot.shells()[0];
+//		wbShell.activate();
 		SWTBotTree treeBot = viewBot.tree();
 		treeBot.setFocus();
 		treeBot.expandNode(projectName).select(file.getName());
@@ -158,7 +153,9 @@ public abstract class GcovTest {
 		
 		SWTBot viewBot = bot.viewByTitle("Project Explorer").bot();
 		SWTBotShell wbShell = bot.activeShell();
-
+//		wbShell.activate();
+//		SWTBotShell wbShell = viewBot.shells()[0];
+//		wbShell.activate();
 		SWTBotTree treeBot = viewBot.tree();
 		treeBot.setFocus();
 		treeBot.expandNode(projectName).select(file.getName());
@@ -189,7 +186,9 @@ public abstract class GcovTest {
 		
 		SWTBot viewBot = bot.viewByTitle("Project Explorer").bot();
 		SWTBotShell wbShell = bot.activeShell();
-
+//		wbShell.activate();
+//		SWTBotShell wbShell = viewBot.shells()[0];
+//		wbShell.activate();
 		SWTBotTree treeBot = viewBot.tree();
 		treeBot.setFocus();
 		// We need to select the binary, but in the tree, it may have additional info appended to the
@@ -206,11 +205,19 @@ public abstract class GcovTest {
 		treeBot.expandNode(projectName).select(binNodeName);
 		String menuItem = "Profiling Tools";
 		String subMenuItem = "1 Profile Code Coverage";
-		click(contextMenu(treeBot, menuItem, subMenuItem));
+		ContextMenuHelper.clickContextMenu(treeBot, menuItem, subMenuItem);
+
 
 		wbShell.activate();
 		SWTBotView botView = bot.viewByTitle("gcov");
-
+		// The following cannot be tested on 4.2 because the SWTBot implementation of toolbarButton()
+		// is broken there because it relies PartPane having a method getPane() which is no longer true.
+//		botView.toolbarButton("Sort coverage per function").click();
+//		dumpCSV(bot, botView, projectName, "function", testProducedReference);
+//		botView.toolbarButton("Sort coverage per file").click();
+//		dumpCSV(bot, botView, projectName, "file", testProducedReference);
+//		botView.toolbarButton("Sort coverage per folder").click();
+//		dumpCSV(bot, botView, projectName, "folder", testProducedReference);
 		botView.close();
 	}
 	
@@ -261,22 +268,8 @@ public abstract class GcovTest {
 		testGcovLaunchSummary(bot, projectName, "a.out");
 	}
 
-	/**
-	 * Click on the specified MenuItem.
-	 * @param menuItem MenuItem item to click
-	 */
-	private static void click(final MenuItem menuItem) {
-            final Event event = new Event();
-            event.time = (int) System.currentTimeMillis();
-            event.widget = menuItem;
-            event.display = menuItem.getDisplay();
-            event.type = SWT.Selection;
-
-            UIThreadRunnable.asyncExec(menuItem.getDisplay(), new VoidResult() {
-                    @Override
-					public void run() {
-                            menuItem.notifyListeners(SWT.Selection, event);
-                    }
-            });
-    }
+	
+	
+	
+	
 }

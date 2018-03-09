@@ -13,14 +13,14 @@
 package org.eclipse.linuxtools.tmf.core.tests.statistics;
 
 import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
-import org.junit.AfterClass;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
 import org.junit.BeforeClass;
 
 /**
@@ -30,34 +30,21 @@ import org.junit.BeforeClass;
  */
 public class TmfStateStatisticsTest extends TmfStatisticsTest {
 
-    private static File htFileTotals;
-    private static File htFileTypes;
-
     /**
      * Set up the fixture (build the state history, etc.) once for all tests.
      */
     @BeforeClass
     public static void setUpClass() {
-        assumeTrue(testTrace.exists());
+        assumeTrue(CtfTmfTestTraces.tracesExist());
         try {
-            htFileTotals = File.createTempFile("stats-test-totals", ".ht");
-            htFileTypes = File.createTempFile("stats-test-types", ".ht");
-
-            backend = new TmfStateStatistics(testTrace.getTrace(), htFileTotals, htFileTypes);
-
+            File htFile = File.createTempFile("stats-test", ".ht");
+            htFile.deleteOnExit();
+            CtfTmfTrace trace = CtfTmfTestTraces.getTestTrace(TRACE_INDEX);
+            backend = new TmfStateStatistics(trace, htFile);
         } catch (TmfTraceException e) {
-            fail();
+            e.printStackTrace();
         } catch (IOException e) {
-            fail();
+            e.printStackTrace();
         }
-    }
-
-    /**
-     * Class cleanup
-     */
-    @AfterClass
-    public static void tearDownClass() {
-        htFileTotals.delete();
-        htFileTypes.delete();
     }
 }

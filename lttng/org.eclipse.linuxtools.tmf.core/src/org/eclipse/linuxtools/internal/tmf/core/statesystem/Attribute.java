@@ -2,40 +2,39 @@
  * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
- *
+ * 
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Vector;
 
 /**
  * An Attribute is a "node" in the Attribute Tree. It represents a smallest
  * unit of the model which can be in a particular state at a given time.
- *
+ * 
  * It is abstract, as different implementations can provide different ways to
  * access sub-attributes
- *
+ * 
  * @author alexmont
- *
+ * 
  */
 abstract class Attribute {
 
     private final Attribute parent;
     private final String name;
     private final int quark;
-    protected final List<Attribute> subAttributes;
+    protected final Vector<Attribute> subAttributes;
 
     /**
      * Constructor
@@ -44,7 +43,7 @@ abstract class Attribute {
         this.parent = parent;
         this.quark = quark;
         this.name = name;
-        this.subAttributes = new ArrayList<Attribute>();
+        this.subAttributes = new Vector<Attribute>();
     }
 
     /**
@@ -59,8 +58,8 @@ abstract class Attribute {
         return parent;
     }
 
-    List<Attribute> getSubAttributes() {
-        return Collections.unmodifiableList(subAttributes);
+    List<Attribute> getSubAttributesList() {
+        return subAttributes;
     }
 
     String getName() {
@@ -69,7 +68,7 @@ abstract class Attribute {
 
     /**
      * Get the matching quark for a given path-of-strings
-     *
+     * 
      * @param path
      *            The path we are looking for, *relative to this node*.
      * @return The matching quark, or -1 if that attribute does not exist.
@@ -83,7 +82,7 @@ abstract class Attribute {
      * returning the matching quark we return the AttributeTreeNode object
      * itself. It can then be used as new "root node" for faster queries on the
      * tree.
-     *
+     * 
      * @param path
      *            The target path, *relative to this node*
      * @return The Node object matching the last element in the path, or "null"
@@ -114,7 +113,7 @@ abstract class Attribute {
     /**
      * Return a String array composed of the full (absolute) path representing
      * this attribute
-     *
+     * 
      * @return
      */
     String[] getFullAttribute() {
@@ -123,9 +122,11 @@ abstract class Attribute {
 
         /* Add recursive parents to the list, but stop at the root node */
         while (curNode.getParent() != null) {
-            list.addFirst(curNode.getName());
+            list.add(curNode.getName());
             curNode = curNode.getParent();
         }
+
+        Collections.reverse(list);
 
         return list.toArray(new String[0]);
     }
@@ -133,7 +134,7 @@ abstract class Attribute {
     /**
      * Return the absolute path of this attribute, as a single slash-separated
      * String.
-     *
+     * 
      * @return
      */
     String getFullAttributeName() {
@@ -161,7 +162,7 @@ abstract class Attribute {
         writer.println(currentNode.getName() + " (" + currentNode.quark + ')'); //$NON-NLS-1$
         curDepth++;
 
-        for (Attribute nextNode : currentNode.getSubAttributes()) {
+        for (Attribute nextNode : currentNode.getSubAttributesList()) {
             /* Skip printing 'null' entries */
             if (nextNode == null) {
                 continue;
@@ -190,13 +191,13 @@ abstract class Attribute {
  * This is the basic implementation, where sub-attributes names can be composed
  * of any alphanumeric characters, and are stored as Strings. A HashMap is used
  * to access them.
- *
+ * 
  * @author alexmont
- *
+ * 
  */
 final class AlphaNumAttribute extends Attribute {
 
-    private Map<String, Integer> subAttributesMap;
+    private HashMap<String, Integer> subAttributesMap;
 
     AlphaNumAttribute(Attribute parent, String name, int quark) {
         super(parent, name, quark);

@@ -76,10 +76,6 @@ public class TmfEventParserStub implements ITmfEventParser {
 
         // Highly inefficient...
         final RandomAccessFile stream = ((TmfTraceStub) fEventStream).getStream();
-        if (stream == null) {
-            return null;
-        }
-
         //       	String name = eventStream.getName();
         //       	name = name.substring(name.lastIndexOf('/') + 1);
 

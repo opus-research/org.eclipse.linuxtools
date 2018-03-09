@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.AbstractDataAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.EventIdCache;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
@@ -80,8 +79,8 @@ public class InfoAdapter extends AbstractDataAdapter{
 	public static final String DUMP_STATUS = "dump-status"; //$NON-NLS-1$
 	
 	public static final String CPUINFO = "/proc/cpuinfo"; //$NON-NLS-1$
-	public static String DEV_OPROFILE = "/dev/oprofile/"; //$NON-NLS-1$
-	public static String CPUTYPE = DEV_OPROFILE + "cpu_type"; //$NON-NLS-1$
+	public static final String DEV_OPROFILE = "/dev/oprofile/"; //$NON-NLS-1$
+	public static final String CPUTYPE = DEV_OPROFILE + "cpu_type"; //$NON-NLS-1$
 	public static final String OP_SHARE = "/usr/share/oprofile/"; //$NON-NLS-1$
 	public static final String EVENTS = "events"; //$NON-NLS-1$
 	
@@ -104,15 +103,11 @@ public class InfoAdapter extends AbstractDataAdapter{
 				createDOM(null);
 			}else{
 				Process p = RuntimeProcessFactory.getFactory().exec("ophelp -X", Oprofile.OprofileProject.getProject());
-				if (p != null) {
-					InputStream is = p.getInputStream();
-					createDOM(is);
-				} else {
-					createDOM(null);
-				}
+				InputStream is = p.getInputStream();
+				createDOM(is);
 			}
 		} catch (IOException e) {
-			createDOM(null);
+			e.printStackTrace();
 		}
 	}
 
@@ -124,7 +119,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 		try {
 			inputStream = resourceFile.openInputStream(EFS.NONE, new NullProgressMonitor());
 			createDOM(inputStream);
-			setEventIdCacheDoc(oldRoot);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -182,7 +176,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 			return;
 		}
 		createHeaders();
-		if (!hasTimerSupport() && oldRoot != null){
+		if (!hasTimerSupport()){
 			createXML();
 		}
 	}
@@ -225,14 +219,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 		Element timerModeTag = newDoc.createElement(TIMER_MODE);
 		timerModeTag.setTextContent(String.valueOf(hasTimerSupport()));
 		newRoot.appendChild(timerModeTag);
-	}
-
-	/**
-	 * @since 3.0
-	 */
-	public static void setOprofileDir (String dir) {
-		DEV_OPROFILE = dir;
-		CPUTYPE = DEV_OPROFILE + "cpu_type";
 	}
 
 	/**
@@ -279,6 +265,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 	 * @return the system's cpu frequency
 	 */
 	private int getCPUFrequency() {
+
 		int val = 0;
 		BufferedReader bi = null;
 		try {
@@ -343,16 +330,6 @@ public class InfoAdapter extends AbstractDataAdapter{
 		 * hard-coded in a list. This method may not be entirely correct,
 		 * although much simpler.
 		 */
-
-		/*
-		 * Returning 1 for operf since it multiplexes the events through the counters
-		 * and it is not possible to read data from opcontrol /dev dir if the opcontrol
-		 * module was not initialized.
-		 * TODO: Make possible to select more than one event in a tab.
-		 */
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
-			return 1;
-		}
 		try {
 			proxy = RemoteProxyManager.getInstance().getFileProxy(Oprofile.OprofileProject.getProject());
 		} catch (CoreException e) {
@@ -467,12 +444,5 @@ public class InfoAdapter extends AbstractDataAdapter{
 	@Override
 	public Document getDocument() {
 		return newDoc;
-	}
-
-	/**
-	 * @since 3.0
-	 */
-	public void setEventIdCacheDoc (Element elem) {
-		EventIdCache.getInstance().setCacheDoc(elem);
 	}
 }

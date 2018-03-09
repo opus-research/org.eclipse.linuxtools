@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 
 /**
@@ -20,7 +21,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
  * @version 1.0
  * @author sveyrier
  */
-public class Print extends BaseSDAction {
+public class Print extends Action {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -32,6 +33,15 @@ public class Print extends BaseSDAction {
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.print"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+
+    /**
+     * The sequence diagram view reference
+     */
+    private SDView fView;
+
+    // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
@@ -41,8 +51,9 @@ public class Print extends BaseSDAction {
      * @param view The view reference
      */
     public Print(SDView view) {
-        super(view);
+        super();
         setId(ID);
+        fView = view;
     }
 
     // ------------------------------------------------------------------------
@@ -51,10 +62,10 @@ public class Print extends BaseSDAction {
 
     @Override
     public void run() {
-        if ((getView() == null) || getView().getSDWidget() == null){
+        if ((fView == null) || fView.getSDWidget() == null){
             return;
         }
 
-        getView().getSDWidget().print();
+        fView.getSDWidget().print();
     }
 }

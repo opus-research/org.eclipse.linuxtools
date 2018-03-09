@@ -13,7 +13,6 @@
  *          CheckedTreeSelectionDialog#createSelectionButtons(Composite) fails to
  *          align the selection buttons to the right
  *      François Rajotte - Support for multiple columns + selection control
- *      Patrick Tasse - Fix Sonar warnings
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs;
@@ -62,13 +61,11 @@ import org.eclipse.ui.dialogs.SelectionStatusDialog;
  * @author François Rajotte
  */
 public class TimeGraphFilterDialog extends SelectionStatusDialog {
-    private static final int BUTTON_CHECK_SELECTED_ID = IDialogConstants.CLIENT_ID;
-    private static final int BUTTON_UNCHECK_SELECTED_ID = IDialogConstants.CLIENT_ID + 1;
-    private static final int BUTTON_CHECK_SUBTREE_ID = IDialogConstants.CLIENT_ID + 2;
-    private static final int BUTTON_UNCHECK_SUBTREE_ID = IDialogConstants.CLIENT_ID + 3;
+    private final static int BUTTON_CHECK_SELECTED_ID = IDialogConstants.CLIENT_ID;
+    private final static int BUTTON_UNCHECK_SELECTED_ID = IDialogConstants.CLIENT_ID + 1;
+    private final static int BUTTON_CHECK_SUBTREE_ID = IDialogConstants.CLIENT_ID + 2;
+    private final static int BUTTON_UNCHECK_SUBTREE_ID = IDialogConstants.CLIENT_ID + 3;
 
-    private static final int DEFAULT_WIDTH = 60;
-    private static final int DEFAULT_HEIGHT = 18;
 
     private CheckboxTreeViewer fViewer;
 
@@ -93,9 +90,9 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
 
     private boolean fIsEmpty;
 
-    private int fWidth = DEFAULT_WIDTH;
+    private int fWidth = 60;
 
-    private int fHeight = DEFAULT_HEIGHT;
+    private int fHeight = 18;
 
     private Object[] fExpandedElements;
 
@@ -151,7 +148,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
      */
     public void addFilter(ViewerFilter filter) {
         if (fFilters == null) {
-            fFilters = new ArrayList<ViewerFilter>();
+            fFilters = new ArrayList<ViewerFilter>(4);
         }
         fFilters.add(filter);
     }
@@ -184,11 +181,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
      *            The elements that will be expanded.
      */
     public void setExpandedElements(Object[] elements) {
-        if (elements != null) {
-            fExpandedElements = Arrays.copyOf(elements, elements.length);
-        } else {
-            fExpandedElements = null;
-        }
+        fExpandedElements = elements;
     }
 
     /**
@@ -222,11 +215,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
      * @param columnNames An array of column names to display
      */
     public void setColumnNames(String[] columnNames) {
-        if (columnNames != null) {
-            fColumnNames = Arrays.copyOf(columnNames, columnNames.length);
-        } else {
-            fColumnNames = null;
-        }
+        fColumnNames = columnNames;
     }
 
     /**
@@ -257,6 +246,10 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         return getReturnCode();
     }
 
+    private void access$superCreate() {
+        super.create();
+    }
+
     @Override
     protected void cancelPressed() {
         setResult(null);
@@ -273,7 +266,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         BusyIndicator.showWhile(null, new Runnable() {
             @Override
             public void run() {
-                TimeGraphFilterDialog.super.create();
+                access$superCreate();
                 fViewer.setCheckedElements(getInitialElementSelections()
                         .toArray());
                 if (fExpandedElements != null) {
@@ -524,10 +517,12 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
 
     private boolean evaluateIfTreeEmpty(Object input) {
         Object[] elements = fContentProvider.getElements(input);
-        if (elements.length > 0 && fFilters != null) {
-            for (int i = 0; i < fFilters.size(); i++) {
-                ViewerFilter curr = fFilters.get(i);
-                elements = curr.filter(fViewer, input, elements);
+        if (elements.length > 0) {
+            if (fFilters != null) {
+                for (int i = 0; i < fFilters.size(); i++) {
+                    ViewerFilter curr = fFilters.get(i);
+                    elements = curr.filter(fViewer, input, elements);
+                }
             }
         }
         return elements.length == 0;

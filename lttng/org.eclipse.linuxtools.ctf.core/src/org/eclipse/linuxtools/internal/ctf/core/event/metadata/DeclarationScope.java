@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
@@ -26,15 +25,8 @@ import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseE
  * <p>
  * A DeclarationScope keeps track of the various CTF declarations for a given
  * scope.
- *
- * TODO: The notion of "symbols" and the notion of "scope" are misused in this
- * parser, which leads to inefficient tree management. It should be cleaned up.
- *
- * @author Matthew Khouzam
- * @author Simon Marchi
- *
  */
-class DeclarationScope {
+public class DeclarationScope {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -42,11 +34,10 @@ class DeclarationScope {
 
     private DeclarationScope parentScope = null;
 
-    private final Map<String, StructDeclaration> structs = new HashMap<String, StructDeclaration>();
-    private final Map<String, EnumDeclaration> enums = new HashMap<String, EnumDeclaration>();
-    private final Map<String, VariantDeclaration> variants = new HashMap<String, VariantDeclaration>();
-    private final Map<String, IDeclaration> types = new HashMap<String, IDeclaration>();
-    private final Map<String, IDeclaration> identifiers = new HashMap<String, IDeclaration>();
+    private final HashMap<String, StructDeclaration> structs = new HashMap<String, StructDeclaration>();
+    private final HashMap<String, EnumDeclaration> enums = new HashMap<String, EnumDeclaration>();
+    private final HashMap<String, VariantDeclaration> variants = new HashMap<String, VariantDeclaration>();
+    private final HashMap<String, IDeclaration> types = new HashMap<String, IDeclaration>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -99,31 +90,12 @@ class DeclarationScope {
             throws ParseException {
         /* Check if the type has been defined in the current scope */
         if (types.containsKey(name)) {
-            throw new ParseException("Type has already been defined:" + name); //$NON-NLS-1$
+            throw new ParseException("Type " + name //$NON-NLS-1$
+                    + " has already been defined."); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
         types.put(name, declaration);
-    }
-
-    /**
-     * Registers an identifier declaration.
-     *
-     * @param name
-     *            name of the identifier
-     * @param declaration
-     *            the identfier's declaration
-     * @throws ParseException
-     *             if an identifier with the same name has already been defined.
-     */
-    public void registerIdentifier(String name, IDeclaration declaration) throws ParseException {
-        /* Check if the type has been defined in the current scope */
-        if (identifiers.containsKey(name)) {
-            throw new ParseException("Identifier has already been defined:" + name); //$NON-NLS-1$
-        }
-
-        /* Add it to the register. */
-        identifiers.put(name, declaration);
     }
 
     /**
@@ -140,15 +112,16 @@ class DeclarationScope {
             throws ParseException {
         /* Check if the struct has been defined in the current scope. */
         if (structs.containsKey(name)) {
-            throw new ParseException("Struct has already been defined:" + name); //$NON-NLS-1$
+            throw new ParseException("struct " + name //$NON-NLS-1$
+                    + " has already been defined."); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
         structs.put(name, declaration);
 
         /* It also defined a new type, so add it to the type declarations. */
-        String structPrefix = "struct "; //$NON-NLS-1$
-        registerType(structPrefix + name, declaration);
+        String struct_prefix = "struct "; //$NON-NLS-1$
+        registerType(struct_prefix + name, declaration);
     }
 
     /**
@@ -165,15 +138,16 @@ class DeclarationScope {
             throws ParseException {
         /* Check if the enum has been defined in the current scope. */
         if (lookupEnum(name) != null) {
-            throw new ParseException("Enum has already been defined:" + name); //$NON-NLS-1$
+            throw new ParseException("enum " + name //$NON-NLS-1$
+                    + " has already been defined."); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
         enums.put(name, declaration);
 
         /* It also defined a new type, so add it to the type declarations. */
-        String enumPrefix = "enum "; //$NON-NLS-1$
-        registerType(enumPrefix + name, declaration);
+        String enum_prefix = "enum "; //$NON-NLS-1$
+        registerType(enum_prefix + name, declaration);
     }
 
     /**
@@ -190,15 +164,16 @@ class DeclarationScope {
             throws ParseException {
         /* Check if the variant has been defined in the current scope. */
         if (lookupVariant(name) != null) {
-            throw new ParseException("Variant has already been defined:" + name); //$NON-NLS-1$
+            throw new ParseException("variant " + name //$NON-NLS-1$
+                    + " has already been defined."); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
         variants.put(name, declaration);
 
         /* It also defined a new type, so add it to the type declarations. */
-        String variantPrefix = "variant "; //$NON-NLS-1$
-        registerType(variantPrefix + name, declaration);
+        String variant_prefix = "variant "; //$NON-NLS-1$
+        registerType(variant_prefix + name, declaration);
     }
 
     // ------------------------------------------------------------------------
@@ -226,12 +201,12 @@ class DeclarationScope {
      * @return The type declaration, or null if no type with that name has been
      *         defined.
      */
-    public IDeclaration lookupTypeRecursive(String name) {
+    public IDeclaration rlookupType(String name) {
         IDeclaration declaration = lookupType(name);
         if (declaration != null) {
             return declaration;
         } else if (parentScope != null) {
-            return parentScope.lookupTypeRecursive(name);
+            return parentScope.rlookupType(name);
         } else {
             return null;
         }
@@ -258,12 +233,12 @@ class DeclarationScope {
      * @return The struct declaration, or null if no struct with that name has
      *         been defined.
      */
-    public StructDeclaration lookupStructRecursive(String name) {
+    public StructDeclaration rlookupStruct(String name) {
         StructDeclaration declaration = lookupStruct(name);
         if (declaration != null) {
             return declaration;
         } else if (parentScope != null) {
-            return parentScope.lookupStructRecursive(name);
+            return parentScope.rlookupStruct(name);
         } else {
             return null;
         }
@@ -290,12 +265,12 @@ class DeclarationScope {
      * @return The enum declaration, or null if no enum with that name has been
      *         defined.
      */
-    public EnumDeclaration lookupEnumRecursive(String name) {
+    public EnumDeclaration rlookupEnum(String name) {
         EnumDeclaration declaration = lookupEnum(name);
         if (declaration != null) {
             return declaration;
         } else if (parentScope != null) {
-            return parentScope.lookupEnumRecursive(name);
+            return parentScope.rlookupEnum(name);
         } else {
             return null;
         }
@@ -322,47 +297,17 @@ class DeclarationScope {
      * @return The variant declaration, or null if no variant with that name has
      *         been defined.
      */
-    public VariantDeclaration lookupVariantRecursive(String name) {
+    public VariantDeclaration rlookupVariant(String name) {
         VariantDeclaration declaration = lookupVariant(name);
         if (declaration != null) {
             return declaration;
         } else if (parentScope != null) {
-            return parentScope.lookupVariantRecursive(name);
+            return parentScope.rlookupVariant(name);
         } else {
             return null;
         }
     }
 
-    /**
-     * Looks through the list of identifiers of a scope to find if it exists.
-     *
-     * @param identifier
-     *            the name of the identifier to search for. In the case of int
-     *            x; it would be "x"
-     * @return the declaration of the type associated to that identifier
-     */
-    public IDeclaration lookupIdentifier(String identifier) {
-        return identifiers.get(identifier);
-    }
-
-    /**
-     * Recursively looks through the list of identifiers of a scope to find if
-     * it exists.
-     *
-     * @param identifier
-     *            the name of the identifier to search for. In the case of int
-     *            x; it would be "x"
-     * @return the declaration of the type associated to that identifier
-     */
-    public IDeclaration lookupIdentifierRecursive(String identifier) {
-        IDeclaration declaration = lookupIdentifier(identifier);
-        if (declaration != null) {
-            return declaration;
-        } else if (parentScope != null) {
-            return parentScope.lookupIdentifierRecursive(identifier);
-        }
-        return null;
-    }
 
     /**
      * Get all the type names of this scope.
@@ -384,11 +329,11 @@ class DeclarationScope {
      * @throws ParseException
      *             If the type does not exist.
      */
-    public void replaceType(String name, IDeclaration newType) throws ParseException {
+    public void replaceType(String name, IDeclaration newType) throws ParseException{
         if (types.containsKey(name)) {
             types.put(name, newType);
         } else {
-            throw new ParseException("Trace does not contain type:" + name); //$NON-NLS-1$
+            throw new ParseException("Trace does not contain type: " + name); //$NON-NLS-1$
         }
     }
 

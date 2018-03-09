@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -26,13 +25,11 @@ public class STPDocumentProvider extends SimpleDocumentProvider {
 	protected void setupDocument(IDocument document) {
 		if (document != null) {
 			IDocumentPartitioner partitioner = new FastPartitioner(
-					new STPPartitionScanner(), STPPartitionScanner.STP_PARTITION_TYPES);
+					new STPPartitionScanner(), new String[] {
+							STPPartitionScanner.STP_COMMENT,
+							STPPartitionScanner.STP_PROBE });
 			partitioner.connect(document);
-			IDocumentPartitioner partitioner2 = new FastPartitioner(
-					new STPProbeScanner(), STPProbeScanner.STP_PROBE_PARTITION_TYPES);
-			partitioner2.connect(document);
-			((IDocumentExtension3)document).setDocumentPartitioner(STPPartitionScanner.STP_PARTITIONING, partitioner);
-			((IDocumentExtension3)document).setDocumentPartitioner(STPProbeScanner.STP_PROBE_PARTITIONING, partitioner2);
+			document.setDocumentPartitioner(partitioner);
 		}
 	}
 

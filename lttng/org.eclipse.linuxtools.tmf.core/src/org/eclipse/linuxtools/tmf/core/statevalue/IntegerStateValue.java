@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 /**
  * A state value containing a simple integer.
  *
@@ -22,10 +20,10 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 final class IntegerStateValue extends TmfStateValue {
 
-    private final int value;
+    private final int valueInt;
 
     public IntegerStateValue(int valueAsInt) {
-        this.value = valueAsInt;
+        this.valueInt = valueAsInt;
     }
 
     @Override
@@ -39,36 +37,12 @@ final class IntegerStateValue extends TmfStateValue {
     }
 
     @Override
-    public boolean equals(@Nullable Object object) {
-        if (!(object instanceof IntegerStateValue)) {
-            return false;
-        }
-        IntegerStateValue other = (IntegerStateValue) object;
-        return (this.value == other.value);
+    public Integer getValue() {
+        return valueInt;
     }
 
     @Override
-    public int hashCode() {
-        return value;
-    }
-
-    @Override
-    public @Nullable String toString() {
-        return String.format("%3d", value); //$NON-NLS-1$
-    }
-
-    // ------------------------------------------------------------------------
-    // Unboxing methods
-    // ------------------------------------------------------------------------
-
-    @Override
-    public int unboxInt() {
-        return value;
-    }
-
-    @Override
-    public long unboxLong() {
-        /* It's always safe to up-cast an int into a long */
-        return value;
+    public String toString() {
+        return String.format("%3d", valueInt); //$NON-NLS-1$
     }
 }

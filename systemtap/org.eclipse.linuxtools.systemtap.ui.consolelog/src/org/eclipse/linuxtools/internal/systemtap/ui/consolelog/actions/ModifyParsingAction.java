@@ -22,7 +22,7 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.ChartStreamDaemon;
@@ -35,11 +35,7 @@ import org.eclipse.ui.PlatformUI;
  * The action to allow users to change the parsing expression while a script is actively running.
  * @author Ryan Morse
  * @since 2.0
- * @deprecated
- * TODO By 3.0, this action is to either be removed or made compatible with
- * the graphing API in place.
  */
-@Deprecated
 public class ModifyParsingAction extends ConsoleAction {
 
 	public ModifyParsingAction(ScriptConsole fConsole) {
@@ -87,8 +83,8 @@ public class ModifyParsingAction extends ConsoleAction {
 			} else
 				daemon.setParser(dataSet, parser);
 
-			IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorEditor.ID);
-			GraphSelectorEditor graphSelector = ((GraphSelectorEditor)ivp);
+			IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorView.ID);
+			GraphSelectorView graphSelector = ((GraphSelectorView)ivp);
 			String name = console.getName();
 			graphSelector.createScriptSet(name.substring(name.lastIndexOf('/')+1), dataSet);
 		}

@@ -19,6 +19,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
+import org.eclipse.linuxtools.tmf.ui.project.wizards.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -76,8 +77,8 @@ abstract class AbstractImportTraceWizardPage extends WizardResourceImportPage {
      */
     public AbstractImportTraceWizardPage(IWorkbench workbench, IStructuredSelection selection) {
         this(BATCH_IMPORT_WIZARD_PAGE, selection);
-        setTitle(null);
-        setDescription(null);
+        setTitle(Messages.ImportTraceWizard_FileSystemTitle);
+        setDescription(Messages.ImportTraceWizard_DialogTitle);
 
         // Locate the target trace folder
         IFolder traceFolder = null;

@@ -41,7 +41,7 @@ import org.eclipse.ui.PlatformUI;
  *
  * @author Bernd Hufmann
  */
-public abstract class ChangeEventStateHandler extends BaseControlViewHandler {
+abstract public class ChangeEventStateHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -57,7 +57,7 @@ public abstract class ChangeEventStateHandler extends BaseControlViewHandler {
     /**
      * @return the new state to set
      */
-    protected abstract TraceEnablement getNewState();
+    abstract protected TraceEnablement getNewState();
 
     // ------------------------------------------------------------------------
     // Operations
@@ -69,7 +69,7 @@ public abstract class ChangeEventStateHandler extends BaseControlViewHandler {
      * @param monitor - a progress monitor
      * @throws ExecutionException If the command fails
      */
-    protected abstract void changeState(TraceChannelComponent channel, List<String> eventNames, IProgressMonitor monitor) throws ExecutionException;
+    abstract protected void changeState(TraceChannelComponent channel, List<String> eventNames, IProgressMonitor monitor) throws ExecutionException;
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -216,15 +216,15 @@ public abstract class ChangeEventStateHandler extends BaseControlViewHandler {
     /**
      *  Class containing parameter for the command execution.
      */
-    protected static class Parameter {
+    static protected class Parameter {
         /**
          * Channel component reference.
          */
-        private final TraceChannelComponent fChannel;
+        final private TraceChannelComponent fChannel;
         /**
          * The list of kernel channel components the command is to be executed on.
          */
-        private final List<TraceEventComponent> fEvents = new ArrayList<TraceEventComponent>();
+        final private List<TraceEventComponent> fEvents = new ArrayList<TraceEventComponent>();
 
         /**
          * Constructor

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2012 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,11 +33,11 @@ public class LifelineCategories {
     /**
 	 * The category name
 	 */
-	private String fName = null;
+	protected String fName = null;
 	/**
 	 * The category image
 	 */
-	private IImage fCategoryImage = null;
+	protected IImage fCategoryImage = null;
 
     // ------------------------------------------------------------------------
     // Methods

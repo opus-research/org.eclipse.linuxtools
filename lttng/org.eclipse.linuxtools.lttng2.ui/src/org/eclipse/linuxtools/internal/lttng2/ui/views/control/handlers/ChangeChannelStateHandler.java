@@ -41,7 +41,7 @@ import org.eclipse.ui.PlatformUI;
  *
  * @author Bernd Hufmann
  */
-public abstract class ChangeChannelStateHandler extends BaseControlViewHandler {
+abstract public class ChangeChannelStateHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -57,7 +57,7 @@ public abstract class ChangeChannelStateHandler extends BaseControlViewHandler {
     /**
      * @return the new state to set
      */
-    protected abstract TraceEnablement getNewState();
+    abstract protected TraceEnablement getNewState();
 
     // ------------------------------------------------------------------------
     // Operations
@@ -69,7 +69,7 @@ public abstract class ChangeChannelStateHandler extends BaseControlViewHandler {
      * @param monitor - a progress monitor
      * @throws ExecutionException If the command fails
      */
-    protected abstract void changeState(TraceDomainComponent domain, List<String> channelNames, IProgressMonitor monitor) throws ExecutionException;
+    abstract protected void changeState(TraceDomainComponent domain, List<String> channelNames, IProgressMonitor monitor) throws ExecutionException;
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -230,23 +230,23 @@ public abstract class ChangeChannelStateHandler extends BaseControlViewHandler {
     /**
      *  Class containing parameter for the command execution.
      */
-    protected static class Parameter {
+    static protected class Parameter {
         /**
          * Kernel domain component reference.
          */
-        protected final TraceDomainComponent fKernelDomain;
+        final protected TraceDomainComponent fKernelDomain;
         /**
          * UST domain component reference.
          */
-        protected final TraceDomainComponent fUstDomain;
+        final protected TraceDomainComponent fUstDomain;
         /**
          * The list of kernel channel components the command is to be executed on.
          */
-        protected final List<TraceChannelComponent> fKernelChannels;
+        final protected List<TraceChannelComponent> fKernelChannels;
         /**
          * The list of UST channel components the command is to be executed on.
          */
-        protected final List<TraceChannelComponent> fUstChannels;
+        final protected List<TraceChannelComponent> fUstChannels;
 
         /**
          * Constructor

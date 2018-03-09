@@ -68,6 +68,15 @@ public class BinutilsPreferencePage extends FieldEditorPreferencePage implements
 
     /*
      * (non-Javadoc)
+     * @see org.eclipse.jface.preference.FieldEditorPreferencePage#initialize()
+     */
+    @Override
+    protected void initialize() {
+        super.initialize();
+    }
+
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jface.preference.PreferencePage#performOk()
      */
     @Override

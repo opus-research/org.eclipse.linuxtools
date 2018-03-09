@@ -18,7 +18,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.internal.perf.ReportComparisonData;
 import org.eclipse.linuxtools.internal.perf.SourceDisassemblyData;
 import org.eclipse.linuxtools.internal.perf.StatData;
 import org.junit.Test;
@@ -48,8 +47,8 @@ public class DataManipulatorTest {
 		sData.parse();
 
 		String expected = "perf stat -r " + runCount + " " + binary; //$NON-NLS-1$
-		for (String i:args) {
-			expected += " " + i; //$NON-NLS-1$
+		for (int i = 0; i < args.length; i++) {
+			expected += " " + args[i]; //$NON-NLS-1$
 		}
 
 		assertEquals(expected, sData.getPerfData().trim());
@@ -71,31 +70,17 @@ public class DataManipulatorTest {
 		}
 
 		expected = expected + " " + binary; //$NON-NLS-1$
-		for (String i : args) {
-			expected += " " + i; //$NON-NLS-1$
+		for (int i = 0; i < args.length; i++) {
+			expected += " " + args[i]; //$NON-NLS-1$
 		}
 
 		assertEquals(expected, sData.getPerfData().trim());
 	}
 
-	@Test
-	public void testEchoReportDiffData() {
-		IPath oldData = Path.fromOSString("perf.old.data"); //$NON-NLS-1$
-		IPath newData = Path.fromOSString("perf.data"); //$NON-NLS-1$
-		StubReportDiffData diffData = new StubReportDiffData("title", //$NON-NLS-1$
-				oldData, newData);
-		diffData.parse();
-
-		String expected = "perf diff " + oldData.toOSString()  //$NON-NLS-1$
-				+ " " + newData.toOSString();  //$NON-NLS-1$
-
-		assertEquals(expected, diffData.getPerfData().trim());
-	}
-
 	/**
 	 * Used for testing SourceDisassemblyData
 	 */
-	private static class StubSourceDisassemblyData extends SourceDisassemblyData {
+	private class StubSourceDisassemblyData extends SourceDisassemblyData {
 
 		public StubSourceDisassemblyData(String title, IPath workingDir) {
 			super(title, workingDir);
@@ -107,18 +92,18 @@ public class DataManipulatorTest {
 			// return the same command with 'echo' prepended
 			ret.add("echo"); //$NON-NLS-1$
 			ret.addAll(Arrays.asList(super.getCommand(workingDir)));
-			return ret.toArray(new String[ret.size()]);
+			return ret.toArray(new String[0]);
 		}
 	}
 
 	/**
 	 * Used for testing StatData
 	 */
-	private static class StubStatData extends StatData {
+	private class StubStatData extends StatData {
 
 		public StubStatData(String title, String cmd, String[] args,
 				int runCount, String[] events) {
-			super(title, Path.fromOSString(""), cmd, args, runCount, events);
+			super(title, null, cmd, args, runCount, events);
 		}
 
 		@Override
@@ -127,7 +112,7 @@ public class DataManipulatorTest {
 			List<String> ret = new ArrayList<String>();
 			ret.add("echo"); //$NON-NLS-1$
 			ret.addAll(Arrays.asList(super.getCommand(command, args)));
-			return ret.toArray(new String[ret.size()]);
+			return ret.toArray(new String[0]);
 		}
 
 		@Override
@@ -136,26 +121,6 @@ public class DataManipulatorTest {
 			// echo will print to standard out
 			performCommand(cmd, 1);
 		}
-	}
-
-	/**
-	 * Used for testing ReportComparisonData
-	 */
-	private static class StubReportDiffData extends ReportComparisonData{
-
-		public StubReportDiffData(String title, IPath oldFile, IPath newFile) {
-			super(title, oldFile, newFile, null);
-		}
-
-		@Override
-		protected String[] getCommand() {
-			// return the same command with 'echo' prepended
-			List<String> ret = new ArrayList<String>();
-			ret.add("echo"); //$NON-NLS-1$
-			ret.addAll(Arrays.asList(super.getCommand()));
-			return ret.toArray(new String[ret.size()]);
-		}
-
 	}
 
 }

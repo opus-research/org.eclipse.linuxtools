@@ -33,11 +33,8 @@ import org.junit.runners.Suite;
     CtfTmfEventFieldTest.class,
     CtfTmfEventTest.class,
     CtfTmfEventTypeTest.class,
-    CtfTmfLostEventsTest.class,
     CtfTmfTimestampTest.class,
     CtfTmfTraceTest.class,
-    EventContextTest.class,
-    FunkyTraceTest.class
 })
 public class AllTests {
 

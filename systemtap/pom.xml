@@ -12,14 +12,19 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
 
+  <prerequisites>
+    <maven>3.0</maven>
+  </prerequisites>
+
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.systemtap</groupId>
   <artifactId>linuxtools-systemtap-parent</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools SystemTap Parent</name>
@@ -49,6 +54,8 @@
     <module>org.eclipse.linuxtools.systemtap-feature</module>
     <module>org.eclipse.linuxtools.systemtap.ui.consolelog</module>
     <module>org.eclipse.linuxtools.systemtap.ui.consolelog.tests</module>
+    <module>org.eclipse.linuxtools.systemtap.ui.dashboard</module>
+    <module>org.eclipse.linuxtools.systemtap.ui.dashboardextension</module>
     <module>org.eclipse.linuxtools.systemtap.ui.doc</module>
     <module>org.eclipse.linuxtools.systemtap.ui.editor</module>
     <module>org.eclipse.linuxtools.systemtap.ui.graphing</module>

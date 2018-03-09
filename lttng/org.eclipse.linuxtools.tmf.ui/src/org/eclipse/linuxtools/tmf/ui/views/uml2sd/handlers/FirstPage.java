@@ -11,10 +11,11 @@
  **********************************************************************/
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
+import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
 
 /**
  * Action class implementation to move the focus to the first page of the whole sequence diagram.
@@ -22,7 +23,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
  * @version 1.0
  * @author Bernd Hufmann
  */
-public class FirstPage extends BaseSDAction {
+public class FirstPage extends Action {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -34,6 +35,15 @@ public class FirstPage extends BaseSDAction {
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.firstpage"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+
+    /**
+     * The sequence diagram view reference
+     */
+    protected SDView fView = null;
+
+    // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
@@ -43,9 +53,10 @@ public class FirstPage extends BaseSDAction {
      * @param view the view reference
      */
     public FirstPage(SDView view) {
-        super(view);
-        setText(Messages.SequenceDiagram_FirstPage);
-        setToolTipText(Messages.SequenceDiagram_GoToFirstPage);
+        super();
+        fView = view;
+        setText(SDMessages._139);
+        setToolTipText(SDMessages._140);
         setId(ID);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_FIRST_PAGE));
     }
@@ -56,13 +67,13 @@ public class FirstPage extends BaseSDAction {
 
     @Override
     public void run() {
-        if ((getView() == null) || (getView().getSDWidget()) == null) {
+        if ((fView == null) || (fView.getSDWidget()) == null) {
             return;
         }
-        if (getView().getSDPagingProvider() != null) {
-            getView().getSDPagingProvider().firstPage();
+        if (fView.getSDPagingProvider() != null) {
+            fView.getSDPagingProvider().firstPage();
         }
-        getView().updateCoolBar();
-        getView().getSDWidget().redraw();
+        fView.updateCoolBar();
+        fView.getSDWidget().redraw();
     }
 }

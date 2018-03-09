@@ -29,6 +29,15 @@ import org.junit.Test;
 public class UtilsTest {
 
     /**
+     * Run the Utils() constructor test.
+     */
+    @Test
+    public void testUtils() {
+        Utils result = new Utils();
+        assertNotNull(result);
+    }
+
+    /**
      * Run the UUID makeUUID(byte[]) method test.
      */
     @Test
@@ -88,31 +97,8 @@ public class UtilsTest {
     public void testUnsignedCompare() {
         long a = 1L;
         long b = 1L;
-        int result;
 
-        result = Utils.unsignedCompare(a, b);
+        int result = Utils.unsignedCompare(a, b);
         assertEquals(0, result);
-
-        result = Utils.unsignedCompare(0L, 1L);
-        assertEquals(-1, result);
-        result = Utils.unsignedCompare(0xFFFFFFFFL, 0x100000000L);
-        assertEquals(-1, result);
-        result = Utils.unsignedCompare(-4L, -1L);
-        assertEquals(-1, result);
-        result = Utils.unsignedCompare(-0x80000000L, -1L);
-        assertEquals(-1, result);
-        result = Utils.unsignedCompare(0x7FFFFFFFFFFFFFFEL, 0x7FFFFFFFFFFFFFFFL);
-        assertEquals(-1, result);
-
-        result = Utils.unsignedCompare(1L, 0L);
-        assertEquals(1, result);
-        result = Utils.unsignedCompare(0x100000000L, 0xFFFFFFFFL);
-        assertEquals(1, result);
-        result = Utils.unsignedCompare(-1L, -4L);
-        assertEquals(1, result);
-        result = Utils.unsignedCompare(-1L, -0x80000000L);
-        assertEquals(1, result);
-        result = Utils.unsignedCompare(0x7FFFFFFFFFFFFFFFL, 0x7FFFFFFFFFFFFFFEL);
-        assertEquals(1, result);
     }
 }

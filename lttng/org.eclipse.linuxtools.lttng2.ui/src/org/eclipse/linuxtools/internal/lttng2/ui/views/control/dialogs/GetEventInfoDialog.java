@@ -56,6 +56,18 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
     // Attributes
     // ------------------------------------------------------------------------
     /**
+     * The dialog composite.
+     */
+    private Composite fDialogComposite = null;
+    /**
+     * The Group for the session combo box.
+     */
+    private Group fSessionsGroup = null;
+    /**
+     * The Group for the channel combo box.
+     */
+    private Group fChannelsGroup = null;
+    /**
      * The session combo box.
      */
     private CCombo fSessionsCombo = null;
@@ -101,7 +113,7 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
      */
     public GetEventInfoDialog(Shell shell) {
         super(shell);
-        setShellStyle(SWT.RESIZE | getShellStyle());
+        setShellStyle(SWT.RESIZE);
     }
 
     // ------------------------------------------------------------------------
@@ -148,19 +160,19 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
     protected Control createDialogArea(Composite parent) {
 
         // Main dialog panel
-        Composite dialogComposite = new Composite(parent, SWT.NONE);
+        fDialogComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
-        dialogComposite.setLayout(layout);
-        dialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        fDialogComposite.setLayout(layout);
+        fDialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Group sessionsGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
-        sessionsGroup.setText(Messages.TraceControl_EnableEventsSessionGroupName);
+        fSessionsGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
+        fSessionsGroup.setText(Messages.TraceControl_EnableEventsSessionGroupName);
         layout = new GridLayout(1, true);
-        sessionsGroup.setLayout(layout);
+        fSessionsGroup.setLayout(layout);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
-        sessionsGroup.setLayoutData(data);
+        fSessionsGroup.setLayoutData(data);
 
-        fSessionsCombo = new CCombo(sessionsGroup, SWT.READ_ONLY);
+        fSessionsCombo = new CCombo(fSessionsGroup, SWT.READ_ONLY);
         fSessionsCombo.setToolTipText(Messages.TraceControl_EnableEventsSessionsTooltip);
         fSessionsCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -172,14 +184,14 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
         fSessionsCombo.setItems(items);
         fSessionsCombo.setEnabled(fSessions.length > 0);
 
-        Group channelsGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
-        channelsGroup.setText(Messages.TraceControl_EnableEventsChannelGroupName);
+        fChannelsGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
+        fChannelsGroup.setText(Messages.TraceControl_EnableEventsChannelGroupName);
         layout = new GridLayout(1, true);
-        channelsGroup.setLayout(layout);
+        fChannelsGroup.setLayout(layout);
         data = new GridData(GridData.FILL_HORIZONTAL);
-        channelsGroup.setLayoutData(data);
+        fChannelsGroup.setLayoutData(data);
 
-        fChannelsCombo = new CCombo(channelsGroup, SWT.READ_ONLY);
+        fChannelsCombo = new CCombo(fChannelsGroup, SWT.READ_ONLY);
         fChannelsCombo.setToolTipText(Messages.TraceControl_EnableEventsChannelsTooltip);
         fChannelsCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fChannelsCombo.setEnabled(false);
@@ -224,7 +236,7 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
 
         // take first session to test whether events filtering is supported or not
         if (fSessions[0].isEventFilteringSupported() && !fIsKernel) {
-            Group filterMainGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
+            Group filterMainGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
             filterMainGroup.setText(Messages.TraceControl_EnableEventsFilterGroupName);
             layout = new GridLayout(2, false);
             filterMainGroup.setLayout(layout);
@@ -239,7 +251,7 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
 
         getShell().setMinimumSize(new Point(300, 200));
 
-        return dialogComposite;
+        return fDialogComposite;
     }
 
     @Override
@@ -271,7 +283,7 @@ public class GetEventInfoDialog extends Dialog implements IGetEventInfoDialog {
         if (fSessions[0].isEventFilteringSupported() && !fIsKernel) {
             String tempFilter = fFilterText.getText();
 
-            if(!tempFilter.isEmpty() && !tempFilter.matches("\\s*")) { //$NON-NLS-1$
+            if(!tempFilter.matches("\\s*")) { //$NON-NLS-1$
                 fFilterExpression = tempFilter;
             }
         }

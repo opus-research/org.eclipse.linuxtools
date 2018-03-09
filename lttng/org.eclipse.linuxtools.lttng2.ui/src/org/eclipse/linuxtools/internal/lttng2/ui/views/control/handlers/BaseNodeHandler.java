@@ -24,7 +24,7 @@ import org.eclipse.ui.IWorkbenchPage;
  *
  * @author Bernd Hufmann
  */
-public abstract class BaseNodeHandler extends BaseControlViewHandler {
+abstract public class BaseNodeHandler extends BaseControlViewHandler {
 
     // ------------------------------------------------------------------------
     // Attributes

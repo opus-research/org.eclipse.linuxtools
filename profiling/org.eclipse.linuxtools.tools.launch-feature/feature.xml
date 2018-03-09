@@ -4,9 +4,7 @@
       label="%featureName"
       version="1.0.0.qualifier"
       provider-name="%featureProvider"
-      os="linux"
-      license-feature="org.eclipse.linuxtools.license.feature"
-      license-feature-version="1.0.0.qualifier">
+      os="linux">
 
    <description>
       %description

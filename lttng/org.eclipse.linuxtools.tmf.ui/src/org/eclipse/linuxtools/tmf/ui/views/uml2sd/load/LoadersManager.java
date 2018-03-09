@@ -64,11 +64,11 @@ public class LoadersManager {
     /**
      * Map for caching information (view ID to loader class)
      */
-    private Map<String, IUml2SDLoader> fViewLoaderMap = new HashMap<String, IUml2SDLoader>();
+    protected Map<String, IUml2SDLoader> fViewLoaderMap = new HashMap<String, IUml2SDLoader>();
     /**
      * Map for caching information (view ID to list of configuration elements)
      */
-    private Map<String, ArrayList<IConfigurationElement>> fViewLoadersList = new HashMap<String, ArrayList<IConfigurationElement>>();
+    protected Map<String, ArrayList<IConfigurationElement>> fViewLoadersList = new HashMap<String, ArrayList<IConfigurationElement>>();
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -87,7 +87,7 @@ public class LoadersManager {
      *
      * @return the manager instance
      */
-    public static synchronized LoadersManager getInstance() {
+    public synchronized static LoadersManager getInstance() {
         if (fLoadersManager == null) {
             fLoadersManager = new LoadersManager();
         }

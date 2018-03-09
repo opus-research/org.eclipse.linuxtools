@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2012 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -34,54 +34,54 @@ public interface ITmfProjectModelElement {
      * Returns the name of the project model element.
      * @return the name of the project element.
      */
-    String getName();
+    public String getName();
     /**
      * Returns the resource associated with the project model element.
      * @return the model resource.
      */
-    IResource getResource();
+    public IResource getResource();
     /**
      * Returns the path of the project model resource.
      * @return the resource path.
      */
-    IPath getPath();
+    public IPath getPath();
     /**
      * Returns the URI (location) of the resource.
      * @return the resource URI.
      */
-    URI getLocation();
+    public URI getLocation();
     /**
      * Returns the project model element.
      * @return the project model element.
      */
-    TmfProjectElement getProject();
+    public TmfProjectElement getProject();
     /**
      * Returns the parent of this model element.
      * @return the parent of this model element.
      */
-    ITmfProjectModelElement getParent();
+    public ITmfProjectModelElement getParent();
     /**
      * Returns whether this model element has children or not.
      * @return <code>true</code> if this model has children else <code>false</code>
      */
-    boolean hasChildren();
+    public boolean hasChildren();
     /**
      * Returns a list of children model elements.
      * @return a list of children model elements.
      */
-    List<ITmfProjectModelElement> getChildren();
+    public List<ITmfProjectModelElement> getChildren();
     /**
      * Method to add a child to the model element.
      * @param child A child element to add.
      */
-    void addChild(ITmfProjectModelElement child);
+    public void addChild(ITmfProjectModelElement child);
     /**
      * Method to remove a child from the model element.
      * @param child A child element to remove
      */
-    void removeChild(ITmfProjectModelElement child);
+    public void removeChild(ITmfProjectModelElement child);
     /**
      * Method to request to refresh the project.
      */
-    void refresh();
+    public void refresh();
 }

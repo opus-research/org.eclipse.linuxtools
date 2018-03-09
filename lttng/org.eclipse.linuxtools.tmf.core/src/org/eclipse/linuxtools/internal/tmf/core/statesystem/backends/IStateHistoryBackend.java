@@ -45,7 +45,7 @@ public interface IStateHistoryBackend {
      *
      * @return The start time
      */
-    long getStartTime();
+    public long getStartTime();
 
     /**
      * Get the current end time of the state history. It will change as the
@@ -53,7 +53,7 @@ public interface IStateHistoryBackend {
      *
      * @return The end time
      */
-    long getEndTime();
+    public long getEndTime();
 
     /**
      * Main method to insert state intervals into the history.
@@ -70,7 +70,7 @@ public interface IStateHistoryBackend {
      *             If the start or end time are invalid
      */
     // FIXME change to IStateInterval?
-    void insertPastState(long stateStartTime, long stateEndTime,
+    public void insertPastState(long stateStartTime, long stateEndTime,
             int quark, ITmfStateValue value) throws TimeRangeException;
 
     /**
@@ -83,7 +83,7 @@ public interface IStateHistoryBackend {
      * @throws TimeRangeException
      *             If the requested time makes no sense.
      */
-    void finishedBuilding(long endTime) throws TimeRangeException;
+    public void finishedBuilding(long endTime) throws TimeRangeException;
 
     /**
      * It is the responsibility of the backend to define where to save the
@@ -96,7 +96,7 @@ public interface IStateHistoryBackend {
      * @return A FileInputStream object pointing to the correct file/location in
      *         the file where to read the attribute tree information.
      */
-    FileInputStream supplyAttributeTreeReader();
+    public FileInputStream supplyAttributeTreeReader();
 
     // FIXME change to FOS too?
     /**
@@ -105,7 +105,7 @@ public interface IStateHistoryBackend {
      *
      * @return The target File
      */
-    File supplyAttributeTreeWriterFile();
+    public File supplyAttributeTreeWriterFile();
 
     /**
      * Supply the position in the file where we should write the attribute tree
@@ -113,7 +113,7 @@ public interface IStateHistoryBackend {
      *
      * @return The file position (we will seek() to it)
      */
-    long supplyAttributeTreeWriterFilePosition();
+    public long supplyAttributeTreeWriterFilePosition();
 
     /**
      * Delete any generated files or anything that might have been created by
@@ -124,13 +124,13 @@ public interface IStateHistoryBackend {
      * index file to persist on disk. This could be limited to actions
      * originating from the user.
      */
-    void removeFiles();
+    public void removeFiles();
 
     /**
      * Notify the state history back-end that the trace is being closed, so it
      * should release its file descriptors, close its connections, etc.
      */
-    void dispose();
+    public void dispose();
 
     // ------------------------------------------------------------------------
     // Query methods
@@ -151,7 +151,7 @@ public interface IStateHistoryBackend {
      * @throws StateSystemDisposedException
      *             If the state system is disposed while a request is ongoing.
      */
-    void doQuery(List<ITmfStateInterval> currentStateInfo, long t)
+    public void doQuery(List<ITmfStateInterval> currentStateInfo, long t)
             throws TimeRangeException, StateSystemDisposedException;
 
     /**
@@ -172,7 +172,7 @@ public interface IStateHistoryBackend {
      * @throws StateSystemDisposedException
      *             If the state system is disposed while a request is ongoing.
      */
-    ITmfStateInterval doSingularQuery(long t, int attributeQuark)
+    public ITmfStateInterval doSingularQuery(long t, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException;
 
@@ -186,7 +186,7 @@ public interface IStateHistoryBackend {
      *            The queried timestamp
      * @return True if the timestamp is within range, false if not.
      */
-    boolean checkValidTime(long t);
+    public boolean checkValidTime(long t);
 
     /**
      * Debug method to print the contents of the history backend.
@@ -194,5 +194,5 @@ public interface IStateHistoryBackend {
      * @param writer
      *            The PrintWriter where to write the output
      */
-    void debugPrint(PrintWriter writer);
+    public void debugPrint(PrintWriter writer);
 }

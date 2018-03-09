@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 /**
  * A state value containing a variable-sized string
  *
@@ -22,10 +20,11 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 final class StringStateValue extends TmfStateValue {
 
-    private final String value;
+    private final String valueStr;
 
     public StringStateValue(String valueAsString) {
-        this.value = valueAsString;
+        assert (valueAsString != null);
+        this.valueStr = valueAsString;
     }
 
     @Override
@@ -39,30 +38,12 @@ final class StringStateValue extends TmfStateValue {
     }
 
     @Override
-    public boolean equals(@Nullable Object object) {
-        if (!(object instanceof StringStateValue)) {
-            return false;
-        }
-        StringStateValue other = (StringStateValue) object;
-        return value.equals(other.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return value.hashCode();
+    public String getValue() {
+        return valueStr;
     }
 
     @Override
     public String toString() {
-        return value;
-    }
-
-    // ------------------------------------------------------------------------
-    // Unboxing methods
-    // ------------------------------------------------------------------------
-
-    @Override
-    public String unboxStr() {
-        return value;
+        return valueStr;
     }
 }

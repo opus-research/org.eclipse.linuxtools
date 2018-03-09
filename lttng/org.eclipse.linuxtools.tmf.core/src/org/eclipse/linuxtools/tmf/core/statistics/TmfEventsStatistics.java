@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -223,8 +223,8 @@ public class TmfEventsStatistics implements ITmfStatistics {
         private long total;
 
         public StatsTotalRequest(ITmfTrace trace, TmfTimeRange range) {
-            super(trace.getEventType(), range, 0, ITmfEventRequest.ALL_DATA,
-                    ITmfEventRequest.ExecutionType.BACKGROUND);
+            super(trace.getEventType(), range, TmfDataRequest.ALL_DATA,
+                    trace.getCacheSize(), ITmfDataRequest.ExecutionType.BACKGROUND);
             total = 0;
         }
 
@@ -235,8 +235,10 @@ public class TmfEventsStatistics implements ITmfStatistics {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            if (!(event instanceof ITmfLostEvent) && event.getTrace() == trace) {
-                total += 1;
+            if (event != null) {
+                if (event.getTrace() == trace) {
+                    total += 1;
+                }
             }
         }
     }
@@ -251,8 +253,8 @@ public class TmfEventsStatistics implements ITmfStatistics {
         private final Map<String, Long> stats;
 
         public StatsPerTypeRequest(ITmfTrace trace, TmfTimeRange range) {
-            super(trace.getEventType(), range, 0, ITmfEventRequest.ALL_DATA,
-                    ITmfEventRequest.ExecutionType.BACKGROUND);
+            super(trace.getEventType(), range, TmfDataRequest.ALL_DATA,
+                    trace.getCacheSize(), ITmfDataRequest.ExecutionType.BACKGROUND);
             this.stats = new HashMap<String, Long>();
         }
 
@@ -263,29 +265,20 @@ public class TmfEventsStatistics implements ITmfStatistics {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            if (event != null && event.getTrace() == trace) {
-                String eventType = event.getType().getName();
-                /*
-                 * Special handling for lost events: instead of counting just
-                 * one, we will count how many actual events it represents.
-                 */
-                if (event instanceof ITmfLostEvent) {
-                    ITmfLostEvent le = (ITmfLostEvent) event;
-                    incrementStats(eventType, le.getNbLostEvents());
-                    return;
+            if (event != null) {
+                if (event.getTrace() == trace) {
+                    processEvent(event);
                 }
-
-                /* For standard event types, just increment by one */
-                incrementStats(eventType, 1L);
             }
         }
 
-        private void incrementStats(String key, long count) {
-            if (stats.containsKey(key)) {
-                long curValue = stats.get(key);
-                stats.put(key, curValue + count);
+        private void processEvent(ITmfEvent event) {
+            String eventType = event.getType().getName();
+            if (stats.containsKey(eventType)) {
+                long curValue = stats.get(eventType);
+                stats.put(eventType, curValue + 1L);
             } else {
-                stats.put(key, count);
+                stats.put(eventType, 1L);
             }
         }
     }
@@ -315,9 +308,9 @@ public class TmfEventsStatistics implements ITmfStatistics {
                     new TmfTimeRange(
                             new TmfTimestamp(borders[0], SCALE),
                             new TmfTimestamp(endTime, SCALE)),
-                    0,
-                    ITmfEventRequest.ALL_DATA,
-                    ITmfEventRequest.ExecutionType.BACKGROUND);
+                    TmfDataRequest.ALL_DATA,
+                    trace.getCacheSize(),
+                    ITmfDataRequest.ExecutionType.BACKGROUND);
 
             /* Prepare the results map, with all counts at 0 */
             results = new TreeMap<Long, Long>();

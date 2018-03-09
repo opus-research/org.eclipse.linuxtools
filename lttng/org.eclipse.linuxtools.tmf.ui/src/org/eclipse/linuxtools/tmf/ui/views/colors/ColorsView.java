@@ -41,7 +41,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -444,12 +443,9 @@ public class ColorsView extends TmfView {
                     dialog.setRGB(colorSetting.getForegroundRGB());
                     dialog.setText(Messages.ColorsView_ForegroundDialogText);
                     dialog.open();
-                    RGB rgb = dialog.getRGB();
-                    if (rgb != null) {
-                        colorSetting.setForegroundRGB(rgb);
-                        ColorSettingsManager.setColorSettings(fColorSettings.toArray(new ColorSetting[0]));
-                        label.setForeground(colorSetting.getForegroundColor());
-                    }
+                    colorSetting.setForegroundRGB(dialog.getRGB());
+                    ColorSettingsManager.setColorSettings(fColorSettings.toArray(new ColorSetting[0]));
+                    label.setForeground(colorSetting.getForegroundColor());
                 }});
 
             bgButton.addSelectionListener(new SelectionAdapter() {
@@ -461,13 +457,10 @@ public class ColorsView extends TmfView {
                     dialog.setRGB(colorSetting.getBackgroundRGB());
                     dialog.setText(Messages.ColorsView_BackgroundDialogText);
                     dialog.open();
-                    RGB rgb = dialog.getRGB();
-                    if (rgb != null) {
-                        colorSetting.setBackgroundRGB(rgb);
-                        ColorSettingsManager.setColorSettings(fColorSettings.toArray(new ColorSetting[0]));
-                        labelComposite.setBackground(colorSetting.getBackgroundColor());
-                        label.setBackground(colorSetting.getBackgroundColor());
-                    }
+                    colorSetting.setBackgroundRGB(dialog.getRGB());
+                    ColorSettingsManager.setColorSettings(fColorSettings.toArray(new ColorSetting[0]));
+                    labelComposite.setBackground(colorSetting.getBackgroundColor());
+                    label.setBackground(colorSetting.getBackgroundColor());
                 }});
 
             final Button tickButton = new Button(this, SWT.PUSH);
@@ -506,12 +499,9 @@ public class ColorsView extends TmfView {
                     dialog.setRGB(colorSetting.getTickColorRGB());
                     dialog.setText(Messages.TickColorDialog_TickColorDialogTitle);
                     dialog.open();
-                    RGB rgb = dialog.getRGB();
-                    if (rgb != null) {
-                        colorSetting.setTickColorRGB(rgb);
-                        ColorSettingsManager.setColorSettings(fColorSettings.toArray(new ColorSetting[0]));
-                        refresh();
-                    }
+                    colorSetting.setTickColorRGB(dialog.getRGB());
+                    ColorSettingsManager.setColorSettings(fColorSettings.toArray(new ColorSetting[0]));
+                    refresh();
                 }});
 
             final Button filterButton = new Button(this, SWT.PUSH);

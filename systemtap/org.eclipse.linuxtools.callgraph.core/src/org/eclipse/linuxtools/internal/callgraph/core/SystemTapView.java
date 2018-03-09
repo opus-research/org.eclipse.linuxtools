@@ -30,6 +30,11 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -233,7 +238,7 @@ public abstract class SystemTapView extends ViewPart {
             @Override
 			public void run() {
                 try {
-                	Process pr = RuntimeProcessFactory.getFactory().exec("stap -V", null); //$NON-NLS-1$
+                	Process pr = RuntimeProcessFactory.getFactory().exec("stap -V", null);
                     BufferedReader buf = new BufferedReader(
                             new InputStreamReader(pr.getErrorStream()));
                     String line = ""; //$NON-NLS-1$
@@ -257,6 +262,63 @@ public abstract class SystemTapView extends ViewPart {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        };
+
+        Action helpAbout = new Action(Messages.getString("SystemTapView.AboutMenu")) { //$NON-NLS-1$
+            @Override
+			public void run() {
+                Display disp = Display.getCurrent();
+                if (disp == null){
+                    disp = Display.getDefault();
+                }
+
+
+                Shell sh = new Shell(disp, SWT.MIN | SWT.MAX);
+                sh.setSize(425, 540);
+                GridLayout gl = new GridLayout(1, true);
+                sh.setLayout(gl);
+
+                sh.setText(""); //$NON-NLS-1$
+
+                Image img = new Image(disp, PluginConstants.getPluginLocation()+"systemtap.png"); //$NON-NLS-1$
+                Composite cmp = new Composite(sh, sh.getStyle());
+                cmp.setLayout(gl);
+                GridData data = new GridData(415,100);
+                cmp.setLayoutData(data);
+                cmp.setBackgroundImage(img);
+
+                Composite c = new Composite(sh, sh.getStyle());
+                c.setLayout(gl);
+                GridData gd = new GridData(415,400);
+                c.setLayoutData(gd);
+                c.setLocation(0,300);
+                StyledText viewer = new StyledText(c, SWT.READ_ONLY | SWT.MULTI
+                        | SWT.V_SCROLL | SWT.WRAP | SWT.BORDER);
+
+                GridData viewerGD = new GridData(SWT.FILL, SWT.FILL, true, true);
+                viewer.setLayoutData(viewerGD);
+                Font font = new Font(sh.getDisplay(), "Monospace", 11, SWT.NORMAL); //$NON-NLS-1$
+                viewer.setFont(font);
+                viewer.setText(
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" +  //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" + //$NON-NLS-1$
+                         "" //$NON-NLS-1$
+                        );
+
+
+
+                sh.open();
             }
         };
     }
@@ -306,54 +368,46 @@ public abstract class SystemTapView extends ViewPart {
      * @param sourcePath
      */
     public void saveData(String targetFile) {
-		try {
-			File file = new File(targetFile);
-			file.delete();
-			file.createNewFile();
+        try {
+            File file = new File(targetFile);
+            file.delete();
+            file.createNewFile();
 
-			File sFile = new File(sourcePath);
-			if (!sFile.exists()) {
-				return;
-			}
+            File sFile = new File(sourcePath);
+            if (!sFile.exists()) {
+                return;
+            }
 
-			FileInputStream fileIn = null;
-			FileOutputStream fileOut = null;
-			FileChannel channelIn = null;
-			FileChannel channelOut = null;
-			try {
-				fileIn = new FileInputStream(sFile);
-				fileOut = new FileOutputStream(file);
-				channelIn = fileIn.getChannel();
-				channelOut = fileOut.getChannel();
+             FileChannel in = null;
+             FileChannel out = null;
 
-				if (channelIn == null || channelOut == null) {
-					return;
-				}
+             try {
+                  in = new FileInputStream(sFile).getChannel();
+                  out = new FileOutputStream(file).getChannel();
 
-				long size = channelIn.size();
-				MappedByteBuffer buf = channelIn.map(
-						FileChannel.MapMode.READ_ONLY, 0, size);
+                  if (in == null || out == null) {
+                      return;
+                  }
 
-				channelOut.write(buf);
+                  long size = in.size();
+                  MappedByteBuffer buf = in.map(FileChannel.MapMode.READ_ONLY, 0, size);
 
-			} finally {
-				if (channelIn != null) {
-					channelIn.close();
-				}
-				if (channelOut != null) {
-					channelOut.close();
-				}
-				if (fileIn != null) {
-					fileIn.close();
-				}
-				if (fileOut != null) {
-					fileOut.close();
-				}
-			}
-		} catch (IOException e) {
-			CallgraphCorePlugin.logException(e);
-		}
-	}
+                  out.write(buf);
+
+             } finally {
+                  if (in != null) {
+                      in.close();
+                  }
+                  if (out != null) {
+                      out.close();
+                  }
+             }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void setSourcePath(String file) {
         sourcePath = file;

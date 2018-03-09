@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
 
@@ -23,7 +24,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDWidget;
  *
  */
 
-public class MoveSDRight extends BaseSDAction {
+public class MoveSDRight extends Action {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -31,7 +32,15 @@ public class MoveSDRight extends BaseSDAction {
     /**
      * The action ID.
      */
-    public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.MoveSDRight"; //$NON-NLS-1$
+     public final static String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.MoveSDRight"; //$NON-NLS-1$
+
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+    /**
+      * The sequence diagram view reference.
+      */
+    protected SDView fView = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -49,9 +58,10 @@ public class MoveSDRight extends BaseSDAction {
      * @param view a sequence diagram view reference
      */
     public MoveSDRight(SDView view) {
-        super(view);
+        super();
         setId(ID);
         setActionDefinitionId(ID);
+        fView = view;
     }
 
     // ------------------------------------------------------------------------
@@ -61,13 +71,22 @@ public class MoveSDRight extends BaseSDAction {
     @Override
     public void run() {
 
-        if (getView() == null) {
+        if (fView == null) {
             return;
         }
 
-        SDWidget viewer = getView().getSDWidget();
+        SDWidget viewer = fView.getSDWidget();
         if (viewer != null) {
             viewer.scrollBy(+viewer.getVisibleWidth(), 0);
         }
+    }
+
+    /**
+     * Sets the active SD view.
+     *
+     * @param view The SD view.
+     */
+   public void setView(SDView view) {
+        fView = view;
     }
 }

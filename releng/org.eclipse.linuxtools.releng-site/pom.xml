@@ -19,49 +19,15 @@
   <parent>
     <groupId>org.eclipse.linuxtools.releng</groupId>
     <artifactId>linuxtools-releng-parent</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.releng-site</artifactId>
   <packaging>eclipse-repository</packaging>
 
-  <profiles>
-     <profile>
-     <id>build-server</id>
-     <build>
-        <plugins>
-           <plugin>
-             <artifactId>maven-antrun-plugin</artifactId>
-             <executions>
-               <execution>
-                 <id>deploy</id>
-                 <phase>verify</phase>
-                 <goals>
-                   <goal>run</goal>
-                 </goals>
-                 <configuration>
-                   <target>
-                    <delete includeemptydirs="false">
-                       <fileset
-                         dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly">
-                         <include name="**" />
-                       </fileset>
-                     </delete>
-                     <copy includeemptydirs="false"
-                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly">
-                       <fileset dir="target/repository">
-                         <include name="**" />
-                       </fileset>
-                     </copy>
-                   </target>
-                 </configuration>
-               </execution>
-             </executions>
-           </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+  <properties>
+    <relengTargetDir>${basedir}/target_save</relengTargetDir>
+  </properties>
 
   <build>
     <plugins>
@@ -80,7 +46,7 @@
 	<executions>
           <execution>
             <id>default-archive-repository</id>
-            <phase>verify</phase>
+            <phase>install</phase>
             <goals>
               <goal>archive-repository</goal>
             </goals>
@@ -100,12 +66,12 @@
               <goal>run</goal>
             </goals>
             <configuration>
-              <target>
+              <tasks>
                 <!-- copy scripts to build directory and execute -->
                 <copy file="p2.xsl" todir="${project.build.directory}"/>
                 <copy file="promoter.xml" todir="${project.build.directory}"/>
                 <ant antfile="${project.build.directory}/promoter.xml"/>
-              </target>
+              </tasks>
             </configuration>
           </execution>
         </executions>
@@ -115,6 +81,92 @@
 
   <name>Eclipse Linux Tools p2 Repository</name>
   <!-- see http://issues.sonatype.org/browse/TYCHO-313 -->
-  <version>2.2.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
+
+  <profiles>
+    <profile>
+     <id>build-server</id>
+     <build>
+       <plugins>
+         <plugin>
+           <groupId>org.eclipse.dash.maven</groupId>
+           <artifactId>eclipse-signing-maven-plugin</artifactId>
+           <version>1.0.5</version>
+           <executions>
+             <execution>
+               <id>pack</id>
+               <configuration>
+                 <inputFile>${relengTargetDir}/org.eclipse.linuxtools.releng-site.zip</inputFile>
+               </configuration>
+               <phase>install</phase>
+               <goals>
+                 <goal>pack</goal>
+               </goals>
+             </execution>
+             <execution>
+               <id>sign</id>
+               <configuration>
+                 <inputFile>${project.build.directory}/packed/org.eclipse.linuxtools.releng-site.zip</inputFile>
+                 <signerInputDirectory>/home/data/httpd/download-staging.priv/linuxtools</signerInputDirectory>
+               </configuration>
+               <phase>install</phase>
+               <goals>
+                 <goal>sign</goal>
+               </goals>
+             </execution>
+             <execution>
+               <id>repack</id>
+               <configuration>
+                 <inputFile>${project.build.directory}/signed/site_assembly.zip</inputFile>
+               </configuration>
+               <phase>install</phase>
+               <goals>
+                 <goal>pack</goal>
+               </goals>
+             </execution>
+             <execution>
+               <id>fixCheckSums</id>
+               <configuration>
+                 <inputFile>${project.build.directory}/packed/site_assembly.zip</inputFile>
+               </configuration>
+               <phase>install</phase>
+               <goals>
+                 <goal>fixCheckSums</goal>
+               </goals>
+             </execution>
+           </executions>
+         </plugin>
+         <plugin>
+             <artifactId>maven-antrun-plugin</artifactId>
+             <executions>
+               <execution>
+                 <id>deploy</id>
+                 <phase>install</phase>
+                 <goals>
+                   <goal>run</goal>
+                 </goals>
+                 <configuration>
+                   <tasks>
+                     <delete includeemptydirs="false">
+                       <fileset
+                         dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly">
+                         <include name="**" />
+                       </fileset>
+                     </delete>
+                     <copy includeemptydirs="false"
+                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly">
+                       <fileset dir="target/checksumFix">
+                         <include name="**" />
+                       </fileset>
+                     </copy>
+                   </tasks>
+                 </configuration>
+               </execution>
+             </executions>
+           </plugin>
+    </plugins>
+  </build>
+  </profile>
+  </profiles>
 
 </project>

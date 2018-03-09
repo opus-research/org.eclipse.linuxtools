@@ -34,7 +34,9 @@ public class LinuxtoolsPathProperty {
 
 
 	private void fillLinuxtoolsPath(String path) {
-		if (path != null && !path.isEmpty()) {
+		if (path == null)
+			return;
+		if (!path.equals("")) { //$NON-NLS-1$
 			linuxtoolsPathSystemDefault = false;
 			linuxtoolsPathDefault = path;
 		}
@@ -56,9 +58,8 @@ public class LinuxtoolsPathProperty {
 	}
 
 	public static LinuxtoolsPathProperty getInstance() {
-		if (instance == null) {
+		if (instance == null)
 			instance = new LinuxtoolsPathProperty();
-		}
 		return instance;
 	}
 
@@ -76,9 +77,8 @@ public class LinuxtoolsPathProperty {
 	 * should return the value of the selected path.
 	 */
 	public String getLinuxtoolsPath(IProject project) {
-		if (project == null) {
-			return ""; //$NON-NLS-1$
-		}
+		if (project == null)
+			return "";
 
 		ScopedPreferenceStore store = new ScopedPreferenceStore(
 				new ProjectScope(project),
@@ -86,24 +86,20 @@ public class LinuxtoolsPathProperty {
 
 		//If the value is not stored we use the default
 		boolean systemPathSelected;
-		if (store.contains(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME)) {
+		if (store.contains(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME))
 			systemPathSelected = store.getBoolean(LaunchCoreConstants.LINUXTOOLS_PATH_SYSTEM_NAME);
-		} else {
+		else
 			systemPathSelected = getLinuxtoolsPathSystemDefault();
-		}
 
-		if (systemPathSelected) {
+		if (systemPathSelected)
 			return ""; //$NON-NLS-1$
-		}
 
 		String path = null;
-		if (store.contains(LaunchCoreConstants.LINUXTOOLS_PATH_NAME)) {
+		if (store.contains(LaunchCoreConstants.LINUXTOOLS_PATH_NAME))
 			path = store.getString(LaunchCoreConstants.LINUXTOOLS_PATH_NAME);
-		}
 
-		if (path == null) {
+		if (path == null)
 			return getLinuxtoolsPathDefault();
-		}
 		return path;
 	}
 

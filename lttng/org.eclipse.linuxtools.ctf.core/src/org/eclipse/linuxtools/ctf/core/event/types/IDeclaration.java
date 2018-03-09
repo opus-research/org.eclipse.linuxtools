@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -14,7 +14,7 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 
 /**
  * A CTF data type declaration.
- *
+ * 
  * An example: <br>
  * int i = 0; <br>
  * <b>int</b> is the declaration.<br>
@@ -37,7 +37,8 @@ public interface IDeclaration {
      *            the name of the definition
      * @return a reference to the definition
      */
-    Definition createDefinition(IDefinitionScope definitionScope, String fieldName);
+    public Definition createDefinition(IDefinitionScope definitionScope,
+            String fieldName);
 
     /**
      * The minimum alignment. if the field is 32 bits, the definition will pad
@@ -45,5 +46,5 @@ public interface IDeclaration {
      *
      * @return the alignment in bits
      */
-    long getAlignment();
+    public long getAlignment();
 }

@@ -33,15 +33,14 @@ public class AbstractProviderPreferencesPage extends
 		FieldEditorPreferencePage implements IWorkbenchPreferencePage, IExecutableExtension {
 
 	// Launch provider extension point tool information attribute
-	private static final String PROVIDER_ATT_INFO = "information"; //$NON-NLS-1$
+	private static final String PROVIDER_ATT_INFO = "information";
 
 	// Launch provider extension point tool description attribute
-	private static final String PROVIDER_ATT_DESC = "description"; //$NON-NLS-1$
+	private static final String PROVIDER_ATT_DESC = "description";
 
 	// Profiling type
 	private String type;
 
-	@Override
 	public void setInitializationData(IConfigurationElement config,
 			String propertyName, Object data) {
 		Hashtable<String, String> parameters = (Hashtable<String, String>) data;
@@ -49,7 +48,7 @@ public class AbstractProviderPreferencesPage extends
 				.get(ProviderProfileConstants.INIT_DATA_TYPE_KEY);
 
 		if (profilingType == null) {
-			profilingType = ""; //$NON-NLS-1$
+			profilingType = "";
 		}
 
 		setProfilingType(profilingType);
@@ -59,7 +58,6 @@ public class AbstractProviderPreferencesPage extends
 		super(GRID);
 	}
 
-	@Override
 	public void init(IWorkbench workbench) {
 			final IPreferenceStore store = new ScopedPreferenceStore(
 					ConfigurationScope.INSTANCE, ProviderProfileConstants.PLUGIN_ID);
@@ -85,10 +83,8 @@ public class AbstractProviderPreferencesPage extends
 	protected void createFieldEditors() {
 		String providerId = ProviderFramework.getHighestProviderId(type);
 
-		if (providerId != null) {
-			getPreferenceStore().setDefault(
-					ProviderProfileConstants.PREFS_KEY + type, providerId);
-		}
+		getPreferenceStore().setDefault(
+				ProviderProfileConstants.PREFS_KEY + type, providerId);
 
 		HashMap<String, String> map = ProviderFramework
 				.getProviderNamesForType(type);
@@ -102,8 +98,8 @@ public class AbstractProviderPreferencesPage extends
 			String toolName = entry.getKey();
 
 			// Append tool description to tool name if available.
-			if (toolDescription != null && !toolDescription.equals("")) { //$NON-NLS-1$
-				toolName = toolName + " " + "[" + toolDescription + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			if (toolDescription != null && !toolDescription.equals("")) {
+				toolName = toolName + " " + "[" + toolDescription + "]"; //$NON-NLS-1$
 			}
 
 			providerList[i][0] = toolName;
@@ -130,7 +126,7 @@ public class AbstractProviderPreferencesPage extends
 			// Set tool tip description text.
 			String toolDescription = ProviderFramework.getToolInformationFromId(curProviderId,
 					PROVIDER_ATT_INFO);
-			if (toolDescription != null && !toolDescription.equals("")) { //$NON-NLS-1$
+			if (toolDescription != null && !toolDescription.equals("")) {
 				control.setToolTipText(toolDescription);
 			}
 		}
@@ -138,13 +134,13 @@ public class AbstractProviderPreferencesPage extends
 
 	/**
 	 * Return the help context id to use if the help button is pushed.
-	 *
+	 * 
 	 * @return the help context id
 	 */
 	private String getHelpContextId() {
 		return ProviderProfileConstants.PLUGIN_ID + ".profiling_categories";  //$NON-NLS-1$
 	}
-
+ 
 	/**
 	 * Set profiling type.
 	 *

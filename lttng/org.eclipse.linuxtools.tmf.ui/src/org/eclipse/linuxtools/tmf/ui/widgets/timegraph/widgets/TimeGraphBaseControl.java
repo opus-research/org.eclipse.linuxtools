@@ -44,10 +44,10 @@ public abstract class TimeGraphBaseControl extends Canvas implements PaintListen
     public static final int SMALL_ICON_SIZE = 16;
 
     /** Color scheme */
-    private TimeGraphColorScheme fColorScheme;
+    protected TimeGraphColorScheme _colors;
 
     /** Font size */
-    private int fFontHeight = 0;
+    protected int _fontHeight = 0;
 
     /**
      * Basic constructor. Uses a default style value
@@ -66,15 +66,20 @@ public abstract class TimeGraphBaseControl extends Canvas implements PaintListen
      *
      * @param parent
      *            The parent composite object
-     * @param colorScheme
+     * @param colors
      *            The color scheme to use
      * @param style
      *            The index of the style to use
      */
-    public TimeGraphBaseControl(Composite parent, TimeGraphColorScheme colorScheme, int style) {
+    public TimeGraphBaseControl(Composite parent, TimeGraphColorScheme colors, int style) {
         super(parent, style);
-        fColorScheme = colorScheme;
+        _colors = colors;
         addPaintListener(this);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
     }
 
     @Override
@@ -82,7 +87,7 @@ public abstract class TimeGraphBaseControl extends Canvas implements PaintListen
         if (e.widget != this) {
             return;
         }
-        fFontHeight = e.gc.getFontMetrics().getHeight();
+        _fontHeight = e.gc.getFontMetrics().getHeight();
         Rectangle bound = getClientArea();
         if (!bound.isEmpty()) {
             Color colBackup = e.gc.getBackground();
@@ -92,23 +97,12 @@ public abstract class TimeGraphBaseControl extends Canvas implements PaintListen
     }
 
     /**
-     * Retrieve the color scheme
-     *
-     * @return The color scheme
-     *
-     * @since 2.0
-     */
-    public TimeGraphColorScheme getColorScheme() {
-        return fColorScheme;
-    }
-
-    /**
      * Retrieve the current font's height
      *
      * @return The height
      */
     public int getFontHeight() {
-        return fFontHeight;
+        return _fontHeight;
     }
 
     abstract void paint(Rectangle bound, PaintEvent e);

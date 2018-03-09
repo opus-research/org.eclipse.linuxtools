@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *     IBM - initial API and implementation
  *
@@ -46,18 +46,18 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	protected int xseries;
 	protected int[] yseries;
 
-	protected static final Color WHITE = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
-	protected static final Color BLACK = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
-	protected static final Color RED = Display.getDefault().getSystemColor(SWT.COLOR_RED);
+	protected static final Color WHITE = new Color(Display.getDefault(), 255, 255, 255);
+	protected static final Color BLACK = new Color(Display.getDefault(), 0, 0, 0);
+	protected static final Color RED = new Color(Display.getDefault(), 255, 0, 0);
 
 	protected static final Color[] COLORS = {
-												RED,
-												Display.getDefault().getSystemColor(SWT.COLOR_GREEN),
-												Display.getDefault().getSystemColor(SWT.COLOR_BLUE),
-												Display.getDefault().getSystemColor(SWT.COLOR_YELLOW),
-												Display.getDefault().getSystemColor(SWT.COLOR_MAGENTA),
-												Display.getDefault().getSystemColor(SWT.COLOR_CYAN),
-												BLACK,
+												new Color(Display.getDefault(), 255, 0, 0),
+												new Color(Display.getDefault(), 0, 255, 0),
+												new Color(Display.getDefault(), 0, 0, 255),
+												new Color(Display.getDefault(), 255, 255, 0),
+												new Color(Display.getDefault(), 255, 0, 255),
+												new Color(Display.getDefault(), 0, 255, 255),
+												new Color(Display.getDefault(), 0, 0, 0),
 												new Color(Display.getDefault(), 64, 128, 128),
 												new Color(Display.getDefault(), 255, 165, 0),
 												new Color(Display.getDefault(), 128, 128, 128),
@@ -76,6 +76,9 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 
 	/**
 	 * Constructs one chart builder and associate it to one data set.
+	 *
+	 * @param dataSet
+	 *            data set
 	 */
 
 	public AbstractChartBuilder(IAdapter adapter, Composite parent, int style, String title) {
@@ -169,42 +172,17 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 		handleUpdateEvent();
 	}
 
-	@Deprecated
 	protected double getDoubleValue(Object o) {
-		if (o instanceof Integer) {
+		if (o instanceof Integer)
 			return ((Integer)o).intValue();
-		}
-		if (o instanceof Double) {
+		if (o instanceof Double)
 			return ((Double)o).doubleValue();
-		}
 		return new Double(o.toString()).doubleValue();
-	}
-
-	/**
-	 * @since 3.0
-	 */
-	protected Double getDoubleOrNullValue(Object o) {
-		if (o == null) {
-			return null;
-		}
-		if (o instanceof Integer) {
-			return ((Integer)o).doubleValue();
-		}
-		if (o instanceof Double) {
-			return (Double) o;
-		}
-		try {
-			return new Double(o.toString());
-		} catch (NumberFormatException e) {
-			return null;
-		}
 	}
 
 	@Override
 	public void handleUpdateEvent() {
-		if (!chart.isDisposed()) {
-			repaint();
-		}
+		repaint();
 	}
 
 	protected void repaint() {

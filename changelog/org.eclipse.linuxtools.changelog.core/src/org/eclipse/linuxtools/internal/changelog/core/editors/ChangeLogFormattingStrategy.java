@@ -26,7 +26,6 @@ public class ChangeLogFormattingStrategy implements IFormattingStrategy {
 
 	private static final String TAB_SPACE_CHAR = "\t";
 
-	@Override
 	public String format(String content, boolean isLineStart,
 			String indentation, int[] positions) {
 
@@ -98,12 +97,12 @@ public class ChangeLogFormattingStrategy implements IFormattingStrategy {
 				// insert name
 				cword = candidateWords.nextToken();
 				while (!isEmail(cword)) {
-
+					
 					if (!cword.equals(WHITE_SPACE_CHAR) && !cword.equals(TAB_SPACE_CHAR) && !cword.equals(NEW_LINE_CHAR)) {
-						formattedWords.add(WHITE_SPACE_CHAR + cword);
+						formattedWords.add(WHITE_SPACE_CHAR + cword);	
 					}
-
-
+					
+					
 					cword = candidateWords.nextToken();
 				}
 
@@ -221,7 +220,7 @@ public class ChangeLogFormattingStrategy implements IFormattingStrategy {
 		}
 		return false;
 	}
-
+	
 	private boolean isEmail(String inputStr) {
 		return inputStr.startsWith("<") && inputStr.endsWith(">");
 	}
@@ -230,12 +229,10 @@ public class ChangeLogFormattingStrategy implements IFormattingStrategy {
 		return inputStr.equals("*");
 	}
 
-	@Override
 	public void formatterStarts(String initialIndentation) {
 
 	}
 
-	@Override
 	public void formatterStops() {
 
 	}

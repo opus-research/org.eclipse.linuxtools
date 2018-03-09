@@ -30,30 +30,30 @@ public interface IGetEventInfoDialog {
     /**
      * @return the session the events shall be enabled.
      */
-    TraceSessionComponent getSession();
+    public TraceSessionComponent getSession();
 
     /**
      * @return the channel the events shall be enabled. Null for default channel.
      */
-    TraceChannelComponent getChannel();
+    public TraceChannelComponent getChannel();
 
     /**
      * Sets flag about domain.
      * @param isKernel - true for kernel, false for UST
      */
-    void setIsKernel(boolean isKernel);
+    public void setIsKernel(boolean isKernel);
 
     /**
      * Sets available session.
      * @param sessions - a array of available sessions.
      */
-    void setSessions(TraceSessionComponent[] sessions);
+    public void setSessions(TraceSessionComponent[] sessions);
 
     /**
      * Returns the filter expression.
      * @return the filter expression or null for no filtering
      */
-    String getFilterExpression();
+    public String getFilterExpression();
 
     // ------------------------------------------------------------------------
     // Operations

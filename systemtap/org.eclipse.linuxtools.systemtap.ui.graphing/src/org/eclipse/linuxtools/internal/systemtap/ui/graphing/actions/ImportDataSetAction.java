@@ -25,13 +25,16 @@ import org.eclipse.linuxtools.internal.systemtap.ui.graphing.Localization;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetFactory;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
+import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.WorkbenchException;
 
 
 
@@ -40,10 +43,7 @@ import org.eclipse.ui.PlatformUI;
  * It allows users to bring up data from previous runs of stap so they can
  * see old data.  Importing DataSets is no different then a script live and getting data.
  * @author Ryan Morse
- * @deprecated
- * TODO remove in 3.0
  */
-@Deprecated
 public class ImportDataSetAction extends Action implements IWorkbenchWindowActionDelegate {
 	@Override
 	public void init(IWorkbenchWindow window) {
@@ -65,15 +65,13 @@ public class ImportDataSetAction extends Action implements IWorkbenchWindowActio
 
 		File f = null;
 
-		if(null == fileName || fileName.length() <= 0) {
+		if(null == fileName || fileName.length() <= 0)
 			return;
-		}
 
 		f = new File(fileName);
 
-		if(!f.exists() || !f.canRead()) {
+		if(!f.exists() || !f.canRead())
 			return;
-		}
 
 		//Create a new DataSet
 		IDataSet dataSet = readFile(f);
@@ -87,8 +85,14 @@ public class ImportDataSetAction extends Action implements IWorkbenchWindowActio
 			return;
 		}
 
-		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorEditor.ID);
-		((GraphSelectorEditor)ivp).createScriptSet(fileName, dataSet);
+		//Create a new script set
+		try {
+			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(GraphingPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+			IViewPart ivp = p.findView(GraphSelectorView.ID);
+			((GraphSelectorView)ivp).createScriptSet(fileName, dataSet);
+		} catch(WorkbenchException we) {
+			ExceptionErrorDialog.openError(Localization.getString("ImportDataSetAction.UnableToImportDataSet"), we); //$NON-NLS-1$
+		}
 	}
 
 	@Override
@@ -103,9 +107,8 @@ public class ImportDataSetAction extends Action implements IWorkbenchWindowActio
 		IDataSet data;
 
 		readHeader(f);
-		if(null == labels || null == id) {
+		if(null == labels || null == id)
 			return null;
-		}
 
 		data = DataSetFactory.createFilteredDataSet(id, labels);
 		data.readFromFile(f);
@@ -116,6 +119,7 @@ public class ImportDataSetAction extends Action implements IWorkbenchWindowActio
 	/**
 	 * This method will read out the labels and DataSet type from the file
 	 * @param f The file that was selected for reading.
+	 * @return An array of all of the labels found in the file
 	 */
 	private void readHeader(File f) {
 

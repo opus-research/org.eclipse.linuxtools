@@ -43,7 +43,7 @@ import org.eclipse.swt.widgets.Text;
 import org.swtchart.Chart;
 
 /**
- * The dialog used to customize the chart before creating it.
+ * The dialog used to customize the chart before cerating it.
  */
 public class ChartDialog extends Dialog {
 
@@ -78,7 +78,7 @@ public class ChartDialog extends Dialog {
 
     /**
      * The constructor
-     *
+     * 
      * @param shell
      * @param stViewer
      */
@@ -91,6 +91,7 @@ public class ChartDialog extends Dialog {
      * Restores the state of this dialog
      */
     public void restoreState() {
+        try {
             IDialogSettings settings = stViewer.getViewerSettings().getSection(TAG_SECTION_CHARTS_STATE);
             if (settings == null) {
                 settings = stViewer.getViewerSettings().addNewSection(TAG_SECTION_CHARTS_STATE);
@@ -109,12 +110,15 @@ public class ChartDialog extends Dialog {
             boolean vBars = Boolean.parseBoolean(settings.get(TAG_VERTICAL_BARS_BUTTON));
             verticalBarsButton.setSelection(vBars);
             verticalBarsButton.setEnabled(barGraph);
+        } catch (Exception e) {
+        }
     }
 
     /**
      * Saves the state of this dialog
      */
     public void saveState() {
+        try {
             IDialogSettings settings = stViewer.getViewerSettings().getSection(TAG_SECTION_CHARTS_STATE);
             if (settings == null) {
                 settings = stViewer.getViewerSettings().addNewSection(TAG_SECTION_CHARTS_STATE);
@@ -130,11 +134,13 @@ public class ChartDialog extends Dialog {
 
             boolean vBars = verticalBarsButton.getSelection();
             settings.put(TAG_VERTICAL_BARS_BUTTON, vBars);
+        } catch (Exception e) {
+        }
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
      */
     @Override
@@ -145,7 +151,7 @@ public class ChartDialog extends Dialog {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.jface.dialogs.Dialog#buttonPressed(int)
      */
     @Override
@@ -161,7 +167,7 @@ public class ChartDialog extends Dialog {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
      */
     @Override
@@ -173,7 +179,7 @@ public class ChartDialog extends Dialog {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.jface.dialogs.Dialog#createContents(org.eclipse.swt.widgets.Composite)
      */
     @Override
@@ -185,7 +191,7 @@ public class ChartDialog extends Dialog {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
      */
     @Override
@@ -274,7 +280,7 @@ public class ChartDialog extends Dialog {
 
     /**
      * Adds one check button for each column implementing the IChartField interface.
-     *
+     * 
      * @see IChartField
      * @param comp
      * @param listener
@@ -329,7 +335,7 @@ public class ChartDialog extends Dialog {
 
     /**
      * Returns the Chart built by this dialog
-     *
+     * 
      * @return the chart
      */
     public Chart getValue() {
@@ -368,7 +374,7 @@ public class ChartDialog extends Dialog {
 
     /**
      * Sets or clears the error message. If not <code>null</code>, the OK button is disabled.
-     *
+     * 
      * @param errorMessage
      *            the error message, or <code>null</code> to clear
      * @since 3.0
@@ -381,7 +387,7 @@ public class ChartDialog extends Dialog {
 
     /**
      * Build the chart from configuration
-     *
+     * 
      * @return a new chart
      */
     private Chart produceChart() {
@@ -403,9 +409,9 @@ public class ChartDialog extends Dialog {
 
         if (barChartType) {
             return ChartFactory
-                    .produceBarChart(objects, labelField, selectedFields, Messages.ChartConstants_BAR_GRAPH, horizontalBars);
+                    .produceBarChart(objects, labelField, selectedFields, getBarChartTitle(), horizontalBars);
         } else {
-            return ChartFactory.producePieChart(objects, labelField, selectedFields, Messages.ChartConstants_PIE_CHART);
+            return ChartFactory.producePieChart(objects, labelField, selectedFields, getPieChartTitle());
         }
     }
 
@@ -422,5 +428,13 @@ public class ChartDialog extends Dialog {
      */
     protected ISTDataViewersField getLabelField(AbstractSTViewer viewer) {
         return viewer.getAllFields()[0];
+    }
+
+    protected String getBarChartTitle() {
+        return Messages.ChartConstants_BAR_GRAPH;
+    }
+
+    protected String getPieChartTitle() {
+        return Messages.ChartConstants_PIE_CHART;
     }
 }
