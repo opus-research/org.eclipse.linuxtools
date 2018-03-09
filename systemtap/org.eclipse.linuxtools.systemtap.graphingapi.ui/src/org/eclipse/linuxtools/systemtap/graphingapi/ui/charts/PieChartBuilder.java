@@ -34,7 +34,7 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 	@Override
 	protected void buildXSeries() {
 		Object data[][] = adapter.getData();
-		if (data == null || data.length == 0 || data[0].length == 0)
+		if (data == null || data.length == 0)
 			return;
 
 		int start = 0, len = Math.min(this.maxItems, data.length), leny = data[0].length-1;
@@ -46,18 +46,15 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 		String[] all_labels = new String[len];
 
 		for (int i = 0; i < all_labels.length; i++) {
-			if (data[i].length < 2)
-				return;
 			Object label = data[start + i][0];
 			if (label != null) {
-				all_labels[i] = data[start + i][0].toString();
+				all_labels[i] = label.toString();
 				for (int j = 1; j < data[start + i].length; j++) {
 					Double val = getDoubleValue(data[start + i][j]);
 					if (val != null) {
 						all_values[i][j-1] = val;
 					} else {
-						all_labels[i] = null;
-						break;
+						all_values[i][j-1] = 0.0;
 					}
 				}
 			}
@@ -84,32 +81,9 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 			}
 		}
 
-		// Give duplicate labels unique names.
-		for (int i = 0; i < len_trim - 1; i++) {
-			int count = 0;
-			for (int j = i + 1; j < len_trim; j++) {
-				if (labels_trim[i].equals(labels_trim[j])) {
-					count++;
-					int k = 0;
-					while (k < j) {
-						if (labels_trim[k].equals(makeCountedLabel(labels_trim[j], count))) {
-							count++;
-							k = 0;
-						} else {
-							k++;
-						}
-					}
-					labels_trim[j] = makeCountedLabel(labels_trim[j], count);
-				}
-			}
-		}
-
+		giveUniqueNames(labels_trim, len_trim);
 		((PieChart)this.chart).addPieChartSeries(labels_trim, values_trim);
 		chart.redraw();
-	}
-
-	private String makeCountedLabel(String original, int count) {
-		return original.concat(String.format(" (%d)", count + 1)); //$NON-NLS-1$
 	}
 
 	@Override

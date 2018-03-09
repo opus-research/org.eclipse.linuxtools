@@ -17,6 +17,7 @@ import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.AbstractChartBuilder;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.AbstractChartWithoutAxisBuilder;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.BarChartBuilder;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.graph.GraphFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -94,8 +95,9 @@ public class GraphComposite extends Composite {
 
 		zoomScale.addSelectionListener(scaleListener);
 
-		//The scale zoom scrool doesn't make sense for charts without axis
-		if (builder instanceof AbstractChartWithoutAxisBuilder) {
+		//The scale zoom scroll doesn't make sense for charts without axis
+		//or for bar charts with category x-axis values
+		if (builder instanceof AbstractChartWithoutAxisBuilder || builder instanceof BarChartBuilder) {
 			this.configure(false);
 		}
 	}

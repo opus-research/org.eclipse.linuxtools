@@ -202,4 +202,32 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 		});
 	}
 
+	/**
+	 *  Give duplicate labels unique names.
+	 */
+	protected void giveUniqueNames(String[] labels, int len) {
+		for (int i = 0; i < len - 1; i++) {
+			int count = 0;
+			for (int j = i + 1; j < len; j++) {
+				if (labels[i].equals(labels[j])) {
+					count++;
+					int k = 0;
+					while (k < j) {
+						if (labels[k].equals(makeCountedLabel(labels[j], count))) {
+							count++;
+							k = 0;
+						} else {
+							k++;
+						}
+					}
+					labels[j] = makeCountedLabel(labels[j], count);
+				}
+			}
+		}
+	}
+
+	private String makeCountedLabel(String original, int count) {
+		return original.concat(String.format(" (%d)", count + 1)); //$NON-NLS-1$
+	}
+
 }
