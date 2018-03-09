@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.linuxtools.rpm.createrepo.IRepoFileConstants;
 import org.eclipse.linuxtools.rpm.createrepo.tests.ICreaterepoTestConstants;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.After;
@@ -67,6 +68,11 @@ public class CreaterepoWizardTest {
 		bot = new SWTWorkbenchBot();
 		root = ResourcesPlugin.getWorkspace().getRoot();
 		monitor = new NullProgressMonitor();
+		try {
+			bot.shell(ICreaterepoTestConstants.MAIN_SHELL).activate();
+		} catch (WidgetNotFoundException e) {
+			// cannot activate main shell, continue anyways
+		}
 	}
 
 	/**
