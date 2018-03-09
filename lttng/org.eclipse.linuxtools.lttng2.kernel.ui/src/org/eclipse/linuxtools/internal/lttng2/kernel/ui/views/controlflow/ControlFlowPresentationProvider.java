@@ -19,9 +19,8 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
-import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
-import org.eclipse.linuxtools.lttng2.kernel.ui.analysis.LttngKernelAnalysisModule;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -127,11 +126,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             return retMap;
         }
         ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-        ITmfStateSystem ssq = module.getStateSystem();
-        if (ssq == null) {
-            return retMap;
-        }
+        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
         int tid = entry.getThreadId();
 
         try {
@@ -152,11 +147,11 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             }
 
         } catch (AttributeNotFoundException e) {
-            Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (TimeRangeException e) {
-            Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (StateValueTypeException e) {
-            Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (StateSystemDisposedException e) {
             /* Ignored */
         }
@@ -171,9 +166,9 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
                 }
 
             } catch (AttributeNotFoundException e) {
-                Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+                e.printStackTrace();
             } catch (TimeRangeException e) {
-                Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+                e.printStackTrace();
             } catch (StateSystemDisposedException e) {
                 /* Ignored */
             }
@@ -191,11 +186,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             return;
         }
         ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-        ITmfStateSystem ss = module.getStateSystem();
-        if (ss == null) {
-            return;
-        }
+        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
         int status = ((TimeEvent) event).getValue();
 
         if (status != StateValues.PROCESS_STATUS_RUN_SYSCALL) {
@@ -210,9 +201,9 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
                 Utils.drawText(gc, state.toString().substring(4), bounds.x, bounds.y - 2, bounds.width, true, true);
             }
         } catch (AttributeNotFoundException e) {
-            Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (TimeRangeException e) {
-            Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+            e.printStackTrace();
         } catch (StateSystemDisposedException e) {
             /* Ignored */
         }
