@@ -48,9 +48,11 @@ public class CreaterepoResourceListenerTest {
 
 	/**
 	 * Initialize the bot.
+	 *
+	 * @throws CoreException
 	 */
 	@BeforeClass
-	public static void setUpBeforeClass() {
+	public static void setUpBeforeClass() throws CoreException {
 		bot = new SWTWorkbenchBot();
 		monitor = new NullProgressMonitor();
 		try {
@@ -118,7 +120,7 @@ public class CreaterepoResourceListenerTest {
 	/**
 	 * Helper method to help setup the test by opening the .repo file.
 	 */
-	private static void openRepoFile() {
+	private void openRepoFile() {
 		// open the package explorer view
 		bot.menu(ICreaterepoTestConstants.WINDOW).menu(ICreaterepoTestConstants.SHOW_VIEW)
 		.menu(ICreaterepoTestConstants.OTHER).click();

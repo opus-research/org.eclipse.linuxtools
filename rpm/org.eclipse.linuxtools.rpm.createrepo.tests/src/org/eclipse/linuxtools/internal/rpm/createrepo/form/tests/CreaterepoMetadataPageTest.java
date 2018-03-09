@@ -16,6 +16,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -91,9 +93,10 @@ public class CreaterepoMetadataPageTest {
 	 * well as import some test RPMs.
 	 *
 	 * @throws CoreException
+	 * @throws IOException
 	 */
 	@Before
-	public void setUp() throws CoreException {
+	public void setUp() throws CoreException, IOException {
 		project = testProject.getCreaterepoProject();
 		assertNotNull(project);
 		initializeMetadataPage();

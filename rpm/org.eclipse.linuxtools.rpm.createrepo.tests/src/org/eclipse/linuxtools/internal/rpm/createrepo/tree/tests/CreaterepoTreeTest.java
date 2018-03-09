@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +62,7 @@ public class CreaterepoTreeTest {
 	 */
 	private static final Map<String, Integer> CORRECT_CATEGORIES;
 	static {
-		Map<String, Integer> temp = new HashMap<>();
+		Map<String, Integer> temp = new HashMap<String, Integer>();
 		temp.put(CreaterepoPreferenceConstants.PREF_DISTRO_TAG, DISTRO_TAGS.length);
 		temp.put(CreaterepoPreferenceConstants.PREF_CONTENT_TAG, CONTENT_TAGS.length);
 		temp.put(CreaterepoPreferenceConstants.PREF_REPO_TAG, REPO_TAGS.length);
@@ -121,13 +122,19 @@ public class CreaterepoTreeTest {
 
 	/**
 	 * Test if the treeviewer is initialized properly with the correct labels.
+	 *
+	 * @throws CoreException
 	 */
 	@Test
-	public void testTreeViewerInitialization() {
+	public void testTreeViewerInitialization() throws CoreException {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				initViewer();
+				try {
+					initViewer();
+				} catch (CoreException e) {
+					fail();
+				}
 				// there should only be 3 categories
 				assertEquals(3, tree.getItemCount());
 				// and these should be the correct categories
@@ -141,15 +148,20 @@ public class CreaterepoTreeTest {
 	/**
 	 * Test if the treeviewer properly loads the preferences.
 	 *
+	 * @throws CoreException
 	 * @throws BackingStoreException
 	 */
 	@Test
-	public void testTreeViewerPreferences() throws BackingStoreException {
+	public void testTreeViewerPreferences() throws CoreException, BackingStoreException {
 		addTestPreferences();
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				initViewer();
+				try {
+					initViewer();
+				} catch (CoreException e) {
+					fail();
+				}
 				for (TreeItem treeItem : tree.getItems()) {
 					if (treeItem.getData() instanceof CreaterepoTreeCategory) {
 						CreaterepoTreeCategory category = (CreaterepoTreeCategory) treeItem.getData();
@@ -177,8 +189,10 @@ public class CreaterepoTreeTest {
 	/**
 	 * Initialize the treeviewer and tree. Needs access to UI thread when using
 	 * SWTBot tests. Need to wrap tests in Display.getDefault().syncExec().
+	 *
+	 * @throws CoreException
 	 */
-	private void initViewer() {
+	private void initViewer() throws CoreException {
 		viewer = new TreeViewer(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 		viewer.setContentProvider(new CreaterepoTreeContentProvider());
 		viewer.setLabelProvider(new CreaterepoTreeLabelProvider());
@@ -191,8 +205,9 @@ public class CreaterepoTreeTest {
 	 * Add some test tags in the preferences.
 	 *
 	 * @throws BackingStoreException
+	 * @throws CoreException
 	 */
-	private void addTestPreferences() throws BackingStoreException {
+	private void addTestPreferences() throws BackingStoreException, CoreException {
 		IEclipsePreferences pref = project.getEclipsePreferences();
 		pref.put(CreaterepoPreferenceConstants.PREF_DISTRO_TAG, preparePrefValue(DISTRO_TAGS));
 		pref.put(CreaterepoPreferenceConstants.PREF_CONTENT_TAG, preparePrefValue(CONTENT_TAGS));
@@ -206,7 +221,7 @@ public class CreaterepoTreeTest {
 	 * @param values The values to store.
 	 * @return The string as it should be stored.
 	 */
-	private static String preparePrefValue(String[] values) {
+	private String preparePrefValue(String[] values) {
 		String str = ICreaterepoConstants.EMPTY_STRING;
 		if (values.length > 0) {
 			for (String temp : values) {
@@ -223,7 +238,7 @@ public class CreaterepoTreeTest {
 	 * @param itemToCheck The item to check.
 	 * @return True if the item should exist, false otherwise.
 	 */
-	private static boolean inCategory(String itemToCheck) {
+	private boolean inCategory(String itemToCheck) {
 		for (String str : CORRECT_CATEGORIES.keySet()) {
 			if (str.equals(itemToCheck)) {
 				return true;

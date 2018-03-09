@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.prefs.BackingStoreException;
 
 /**
  * Tests for CreaterepoProject.
@@ -119,9 +120,10 @@ public class CreaterepoProjectTest {
 	 * without specifying .repo file.
 	 *
 	 * @throws CoreException
+	 * @throws BackingStoreException
 	 */
 	@Test
-	public void testInitializeNoRepoFileSpecfied() throws CoreException {
+	public void testInitializeNoRepoFileSpecfied() throws CoreException, BackingStoreException {
 		// repo file will be found rather than initialized
 		CreaterepoProject createrepoProject = new CreaterepoProject(project);
 		// content folder is defined, but not created (wizard does that)

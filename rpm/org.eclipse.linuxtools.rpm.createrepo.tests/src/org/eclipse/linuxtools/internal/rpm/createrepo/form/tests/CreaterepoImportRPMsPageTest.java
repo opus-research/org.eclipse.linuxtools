@@ -123,9 +123,11 @@ public class CreaterepoImportRPMsPageTest {
 
 	/**
 	 * Test out the remove RPMs button.
+	 *
+	 * @throws CoreException
 	 */
 	@Test
-	public void testRemoveRPMs() {
+	public void testRemoveRPMs() throws CoreException {
 		// run in UI thread because accessing the tree in the import RPMs page
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
