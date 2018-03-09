@@ -28,6 +28,12 @@
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-source-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>
+          <useUIHarness>false</useUIHarness>
+          <useUIThread>false</useUIThread>
+          <product>org.eclipse.platform.ide</product>
+        </configuration>
       </plugin>
     </plugins>
   </build>
