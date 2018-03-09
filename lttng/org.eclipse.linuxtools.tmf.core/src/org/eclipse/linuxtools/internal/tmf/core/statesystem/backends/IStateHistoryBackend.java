@@ -34,7 +34,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
  * depending on what's asked by the user), implement one wrapper HistoryBackend
  * which can then contain your 2-3 other backends underneath.
  *
- * @author Alexandre Montplaisir
+ * @author alexmont
  *
  */
 public interface IStateHistoryBackend {
@@ -152,25 +152,6 @@ public interface IStateHistoryBackend {
      *             If the state system is disposed while a request is ongoing.
      */
     void doQuery(List<ITmfStateInterval> currentStateInfo, long t)
-            throws TimeRangeException, StateSystemDisposedException;
-
-    /**
-     * Retrieve the state of attributes at a given time
-     *
-     * The backend acts as an intervals publisher and enumerates intervals
-     * at a given time through the listener interface to be consumed by an
-     * observer.
-     *
-     * @param listener
-     *            The link with the intervals observer
-     * @param t
-     *            Target timestamp of the query
-     * @throws TimeRangeException
-     *             If the timestamp is outside of the history/trace
-     * @throws StateSystemDisposedException
-     *             If the state system is disposed while a request is ongoing.
-     */
-    void doQuery(ITmfStateIntervalListener listener, long t)
             throws TimeRangeException, StateSystemDisposedException;
 
     /**
