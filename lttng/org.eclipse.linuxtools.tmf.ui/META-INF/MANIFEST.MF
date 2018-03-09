@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.core.expressions,
  org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.ui.navigator,
- org.eclipse.ui.navigator.resources
+ org.eclipse.ui.navigator.resources,
+ org.eclipse.jdt.annotation
 Export-Package: org.eclipse.linuxtools.internal.tmf.ui;x-friends:="org.eclipse.linuxtools.tmf.ui.tests",
  org.eclipse.linuxtools.internal.tmf.ui.commands;x-internal:=true,
  org.eclipse.linuxtools.internal.tmf.ui.dialogs;x-internal:=true,
