@@ -34,10 +34,7 @@ public final class CreaterepoPreferenceConstants {
 	/****/ public static final String PREF_CHECKSUM				= "checksum"; 		//$NON-NLS-1$
 	/****/ public static final String PREF_COMPRESSION_TYPE		= "compress-type"; 	//$NON-NLS-1$
 
-	// CreaterepoGeneralPropertyPage
-	/****/ public static final String PREF_GENERAL_ENABLED		= "projectSettings"; //$NON-NLS-1$
-
-	// CreaterepoDeltaPropertyPage
+	// CreaterepoDeltaPreferencePage
 	/****/ public static final String PREF_DELTA_ENABLE		= "deltas"; 	//$NON-NLS-1$
 	/****/ public static final String PREF_NUM_DELTAS		= "num-deltas"; //$NON-NLS-1$
 	/****/ public static final String PREF_MAX_DELTA_SIZE	= "max-delta-rpm-size"; //$NON-NLS-1$
@@ -58,10 +55,7 @@ public final class CreaterepoPreferenceConstants {
 	/****/ public static final String DEFAULT_CHECKSUM 				= ICreaterepoChecksums.SHA256;
 	/****/ public static final String DEFAULT_COMPRESS_TYPE 		= ICreaterepoCompressionTypes.COMPAT;
 
-	// CreaterepoGeneralPropertyPage
-	/****/ public static final boolean DEFAULT_GENERAL_ENABLED		= false;
-
-	// CreaterepoDeltaPropertyPage
+	// CreaterepoDeltaPreferencePage
 	/****/ public static final boolean DEFAULT_DELTA_ENABLE 		= false;
 	/****/ public static final int DEFAULT_NUM_DELTAS 				= 1;
 	/****/ public static final int DEFAULT_MAX_DELTA_SIZE 			= 10;

@@ -82,7 +82,7 @@ public class CreaterepoProject {
 	 * @throws CoreException Thrown when unable to create the folders.
 	 */
 	private void intitialize() throws CoreException {
-		content = getProject().getFolder(ICreaterepoConstants.CONTENT_FOLDER);
+		createContentFolder();
 		if (repoFile == null) {
 			for (IResource child : getProject().members()) {
 				String extension = child.getFileExtension();
@@ -115,7 +115,7 @@ public class CreaterepoProject {
 	 */
 	public void importRPM(File externalFile) throws CoreException {
 		// must put imported RPMs into the content folder; create if missing
-		if (!getContentFolder().exists()) {
+		if (content == null) {
 			createContentFolder();
 		}
 		IFile file = getContentFolder().getFile(new Path(externalFile.getName()));
@@ -141,9 +141,6 @@ public class CreaterepoProject {
 	 * @throws CoreException Thrown when failure to execute command.
 	 */
 	public IStatus createrepo(OutputStream os) throws CoreException {
-		if (!getContentFolder().exists()) {
-			createContentFolder();
-		}
 		Createrepo createrepo = new Createrepo();
 		IStatus result = createrepo.execute(os, this, getCommandArguments());
 		getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
@@ -185,9 +182,6 @@ public class CreaterepoProject {
 	 */
 	public List<IResource> getRPMs() throws CoreException {
 		List<IResource> rpms = new ArrayList<IResource>();
-		if (!getContentFolder().exists()) {
-			return rpms;
-		}
 		if (getProject().members().length > 0) {
 			for (IResource child : getContentFolder().members()) {
 				String extension = child.getFileExtension();
