@@ -63,7 +63,7 @@ public class HistogramRequest extends TmfEventRequest {
      *            The number of events per block
      * @param execType
      *            The requested execution priority
-     * @since 3.0
+     * @since 2.0
      *
      */
     @Deprecated
@@ -96,7 +96,7 @@ public class HistogramRequest extends TmfEventRequest {
      *            The requested execution priority
      * @param fullRange
      *            Full range or time range for histogram request
-     * @since 3.0
+     * @since 2.2
      *
      */
     public HistogramRequest(HistogramDataModel histogram, TmfTimeRange range,

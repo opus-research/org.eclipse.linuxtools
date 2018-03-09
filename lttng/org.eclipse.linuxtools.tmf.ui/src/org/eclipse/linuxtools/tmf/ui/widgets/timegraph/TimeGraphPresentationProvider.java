@@ -158,9 +158,6 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
         return true;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void addColorListener(ITimeGraphColorListener listener) {
         if (!fListeners.contains(listener)) {
@@ -168,9 +165,6 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
         }
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void removeColorListener(ITimeGraphColorListener listener) {
         fListeners.remove(listener);
@@ -178,7 +172,6 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
 
     /**
      * Notifies listeners of the state table change
-     * @since 3.0
      */
     protected void fireColorSettingsChanged() {
         for (ITimeGraphColorListener listener : fListeners) {
