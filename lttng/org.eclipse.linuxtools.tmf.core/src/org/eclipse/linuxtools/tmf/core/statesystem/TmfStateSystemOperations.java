@@ -32,7 +32,6 @@ import org.eclipse.linuxtools.tmf.core.util.Pair;
  * performed on attributes of the state system.
  *
  * @author Patrick Tassé
- * @since 3.0
  */
 public final class TmfStateSystemOperations {
 
