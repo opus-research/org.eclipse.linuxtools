@@ -23,8 +23,8 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
-import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalThrottler;
@@ -50,6 +50,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IActionBars;
 
@@ -581,9 +582,6 @@ public class HistogramView extends TmfView {
         fFullTraceHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
         fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
 
-        fFullTraceHistogram.setTimeRange(fTimeRangeHistogram.getStartTime(), fWindowSpan);
-        fTimeRangeHistogram.setTimeRange(fTimeRangeHistogram.getStartTime(), fWindowSpan);
-
         if ((fFullTraceRequest != null) && fFullTraceRequest.getRange().getEndTime().compareTo(signal.getRange().getEndTime()) < 0) {
             sendFullRangeRequest(fullRange);
         }
@@ -596,9 +594,20 @@ public class HistogramView extends TmfView {
      * @param signal the signal to process
      */
     @TmfSignalHandler
-    public void currentTimeUpdated(TmfTimeSynchSignal signal) {
-        // Because this can't happen :-)
-        assert (signal != null);
+    public void currentTimeUpdated(final TmfTimeSynchSignal signal) {
+        if (Display.getCurrent() == null) {
+            // Make sure the signal is handled in the UI thread
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    if (fParent.isDisposed()) {
+                        return;
+                    }
+                    currentTimeUpdated(signal);
+                }
+            });
+            return;
+        }
 
         // Update the selected time range
         ITmfTimestamp beginTime = signal.getBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
@@ -611,9 +620,20 @@ public class HistogramView extends TmfView {
      * @param signal the signal to process
      */
     @TmfSignalHandler
-    public void timeRangeUpdated(TmfRangeSynchSignal signal) {
-        // Because this can't happen :-)
-        assert (signal != null);
+    public void timeRangeUpdated(final TmfRangeSynchSignal signal) {
+        if (Display.getCurrent() == null) {
+            // Make sure the signal is handled in the UI thread
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    if (fParent.isDisposed()) {
+                        return;
+                    }
+                    timeRangeUpdated(signal);
+                }
+            });
+            return;
+        }
 
         if (fTrace != null) {
             // Validate the time range
@@ -719,7 +739,8 @@ public class HistogramView extends TmfView {
         fTimeRangeHistogram.setTimeRange(startTime, endTime - startTime);
 
         int cacheSize = fTrace.getCacheSize();
-        fTimeRangeRequest = new HistogramRequest(fTimeRangeHistogram.getDataModel(), timeRange, 0, TmfDataRequest.ALL_DATA, cacheSize, ExecutionType.FOREGROUND, false);
+        fTimeRangeRequest = new HistogramRequest(fTimeRangeHistogram.getDataModel(),
+                timeRange, 0, ITmfEventRequest.ALL_DATA, cacheSize, ExecutionType.FOREGROUND, false);
         fTrace.sendRequest(fTimeRangeRequest);
     }
 
@@ -728,8 +749,12 @@ public class HistogramView extends TmfView {
             fFullTraceRequest.cancel();
         }
         int cacheSize = fTrace.getCacheSize();
-        fFullTraceRequest = new HistogramRequest(fFullTraceHistogram.getDataModel(), fullRange, (int) fFullTraceHistogram.fDataModel.getNbEvents(),
-                TmfDataRequest.ALL_DATA, cacheSize, ExecutionType.BACKGROUND, true);
+        fFullTraceRequest = new HistogramRequest(fFullTraceHistogram.getDataModel(),
+                fullRange,
+                (int) fFullTraceHistogram.fDataModel.getNbEvents(),
+                ITmfEventRequest.ALL_DATA,
+                cacheSize,
+                ExecutionType.BACKGROUND, true);
         fTrace.sendRequest(fFullTraceRequest);
     }
 
