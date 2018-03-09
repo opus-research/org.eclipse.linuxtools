@@ -634,9 +634,8 @@ public final class TmfTraceType {
      * @throws TmfTraceImportException
      *             if the traces don't match or there are errors in the trace
      *             file
-     * @since 2.2
      */
-    public TraceTypeHelper selectTraceType(String path, Shell shell, String traceTypeHint) throws TmfTraceImportException {
+    TraceTypeHelper selectTraceType(String path, Shell shell, String traceTypeHint) throws TmfTraceImportException {
         List<TraceTypeHelper> validCandidates = new ArrayList<TraceTypeHelper>();
         getCustomTraceTypes();
         final Set<String> traceTypes = fTraceTypes.keySet();
