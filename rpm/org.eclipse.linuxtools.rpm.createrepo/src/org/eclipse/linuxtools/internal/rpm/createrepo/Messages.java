@@ -183,6 +183,10 @@ public final class Messages {
 	/****/
 	public static String CreaterepoDeltaPropertyPage_errorInvalidText;
 
+	// ImportRPMDropListener
+	/****/
+	public static String ImportRPMDropListener_errorCopyingFileToProject;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
