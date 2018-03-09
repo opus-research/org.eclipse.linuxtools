@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
@@ -38,6 +37,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -174,10 +174,17 @@ public class TmfExperimentTest {
     // ------------------------------------------------------------------------
 
     @Test
+    public void testGetStatistics() {
+        /* There should not be any experiment-specific statistics */
+        ITmfStatistics stats = fExperiment.getStatistics();
+        assertNull(stats);
+    }
+
+    @Test
     public void testGetAnalysisModules() {
         /* There should not be any modules at this point */
-        Map<String, IAnalysisModule> modules = fExperiment.getAnalysisModules();
-        assertTrue(modules.isEmpty());
+        Iterable<IAnalysisModule> modules = fExperiment.getAnalysisModules();
+        assertFalse(modules.iterator().hasNext());
     }
 
     // ------------------------------------------------------------------------

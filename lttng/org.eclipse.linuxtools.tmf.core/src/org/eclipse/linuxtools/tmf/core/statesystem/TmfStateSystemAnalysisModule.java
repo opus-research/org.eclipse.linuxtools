@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.tmf.core.statesystem;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -56,6 +57,8 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         implements ITmfAnalysisModuleWithStateSystems {
 
     private static final String EXTENSION = ".ht"; //$NON-NLS-1$
+
+    private final CountDownLatch fInitialized = new CountDownLatch(1);
 
     @Nullable private ITmfStateSystemBuilder fStateSystem;
     @Nullable private ITmfStateProvider fStateProvider;
@@ -113,6 +116,17 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         return fStateSystem;
     }
 
+    /**
+     * Block the calling thread until the analysis module has been initialized.
+     * After this method returns, {@link #getStateSystem()} should not return
+     * null anymore.
+     */
+    public void waitForInitialization() {
+        try {
+            fInitialized.await();
+        } catch (InterruptedException e) {}
+    }
+
     // ------------------------------------------------------------------------
     // TmfAbstractAnalysisModule
     // ------------------------------------------------------------------------
@@ -162,6 +176,14 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         }
     }
 
+    @Override
+    public void dispose() {
+        if (fStateSystem != null) {
+            fStateSystem.dispose();
+        }
+        super.dispose();
+    }
+
     // ------------------------------------------------------------------------
     // History creation methods
     // ------------------------------------------------------------------------
@@ -183,6 +205,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             try {
                 fHtBackend = new HistoryTreeBackend(htFile, version);
                 fStateSystem = new StateSystem(fHtBackend, false);
+                fInitialized.countDown();
                 return;
             } catch (IOException e) {
                 /*
@@ -308,7 +331,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         build(provider);
     }
 
-    private void dispose(boolean deleteFiles) {
+    private void disposeProvider(boolean deleteFiles) {
         ITmfStateProvider provider = fStateProvider;
         if (provider != null) {
             provider.dispose();
@@ -338,8 +361,18 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         fStateProvider = provider;
         fRequest = request;
 
+        /*
+         * The state system object is now created, we can consider this module
+         * "initialized" (components can retrieve it and start doing queries).
+         */
+        fInitialized.countDown();
+
+        /*
+         * Block the executeAnalysis() construction is complete (so that the
+         * progress monitor displays that it is running).
+         */
         try {
-             fRequest.waitForCompletion();
+             request.waitForCompletion();
         } catch (InterruptedException e) {
              e.printStackTrace();
         }
@@ -375,19 +408,19 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         @Override
         public void handleSuccess() {
             super.handleSuccess();
-            dispose(false);
+            disposeProvider(false);
         }
 
         @Override
         public void handleCancel() {
             super.handleCancel();
-            dispose(true);
+            disposeProvider(true);
         }
 
         @Override
         public void handleFailure() {
             super.handleFailure();
-            dispose(true);
+            disposeProvider(true);
         }
     }
 

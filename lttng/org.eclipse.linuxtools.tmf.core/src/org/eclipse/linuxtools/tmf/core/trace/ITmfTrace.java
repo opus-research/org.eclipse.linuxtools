@@ -21,12 +21,15 @@ import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfAnalysisModuleWithStateSystems;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfAnalysisModuleWithStateSystems;
+import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -194,6 +197,12 @@ public interface ITmfTrace extends ITmfEventProvider {
     int getCacheSize();
 
     /**
+     * @return The statistics provider for this trace
+     * @since 2.0
+     */
+    ITmfStatistics getStatistics();
+
+    /**
      * Return the map of state systems associated with this trace.
      *
      * This view should be read-only (implementations should use
@@ -203,7 +212,7 @@ public interface ITmfTrace extends ITmfEventProvider {
      * @since 2.0
      * @deprecated State systems now should be provided by analysis and use
      *             {@link ITmfAnalysisModuleWithStateSystems} and retrieve the modules
-     *             with {@link TmfTrace#getAnalysisModules(Class)} with Class
+     *             with {@link TmfTrace#getAnalysisModules} with Class
      *             being TmfStateSystemAnalysisModule.class
      */
     @Deprecated
@@ -238,38 +247,57 @@ public interface ITmfTrace extends ITmfEventProvider {
      */
     void indexTrace(boolean waitForCompletion);
 
-    /**
-     * Returns an analysis module with the given id
-     *
-     * @param analysisId
-     *            The analysis module id
-     * @return The {@link IAnalysisModule} object
-     * @since 3.0
-     */
-    IAnalysisModule getAnalysisModule(String analysisId);
+    // ------------------------------------------------------------------------
+    // Analysis getters
+    // ------------------------------------------------------------------------
 
     /**
-     * Return a map of analysis modules that are of a given class. Module are
-     * already casted to the requested class
+     * Returns an analysis module with the given ID.
      *
-     * @param moduleclass
-     *            Class returned module must extend
-     * @return List of modules of class moduleclass
+     * @param id
+     *            The analysis module ID
+     * @return The {@link IAnalysisModule} object, or null if an analysis with
+     *         the given ID does no exist.
      * @since 3.0
      */
-    <T> Map<String, T> getAnalysisModules(Class<T> moduleclass);
+    @Nullable
+    IAnalysisModule getAnalysisModule(String id);
 
     /**
-     * Returns a map of analysis modules applicable to this trace. The key is
-     * the analysis id.
+     * Get a list of all analysis modules currently available for this trace.
      *
-     * This view should be read-only (implementations should use
-     * {@link Collections#unmodifiableMap}).
-     *
-     * @return The map of analysis modules
+     * @return An iterable view of the analysis modules
      * @since 3.0
      */
-    Map<String, IAnalysisModule> getAnalysisModules();
+    @NonNull
+    Iterable<IAnalysisModule> getAnalysisModules();
+
+    /**
+     * Get an analysis module belonging to this trace, with the specified ID and
+     * class.
+     *
+     * @param moduleClass
+     *            Returned modules must extend this class
+     * @param id
+     *            The ID of the analysis module
+     * @return The analysis module with specified class and ID, or null if no
+     *         such module exists.
+     * @since 3.0
+     */
+    @Nullable
+    <T extends IAnalysisModule> T getAnalysisModuleOfClass(Class<T> moduleClass, String id);
+
+    /**
+     * Return the analysis modules that are of a given class. Module are already
+     * casted to the requested class.
+     *
+     * @param moduleClass
+     *            Returned modules must extend this class
+     * @return List of modules of class moduleClass
+     * @since 3.0
+     */
+    @NonNull
+    <T> Iterable<T> getAnalysisModulesOfClass(Class<T> moduleClass);
 
     // ------------------------------------------------------------------------
     // Trace characteristics getters
