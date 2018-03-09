@@ -36,7 +36,7 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
     // ------------------------------------------------------------------------
 
     /** The list of coalesced requests */
-    private final List<ITmfEventRequest> fRequests = new ArrayList<>();
+    private final List<ITmfEventRequest> fRequests = new ArrayList<ITmfEventRequest>();
 
     /**
      * We do not use super.fRange, because in the case of coalesced requests,

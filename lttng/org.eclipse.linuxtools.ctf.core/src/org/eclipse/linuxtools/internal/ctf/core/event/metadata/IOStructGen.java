@@ -126,12 +126,12 @@ public class IOStructGen {
         }
 
         CommonTree traceNode = null;
-        List<CommonTree> streams = new ArrayList<>();
-        List<CommonTree> events = new ArrayList<>();
-        List<CommonTree> declarations = new ArrayList<>();
-        List<CommonTree> environments = new ArrayList<>();
-        List<CommonTree> clocks = new ArrayList<>();
-        List<CommonTree> callsites = new ArrayList<>();
+        List<CommonTree> streams = new ArrayList<CommonTree>();
+        List<CommonTree> events = new ArrayList<CommonTree>();
+        List<CommonTree> declarations = new ArrayList<CommonTree>();
+        List<CommonTree> environments = new ArrayList<CommonTree>();
+        List<CommonTree> clocks = new ArrayList<CommonTree>();
+        List<CommonTree> callsites = new ArrayList<CommonTree>();
         /* Create a new declaration scope with no parent. */
         pushScope();
 
@@ -270,7 +270,8 @@ public class IOStructGen {
             } else if (left.equals("func")) { //$NON-NLS-1$
                 funcName = child.getChild(1).getChild(0).getChild(0).getText().replaceAll(regex, nullString);
             } else if (left.equals("ip")) { //$NON-NLS-1$
-                ip = Long.decode(child.getChild(1).getChild(0).getChild(0).getText());
+                /* trim the 0x */
+                ip = Long.parseLong(child.getChild(1).getChild(0).getChild(0).getText().substring(2), 16);
             } else if (left.equals("file")) { //$NON-NLS-1$
                 fileName = child.getChild(1).getChild(0).getChild(0).getText().replaceAll(regex, nullString);
             } else if (left.equals("line")) { //$NON-NLS-1$
@@ -965,7 +966,7 @@ public class IOStructGen {
         CommonTree typeSpecifierList = null;
         CommonTree typeDeclaratorList = null;
         CommonTree typeDeclarator = null;
-        List<CommonTree> pointers = new LinkedList<>();
+        List<CommonTree> pointers = new LinkedList<CommonTree>();
 
         for (CommonTree child : children) {
             switch (child.getType()) {
@@ -1069,8 +1070,8 @@ public class IOStructGen {
 
         IDeclaration declaration = null;
         List<CommonTree> children = null;
-        List<CommonTree> pointers = new LinkedList<>();
-        List<CommonTree> lengths = new LinkedList<>();
+        List<CommonTree> pointers = new LinkedList<CommonTree>();
+        List<CommonTree> lengths = new LinkedList<CommonTree>();
         CommonTree identifier = null;
 
         /* Separate the tokens by type */
@@ -2040,7 +2041,7 @@ public class IOStructGen {
                 throw new ParseException("Variant tag must be an enum: " + variantTag); //$NON-NLS-1$
             }
             EnumDeclaration tagDecl = (EnumDeclaration) decl;
-            Set<String> intersection = new HashSet<>(tagDecl.getLabels());
+            Set<String> intersection = new HashSet<String>(tagDecl.getLabels());
             intersection.retainAll(variantDeclaration.getFields().keySet());
             if (intersection.isEmpty()) {
                 throw new ParseException("Variant contains no values of the tag, impossible to use: " + variantName); //$NON-NLS-1$

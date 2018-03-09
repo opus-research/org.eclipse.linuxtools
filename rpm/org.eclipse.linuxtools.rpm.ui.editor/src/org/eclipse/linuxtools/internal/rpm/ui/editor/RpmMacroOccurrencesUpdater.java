@@ -35,7 +35,7 @@ public class RpmMacroOccurrencesUpdater implements ISelectionChangedListener {
 
 	private final SpecfileEditor fEditor;
 
-	private final List<Annotation> fOldAnnotations = new LinkedList<>();
+	private final List<Annotation> fOldAnnotations = new LinkedList<Annotation>();
 
 	/**
 	 * Creates a new instance on editor <code>specfileEditor</code>.
@@ -150,7 +150,7 @@ public class RpmMacroOccurrencesUpdater implements ISelectionChangedListener {
 				return macros;
 			}
 		}
-		return new ArrayList<>();
+		return new ArrayList<SpecfileDefine>();
 	}
 
 	/**

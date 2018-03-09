@@ -64,7 +64,8 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
 
     /** List of coalesced requests
      * @since 3.0*/
-    protected final List<TmfCoalescedEventRequest> fPendingCoalescedRequests = new ArrayList<>();
+    protected final List<TmfCoalescedEventRequest> fPendingCoalescedRequests =
+            new ArrayList<TmfCoalescedEventRequest>();
 
     /** The type of event handled by this provider
      * @since 3.0*/
@@ -96,7 +97,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     public TmfEventProvider() {
         super();
         fQueueSize = DEFAULT_QUEUE_SIZE;
-        fDataQueue = new LinkedBlockingQueue<>(fQueueSize);
+        fDataQueue = new LinkedBlockingQueue<ITmfEvent>(fQueueSize);
         fExecutor = new TmfRequestExecutor();
     }
 

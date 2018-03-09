@@ -132,8 +132,8 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
 
     // The mapping of available trace type IDs to their corresponding
     // configuration element
-    private static final Map<String, IConfigurationElement> sfTraceTypeAttributes = new HashMap<>();
-    private static final Map<String, IConfigurationElement> sfTraceCategories = new HashMap<>();
+    private static final Map<String, IConfigurationElement> sfTraceTypeAttributes = new HashMap<String, IConfigurationElement>();
+    private static final Map<String, IConfigurationElement> sfTraceCategories = new HashMap<String, IConfigurationElement>();
 
     /**
      * Initialize statically at startup by getting extensions from the platform
@@ -189,15 +189,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
         parent.addChild(this);
         refreshTraceType();
         TmfSignalManager.register(this);
-    }
-
-    // ------------------------------------------------------------------------
-    // TmfProjectModelElement
-    // ------------------------------------------------------------------------
-
-    @Override
-    void refreshChildren() {
-        refreshAnalysis();
     }
 
     // ------------------------------------------------------------------------
@@ -453,7 +444,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
                 }
             }
         }
-        return new HashMap<>();
+        return new HashMap<String, String>();
     }
 
     @Override
@@ -620,7 +611,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
 
             // Propagate the removal to traces
             for (ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
-                List<ITmfProjectModelElement> toRemove = new LinkedList<>();
+                List<ITmfProjectModelElement> toRemove = new LinkedList<ITmfProjectModelElement>();
                 for (ITmfProjectModelElement child : experiment.getChildren()) {
                     if (child.getName().equals(getName())) {
                         toRemove.add(child);
@@ -674,7 +665,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      * @since 3.0
      */
     public List<TmfAnalysisElement> getAvailableAnalysis() {
-        List<TmfAnalysisElement> list = new ArrayList<>();
+        List<TmfAnalysisElement> list = new ArrayList<TmfAnalysisElement>();
 
         TraceTypeHelper helper = TmfTraceType.getInstance().getTraceType(getTraceType());
 

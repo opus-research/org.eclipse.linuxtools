@@ -75,7 +75,7 @@ public class TcpEventMatching implements ITmfNetworkMatchDefinition {
      */
     @Override
     public List<Object> getUniqueField(ITmfEvent event) {
-        List<Object> keys = new ArrayList<>();
+        List<Object> keys = new ArrayList<Object>();
 
         keys.add(event.getContent().getField(TcpEventStrings.SEQ).getValue());
         keys.add(event.getContent().getField(TcpEventStrings.ACKSEQ).getValue());
