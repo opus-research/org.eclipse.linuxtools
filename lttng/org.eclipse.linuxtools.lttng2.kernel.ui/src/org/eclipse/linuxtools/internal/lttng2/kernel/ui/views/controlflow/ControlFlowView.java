@@ -19,7 +19,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -27,7 +26,6 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
-import org.eclipse.linuxtools.lttng2.kernel.ui.analysis.LttngKernelAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -212,12 +210,10 @@ public class ControlFlowView extends AbstractTimeGraphView {
             if (aTrace instanceof LttngKernelTrace) {
                 ArrayList<ControlFlowEntry> entryList = new ArrayList<>();
                 LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
-                LttngKernelAnalysisModule module = ctfKernelTrace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-                module.schedule();
-                if (!module.waitForCompletion(new NullProgressMonitor())) {
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
+                if (!ssq.waitUntilBuilt()) {
                     return;
                 }
-                ITmfStateSystem ssq = module.getStateSystem();
                 long start = ssq.getStartTime();
                 long end = ssq.getCurrentEndTime() + 1;
                 setStartTime(Math.min(getStartTime(), start));
@@ -327,8 +323,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
     }
 
     private void buildStatusEvents(ITmfTrace trace, ControlFlowEntry entry, IProgressMonitor monitor) {
-        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-        ITmfStateSystem ssq = module.getStateSystem();
+        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
 
         long start = ssq.getStartTime();
         long end = ssq.getCurrentEndTime() + 1;
@@ -361,8 +356,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
         if (realEnd <= realStart) {
             return null;
         }
-        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-        ITmfStateSystem ssq = module.getStateSystem();
+        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
             List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
@@ -414,8 +408,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
             }
             if (trace instanceof LttngKernelTrace) {
                 LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) trace;
-                LttngKernelAnalysisModule module = ctfKernelTrace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-                ITmfStateSystem ssq = module.getStateSystem();
+                ITmfStateSystem ssq = ctfKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
                 if (time >= ssq.getStartTime() && time <= ssq.getCurrentEndTime()) {
                     List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD); //$NON-NLS-1$
                     for (int currentThreadQuark : currentThreadQuarks) {
@@ -472,8 +465,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
         }
         for (ITmfTrace trace : traces) {
             if (trace instanceof LttngKernelTrace) {
-                LttngKernelAnalysisModule module = trace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-                ITmfStateSystem ssq = module.getStateSystem();
+                ITmfStateSystem ssq = trace.getStateSystems().get(LttngKernelTrace.STATE_ID);
                 try {
                     long start = Math.max(startTime, ssq.getStartTime());
                     long end = Math.min(endTime, ssq.getCurrentEndTime());
