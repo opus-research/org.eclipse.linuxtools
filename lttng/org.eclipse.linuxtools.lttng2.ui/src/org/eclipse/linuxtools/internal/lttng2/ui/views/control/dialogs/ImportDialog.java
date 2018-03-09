@@ -112,7 +112,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
     /**
      * List of traces to import
      */
-    private final List<ImportFileInfo> fTraces = new ArrayList<>();
+    private final List<ImportFileInfo> fTraces = new ArrayList<ImportFileInfo>();
     /**
      * Selection index in project combo box.
      */
@@ -144,7 +144,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
     @Override
     public List<ImportFileInfo> getTracePathes() {
-        List<ImportFileInfo> retList = new ArrayList<>();
+        List<ImportFileInfo> retList = new ArrayList<ImportFileInfo>();
         retList.addAll(fTraces);
         return retList;
     }
@@ -410,8 +410,8 @@ public class ImportDialog extends Dialog implements IImportDialog {
         projectGroup.setLayout(layout);
         projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        fProjects = new ArrayList<>();
-        List<String> projectNames = new ArrayList<>();
+        fProjects = new ArrayList<IProject>();
+        List<String> projectNames = new ArrayList<String>();
 
         for (IProject project : TraceUtils.getOpenedTmfProjects()) {
             fProjects.add(project);

@@ -236,7 +236,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
 
         CustomTxtEvent event = parseFirstLine(context);
 
-        final HashMap<InputLine, Integer> countMap = new HashMap<>();
+        final HashMap<InputLine, Integer> countMap = new HashMap<InputLine, Integer>();
         InputLine currentInput = null;
         if (context.inputLine.childrenInputs != null && context.inputLine.childrenInputs.size() > 0) {
             currentInput = context.inputLine.childrenInputs.get(0);

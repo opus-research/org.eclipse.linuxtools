@@ -95,7 +95,7 @@ abstract class BaseEnableChannelHandler extends BaseControlViewHandler {
                 protected IStatus run(IProgressMonitor monitor) {
                     Exception error = null;
 
-                    List<String> channelNames = new ArrayList<>();
+                    List<String> channelNames = new ArrayList<String>();
                     channelNames.add(dialog.getChannelInfo().getName());
 
                     try {

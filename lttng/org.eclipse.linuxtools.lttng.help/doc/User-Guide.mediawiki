@@ -2,6 +2,7 @@
 = Overview =
 
 LTTng (Linux Trace Toolkit, next generation) is a highly efficient tracing tool for Linux that can be used to track down kernel and application performance issues as well as troubleshoot problems involving multiple concurrent processes and threads. It consists of a set of kernel modules, daemons - to collect the raw tracing data - and a set of tools to control, visualize and analyze the generated data. It also provides support for user space application instrumentation.
+
 For more information about LTTng, refer to the project [http://lttng.org site]
 
 '''Note''': This User Guide covers the integration of the latest LTTng (v2.0) in Eclipse. The legacy version (v0.x) of both the tracer and the LTTng integration are no longer being maintained.
@@ -457,7 +458,7 @@ When opening a trace or experiment all currently open view will be filled which 
 
 Traces can be also be imported to a project by dragging from another tracing project and dropping to the project's trace folder. The trace will be copied and the trace type will be set.
 
-Any resource can be dragged and dropped from a non-tracing project, and any file or folder can be dragged from an external tool, into a tracing project's trace folder. The resource will be copied or imported as a new trace, however the trace type will be unknown and the unknown icon [[Image:images/unknown_parser.gif]] will be displayed. In this case the user needs to set the trace type manually.
+Any resource can be dragged and dropped from a non-tracing project, and any file or folder can be dragged from an external tool, into a tracing project's trace folder. The resource will be copied or imported as a new trace, however the trace type will be unknown and need to be set manually by the user.
 
 To import the trace as a link, use the platform-specific key modifier while dragging the source trace. A link will be created in the target project to the trace's location on the file system.
 
@@ -716,30 +717,6 @@ Shift-clicking on the time graph will select a time range. When the selection is
 Double-clicking on a call stack event will zoom the time graph to the selected function's range of execution.
 
 Clicking the '''Select Next Event''' or '''Select Previous Event''' or using the left and right arrows will navigate to the next or previous call stack event, and select the function currently at the top of the call stack.
-
-Clicking the '''Import Mapping File''' ([[Image:images/import.gif]]) icon will open a file selection dialog, allowing you to import a text file containing mappings from function addresses to function names. If the callstack provider for the current trace type only provides function addresses, a mapping file will be required to get the function names in the view. See the following sections for an example with LTTng-UST traces.
-
-=== Using the Callstack View with LTTng-UST traces ===
-
-There is support in the LTTng-UST integration plugin to display the callstack of applications traced with the ''liblttng-ust-cyg-profile.so'' library (see the ''liblttng-ust-cyg-profile'' man page for additional information). To do so, you need to:
-
-* Recompile your application with "''-g -finstrument-functions''".
-* Add the ''vtid'' and ''procname'' contexts to your trace session. See the [[#Adding Contexts to Channels and Events of a Domain | Adding Contexts to Channels and Events of a Domain]] section. Or if using the command-line:
-** <pre>lttng add-context -u -t vtid -t procname</pre>
-* Preload the ''liblttng-ust-cyg-profile'' library when running your program:
-** <pre>LD_PRELOAD=/usr/lib/liblttng-ust-cyg-profile.so ./myprogram</pre>
-
-Once you load the resulting trace, making sure it's set to the ''Common Trace Format - LTTng UST Trace'' type, the Callstack View should be populated with the relevant information. However, since GCC's cyg-profile instrumentation only provides function addresses, and not names, an additional step is required to get the function names showing in the view. The following section explains how to do so.
-
-=== Importing a function name mapping file for LTTng-UST traces ===
-
-If you followed the steps in the previous section, you should have a Callstack View populated with function entries and exits. However, the view will display the function addresses instead of names in the intervals, which are not very useful by themselves. To get the actual function names, you need to:
-
-* Generate a mapping file from the binary, using:
-** <pre>nm myprogram > mapping.txt</pre>
-* Click the '''Import Mapping File''' ([[Image:images/import.gif]]) button in the Callstack View, and select the ''mapping.txt'' file that was just created.
-
-The view should now update to display the function names instead. Make sure the binary used for taking the trace is the one used for this step too (otherwise, there is a good chance of the addresses not being the same).
 
 == Custom Parsers ==
 

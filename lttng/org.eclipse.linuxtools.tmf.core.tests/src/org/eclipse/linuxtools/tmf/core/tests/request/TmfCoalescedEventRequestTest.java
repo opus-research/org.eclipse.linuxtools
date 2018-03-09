@@ -416,7 +416,7 @@ public class TmfCoalescedEventRequestTest {
         TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final long REQUEST_OFFSET = 1000;
 
-        requestedEvents1 = new Vector<>();
+        requestedEvents1 = new Vector<ITmfEvent>();
         request1 = new TmfEventRequest(ITmfEvent.class, range, signal.fIndex,
                 NB_EVENTS, ExecutionType.FOREGROUND) {
             @Override
@@ -431,7 +431,7 @@ public class TmfCoalescedEventRequestTest {
             }
         };
 
-        requestedEvents2 = new Vector<>();
+        requestedEvents2 = new Vector<ITmfEvent>();
         request2 = new TmfEventRequest(ITmfEvent.class, range,
                 signal.fIndex + REQUEST_OFFSET, NB_EVENTS, ExecutionType.FOREGROUND) {
             @Override
@@ -443,7 +443,7 @@ public class TmfCoalescedEventRequestTest {
             }
         };
 
-        requestedEvents3 = new Vector<>();
+        requestedEvents3 = new Vector<ITmfEvent>();
         request3 = new TmfEventRequest(ITmfEvent.class, range,
                 signal.fIndex + 2 * REQUEST_OFFSET, NB_EVENTS, ExecutionType.FOREGROUND) {
             @Override
