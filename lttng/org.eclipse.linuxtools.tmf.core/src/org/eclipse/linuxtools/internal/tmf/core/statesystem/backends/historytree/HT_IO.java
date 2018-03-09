@@ -96,39 +96,8 @@ class HT_IO {
         return node;
     }
 
-    /**
-     * Generic "read node" method, which checks if the node is in memory first,
-     * and if it's not it goes to disk to retrieve it.
-     *
-     * @param seqNumber
-     *            Sequence number of the node we want
-     * @return The wanted node in object form
-     * @throws ClosedChannelException
-     *             If the channel was closed before we could read
-     */
-    HTNode readNode(int seqNumber, long t) throws ClosedChannelException {
-        int i = 0;
-        for (HTNode node : tree.getCacheBranch()) {
-            if (node.getSequenceNumber() == seqNumber) {
-                return node;
-            }
-            if (t < node.getNodeStart() || t > node.getNodeEnd()) {
-                break;
-            }
-            i++;
-        }
-
-        HTNode resultNode = readNodeFromDisk(seqNumber);
-        if(i < tree.getCacheBranch().size()) {
-            tree.getCacheBranch().set(i,resultNode);
-        } else {
-            tree.getCacheBranch().add(resultNode);
-        }
-        return resultNode;
-    }
-
     private HTNode readNodeFromMemory(int seqNumber) {
-        for (HTNode node : tree.getCacheBranch()) {
+        for (HTNode node : tree.getLatestBranch()) {
             if (node.getSequenceNumber() == seqNumber) {
                 return node;
             }
