@@ -22,7 +22,6 @@
 			id="org.eclipse.linuxtools.systemtap.ui.editor.FileActionSet">
 			<action
 				label="%action.open.name"
-				tooltip="%action.open.desc"
 				id="org.eclipse.linuxtools.systemtap.ui.editor.actions.file.OpenFileAction"
 				icon="icons/actions/file/open_wiz.gif"
 				toolbarPath="org.eclipse.ui.workbench.file/new.ext"
@@ -31,5 +30,13 @@
 				style="push"
 				state="false"/>
 		</actionSet>
+	</extension>
+
+	<extension
+		point="org.eclipse.ui.perspectiveExtensions">
+		<perspectiveExtension
+			targetID="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective">
+			<actionSet id="org.eclipse.linuxtools.systemtap.ui.editor.FileActionSet"/>
+		</perspectiveExtension>
 	</extension>
 </plugin>

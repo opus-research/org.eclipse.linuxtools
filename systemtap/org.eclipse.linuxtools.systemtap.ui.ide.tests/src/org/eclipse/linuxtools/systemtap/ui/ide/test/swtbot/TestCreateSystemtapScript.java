@@ -57,6 +57,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotSlider;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotToolbarButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.hamcrest.Matcher;
@@ -98,12 +99,12 @@ public class TestCreateSystemtapScript {
 		}
 	}
 
-	private static class NodeAvaiable extends DefaultCondition {
+	private static class NodeAvailable extends DefaultCondition {
 
 		private String node;
 		private SWTBotTreeItem parent;
 
-		NodeAvaiable(SWTBotTreeItem parent, String node){
+		NodeAvailable(SWTBotTreeItem parent, String node){
 			this.node = node;
 			this.parent = parent;
 		}
@@ -116,6 +117,25 @@ public class TestCreateSystemtapScript {
 		@Override
 		public String getFailureMessage() {
 			return "Timed out waiting for " + node; //$NON-NLS-1$
+		}
+	}
+
+	private static class TreePopulated extends DefaultCondition {
+
+		private SWTBotTree parent;
+
+		TreePopulated(SWTBotTree parent) {
+			this.parent = parent;
+		}
+
+		@Override
+		public boolean test() {
+			return this.parent.getAllItems().length > 0;
+		}
+
+		@Override
+		public String getFailureMessage() {
+			return "Timed out waiting for tree to populate.";
 		}
 	}
 
@@ -274,6 +294,15 @@ public class TestCreateSystemtapScript {
 		bot.textWithLabel("Project name:").setText(SYSTEMTAP_PROJECT_NAME);
 		bot.button("Finish").click();
 		bot.waitUntil(new ShellIsClosed(shell));
+
+		// Open the Debug view.
+		bot.menu("Window").menu("Show View").menu("Other...").click();
+		shell = bot.shell("Show View");
+		node = bot.tree().expandNode("Debug");
+		assertNotNull(node);
+		bot.waitUntil(new NodeAvailable(node, "Debug"));
+		node.select("Debug");
+		bot.button("OK").click();
 	}
 
 	@After
@@ -301,7 +330,7 @@ public class TestCreateSystemtapScript {
 
 		SWTBotTreeItem node = bot.tree().expandNode("SystemTap");
 		assertNotNull(node);
-		bot.waitUntil(new NodeAvaiable(node, "SystemTap Script"));
+		bot.waitUntil(new NodeAvailable(node, "SystemTap Script"));
 		node.select("SystemTap Script");
 
 		bot.button("Next >").click();
@@ -338,6 +367,18 @@ public class TestCreateSystemtapScript {
 		return shell;
 	}
 
+	private void clearAllTerminated(){
+		SWTBotView debugView = bot.viewByTitle("Debug");
+		debugView.setFocus();
+		SWTBotTree debugTable = debugView.bot().tree();
+		assertTrue(debugTable.getAllItems().length > 0);
+		SWTBotToolbarButton remButton = debugView.toolbarPushButton("Remove All Terminated Launches");
+		assertTrue(remButton.isEnabled());
+		remButton.click();
+		assertTrue(debugTable.getAllItems().length == 0);
+		assertTrue(!remButton.isEnabled());
+	}
+
 	@Test
 	public void testCreateScript(){
 		String scriptName = "testScript.stp";
@@ -364,6 +405,75 @@ public class TestCreateSystemtapScript {
 			bot.waitUntil(new ConsoleIsReady(scriptName));
 			bot.waitUntil(new StapHasExited(), 10000); // The script should end on its own
 		}
+	}
+
+	@Test
+	public void testAddProbes(){
+		// Create a blank script and add a probe to it while it's open.
+		String scriptName = "probeScript.stp";
+		createScript(bot, scriptName);
+
+		SWTBotView probeView = bot.viewByTitle("Probe Alias");
+		SWTBotTree probeTree = probeView.bot().tree();
+		bot.waitUntil(new TreePopulated(probeTree), 10000);
+		SWTBotTreeItem[] items = probeTree.getAllItems();
+		items[0].doubleClick();
+		SWTBotEclipseEditor editor = bot.activeEditor().toTextEditor();
+		assertTrue(editor.getText().contains("probe " + items[0].getText() + "\n"));
+
+		// Open a non-stap file and add a probe. This should bring up a dialog
+		// asking if the probe should be added to the only open .stp file.
+		SWTBotMenu fileMenu = bot.menu("File");
+		SWTBotMenu newMenu = fileMenu.menu("New");
+		SWTBotMenu projectMenu = newMenu.menu("Other...");
+		projectMenu.click();
+		SWTBotShell shell = bot.shell("New");
+		shell.activate();
+		SWTBotTreeItem node = bot.tree().expandNode("General");
+		assertNotNull(node);
+		bot.waitUntil(new NodeAvailable(node, "Untitled Text File"));
+		node.select("Untitled Text File");
+		bot.button("Finish").click();
+
+		items[1].doubleClick();
+		shell = bot.shell("Add Probe To Script");
+		shell.setFocus();
+		bot.button("Yes").click();
+		bot.waitUntil(new ShellIsClosed(shell));
+
+		// The editor containing the script should now be in focus.
+		editor = bot.activeEditor().toTextEditor();
+		assertEquals(scriptName, editor.getTitle());
+		assertTrue(editor.getText().contains("probe " + items[0].getText() + "\n"));
+		assertTrue(editor.getText().contains("probe " + items[1].getText() + "\n"));
+
+		// Adding a probe while an .stp editor is in focus should always add it
+		// to that editor, even if multiple .stp editors are open.
+		String scriptName2 = "probeScript2.stp";
+		createScript(bot, scriptName2);
+		editor = bot.activeEditor().toTextEditor();
+		assertEquals(scriptName2, editor.getTitle());
+		items[2].doubleClick();
+		assertTrue(editor.getText().contains("probe " + items[2].getText() + "\n"));
+		editor = bot.editorByTitle(scriptName).toTextEditor();
+		assertTrue(!editor.getText().contains("probe " + items[2].getText() + "\n"));
+
+		// Switch to the non-stp editor, and add a probe. A dialog should appear
+		// to let the user choose which of the open files to add to.
+		editor = bot.editorByTitle("Untitled 1").toTextEditor();
+		editor.show();
+		items[3].doubleClick();
+		shell = bot.shell("Add Probe To Script");
+		shell.setFocus();
+		SWTBotTable table = bot.table();
+		assertTrue(table.containsItem(scriptName));
+		assertTrue(table.containsItem(scriptName2));
+		table.select(scriptName2);
+		bot.button("OK").click();
+		bot.waitUntil(new ShellIsClosed(shell));
+		editor = bot.activeEditor().toTextEditor();
+		assertTrue(!editor.getTitle().equals("Untitled 1"));
+		assertTrue(editor.getText().contains("probe " + items[3].getText() + "\n"));
 	}
 
 	@Test
@@ -597,6 +707,8 @@ public class TestCreateSystemtapScript {
 		assertEquals(val2, colNames.get(2));
 		assertEquals("10", dataTable.cell(3, 1));
 		assertEquals("3", dataTable.cell(3, 2));
+
+		clearAllTerminated();
 	}
 
 	@Test
@@ -728,6 +840,8 @@ public class TestCreateSystemtapScript {
 		cb = bot.widget(matcher);
 		continuousControlTests(cb, true);
 		continuousControlTests(cb, false);
+
+		clearAllTerminated();
 	}
 
 	private void discreteXControlTests(AbstractChartBuilder cb, int numAxisItems) {
@@ -1007,6 +1121,7 @@ public class TestCreateSystemtapScript {
 
 		ScriptConsole.stopAll();
 		bot.waitUntil(new StapHasExited());
+		clearAllTerminated();
 	}
 
 	/**
@@ -1063,7 +1178,7 @@ public class TestCreateSystemtapScript {
 		SWTBotTree treeBot = bot.tree();
 		treeBot.setFocus();
 		SWTBotTreeItem node = treeBot.expandNode(SYSTEMTAP_PROJECT_NAME);
-		bot.waitUntil(new NodeAvaiable(node, scriptName));
+		bot.waitUntil(new NodeAvailable(node, scriptName));
 
 		treeBot.expandNode(SYSTEMTAP_PROJECT_NAME).expand().select(scriptName);
 

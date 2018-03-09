@@ -34,12 +34,14 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceTypeUIUtils;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -56,9 +58,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
     // Constants
     // ------------------------------------------------------------------------
 
-    private static final String BUNDLE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.bundle"; //$NON-NLS-1$
     private static final String TYPE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.type"; //$NON-NLS-1$
-    private static final String ICON_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.icon"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -129,12 +129,10 @@ public class SelectTraceTypeHandler extends AbstractHandler {
             IResource resource = trace.getResource();
             if (resource != null) {
                 try {
-                    // Set the properties for this resource
-                    String bundleName = event.getParameter(BUNDLE_PARAMETER);
+                    // Set the trace type for this resource
                     String traceType = event.getParameter(TYPE_PARAMETER);
-                    String iconUrl = event.getParameter(ICON_PARAMETER);
                     String previousTraceType = trace.getTraceType();
-                    IStatus status = propagateProperties(trace, bundleName, traceType, iconUrl);
+                    IStatus status = propagateProperties(trace, traceType);
                     ok &= status.isOK();
 
                     if (status.isOK()) {
@@ -173,50 +171,32 @@ public class SelectTraceTypeHandler extends AbstractHandler {
         return null;
     }
 
-    private static IStatus propagateProperties(TmfTraceElement trace,
-            String bundleName, String traceType, String iconUrl)
+    private static IStatus propagateProperties(TmfTraceElement traceElement, String traceType)
             throws CoreException {
 
-        IResource svResource = trace.getResource();
-        String svBundleName = svResource.getPersistentProperty(TmfCommonConstants.TRACEBUNDLE);
-        String svTraceType = svResource.getPersistentProperty(TmfCommonConstants.TRACETYPE);
-        String svIconUrl = svResource.getPersistentProperty(TmfCommonConstants.TRACEICON);
+        IResource resource = traceElement.getResource();
+        String svTraceType = resource.getPersistentProperty(TmfCommonConstants.TRACETYPE);
+        TraceTypeHelper svTraceTypeHelper = TmfTraceType.getInstance().getTraceType(svTraceType);
 
-        setProperties(trace.getResource(), bundleName, traceType, iconUrl);
-        trace.refreshTraceType();
-        final IStatus validateTraceType = validateTraceType(trace);
+        TraceTypeHelper traceTypeHelper = TmfTraceType.getInstance().getTraceType(traceType);
+        TmfTraceTypeUIUtils.setTraceType(resource, traceTypeHelper);
+        final IStatus validateTraceType = validateTraceType(traceElement);
         if (!validateTraceType.isOK()) {
-            setProperties(trace.getResource(), svBundleName, svTraceType, svIconUrl);
-            trace.refreshTraceType();
+            TmfTraceTypeUIUtils.setTraceType(resource, svTraceTypeHelper);
             return validateTraceType;
         }
 
-        trace.refreshTraceType();
-
-        if (trace.getParent() instanceof TmfTraceFolder) {
-            TmfExperimentFolder experimentFolder = trace.getProject().getExperimentsFolder();
-            for (final ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
-                for (final ITmfProjectModelElement child : experiment.getChildren()) {
-                    if (child instanceof TmfTraceElement) {
-                        TmfTraceElement linkedTrace = (TmfTraceElement) child;
-                        if (linkedTrace.getName().equals(trace.getName())) {
-                            IResource resource = linkedTrace.getResource();
-                            setProperties(resource, bundleName, traceType, iconUrl);
-                            linkedTrace.refreshTraceType();
-                        }
-                    }
+        TmfExperimentFolder experimentFolder = traceElement.getProject().getExperimentsFolder();
+        for (final TmfExperimentElement experiment : experimentFolder.getExperiments()) {
+            for (final TmfTraceElement child : experiment.getTraces()) {
+                if (child.getName().equals(traceElement.getName())) {
+                    TmfTraceTypeUIUtils.setTraceType(child.getResource(), traceTypeHelper);
+                    break;
                 }
             }
         }
 
         return Status.OK_STATUS;
-    }
-
-    private static void setProperties(IResource resource, String bundleName,
-            String traceType, String iconUrl) throws CoreException {
-        resource.setPersistentProperty(TmfCommonConstants.TRACEBUNDLE, bundleName);
-        resource.setPersistentProperty(TmfCommonConstants.TRACETYPE, traceType);
-        resource.setPersistentProperty(TmfCommonConstants.TRACEICON, iconUrl);
     }
 
     private static IStatus validateTraceType(TmfTraceElement trace) {
@@ -227,8 +207,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
             tmfTrace = trace.instantiateTrace();
             if (tmfTrace != null) {
                 validate = tmfTrace.validate(project, trace.getLocation().getPath());
-            }
-            else{
+            } else {
                 validate =  new Status(IStatus.ERROR, trace.getName(), "File does not exist : " + trace.getLocation().getPath()); //$NON-NLS-1$
             }
         } finally {

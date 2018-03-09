@@ -16,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.viewers.xycharts.TmfChartTimeStampFormat;
 import org.eclipse.linuxtools.tmf.ui.viewers.xycharts.TmfXYChartViewer;
@@ -57,6 +59,9 @@ public abstract class TmfCommonXLineChartViewer extends TmfXYChartViewer {
 
     private final Map<String, double[]> fSeriesValues = new LinkedHashMap<>();
     private double[] fXValues;
+    private double fResolution;
+
+    private UpdateThread fUpdateThread;
 
     /**
      * Constructor
@@ -73,7 +78,18 @@ public abstract class TmfCommonXLineChartViewer extends TmfXYChartViewer {
     public TmfCommonXLineChartViewer(Composite parent, String title, String xLabel, String yLabel) {
         super(parent, title, xLabel, yLabel);
 
+        setResolution(RESOLUTION);
         setTooltipProvider(new TmfCommonXLineChartTooltipProvider(this));
+    }
+
+    /**
+     * Set the number of requests per pixel that should be done on this chart
+     *
+     * @param resolution
+     *            The number of points per pixels
+     */
+    protected void setResolution(double resolution) {
+        fResolution = resolution;
     }
 
     @Override
@@ -109,20 +125,58 @@ public abstract class TmfCommonXLineChartViewer extends TmfXYChartViewer {
 
     }
 
+    private class UpdateThread extends Thread {
+        private final IProgressMonitor fMonitor;
+        private final int fNumRequests;
+
+        public UpdateThread(int numRequests) {
+            super("Line chart update"); //$NON-NLS-1$
+            fNumRequests = numRequests;
+            fMonitor = new NullProgressMonitor();
+        }
+
+        @Override
+        public void run() {
+            updateData(getWindowStartTime(), getWindowEndTime(), fNumRequests, fMonitor);
+            updateThreadFinished(this);
+        }
+
+        public void cancel() {
+            fMonitor.setCanceled(true);
+        }
+    }
+
+    private synchronized void newUpdateThread() {
+        cancelUpdate();
+        final int numRequests = (int) (getSwtChart().getPlotArea().getBounds().width * fResolution);
+        fUpdateThread = new UpdateThread(numRequests);
+        fUpdateThread.start();
+    }
+
+    private synchronized void updateThreadFinished(UpdateThread thread) {
+        if (thread == fUpdateThread) {
+            fUpdateThread = null;
+        }
+    }
+
+    /**
+     * Cancels the currently running update thread. It is automatically called
+     * when the content is updated, but child viewers may want to call it
+     * manually to do some operations before calling
+     * {@link TmfCommonXLineChartViewer#updateContent}
+     */
+    protected synchronized void cancelUpdate() {
+        if (fUpdateThread != null) {
+            fUpdateThread.cancel();
+        }
+    }
+
     @Override
     protected void updateContent() {
         getDisplay().asyncExec(new Runnable() {
-
             @Override
             public void run() {
-                final int numRequests = (int) (getSwtChart().getPlotArea().getBounds().width * RESOLUTION);
-                Thread thread = new Thread("Line chart update") { //$NON-NLS-1$
-                    @Override
-                    public void run() {
-                        updateData(getWindowStartTime(), getWindowEndTime(), numRequests);
-                    }
-                };
-                thread.start();
+                newUpdateThread();
             }
         });
     }
@@ -190,8 +244,10 @@ public abstract class TmfCommonXLineChartViewer extends TmfXYChartViewer {
      *            The end time of the range
      * @param nb
      *            The number of 'points' in the chart.
+     * @param monitor
+     *            The progress monitor object
      */
-    protected abstract void updateData(long start, long end, int nb);
+    protected abstract void updateData(long start, long end, int nb, IProgressMonitor monitor);
 
     /**
      * Set the data for a given series of the graph. The series does not need to
@@ -272,6 +328,9 @@ public abstract class TmfCommonXLineChartViewer extends TmfXYChartViewer {
                             miny = Math.min(miny, value);
                         }
                         series.setYSeries(entry.getValue());
+                    }
+                    if (maxy == DEFAULT_MAXY) {
+                        maxy = 1.0;
                     }
 
                     IAxisTick xTick = getSwtChart().getAxisSet().getXAxis(0).getTick();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,10 +17,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -29,6 +28,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -47,6 +50,7 @@ import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition.InputAttribute;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition.InputElement;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.TitleEvent;
@@ -64,6 +68,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -75,6 +81,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.osgi.framework.Bundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -94,7 +101,8 @@ import org.xml.sax.SAXParseException;
 public class CustomXmlParserInputWizardPage extends WizardPage {
 
     private static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"; //$NON-NLS-1$
-    private static final String SIMPLE_DATE_FORMAT_URL = "http://java.sun.com/javase/6/docs/api/java/text/SimpleDateFormat.html#skip-navbar_top"; //$NON-NLS-1$
+    private static final String TIMESTAMP_FORMAT_BUNDLE = "org.eclipse.linuxtools.lttng.help"; //$NON-NLS-1$
+    private static final String TIMESTAMP_FORMAT_PATH = "reference/api/org/eclipse/linuxtools/tmf/core/timestamp/TmfTimestampFormat.html"; //$NON-NLS-1$
     private static final Image ELEMENT_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/element_icon.gif"); //$NON-NLS-1$
     private static final Image ADD_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/add_button.gif"); //$NON-NLS-1$
     private static final Image ADD_NEXT_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/addnext_button.gif"); //$NON-NLS-1$
@@ -191,13 +199,20 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
         timeStampOutputFormatText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         timeStampOutputFormatText.setText(DEFAULT_TIMESTAMP_FORMAT);
 
-        Button dateFormatHelpButton = new Button(headerComposite, SWT.PUSH);
-        dateFormatHelpButton.setImage(HELP_IMAGE);
-        dateFormatHelpButton.setToolTipText(Messages.CustomXmlParserInputWizardPage_dateFormatHelp);
-        dateFormatHelpButton.addSelectionListener(new SelectionAdapter() {
+        Button timeStampFormatHelpButton = new Button(headerComposite, SWT.PUSH);
+        timeStampFormatHelpButton.setImage(HELP_IMAGE);
+        timeStampFormatHelpButton.setToolTipText(Messages.CustomXmlParserInputWizardPage_timestampFormatHelp);
+        timeStampFormatHelpButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                openHelpShell(SIMPLE_DATE_FORMAT_URL);
+                Bundle plugin = Platform.getBundle(TIMESTAMP_FORMAT_BUNDLE);
+                IPath path = new Path(TIMESTAMP_FORMAT_PATH);
+                URL fileURL = FileLocator.find(plugin, path, null);
+                try {
+                    URL pageURL = FileLocator.toFileURL(fileURL);
+                    openHelpShell(pageURL.toString());
+                } catch (IOException e1) {
+                }
             }
         });
 
@@ -780,10 +795,10 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
 
         if (timeStampValue != null && timeStampFormat != null) {
             try {
-                SimpleDateFormat dateFormat = new SimpleDateFormat(timeStampFormat);
-                Date date = dateFormat.parse(timeStampValue);
-                dateFormat = new SimpleDateFormat(timeStampOutputFormatText.getText().trim());
-                timeStampPreviewText.setText(dateFormat.format(date));
+                TmfTimestampFormat timestampFormat = new TmfTimestampFormat(timeStampFormat);
+                long timestamp = timestampFormat.parseValue(timeStampValue);
+                timestampFormat = new TmfTimestampFormat(timeStampOutputFormatText.getText().trim());
+                timeStampPreviewText.setText(timestampFormat.format(timestamp));
             } catch (ParseException e) {
                 timeStampPreviewText.setText("*parse exception* [" + timeStampValue + "] <> [" + timeStampFormat + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             } catch (IllegalArgumentException e) {
@@ -811,8 +826,10 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
                 helpShell.setText(event.title);
             }
         });
-        helpBrowser.setBounds(0, 0, 600, 400);
-        helpShell.pack();
+        Rectangle r = container.getBounds();
+        Point p = container.toDisplay(r.x, r.y);
+        Rectangle trim = helpShell.computeTrim(p.x + (r.width - 750) / 2, p.y + (r.height - 400) / 2, 750, 400);
+        helpShell.setBounds(trim);
         helpShell.open();
         helpBrowser.setUrl(url);
     }
@@ -1502,7 +1519,7 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
                         timeStampOutputFormatText.setBackground(COLOR_LIGHT_RED);
                     } else {
                         try {
-                            new SimpleDateFormat(timeStampOutputFormatText.getText().trim());
+                            new TmfTimestampFormat(timeStampOutputFormatText.getText().trim());
                             timeStampOutputFormatText.setBackground(COLOR_TEXT_BACKGROUND);
                         } catch (IllegalArgumentException e) {
                             errors.append(Messages.CustomXmlParserInputWizardPage_invalidTimestampFmtError);
@@ -1565,7 +1582,7 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
                     }
                 } else {
                     try {
-                        new SimpleDateFormat(inputElement.inputFormat);
+                        new TmfTimestampFormat(inputElement.inputFormat);
                         if (elementNode != null) {
                             elementNode.tagText.setBackground(COLOR_TEXT_BACKGROUND);
                         }
@@ -1629,7 +1646,7 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
                         }
                     } else {
                         try {
-                            new SimpleDateFormat(attribute.inputFormat);
+                            new TmfTimestampFormat(attribute.inputFormat);
                             if (elementNode != null) {
                                 elementNode.attributes.get(i).tagText.setBackground(COLOR_TEXT_BACKGROUND);
                             }

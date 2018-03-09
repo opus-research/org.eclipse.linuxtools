@@ -41,6 +41,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceImportException;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
@@ -494,17 +495,13 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         try {
             Map<QualifiedName, String> properties = resource.getPersistentProperties();
-            String bundleName = properties.get(TmfCommonConstants.TRACEBUNDLE);
             String traceType = properties.get(TmfCommonConstants.TRACETYPE);
-            String iconUrl = properties.get(TmfCommonConstants.TRACEICON);
-            String supplFolder = properties.get(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER);
 
             if (resource instanceof IFolder) {
                 IFolder folder = parentFolder.getFolder(targetName);
                 if (workspace.validateLinkLocation(folder, location).isOK()) {
                     folder.createLink(location, IResource.REPLACE, null);
-                    setProperties(folder, bundleName, traceType, iconUrl, supplFolder);
-
+                    TmfTraceTypeUIUtils.setTraceType(folder, TmfTraceType.getInstance().getTraceType(traceType));
                 } else {
                     Activator.getDefault().logError("Invalid Trace Location"); //$NON-NLS-1$
                 }
@@ -512,7 +509,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
                 IFile file = parentFolder.getFile(targetName);
                 if (workspace.validateLinkLocation(file, location).isOK()) {
                     file.createLink(location, IResource.REPLACE, null);
-                    setProperties(file, bundleName, traceType, iconUrl, supplFolder);
+                    TmfTraceTypeUIUtils.setTraceType(file, TmfTraceType.getInstance().getTraceType(traceType));
                 } else {
                     Activator.getDefault().logError("Invalid Trace Location"); //$NON-NLS-1$
                 }
@@ -596,30 +593,11 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         }
     }
 
-    /**
-     * Set the trace persistent properties
-     *
-     * @param resource the trace resource
-     * @param bundleName the bundle name
-     * @param traceType the trace type
-     * @param iconUrl the icon URL
-     * @param supplFolder the directory of the directory for supplementary information or null to ignore the property
-     * @throws CoreException
-     */
-    private static void setProperties(IResource resource, String bundleName,
-            String traceType, String iconUrl, String supplFolder)
-            throws CoreException {
-        resource.setPersistentProperty(TmfCommonConstants.TRACEBUNDLE, bundleName);
-        resource.setPersistentProperty(TmfCommonConstants.TRACETYPE, traceType);
-        resource.setPersistentProperty(TmfCommonConstants.TRACEICON, iconUrl);
-        resource.setPersistentProperty(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, supplFolder);
-    }
-
     private static void setTraceType(IResource traceResource) {
         try {
             TraceTypeHelper traceTypeHelper = TmfTraceTypeUIUtils.selectTraceType(traceResource.getLocationURI().getPath(), null, null);
             if (traceTypeHelper != null) {
-                TmfTraceTypeUIUtils.setTraceType(traceResource.getFullPath(), traceTypeHelper);
+                TmfTraceTypeUIUtils.setTraceType(traceResource, traceTypeHelper);
             }
         } catch (TmfTraceImportException e) {
         } catch (CoreException e) {

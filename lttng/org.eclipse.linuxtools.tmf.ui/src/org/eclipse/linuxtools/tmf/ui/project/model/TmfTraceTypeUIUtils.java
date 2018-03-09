@@ -12,22 +12,21 @@
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceImportException;
 import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
@@ -50,7 +49,26 @@ import org.eclipse.swt.widgets.Shell;
  */
 public final class TmfTraceTypeUIUtils {
 
-    private static final String DEFAULT_TRACE_ICON_PATH = "icons" + File.separator + "elcl16" + File.separator + "trace.gif"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    /** Extension point ID */
+    public static final String TMF_TRACE_TYPE_UI_ID = "org.eclipse.linuxtools.tmf.ui.tracetypeui"; //$NON-NLS-1$
+
+    /** Extension point element 'type' (should match the type in TmfTraceType) */
+    public static final String TYPE_ELEM = "type"; //$NON-NLS-1$
+
+    /** Extension point element 'Default editor' */
+    public static final String DEFAULT_EDITOR_ELEM = "defaultEditor"; //$NON-NLS-1$
+
+    /** Extension point element 'Events table type' */
+    public static final String EVENTS_TABLE_TYPE_ELEM = "eventsTableType"; //$NON-NLS-1$
+
+    /** Extension point attribute 'tracetype' */
+    public static final String TRACETYPE_ATTR = "tracetype"; //$NON-NLS-1$
+
+    /** Extension point attribute 'icon' */
+    public static final String ICON_ATTR = "icon"; //$NON-NLS-1$
+
+    /** Extension point attribute 'class' (attribute of eventsTableType) */
+    public static final String CLASS_ATTR = "class"; //$NON-NLS-1$
 
     private static final char SEPARATOR = ':';
 
@@ -227,40 +245,77 @@ public final class TmfTraceTypeUIUtils {
      * Set the trace type of a {@Link TraceTypeHelper}. Should only be
      * used internally by this project.
      *
-     * @param path
-     *            the {@link IPath} path of the resource to set
+     * @param resource
+     *            the resource to set
      * @param traceType
      *            the {@link TraceTypeHelper} to set the trace type to.
      * @return Status.OK_Status if successful, error is otherwise.
      * @throws CoreException
      *             An exception caused by accessing eclipse project items.
      */
-    public static IStatus setTraceType(IPath path, TraceTypeHelper traceType) throws CoreException {
-        IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
-        String traceBundle = null, traceTypeId = traceType.getCanonicalName(), traceIcon = null;
-        if (isCustomTraceId(traceTypeId)) {
-            traceBundle = Activator.getDefault().getBundle().getSymbolicName();
-            traceIcon = DEFAULT_TRACE_ICON_PATH;
-        } else {
-            IConfigurationElement ce = TmfTraceType.getInstance().getTraceAttributes(traceTypeId);
-            traceBundle = ce.getContributor().getName();
-            traceIcon = ce.getAttribute(TmfTraceType.ICON_ATTR);
-        }
+    public static IStatus setTraceType(IResource resource, TraceTypeHelper traceType) throws CoreException {
+        String traceTypeId = traceType.getCanonicalName();
 
-        resource.setPersistentProperty(TmfCommonConstants.TRACEBUNDLE, traceBundle);
         resource.setPersistentProperty(TmfCommonConstants.TRACETYPE, traceTypeId);
-        resource.setPersistentProperty(TmfCommonConstants.TRACEICON, traceIcon);
 
         TmfProjectElement tmfProject = TmfProjectRegistry.getProject(resource.getProject(), true);
-        final TmfTraceFolder tracesFolder = tmfProject.getTracesFolder();
-        List<TmfTraceElement> traces = tracesFolder.getTraces();
-        for (TmfTraceElement traceElement : traces) {
-            if (traceElement.getName().equals(resource.getName())) {
-                traceElement.refreshTraceType();
-                break;
+        if (resource.getParent().equals(tmfProject.getTracesFolder().getResource())) {
+            refreshTraceElement(tmfProject.getTracesFolder().getTraces(), resource.getName());
+        } else {
+            for (TmfExperimentElement experimentElement : tmfProject.getExperimentsFolder().getExperiments()) {
+                if (resource.getParent().equals(experimentElement.getResource())) {
+                    refreshTraceElement(experimentElement.getTraces(), resource.getName());
+                    break;
+                }
             }
         }
         tmfProject.refresh();
         return Status.OK_STATUS;
+    }
+
+    private static void refreshTraceElement(List<TmfTraceElement> traceElements, String traceName) {
+        for (TmfTraceElement traceElement : traceElements) {
+            if (traceElement.getName().equals(traceName)) {
+                traceElement.refreshTraceType();
+                break;
+            }
+        }
+    }
+
+    /**
+     * Retrieves all configuration elements from the platform extension registry
+     * for the trace type UI extension.
+     *
+     * @return An array of trace type configuration elements
+     */
+    public static IConfigurationElement[] getTypeUIElements() {
+        IConfigurationElement[] elements =
+                Platform.getExtensionRegistry().getConfigurationElementsFor(TMF_TRACE_TYPE_UI_ID);
+        List<IConfigurationElement> typeElements = new LinkedList<>();
+        for (IConfigurationElement element : elements) {
+            if (element.getName().equals(TYPE_ELEM)) {
+                typeElements.add(element);
+            }
+        }
+        return typeElements.toArray(new IConfigurationElement[typeElements.size()]);
+    }
+
+    /**
+     * Get the UI elements for the given trace type
+     *
+     * @param traceType
+     *            The tracetype ID
+     * @return The top-level configuration element (access its children with
+     *         .getChildren()). Or null if there is no such element.
+     */
+    @Nullable
+    public static IConfigurationElement getTraceUIAttributes(String traceType) {
+        IConfigurationElement[] elements = getTypeUIElements();
+        for (IConfigurationElement ce : elements) {
+            if (traceType.equals(ce.getAttribute(TRACETYPE_ATTR))) {
+                return ce;
+            }
+        }
+        return null;
     }
 }
