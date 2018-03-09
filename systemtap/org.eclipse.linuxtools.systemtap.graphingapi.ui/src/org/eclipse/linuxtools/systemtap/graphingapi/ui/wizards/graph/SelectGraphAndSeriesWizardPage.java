@@ -391,16 +391,14 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 	}
 
 	private void checkErrors(){
-		if(!isSeriesUnique()) {
+		if(txtTitle.getText().length() == 0) {
+			setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.TitleNotSet")); //$NON-NLS-1$
+		} else if(!isSeriesUnique()) {
 			setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.SeriesNotUnique")); //$NON-NLS-1$
 		}
 		else if(isSeriesDeleted()) {
 			setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.SeriesDeleted")); //$NON-NLS-1$
-		}
-		else if(txtTitle.getText().length() == 0) {
-			setErrorMessage(Localization.getString("SelectGraphAndSeriesWizardPage.TitleNotSet")); //$NON-NLS-1$
-		}
-		else {
+		} else {
 			setErrorMessage(null);
 		}
 		getWizard().getContainer().updateButtons();
