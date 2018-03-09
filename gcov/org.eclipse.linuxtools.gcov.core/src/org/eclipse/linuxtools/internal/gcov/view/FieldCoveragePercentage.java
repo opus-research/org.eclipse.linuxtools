@@ -31,9 +31,8 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
     @Override
     public String getValue(Object obj) {
         float f = getPercentage(obj);
-        if (f < 0) {
+        if (f < 0)
             f = 0.0f;
-        }
         return nf.format(f);
     }
 
@@ -95,9 +94,8 @@ public class FieldCoveragePercentage extends AbstractPercentageDrawerField imple
         if (e.getClass() == CovRootTreeElement.class)
             return 0;
         else {
-            if (f < 0) {
+            if (f < 0)
                 f = 0.0f;
-            }
             return f;
         }
     }

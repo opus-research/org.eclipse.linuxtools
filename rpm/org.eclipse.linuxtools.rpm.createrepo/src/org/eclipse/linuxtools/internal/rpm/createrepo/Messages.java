@@ -54,12 +54,6 @@ public final class Messages {
 	public static String CreaterepoNewWizardPageTwo_errorName;
 	/****/
 	public static String CreaterepoNewWizardPageTwo_errorURL;
-	/****/
-	public static String CreaterepoNewWizardPageTwo_tooltipID;
-	/****/
-	public static String CreaterepoNewWizardPageTwo_tooltipName;
-	/****/
-	public static String CreaterepoNewWizardPageTwo_tooltipURL;
 
 	// CreaterepoProject
 	/****/
@@ -73,21 +67,7 @@ public final class Messages {
 	/****/
 	public static String Createrepo_jobName;
 	/****/
-	public static String Createrepo_jobCancelled;
-	/****/
 	public static String Createrepo_errorExecuting;
-	/****/
-	public static String Createrepo_errorTryingToFindCommand;
-	/****/
-	public static String Createrepo_errorCommandNotFound;
-	/****/
-	public static String Createrepo_errorWrongVersionCreaterepo;
-	/****/
-	public static String Createrepo_errorWrongVersionYum;
-	/****/
-	public static String Createrepo_errorCancelled;
-	/****/
-	public static String Createrepo_errorPasingVersion;
 
 	// RepoFormEditor
 	/****/
