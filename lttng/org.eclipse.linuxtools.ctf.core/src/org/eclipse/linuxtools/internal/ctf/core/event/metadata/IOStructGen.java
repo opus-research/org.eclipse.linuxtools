@@ -21,8 +21,10 @@ import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -426,9 +428,8 @@ public class IOStructGen {
             } else {
                 trace.setByteOrder(byteOrder);
                 final DeclarationScope parentScope = scope.getParentScope();
-                String types[] = parentScope.getTypeNames();
 
-                for (String type : types) {
+                for (String type : parentScope.getTypeNames()) {
                     IDeclaration d = parentScope.lookupType(type);
                     if (d instanceof IntegerDeclaration) {
                         addByteOrder(byteOrder, parentScope, type, (IntegerDeclaration) d);
@@ -2031,6 +2032,20 @@ public class IOStructGen {
 
         if (hasTag) {
             variantDeclaration.setTag(variantTag);
+
+            IDeclaration decl = getCurrentScope().lookupIdentifierRecursive(variantTag);
+            if (decl == null) {
+                throw new ParseException("Variant tag not found: " + variantTag); //$NON-NLS-1$
+            }
+            if (!(decl instanceof EnumDeclaration)) {
+                throw new ParseException("Variant tag must be an enum: " + variantTag); //$NON-NLS-1$
+            }
+            EnumDeclaration tagDecl = (EnumDeclaration) decl;
+            Set<String> intersection = new HashSet<String>(tagDecl.getLabels());
+            intersection.retainAll(variantDeclaration.getFields().keySet());
+            if (intersection.isEmpty()) {
+                throw new ParseException("Variant contains no values of the tag, impossible to use: " + variantName); //$NON-NLS-1$
+            }
         }
 
         return variantDeclaration;
@@ -2307,7 +2322,7 @@ public class IOStructGen {
      * @param unaryInteger
      *            An unary integer node.
      * @return The integer value.
-     * @throws CTFReaderException
+     * @throws ParseException on an invalid integer format ("bob" for example)
      */
     private static long parseUnaryInteger(CommonTree unaryInteger) throws ParseException {
 
