@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,6 +10,7 @@
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
  *   Matthew Khouzam - Modified to use a TreeSet
+ *   Florian Wininger - Add 2D Query
  ******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends;
@@ -25,6 +27,7 @@ import java.util.TreeSet;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.tmf.core.interval.ITmfStateIntervalList;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 
@@ -73,6 +76,11 @@ public class InMemoryBackend implements IStateHistoryBackend {
     private final TreeSet<ITmfStateInterval> intervals;
     private final long startTime;
     private long latestTime;
+
+    /**
+     * Maximum size of a 2D Query.
+     */
+    private static int QUERY2D_SIZE = 10000;
 
     /**
      * Constructor
@@ -136,6 +144,25 @@ public class InMemoryBackend implements IStateHistoryBackend {
                 currentStateInfo.set(entry.getAttribute(), entry);
                 modCount++;
             }
+        }
+    }
+
+    @Override
+    public void do2DQuery(ITmfStateIntervalList currentStateInfo, long t)
+            throws TimeRangeException {
+        if (!checkValidTime(t)) {
+            throw new TimeRangeException();
+        }
+
+        /*
+         * The intervals are sorted by end time, so we can binary search to get
+         * the first possible interval.
+         */
+        Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
+        for (int modCount = 0; iter.hasNext() && modCount < QUERY2D_SIZE;) {
+            /* Add this interval to the returned values */
+            currentStateInfo.add(iter.next());
+            modCount++;
         }
     }
 
