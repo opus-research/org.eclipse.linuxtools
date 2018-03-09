@@ -12,13 +12,13 @@
 
 package org.eclipse.linuxtools.tmf.analysis.xml.core.tests;
 
-import org.eclipse.core.runtime.Plugin;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends Plugin {
+public class Activator extends AbstractUIPlugin {
 
     /**
      * The plug-in ID
