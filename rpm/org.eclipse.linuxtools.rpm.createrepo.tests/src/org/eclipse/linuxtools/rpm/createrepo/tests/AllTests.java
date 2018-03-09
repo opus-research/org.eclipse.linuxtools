@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.rpm.createrepo.tests;
 
-import org.eclipse.linuxtools.internal.rpm.createrepo.tests.CreaterepoTest;
 import org.eclipse.linuxtools.internal.rpm.createrepo.tree.tests.CreaterepoTreeCategoryTest;
 import org.eclipse.linuxtools.internal.rpm.createrepo.tree.tests.CreaterepoTreeTest;
 import org.eclipse.linuxtools.internal.rpm.createrepo.wizard.tests.CreaterepoWizardTest;
@@ -21,6 +20,6 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({CreaterepoProjectCreatorTest.class, CreaterepoUtilsTest.class,
 	CreaterepoProjectTest.class, CreaterepoTreeCategoryTest.class, CreaterepoTreeTest.class,
-	CreaterepoWizardTest.class, CreaterepoTest.class})
+	CreaterepoWizardTest.class})
 public class AllTests {
 }
