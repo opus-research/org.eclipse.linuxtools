@@ -1,9 +1,8 @@
 package org.eclipse.linuxtools.internal.gcov.test;
 
-import static org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper.contextMenu;
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withText;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.waitForShell;
-import static org.junit.Assert.fail;
+import static org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper.contextMenu;
 
 import java.io.File;
 import java.io.InputStream;
@@ -22,7 +21,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.dataviewers.actions.STExportToCSVAction;
 import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.actions.AbstractOpenSourceFileAction;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -33,15 +31,11 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
-import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotRadio;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.hamcrest.Matcher;
 import org.osgi.framework.FrameworkUtil;
 
@@ -62,7 +56,7 @@ public abstract class GcovTest {
 				
 		bot.button("Next >").click();
 		bot.button("Finish").click();
-		bot.waitUntil(Conditions.shellCloses(shell));
+		bot.sleep(3000);
 	}
 	
 	public static void populateProject(SWTWorkbenchBot bot, String projectName) throws Exception {
@@ -102,7 +96,7 @@ public abstract class GcovTest {
 		SWTBotTree treeBot = viewBot.tree();
 		treeBot.setFocus();
 		treeBot = treeBot.select(projectName);
-		bot.waitUntil(Conditions.treeHasRows(treeBot, 1));
+		bot.sleep(1000);
 		SWTBotMenu menu = bot.menu("Build Project");
 		menu.click();
 		bot.waitUntil(new JobsRunning(ResourcesPlugin.FAMILY_MANUAL_BUILD), 30000);
@@ -130,14 +124,15 @@ public abstract class GcovTest {
 		SWTBot viewBot = bot.viewByTitle("Project Explorer").bot();
 		SWTBotShell wbShell = bot.activeShell();
 
-		String fileName = file.getName();
 		SWTBotTree treeBot = viewBot.tree();
-		doubleclickOnFile(projectName, fileName, treeBot);
+		treeBot.setFocus();
+		treeBot.expandNode(projectName).select(file.getName());
+		treeBot.contextMenu("Open").click();
+		
 		Matcher<Shell> withText = withText("Gcov - Open coverage results...");
 		waitForShell(withText);
-		SWTBotShell openCoverageResultsShell = bot
-				.shell("Gcov - Open coverage results...");
-		openCoverageResultsShell.activate();
+		SWTBotShell shell = bot.shell("Gcov - Open coverage results...");
+		shell.activate();
 		bot.textInGroup("Binary File", 0).setText(binPath);
 		bot.button("OK").click();
 		
@@ -154,14 +149,6 @@ public abstract class GcovTest {
 		dumpCSV(bot, botView, projectName, "folder", testProducedReference);
 		botView.close();
 	}
-
-	private static void doubleclickOnFile(String projectName, String fileName,
-			SWTBotTree treeBot) {
-		treeBot.setFocus();
-		SWTBotTreeItem expandedNode = treeBot.expandNode(projectName);
-		SWTBotTreeItem item = expandedNode.getNode(fileName);
-		item.doubleClick();
-	}
 	
 
 	private static void testGcovFileDetails(SWTWorkbenchBot bot, String projectName, String filename, String binName) throws Exception {
@@ -173,7 +160,9 @@ public abstract class GcovTest {
 		SWTBotShell wbShell = bot.activeShell();
 
 		SWTBotTree treeBot = viewBot.tree();
-		doubleclickOnFile(projectName, file.getName(), treeBot);
+		treeBot.setFocus();
+		treeBot.expandNode(projectName).select(file.getName());
+		treeBot.contextMenu("Open").click();
 		
 		Matcher<Shell> withText = withText("Gcov - Open coverage results...");
 		waitForShell(withText);
@@ -219,26 +208,7 @@ public abstract class GcovTest {
 		String subMenuItem = "1 Profile Code Coverage";
 		click(contextMenu(treeBot, menuItem, subMenuItem));
 
-		bot.button("OK").click();
 		wbShell.activate();
-		final boolean result[] = new boolean[1];
-		Display.getDefault().syncExec(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage()
-							.showView("org.eclipse.linuxtools.gcov.view");
-					result[0] = true;
-				} catch (PartInitException e) {
-					result[0] = false;
-				}
-			}
-		});
-		if (!result[0]) {
-			fail();
-		}
 		SWTBotView botView = bot.viewByTitle("gcov");
 
 		botView.close();
