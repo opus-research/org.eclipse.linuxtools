@@ -29,6 +29,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
@@ -71,6 +72,8 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
 
     private final TmfRequestExecutor fExecutor;
 
+    private TmfRequestAccumulator fRequestAccumulator;
+
     private final Object fLock = new Object();
 
     // ------------------------------------------------------------------------
@@ -101,6 +104,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
         fDataQueue = (fQueueSize > 1) ? new LinkedBlockingQueue<ITmfEvent>(fQueueSize) : new SynchronousQueue<ITmfEvent>();
 
         fExecutor.init();
+        fRequestAccumulator = new TmfRequestAccumulator(this, 500);
         TmfProviderManager.register(fType, this);
     }
 
@@ -146,6 +150,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     @Override
     public void dispose() {
         TmfProviderManager.deregister(fType, this);
+        fRequestAccumulator.dispose();
         fExecutor.stop();
         super.dispose();
     }
@@ -179,7 +184,16 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     @Override
     public void sendRequest(final ITmfEventRequest request) {
         synchronized (fLock) {
-            dispatchRequest(request);
+            if (request.getRange() == TmfTimeRange.ETERNITY) {
+                /*
+                 * Automatically coalesce ETERNITY requests received roughly at
+                 * the same time.
+                 */
+                fRequestAccumulator.queue(request);
+            } else {
+                /* For other request types, just send them right away */
+                dispatchRequest(request);
+            }
         }
     }
 
