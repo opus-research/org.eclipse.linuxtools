@@ -18,16 +18,14 @@ import java.io.Writer;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
 
 /**
  * This TMF Requests exports traces to text files.
  * @author Xavier Raynaud <xavier.raynaud@kalray.eu>
  */
-public class ExportToTextRequest extends TmfEventRequest {
+public class ExportToTextRequest extends TmfDataRequest {
 
     private final Writer fWriter;
     private final ITmfFilter fFilter;
@@ -44,7 +42,7 @@ public class ExportToTextRequest extends TmfEventRequest {
      *            the {@link TmfEventsTable} requesting the export (may be <code>null</code>)
      */
     public ExportToTextRequest(Writer w, ITmfFilter filter, TmfEventsTable table) {
-        super(ITmfEvent.class, TmfTimeRange.ETERNITY, 0, ITmfEventRequest.ALL_DATA, ExecutionType.FOREGROUND);
+        super(ITmfEvent.class);
         this.fWriter = w;
         this.fFilter = filter;
         this.fTable = table;
