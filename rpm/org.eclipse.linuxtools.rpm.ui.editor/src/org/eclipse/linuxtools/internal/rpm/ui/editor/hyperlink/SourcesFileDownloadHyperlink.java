@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 Red Hat, Inc.
+ * Copyright (c) 2010, 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,20 +20,21 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.linuxtools.rpm.core.IRPMConstants;
+import org.eclipse.linuxtools.rpm.core.utils.DownloadJob;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 
 public class SourcesFileDownloadHyperlink implements IHyperlink {
-	String fileName;
-	IFile original;
-	IRegion region;
+	private String fileName;
+	private IFile original;
+	private IRegion region;
 
 	/**
 	 * Creates hyperlink for the following file name, region and file whether
 	 * the file name is found.
-	 * 
+	 *
 	 * @param original
 	 *            The file where the reference to this file name is.
 	 * @param fileName
@@ -51,6 +52,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkRegion()
 	 */
+	@Override
 	public IRegion getHyperlinkRegion() {
 		return region;
 	}
@@ -58,13 +60,15 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getHyperlinkText()
 	 */
+	@Override
 	public String getHyperlinkText() {
-		return Messages.SourcesFileHyperlink_1 + ' ' + fileName;
+		return NLS.bind(Messages.SourcesFileHyperlink_1, fileName);
 	}
 
 	/**
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#getTypeLabel()
 	 */
+	@Override
 	public String getTypeLabel() {
 		return null;
 	}
@@ -72,9 +76,10 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 	/**
 	 * Tries to open the given file name looking for it in the current directory
 	 * and in ../SOURCES.
-	 * 
+	 *
 	 * @see org.eclipse.jface.text.hyperlink.IHyperlink#open()
 	 */
+	@Override
 	public void open() {
 		IContainer container = original.getParent();
 		IResource saveFolder = container.getParent().findMember(
@@ -102,7 +107,7 @@ public class SourcesFileDownloadHyperlink implements IHyperlink {
 						savedFileName));
 				int rc = mb.open();
 				if (rc == SWT.OK) {
-					new DownloadJob(savedFile, connection, true).schedule();
+					new DownloadJob(savedFile, connection).schedule();
 				}
 
 			} else {

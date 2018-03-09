@@ -10,6 +10,7 @@
  *   Francois Chouinard - Initial API and implementation
  *   Francois Chouinard - Moved from LTTng to TMF
  *   Francois Chouinard - Simplified constructor, handle interval format change
+ *   Patrick Tasse - Update value handling
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -43,14 +44,14 @@ public class HistogramCurrentTimeControl extends HistogramTextControl {
      *
      * @param parentView A parent histogram view
      * @param parent A parent composite to draw in
-     * @param groupLabel A group value
+     * @param label A label
      * @param value A value
      * @since 2.0
      */
     public HistogramCurrentTimeControl(HistogramView parentView, Composite parent,
-            String groupLabel, long value)
+            String label, long value)
     {
-        super(parentView, parent, groupLabel, value);
+        super(parentView, parent, label, value);
         TmfSignalManager.register(this);
     }
 
@@ -70,7 +71,7 @@ public class HistogramCurrentTimeControl extends HistogramTextControl {
             return;
         }
         String string = fTextValue.getText();
-        long value = 0;
+        long value = getValue();
         try {
             value = TmfTimestampFormat.getDefaulTimeFormat().parseValue(string, getValue());
         } catch (ParseException e) {
@@ -91,8 +92,21 @@ public class HistogramCurrentTimeControl extends HistogramTextControl {
 
             // Set and propagate
             setValue(value);
-            fParentView.updateCurrentEventTime(value);
+            updateSelectionTime(value);
+        } else {
+            setValue(value);
         }
+    }
+
+    /**
+     * Update the selection time
+     *
+     * @param time
+     *            the new selected time
+     * @since 2.2
+     */
+    protected void updateSelectionTime(long time) {
+        fParentView.updateSelectionTime(time, time);
     }
 
     @Override

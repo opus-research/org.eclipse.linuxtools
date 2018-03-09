@@ -13,17 +13,13 @@ package org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset;
 
 import org.eclipse.linuxtools.internal.systemtap.graphingapi.ui.Localization;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IFilteredDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.row.FilteredRowDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.row.RowDataSet;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.row.RowParser;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.table.FilteredTableDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.table.TableDataSet;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.table.TableParser;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.datadisplay.DataGrid;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IMemento;
 
 
 
@@ -55,10 +51,18 @@ public final class DataSetFactory {
 		return null;
 	}
 
+	/**
+	 * TODO remove in 3.0
+	 */
+	@Deprecated
 	public static String[] getIDs() {
 		return ids;
 	}
 
+	/**
+	 * TODO remove in 3.0
+	 */
+	@Deprecated
 	public static String getName(String id) {
 		int index = getIndex(id);
 		if(index >= 0) {
@@ -67,6 +71,10 @@ public final class DataSetFactory {
 		return null;
 	}
 
+	/**
+	 * TODO remove in 3.0
+	 */
+	@Deprecated
 	public static String getDescription(String id) {
 		int index = getIndex(id);
 		if(index >= 0) {
@@ -75,6 +83,10 @@ public final class DataSetFactory {
 		return null;
 	}
 
+	/**
+	 * TODO remove in 3.0
+	 */
+	@Deprecated
 	public static ParsingWizardPage getParsingWizardPage(String id) {
 		ParsingWizardPage page = null;
 
@@ -84,16 +96,6 @@ public final class DataSetFactory {
 		}
 
 		return page;
-	}
-
-	public static IDataSetParser createParserXML(String id, IMemento source) {
-		if(id.equals(ids[0])) {
-			return new RowParser(source);
-		} else if(id.equals(ids[1])) {
-			return new TableParser(source);
-		}
-
-		return null;
 	}
 
 	public static DataGrid getDataGrid(Composite composite, IDataSet set) {
@@ -106,6 +108,10 @@ public final class DataSetFactory {
 		return null;
 	}
 
+	/**
+	 * TODO remove in 3.0
+	 */
+	@Deprecated
 	private static int getIndex(String id) {
 		for(int i=0; i<ids.length; i++) {
 			if(id.equals(ids[i])) {
@@ -115,16 +121,28 @@ public final class DataSetFactory {
 		return -1;
 	}
 
+	/**
+	 * TODO remove in 3.0
+	 */
+	@Deprecated
 	private static final String[] ids = {
 		RowDataSet.ID,
 		TableDataSet.ID
 	};
 
+	/**
+	 * TODO remove in 3.0
+	 */
+	@Deprecated
 	private static final String[] names = {
 		Localization.getString("DataSetFactory.RowDataSet"), //$NON-NLS-1$
 		Localization.getString("DataSetFactory.TableDataSet") //$NON-NLS-1$
 	};
 
+	/**
+	 * TODO remove in 3.0
+	 */
+	@Deprecated
 	private static final String[] descriptions = {
 		Localization.getString("DataSetFactory.RowDataSetDescription") + //$NON-NLS-1$
 		Localization.getString("DataSetFactory.DataSetExample") + //$NON-NLS-1$
@@ -149,6 +167,10 @@ public final class DataSetFactory {
 		"-------------------\n" //$NON-NLS-1$
 	};
 
+	/**
+	 * TODO remove in 3.0
+	 */
+	@Deprecated
 	private static final ParsingWizardPage[] dataSetWizards = new ParsingWizardPage[] {
 		new SelectRowParsingWizardPage(),
 		new SelectTableParsingWizardPage()

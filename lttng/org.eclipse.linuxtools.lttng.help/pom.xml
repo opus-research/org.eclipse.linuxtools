@@ -14,11 +14,11 @@
   <parent>
     <artifactId>linuxtools-lttng-parent</artifactId>
     <groupId>org.eclipse.linuxtools.lttng</groupId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.lttng.help</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 
   <name>Linux Tools LTTng Help Plug-in</name>
@@ -34,10 +34,10 @@
             <phase>generate-sources</phase>
             <configuration>
               <echo>Generating LTTng Help Files</echo>
-              <tasks>
+              <target>
                 <property name="compile_classpath" refid="maven.compile.classpath" />
                 <ant target="build" inheritRefs="true" antfile="build.xml" />
-              </tasks>
+              </target>
             </configuration>
             <goals>
               <goal>run</goal>
@@ -48,9 +48,9 @@
             <phase>clean</phase>
             <configuration>
               <echo>Cleaning up generated LTTng Help Files</echo>
-              <tasks>
+              <target>
                 <ant target="clean" antfile="build.xml" />
-              </tasks>
+              </target>
             </configuration>
             <goals>
               <goal>run</goal>

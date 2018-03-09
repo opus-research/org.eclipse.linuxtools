@@ -7,14 +7,15 @@
  *
  * Contributors:
  *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
- *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially 
+ *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially
  *        written in the now-defunct OprofileSession class
- *    QNX Software Systems and others - the section of code marked in the launch 
+ *    QNX Software Systems and others - the section of code marked in the launch
  *        method, and the exec method
  *    Red Hat Inc. - modification of OProfileLaunchConfigurationDelegate to here
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.gprof.launch;
 
+import java.io.File;
 import java.net.URI;
 
 import org.eclipse.cdt.debug.core.CDebugUtils;
@@ -30,7 +31,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.ILaunchesListener2;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.linuxtools.gprof.launch.GprofLaunchPlugin;
 import org.eclipse.linuxtools.internal.gprof.view.GmonView;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
@@ -42,55 +42,57 @@ import org.eclipse.ui.PlatformUI;
 
 public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfigurationDelegate {
 	protected ILaunchConfiguration config;
-	
+
 	@Override
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		this.config = config;
 		IPath exePath = getExePath(config);
 
-		/* 
-		 * this code written by QNX Software Systems and others and was 
+		/*
+		 * this code written by QNX Software Systems and others and was
 		 * originally in the CDT under LocalCDILaunchDelegate::RunLocalApplication
 		 */
 		//set up and launch the local c/c++ program
 		IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(getProject());
 
-		URI workingDirURI = getProject().getLocationURI();
-		IPath workingDirPath = new Path(workingDirURI.getPath());
+		File workDir = getWorkingDirectory(config);
+		if (workDir == null) {
+			workDir = new File(System.getProperty("user.home", ".")); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 		String arguments[] = getProgramArgumentsArray( config );
-		
+
 		//add a listener for termination of the launch
 		ILaunchManager lmgr = DebugPlugin.getDefault().getLaunchManager();
 		lmgr.addLaunchListener(new LaunchTerminationWatcher(launch, exePath));
-		
-		Process process = launcher.execute(exePath, arguments, getEnvironment(config), workingDirPath, monitor);
+
+		Process process = launcher.execute(exePath, arguments, getEnvironment(config), new Path(workDir.getAbsolutePath()), monitor);
 
 		DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
 
 	}
-	
-	//A class used to listen for the termination of the current launch, and 
-	// run some functions when it is finished. 
+
+	//A class used to listen for the termination of the current launch, and
+	// run some functions when it is finished.
 	class LaunchTerminationWatcher implements ILaunchesListener2 {
 		private ILaunch launch;
 		private IPath exePath;
-		
+
 		class LaunchTerminationWatcherRunnable implements Runnable {
 
 			private String exePath;
 			private String gmonPath;
-			
+
 			public LaunchTerminationWatcherRunnable(String exePath, String gmonPath) {
 				this.exePath = exePath;
 				this.gmonPath = gmonPath;
 			}
-			
+
 			@Override
 			public void run() {
 				GmonView.displayGprofView(exePath, gmonPath, getProject());
 			}
 		}
-		
+
 		public LaunchTerminationWatcher(ILaunch il, IPath exePath) {
 			launch = il;
 			this.exePath = exePath;
@@ -112,7 +114,7 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 						@Override
 						public void run() {
 							try {
-								String s = exePath.toOSString();			
+								String s = exePath.toOSString();
 								URI workingDirURI = getProject().getLocationURI();
 								RemoteProxyManager rpmgr = RemoteProxyManager.getInstance();
 								IRemoteFileProxy proxy = rpmgr.getFileProxy(getProject());
@@ -157,18 +159,17 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 		public void launchesRemoved(ILaunch[] launches) { /* dont care */ }
 
 	}
-	
+
 	@Override
 	protected String getPluginID() {
-		return GprofLaunchPlugin.PLUGIN_ID;
+		return GprofLaunch.PLUGIN_ID;
 	}
-	
+
 	/* all these functions exist to be overridden by the test class in order to allow launch testing */
-	
+
 	protected IProject getProject(){
 		try{
-			IProject project = CDebugUtils.verifyCProject(config).getProject();
-			return project;
+			return CDebugUtils.verifyCProject(config).getProject();
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -183,9 +184,7 @@ public class GprofLaunchConfigurationDelegate extends ProfileLaunchConfiguration
 	  * @since 1.1
 	  */
 	protected IPath getExePath(ILaunchConfiguration config) throws CoreException{
-		IPath exePath = CDebugUtils.verifyProgramPath( config );
-
-		return exePath;
+		return CDebugUtils.verifyProgramPath( config );
 	}
 
 }

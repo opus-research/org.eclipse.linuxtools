@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.tmf.core.statevalue;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 
-
 /**
  * This is the interface for using state values and reading their contents.
  *
@@ -32,10 +31,12 @@ public interface ITmfStateValue {
         NULL,
         /** 32-bit integer value */
         INTEGER,
+        /** 64-bit integer value */
+        LONG,
+        /** IEEE 754 double precision number */
+        DOUBLE,
         /** Variable-length string value */
         STRING,
-        /** 64-bit integer value */
-        LONG
     }
 
     /**
@@ -46,7 +47,7 @@ public interface ITmfStateValue {
      * @return The ITmfStateValue.Type enum representing the type of this value
      * @since 2.0
      */
-    public Type getType();
+    Type getType();
 
     /**
      * Only "null values" should return true here
@@ -54,7 +55,7 @@ public interface ITmfStateValue {
      * @return True if this type of SV is considered "null", false if it
      *         contains a real value.
      */
-    public boolean isNull();
+    boolean isNull();
 
     /**
      * Read the contained value as an 'int' primitive
@@ -63,16 +64,7 @@ public interface ITmfStateValue {
      * @throws StateValueTypeException
      *             If the contained value cannot be read as an integer
      */
-    public int unboxInt() throws StateValueTypeException;
-
-    /**
-     * Read the contained value as a String
-     *
-     * @return The String contained in the state value
-     * @throws StateValueTypeException
-     *             If the contained value cannot be read as a String
-     */
-    public String unboxStr() throws StateValueTypeException;
+    int unboxInt() throws StateValueTypeException;
 
     /**
      * Read the contained value as a 'long' primitive
@@ -82,5 +74,23 @@ public interface ITmfStateValue {
      *             If the contained value cannot be read as a long
      * @since 2.0
      */
-    public long unboxLong() throws StateValueTypeException;
+    long unboxLong() throws StateValueTypeException;
+
+    /**
+     * Read the contained value as a 'double' primitive
+     *
+     * @return The double contained in the state value
+     * @throws StateValueTypeException
+     *             If the contained value cannot be read as a double
+     */
+    double unboxDouble() throws StateValueTypeException;
+
+    /**
+     * Read the contained value as a String
+     *
+     * @return The String contained in the state value
+     * @throws StateValueTypeException
+     *             If the contained value cannot be read as a String
+     */
+    String unboxStr() throws StateValueTypeException;
 }

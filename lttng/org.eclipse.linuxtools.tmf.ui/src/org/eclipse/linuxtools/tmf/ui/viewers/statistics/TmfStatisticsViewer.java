@@ -9,6 +9,7 @@
  * Contributors:
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and implementation
  *   Alexandre Montplaisir - Port to ITmfStatistics provider
+ *   Patrick Tasse - Support selection range
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.viewers.statistics;
@@ -21,10 +22,11 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -243,7 +245,10 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Sends the time range request only once from this method.
             if (fSendRangeRequest) {
                 fSendRangeRequest = false;
-                requestTimeRangeData(trace, fTraceManager.getCurrentRange());
+                ITmfTimestamp begin = fTraceManager.getSelectionBeginTime();
+                ITmfTimestamp end = fTraceManager.getSelectionEndTime();
+                TmfTimeRange timeRange = new TmfTimeRange(begin, end);
+                requestTimeRangeData(trace, timeRange);
             }
         }
         requestData(trace, signal.getRange());
@@ -255,13 +260,31 @@ public class TmfStatisticsViewer extends TmfViewer {
      *
      * @param signal
      *            Contains the information about the new selected time range.
+     * @deprecated
+     *            As of 2.1, use {@link #timeSynchUpdated(TmfTimeSynchSignal)}
      */
+    @Deprecated
     @TmfSignalHandler
     public void timeRangeUpdated(TmfRangeSynchSignal signal) {
+    }
+
+    /**
+     * Handles the time synch updated signal. It updates the time range
+     * statistics.
+     *
+     * @param signal
+     *            Contains the information about the new selected time range.
+     * @since 2.1
+     */
+    @TmfSignalHandler
+    public void timeSynchUpdated(TmfTimeSynchSignal signal) {
         if (fTrace == null) {
             return;
         }
-        requestTimeRangeData(fTrace, signal.getCurrentRange());
+        ITmfTimestamp begin = signal.getBeginTime();
+        ITmfTimestamp end = signal.getEndTime();
+        TmfTimeRange timeRange = new TmfTimeRange(begin, end);
+        requestTimeRangeData(fTrace, timeRange);
     }
 
     /**
@@ -428,7 +451,7 @@ public class TmfStatisticsViewer extends TmfViewer {
      * @param request
      *            The request to be canceled
      */
-    protected void cancelOngoingRequest(ITmfDataRequest request) {
+    protected void cancelOngoingRequest(ITmfEventRequest request) {
         if (request != null && !request.isCompleted()) {
             request.cancel();
         }
@@ -565,7 +588,7 @@ public class TmfStatisticsViewer extends TmfViewer {
             // Checks if the trace is already in the statistics tree.
             int numNodeTraces = statisticsTreeNode.getNbChildren();
 
-            ITmfTrace[] traces = fTraceManager.getActiveTraceSet();
+            ITmfTrace[] traces = TmfTraceManager.getTraceSet(fTrace);
             int numTraces = traces.length;
 
             if (numTraces == numNodeTraces) {
@@ -706,7 +729,7 @@ public class TmfStatisticsViewer extends TmfViewer {
                 statTree.resetTimeRangeValue();
             }
 
-            for (final ITmfTrace aTrace : fTraceManager.getActiveTraceSet()) {
+            for (final ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
                 if (!isListeningTo(aTrace)) {
                     continue;
                 }

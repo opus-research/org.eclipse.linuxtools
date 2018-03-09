@@ -14,6 +14,7 @@
 package org.eclipse.linuxtools.tmf.core.tests.ctfadaptor;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -31,7 +32,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -49,8 +50,7 @@ import org.junit.Test;
  */
 public class CtfTmfTraceTest {
 
-    private static final int TRACE_INDEX = 0;
-    private static final String PATH = CtfTmfTestTraces.getTestTracePath(TRACE_INDEX);
+    private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.KERNEL;
 
     private CtfTmfTrace fixture;
 
@@ -62,9 +62,9 @@ public class CtfTmfTraceTest {
      */
     @Before
     public void setUp() throws TmfTraceException {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
+        assumeTrue(testTrace.exists());
         fixture = new CtfTmfTrace();
-        fixture.initTrace((IResource) null, PATH, CtfTmfEvent.class);
+        fixture.initTrace((IResource) null, testTrace.getPath(), CtfTmfEvent.class);
     }
 
     /**
@@ -175,21 +175,12 @@ public class CtfTmfTraceTest {
     }
 
     /**
-     * Run the String[] getEnvNames() method test.
-     */
-    @Test
-    public void testGetEnvNames() {
-        String[] result = fixture.getEnvNames();
-        assertNotNull(result);
-    }
-
-    /**
-     * Run the String getEnvValue(String) method test.
+     * Run the String getEnvironment method test.
      */
     @Test
     public void testGetEnvValue() {
         String key = "tracer_name";
-        String result = fixture.getEnvValue(key);
+        String result = fixture.getTraceProperties().get(key);
         assertEquals("\"lttng-modules\"",result);
     }
 
@@ -198,7 +189,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetEventType() {
-        Class<ITmfEvent> result = fixture.getEventType();
+        Class<? extends ITmfEvent> result = fixture.getEventType();
         assertNotNull(result);
     }
 
@@ -228,7 +219,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetNbEnvVars() {
-        int result = fixture.getNbEnvVars();
+        int result = fixture.getTraceProperties().size();
         assertEquals(8, result);
     }
 
@@ -353,8 +344,32 @@ public class CtfTmfTraceTest {
     @Test
     public void testValidate() {
         IProject project = null;
-        String path = PATH;
-        IStatus result = fixture.validate(project, path);
+        IStatus result = fixture.validate(project, testTrace.getPath());
         assertTrue(result.isOK());
     }
+
+    /**
+     * Run the boolean hasEvent(final String) method test
+     */
+    @Test
+    public void testEventLookup() {
+        assertTrue(fixture.hasEvent("sched_switch"));
+        assertFalse(fixture.hasEvent("Sched_switch"));
+        String[] events = { "sched_switch", "sched_wakeup", "timer_init" };
+        assertTrue(fixture.hasAllEvents(events));
+        assertTrue(fixture.hasAtLeastOneOfEvents(events));
+        String[] names = { "inexistent", "sched_switch", "SomeThing" };
+        assertTrue(fixture.hasAtLeastOneOfEvents(names));
+        assertFalse(fixture.hasAllEvents(names));
+    }
+
+    /**
+     * Run the String getHostId() method test
+     */
+    @Test
+    public void testCtfHostId() {
+        String a = fixture.getHostId();
+        assertEquals("\"84db105b-b3f4-4821-b662-efc51455106a\"", a);
+    }
+
 }

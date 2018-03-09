@@ -17,14 +17,19 @@ package org.eclipse.linuxtools.tmf.ui.widgets.virtualtable;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -35,7 +40,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -60,66 +64,34 @@ import org.eclipse.ui.PlatformUI;
  * created for each virtual row. This does not scale well for very large data sets.
  *
  * Styles:
- * H_SCROLL, V_SCROLL, SINGLE, CHECK, FULL_SELECTION, HIDE_SELECTION, NO_SCROLL
+ * H_SCROLL, V_SCROLL, SINGLE, MULTI, CHECK, FULL_SELECTION, HIDE_SELECTION, NO_SCROLL
  * @author Matthew Khouzam, Francois Chouinard, Patrick Tasse, Xavier Raynaud
  * @version $Revision: 1.0
  */
 public class TmfVirtualTable extends Composite {
 
     // The table
-    /**
-     * Field fTable.
-     */
     private Table   fTable;
-    /**
-     * Field fTableRows.
-     */
     private int     fTableRows         = 0;      // Number of table rows
-    /**
-     * Field fFullyVisibleRows.
-     */
     private int     fFullyVisibleRows  = 0;      // Number of fully visible table rows
-    /**
-     * Field fFrozenRowCount.
-     */
     private int     fFrozenRowCount    = 0;      // Number of frozen table rows at top of table
 
-    /**
-     * Field fTableTopEventRank.
-     */
     private int     fTableTopEventRank = 0;      // Global rank of the first entry displayed
-    /**
-     * Field fSelectedEventRank.
-     */
-    private int     fSelectedEventRank = 0;      // Global rank of the selected event
-    /**
-     * Field fPendingSelection.
-     */
+    private int     fSelectedEventRank = -1;     // Global rank of the selected event
+    private int     fSelectedBeginRank = -1;     // Global rank of the selected begin event
     private boolean fPendingSelection  = false;  // Pending selection update
 
-    /**
-     * Field fTableItemCount.
-     */
-    private int       fTableItemCount  = 0;
+    private int     fTableItemCount    = 0;
 
     // The slider
-    /**
-     * Field fSlider.
-     */
     private Slider fSlider;
 
-    /**
-     * Field fLinuxItemHeight.
-     */
     private int fLinuxItemHeight = 0;            // Calculated item height for Linux workaround
-    /**
-     * Field tooltipProvider.
-     */
     private TooltipProvider tooltipProvider = null;
-    /**
-     * Field doubleClickListener.
-     */
     private IDoubleClickListener doubleClickListener = null;
+
+    private boolean fResetTopIndex = false;      // Flag to trigger reset of top index
+    private ControlAdapter fResizeListener;      // Resize listener to update visible rows
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -134,10 +106,10 @@ public class TmfVirtualTable extends Composite {
      *            The style to use
      */
     public TmfVirtualTable(Composite parent, int style) {
-        super(parent, style & (~SWT.H_SCROLL) & (~SWT.V_SCROLL) & (~SWT.SINGLE) & (~SWT.FULL_SELECTION) & (~SWT.HIDE_SELECTION) & (~SWT.CHECK));
+        super(parent, style & (~SWT.H_SCROLL) & (~SWT.V_SCROLL) & (~SWT.SINGLE) & (~SWT.MULTI) & (~SWT.FULL_SELECTION) & (~SWT.HIDE_SELECTION) & (~SWT.CHECK));
 
         // Create the controls
-        createTable(style & (SWT.H_SCROLL | SWT.SINGLE | SWT.FULL_SELECTION | SWT.HIDE_SELECTION | SWT.CHECK));
+        createTable(style & (SWT.H_SCROLL | SWT.SINGLE | SWT.MULTI | SWT.FULL_SELECTION | SWT.HIDE_SELECTION | SWT.CHECK));
         createSlider(style & SWT.V_SCROLL);
 
         // Prevent the slider from being traversed
@@ -187,7 +159,7 @@ public class TmfVirtualTable extends Composite {
             }
         });
 
-        fTable.addControlListener(new ControlAdapter() {
+        fResizeListener = new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent event) {
                 int tableHeight = Math.max(0, fTable.getClientArea().height - fTable.getHeaderHeight());
@@ -196,28 +168,30 @@ public class TmfVirtualTable extends Composite {
                     fSlider.setThumb(Math.max(1, Math.min(fTableRows, fFullyVisibleRows)));
                 }
             }
-        });
+        };
+        fTable.addControlListener(fResizeListener);
+
         // Implement a "fake" tooltip
         final String TOOLTIP_DATA_KEY = "_TABLEITEM"; //$NON-NLS-1$
-        final Listener labelListener = new Listener () {
+        final Listener labelListener = new Listener() {
             @Override
             public void handleEvent (Event event) {
-                Label label = (Label)event.widget;
-                Shell shell = label.getShell ();
+                Label label = (Label) event.widget;
+                Shell shell = label.getShell();
                 switch (event.type) {
                 case SWT.MouseDown:
-                    Event e = new Event ();
-                    e.item = (TableItem) label.getData (TOOLTIP_DATA_KEY);
+                    Event e = new Event();
+                    e.item = (TableItem) label.getData(TOOLTIP_DATA_KEY);
                     // Assuming table is single select, set the selection as if
                     // the mouse down event went through to the table
-                    fTable.setSelection (new TableItem [] {(TableItem) e.item});
-                    fTable.notifyListeners (SWT.Selection, e);
-                    shell.dispose ();
+                    fTable.setSelection(new TableItem [] {(TableItem) e.item});
+                    fTable.notifyListeners(SWT.Selection, e);
+                    shell.dispose();
                     fTable.setFocus();
                     break;
                 case SWT.MouseExit:
                 case SWT.MouseWheel:
-                    shell.dispose ();
+                    shell.dispose();
                     break;
                 default:
                     break;
@@ -225,11 +199,11 @@ public class TmfVirtualTable extends Composite {
             }
         };
 
-        Listener tableListener = new Listener () {
+        Listener tableListener = new Listener() {
             Shell tip = null;
             Label label = null;
             @Override
-            public void handleEvent (Event event) {
+            public void handleEvent(Event event) {
                 switch (event.type) {
                 case SWT.Dispose:
                 case SWT.KeyDown:
@@ -237,17 +211,17 @@ public class TmfVirtualTable extends Composite {
                     if (tip == null) {
                         break;
                     }
-                    tip.dispose ();
+                    tip.dispose();
                     tip = null;
                     label = null;
                     break;
                 }
                 case SWT.MouseHover: {
-                    TableItem item = fTable.getItem (new Point(event.x, event.y));
+                    TableItem item = fTable.getItem(new Point(event.x, event.y));
                     if (item != null) {
-                        for (int i=0; i < fTable.getColumnCount(); i++) {
+                        for (int i = 0; i < fTable.getColumnCount(); i++) {
                             Rectangle bounds = item.getBounds(i);
-                            if (bounds.contains(event.x,event.y)){
+                            if (bounds.contains(event.x, event.y)) {
                                 if (tip != null && !tip.isDisposed()) {
                                     tip.dispose();
                                 }
@@ -276,6 +250,9 @@ public class TmfVirtualTable extends Composite {
                                 Point pt = fTable.toDisplay(bounds.x, bounds.y);
                                 tip.setBounds(pt.x, pt.y, size.x, size.y);
                                 tip.setVisible(true);
+
+                                // Item found, leave loop.
+                                break;
                             }
                         }
                     }
@@ -310,7 +287,7 @@ public class TmfVirtualTable extends Composite {
 
     /**
      * Create the table and add listeners
-     * @param style int can be H_SCROLL, V_SCROLL, SINGLE, CHECK, FULL_SELECTION, HIDE_SELECTION, NO_SCROLL
+     * @param style int can be H_SCROLL, SINGLE, MULTI, FULL_SELECTION, HIDE_SELECTION, CHECK
      */
     private void createTable(int style) {
         fTable = new Table(this, style | SWT.NO_SCROLL);
@@ -318,19 +295,24 @@ public class TmfVirtualTable extends Composite {
         fTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                if (fTable.getSelectionIndices().length > 0) {
-                    handleTableSelection();
+                if (event.item == null) {
+                    // Override table selection from Select All action
+                    refreshSelection();
                 }
             }
         });
 
-        fTable.addKeyListener(new KeyListener() {
+        fTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                handleTableMouseEvent(e);
+            }
+        });
+
+        fTable.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
                 handleTableKeyEvent(event);
-            }
-            @Override
-            public void keyReleased(KeyEvent event) {
             }
         });
 
@@ -339,11 +321,11 @@ public class TmfVirtualTable extends Composite {
                     @Override
                     public void handleEvent(Event event) {
                         if (doubleClickListener != null) {
-                            TableItem item = fTable.getItem (new Point (event.x, event.y));
+                            TableItem item = fTable.getItem(new Point (event.x, event.y));
                             if (item != null) {
-                                for(int i=0;i<fTable.getColumnCount();i++){
+                                for (int i = 0; i < fTable.getColumnCount(); i++){
                                     Rectangle bounds = item.getBounds(i);
-                                    if (bounds.contains(event.x,event.y)){
+                                    if (bounds.contains(event.x, event.y)){
                                         doubleClickListener.handleDoubleClick(TmfVirtualTable.this, item, i);
                                         break;
                                     }
@@ -353,60 +335,67 @@ public class TmfVirtualTable extends Composite {
                     }
                 }
                 );
-    }
-
-    /**
-     * Update the rows and selected item
-     */
-    private void handleTableSelection() {
-        int selectedRow = fTable.getSelectionIndices()[0];
-        if (selectedRow < fFrozenRowCount) {
-            fSelectedEventRank = selectedRow;
-        } else {
-            fSelectedEventRank = fTableTopEventRank + selectedRow;
-        }
 
         /*
          * Feature in Windows. When a partially visible table item is selected,
          * after ~500 ms the top index is changed to ensure the selected item is
          * fully visible. This leaves a blank space at the bottom of the virtual
-         * table. The workaround is to update the top event rank, refresh the
-         * table and reset the top index to 0 after a sufficient delay.
+         * table. The workaround is to reset the top index to 0 if it is not 0.
+         * Also reset the top index to 0 if indicated by the flag that was set
+         * at table selection of a partially visible table item.
+         */
+        fTable.addPaintListener(new PaintListener() {
+            @Override
+            public void paintControl(PaintEvent e) {
+                if (fTable.getTopIndex() != 0 || fResetTopIndex) {
+                    fTable.setTopIndex(0);
+                }
+                fResetTopIndex = false;
+            }
+        });
+    }
+
+    /**
+     * Handle mouse-based selection in table.
+     *
+     * @param event the mouse event
+     */
+    private void handleTableMouseEvent(MouseEvent event) {
+        TableItem item = fTable.getItem(new Point(event.x, event.y));
+        if (item == null) {
+            return;
+        }
+        int selectedRow = indexOf(item);
+        if (event.button == 1 || (event.button == 3 &&
+                (selectedRow < Math.min(fSelectedBeginRank, fSelectedEventRank) ||
+                        selectedRow > Math.max(fSelectedBeginRank, fSelectedEventRank)))) {
+            if (selectedRow >= 0) {
+                fSelectedEventRank = selectedRow;
+            } else {
+                fSelectedEventRank = -1;
+            }
+            if ((event.stateMask & SWT.SHIFT) == 0 || (fTable.getStyle() & SWT.MULTI) == 0 || fSelectedBeginRank == -1) {
+                fSelectedBeginRank = fSelectedEventRank;
+            }
+        }
+        refreshSelection();
+
+        /*
+         * Feature in Linux. When a partially visible table item is selected,
+         * the origin is changed to ensure the selected item is fully visible.
+         * This makes the first row partially visible. The solution is to force
+         * reset the origin by setting the top index to 0. This should happen
+         * only once at the next redraw by the paint listener.
          */
         if (selectedRow >= fFullyVisibleRows) {
-            final Display display = fTable.getDisplay();
-            Thread thread = new Thread("Top index check") { //$NON-NLS-1$
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(600);
-                    } catch (InterruptedException e) {
-                    }
-                    display.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (fTable.isDisposed()) {
-                                return;
-                            }
-                            int topIndex = fTable.getTopIndex();
-                            if (topIndex != 0) {
-                                fTableTopEventRank += topIndex;
-                                refreshTable();
-                                fSlider.setSelection(fTableTopEventRank);
-                                fTable.setTopIndex(0);
-                            }
-                        }
-                    });
-                }
-            };
-            thread.start();
+            fResetTopIndex = true;
         }
     }
 
     /**
      * Handle key-based navigation in table.
      *
-     * @param event
+     * @param event the key event
      */
     private void handleTableKeyEvent(KeyEvent event) {
 
@@ -414,7 +403,7 @@ public class TmfVirtualTable extends Composite {
         int lastPageTopEntryRank = Math.max(0, fTableItemCount - fFullyVisibleRows);
 
         int previousSelectedEventRank = fSelectedEventRank;
-        int selectedRow = fSelectedEventRank - fTableTopEventRank;
+        int previousSelectedBeginRank = fSelectedBeginRank;
         boolean needsRefresh = false;
 
         // In all case, perform the following steps:
@@ -428,7 +417,7 @@ public class TmfVirtualTable extends Composite {
             event.doit = false;
             if (fSelectedEventRank < lastEventRank) {
                 fSelectedEventRank++;
-                selectedRow = fSelectedEventRank - fTableTopEventRank;
+                int selectedRow = fSelectedEventRank - fTableTopEventRank;
                 if (selectedRow == fFullyVisibleRows) {
                     fTableTopEventRank++;
                     needsRefresh = true;
@@ -444,7 +433,7 @@ public class TmfVirtualTable extends Composite {
             event.doit = false;
             if (fSelectedEventRank > 0) {
                 fSelectedEventRank--;
-                selectedRow = fSelectedEventRank - fTableTopEventRank;
+                int selectedRow = fSelectedEventRank - fTableTopEventRank;
                 if (selectedRow == fFrozenRowCount - 1 && fTableTopEventRank > 0) {
                     fTableTopEventRank--;
                     needsRefresh = true;
@@ -479,7 +468,7 @@ public class TmfVirtualTable extends Composite {
                 if (fSelectedEventRank > lastEventRank) {
                     fSelectedEventRank = lastEventRank;
                 }
-                selectedRow = fSelectedEventRank - fTableTopEventRank;
+                int selectedRow = fSelectedEventRank - fTableTopEventRank;
                 if (selectedRow > fFullyVisibleRows + fFrozenRowCount - 1 && selectedRow < 2 * fFullyVisibleRows) {
                     fTableTopEventRank += fFullyVisibleRows;
                     if (fTableTopEventRank > lastPageTopEntryRank) {
@@ -501,7 +490,7 @@ public class TmfVirtualTable extends Composite {
                 if (fSelectedEventRank < fFrozenRowCount) {
                     fSelectedEventRank = fFrozenRowCount;
                 }
-                selectedRow = fSelectedEventRank - fTableTopEventRank;
+                int selectedRow = fSelectedEventRank - fTableTopEventRank;
                 if (selectedRow < fFrozenRowCount && selectedRow > -fFullyVisibleRows) {
                     fTableTopEventRank -= fFullyVisibleRows;
                     if (fTableTopEventRank < 0) {
@@ -520,21 +509,25 @@ public class TmfVirtualTable extends Composite {
         }
         }
 
+        if ((event.stateMask & SWT.SHIFT) == 0 || (fTable.getStyle() & SWT.MULTI) == 0 || fSelectedBeginRank == -1) {
+            fSelectedBeginRank = fSelectedEventRank;
+        }
+
         boolean done = true;
         if (needsRefresh) {
             done = refreshTable(); // false if table items not updated yet in this thread
         } else {
-            fTable.select(selectedRow);
+            refreshSelection();
         }
 
         if (fFullyVisibleRows < fTableItemCount) {
             fSlider.setSelection(fTableTopEventRank);
         }
 
-        if (fSelectedEventRank != previousSelectedEventRank && fSelectedEventRank < fTableItemCount) {
+        if (fSelectedEventRank != previousSelectedEventRank || fSelectedBeginRank != previousSelectedBeginRank) {
             if (done) {
                 Event e = new Event();
-                e.item = fTable.getSelection()[0];
+                e.item = fTable.getItem(fSelectedEventRank - fTableTopEventRank);
                 fTable.notifyListeners(SWT.Selection, e);
             } else {
                 fPendingSelection = true;
@@ -623,8 +616,21 @@ public class TmfVirtualTable extends Composite {
     }
 
     /**
-     * Method getSelection.
-     * @return TableItem[] the items that are selected.
+     * Returns an array of <code>TableItem</code>s that are currently selected
+     * in the receiver. The order of the items is unspecified. An empty array
+     * indicates that no items are selected.
+     * <p>
+     * Note: This array only contains the visible selected items in the virtual
+     * table. To get information about the full selection range, use
+     * {@link #getSelectionIndices()}.
+     * </p>
+     *
+     * @return an array representing the selection
+     *
+     * @exception SWTException <ul>
+     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     * </ul>
      */
     public TableItem[] getSelection() {
         return fTable.getSelection();
@@ -648,7 +654,6 @@ public class TmfVirtualTable extends Composite {
     public void addKeyListener(KeyListener listener) {
         fTable.addKeyListener(listener);
     }
-
 
     /**
      * Method addMouseListener.
@@ -852,11 +857,20 @@ public class TmfVirtualTable extends Composite {
      */
     public void refresh() {
         boolean done = refreshTable();
-        if (fPendingSelection && done) {
+        if (!done) {
+            return;
+        }
+        if (fPendingSelection) {
             fPendingSelection = false;
-            if (fTable.getSelection().length > 0) {
+            TableItem item = null;
+            if (fSelectedEventRank >= 0 && fSelectedEventRank < fFrozenRowCount) {
+                item = fTable.getItem(fSelectedEventRank);
+            } else if (fSelectedEventRank >= fTableTopEventRank + fFrozenRowCount && fSelectedEventRank - fTableTopEventRank < fTable.getItemCount()) {
+                item = fTable.getItem(fSelectedEventRank - fTableTopEventRank);
+            }
+            if (item != null) {
                 Event e = new Event();
-                e.item = fTable.getSelection()[0];
+                e.item = item;
                 fTable.notifyListeners(SWT.Selection, e);
             }
         }
@@ -870,6 +884,13 @@ public class TmfVirtualTable extends Composite {
         for (int i = 0; i < columnData.length; i++) {
             TableColumn column = new TableColumn(fTable, columnData[i].alignment, i);
             column.setText(columnData[i].header);
+            /*
+             * In Linux the table does not receive a control resized event when
+             * a table column resize causes the horizontal scroll bar to become
+             * visible or invisible, so a resize listener must be added to every
+             * table column to properly update the number of fully visible rows.
+             */
+            column.addControlListener(fResizeListener);
             if (columnData[i].width > 0) {
                 column.setWidth(columnData[i].width);
             } else {
@@ -886,13 +907,14 @@ public class TmfVirtualTable extends Composite {
         setItemCount(0);
         fSlider.setMaximum(0);
         fTable.removeAll();
-        fSelectedEventRank = fFrozenRowCount;
+        fSelectedEventRank = -1;
+        fSelectedBeginRank = fSelectedEventRank;
         return 0;
     }
 
     /**
      * Method refreshTable.
-     * @return boolean did all the items regresh properly?
+     * @return true if all table items have been refreshed, false otherwise
      */
     private boolean refreshTable() {
         boolean done = true;
@@ -911,24 +933,59 @@ public class TmfVirtualTable extends Composite {
                 }
             }
         }
-
-        int lastRowOffset = fTableTopEventRank + fTableRows - 1;
-        if (fSelectedEventRank < fFrozenRowCount) {
-            fTable.select(fSelectedEventRank);
-        } else if (!done) {
-            fTable.deselectAll();
-        } else if ((fSelectedEventRank >= fTableTopEventRank + fFrozenRowCount) && (fSelectedEventRank <= lastRowOffset)) {
-            int selectedRow = fSelectedEventRank - fTableTopEventRank;
-            fTable.select(selectedRow);
+        if (done) {
+            refreshSelection();
         } else {
             fTable.deselectAll();
         }
         return done;
     }
 
+    private void refreshSelection() {
+        int lastRowOffset = fTableTopEventRank + fTableRows - 1;
+        int startRank = Math.min(fSelectedBeginRank, fSelectedEventRank);
+        int endRank = Math.max(fSelectedBeginRank, fSelectedEventRank);
+        int start = Integer.MAX_VALUE;
+        int end = Integer.MIN_VALUE;
+        if (startRank < fFrozenRowCount) {
+            start = startRank;
+        } else if (startRank < fTableTopEventRank + fFrozenRowCount) {
+            start = fFrozenRowCount;
+        } else if (startRank <= lastRowOffset) {
+            start = startRank - fTableTopEventRank;
+        }
+        if (endRank < fFrozenRowCount) {
+            end = endRank;
+        } else if (endRank < fTableTopEventRank + fFrozenRowCount) {
+            end = fFrozenRowCount - 1;
+        } else if (endRank <= lastRowOffset) {
+            end = endRank - fTableTopEventRank;
+        } else {
+            end = fTableRows - 1;
+        }
+        if (start <= end) {
+            fTable.setSelection(start, end);
+            if (startRank == fSelectedEventRank) {
+                fTable.select(start);
+            } else {
+                fTable.select(end);
+            }
+        } else {
+            fTable.deselectAll();
+        }
+    }
+
     /**
-     * Method setSelection.
-     * @param index int the item number to select in the table.
+     * Selects the item at the given zero-relative index in the receiver.
+     * The current selection is first cleared, then the new item is selected,
+     * and if necessary the receiver is scrolled to make the new selection visible.
+     *
+     * @param index the index of the item to select
+     *
+     * @exception SWTException <ul>
+     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     * </ul>
      */
     public void setSelection(int index) {
         if (fTableItemCount > 0) {
@@ -936,6 +993,7 @@ public class TmfVirtualTable extends Composite {
             i = Math.max(i, 0);
 
             fSelectedEventRank = i;
+            fSelectedBeginRank = fSelectedEventRank;
             if ((i < fTableTopEventRank + fFrozenRowCount && i >= fFrozenRowCount) ||
                     (i >= fTableTopEventRank + fFullyVisibleRows)) {
                 int lastPageTopEntryRank = Math.max(0, fTableItemCount - fFullyVisibleRows);
@@ -946,23 +1004,36 @@ public class TmfVirtualTable extends Composite {
             }
 
             refreshTable();
-
         }
     }
 
     /**
-     * Method getSelectionIndex.
-     * @return int the table index of the selected event. not necessarrily the index of the event due to filtering.
+     * Returns the zero-relative index of the item which is currently
+     * selected in the receiver, or -1 if no item is selected.
+     *
+     * @return the index of the selected item
      */
     public int getSelectionIndex() {
-        int index = fTable.getSelectionIndex();
-        if (index == -1) {
-            return fSelectedEventRank;
+        return fSelectedEventRank;
+    }
+
+    /**
+     * Returns an index array representing the selection range. If there is a
+     * single item selected the array holds one index. If there is a selected
+     * range the first item in the array is the start index of the selection and
+     * the second item is the end index of the selection, which is the item most
+     * recently selected. The array is empty if no items are selected.
+     * <p>
+     * @return the array of indices of the selected items
+     * @since 2.1
+     */
+    public int[] getSelectionIndices() {
+        if (fSelectedEventRank < 0 || fSelectedBeginRank < 0) {
+            return new int[] {};
+        } else if (fSelectedEventRank == fSelectedBeginRank) {
+            return new int[] { fSelectedEventRank };
         }
-        if (index < fFrozenRowCount) {
-            return index;
-        }
-        return (index - fFrozenRowCount) + getTopIndex();
+        return new int[] { fSelectedBeginRank, fSelectedEventRank };
     }
 
     /**

@@ -15,14 +15,12 @@ package org.eclipse.linuxtools.ctf.core.tests.headless;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
-import org.eclipse.linuxtools.ctf.core.trace.Stream;
 
 @SuppressWarnings("javadoc")
 public class ReadTrace {
@@ -50,41 +48,42 @@ public class ReadTrace {
             } catch (CTFReaderException e) {
                 // do nothing
             }
-            @SuppressWarnings("unused")
-            long prev = -1;
             start = System.nanoTime();
             if (USE_TEXT) {
                 System.out.println("Event, " + " Time, " + " type, " + " CPU ");
             }
-            if (trace != null) {
-                CTFTraceReader traceReader = new CTFTraceReader(trace);
+            try {
+                if (trace != null) {
+                    CTFTraceReader traceReader = new CTFTraceReader(trace);
 
-                start = System.nanoTime();
+                    start = System.nanoTime();
 
-                while (traceReader.hasMoreEvents()) {
-                    EventDefinition ed = traceReader.getCurrentEventDef();
-                    nbEvent++;
-                    if (USE_TEXT) {
-                        String output = formatDate(ed.getTimestamp()
-                                + trace.getOffset());
-                        System.out.println(nbEvent + ", "
-                                + output + ", " + ed.getDeclaration().getName()
-                                + ", " + ed.getCPU() + ed.getFields().toString()) ;
+                    while (traceReader.hasMoreEvents()) {
+                        EventDefinition ed = traceReader.getCurrentEventDef();
+                        nbEvent++;
+                        if (USE_TEXT) {
+                            String output = formatDate(ed.getTimestamp()
+                                    + trace.getOffset());
+                            System.out.println(nbEvent + ", "
+                                    + output + ", " + ed.getDeclaration().getName()
+                                    + ", " + ed.getCPU() + ed.getFields().toString());
+                        }
+                        // long endTime = traceReader.getEndTime();
+                        // long timestamp =
+                        // traceReader.getCurrentEventDef().getTimestamp();
+                        traceReader.advance();
                     }
-                    @SuppressWarnings("unused")
-                    long endTime = traceReader.getEndTime();
-                    @SuppressWarnings("unused")
-                    long timestamp = traceReader.getCurrentEventDef().getTimestamp();
-                    traceReader.advance();
+                    // Map<Long, Stream> streams =
+                    // traceReader.getTrace().getStreams();
                 }
-                @SuppressWarnings("unused")
-                Map<Long, Stream> streams = traceReader.getTrace().getStreams();
-            }
-            stop = System.nanoTime();
+                stop = System.nanoTime();
 
-            System.out.print('.');
-            double time = (stop - start) / (double) nbEvent;
-            benchs.add(time);
+                System.out.print('.');
+                double time = (stop - start) / (double) nbEvent;
+                benchs.add(time);
+            } catch (CTFReaderException e) {
+                System.out.println("error");
+            }
         }
         System.out.println("");
         double avg = 0;

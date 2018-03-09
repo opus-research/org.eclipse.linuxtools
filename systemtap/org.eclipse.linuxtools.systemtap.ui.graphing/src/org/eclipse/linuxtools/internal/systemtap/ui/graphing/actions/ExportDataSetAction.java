@@ -20,7 +20,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.graphing.Localization;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.structures.listeners.ITabListener;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphDisplaySet;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IViewPart;
@@ -32,7 +32,10 @@ import org.eclipse.ui.PlatformUI;
  * This action handles exporting all of the data that was collected for the DataSet.  It
  * exports everything as a table, that can easily be read back in at a later time.
  * @author Ryan Morse
+ * @deprecated
+ * TODO remove in 3.0
  */
+@Deprecated
 public class ExportDataSetAction extends Action implements IWorkbenchWindowActionDelegate {
 	@Override
 	public void init(IWorkbenchWindow window) {
@@ -64,9 +67,9 @@ public class ExportDataSetAction extends Action implements IWorkbenchWindowActio
 	 * @return The IDataSet in tha active display set.
 	 */
 	public IDataSet getDataSet() {
-		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorView.ID);
+		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorEditor.ID);
 		IDataSet data = null;
-		GraphDisplaySet gds = ((GraphSelectorView)ivp).getActiveDisplaySet();
+		GraphDisplaySet gds = ((GraphSelectorEditor)ivp).getActiveDisplaySet();
 		if(null != gds) {
 			data = gds.getDataSet();
 		}
@@ -104,9 +107,9 @@ public class ExportDataSetAction extends Action implements IWorkbenchWindowActio
 	 * should be enabled or not.
 	 */
 	private void buildEnablementChecks() {
-		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorView.ID);
+		IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorEditor.ID);
 		if(null != ivp) {
-			final GraphSelectorView gsv = (GraphSelectorView)ivp;
+			final GraphSelectorEditor gsv = (GraphSelectorEditor)ivp;
 			action.setEnabled(null != gsv.getActiveDisplaySet());
 			gsv.addTabListener(new ITabListener() {
 				@Override

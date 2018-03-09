@@ -10,15 +10,20 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.handlers;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
+import org.eclipse.linuxtools.internal.perf.ui.PerfProfileView;
+import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * Handler for saving a perf profile session.
@@ -28,66 +33,59 @@ public class PerfSaveSessionHandler extends AbstractSaveDataHandler {
 	public static final String DATA_EXT = "data"; //$NON-NLS-1$
 
 	@Override
-	public File saveData(String filename) {
+	public IPath saveData(String filename) {
 		// get paths
 		IPath newDataLoc = getNewDataLocation(filename, DATA_EXT);
 		IPath defaultDataLoc = PerfPlugin.getDefault().getPerfProfileData();
-
+		URI newDataLocURI = null;
+		URI defaultDataLocURI = null;
 		// get files
-		File newDataFile = new File(newDataLoc.toOSString());
-		File defaultDataFile = defaultDataLoc.toFile();
+		IRemoteFileProxy proxy = null;
+		try {
+			newDataLocURI = new URI(newDataLoc.toPortableString());
+			defaultDataLocURI = new URI(defaultDataLoc.toPortableString());
+			proxy = RemoteProxyManager.getInstance().getFileProxy(newDataLocURI);
+		} catch (URISyntaxException e) {
+			openErroDialog(Messages.MsgProxyError,
+					Messages.MsgProxyError,
+					newDataLoc.lastSegment());
+		} catch (CoreException e) {
+			openErroDialog(Messages.MsgProxyError,
+					Messages.MsgProxyError,
+					newDataLoc.lastSegment());
+		}
+		IFileStore newDataFileStore = proxy.getResource(newDataLocURI.getPath());
+		IFileStore defaultDataFileStore = proxy.getResource(defaultDataLocURI.getPath());
 
-		if (canSave(newDataFile)) {
+		if (canSave(newDataLoc)) {
 			// copy default data into new location
 			try {
-				newDataFile.createNewFile();
-				copyFile(defaultDataFile, newDataFile);
+				defaultDataFileStore.copy(newDataFileStore, EFS.OVERWRITE, null);
 				PerfPlugin.getDefault().setPerfProfileData(newDataLoc);
-				PerfPlugin.getDefault().getProfileView()
-						.setContentDescription(newDataLoc.toOSString());
-
-				return newDataFile;
-			} catch (IOException e) {
+				try {
+					PerfProfileView view = (PerfProfileView) PlatformUI
+							.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage().showView(PerfPlugin.VIEW_ID);
+					view.setContentDescription(newDataLoc.toOSString());
+				} catch (PartInitException e) {
+					// fail silently
+				}
+				IFileInfo info = newDataFileStore.fetchInfo();
+				info.setAttribute(EFS.ATTRIBUTE_READ_ONLY, true);
+				newDataFileStore.putInfo(info, EFS.SET_ATTRIBUTES, null);
+				return newDataLoc;
+			} catch (CoreException e) {
 				openErroDialog(Messages.PerfSaveSession_failure_title,
 						Messages.PerfSaveSession_failure_msg,
 						newDataLoc.lastSegment());
 			}
 		}
 		return null;
-
 	}
 
 	@Override
 	public boolean verifyData() {
 		IPath defaultDataLoc = PerfPlugin.getDefault().getPerfProfileData();
 		return defaultDataLoc != null && !defaultDataLoc.isEmpty();
-	}
-
-	private void copyFile(File src, File dest) {
-		InputStream destInput = null;
-		OutputStream srcOutput = null;
-		try {
-			destInput = new FileInputStream(src);
-			srcOutput = new FileOutputStream(dest);
-
-			byte[] buffer = new byte[1024];
-
-			int length;
-			while ((length = destInput.read(buffer)) != -1) {
-				srcOutput.write(buffer, 0, length);
-			}
-		} catch (FileNotFoundException e) {
-			openErroDialog(Messages.PerfSaveSession_failure_title,
-					Messages.PerfSaveSession_failure_msg,
-					dest.toString());
-		} catch (IOException e) {
-			openErroDialog(Messages.PerfSaveSession_failure_title,
-					Messages.PerfSaveSession_failure_msg,
-					dest.toString());
-		} finally {
-			closeResource(destInput, dest.getName());
-			closeResource(srcOutput, src.getName());
-		}
-
 	}
 }

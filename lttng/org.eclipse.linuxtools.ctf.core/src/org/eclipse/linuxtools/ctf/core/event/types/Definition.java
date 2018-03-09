@@ -13,12 +13,13 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
- * A CTF definiton
+ * A CTF definition
  *
- * A definition is like an object of a declaration class. It fills the declaration
- * with values. <br>
+ * A definition is like an object of a declaration class. It fills the
+ * declaration with values. <br>
  * An example: <br>
  * int i = 0; <br>
  * <b>int</b> is the declaration.<br>
@@ -35,19 +36,12 @@ public abstract class Definition {
     // Attributes
     // ------------------------------------------------------------------------
 
-    /** The name of the field in its container */
-    protected final String fieldName;
+    private final String fieldName;
 
     /** The complete path of this field */
-    protected final String path;
+    private final String path;
 
-    /**
-     * The definition scope in which this definition is found.
-     *
-     * The complete path of a definition is thus the path of the definition
-     * scope DOT the name of the definition (name of the field in its container)
-     */
-    protected final IDefinitionScope definitionScope;
+    private final IDefinitionScope definitionScope;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -75,11 +69,43 @@ public abstract class Definition {
         } else {
             path = fieldName;
         }
+    }
 
-        /*
-         * System.out.println("[definition] " + this.getClass().getSimpleName()
-         * + " " + path + " created");
-         */
+    // ------------------------------------------------------------------------
+    // Getters
+    // ------------------------------------------------------------------------
+
+    /**
+     * Get the field name in its container.
+     *
+     * @return The field name
+     * @since 2.0
+     */
+    protected String getFieldName() {
+        return fieldName;
+    }
+
+    /**
+     * Get the complete path of this field.
+     *
+     * @return The path
+     * @since 2.0
+     */
+    public String getPath() {
+        return path;
+    }
+
+    /**
+     * Get the definition scope in which this definition is found.
+     *
+     * The complete path of a definition is thus the path of the definition
+     * scope DOT the name of the definition (name of the field in its container)
+     *
+     * @return The definition scope
+     * @since 2.0
+     */
+    protected IDefinitionScope getDefinitionScope() {
+        return definitionScope;
     }
 
     // ------------------------------------------------------------------------
@@ -98,9 +124,36 @@ public abstract class Definition {
      *
      * @param input
      *            the bitbuffer containing the data to read.
+     * @throws CTFReaderException
+     *             An error occurred reading the data. If the buffer is reading
+     *             beyond its end, this exception will be raised.
      * @since 2.0
      */
-    public abstract void read(BitBuffer input);
+    public abstract void read(BitBuffer input) throws CTFReaderException;
+
+    /**
+     * Offset the buffer position wrt the current alignment.
+     *
+     * @param input
+     *            The bitbuffer that is being read
+     * @param declaration
+     *            The declaration which has an alignment
+     * @throws CTFReaderException
+     *            Happens when there is an out of bounds exception
+     * @since 2.2
+     */
+    protected static void alignRead(BitBuffer input, IDeclaration declaration) throws CTFReaderException{
+        long mask = declaration.getAlignment() -1;
+        /*
+         * The alignment is a power of 2
+         */
+        long pos = input.position();
+        if ((pos & mask) == 0) {
+            return;
+        }
+        pos = (pos + mask) & ~mask;
+        input.position(pos);
+    }
 
     @Override
     public String toString() {

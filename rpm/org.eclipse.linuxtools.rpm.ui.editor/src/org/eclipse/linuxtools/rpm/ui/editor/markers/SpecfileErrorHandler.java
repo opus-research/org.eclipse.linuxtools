@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2009 Red Hat, Inc.
+ * Copyright (c) 2007, 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,6 +47,7 @@ public class SpecfileErrorHandler extends SpecfileMarkerHandler {
 	public SpecfileErrorHandler(IEditorInput input, IDocument document) {
 		super(null, document);
 		this.input = input;
+		fAnnotationModel = getAnnotationModel();
 	}
 
 	private static class SpecfileAnnotation extends Annotation implements IQuickFixableAnnotation {
@@ -67,6 +68,7 @@ public class SpecfileErrorHandler extends SpecfileMarkerHandler {
 		 * {@inheritDoc}
 		 *
 		 */
+		@Override
 		public void setQuickFixable(boolean state) {
 			fIsQuickFixable= state;
 			fIsQuickFixableStateSet= true;
@@ -76,6 +78,7 @@ public class SpecfileErrorHandler extends SpecfileMarkerHandler {
 		 * {@inheritDoc}
 		 *
 		 */
+		@Override
 		public boolean isQuickFixableStateSet() {
 			return fIsQuickFixableStateSet;
 		}
@@ -84,6 +87,7 @@ public class SpecfileErrorHandler extends SpecfileMarkerHandler {
 		 * {@inheritDoc}
 		 *
 		 */
+		@Override
 		public boolean isQuickFixable() {
 			Assert.isTrue(isQuickFixableStateSet());
 			return fIsQuickFixable;
@@ -114,7 +118,9 @@ public class SpecfileErrorHandler extends SpecfileMarkerHandler {
 		}
 		Annotation annotation = new SpecfileAnnotation(annotationType, true, e.getLocalizedMessage());
 		Position p = new Position(charStart.intValue(),charEnd.intValue() - charStart.intValue());
-		fAnnotationModel.addAnnotation(annotation, p);
+		if (fAnnotationModel != null) {
+			fAnnotationModel.addAnnotation(annotation, p);
+		}
 		annotations.put(p, annotation);
 		return;
 	}
@@ -136,7 +142,6 @@ public class SpecfileErrorHandler extends SpecfileMarkerHandler {
 
 	public void removeExistingMarkers(int offset, int length)
 	{
-		fAnnotationModel = getAnnotationModel();
 		if (fAnnotationModel != null) {
 			Iterator<Annotation> i = fAnnotationModel.getAnnotationIterator();
 			while (i.hasNext()) {

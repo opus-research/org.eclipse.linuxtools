@@ -10,27 +10,29 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.perf.StatComparisonData;
 import org.eclipse.linuxtools.internal.perf.model.PMStatEntry;
 import org.junit.Before;
 import org.junit.Test;
 
 public class StatsComparisonTest {
-	PMStatEntry statEntry;
-	PMStatEntry statEntry2;
-	PMStatEntry statEntry3;
-	PMStatEntry statEntry4;
+	private PMStatEntry statEntry;
+	private PMStatEntry statEntry2;
+	private PMStatEntry statEntry3;
+	private PMStatEntry statEntry4;
 	private static final String STAT_RES = "resources/stat-data/";
 
 	@Before
@@ -79,9 +81,10 @@ public class StatsComparisonTest {
 		String[] actualList = statEntry.toStringArray();
 
 		// test string array representation
-		assertTrue(Arrays.equals(expectedList, actualList));
+		assertArrayEquals(expectedList, actualList);
 	}
 
+	@Test
 	public void testPMStatEntryComparison() {
 		String expectedEvent = "event";
 		String expectedUnits = "unit";
@@ -97,12 +100,13 @@ public class StatsComparisonTest {
 		PMStatEntry actualDiff = statEntry.compare(statEntry2);
 
 		// test stat entry comparison
-		assertTrue(expectedDiff.equals(actualDiff));
+		assertEquals(expectedDiff,actualDiff);
 
 	}
 
+	@Test
 	public void testStatDataCollection() {
-		File statData = new File(STAT_RES + "perf_simple.stat");
+		IPath statData = Path.fromOSString(STAT_RES + "perf_simple.stat");
 
 		//set up expected result
 		ArrayList<PMStatEntry> expectedStatList = new ArrayList<PMStatEntry>();
@@ -128,9 +132,27 @@ public class StatsComparisonTest {
 		}
 	}
 
+	@Test
+	public void testStatDataComparisonFieldGetters() {
+		IPath oldStatData = Path.fromOSString(STAT_RES + "perf_old.stat");
+		IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
+		String dataTitle = "title";
+		StatComparisonData diffData = new StatComparisonData(dataTitle,
+				oldStatData, newStatData);
+
+		assertEquals(dataTitle, diffData.getTitle());
+		assertEquals("", diffData.getPerfData());
+		assertNotNull(diffData.getDataID());
+		assertEquals(oldStatData.toOSString(), diffData.getOldDataPath());
+		assertEquals(newStatData.toOSString(), diffData.getNewDataPath());
+		assertEquals(oldStatData.toOSString() + diffData.getDataID(),diffData.getOldDataID());
+		assertEquals(newStatData.toOSString() + diffData.getDataID(),diffData.getNewDataID());
+	}
+
+	@Test
 	public void testStatDataComparison() {
-		File oldStatData = new File(STAT_RES + "perf_old.stat");
-		File newStatData = new File(STAT_RES + "perf_new.stat");
+		IPath oldStatData = Path.fromOSString(STAT_RES + "perf_old.stat");
+		IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
 		StatComparisonData diffData = new StatComparisonData("title",
 				oldStatData, newStatData);
 
@@ -160,18 +182,19 @@ public class StatsComparisonTest {
 		}
 	}
 
+	@Test
 	public void testStatComparisonResult() throws IOException {
-		File oldStatData = new File(STAT_RES + "perf_old.stat");
-		File newStatData = new File(STAT_RES + "perf_new.stat");
-		File diffStatData = new File(STAT_RES + "perf_diff.stat");
+		IPath oldStatData = Path.fromOSString(STAT_RES + "perf_old.stat");
+		IPath newStatData = Path.fromOSString(STAT_RES + "perf_new.stat");
+		IPath diffStatData = Path.fromOSString(STAT_RES + "perf_diff.stat");
 
 		BufferedReader diffDataReader = new BufferedReader(new FileReader(
-				diffStatData));
+				diffStatData.toFile()));
 		StatComparisonData diffData = new StatComparisonData("title",
 				oldStatData, newStatData);
 
 		diffData.runComparison();
-		String actualResult = diffData.getResult();
+		String actualResult = diffData.getPerfData();
 		String[] actualResultLines = actualResult.split("\n");
 
 		String curLine;

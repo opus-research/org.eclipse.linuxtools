@@ -11,9 +11,12 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
+import java.text.MessageFormat;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -64,6 +67,15 @@ public class SystemTapScriptLaunchConfigurationTab extends
 	private Label userPasswordLabel;
 	private Label hostNamelabel;
 	private FileDialog fileDialog;
+
+	/**
+	 * @return The path of the chosen script the Run Configuration will be applied to,
+	 * or <code>null</code> if no file exists at the given path.
+	 */
+	private IPath getScriptPath() {
+		IPath scriptPath = new Path(scriptPathText.getText());
+		return scriptPath.toFile().exists() ? scriptPath : null;
+	}
 
 	@Override
 	public void createControl(Composite parent) {
@@ -268,6 +280,24 @@ public class SystemTapScriptLaunchConfigurationTab extends
 	}
 
 	@Override
+	public boolean isValid(ILaunchConfiguration launchConfig) {
+		setErrorMessage(null);
+
+		IPath scriptPath = getScriptPath();
+		if (scriptPath == null) {
+			setErrorMessage(MessageFormat.format(Messages.SystemTapScriptLaunchConfigurationTab_fileNotFound, scriptPathText.getText()));
+			return false;
+		}
+		String extension = scriptPath.getFileExtension();
+		if (extension == null || !extension.equals("stp")) { //$NON-NLS-1$
+			setErrorMessage(Messages.SystemTapScriptLaunchConfigurationTab_fileNotStp);
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
 	public String getName() {
 		return Messages.SystemTapScriptLaunchConfigurationTab_9;
 	}
@@ -302,7 +332,7 @@ public class SystemTapScriptLaunchConfigurationTab extends
 			}
 		}
 
-		if (pathString.endsWith(SystemTapScriptTester.STP_SUFFIX)) {
+		if (pathString.endsWith(".stp")) { //$NON-NLS-1$
 			return pathString;
 		}
 

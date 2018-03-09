@@ -17,12 +17,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.systemtap.structures.StructuresPlugin;
 import org.eclipse.linuxtools.systemtap.structures.LoggingStreamDaemon;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IGobblerListener;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
+import org.eclipse.linuxtools.systemtap.structures.process.SystemtapProcessFactory;
 
 
 
@@ -90,14 +91,17 @@ public class Command implements Runnable {
 	/**
 	 * Starts the <code>Thread</code> that the new <code>Process</code> will run in.
 	 * This must be called in order to get the process to start running.
+	 * @throws CoreException
 	 */
-	public void start() {
-		if(init().isOK()) {
+	public void start() throws CoreException {
+		IStatus status = init();
+		if(status.isOK()) {
 			Thread t = new Thread(this, cmd[0]);
 			t.start();
 		} else {
 			stop();
 			returnVal = Integer.MIN_VALUE;
+			throw new CoreException(status);
 		}
 	}
 
@@ -108,7 +112,11 @@ public class Command implements Runnable {
 	 */
 	protected IStatus init() {
 		try {
-			process = RuntimeProcessFactory.getFactory().exec(cmd, envVars, null);
+			process = SystemtapProcessFactory.exec(cmd, envVars);
+
+			if (process == null){
+				return new Status(IStatus.ERROR, StructuresPlugin.PLUGIN_ID, Messages.Command_failedToRunSystemtap);
+			}
 
 			errorGobbler = new StreamGobbler(process.getErrorStream());
 			inputGobbler = new StreamGobbler(process.getInputStream());
@@ -152,14 +160,17 @@ public class Command implements Runnable {
 
 	/**
 	 * Stops the process from running and stops the <code>StreamGobblers</code> from monitering
-	 * the dead process and unregisters the StreamListener.
+	 * the dead process and unregisters the StreamListener. Also wakes up any threads waiting
+	 * on this command.
 	 */
 	public synchronized void stop() {
 		if(!stopped) {
-			if(null != errorGobbler)
+			if(null != errorGobbler) {
 				errorGobbler.stop();
-			if(null != inputGobbler)
+			}
+			if(null != inputGobbler) {
 				inputGobbler.stop();
+			}
 			try {
 				if(process != null){
 					process.waitFor();
@@ -172,6 +183,7 @@ public class Command implements Runnable {
 			}
 			removeInputStreamListener(logger);
 			stopped = true;
+			notifyAll(); // Wake up threads waiting for this command to stop.
 		}
 	}
 
@@ -206,10 +218,11 @@ public class Command implements Runnable {
 	 * @param listener A listener to monitor the InputStream from the Process
 	 */
 	public void addInputStreamListener(IGobblerListener listener) {
-		if(null != inputGobbler)
+		if(null != inputGobbler) {
 			inputGobbler.addDataListener(listener);
-		else
+		} else {
 			inputListeners.add(listener);
+		}
 	}
 
 	/**
@@ -217,10 +230,11 @@ public class Command implements Runnable {
 	 * @param listener A listener to monitor the ErrorStream from the Process
 	 */
 	public void addErrorStreamListener(IGobblerListener listener) {
-		if(null != errorGobbler)
+		if(null != errorGobbler) {
 			errorGobbler.addDataListener(listener);
-		else
+		} else {
 			errorListeners.add(listener);
+		}
 	}
 
 	/**
@@ -228,10 +242,11 @@ public class Command implements Runnable {
 	 * @return List of all <code>IGobblerListeners</code> that are monitoring the stream.
 	 */
 	public ArrayList<IGobblerListener> getInputStreamListeners() {
-		if(null != inputGobbler)
+		if(null != inputGobbler) {
 			return inputGobbler.getDataListeners();
-		else
+		} else {
 			return inputListeners;
+		}
 	}
 
 	/**
@@ -239,10 +254,11 @@ public class Command implements Runnable {
 	 * @return List of all <code>IGobblerListeners</code> that are monitoring the stream.
 	 */
 	public ArrayList<IGobblerListener> getErrorStreamListeners() {
-		if(null != errorGobbler)
+		if(null != errorGobbler) {
 			return errorGobbler.getDataListeners();
-		else
+		} else {
 			return errorListeners;
+		}
 	}
 
 	/**
@@ -250,10 +266,11 @@ public class Command implements Runnable {
 	 * @param listener An </code>IGobblerListener</code> that is monitoring the stream.
 	 */
 	public void removeInputStreamListener(IGobblerListener listener) {
-		if(null != inputGobbler)
+		if(null != inputGobbler) {
 			inputGobbler.removeDataListener(listener);
-		else
+		} else {
 			inputListeners.remove(listener);
+		}
 	}
 
 	/**
@@ -261,10 +278,11 @@ public class Command implements Runnable {
 	 * @param listener An </code>IGobblerListener</code> that is monitoring the stream.
 	 */
 	public void removeErrorStreamListener(IGobblerListener listener) {
-		if(null != errorGobbler)
+		if(null != errorGobbler) {
 			errorGobbler.removeDataListener(listener);
-		else
+		} else {
 			errorListeners.remove(listener);
+		}
 	}
 
 	/**
@@ -281,10 +299,11 @@ public class Command implements Runnable {
 	 * @return String containing the entire output from the input stream.
 	 */
 	public String getOutput() {
-		if(!isDisposed())
+		if(!isDisposed()) {
 			return logger.getOutput();
-		else
+		} else {
 			return null;
+		}
 	}
 
 	/**
@@ -302,12 +321,14 @@ public class Command implements Runnable {
 			inputListeners = null;
 			errorListeners = null;
 
-			if(null != inputGobbler)
+			if(null != inputGobbler) {
 				inputGobbler.dispose();
+			}
 			inputGobbler = null;
 
-			if(null != errorGobbler)
+			if(null != errorGobbler) {
 				errorGobbler.dispose();
+			}
 			errorGobbler = null;
 			logger.dispose();
 		}

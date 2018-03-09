@@ -21,11 +21,9 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    TmfCoalescedDataRequestTest.class,
     TmfCoalescedEventRequestTest.class,
-    TmfDataRequestTest.class,
     TmfEventRequestTest.class,
-    TmfRequestExecutorTest.class
+    TmfSchedulerTest.class
 })
 public class AllTests {
 

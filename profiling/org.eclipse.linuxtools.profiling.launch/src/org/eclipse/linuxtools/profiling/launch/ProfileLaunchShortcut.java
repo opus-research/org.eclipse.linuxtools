@@ -54,10 +54,12 @@ import org.eclipse.ui.dialogs.TwoPaneElementSelector;
 
 public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 
+	@Override
 	public void launch(IEditorPart editor, String mode) {
 		searchAndLaunch(new Object[] { editor.getEditorInput() }, mode);
 	}
 
+	@Override
 	public void launch(ISelection selection, String mode) {
 		if (selection instanceof IStructuredSelection) {
 			searchAndLaunch(((IStructuredSelection) selection).toArray(), mode);
@@ -73,7 +75,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 
 	/**
 	 * Locate a configuration to relaunch for the given type.  If one cannot be found, create one.
-	 * 
+	 *
 	 * @return a re-useable config or <code>null</code> if none
 	 */
 	protected ILaunchConfiguration findLaunchConfiguration(IBinary bin, String mode) {
@@ -97,7 +99,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-	
+
 		// If there are no existing configs associated with the IBinary, create one.
 		// If there is exactly one config associated with the IBinary, return it.
 		// Otherwise, if there is more than one config associated with the IBinary, prompt the
@@ -120,8 +122,8 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 	 * Can return <code>getLaunchManager().getLaunchConfigurationType(String ID)</code>.
 	 * This String will be used to identify your configuration type to Eclipse, and should
 	 * be unique.
-	 * 
-	 * @return
+	 *
+	 * @return The launch configuration type.
 	 */
 	protected abstract ILaunchConfigurationType getLaunchConfigType();
 
@@ -130,7 +132,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 	/**
 	 * Set default attributes for the given configuration.
 	 *
-	 * @param config
+	 * @param wc
 	 * @since 1.2
 	 */
 	public void setDefaultProfileLaunchShortcutAttributes(ILaunchConfigurationWorkingCopy wc){
@@ -161,14 +163,14 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 			String projectName = bin.getResource().getProjectRelativePath().toString();
 			ILaunchConfigurationType configType = getLaunchConfigType();
 			ILaunchConfigurationWorkingCopy wc = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(bin.getElementName()));
-	
+
 			wc.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, projectName);
 			wc.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, bin.getCProject().getElementName());
 			wc.setMappedResources(new IResource[] {bin.getResource(), bin.getResource().getProject()});
 			wc.setAttribute(ICDTLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, (String) null);
-	
+
 			setDefaultProfileAttributes(wc);
-	
+
 			if (save){
 				config = wc.doSave();
 			} else {
@@ -198,9 +200,10 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 				final List<IBinary> results = new ArrayList<IBinary>();
 				ProgressMonitorDialog dialog = new ProgressMonitorDialog(getActiveWorkbenchShell());
 				IRunnableWithProgress runnable = new IRunnableWithProgress() {
+					@Override
 					public void run(IProgressMonitor pm) throws InterruptedException {
 						int nElements = elements.length;
-						pm.beginTask(Messages.getString("ProfileLaunchShortcut.Looking_for_executables"), nElements); //$NON-NLS-1$
+						pm.beginTask(Messages.ProfileLaunchShortcut_Looking_for_executables, nElements);
 						try {
 							IProgressMonitor sub = new SubProgressMonitor(pm, 1);
 							for (int i = 0; i < nElements; i++) {
@@ -211,7 +214,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 										if (cproject != null) {
 											try {
 												IBinary[] bins = cproject.getBinaryContainer().getBinaries();
-	
+
 												for (int j = 0; j < bins.length; j++) {
 													if (bins[j].isExecutable()) {
 														results.add(bins[j]);
@@ -242,8 +245,8 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 					return;
 				}
 				int count = results.size();
-				if (count == 0) {					
-					handleFail(Messages.getString("ProfileLaunchShortcut.Binary_not_found")); //$NON-NLS-1$
+				if (count == 0) {
+					handleFail(Messages.ProfileLaunchShortcut_Binary_not_found);
 				} else if (count > 1) {
 					bin = chooseBinary(results, mode);
 				} else {
@@ -254,17 +257,17 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 				launch(bin, mode);
 			}
 		} else {
-			handleFail(Messages.getString("ProfileLaunchShortcut.no_project_selected")); //$NON-NLS-1$
+			handleFail(Messages.ProfileLaunchShortcut_no_project_selected);
 		}
 	}
 
 	protected void handleFail(String message) {
-		MessageDialog.openError(getActiveWorkbenchShell(), Messages.getString("ProfileLaunchShortcut.Launcher"), message); //$NON-NLS-1$
+		MessageDialog.openError(getActiveWorkbenchShell(), Messages.ProfileLaunchShortcut_Launcher, message);
 	}
 
 	/**
 	 * Prompts the user to select a  binary
-	 * 
+	 *
 	 * @return the selected binary or <code>null</code> if none.
 	 */
 	protected IBinary chooseBinary(List<IBinary> binList, String mode) {
@@ -280,7 +283,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 				return super.getText(element);
 			}
 		};
-	
+
 		ILabelProvider qualifierLabelProvider = new CElementLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -295,18 +298,18 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 				return super.getText(element);
 			}
 		};
-	
+
 		TwoPaneElementSelector dialog = new TwoPaneElementSelector(getActiveWorkbenchShell(), programLabelProvider, qualifierLabelProvider);
 		dialog.setElements(binList.toArray());
-		dialog.setTitle(Messages.getString("ProfileLaunchShortcut.Profile")); //$NON-NLS-1$
-		dialog.setMessage(Messages.getString("ProfileLaunchShortcut.Choose_a_local_application")); //$NON-NLS-1$
-		dialog.setUpperListLabel(Messages.getString("ProfileLaunchShortcut.Binaries")); //$NON-NLS-1$
-		dialog.setLowerListLabel(Messages.getString("ProfileLaunchShortcut.Qualifier")); //$NON-NLS-1$
+		dialog.setTitle(Messages.ProfileLaunchShortcut_Profile);
+		dialog.setMessage(Messages.ProfileLaunchShortcut_Choose_a_local_application);
+		dialog.setUpperListLabel(Messages.ProfileLaunchShortcut_Binaries);
+		dialog.setLowerListLabel(Messages.ProfileLaunchShortcut_Qualifier);
 		dialog.setMultipleSelection(false);
 		if (dialog.open() == Window.OK) {
 			return (IBinary) dialog.getFirstResult();
 		}
-	
+
 		return null;
 	}
 
@@ -319,8 +322,8 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 		IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
 		ElementListSelectionDialog dialog = new ElementListSelectionDialog(getActiveWorkbenchShell(), labelProvider);
 		dialog.setElements(configList.toArray());
-		dialog.setTitle(Messages.getString("ProfileLaunchShortcut.Launch_Configuration_Selection"));  //$NON-NLS-1$
-		dialog.setMessage(Messages.getString("ProfileLaunchShortcut.Choose_a_launch_configuration"));  //$NON-NLS-1$
+		dialog.setTitle(Messages.ProfileLaunchShortcut_Launch_Configuration_Selection);
+		dialog.setMessage(Messages.ProfileLaunchShortcut_Choose_a_launch_configuration);
 		dialog.setMultipleSelection(false);
 		int result = dialog.open();
 		labelProvider.dispose();

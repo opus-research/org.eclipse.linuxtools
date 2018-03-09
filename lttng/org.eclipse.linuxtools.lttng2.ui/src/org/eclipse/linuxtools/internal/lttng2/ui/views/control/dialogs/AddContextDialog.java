@@ -57,11 +57,6 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     // ------------------------------------------------------------------------
 
     /**
-     * The dialog composite.
-     */
-    private Composite fDialogComposite;
-
-    /**
      * A tree viewer for displaying and selection of available contexts.
      */
     private CheckboxTreeViewer fContextsViewer;
@@ -86,7 +81,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
      */
     public AddContextDialog(Shell shell) {
         super(shell);
-        setShellStyle(SWT.RESIZE);
+        setShellStyle(SWT.RESIZE | getShellStyle());
     }
 
     // ------------------------------------------------------------------------
@@ -120,13 +115,13 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     protected Control createDialogArea(Composite parent) {
 
         // Main dialog panel
-        fDialogComposite = new Composite(parent, SWT.NONE);
+        Composite dialogComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
-        fDialogComposite.setLayout(layout);
-        fDialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        dialogComposite.setLayout(layout);
+        dialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Contexts list
-        Group contextGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
+        Group contextGroup = new Group(dialogComposite, SWT.SHADOW_NONE);
         contextGroup.setText(Messages.TraceControl_AddContextAvailableContextsLabel);
         layout = new GridLayout(1, true);
         contextGroup.setLayout(layout);
@@ -143,7 +138,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
 
         getShell().setMinimumSize(new Point(500, 450));
 
-        return fDialogComposite;
+        return dialogComposite;
     }
 
     @Override
@@ -174,7 +169,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     /**
      * Content provider for the contexts tree
      */
-    final public static class ContextsContentProvider implements ITreeContentProvider {
+    public static final class ContextsContentProvider implements ITreeContentProvider {
 
         @Override
         public void dispose() {
@@ -217,7 +212,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     /**
      * Label provider for the contexts tree
      */
-    final public static class ContextsLabelProvider extends ColumnLabelProvider {
+    public static final class ContextsLabelProvider extends ColumnLabelProvider {
         @Override
         public String getText(Object element) {
 
@@ -232,7 +227,7 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
     /**
      * Check state listener for the contexts tree.
      */
-    final public class ContextCheckListener implements ICheckStateListener {
+    public final class ContextCheckListener implements ICheckStateListener {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
           if (event.getChecked()) {
@@ -405,21 +400,21 @@ public class AddContextDialog extends Dialog implements IAddContextDialog  {
         /**
          * @return The name of this component
          */
-        public String getName();
+        String getName();
 
         /**
          * @return The parent component
          */
-        public Object getParent();
+        Object getParent();
 
         /**
          * @return The array of children of this component
          */
-        public Object[] getChildren();
+        Object[] getChildren();
 
         /**
          * @return If this component has children or not
          */
-        public boolean hasChildren();
+        boolean hasChildren();
     }
 }

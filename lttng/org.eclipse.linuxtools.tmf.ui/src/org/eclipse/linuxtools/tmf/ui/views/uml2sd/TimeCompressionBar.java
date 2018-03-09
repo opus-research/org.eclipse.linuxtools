@@ -67,77 +67,81 @@ import org.eclipse.swt.widgets.Display;
 public class TimeCompressionBar extends ScrollView implements DisposeListener {
 
     // ------------------------------------------------------------------------
+    // Constants
+    // ------------------------------------------------------------------------
+    private static final int BASE_RED_VALUE = 255;
+    private static final int BASE_GREEN_BLUE_VALUE = 225;
+    private static final int COLOR_STEP = 25;
+    private static final int NUMBER_STEPS = 10;
+
+    // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
     /**
      * The listener list
      */
-    protected List<ITimeCompressionListener> fListenerList = null;
+    private List<ITimeCompressionListener> fListenerList = null;
     /**
      * The current frame displayed.
      */
-    protected Frame fFrame = null;
+    private Frame fFrame = null;
     /**
      * List of time events.
      */
-    protected List<SDTimeEvent> fNodeList = null;
+    private List<SDTimeEvent> fNodeList = null;
     /**
      * The minimum time delta.
      */
-    protected ITmfTimestamp fMinTime = new TmfTimestamp();
+    private ITmfTimestamp fMinTime = new TmfTimestamp();
     /**
      * The maximum time delta.
      */
-    protected ITmfTimestamp fMaxTime = new TmfTimestamp();
+    private ITmfTimestamp fMaxTime = new TmfTimestamp();
     /**
      * The current zoom value.
      */
-    protected float fZoomValue = 1;
+    private float fZoomValue = 1;
     /**
      * The tooltip to display.
      */
-    protected DrawableToolTip fTooltip = null;
+    private DrawableToolTip fTooltip = null;
     /**
      *  Array of colors for displaying wight of time deltas.
      */
-    protected ColorImpl[] fColors;
+    private ColorImpl[] fColors;
     /**
      * The accessible object reference.
      */
-    protected Accessible fAccessible = null;
+    private Accessible fAccessible = null;
     /**
      * The focused widget reference.
      */
-    protected int fFocusedWidget = -1;
-    /**
-     * The sequence diagram view reference.
-     */
-    protected SDView view = null;
+    private int fFocusedWidget = -1;
     /**
      * The current lifeline.
      */
-    protected Lifeline fLifeline = null;
+    private Lifeline fLifeline = null;
     /**
      * The current start event value.
      */
-    protected int fLifelineStart = 0;
+    private int fLifelineStart = 0;
     /**
      * The current number of events.
      */
-    protected int fLifelineNumEvents = 0;
+    private int fLifelineNumEvents = 0;
     /**
      * The Current color of range to display.
      */
-    protected IColor fLifelineColor = null;
+    private IColor fLifelineColor = null;
     /**
      *  The next graph node y coordinate.
      */
-    protected int fNextNodeY = 0;
+    private int fNextNodeY = 0;
     /**
      *  The previous graph node y coordinate.
      */
-    protected int fPrevNodeY = 0;
+    private int fPrevNodeY = 0;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -153,17 +157,13 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         setVScrollBarMode(ScrollView.ALWAYS_OFF);
         setHScrollBarMode(ScrollView.ALWAYS_OFF);
         fListenerList = new ArrayList<ITimeCompressionListener>();
-        fColors = new ColorImpl[10];
-        fColors[0] = new ColorImpl(Display.getDefault(), 255, 229, 229);
-        fColors[1] = new ColorImpl(Display.getDefault(), 255, 204, 204);
-        fColors[2] = new ColorImpl(Display.getDefault(), 255, 178, 178);
-        fColors[3] = new ColorImpl(Display.getDefault(), 255, 153, 153);
-        fColors[4] = new ColorImpl(Display.getDefault(), 255, 127, 127);
-        fColors[5] = new ColorImpl(Display.getDefault(), 255, 102, 102);
-        fColors[6] = new ColorImpl(Display.getDefault(), 255, 76, 76);
-        fColors[7] = new ColorImpl(Display.getDefault(), 255, 51, 51);
-        fColors[8] = new ColorImpl(Display.getDefault(), 255, 25, 25);
-        fColors[9] = new ColorImpl(Display.getDefault(), 255, 0, 0);
+        fColors = new ColorImpl[NUMBER_STEPS];
+        int greenBlue = BASE_GREEN_BLUE_VALUE;
+        final int step = COLOR_STEP;
+        for (int i = 0; i < fColors.length; i++) {
+            fColors[i] = new ColorImpl(Display.getDefault(), BASE_RED_VALUE, greenBlue, greenBlue);
+            greenBlue -= step;
+        }
         super.addDisposeListener(this);
 
         fAccessible = getViewControl().getAccessible();
@@ -356,14 +356,9 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         Arrays.sort(temp, new TimeEventComparator());
         fNodeList = Arrays.asList(temp);
 
-        Image dbuffer = null;
-        GC gcim = null;
-        try {
-            dbuffer = new Image(getDisplay(), getClientArea().width, getClientArea().height);
-        } catch (Exception e) {
-            Activator.getDefault().logError("Error creating image", e); //$NON-NLS-1$
-        }
-        gcim = new GC(dbuffer);
+        Image dbuffer = new Image(getDisplay(), getClientArea().width, getClientArea().height);
+        GC gcim = new GC(dbuffer);
+
         for (int i = 0; i < fNodeList.size() - 1; i++) {
             SDTimeEvent m1 = fNodeList.get(i);
             SDTimeEvent m2 = fNodeList.get(i + 1);
@@ -379,7 +374,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
             fMinTime = fFrame.getMinTime();
             fMaxTime = fFrame.getMaxTime();
             ITmfTimestamp minMaxdelta = fMaxTime.getDelta(fMinTime);
-            double gr = (minMaxdelta.getValue()) / (double) 10;
+            double gr = (minMaxdelta.getValue()) / (double) NUMBER_STEPS;
 
             ITmfTimestamp delta = m2.getTime().getDelta(m1.getTime()).getDelta(fMinTime);
             long absDelta = Math.abs(delta.getValue());
@@ -448,9 +443,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
             Activator.getDefault().logError("Error drawing image", e); //$NON-NLS-1$
         }
         gcim.dispose();
-        if (dbuffer != null) {
-            dbuffer.dispose();
-        }
+        dbuffer.dispose();
         gc.dispose();
     }
 
@@ -654,7 +647,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
         }
 
         ITmfTimestamp minMaxdelta = fMaxTime.getDelta(fMinTime);
-        double gr = (minMaxdelta.getValue()) / (double) 10;
+        double gr = (minMaxdelta.getValue()) / (double) NUMBER_STEPS;
 
         ITmfTimestamp delta = time2.getDelta(time1).getDelta(fMinTime);
         long absDelta = Math.abs(delta.getValue());
@@ -752,7 +745,6 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
             Control[] child = getParent().getChildren();
             for (int i = 0; i < child.length; i++) {
                 if (child[i].isFocusControl()) {
-                    // getViewControl().setFocus();
                     break;
                 }
             }
@@ -897,7 +889,7 @@ public class TimeCompressionBar extends ScrollView implements DisposeListener {
                     fPrevNodeY = m1Y;
                     fNextNodeY = m2Y;
                     ITmfTimestamp minMaxdelta = fMaxTime.getDelta(fMinTime);
-                    double gr = (minMaxdelta.getValue()) / (double) 10;
+                    double gr = (minMaxdelta.getValue()) / (double) NUMBER_STEPS;
 
                     ITmfTimestamp delta = m2.getTime().getDelta(m1.getTime()).getDelta(fMinTime);
                     long absDelta = Math.abs(delta.getValue());

@@ -7,7 +7,7 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.ui;
 
 import java.util.HashMap;
@@ -18,14 +18,10 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.internal.valgrind.core.PluginConstants;
 import org.eclipse.linuxtools.valgrind.ui.IValgrindToolView;
 import org.eclipse.linuxtools.valgrind.ui.ValgrindUIConstants;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -34,11 +30,12 @@ import org.osgi.framework.BundleContext;
 public class ValgrindUIPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = PluginConstants.UI_PLUGIN_ID;
+	public static final String PLUGIN_ID = "org.eclipse.linuxtools.valgrind.ui"; //$NON-NLS-1$
 	public static final String TOOLBAR_LOC_GROUP_ID = "toolbarLocal"; //$NON-NLS-1$
 	public static final String TOOLBAR_EXT_GROUP_ID = "toolbarExtensions"; //$NON-NLS-1$
-	
+
 	// Extension point constants
+	private static final String VIEW_EXT_ID = "valgrindToolViews"; //$NON-NLS-1$
 	protected static final String EXT_ELEMENT = "view"; //$NON-NLS-1$
 	protected static final String EXT_ATTR_ID = "definitionId"; //$NON-NLS-1$
 	protected static final String EXT_ATTR_CLASS = "class"; //$NON-NLS-1$
@@ -51,12 +48,6 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 	protected ValgrindViewPart view;
 	// The page containing the created Valgrind view
 	protected IWorkbenchPage activePage;
-	
-	/**
-	 * The constructor
-	 */
-	public ValgrindUIPlugin() {
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -89,6 +80,7 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 
 	public void createView(final String contentDescription, final String toolID) {
 		Display.getDefault().syncExec(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -105,7 +97,7 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 				} catch (CoreException e) {
 					e.printStackTrace();
 				}
-			}					
+			}
 		});
 	}
 
@@ -114,42 +106,45 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 	 */
 	public void showView() {
 		Display.getDefault().syncExec(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					activePage.showView(ValgrindUIConstants.VIEW_ID);
 				} catch (PartInitException e) {
 					e.printStackTrace();
 				}
-			}			
+			}
 		});
 	}
-	
+
 	/**
 	 * Refreshes the Valgrind view
 	 */
 	public void refreshView() {
 		if (view != null) {
 			Display.getDefault().syncExec(new Runnable() {
+				@Override
 				public void run() {
 					view.refreshView();
-				}				
+				}
 			});
 		}
 	}
-	
+
 	/**
 	 * Empties the contents of the view and restores its original state.
 	 */
 	public void resetView() {
 		if (view != null) {
 			Display.getDefault().syncExec(new Runnable() {
+				@Override
 				public void run() {
 					try {
 						view.createDynamicContent(Messages.getString("ValgrindViewPart.No_Valgrind_output"), null); //$NON-NLS-1$
 					} catch (CoreException e) {
 						e.printStackTrace();
 					}
-				}				
+				}
 			});
 		}
 	}
@@ -164,18 +159,10 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 	public ValgrindViewPart getView() {
 		return view;
 	}
-	
-	public static Shell getActiveWorkbenchShell() {
-		IWorkbenchWindow window = getDefault().getWorkbench().getActiveWorkbenchWindow();
-		if (window != null) {
-			return window.getShell();
-		}
-		return null;
-	}
 
 	protected void initializeToolMap() {
 		toolMap = new HashMap<String, IConfigurationElement>();
-		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(PLUGIN_ID, PluginConstants.VIEW_EXT_ID);
+		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(PLUGIN_ID, VIEW_EXT_ID);
 		IConfigurationElement[] configs = extPoint.getConfigurationElements();
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals(EXT_ELEMENT)) {
@@ -185,17 +172,6 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Returns an image descriptor for the image file at the given
-	 * plug-in relative path.
-	 *
-	 * @param path the path
-	 * @return the image descriptor
-	 */
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 
 	protected HashMap<String, IConfigurationElement> getToolMap() {

@@ -32,27 +32,35 @@ public class IntegerDeclaration implements IDeclaration {
     // Attributes
     // ------------------------------------------------------------------------
 
-    final private int length;
-    final private boolean signed;
-    final private int base;
-    final private ByteOrder byteOrder;
-    final private Encoding encoding;
-    final private long alignment;
-    final private String clock;
+    private final int length;
+    private final boolean signed;
+    private final int base;
+    private final ByteOrder byteOrder;
+    private final Encoding encoding;
+    private final long alignment;
+    private final String clock;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Contructor
-     * @param len the length in bits
-     * @param signed is the integer signed? false == unsigned
-     * @param base the base (10-16 are most common)
-     * @param byteOrder Big endian little endian or other
-     * @param encoding ascii, utf8 or none.
-     * @param clock the clock path, can be null
-     * @param alignment the minimum alignment
+     * Constructor
+     *
+     * @param len
+     *            The length in bits
+     * @param signed
+     *            Is the integer signed? false == unsigned
+     * @param base
+     *            The base (10-16 are most common)
+     * @param byteOrder
+     *            Big-endian little-endian or other
+     * @param encoding
+     *            ascii, utf8 or none.
+     * @param clock
+     *            The clock path, can be null
+     * @param alignment
+     *            The minimum alignment. Should be >= 1
      */
     public IntegerDeclaration(int len, boolean signed, int base,
             ByteOrder byteOrder, Encoding encoding, String clock, long alignment) {
@@ -65,15 +73,16 @@ public class IntegerDeclaration implements IDeclaration {
         this.byteOrder = byteOrder;
         this.encoding = encoding;
         this.clock = clock;
-        this.alignment = alignment;
+        this.alignment = Math.max(alignment, 1);
     }
 
     // ------------------------------------------------------------------------
-    // Gettters/Setters/Predicates
+    // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
 
     /**
      * Is the integer signed?
+     *
      * @return the is the integer signed
      */
     public boolean isSigned() {
@@ -81,7 +90,8 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * get the integer base commonly decimal or hex
+     * Get the integer base commonly decimal or hex
+     *
      * @return the integer base
      */
     public int getBase() {
@@ -89,7 +99,8 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * gets the byte order
+     * Get the byte order
+     *
      * @return the byte order
      */
     public ByteOrder getByteOrder() {
@@ -97,7 +108,8 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * get encoding, chars are 8 bit ints
+     * Get encoding, chars are 8 bit ints
+     *
      * @return the encoding
      */
     public Encoding getEncoding() {
@@ -105,33 +117,37 @@ public class IntegerDeclaration implements IDeclaration {
     }
 
     /**
-     * is the integer a character (8 bits and encoded?)
+     * Is the integer a character (8 bits and encoded?)
+     *
      * @return is the integer a char
      */
-   public boolean isCharacter() {
+    public boolean isCharacter() {
         return (length == 8) && (encoding != Encoding.NONE);
     }
 
-   /**
-    * How many bits is this int
-    * @return the length of the int
-    */
+    /**
+     * Get the length in bits for this integer
+     *
+     * @return the length of the integer
+     */
     public int getLength() {
         return length;
     }
 
     @Override
-    public long getAlignment(){
+    public long getAlignment() {
         return alignment;
     }
 
     /**
      * The integer's clock, since timestamps are stored in ints
+     *
      * @return the integer's clock, can be null. (most often it is)
      */
-    public String getClock(){
+    public String getClock() {
         return clock;
     }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -155,9 +171,16 @@ public class IntegerDeclaration implements IDeclaration {
      * @since 2.0
      */
     public BigInteger getMaxValue() {
-        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
-        BigInteger max = signed ? capacity.divide(BigInteger.valueOf(2)) : capacity;
-        return max.subtract(BigInteger.ONE);
+        /*
+         * Compute the number of bits able to represent an unsigned number,
+         * ignoring sign bit.
+         */
+        int significant_bits = length - (signed ? 1 : 0);
+        /*
+         * For a given N significant bits, compute the maximal value which is
+         * (1 << N) - 1.
+         */
+        return BigInteger.ONE.shiftLeft(significant_bits).subtract(BigInteger.ONE);
     }
 
     /**
@@ -171,8 +194,16 @@ public class IntegerDeclaration implements IDeclaration {
             return BigInteger.ZERO;
         }
 
-        BigInteger capacity = BigInteger.ONE.shiftLeft(length);
-        return capacity.divide(BigInteger.valueOf(2)).negate();
+        /*
+         * Compute the number of bits able to represent an unsigned number,
+         * without the sign bit.
+         */
+        int significant_bits = length - 1;
+        /*
+         * For a given N significant bits, compute the minimal value which is
+         * - (1 << N).
+         */
+        return BigInteger.ONE.shiftLeft(significant_bits).negate();
     }
 
 }

@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Simon Delisle - Updated for support of LTTng Tools 2.2
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.core.control.model.impl;
 
@@ -64,6 +65,18 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
      * The events information of the channel.
      */
     private final List<IEventInfo> fEvents = new ArrayList<IEventInfo>();
+    /**
+     * The maximum size of trace files
+     */
+    private int fMaxSizeTraceFiles;
+    /**
+     * The maximum number of trace files
+     */
+    private int fMaxNumberTraceFiles;
+    /**
+     * The value of buffer type
+     */
+    private BufferType fBufferType = BufferType.BUFFER_TYPE_UNKNOWN;
 
 
     // ------------------------------------------------------------------------
@@ -88,6 +101,9 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         fNumberOfSubBuffers = other.fNumberOfSubBuffers;
         fSwitchTimer = other.fSwitchTimer;
         fReadTimer = other.fReadTimer;
+        fMaxSizeTraceFiles = other.fMaxSizeTraceFiles;
+        fMaxNumberTraceFiles = other.fMaxNumberTraceFiles;
+        fBufferType = other.fBufferType;
         fOutputType = (other.fOutputType == null ? null : String.valueOf(other.fOutputType));
         fState = other.fState;
         for (Iterator<IEventInfo> iterator = other.fEvents.iterator(); iterator.hasNext();) {
@@ -215,6 +231,7 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         result = prime * result + ((fState == null) ? 0 : (fState.ordinal() + 1));
         result = prime * result + (int) (fSubBufferSize ^ (fSubBufferSize >>> 32));
         result = prime * result + (int) (fSwitchTimer ^ (fSwitchTimer >>> 32));
+        result = prime * result + ((fBufferType == null) ? 0 : (fBufferType.ordinal() + 1));
         return result;
     }
 
@@ -258,6 +275,9 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         if (fSwitchTimer != other.fSwitchTimer) {
             return false;
         }
+        if (fBufferType != other.fBufferType) {
+            return false;
+        }
         return true;
     }
 
@@ -281,6 +301,10 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
             output.append(fReadTimer);
             output.append(",output=");
             output.append(fOutputType);
+            if ((fBufferType != null) && !fBufferType.equals(BufferType.BUFFER_TYPE_UNKNOWN) && !fBufferType.equals(BufferType.BUFFER_SHARED)) {
+                output.append(",BufferType=");
+                output.append(fBufferType);
+            }
             output.append(",Events=");
             if (fEvents.isEmpty()) {
                 output.append("None");
@@ -292,5 +316,35 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
             }
             output.append(")]");
             return output.toString();
+    }
+
+    @Override
+    public void setMaxSizeTraceFiles(int maxSizeTraceFiles) {
+        fMaxSizeTraceFiles = maxSizeTraceFiles;
+    }
+
+    @Override
+    public void setMaxNumberTraceFiles(int maxNumberTraceFiles) {
+        fMaxNumberTraceFiles = maxNumberTraceFiles;
+    }
+
+    @Override
+    public int getMaxSizeTraceFiles() {
+        return fMaxSizeTraceFiles;
+    }
+
+    @Override
+    public int getMaxNumberTraceFiles() {
+        return fMaxNumberTraceFiles;
+    }
+
+    @Override
+    public void setBufferType(BufferType bufferType) {
+        fBufferType = bufferType;
+    }
+
+    @Override
+    public BufferType getBufferType() {
+        return fBufferType;
     }
 }

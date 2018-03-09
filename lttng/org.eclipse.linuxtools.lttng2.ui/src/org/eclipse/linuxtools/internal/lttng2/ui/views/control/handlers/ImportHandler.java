@@ -17,17 +17,21 @@ import java.util.List;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceSessionState;
 import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.ControlView;
@@ -36,7 +40,13 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ImportFil
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.TraceControlDialogFactory;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent;
+import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
+import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.BatchImportTraceWizard;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.services.files.IFileService;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
@@ -53,6 +63,16 @@ import org.eclipse.ui.PlatformUI;
  * @author Bernd Hufmann
  */
 public class ImportHandler extends BaseControlViewHandler {
+
+    // ------------------------------------------------------------------------
+    // Constants
+    // ------------------------------------------------------------------------
+    /** Trace Type ID for LTTng Kernel traces */
+    private static final String LTTNG_KERNEL_TRACE_TYPE = "org.eclipse.linuxtools.lttng2.kernel.tracetype"; //$NON-NLS-1$
+    /** Trace Type ID for Generic CTF traces */
+    private static final String GENERIC_CTF_TRACE_TYPE = "org.eclipse.linuxtools.tmf.ui.type.ctf"; //$NON-NLS-1$
+    /** Name of default project to import traces to */
+    public static final String DEFAULT_REMOTE_PROJECT_NAME = "Remote"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -80,29 +100,74 @@ public class ImportHandler extends BaseControlViewHandler {
         try {
             final CommandParameter param = fParam.clone();
 
+            // create default project
+            IProject project = TmfProjectRegistry.createProject(DEFAULT_REMOTE_PROJECT_NAME, null, null);
+            TmfImportHelper.forceFolderRefresh(project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME));
+
+            if (param.getSession().isStreamedTrace()) {
+                // Streamed trace
+                TmfProjectElement projectElement = TmfProjectRegistry.getProject(project);
+                TmfTraceFolder traceFolder = projectElement.getTracesFolder();
+
+                BatchImportTraceWizard wizard = new BatchImportTraceWizard();
+                wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(traceFolder));
+                WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
+                dialog.open();
+                traceFolder.refresh();
+                return null;
+            }
+
+            // Remote trace
             final IImportDialog dialog = TraceControlDialogFactory.getInstance().getImportDialog();
             dialog.setSession(param.getSession());
+            dialog.setDefaultProject(DEFAULT_REMOTE_PROJECT_NAME);
 
-            if ((dialog.open() != Window.OK) || param.getSession().isStreamedTrace()) {
+            if (dialog.open() != Window.OK) {
                 return null;
             }
 
             Job job = new Job(Messages.TraceControl_ImportJob) {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    try {
-                        List<ImportFileInfo> traces = dialog.getTracePathes();
-                        IProject project = dialog.getProject();
 
-                        for (Iterator<ImportFileInfo> iterator = traces.iterator(); iterator.hasNext();) {
+                    MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, Messages.TraceControl_ImportFailure, null);
+                    List<ImportFileInfo> traces = dialog.getTracePathes();
+                    IProject selectedProject = dialog.getProject();
+                    for (Iterator<ImportFileInfo> iterator = traces.iterator(); iterator.hasNext();) {
+                        try {
                             ImportFileInfo remoteFile = iterator.next();
-                            downloadTrace(remoteFile, project);
-                        }
 
-                    } catch (ExecutionException e) {
-                        return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_ImportFailure, e);
+                            downloadTrace(remoteFile, selectedProject, monitor);
+
+                            // Set trace type
+                            IFolder traceFolder = selectedProject.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
+                            TmfImportHelper.forceFolderRefresh(traceFolder);
+
+                            if(monitor.isCanceled()) {
+                                status.add(Status.CANCEL_STATUS);
+                                break;
+                            }
+
+                            IFile file = traceFolder.getFile(remoteFile.getLocalTraceName());
+
+                            TraceTypeHelper helper = null;
+
+                            if (remoteFile.isKernel()) {
+                                helper = TmfTraceType.getInstance().getTraceType(LTTNG_KERNEL_TRACE_TYPE);
+                            } else {
+                                helper = TmfTraceType.getInstance().getTraceType(GENERIC_CTF_TRACE_TYPE);
+                            }
+
+                            if (helper != null) {
+                                status.add(TmfTraceType.setTraceType(file.getFullPath(), helper));
+                            }
+                        } catch (ExecutionException e) {
+                            status.add(new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_ImportFailure, e));
+                        } catch (CoreException e) {
+                            status.add(new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_ImportFailure, e));
+                        }
                     }
-                    return Status.OK_STATUS;
+                    return status;
                 }
             };
             job.setUser(true);
@@ -131,7 +196,7 @@ public class ImportHandler extends BaseControlViewHandler {
                 if (element instanceof TraceSessionComponent) {
                     // Add only TraceSessionComponents that are inactive and not destroyed
                     TraceSessionComponent tmpSession = (TraceSessionComponent) element;
-                    if ((tmpSession.getSessionState() == TraceSessionState.INACTIVE) && (!tmpSession.isDestroyed())) {
+                    if (((tmpSession.isSnapshotSession()) || (tmpSession.getSessionState() == TraceSessionState.INACTIVE)) && (!tmpSession.isDestroyed())) {
                         session = tmpSession;
                     }
                 }
@@ -162,9 +227,11 @@ public class ImportHandler extends BaseControlViewHandler {
      *            - trace information of trace to import
      * @param project
      *            - project to import to
+     * @param monitor
+     *            - a progress monitor
      * @throws ExecutionException
      */
-    private static void downloadTrace(ImportFileInfo trace, IProject project)
+    private static void downloadTrace(ImportFileInfo trace, IProject project, IProgressMonitor monitor)
             throws ExecutionException {
         try {
             IRemoteFileSubSystem fsss = trace.getImportFile().getParentRemoteFileSubSystem();
@@ -185,16 +252,18 @@ public class ImportHandler extends BaseControlViewHandler {
             }
 
             IRemoteFile[] sources = fsss.list(trace.getImportFile(), IFileService.FILE_TYPE_FILES, new NullProgressMonitor());
+            SubMonitor subMonitor = SubMonitor.convert(monitor, sources.length);
+            subMonitor.beginTask(Messages.TraceControl_DownloadTask, sources.length);
 
-            String[] destinations = new String[sources.length];
-            String[] encodings = new String[sources.length];
             for (int i = 0; i < sources.length; i++) {
-                destinations[i] = folder.getLocation().addTrailingSeparator().append(sources[i].getName()).toString();
-                encodings[i] = null;
+                if (subMonitor.isCanceled()) {
+                    monitor.setCanceled(true);
+                    return;
+                }
+                String destination = folder.getLocation().addTrailingSeparator().append(sources[i].getName()).toString();
+                subMonitor.setTaskName(Messages.TraceControl_DownloadTask + ' '  + traceName + '/' +sources[i].getName());
+                fsss.download(sources[i], destination, null, subMonitor.newChild(1));
             }
-
-            fsss.downloadMultiple(sources, destinations, encodings, new NullProgressMonitor());
-
         } catch (SystemMessageException e) {
             throw new ExecutionException(e.toString(), e);
         } catch (CoreException e) {

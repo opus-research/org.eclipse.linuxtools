@@ -32,20 +32,20 @@ import org.swtchart.LineStyle;
 
 /**
  * A utility class that handles the charts creation (pie chart & bar chart)
- * 
+ *
  * @author Marzia Maugeri <marzia.maugeri@st.com>
- * 
+ *
  */
 public class ChartFactory {
 
     /**
      * Produces a pie chart from the input objects.
-     * 
+     *
      * @param objects
      *            the input data
      * @param nameField
      *            the field used to get the labels of the objects (colored parts in the pie).
-     * @param valField
+     * @param valFields
      *            the field providing the values for the pie parts.
      * @return a new pie chart
      */
@@ -60,7 +60,13 @@ public class ChartFactory {
 
             view = (ChartView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                     .showView(ChartView.VIEW_ID, String.valueOf(ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
-            PieChart chart = new PieChart(view.getParent(), SWT.NONE);
+
+            String[] pieChartNames = new String [valFields.size()];
+            for (int i = 0; i < valFields.size(); i++) {
+                pieChartNames[i] = valFields.get(i).getColumnHeaderText();
+            }
+
+            PieChart chart = new PieChart(view.getParent(), SWT.NONE, pieChartNames);
 
             chart.setBackground(WHITE);
             chart.setBackgroundInPlotArea(GRAD);
@@ -74,11 +80,6 @@ public class ChartFactory {
             for (int i = 0; i < objects.length; i++) {
                 valueLabels[i] = nameField.getValue(objects[i]);
             }
-
-            /*
-             * String [] pieChartNames = new String [valFields.size()]; for (int i = 0; i < valFields.size(); i++) {
-             * pieChartNames[i] = valFields.get(i).getColumnHeaderText(); }
-             */
 
             // pie chart data is grouped by columns
             // row size is the number of pie charts
@@ -106,7 +107,7 @@ public class ChartFactory {
 
     /**
      * Produces a 2D bar chart from the input objects.
-     * 
+     *
      * @param objects
      *            the input data
      * @param nameField

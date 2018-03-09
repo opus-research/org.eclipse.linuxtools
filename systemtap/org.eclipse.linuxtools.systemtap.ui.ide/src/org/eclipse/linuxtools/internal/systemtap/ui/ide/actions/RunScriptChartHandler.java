@@ -12,17 +12,17 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
 
 import java.util.LinkedList;
+import java.util.List;
 
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPerspective;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.ChartStreamDaemon;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.ChartStreamDaemon2;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
-import org.eclipse.linuxtools.systemtap.ui.ide.actions.Messages;
-import org.eclipse.linuxtools.systemtap.ui.ide.actions.RunScriptHandler;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
@@ -34,28 +34,39 @@ import org.eclipse.ui.WorkbenchException;
  */
 public class RunScriptChartHandler extends RunScriptHandler {
 
-	private IDataSet dataSet;
-	private IDataSetParser parser;
-	private LinkedList<GraphData> graphs;
+	private List<IDataSetParser> parsers;
+	private List<IDataSet> dataSets;
+	private List<String> names;
+	private List<LinkedList<GraphData>> graphs;
 
-	public RunScriptChartHandler(IDataSetParser parser, IDataSet dataSet, LinkedList<GraphData> graphs) {
+	public RunScriptChartHandler(List<IDataSetParser> parsers, List<IDataSet> dataSet, List<String> names, List<LinkedList<GraphData>> graphs) {
 		super();
-		this.parser = parser;
-		this.dataSet = dataSet;
+		this.parsers = parsers;
+		this.dataSets = dataSet;
+		this.names = names;
 		this.graphs = graphs;
 	}
 
 	@Override
 	protected void scriptConsoleInitialized(ScriptConsole console){
-		console.getCommand().addInputStreamListener(new ChartStreamDaemon2(console, dataSet, parser));
+		int n = parsers.size();
+		for (int i = 0; i < n; i++) {
+			console.getCommand().addInputStreamListener(new ChartStreamDaemon(dataSets.get(i), parsers.get(i)));
+		}
 		try {
-			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(GraphingPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-			GraphSelectorView ivp = (GraphSelectorView)p.showView(GraphSelectorView.ID);
 			String name = console.getName();
-			ivp.createScriptSet(name.substring(name.lastIndexOf('/')+1), dataSet);
+			String title = name.substring(name.lastIndexOf('/')+1);
 
-			for (GraphData graph : graphs) {
-				ivp.getActiveDisplaySet().addGraph(graph);
+			IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(IDEPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+			GraphSelectorEditor ivp = (GraphSelectorEditor)p.openEditor(new GraphSelectorEditorInput(title), GraphSelectorEditor.ID);
+
+			String scriptName = console.getName();
+			ivp.createScriptSets(scriptName, names, dataSets);
+
+			for (int i = 0; i < n; i++) {
+				for (GraphData graph : graphs.get(i)) {
+					ivp.getDisplaySet(i).addGraph(graph);
+				}
 			}
 		} catch(WorkbenchException we) {
 			ExceptionErrorDialog.openError(Messages.RunScriptChartAction_couldNotSwitchToGraphicPerspective, we);

@@ -31,8 +31,6 @@ public class CProfilingOptionsTab extends AbstractProfilingOptionsTab {
 	/**
 	 * ProviderOptionsTab constructor.
 	 *
-	 * @param profilingType String type of profiling this tab will be used for.
-	 * @param profilingName String name of this tab to be displayed.
 	 */
 	public CProfilingOptionsTab() {
 		setName(Messages.ProfilingTabName);
@@ -43,7 +41,7 @@ public class CProfilingOptionsTab extends AbstractProfilingOptionsTab {
 	protected SortedMap<String, String> getProviders() {
 		return ProviderFramework.getAllProviderNames();
 	}
-	
+
 	@Override
 	protected String getDefaultProviderId() {
 		// get the id of a provider
@@ -51,7 +49,7 @@ public class CProfilingOptionsTab extends AbstractProfilingOptionsTab {
 			String[] categories = ProviderFramework.getProviderCategories();
 			if (categories.length == 0) {
 				setErrorMessage(Messages.ProfilingTab_no_profilers_installed);
-				return "";
+				return ""; //$NON-NLS-1$
 			}
 			for (String category : categories) {
 				// Give precedence to timing category if present
@@ -74,7 +72,7 @@ public class CProfilingOptionsTab extends AbstractProfilingOptionsTab {
 	@Override
 	public Image getImage() {
 		if (img == null)
-		   img = AbstractUIPlugin.imageDescriptorFromPlugin(ProfileLaunchPlugin.PLUGIN_ID, 
+		   img = AbstractUIPlugin.imageDescriptorFromPlugin(ProfileLaunchPlugin.PLUGIN_ID,
 				"icons/time_obj.gif").createImage(); //$NON-NLS-1$
 		return img;
 	}

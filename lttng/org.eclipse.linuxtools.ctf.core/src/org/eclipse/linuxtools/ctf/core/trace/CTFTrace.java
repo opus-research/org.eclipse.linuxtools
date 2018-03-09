@@ -9,6 +9,7 @@
  * Contributors:
  *     Matthew Khouzam - Initial API and implementation
  *     Alexandre Montplaisir - Initial API and implementation
+ *     Simon Delisle - Replace LinkedList by TreeSet in callsitesByName attribute
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.trace;
@@ -23,13 +24,11 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -47,6 +46,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.internal.ctf.core.event.CTFCallsiteComparator;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndex;
 
@@ -75,11 +75,6 @@ public class CTFTrace implements IDefinitionScope {
      * The trace directory on the filesystem.
      */
     private final File path;
-
-    /**
-     * The metadata parsing object.
-     */
-    private final Metadata metadata;
 
     /**
      * Major CTF version number
@@ -122,7 +117,7 @@ public class CTFTrace implements IDefinitionScope {
     /**
      * Collection of streams contained in the trace.
      */
-    private final Map<Long, Stream> streams =  new HashMap<Long, Stream>();
+    private final Map<Long, Stream> streams = new HashMap<Long, Stream>();
 
     /**
      * Collection of environment variables set by the tracer
@@ -138,23 +133,22 @@ public class CTFTrace implements IDefinitionScope {
     private final List<FileInputStream> fileInputStreams = new LinkedList<FileInputStream>();
 
     /** Handlers for the metadata files */
-    private final static FileFilter metadataFileFilter = new MetadataFileFilter();
-    private final static Comparator<File> metadataComparator = new MetadataComparator(); // $codepro.audit.disable
-                                                                                         // fieldJavadoc
+    private static final FileFilter METADATA_FILE_FILTER = new MetadataFileFilter();
+    private static final Comparator<File> METADATA_COMPARATOR = new MetadataComparator();
 
     /** map of all the event types */
-    private final Map<Long,HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long,IEventDeclaration>>();
-    /** map of all the event types */
-    private final Map<StreamInput,HashMap<Long, EventDefinition>> eventDefs = new HashMap<StreamInput, HashMap<Long,EventDefinition>>();
+    private final Map<Long, HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long, IEventDeclaration>>();
+
     /** map of all the indexes */
     private final Map<StreamInput, StreamInputPacketIndex> indexes = new HashMap<StreamInput, StreamInputPacketIndex>();
 
     /** Callsite helpers */
-    private Map<String, LinkedList<CTFCallsite>> callsitesByName = new HashMap<String, LinkedList<CTFCallsite>>();
+    private CTFCallsiteComparator ctfCallsiteComparator = new CTFCallsiteComparator();
+
+    private Map<String, TreeSet<CTFCallsite>> callsitesByName = new HashMap<String, TreeSet<CTFCallsite>>();
+
     /** Callsite helpers */
     private TreeSet<CTFCallsite> callsitesByIP = new TreeSet<CTFCallsite>();
-
-
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -183,7 +177,7 @@ public class CTFTrace implements IDefinitionScope {
      */
     public CTFTrace(File path) throws CTFReaderException {
         this.path = path;
-        this.metadata = new Metadata(this);
+        final Metadata metadata = new Metadata(this);
 
         /* Set up the internal containers for this trace */
         if (!this.path.exists()) {
@@ -200,13 +194,12 @@ public class CTFTrace implements IDefinitionScope {
         /* Open all the trace files */
         /* Create the definitions needed to read things from the files */
         if (packetHeaderDecl != null) {
-            packetHeaderDef = packetHeaderDecl.createDefinition(this,
-                    "packet.header"); //$NON-NLS-1$
+            packetHeaderDef = packetHeaderDecl.createDefinition(this, "packet.header"); //$NON-NLS-1$
         }
 
         /* List files not called metadata and not hidden. */
-        File[] files = path.listFiles(metadataFileFilter);
-        Arrays.sort(files, metadataComparator);
+        File[] files = path.listFiles(METADATA_FILE_FILTER);
+        Arrays.sort(files, METADATA_COMPARATOR);
         /* Try to open each file */
         for (File streamFile : files) {
             openStreamInput(streamFile);
@@ -238,6 +231,7 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Dispose the trace
+     *
      * @since 2.0
      */
     public void dispose() {
@@ -250,7 +244,8 @@ public class CTFTrace implements IDefinitionScope {
                 }
             }
         }
-        System.gc(); // Invoke GC to release MappedByteBuffer objects (Java bug JDK-4724038)
+        // Invoke GC to release MappedByteBuffer objects (Java bug JDK-4724038)
+        System.gc();
     }
 
     // ------------------------------------------------------------------------
@@ -263,18 +258,21 @@ public class CTFTrace implements IDefinitionScope {
      * @param streamId
      *            The ID of the stream from which to read
      * @return The Hash map with the event declarations
+     * @since 2.0
      */
-    public HashMap<Long, IEventDeclaration> getEvents(Long streamId) {
+    public Map<Long, IEventDeclaration> getEvents(Long streamId) {
         return eventDecs.get(streamId);
     }
 
     /**
      * Gets an index for a given StreamInput
-     * @param id the StreamInput
+     *
+     * @param id
+     *            the StreamInput
      * @return The index
      */
-    StreamInputPacketIndex getIndex(StreamInput id){
-        if(! indexes.containsKey(id)){
+    StreamInputPacketIndex getIndex(StreamInput id) {
+        if (!indexes.containsKey(id)) {
             indexes.put(id, new StreamInputPacketIndex());
         }
         return indexes.get(id);
@@ -282,15 +280,17 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Gets an event Declaration hashmap for a given StreamInput
-     * @param id the StreamInput
-     * @return the hashmap with the event definitions
+     *
+     * @param id
+     *            the StreamInput
+     * @return an empty hashmap, please see deprecated
      * @since 2.0
+     * @deprecated You should be using
+     *             {@link StreamInputReader#getEventDefinitions()} instead.
      */
-    public HashMap<Long, EventDefinition> getEventDefs(StreamInput id) {
-        if(! eventDefs.containsKey(id)){
-            eventDefs.put(id, new HashMap<Long, EventDefinition>());
-        }
-        return eventDefs.get(id);
+    @Deprecated
+    public Map<Long, EventDefinition> getEventDefs(StreamInput id) {
+        return new HashMap<Long, EventDefinition>();
     }
 
     /**
@@ -379,11 +379,11 @@ public class CTFTrace implements IDefinitionScope {
     }
 
     /**
-     * Method majortIsSet is the major version number set?
+     * Method majorIsSet is the major version number set?
      *
      * @return boolean is the major set?
      */
-    public boolean majortIsSet() {
+    public boolean majorIsSet() {
         return major != null;
     }
 
@@ -400,8 +400,9 @@ public class CTFTrace implements IDefinitionScope {
      * Method UUIDIsSet is the UUID set?
      *
      * @return boolean is the UUID set?
+     * @since 2.0
      */
-    public boolean UUIDIsSet() {
+    public boolean uuidIsSet() {
         return uuid != null;
     }
 
@@ -455,7 +456,7 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @return ByteOrder gets the trace byte order
      */
-    public ByteOrder getByteOrder() {
+    public final ByteOrder getByteOrder() {
         return byteOrder;
     }
 
@@ -530,10 +531,10 @@ public class CTFTrace implements IDefinitionScope {
             fc = fis.getChannel();
 
             /* Map one memory page of 4 kiB */
-            byteBuffer = fc.map(MapMode.READ_ONLY, 0, Math.min((int)fc.size(), 4096));
+            byteBuffer = fc.map(MapMode.READ_ONLY, 0, (int) Math.min(fc.size(), 4096L));
         } catch (IOException e) {
             /* Shouldn't happen at this stage if every other check passed */
-            throw new CTFReaderException();
+            throw new CTFReaderException(e);
         }
 
         /* Create a BitBuffer with this mapping and the trace byte order */
@@ -573,7 +574,8 @@ public class CTFTrace implements IDefinitionScope {
             /* Read the stream ID */
             Definition streamIDDef = packetHeaderDef.lookupDefinition("stream_id"); //$NON-NLS-1$
 
-            if (streamIDDef instanceof IntegerDefinition) { //this doubles as a null check
+            if (streamIDDef instanceof IntegerDefinition) { // this doubles as a
+                                                            // null check
                 long streamID = ((IntegerDefinition) streamIDDef).getValue();
                 stream = streams.get(streamID);
             } else {
@@ -647,11 +649,12 @@ public class CTFTrace implements IDefinitionScope {
 
         /* It should be ok now. */
         streams.put(stream.getId(), stream);
-        eventDecs.put(stream.getId(), new HashMap<Long,IEventDeclaration>());
+        eventDecs.put(stream.getId(), new HashMap<Long, IEventDeclaration>());
     }
 
     /**
      * gets the Environment variables from the trace metadata (See CTF spec)
+     *
      * @return the environment variables in a map form (key value)
      * @since 2.0
      */
@@ -661,7 +664,9 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Look up a specific environment variable
-     * @param key the key to look for
+     *
+     * @param key
+     *            the key to look for
      * @return the value of the variable, can be null.
      */
     public String lookupEnvironment(String key) {
@@ -670,8 +675,11 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Add a variable to the environment variables
-     * @param varName the name of the variable
-     * @param varValue the value of the variable
+     *
+     * @param varName
+     *            the name of the variable
+     * @param varValue
+     *            the value of the variable
      */
     public void addEnvironmentVar(String varName, String varValue) {
         environment.put(varName, varValue);
@@ -679,8 +687,11 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Add a clock to the clock list
-     * @param nameValue the name of the clock (full name with scope)
-     * @param ctfClock the clock
+     *
+     * @param nameValue
+     *            the name of the clock (full name with scope)
+     * @param ctfClock
+     *            the clock
      */
     public void addClock(String nameValue, CTFClock ctfClock) {
         clocks.put(nameValue, ctfClock);
@@ -688,15 +699,14 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * gets the clock with a specific name
-     * @param name the name of the clock.
+     *
+     * @param name
+     *            the name of the clock.
      * @return the clock
      */
     public CTFClock getClock(String name) {
         return clocks.get(name);
     }
-
-
-
 
     /**
      * gets the clock if there is only one. (this is 100% of the use cases as of
@@ -729,7 +739,7 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @return the time offset of a clock with respect to UTC in nanoseconds
      */
-    private final double getTimeScale() {
+    private double getTimeScale() {
         if (getClock() == null) {
             return 1.0;
         }
@@ -741,7 +751,7 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @return if the trace is in ns or cycles.
      */
-    private final boolean clockNeedsScale() {
+    private boolean clockNeedsScale() {
         if (getClock() == null) {
             return false;
         }
@@ -753,7 +763,7 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @return 1.0 / scale
      */
-    private final double getInverseTimeScale() {
+    private double getInverseTimeScale() {
         if (getClock() == null) {
             return 1.0;
         }
@@ -800,21 +810,26 @@ public class CTFTrace implements IDefinitionScope {
 
     /**
      * Does a given stream contain any events?
-     * @param id the stream ID
+     *
+     * @param id
+     *            the stream ID
      * @return true if the stream has events.
      */
-    public boolean hasEvents(Long id){
+    public boolean hasEvents(Long id) {
         return eventDecs.containsKey(id);
     }
 
     /**
      * Add an event declaration map to the events map.
-     * @param id the id of a stream
+     *
+     * @param id
+     *            the id of a stream
      * @return the hashmap containing events.
+     * @since 2.0
      */
-    public HashMap<Long, IEventDeclaration> createEvents(Long id){
+    public Map<Long, IEventDeclaration> createEvents(Long id) {
         HashMap<Long, IEventDeclaration> value = eventDecs.get(id);
-        if( value == null ) {
+        if (value == null) {
             value = new HashMap<Long, IEventDeclaration>();
             eventDecs.put(id, value);
         }
@@ -839,37 +854,29 @@ public class CTFTrace implements IDefinitionScope {
             String fileName, long lineNumber) {
         final CTFCallsite cs = new CTFCallsite(eventName, funcName, ip,
                 fileName, lineNumber);
-        LinkedList<CTFCallsite> csl = callsitesByName.get(eventName);
+        TreeSet<CTFCallsite> csl = callsitesByName.get(eventName);
         if (csl == null) {
-            csl = new LinkedList<CTFCallsite>();
+            csl = new TreeSet<CTFCallsite>(ctfCallsiteComparator);
             callsitesByName.put(eventName, csl);
         }
 
-        ListIterator<CTFCallsite> iter = csl.listIterator();
-        int index = 0;
-        for (; index < csl.size(); index++) {
-            if (iter.next().compareTo(cs) < 0) {
-                break;
-            }
-        }
-
-        csl.add(index, cs);
+        csl.add(cs);
 
         callsitesByIP.add(cs);
     }
 
     /**
-     * Gets the list of callsites associated to an event name. O(1)
+     * Gets the set of callsites associated to an event name. O(1)
      *
      * @param eventName
      *            the event name
-     * @return the callsite list can be empty
-     * @since 1.2
+     * @return the callsite set can be empty
+     * @since 3.0
      */
-    public List<CTFCallsite> getCallsiteCandidates(String eventName) {
-        LinkedList<CTFCallsite> retVal = callsitesByName.get(eventName);
-        if( retVal == null ) {
-            retVal = new LinkedList<CTFCallsite>();
+    public TreeSet<CTFCallsite> getCallsiteCandidates(String eventName) {
+        TreeSet<CTFCallsite> retVal = callsitesByName.get(eventName);
+        if (retVal == null) {
+            retVal = new TreeSet<CTFCallsite>(ctfCallsiteComparator);
         }
         return retVal;
     }
@@ -883,9 +890,9 @@ public class CTFTrace implements IDefinitionScope {
      * @since 1.2
      */
     public CTFCallsite getCallsite(String eventName) {
-        LinkedList<CTFCallsite> callsites = callsitesByName.get(eventName);
+        TreeSet<CTFCallsite> callsites = callsitesByName.get(eventName);
         if (callsites != null) {
-            return callsites.getFirst();
+            return callsites.first();
         }
         return null;
     }
@@ -914,15 +921,14 @@ public class CTFTrace implements IDefinitionScope {
      * @return the closest matching callsite, can be null
      */
     public CTFCallsite getCallsite(String eventName, long ip) {
-        final LinkedList<CTFCallsite> candidates = callsitesByName.get(eventName);
+        final TreeSet<CTFCallsite> candidates = callsitesByName.get(eventName);
         final CTFCallsite dummyCs = new CTFCallsite(null, null, ip, null, -1);
-        final int pos = Collections.binarySearch(candidates, dummyCs)+1;
-        if( pos >= candidates.size()) {
-            return null;
+        final CTFCallsite callsite = candidates.ceiling(dummyCs);
+        if (callsite == null) {
+            return candidates.floor(dummyCs);
         }
-        return candidates.get(pos);
+        return callsite;
     }
-
 }
 
 class MetadataFileFilter implements FileFilter {

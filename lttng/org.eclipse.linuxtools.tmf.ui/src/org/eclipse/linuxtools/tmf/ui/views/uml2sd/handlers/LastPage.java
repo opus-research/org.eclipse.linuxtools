@@ -11,11 +11,10 @@
  **********************************************************************/
 package org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
-import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
+import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.Messages;
 
 /**
  * Action class implementation to move the focus to the last page of the whole sequence diagram.
@@ -23,7 +22,7 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.util.SDMessages;
  * @version 1.0
  * @author Bernd Hufmann
  */
-public class LastPage extends Action {
+public class LastPage extends BaseSDAction {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -35,15 +34,6 @@ public class LastPage extends Action {
     public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.uml2sd.handlers.lastpage"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
-
-    /**
-     * The sequence diagram view reference
-     */
-    protected SDView fView = null;
-
-    // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
@@ -53,10 +43,9 @@ public class LastPage extends Action {
      * @param view the view reference
      */
     public LastPage(SDView view) {
-        super();
-        fView = view;
-        setText(SDMessages._141);
-        setToolTipText(SDMessages._142);
+        super(view);
+        setText(Messages.SequenceDiagram_LastPage);
+        setToolTipText(Messages.SequenceDiagram_GoToLastPage);
         setId(ID);
         setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_LAST_PAGE));
     }
@@ -67,13 +56,13 @@ public class LastPage extends Action {
 
     @Override
     public void run() {
-        if ((fView == null) || (fView.getSDWidget()) == null) {
+        if ((getView() == null) || (getView().getSDWidget()) == null) {
             return;
         }
-        if (fView.getSDPagingProvider() != null) {
-            fView.getSDPagingProvider().lastPage();
+        if (getView().getSDPagingProvider() != null) {
+            getView().getSDPagingProvider().lastPage();
         }
-        fView.updateCoolBar();
-        fView.getSDWidget().redraw();
+        getView().updateCoolBar();
+        getView().getSDWidget().redraw();
     }
 }

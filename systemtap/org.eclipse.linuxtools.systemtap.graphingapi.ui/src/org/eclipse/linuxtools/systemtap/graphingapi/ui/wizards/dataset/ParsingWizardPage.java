@@ -22,10 +22,14 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IMemento;
 
 
-
+/**
+ * @deprecated The means of creating/editing graph configurations has
+ * deviated significantly from this implementation.
+ * TODO remove in 3.0
+ */
+@Deprecated
 public abstract class ParsingWizardPage extends WizardPage {
 	public ParsingWizardPage(String title) {
 		super(title);
@@ -102,8 +106,6 @@ public abstract class ParsingWizardPage extends WizardPage {
 				txtRegExpr[i].setText("\\d+"); //$NON-NLS-1$
 			}
 		}
-
-		readParsingExpression();
 
 		//Do this after readingParsingExpressions so events arn't fired
 		for(int i=0; i<txtRegExpr.length; i++) {
@@ -195,9 +197,6 @@ public abstract class ParsingWizardPage extends WizardPage {
 		}
 		return true;
 	}
-
-	abstract boolean readParsingExpression();
-	abstract void copyExisting(IMemento oldMeta, IMemento newMeta);
 
 	protected class TextModifyListener implements ModifyListener {
 		@Override

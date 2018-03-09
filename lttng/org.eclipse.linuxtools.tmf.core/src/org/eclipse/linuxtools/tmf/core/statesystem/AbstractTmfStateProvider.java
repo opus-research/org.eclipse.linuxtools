@@ -72,7 +72,6 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
 
         String id2 = (id == null ? "Unamed" : id); //$NON-NLS-1$
         eventHandlerThread = new Thread(new EventProcessor(), id2 + " Event Handler"); //$NON-NLS-1$
-
     }
 
     @Override
@@ -141,16 +140,29 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
          * the state. That way, when that event leaves the queue, we will know
          * for sure that the state system processed the preceding real event.
          */
-        TmfTimestamp ts = new TmfTimestamp(0); /* it must not be -1! */
-        TmfEvent ev = new TmfEvent(null, ts, null, null, null, null);
+        TmfEvent ev = new EmptyEvent();
 
         try {
             eventsQueue.put(ev);
             while (!eventsQueue.isEmpty()) {
-                    Thread.sleep(100);
+                Thread.sleep(100);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Inner classes
+    // ------------------------------------------------------------------------
+
+    /**
+     * Empty event that should be totally ignored by the event handler. It can
+     * by used for synchronisation purposes.
+     */
+    private class EmptyEvent extends TmfEvent {
+        public EmptyEvent() {
+            super(null, new TmfTimestamp(0), null, null, null, null);
         }
     }
 
@@ -171,6 +183,12 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
             try {
                 event = eventsQueue.take();
                 while (event.getTimestamp().getValue() != -1) {
+                    if (event instanceof EmptyEvent) {
+                        /* Synchronization event, should be ignored */
+                        event = eventsQueue.take();
+                        continue;
+                    }
+
                     currentEvent = event;
 
                     /* Make sure this is an event the sub-class can process */
@@ -181,7 +199,6 @@ public abstract class AbstractTmfStateProvider implements ITmfStateProvider {
                 }
                 /* We've received the last event, clean up */
                 closeStateSystem();
-                return;
             } catch (InterruptedException e) {
                 /* We've been interrupted abnormally */
                 System.out.println("Event handler interrupted!"); //$NON-NLS-1$

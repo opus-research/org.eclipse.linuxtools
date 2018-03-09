@@ -9,6 +9,7 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Added handling of streamed traces
+ *   Marc-Andre Laperle - Use common method to get opened tmf projects
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -17,8 +18,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -26,21 +25,21 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.lttng2.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.remote.IRemoteSystemProxy;
-import org.eclipse.linuxtools.tmf.core.TmfProjectNature;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.ImportTraceWizard;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
+import org.eclipse.rse.core.subsystems.RemoteChildrenContentsType;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSystem;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -51,7 +50,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
@@ -73,6 +71,12 @@ public class ImportDialog extends Dialog implements IImportDialog {
     /** Parent directory for UST traces */
     public static final String UST_PARENT_DIRECTORY = "ust"; //$NON-NLS-1$
 
+    /** Name of metadata file of trace */
+    public static final String METADATA_FILE_NAME = "metadata"; //$NON-NLS-1$
+
+    /** Default name of kernel traces */
+    public static final String DEFAULT_KERNEL_TRACE_NAME = "kernel"; //$NON-NLS-1$
+
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -93,10 +97,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
      */
     private Button fOverwriteButton;
     /**
-     * The button to open import wizard for import locally.
-     */
-    private Button fImportLocallyButton;
-    /**
      * List of available LTTng 2.0 projects
      */
     private List<IProject> fProjects;
@@ -104,6 +104,11 @@ public class ImportDialog extends Dialog implements IImportDialog {
      * The parent where the new node should be added.
      */
     private TraceSessionComponent fSession = null;
+
+    /**
+     * The name of the default project name
+     */
+    private String fDefaultProjectName = null;
     /**
      * List of traces to import
      */
@@ -116,6 +121,10 @@ public class ImportDialog extends Dialog implements IImportDialog {
      * Flag to indicate that something went wrong when creating the dialog box.
      */
     private boolean fIsError = false;
+    /**
+     * Children of the remote folder (can be null)
+     */
+    private Object[] fFolderChildren = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -126,7 +135,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
      */
     public ImportDialog(Shell shell) {
         super(shell);
-        setShellStyle(SWT.RESIZE);
+        setShellStyle(SWT.RESIZE | getShellStyle());
     }
 
     // ------------------------------------------------------------------------
@@ -150,6 +159,11 @@ public class ImportDialog extends Dialog implements IImportDialog {
         fSession = session;
     }
 
+    @Override
+    public void setDefaultProject(String defaultProject) {
+        fDefaultProjectName = defaultProject;
+    }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -171,14 +185,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
         fDialogComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         try {
-            if (fSession.isStreamedTrace()) {
-                createLocalComposite();
-            } else {
-                createRemoteComposite();
-            }
-        } catch (CoreException e) {
-            createErrorComposite(parent, e.fillInStackTrace());
-            return fDialogComposite;
+            createRemoteComposite();
         } catch (SystemMessageException e) {
             createErrorComposite(parent, e.fillInStackTrace());
             return fDialogComposite;
@@ -188,11 +195,24 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", true); //$NON-NLS-1$
-        fImportLocallyButton = createButton(parent, IDialogConstants.OK_ID, "&Ok", true); //$NON-NLS-1$
-        if (fSession.isStreamedTrace()) {
-            fImportLocallyButton.setText("&Next..."); //$NON-NLS-1$
-        }
+        Button selectAllButton = createButton(parent, IDialogConstants.SELECT_ALL_ID, Messages.TraceControl_ImportDialog_SelectAll, true);
+        selectAllButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setFolderChildrenChecked(true);
+            }
+        });
+
+        Button deselectAllButton = createButton(parent, IDialogConstants.DESELECT_ALL_ID, Messages.TraceControl_ImportDialog_DeselectAll, true);
+        deselectAllButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setFolderChildrenChecked(false);
+            }
+        });
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        updateOKButtonEnablement();
     }
 
     @Override
@@ -208,20 +228,6 @@ public class ImportDialog extends Dialog implements IImportDialog {
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_ImportDialogTitle,
                         Messages.TraceControl_ImportDialogNoProjectSelectedError);
-                return;
-            }
-
-            if (fSession.isStreamedTrace()) {
-                // For streaming use standard import wizard from TMF because exact location
-                // is not available (lttng backend limitation)
-                IProject project = fProjects.get(fCombo.getSelectionIndex());
-                ImportTraceWizard wizard = new ImportTraceWizard();
-                wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(project));
-                WizardDialog dialog = new WizardDialog(getShell(), wizard);
-                if (dialog.open() == Window.OK) {
-                    super.okPressed();
-                }
-                super.cancelPressed();
                 return;
             }
 
@@ -241,20 +247,35 @@ public class ImportDialog extends Dialog implements IImportDialog {
             Object[] checked = fFolderViewer.getCheckedElements();
             for (int i = 0; i < checked.length; i++) {
                 IRemoteFile file = (IRemoteFile) checked[i];
+                if (!file.isDirectory() && file.getName().equals(METADATA_FILE_NAME)) {
+                    IRemoteFile trace = file.getParentRemoteFile();
+                    IRemoteFile parent = trace.getParentRemoteFile();
+                    boolean isKernel = false;
+                    if (trace.getName().equals(DEFAULT_KERNEL_TRACE_NAME)) {
+                        isKernel = true;
+                    }
+                    StringBuffer traceName = new StringBuffer();
+                    traceName.append(trace.getName());
+                    traceName.insert(0, '-');
 
-                // Only add actual trace directories
-                if (file.isDirectory() && !UST_PARENT_DIRECTORY.equals(file.getName())) {
+                    String path = fSession.isSnapshotSession() ? fSession.getSnapshotInfo().getSnapshotPath() : fSession.getSessionPath();
 
-                    ImportFileInfo info = new ImportFileInfo(file, file.getName(), overwriteAll);
-                    String traceName = info.getLocalTraceName();
-                    IFolder folder = traceFolder.getFolder(traceName);
+                    while (!parent.getAbsolutePath().equals(path)) {
+                        traceName.insert(0, parent.getName());
+                        traceName.insert(0, '-');
+                        parent = parent.getParentRemoteFile();
+                    }
+                    traceName.insert(0, parent.getName());
+
+                    ImportFileInfo info = new ImportFileInfo(trace, traceName.toString(), overwriteAll, isKernel);
+                    IFolder folder = traceFolder.getFolder(traceName.toString());
 
                     // Verify if trace directory already exists (and not overwrite)
                     if (folder.exists() && !overwriteAll) {
 
                         // Ask user for overwrite or new name
                         IImportConfirmationDialog conf = TraceControlDialogFactory.getInstance().getImportConfirmationDialog();
-                        conf.setTraceName(traceName);
+                        conf.setTraceName(traceName.toString());
 
                         // Don't add trace to list if dialog was cancelled.
                         if (conf.open() == Window.OK) {
@@ -330,7 +351,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
         errorText.setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
-    private void createRemoteComposite() throws CoreException, SystemMessageException{
+    private void createRemoteComposite() throws SystemMessageException{
         Group contextGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
         contextGroup.setText(Messages.TraceControl_ImportDialogTracesGroupName);
         GridLayout layout = new GridLayout(1, true);
@@ -341,9 +362,12 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
         IFileServiceSubSystem fsss = proxy.getFileServiceSubSystem();
 
-        IRemoteFile remoteFolder = fsss.getRemoteFileObject(fSession.getSessionPath(), new NullProgressMonitor());
+        final String path = fSession.isSnapshotSession() ? fSession.getSnapshotInfo().getSnapshotPath() : fSession.getSessionPath();
+        final IRemoteFile remoteFolder = fsss.getRemoteFileObject(path, new NullProgressMonitor());
+        // make sure that remote directory is read and not cached
+        remoteFolder.markStale(true, true);
 
-        fFolderViewer = new CheckboxTreeViewer(contextGroup, SWT.BORDER);
+        fFolderViewer = new CheckboxTreeViewer(contextGroup, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         GridData data = new GridData(GridData.FILL_BOTH);
         Tree tree = fFolderViewer.getTree();
         tree.setLayoutData(data);
@@ -363,16 +387,22 @@ public class ImportDialog extends Dialog implements IImportDialog {
                         // A trick to keep selection of a file in sync with the directory
                         boolean p = fFolderViewer.getChecked((element.getParentRemoteFile()));
                         fFolderViewer.setChecked(element, p);
-                        return;
+                    } else {
+                        fFolderViewer.setSubtreeChecked(event.getElement(), event.getChecked());
+                        if (!event.getChecked()) {
+                            fFolderViewer.setChecked(element.getParentRemoteFile(), false);
+                        }
                     }
-                    fFolderViewer.setSubtreeChecked(event.getElement(), event.getChecked());
-                    if (!event.getChecked()) {
-                        fFolderViewer.setChecked(element.getParentRemoteFile(), false);
-                    }
+                    updateOKButtonEnablement();
                 }
             }
         });
         fFolderViewer.setInput(remoteFolder);
+
+        fFolderChildren = remoteFolder.getContents(RemoteChildrenContentsType.getInstance());
+        // children can be null if there the path doesn't exist. This happens when a trace
+        // session hadn't been started and no output was created.
+        setFolderChildrenChecked(true);
 
         Group projectGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
         projectGroup.setText(Messages.TraceControl_ImportDialogProjectsGroupName);
@@ -382,17 +412,21 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
         fProjects = new ArrayList<IProject>();
         List<String> projectNames = new ArrayList<String>();
-        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if (project.isOpen() && project.hasNature(TmfProjectNature.ID)) {
-                fProjects.add(project);
-                projectNames.add(project.getName());
-            }
+
+        for (IProject project : TraceUtils.getOpenedTmfProjects()) {
+            fProjects.add(project);
+            projectNames.add(project.getName());
         }
 
         fCombo = new CCombo(projectGroup, SWT.READ_ONLY);
         fCombo.setToolTipText(Messages.TraceControl_ImportDialogProjectsTooltip);
         fCombo.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false, 1, 1));
         fCombo.setItems(projectNames.toArray(new String[projectNames.size()]));
+
+        if (fDefaultProjectName != null) {
+            int select = projectNames.indexOf(fDefaultProjectName);
+            fCombo.select(select);
+        }
 
         Group overrideGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
         layout = new GridLayout(1, true);
@@ -404,36 +438,20 @@ public class ImportDialog extends Dialog implements IImportDialog {
         getShell().setMinimumSize(new Point(500, 400));
     }
 
-    private void createLocalComposite() throws CoreException {
-
-        Group projectGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-        projectGroup.setText(Messages.TraceControl_ImportDialogProjectsGroupName);
-        GridLayout layout = new GridLayout(1, true);
-        projectGroup.setLayout(layout);
-        projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        fProjects = new ArrayList<IProject>();
-        List<String> projectNames = new ArrayList<String>();
-        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if (project.isOpen() && project.hasNature(TmfProjectNature.ID)) {
-                fProjects.add(project);
-                projectNames.add(project.getName());
+    private void setFolderChildrenChecked(boolean isChecked) {
+        if (fFolderChildren != null) {
+            for (Object child : fFolderChildren) {
+                fFolderViewer.setSubtreeChecked(child, isChecked);
             }
         }
+        updateOKButtonEnablement();
+    }
 
-        fCombo = new CCombo(projectGroup, SWT.READ_ONLY);
-        fCombo.setToolTipText(Messages.TraceControl_ImportDialogProjectsTooltip);
-        fCombo.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false, 1, 1));
-        fCombo.setItems(projectNames.toArray(new String[projectNames.size()]));
-
-//        Group overrideGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
-//        layout = new GridLayout(1, true);
-//        overrideGroup.setLayout(layout);
-//        overrideGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-//
-//        fOverwriteButton = new Button(overrideGroup, SWT.CHECK);
-//        fOverwriteButton.setText(Messages.TraceControl_ImportDialogOverwriteButtonText);
-
-        getShell().setMinimumSize(new Point(500, 50));
+    private void updateOKButtonEnablement() {
+        Object[] checked = fFolderViewer.getCheckedElements();
+        Button okButton = getButton(IDialogConstants.OK_ID);
+        if (okButton != null) {
+            okButton.setEnabled(checked.length > 0);
+        }
     }
  }

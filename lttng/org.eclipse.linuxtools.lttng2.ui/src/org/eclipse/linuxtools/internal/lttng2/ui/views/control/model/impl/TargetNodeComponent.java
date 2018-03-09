@@ -233,6 +233,47 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
         return getControlService().isVersionSupported("2.1.0"); //$NON-NLS-1$
     }
 
+    /**
+     * Returns if node supports configuring buffer type  or not
+     * @return <code>true</code> if node supports buffer type configuration else <code>false</code>
+     */
+    public boolean isBufferTypeConfigSupported() {
+        return getControlService().isVersionSupported("2.2.0"); //$NON-NLS-1$
+    }
+
+    /**
+     * Returns if node supports trace file rotation or not
+     * @return <code>true</code> if node supports trace file rotation else <code>false</code>
+     */
+    public boolean isTraceFileRotationSupported() {
+        return getControlService().isVersionSupported("2.2.0"); //$NON-NLS-1$
+    }
+
+    /**
+     * Returns if node supports periodical flush for metadata or not
+     * @return <code>true</code> if node supports periodical flush for metadata else <code>false</code>
+     */
+    public boolean isPeriodicalMetadataFlushSupported() {
+        return getControlService().isVersionSupported("2.2.0"); //$NON-NLS-1$
+    }
+    /**
+     * Returns if node supports snapshots or not
+     * @return <code>true</code> if it supports snapshots else <code>false</code>
+     *
+     */
+    public boolean isSnapshotSupported() {
+        return getControlService().isVersionSupported("2.3.0"); //$NON-NLS-1$
+    }
+
+    /**
+     * Returns if node supports adding contexts on event
+     * @return <code>true</code> if it supports adding contexts on events else <code>false</code>
+     *
+     */
+    public boolean isContextOnEventSupported() {
+        return !getControlService().isVersionSupported("2.2.0"); //$NON-NLS-1$
+    }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------

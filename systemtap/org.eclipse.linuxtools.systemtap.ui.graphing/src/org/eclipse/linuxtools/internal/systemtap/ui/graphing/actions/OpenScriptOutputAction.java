@@ -29,17 +29,14 @@ import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.dataset.DataSetWizard;
 import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingConstants;
-import org.eclipse.linuxtools.systemtap.ui.graphing.GraphingPerspective;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorView;
+import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.WorkbenchException;
 
 
 
@@ -48,7 +45,10 @@ import org.eclipse.ui.WorkbenchException;
  * It will act just like the user is running a script with graphing, but will
  * not cause update events.
  * @author Ryan Morse
+ * @deprecated
+ * TODO remove in 3.0
  */
+@Deprecated
 public class OpenScriptOutputAction extends Action implements IWorkbenchWindowActionDelegate {
 	@Override
 	public void init(IWorkbenchWindow window) {
@@ -88,13 +88,8 @@ public class OpenScriptOutputAction extends Action implements IWorkbenchWindowAc
 					}
 				}
 
-				try {
-					IWorkbenchPage p = PlatformUI.getWorkbench().showPerspective(GraphingPerspective.ID, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-					IViewPart ivp = p.findView(GraphSelectorView.ID);
-					((GraphSelectorView)ivp).createScriptSet(f.getName(), dataSet);
-				} catch (WorkbenchException e) {
-					ExceptionErrorDialog.openError(Localization.getString("OpenScriptOutputAction.UnableToOpenDialogTitle"), e); //$NON-NLS-1$
-				}
+				IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(GraphSelectorEditor.ID);
+				((GraphSelectorEditor)ivp).createScriptSet(f.getName(), dataSet);
 			}
 		}
 	}

@@ -12,8 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.core.statevalue;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-
 
 /**
  * This is the wrapper class that exposes the different types of 'state values'
@@ -23,59 +23,28 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
  * example, we can save numerical values as integers instead of arrays of
  * 1-digit characters.
  *
- * For now the two available types are either int or String.
+ * The available types are Int, Long, Double and String.
  *
  * @version 1.0
  * @author Alexandre Montplaisir
  */
 public abstract class TmfStateValue implements ITmfStateValue {
 
-    /**
-     * Retrieve directly the value object contained within. Implementing
-     * subclasses may limit the return type here.
-     *
-     * It's protected, since we do not want to expose this directly in the
-     * public API (and require all its users to manually cast to the right
-     * types). All accesses to the values should go through the "unbox-"
-     * methods.
-     *
-     * @return The underneath object assigned to this state value.
-     */
-    protected abstract Object getValue();
+    // ------------------------------------------------------------------------
+    // State value caches (sizes must be powers of 2)
+    // ------------------------------------------------------------------------
 
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (!(other instanceof TmfStateValue)) {
-            return false;
-        }
+    private static final int INT_CACHE_SIZE = 128;
+    private static final int LONG_CACHE_SIZE = 128;
+    private static final int DOUBLE_CACHE_SIZE = 128;
 
-        /* If both types are different they're necessarily not equal */
-        if (this.getType() != ((TmfStateValue) other).getType()) {
-            return false;
-        }
+    private static final IntegerStateValue intCache[] = new IntegerStateValue[INT_CACHE_SIZE];
+    private static final LongStateValue longCache[] = new LongStateValue[LONG_CACHE_SIZE];
+    private static final DoubleStateValue doubleCache[] = new DoubleStateValue[DOUBLE_CACHE_SIZE];
 
-        /*
-         * This checks for the case where we'd compare two null values (and so
-         * avoid a NPE below)
-         */
-        if (this.isNull()) {
-            return true;
-        }
-
-        /* The two are valid and comparable, let's compare them */
-        return this.getValue().equals(((TmfStateValue) other).getValue());
-    }
-
-    @Override
-    public int hashCode() {
-        if (this.isNull()) {
-            return 0;
-        }
-        return this.getValue().hashCode();
-    }
+    // ------------------------------------------------------------------------
+    // Factory methods to instantiate new state values
+    // ------------------------------------------------------------------------
 
     /*
      * Since all "null state values" are the same, we only need one copy in
@@ -88,89 +57,120 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *
      * @return A null value
      */
-    public final static TmfStateValue nullValue() {
+    public static final TmfStateValue nullValue() {
         return nullValue;
     }
 
     /**
      * Factory constructor for Integer state values
      *
-     * @param intValue The integer value to contain
+     * @param intValue
+     *            The integer value to contain
      * @return The newly-created TmfStateValue object
      */
     public static TmfStateValue newValueInt(int intValue) {
-        if (intValue == -1) {
-            return nullValue();
+        /* Lookup in cache for the existence of the same value. */
+        int offset = intValue & (INT_CACHE_SIZE - 1);
+        IntegerStateValue cached = intCache[offset];
+        if (cached != null && cached.unboxInt() == intValue) {
+            return cached;
         }
-        return new IntegerStateValue(intValue);
+
+        /* Not in cache, create a new value and cache it. */
+        IntegerStateValue newValue = new IntegerStateValue(intValue);
+        intCache[offset] = newValue;
+        return newValue;
+    }
+
+    /**
+     * Factory constructor for Long state values
+     *
+     * @param longValue
+     *            The long value to contain
+     * @return The newly-created TmfStateValue object
+     * @since 2.0
+     */
+    public static TmfStateValue newValueLong(long longValue) {
+        /* Lookup in cache for the existence of the same value. */
+        int offset = (int) longValue & (LONG_CACHE_SIZE - 1);
+        LongStateValue cached = longCache[offset];
+        if (cached != null && cached.unboxLong() == longValue) {
+            return cached;
+        }
+
+        /* Not in cache, create a new value and cache it. */
+        LongStateValue newValue = new LongStateValue(longValue);
+        longCache[offset] = newValue;
+        return newValue;
+    }
+
+    /**
+     * Factory constructor for Double state values
+     *
+     * @param value
+     *            The double value to contain
+     * @return The newly-created TmfStateValue object
+     */
+    public static TmfStateValue newValueDouble(double value) {
+        /* Lookup in cache for the existence of the same value. */
+        int offset = (int) Double.doubleToLongBits(value) & (DOUBLE_CACHE_SIZE - 1);
+        DoubleStateValue cached = doubleCache[offset];
+
+        /*
+         * We're using Double.compare() instead of .equals(), because .compare()
+         * works when both values are Double.NaN.
+         */
+        if (cached != null && Double.compare(cached.unboxDouble(), value) == 0) {
+            return cached;
+        }
+
+        /* Not in cache, create a new value and cache it. */
+        DoubleStateValue newValue = new DoubleStateValue(value);
+        doubleCache[offset] = newValue;
+        return newValue;
     }
 
     /**
      * Factory constructor for String state values
      *
-     * @param strValue The string value to contain
-     * @return The newly-create TmfStateValue object
+     * @param strValue
+     *            The string value to contain
+     * @return The newly-created TmfStateValue object
      */
-    public static TmfStateValue newValueString(String strValue) {
+    public static TmfStateValue newValueString(@Nullable String strValue) {
         if (strValue == null) {
             return nullValue();
         }
         return new StringStateValue(strValue);
     }
 
-    /**
-     * Factory constructor for Long state values
-     *
-     * @param longValue The long value to contain
-     * @return The newly-create TmfStateValue object
-     * @since 2.0
-     */
-    public static TmfStateValue newValueLong(long longValue) {
-        if (longValue == -1) {
-            return nullValue();
-        }
-        return new LongStateValue(longValue);
+    // ------------------------------------------------------------------------
+    // Default unboxing methods.
+    // Subclasses can override those for the types they support.
+    // ------------------------------------------------------------------------
+
+    private String unboxErrMsg(String targetType) {
+        return "Type " + getClass().getSimpleName() + //$NON-NLS-1$
+                " cannot be unboxed into a " + targetType + " value."; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
     public int unboxInt() throws StateValueTypeException {
-        if (this.isNull()) {
-            /* Int value expected, return "-1" instead */
-            return -1;
-        }
+        throw new StateValueTypeException(unboxErrMsg("Int")); //$NON-NLS-1$
+    }
 
-        if (this.getType() != Type.INTEGER) {
-            throw new StateValueTypeException();
-        }
-        return (Integer) this.getValue();
+    @Override
+    public long unboxLong() throws StateValueTypeException {
+        throw new StateValueTypeException(unboxErrMsg("Long")); //$NON-NLS-1$
+    }
+
+    @Override
+    public double unboxDouble() throws StateValueTypeException {
+        throw new StateValueTypeException(unboxErrMsg("Double")); //$NON-NLS-1$
     }
 
     @Override
     public String unboxStr() throws StateValueTypeException {
-        if (this.isNull()) {
-            /* String value expected, return "nullValue" instead */
-            return "nullValue"; //$NON-NLS-1$
-        }
-
-        if (this.getType() != Type.STRING) {
-            throw new StateValueTypeException();
-        }
-        return (String) this.getValue();
-    }
-
-    /**
-     * @since 2.0
-     */
-    @Override
-    public long unboxLong() throws StateValueTypeException {
-        if (this.isNull()) {
-            /* Long value expected, return "-1" instead */
-            return -1;
-        }
-
-        if (this.getType() != Type.LONG) {
-            throw new StateValueTypeException();
-        }
-        return (Long) this.getValue();
+        throw new StateValueTypeException(unboxErrMsg("String")); //$NON-NLS-1$
     }
 }

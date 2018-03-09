@@ -8,16 +8,18 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Bernd Hufmann - Update handling of suspend and resume
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.component;
 
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
-import org.eclipse.linuxtools.tmf.core.component.ITmfDataProvider;
-import org.eclipse.linuxtools.tmf.core.component.TmfDataProvider;
+import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
+import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
-import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest.ExecutionType;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
@@ -36,12 +38,12 @@ public class TmfEventThread implements Runnable {
     /**
      * The event provider
      */
-    private final TmfDataProvider fProvider;
+    private final TmfEventProvider fProvider;
 
     /**
      * The wrapped event request
      */
-    private final ITmfDataRequest fRequest;
+    private final ITmfEventRequest fRequest;
 
     /**
      * The request execution priority
@@ -56,13 +58,13 @@ public class TmfEventThread implements Runnable {
     /**
      * The thread execution state
      */
-    private volatile boolean isPaused    = false;
     private volatile boolean isCompleted = false;
 
-    /**
-     * The synchronization object
-     */
-    private final Object object = new Object();
+    /** The synchronization object */
+    private final Object fSynchObject = new Object();
+
+    /** The flag for suspending a thread */
+    private volatile boolean fIsPaused = false;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -74,7 +76,7 @@ public class TmfEventThread implements Runnable {
      * @param provider the event provider
      * @param request the request to process
      */
-    public TmfEventThread(TmfDataProvider provider, ITmfDataRequest request) {
+    public TmfEventThread(TmfEventProvider provider, ITmfEventRequest request) {
         assert provider != null;
         assert request  != null;
         fProvider = provider;
@@ -109,14 +111,14 @@ public class TmfEventThread implements Runnable {
     /**
      * @return The event provider
      */
-    public ITmfDataProvider getProvider() {
+    public ITmfEventProvider getProvider() {
         return fProvider;
     }
 
     /**
      * @return The event request
      */
-    public ITmfDataRequest getRequest() {
+    public ITmfEventRequest getRequest() {
         return fRequest;
     }
 
@@ -131,7 +133,14 @@ public class TmfEventThread implements Runnable {
      * @return The request execution state
      */
     public boolean isRunning() {
-        return fRequest.isRunning() && !isPaused;
+        return fRequest.isRunning() && !isPaused();
+    }
+
+    /**
+     * @return The request execution state
+     */
+    public boolean isPaused() {
+        return fIsPaused;
     }
 
     /**
@@ -169,20 +178,22 @@ public class TmfEventThread implements Runnable {
             TmfCoreTracer.traceRequest(fRequest, "read first event"); //$NON-NLS-1$
 
             while (event != null && !fProvider.isCompleted(fRequest, event, nbRead)) {
-                if (isPaused) {
-                    try {
-                        while (isPaused) {
-                            synchronized (object) {
-                                object.wait();
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                    }
-                }
 
                 TmfCoreTracer.traceEvent(fProvider, fRequest, event);
                 if (fRequest.getDataType().isInstance(event)) {
                     fRequest.handleData(event);
+                }
+
+                // Pause execution if requested
+
+                while (fIsPaused) {
+                    synchronized (fSynchObject) {
+                        try {
+                            fSynchObject.wait();
+                        } catch (InterruptedException e) {
+                            // continue
+                        }
+                    }
                 }
 
                 // To avoid an unnecessary read passed the last event requested
@@ -200,6 +211,7 @@ public class TmfEventThread implements Runnable {
             }
 
         } catch (Exception e) {
+            Activator.logError("Error in " + fProvider.getName() + " handling " + fRequest, e); //$NON-NLS-1$ //$NON-NLS-2$
             fRequest.fail();
         }
 
@@ -214,18 +226,18 @@ public class TmfEventThread implements Runnable {
     /**
      * Suspend the thread
      */
-    public synchronized void suspend() {
-        isPaused = true;
+    public void suspend() {
+        fIsPaused = true;
         TmfCoreTracer.traceRequest(fRequest, "SUSPENDED"); //$NON-NLS-1$
     }
 
     /**
      * Resume the thread
      */
-    public synchronized void resume() {
-        isPaused = false;
-        synchronized (object) {
-            object.notifyAll();
+    public void resume() {
+        fIsPaused = false;
+        synchronized (fSynchObject) {
+            fSynchObject.notifyAll();
         }
         TmfCoreTracer.traceRequest(fRequest, "RESUMED"); //$NON-NLS-1$
     }
@@ -238,5 +250,4 @@ public class TmfEventThread implements Runnable {
             fRequest.cancel();
         }
     }
-
 }

@@ -11,6 +11,7 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
@@ -20,7 +21,7 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKer
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTraces;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -31,24 +32,32 @@ import org.junit.Test;
  */
 public class PartialStateSystemTest extends StateSystemTest {
 
+    private static File stateFile;
+
     /**
      * Initialization
      */
     @BeforeClass
     public static void initialize() {
-        assumeTrue(CtfTmfTestTraces.tracesExist());
-        File stateFile = null;
+        assumeTrue(testTrace.exists());
         try {
             stateFile = File.createTempFile("test-partial", ".ht");
-            stateFile.deleteOnExit();
 
-            input = new LttngKernelStateProvider(CtfTmfTestTraces.getTestTrace(TRACE_INDEX));
+            input = new LttngKernelStateProvider(testTrace.getTrace());
             ssq = TmfStateSystemFactory.newPartialHistory(stateFile, input, true);
         } catch (IOException e) {
-            e.printStackTrace();
+            fail();
         } catch (TmfTraceException e) {
-            e.printStackTrace();
+            fail();
         }
+    }
+
+    /**
+     * Class clean-up
+     */
+    @AfterClass
+    public static void tearDownClass() {
+        stateFile.delete();
     }
 
     /**

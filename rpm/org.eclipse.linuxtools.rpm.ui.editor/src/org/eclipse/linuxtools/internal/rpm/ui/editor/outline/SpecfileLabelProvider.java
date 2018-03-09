@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2009 Red Hat, Inc.
+ * Copyright (c) 2007, 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,10 @@
 
 package org.eclipse.linuxtools.internal.rpm.ui.editor.outline;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.Activator;
@@ -28,20 +32,26 @@ public class SpecfileLabelProvider implements ILabelProvider {
 	private static final String SECTION_ICON="icons/section_obj.gif"; //$NON-NLS-1$
 	private static final String PACKAGES_ICON="icons/packages_obj.gif"; //$NON-NLS-1$
 	private static final String PACKAGE_ICON="icons/package_obj.gif"; //$NON-NLS-1$
-	
+	private IProject project;
+
+	@Override
 	public void addListener(ILabelProviderListener listener) {
 	}
 
+	@Override
 	public void dispose() {
 	}
 
+	@Override
 	public boolean isLabelProperty(Object element, String property) {
 		return false;
 	}
 
+	@Override
 	public void removeListener(ILabelProviderListener listener) {
 	}
 
+	@Override
 	public Image getImage(Object element) {
 		if (element instanceof SpecfilePackage) {
 			return Activator.getDefault().getImage(PACKAGE_ICON);
@@ -55,25 +65,53 @@ public class SpecfileLabelProvider implements ILabelProvider {
 		return null;
 	}
 
+	@Override
 	public String getText(Object element) {
+		String str = ""; //$NON-NLS-1$
 		if (element instanceof SpecfileSection) {
 			SpecfileSection specfileSection = (SpecfileSection) element;
-			return specfileSection.toString();
+			str = specfileSection.toString();
 		} else if (element instanceof Specfile) {
-			return ((Specfile) element).getName();
+			str = ((Specfile) element).getName();
 		} else if (element instanceof SpecfilePackageContainer) {
-			return Messages.SpecfileLabelProvider_0;
+			str = Messages.SpecfileLabelProvider_0;
 		} else if (element instanceof SpecfilePreamble){
-			return Messages.SpecfileLabelProvider_1;
+			str = Messages.SpecfileLabelProvider_1;
 		} else if (element instanceof SpecfileElement) {
 			SpecfileElement specfileElement = (SpecfileElement) element;
-			return specfileElement.getName();
+			str = specfileElement.getName();
 		} else if (element instanceof String) {
-			return (String) element;
+			str = (String) element;
 		} else if (element instanceof SpecfilePackage) {
-			return ((SpecfilePackage) element).getName();
+			str = ((SpecfilePackage) element).getName();
 		}
-		return ""; //$NON-NLS-1$
+		return filterMacros(str.trim());
+	}
+
+	/**
+	 * Sets IProject
+	 * @since 2.1
+	 */
+	protected void setProject(IProject project) {
+		this.project=project;
+	}
+
+	/**
+	 * Remove any unresolved macros from the string. These are
+	 * macros that follow the format %{?...} (e.g. %{?scl_prefix}).
+	 *
+	 * @param text The text to filter macros out from.
+	 * @return A string without unresolved macros.
+	 *
+	 * @since 2.1
+	 */
+	private String filterMacros(String text) {
+		Pattern variablePattern = Pattern.compile("%\\{\\?\\w+\\}"); //$NON-NLS-1$
+		Matcher variableMatcher = variablePattern.matcher(text);
+		while (variableMatcher.find()) {
+				text = text.replace(variableMatcher.group(0), ""); //$NON-NLS-1$
+		}
+		return text;
 	}
 
 }
