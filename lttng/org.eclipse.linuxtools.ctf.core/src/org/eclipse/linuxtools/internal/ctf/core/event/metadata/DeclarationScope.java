@@ -21,7 +21,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 
-
 /**
  * <b><u>DeclarationScope</u></b>
  * <p>
@@ -29,11 +28,11 @@ import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseE
  * scope.
  *
  * TODO: The notion of "symbols" and the notion of "scope" are misused in this
- * parser, which lead to inefficient tree management. It should be cleaned up.
- * 
+ * parser, which leads to inefficient tree management. It should be cleaned up.
+ *
  * @author Matthew Khouzam
  * @author Simon Marchi
- * 
+ *
  */
 class DeclarationScope {
 
