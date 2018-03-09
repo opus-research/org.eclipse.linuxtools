@@ -109,7 +109,7 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
              */
             quark = ss.getQuarkRelativeAndAdd(currentCPUNode, Attributes.CURRENT_THREAD);
             value = ss.queryOngoingState(quark);
-            int thread = value.isNull() ? -1 : value.unboxInt();
+            int thread = value.unboxInt();
             final Integer currentThreadNode = ss.getQuarkRelativeAndAdd(getNodeThreads(), String.valueOf(thread));
 
             /*

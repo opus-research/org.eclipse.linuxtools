@@ -162,7 +162,6 @@ public class SelectTracesWizardPage extends WizardPage {
         }
         fProject.refresh();
         if (changed) {
-            fExperiment.deleteSupplementaryResources();
             fExperiment.closeEditors();
         }
 
