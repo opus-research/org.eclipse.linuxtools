@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.internal.rpm.createrepo.form.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -66,6 +67,7 @@ public class CreaterepoMetadataPageTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws CoreException {
 		testProject = new TestCreaterepoProject();
+		assertTrue(testProject.getProject().exists());
 		bot = new SWTWorkbenchBot();
 	}
 
@@ -77,6 +79,7 @@ public class CreaterepoMetadataPageTest {
 	@AfterClass
 	public static void tearDownAfterClass() throws CoreException {
 		testProject.dispose();
+		assertFalse(testProject.getProject().exists());
 	}
 
 	/**
@@ -89,6 +92,7 @@ public class CreaterepoMetadataPageTest {
 	@Before
 	public void setUp() throws CoreException, IOException {
 		project = testProject.getCreaterepoProject();
+		assertNotNull(project);
 		initializeMetadataPage();
 	}
 
@@ -102,6 +106,7 @@ public class CreaterepoMetadataPageTest {
 		IEclipsePreferences pref = project.getEclipsePreferences();
 		pref.clear();
 		pref.flush();
+		assertEquals(0, pref.keys().length);
 	}
 
 	/**
@@ -118,8 +123,10 @@ public class CreaterepoMetadataPageTest {
 				String prefValueToBe = ""; //$NON-NLS-1$
 				metadataPageBot.textWithLabel(Messages.MetadataPage_labelTags).setText(tagName);
 				Tree tree = metadataPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
+				assertNotNull(tree);
 				// 0 = distro, 1 = content, 2 = repo
 				int category = 0;
+				// select the category and the test adding tags
 				tree.select(tree.getItem(category));
 				metadataPageBot.button(Messages.MetadataPage_buttonAddTag).click();
 				CreaterepoTreeCategory test = (CreaterepoTreeCategory) tree.getItem(category).getData();
@@ -161,9 +168,10 @@ public class CreaterepoMetadataPageTest {
 				String newTagName = "renameTag"; //$NON-NLS-1$
 				String prefValueToBe = ""; //$NON-NLS-1$
 				Tree tree = metadataPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
+				assertNotNull(tree);
 				// 0 = distro, 1 = content, 2 = repo
 				int category = 1;
-				// select the category and the test tags to it
+				// select the category and test editing tags
 				tree.select(tree.getItem(category));
 				metadataPageBot.textWithLabel(Messages.MetadataPage_labelTags).setText(tagName);
 				metadataPageBot.button(Messages.MetadataPage_buttonAddTag).click();
@@ -183,7 +191,7 @@ public class CreaterepoMetadataPageTest {
 				// it should be content = {renameTag, testTag2} now
 				prefValueToBe = newTagName + ICreaterepoConstants.DELIMITER + tagName2;
 				assertTrue(isPreferencesCorrect(CreaterepoPreferenceConstants.PREF_CONTENT_TAG, prefValueToBe));
-				// select the second test tag and try to rename it as the same name as the first tag, this should not happen
+				// select the second test tag and try to rename it as the same name as the first tag, this should not work
 				tree.select(tree.getItem(category).getItem(1));
 				metadataPageBot.textWithLabel(Messages.MetadataPage_labelTags).setText(newTagName);
 				metadataPageBot.button(Messages.MetadataPage_buttonEditTag).click();
@@ -208,9 +216,10 @@ public class CreaterepoMetadataPageTest {
 				String tagName = "testTag"; //$NON-NLS-1$
 				String prefValueToBe = ""; //$NON-NLS-1$
 				Tree tree = metadataPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
+				assertNotNull(tree);
 				// 0 = distro, 1 = content, 2 = repo
 				int category = 2;
-				// select the category and the test tags to it
+				// select the category and test removing tags
 				tree.select(tree.getItem(category));
 				metadataPageBot.textWithLabel(Messages.MetadataPage_labelTags).setText(tagName);
 				metadataPageBot.button(Messages.MetadataPage_buttonAddTag).click();
@@ -258,22 +267,24 @@ public class CreaterepoMetadataPageTest {
 		bot.menu(ICreaterepoTestConstants.WINDOW).menu(ICreaterepoTestConstants.SHOW_VIEW).menu(ICreaterepoTestConstants.OTHER).click();
 		SWTBotShell shell = bot.shell(ICreaterepoTestConstants.SHOW_VIEW);
 		shell.activate();
-		bot.tree().expandNode(ICreaterepoTestConstants.JAVA_NODE).select(ICreaterepoTestConstants.PACKAGE_EXPLORER);
+		bot.tree().expandNode(ICreaterepoTestConstants.GENERAL_NODE).select(ICreaterepoTestConstants.NAVIGATOR);
 		bot.button(ICreaterepoTestConstants.OK_BUTTON).click();
-		SWTBotView view = bot.viewByTitle(ICreaterepoTestConstants.PACKAGE_EXPLORER);
+		SWTBotView view = bot.viewByTitle(ICreaterepoTestConstants.NAVIGATOR);
 		view.show();
 		// select the repo file from the package explorer and open it
 		Composite packageExplorer = (Composite)view.getWidget();
+		assertNotNull(packageExplorer);
 		Tree swtTree = bot.widget(WidgetMatcherFactory.widgetOfType(Tree.class), packageExplorer);
+		assertNotNull(swtTree);
 		SWTBotTree botTree = new SWTBotTree(swtTree);
-		botTree.expandNode(TestCreaterepoProject.PROJECT_NAME).select(TestCreaterepoProject.REPO_NAME);
-		bot.menu(ICreaterepoTestConstants.OPEN).click();
+		botTree.expandNode(ICreaterepoTestConstants.PROJECT_NAME).getNode(ICreaterepoTestConstants.REPO_NAME)
+			.contextMenu(ICreaterepoTestConstants.OPEN).click();
 		// get a handle on the multipage editor that was opened
-		SWTBotMultiPageEditor editor = bot.multipageEditorByTitle(TestCreaterepoProject.REPO_NAME);
+		SWTBotMultiPageEditor editor = bot.multipageEditorByTitle(ICreaterepoTestConstants.REPO_NAME);
 		editor.show();
 		// 3 = repository form page, metadata form page, repo file
 		assertEquals(3, editor.getPageCount());
-		// activate the pages to make sure they exist and work
+		// activate the metadata page
 		editor.activatePage(Messages.MetadataPage_title);
 		// make sure correct page is active
 		assertEquals(Messages.MetadataPage_title, editor.getActivePageTitle());
