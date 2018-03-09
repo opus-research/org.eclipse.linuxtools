@@ -324,7 +324,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
             if (idDef instanceof SimpleDatatypeDefinition) {
                 eventID = ((SimpleDatatypeDefinition) idDef).getIntegerValue();
             } else if (idDef != null) {
-                throw new CTFReaderException("Incorrect event id : " + eventID); //$NON-NLS-1$
+                throw new CTFReaderException("Incorrect event id : " + eventID);
             }
 
             /*
