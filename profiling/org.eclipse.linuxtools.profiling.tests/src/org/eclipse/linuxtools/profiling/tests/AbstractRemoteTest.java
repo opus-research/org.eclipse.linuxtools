@@ -60,13 +60,12 @@ import org.eclipse.ptp.rdt.core.remotemake.RemoteMakeBuilder;
 import org.eclipse.ptp.rdt.core.resources.RemoteMakeNature;
 import org.eclipse.ptp.rdt.ui.serviceproviders.IRemoteToolsIndexServiceProvider;
 import org.eclipse.ptp.rdt.ui.serviceproviders.RemoteBuildServiceProvider;
-import org.eclipse.remote.core.IRemoteConnectionWorkingCopy;
-import org.eclipse.remote.core.IRemoteConnection;
-import org.eclipse.remote.core.IRemoteConnectionManager;
-import org.eclipse.remote.core.IRemoteFileManager;
-import org.eclipse.remote.core.IRemoteServices;
-import org.eclipse.remote.core.RemoteServices;
-import org.eclipse.remote.core.exception.RemoteConnectionException;
+import org.eclipse.ptp.remote.core.IRemoteConnection;
+import org.eclipse.ptp.remote.core.IRemoteConnectionManager;
+import org.eclipse.ptp.remote.core.IRemoteFileManager;
+import org.eclipse.ptp.remote.core.IRemoteServices;
+import org.eclipse.ptp.remote.core.RemoteServices;
+import org.eclipse.ptp.remote.core.exception.RemoteConnectionException;
 import org.eclipse.ptp.services.core.IService;
 import org.eclipse.ptp.services.core.IServiceConfiguration;
 import org.eclipse.ptp.services.core.IServiceProviderDescriptor;
@@ -93,7 +92,7 @@ public abstract class AbstractRemoteTest extends AbstractTest {
 	public static final String RESOURCES_DIR = "resources/"; //$NON-NLS-1$
 
 	private IRemoteServices fRemoteServices;
-	private IRemoteConnectionWorkingCopy fRemoteConnection;
+	private IRemoteConnection fRemoteConnection;
 
 	/**
 	 * Create a CDT project outside the default workspace.
@@ -225,7 +224,7 @@ public abstract class AbstractRemoteTest extends AbstractTest {
 		mngr.setProjectDescription(externalProject, des);
 
 		// The source file in the plug-in test package is copied to the specified directory
-		final IRemoteFileManager fileManager = fRemoteConnection.getFileManager();
+		final IRemoteFileManager fileManager = fRemoteServices.getFileManager(fRemoteConnection);
 		final IFileStore dstFileStore = fileManager.getResource(pathString);
 		IFileSystem fileSystem = EFS.getLocalFileSystem();
 		IFileStore srcFileStore = fileSystem.getStore(URI.create(RESOURCES_DIR + projname));
@@ -283,7 +282,7 @@ public abstract class AbstractRemoteTest extends AbstractTest {
 				IRemoteConnectionManager connMgr = fRemoteServices.getConnectionManager();
 				assertNotNull(connMgr);
 				fRemoteConnection = connMgr.getConnection(CONNECTION_NAME);
-				final IRemoteFileManager fileManager = fRemoteConnection.getFileManager();
+				final IRemoteFileManager fileManager = fRemoteServices.getFileManager(fRemoteConnection);
 				final IFileStore dstFileStore = fileManager.getResource(directory);
 				try {
 					dstFileStore.delete(EFS.NONE, null);

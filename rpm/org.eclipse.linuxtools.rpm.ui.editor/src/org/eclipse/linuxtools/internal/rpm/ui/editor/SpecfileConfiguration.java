@@ -234,7 +234,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		Map<?, ?> targets = getHyperlinkDetectorTargets(sourceViewer);
 		HyperlinkDetectorRegistry hlDetectorRegistry = EditorsUI.getHyperlinkDetectorRegistry();
 		HyperlinkDetectorDescriptor[] hlDetectorDescriptor = hlDetectorRegistry.getHyperlinkDetectorDescriptors();
-		List<IHyperlinkDetector> tempHDList = new ArrayList<>();
+		List<IHyperlinkDetector> tempHDList = new ArrayList<IHyperlinkDetector>();
 
 		for (Map.Entry<?, ?> entry : targets.entrySet()) {
 			for (HyperlinkDetectorDescriptor hdd : hlDetectorDescriptor) {

@@ -11,8 +11,6 @@
 package org.eclipse.linuxtools.rpm.createrepo.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -38,6 +36,9 @@ import org.junit.Test;
  */
 public class CreaterepoProjectCreatorTest {
 
+	private static final String PROJECT_NAME = "createrepo-test-project"; //$NON-NLS-1$
+	private static final String REPO_NAME = "createrepo-test-repo.repo"; //$NON-NLS-1$
+
 	private static IWorkspaceRoot root;
 	private static NullProgressMonitor monitor;
 	private IProject project;
@@ -59,11 +60,8 @@ public class CreaterepoProjectCreatorTest {
 	@Before
 	public void setUp() throws CoreException{
 		if (project == null || !project.exists()) {
-			project = CreaterepoProjectCreator.create(ICreaterepoTestConstants.PROJECT_NAME,
-					root.getLocation(), ICreaterepoTestConstants.REPO_NAME, monitor);
+			project = CreaterepoProjectCreator.create(PROJECT_NAME, root.getLocation(), REPO_NAME, monitor);
 		}
-		assertNotNull(project);
-		assertTrue(project.exists());
 	}
 
 	/**
@@ -74,9 +72,8 @@ public class CreaterepoProjectCreatorTest {
 	@After
 	public void tearDown() throws CoreException {
 		if (project != null && project.exists()) {
-			project.delete(true, true, monitor);
+			project.delete(true, monitor);
 		}
-		assertFalse(project.exists());
 	}
 
 	/**
@@ -89,13 +86,14 @@ public class CreaterepoProjectCreatorTest {
 	 */
 	@Test
 	public void testProjectContents() throws CoreException, IOException {
-		// 2 = .project + .repo file
+		assertTrue(project.exists());
+		// 3 = .project + .repo file
 		assertEquals(2, project.members().length);
 
 		// contains the repo file
-		assertTrue(project.findMember(ICreaterepoTestConstants.REPO_NAME).exists());
+		assertTrue(project.findMember(REPO_NAME).exists());
 
-		IFile repoFile = (IFile) project.findMember(ICreaterepoTestConstants.REPO_NAME);
+		IFile repoFile = (IFile) project.findMember(REPO_NAME);
 		// repo file should be empty because test did not go through project creation
 		// to initialize .repo contents
 		assertEquals(repoFile.getContents().available(), 0);
