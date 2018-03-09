@@ -30,7 +30,7 @@ public class ChangeLogFormattingStrategy implements IFormattingStrategy {
 	public String format(String content, boolean isLineStart,
 			String indentation, int[] positions) {
 
-		ArrayList<String> formattedWords = new ArrayList<>();
+		ArrayList<String> formattedWords = new ArrayList<String>();
 		int currentLineLength = indentation.length();
 		boolean newLineBegin = true;
 

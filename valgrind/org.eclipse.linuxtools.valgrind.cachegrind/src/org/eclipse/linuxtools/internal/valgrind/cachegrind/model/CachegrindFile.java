@@ -32,7 +32,7 @@ public class CachegrindFile implements ICachegrindElement {
 	public CachegrindFile(CachegrindOutput parent, String path) {
 		this.parent = parent;
 		this.path = path;
-		functions = new ArrayList<>();
+		functions = new ArrayList<CachegrindFunction>();
 
 		IPath pathObj = Path.fromOSString(path);
 		if (path.equals(UNKNOWN_FILE)) {
@@ -54,12 +54,10 @@ public class CachegrindFile implements ICachegrindElement {
 		return functions.toArray(new CachegrindFunction[functions.size()]);
 	}
 
-	@Override
 	public ICachegrindElement[] getChildren() {
 		return getFunctions();
 	}
 
-	@Override
 	public IAdaptable getModel() {
 		return model;
 	}
@@ -76,12 +74,10 @@ public class CachegrindFile implements ICachegrindElement {
 		return name;
 	}
 	
-	@Override
 	public ICachegrindElement getParent() {
 		return parent;
 	}
 	
-	@Override
 	public int compareTo(ICachegrindElement o) {
 		int result = 0;
 		if (o instanceof CachegrindFile) {

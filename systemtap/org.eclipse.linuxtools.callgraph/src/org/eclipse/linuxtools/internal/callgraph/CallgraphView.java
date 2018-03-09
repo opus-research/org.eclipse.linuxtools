@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.internal.callgraph;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -279,10 +280,10 @@ public class CallgraphView extends SystemTapView {
 
 
 	    if (g.aggregateTime == null) {
-	    	g.aggregateTime = new HashMap<>();
+	    	g.aggregateTime = new HashMap<String, Long>();
 	    }
 		if (g.aggregateCount == null) {
-	    	g.aggregateCount = new HashMap<>();
+	    	g.aggregateCount = new HashMap<String, Integer>();
 		}
 
 	    g.aggregateCount.putAll(parser.countMap);
@@ -311,13 +312,13 @@ public class CallgraphView extends SystemTapView {
 	private IStatus finishLoad(IProgressMonitor monitor) {
 
 		if (g.aggregateCount == null) {
-	    	g.aggregateCount = new HashMap<>();
+	    	g.aggregateCount = new HashMap<String, Integer>();
 		}
 
 	    g.aggregateCount.putAll(parser.countMap);
 
 	    if (g.aggregateTime == null) {
-	    	g.aggregateTime = new HashMap<>();
+	    	g.aggregateTime = new HashMap<String, Long>();
 	    }
 	    g.aggregateTime.putAll(parser.aggregateTimeMap);
 
@@ -1058,7 +1059,8 @@ public class CallgraphView extends SystemTapView {
 				return;
 			}
 
-            try (BufferedWriter out = new BufferedWriter(new FileWriter(f))) {
+            try {
+				BufferedWriter out = new BufferedWriter(new FileWriter(f));
 				StringBuilder build = new StringBuilder(""); //$NON-NLS-1$
 
 				out.write("digraph stapgraph {\n"); //$NON-NLS-1$
@@ -1089,6 +1091,9 @@ public class CallgraphView extends SystemTapView {
             	}
             	out.write("}"); //$NON-NLS-1$
             	out.flush();
+            	out.close();
+            } catch (FileNotFoundException e) {
+            	e.printStackTrace();
             } catch (IOException e) {
 				e.printStackTrace();
 			}

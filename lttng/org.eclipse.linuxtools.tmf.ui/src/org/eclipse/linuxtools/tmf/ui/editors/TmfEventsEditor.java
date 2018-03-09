@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2014 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -53,6 +53,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.Messages;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
@@ -124,7 +125,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                 }
                 if (traceTypeId.equals(TmfExperiment.class.getCanonicalName())) {
                     // Special case: experiment bookmark resource
-                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject(), true);
+                    final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
+                    ncp.getChildren(fFile.getProject()); // force the model to be populated
+                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject());
                     if (project == null) {
                         throw new PartInitException(Messages.TmfOpenTraceHelper_NoTraceType);
                     }
@@ -141,7 +144,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                     }
                 } else if (traceTypeId.equals(TmfTrace.class.getCanonicalName())) {
                     // Special case: trace bookmark resource
-                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject(), true);
+                    final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
+                    ncp.getChildren(fFile.getProject()); // force the model to be populated
+                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject());
                     for (final ITmfProjectModelElement projectElement : project.getTracesFolder().getChildren()) {
                         final String traceName = fFile.getParent().getName();
                         if (projectElement.getName().equals(traceName)) {
@@ -154,7 +159,9 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                         }
                     }
                 } else {
-                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject(), true);
+                    final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
+                    ncp.getChildren(fFile.getProject()); // force the model to be populated
+                    final TmfProjectElement project = TmfProjectRegistry.getProject(fFile.getProject());
                     for (final ITmfProjectModelElement projectElement : project.getTracesFolder().getChildren()) {
                         if (projectElement.getResource().equals(fFile)) {
                             final TmfTraceElement traceElement = (TmfTraceElement) projectElement;
@@ -202,9 +209,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
     @Override
     public void propertyChanged(final Object source, final int propId) {
         if (propId == IEditorPart.PROP_INPUT && getEditorInput() instanceof TmfEditorInput) {
-            if (fTrace != null) {
-                broadcast(new TmfTraceClosedSignal(this, fTrace));
-            }
+            broadcast(new TmfTraceClosedSignal(this, fTrace));
             fTraceSelected = false;
             fFile = ((TmfEditorInput) getEditorInput()).getFile();
             fTrace = ((TmfEditorInput) getEditorInput()).getTrace();

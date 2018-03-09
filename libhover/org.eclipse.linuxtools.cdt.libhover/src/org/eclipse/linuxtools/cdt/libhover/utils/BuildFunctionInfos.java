@@ -155,11 +155,13 @@ public class BuildFunctionInfos {
 				}
 			}
 		}
-		try (FileOutputStream f = new FileOutputStream(fileName);
-			ObjectOutputStream out = new ObjectOutputStream(f)){
+		try {
 			// Now, output the LibHoverInfo for caching later
+			FileOutputStream f = new FileOutputStream(fileName);
+			ObjectOutputStream out = new ObjectOutputStream(f);
 			out.writeObject(hoverInfo);
-		} catch(IOException e) {
+			out.close();
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}

@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 
 public class UpdateManager {
 	public UpdateManager(int delay) {
-		updateListeners = new ArrayList<>();
+		updateListeners = new ArrayList<IUpdateListener>();
 		stopped = false;
 		disposed = false;
 		timer = new Timer("Update Manager", true); //$NON-NLS-1$
@@ -35,10 +35,8 @@ public class UpdateManager {
 		if(!stopped) {
 			stopped = true;
 			timer.cancel();
-			synchronized (updateListeners) {
-				for(int i=0; i<updateListeners.size(); i++)
-					removeUpdateListener(updateListeners.get(i));
-			}
+			for(int i=0; i<updateListeners.size(); i++)
+				removeUpdateListener(updateListeners.get(i));
 		}
 	}
 
@@ -71,10 +69,8 @@ public class UpdateManager {
 		@Override
 		public void run() {
 			if(!stopped) {
-				synchronized (updateListeners) {
-					for(int i = 0; i < updateListeners.size(); i++)
-						(updateListeners.get(i)).handleUpdateEvent();
-				}
+				for(int i = 0; i < updateListeners.size(); i++)
+					(updateListeners.get(i)).handleUpdateEvent();
 			}
 		}
 	}

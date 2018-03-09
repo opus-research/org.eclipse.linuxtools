@@ -49,7 +49,7 @@ public class ProviderLaunchConfigurationTabGroup extends
 
 	@Override
 	public AbstractLaunchConfigurationTab[] getProfileTabs() {
-		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<>();
+		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<AbstractLaunchConfigurationTab>();
 		tabs.add(new ProviderOptionsTab(type, name));
 
 		return tabs.toArray(new AbstractLaunchConfigurationTab [] {});

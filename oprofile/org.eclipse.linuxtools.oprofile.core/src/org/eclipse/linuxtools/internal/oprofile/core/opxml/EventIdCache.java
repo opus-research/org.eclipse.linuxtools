@@ -67,7 +67,7 @@ public class EventIdCache {
 	public static EventIdCache getInstance(){
 
 		if (cacheMap == null) {
-			cacheMap = new HashMap<>();
+			cacheMap = new HashMap<String, EventIdCache>();
 		}
 
 		IProject project = Oprofile.OprofileProject.getProject();
@@ -117,7 +117,7 @@ public class EventIdCache {
 	 * Build the cache
 	 */
 	private void buildCache(EventIdCache eventId) {
-		eventId.nameMap = new HashMap<> ();
+		eventId.nameMap = new HashMap<String, Element> ();
 		NodeList eventList = eventId.eventRoot.getElementsByTagName(EVENT);
 		for (int i = 0; i < eventList.getLength(); i++){
 			Element elem = (Element) eventList.item(i);
@@ -257,9 +257,6 @@ public class EventIdCache {
 		return unitMaskType;
 	}
 
-	/**
-	 * @since 3.0
-	 */
 	public void setCacheDoc(Element oldRoot) {
 		eventRoot = oldRoot;
 	}

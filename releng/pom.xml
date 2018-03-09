@@ -26,7 +26,7 @@
   <artifactId>linuxtools-releng-parent</artifactId>
   <packaging>pom</packaging>
 
-  <name>Linux Tools Releng Parent</name>
+  <name>Eclipse Linux Tools Releng Parent</name>
 
   <licenses>
     <license>

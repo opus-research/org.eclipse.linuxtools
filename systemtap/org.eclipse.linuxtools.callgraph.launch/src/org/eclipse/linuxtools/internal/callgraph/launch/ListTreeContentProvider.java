@@ -24,7 +24,7 @@ public class ListTreeContentProvider implements ITreeContentProvider {
 	@Override
 	public Object[] getChildren(Object parentElement) {
 
-		ArrayList<Object> output = new ArrayList<>();
+		ArrayList<Object> output = new ArrayList<Object>();
 
 		if (parentElement instanceof ICContainer) {
 			try {
@@ -104,7 +104,7 @@ public class ListTreeContentProvider implements ITreeContentProvider {
 				if (element instanceof ICContainer)
 					try {
 						ICElement[] array = ((ICContainer) element).getChildren();
-						ArrayList<ICElement> output = new ArrayList<>();
+						ArrayList<ICElement> output = new ArrayList<ICElement>();
 
 						for (ICElement item : array) {
 							if ((item instanceof ICContainer)
@@ -135,7 +135,7 @@ public class ListTreeContentProvider implements ITreeContentProvider {
 
 
 	public Object[] findElements(Object inputElement) {
-		ArrayList<Object> output = new ArrayList<>();
+		ArrayList<Object> output = new ArrayList<Object>();
 
 		if (inputElement instanceof List) {
 			for (Object element : (List<?>) inputElement) {

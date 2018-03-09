@@ -15,8 +15,6 @@ package org.eclipse.linuxtools.systemtap.graphingapi.ui.charts;
 import org.eclipse.linuxtools.dataviewers.piechart.PieChart;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.adapters.IAdapter;
 import org.eclipse.swt.widgets.Composite;
-import org.swtchart.IAxis;
-import org.swtchart.Range;
 
 /**
  * Builds Pie chart.
@@ -30,28 +28,19 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 
 	@Override
 	protected void createChart() {
-		this.chart = new PieChart(this, getStyle());
-		((PieChart) chart).setCustomColors(COLORS);
-	}
-
-	@Override
-	protected void buildXAxis() {
-		String[] labels = adapter.getLabels();
-		String[] seriesLabels = new String[labels.length - 1];
-		for (int i = 0; i < seriesLabels.length; i++) {
-			seriesLabels[i] = labels[i+1];
+		String[] allNames = adapter.getLabels();
+		String[] ySeriesNames = new String[allNames.length - 1];
+		for (int i = 0; i < ySeriesNames.length; i++) {
+			ySeriesNames[i] = allNames[i+1];
 		}
-		IAxis xAxis = this.chart.getAxisSet().getXAxis(0);
-		xAxis.getTitle().setText(labels[0]);
-		xAxis.setCategorySeries(seriesLabels);
+		this.chart = new PieChart(this, getStyle(), ySeriesNames);
 	}
 
 	@Override
 	protected void buildXSeries() {
 		Object data[][] = adapter.getData();
-		if (data == null || data.length == 0) {
+		if (data == null || data.length == 0 || data[0].length == 0)
 			return;
-		}
 
 		int start = 0, len = Math.min(this.maxItems, data.length), leny = data[0].length-1;
 		if (this.maxItems < data.length) {
@@ -62,15 +51,18 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 		String[] all_labels = new String[len];
 
 		for (int i = 0; i < all_labels.length; i++) {
+			if (data[i].length < 2)
+				return;
 			Object label = data[start + i][0];
 			if (label != null) {
-				all_labels[i] = label.toString();
+				all_labels[i] = data[start + i][0].toString();
 				for (int j = 1; j < data[start + i].length; j++) {
-					Double val = getDoubleOrNullValue(data[start + i][j]);
+					Double val = getDoubleValue(data[start + i][j]);
 					if (val != null) {
 						all_values[i][j-1] = val;
 					} else {
-						all_values[i][j-1] = 0.0;
+						all_labels[i] = null;
+						break;
 					}
 				}
 			}
@@ -97,18 +89,8 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 			}
 		}
 
-		((PieChart)this.chart).addPieChartSeries(getUniqueNames(labels_trim), values_trim);
-		applyCategoryRange(values_trim[0].length);
+		((PieChart)this.chart).addPieChartSeries(labels_trim, values_trim);
 		chart.redraw();
-	}
-
-	/**
-	 * This updates the visible range of the chart's x-axis.
-	 */
-	private void applyCategoryRange(int numItems) {
-		int itemRange = Math.max(1, (int) Math.ceil(numItems * scale)); // The number of items to display
-		int lower = (int) Math.round((numItems - itemRange) * scroll);
-		chart.getAxisSet().getXAxis(0).setRange(new Range(lower, lower + itemRange - 1));
 	}
 
 	@Override

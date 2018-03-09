@@ -41,7 +41,7 @@ public class SystemTapGraphTest {
 		CallgraphView cView = (CallgraphView)  ViewFactory.createView(CallGraphConstants.VIEW_ID);
 
 		if (!manual) {
-			ArrayList<String> tasks = new ArrayList<>();
+			ArrayList<String> tasks = new ArrayList<String>();
 
 
 			tasks.add("(Manually) Maximize CallgraphView");

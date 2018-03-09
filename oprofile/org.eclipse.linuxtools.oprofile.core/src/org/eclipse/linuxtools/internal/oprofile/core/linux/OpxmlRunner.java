@@ -32,9 +32,10 @@ import javax.xml.parsers.SAXParserFactory;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileProperties;
+import org.eclipse.linuxtools.internal.oprofile.core.OpxmlException;
+import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.AbstractDataAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.OprofileSAXHandler;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.XMLProcessor;
@@ -74,6 +75,7 @@ public class OpxmlRunner {
 	 * @param args the arguments to pass to opxml
 	 * @param callData any callData to pass to the processor
 	 * @return boolean indicating the success/failure of opxml
+	 * @throws OpxmlException 
 	 */
 	public boolean run(String[] args, Object callData) {
 		XMLReader reader = null;
@@ -184,7 +186,7 @@ public class OpxmlRunner {
 	}
 	
 	private boolean handleModelData (String [] args){
-		ArrayList<String> cmd = new ArrayList<>();
+		ArrayList<String> cmd = new ArrayList<String>();
 		cmd.add("-Xdg"); //$NON-NLS-1$
 		if (!InfoAdapter.hasTimerSupport()){
 			cmd.add("event:" + args[1]); //$NON-NLS-1$
@@ -276,55 +278,54 @@ public class OpxmlRunner {
 	 */
 	private InputStream runOpReport(String[] args){
 
-		ArrayList<String> cmd = new ArrayList<>();
+		ArrayList<String> cmd = new ArrayList<String>();
 		cmd.add("opreport"); //$NON-NLS-1$
 		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY))
 			cmd.add(1,"--session-dir=" + Oprofile.OprofileProject.getProject().getLocationURI().getPath() + IPath.SEPARATOR + "oprofile_data"); //$NON-NLS-1$ //$NON-NLS-2$
 		Collections.addAll(cmd, args);
 		Process p = null;
 		try {
-			p = RuntimeProcessFactory.getFactory().exec(
-					cmd.toArray(new String[0]),
-					Oprofile.OprofileProject.getProject());
+			p = RuntimeProcessFactory.getFactory().exec(cmd.toArray(new String[0]), Oprofile.OprofileProject.getProject());
 
 			StringBuilder output = new StringBuilder();
 			StringBuilder errorOutput = new StringBuilder();
 			String s = null;
-			try (BufferedReader stdInput = new BufferedReader(
-					new InputStreamReader(p.getInputStream()));
-					BufferedReader stdError = new BufferedReader(
-							new InputStreamReader(p.getErrorStream()))) {
-				// Read output of opreport. We need to do this, since this might
-				// cause the plug-in to hang. See Eclipse bug 341621 for more
-				// info.
-				// FIXME: Both of those while loops should really be done in two
-				// separate
-				// threads, so that we avoid this very problem when the error
-				// input
-				// stream buffer fills up.
-				while ((s = stdInput.readLine()) != null) {
-					output.append(s + System.getProperty("line.separator")); //$NON-NLS-1$
-				}
-				while ((s = stdError.readLine()) != null) {
-					errorOutput
-							.append(s + System.getProperty("line.separator")); //$NON-NLS-1$
+			try {
+				BufferedReader stdInput = new BufferedReader(new InputStreamReader(
+						p.getInputStream()));
+				BufferedReader stdError = new BufferedReader(new InputStreamReader(
+						p.getErrorStream()));
+				try {
+					// Read output of opreport. We need to do this, since this might
+					// cause the plug-in to hang. See Eclipse bug 341621 for more info.
+					// FIXME: Both of those while loops should really be done in two separate
+					// threads, so that we avoid this very problem when the error input
+					// stream buffer fills up.
+					while ((s = stdInput.readLine()) != null) {
+						output.append(s + System.getProperty("line.separator")); //$NON-NLS-1$
+					}
+					while ((s = stdError.readLine()) != null) {
+						errorOutput.append(s + System.getProperty("line.separator")); //$NON-NLS-1$
+					}
+				} finally {
+					stdInput.close();
+					stdError.close();
 				}
 				if (!errorOutput.toString().trim().equals("")) { //$NON-NLS-1$
-					OprofileCorePlugin
-							.log(IStatus.ERROR,
-									NLS.bind(
-											OprofileProperties
-													.getString("process.log.stderr"), "opreport", errorOutput.toString().trim())); //$NON-NLS-1$ //$NON-NLS-2$
+				OprofileCorePlugin
+						.log(IStatus.ERROR,
+								NLS.bind(
+										OprofileProperties
+												.getString("process.log.stderr"), "opreport", errorOutput.toString().trim())); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
-			if (p.waitFor() == 0) {
+			if(p.waitFor() == 0){
 				// convert the string to inputstream to pass to builder.parse
 				try {
-					return new ByteArrayInputStream(output.toString().getBytes(
-							"UTF-8"));
+					return new ByteArrayInputStream(output.toString().getBytes("UTF-8"));
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
