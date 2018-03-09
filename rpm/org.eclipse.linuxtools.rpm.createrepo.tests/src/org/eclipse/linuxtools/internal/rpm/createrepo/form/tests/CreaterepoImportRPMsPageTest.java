@@ -21,10 +21,8 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
@@ -64,10 +62,9 @@ public class CreaterepoImportRPMsPageTest {
 	private CreaterepoProject project;
 	private static SWTWorkbenchBot bot;
 	private SWTBot importPageBot;
-	private static NullProgressMonitor monitor;
 
 	/**
-	 * Initialize the test project.
+	 * Initialize the test project. Will close the welcome view.
 	 *
 	 * @throws CoreException
 	 */
@@ -76,7 +73,6 @@ public class CreaterepoImportRPMsPageTest {
 		testProject = new TestCreaterepoProject();
 		assertTrue(testProject.getProject().exists());
 		bot = new SWTWorkbenchBot();
-		monitor = new NullProgressMonitor();
 	}
 
 	/**
@@ -161,47 +157,6 @@ public class CreaterepoImportRPMsPageTest {
 		// assert that the repomd.xml file was created (successful createrepo execution)
 		IFolder repodata = (IFolder) project.getContentFolder().findMember(ICreaterepoTestConstants.REPODATA_FOLDER);
 		assertTrue(repodata.findMember(ICreaterepoTestConstants.REPO_MD_NAME).exists());
-	}
-
-	/**
-	 * Test if deleting/adding an RPM into content folder updates the RPM list.
-	 *
-	 * @throws CoreException
-	 * @throws IOException
-	 */
-	@Test
-	public void testResourceChangeListener() throws CoreException, IOException {
-		// delete the contents of the content folder
-		for (IResource resource : project.getContentFolder().members()) {
-			resource.delete(true, monitor);
-		}
-		// run in UI thread because accessing the tree in the import RPMs page
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
-				assertNotNull(tree);
-				// check items in tree are gone
-				assertEquals(0, tree.getItemCount());
-			}
-		});
-		// import a file again into the content folder
-		URL rpmURL = FileLocator.find(FrameworkUtil
-				.getBundle(CreaterepoProjectTest.class), new Path(TEST_RPM_LOC1), null);
-		final File rpmFile = new File(FileLocator.toFileURL(rpmURL).getPath());
-		assertTrue(rpmFile.exists());
-		project.importRPM(rpmFile);
-		// run in UI thread because accessing the tree in the import RPMs page
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
-				assertNotNull(tree);
-				// check if items are in tree
-				assertEquals(1, tree.getItemCount());
-				assertEquals(rpmFile.getName(), tree.getItem(0).getText());
-			}
-		});
 	}
 
 	/**

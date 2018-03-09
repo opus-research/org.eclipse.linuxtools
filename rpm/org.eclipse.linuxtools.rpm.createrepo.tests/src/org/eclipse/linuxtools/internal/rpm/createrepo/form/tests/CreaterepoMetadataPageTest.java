@@ -60,7 +60,7 @@ public class CreaterepoMetadataPageTest {
 	private SWTBot metadataPageBot;
 
 	/**
-	 * Initialize the test project.
+	 * Initialize the test project. Will close the welcome view.
 	 *
 	 * @throws CoreException
 	 */
