@@ -46,14 +46,14 @@ public abstract class TmfCommonXLineChartViewer extends TmfXYChartViewer {
     private static final double DEFAULT_MINY = Double.MAX_VALUE;
 
     /* The desired number of points per pixel */
-    private static final double RESOLUTION = 1.0;
+    private static final double RESOLUTION = 0.1;
 
     private static final int[] LINE_COLORS = { SWT.COLOR_BLUE, SWT.COLOR_RED, SWT.COLOR_GREEN,
-            SWT.COLOR_CYAN, SWT.COLOR_MAGENTA,
+            SWT.COLOR_MAGENTA, SWT.COLOR_CYAN,
             SWT.COLOR_DARK_BLUE, SWT.COLOR_DARK_RED, SWT.COLOR_DARK_GREEN,
-            SWT.COLOR_DARK_CYAN, SWT.COLOR_DARK_MAGENTA, SWT.COLOR_DARK_YELLOW,
+            SWT.COLOR_DARK_MAGENTA, SWT.COLOR_DARK_CYAN, SWT.COLOR_DARK_YELLOW,
             SWT.COLOR_BLACK, SWT.COLOR_GRAY };
-    private static final LineStyle[] LINE_STYLES = { LineStyle.SOLID, LineStyle.DOT, LineStyle.DASH, LineStyle.DASHDOT };
+    private static final LineStyle[] LINE_STYLES = { LineStyle.SOLID, LineStyle.DASH, LineStyle.DOT, LineStyle.DASHDOT };
 
     private final Map<String, double[]> fSeriesValues = new LinkedHashMap<>();
     private double[] fXValues;
@@ -174,15 +174,15 @@ public abstract class TmfCommonXLineChartViewer extends TmfXYChartViewer {
     /**
      * Update the series data because the time range has changed. The x axis
      * values for this data update can be computed using the
-     * {@link TmfCommonXLineChartViewer#getXAxis(long, long, int)} method which will
-     * return a list of uniformely separated time values.
+     * {@link TmfCommonXLineChartViewer#getXAxis(long, long, int)} method which
+     * will return a list of uniformely separated time values.
      *
      * Each series values should be set by calling the
      * {@link TmfCommonXLineChartViewer#setSeries(String, double[])}.
      *
      * This method is responsible for calling the
-     * {@link TmfCommonXLineChartViewer#updateDisplay()} when needed for the new values
-     * to be displayed.
+     * {@link TmfCommonXLineChartViewer#updateDisplay()} when needed for the new
+     * values to be displayed.
      *
      * @param start
      *            The start time of the range for which the get the data

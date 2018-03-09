@@ -56,8 +56,8 @@ public class GraphSelectorEditor extends EditorPart {
 
 	public GraphSelectorEditor() {
 		super();
-		displaySets = new ArrayList<GraphDisplaySet>();
-		tabListeners = new ArrayList<ITabListener>();
+		displaySets = new ArrayList<>();
+		tabListeners = new ArrayList<>();
 	}
 
 	/**
@@ -150,6 +150,14 @@ public class GraphSelectorEditor extends EditorPart {
 	 */
 	public GraphDisplaySet getActiveDisplaySet() {
 		return getDisplaySet(scriptFolder.getSelectionIndex());
+	}
+
+	/**
+	 * @return The title of the tab containing the active graph.
+	 * @since 3.0
+	 */
+	public String getActiveTitle() {
+		return scriptFolder.getSelection().getText();
 	}
 
 	/**

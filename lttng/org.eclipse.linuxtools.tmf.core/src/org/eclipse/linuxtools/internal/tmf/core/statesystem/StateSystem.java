@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
@@ -68,7 +70,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
      * @param backend
      *            Back-end plugin to use
      */
-    public StateSystem(IStateHistoryBackend backend) {
+    public StateSystem(@NonNull IStateHistoryBackend backend) {
         this.backend = backend;
         this.transState = new TransientState(backend);
         this.attributeTree = new AttributeTree(this);
@@ -85,7 +87,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
      * @throws IOException
      *             If there was a problem creating the new history file
      */
-    public StateSystem(IStateHistoryBackend backend, boolean newFile)
+    public StateSystem(@NonNull IStateHistoryBackend backend, boolean newFile)
             throws IOException {
         this.backend = backend;
         this.transState = new TransientState(backend);
@@ -101,13 +103,28 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public boolean waitUntilBuilt() {
+    public boolean isCancelled() {
+        return buildCancelled;
+    }
+
+    @Override
+    public void waitUntilBuilt() {
         try {
             finishedLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return !buildCancelled;
+    }
+
+    @Override
+    public boolean waitUntilBuilt(long timeout) {
+        boolean ret = false;
+        try {
+            ret = finishedLatch.await(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
 
     @Override
@@ -545,10 +562,12 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateSystemDisposedException();
         }
 
-        ITmfStateInterval ret;
-        if (transState.hasInfoAboutStateOf(t, attributeQuark)) {
-            ret = transState.getOngoingInterval(attributeQuark);
-        } else {
+        ITmfStateInterval ret = transState.getIntervalAt(t, attributeQuark);
+        if (ret == null) {
+            /*
+             * The transient state did not have the information, let's look into
+             * the backend next.
+             */
             ret = backend.doSingularQuery(t, attributeQuark);
         }
 
@@ -599,7 +618,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         long ts, tEnd;
 
         /* Make sure the time range makes sense */
-        if (t2 <= t1) {
+        if (t2 < t1) {
             throw new TimeRangeException();
         }
 
