@@ -20,6 +20,7 @@ import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.ITmfStateIntervalListener;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
@@ -190,12 +191,31 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         } catch (ClosedChannelException e) {
             throw new StateSystemDisposedException(e);
         }
+    }
 
-        /*
-         * The stateInfo should now be filled with everything needed, we pass
-         * the control back to the State System.
-         */
-        return;
+
+    @Override
+    public void doQuery(ITmfStateIntervalListener listener, long t) throws TimeRangeException, StateSystemDisposedException {
+        if (!checkValidTime(t)) {
+            /* We can't possibly have information about this query */
+            throw new TimeRangeException();
+        }
+
+        /* Reading information from the root node */
+        // FIXME using CoreNode for now, we'll have to redo this part to handle
+        // different node types
+        HTNode currentNode = sht.getRootNode();
+        currentNode.writeInfoFromNode(listener, t);
+
+        /* Follow the branch down in the relevant children */
+        try {
+            while (currentNode.getNodeType() == HTNode.NodeType.CORE) {
+                currentNode = sht.selectNextChild((CoreNode) currentNode, t);
+                currentNode.writeInfoFromNode(listener, t);
+            }
+        } catch (ClosedChannelException e) {
+            throw new StateSystemDisposedException(e);
+        }
     }
 
     @Override
@@ -303,4 +323,5 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         sht.debugPrintFullTree(writer, printIntervals);
     }
+
 }

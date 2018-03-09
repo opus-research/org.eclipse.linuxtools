@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.ITmfStateIntervalListener;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
@@ -455,6 +456,27 @@ public abstract class HTNode {
             }
         } finally {
             rwl.readLock().unlock();
+        }
+    }
+
+    /**
+     * Enumerates the intervals intersecting a given timestamp stored
+     * in this node through an intervals listener.
+     *
+     * @param listener
+     *            The link between the intervals observer
+     * @param t
+     *            The timestamp for which the query is for. Only return
+     *            intervals that intersect t.
+     * @throws TimeRangeException
+     */
+    void writeInfoFromNode(ITmfStateIntervalListener listener, long t)
+            throws TimeRangeException {
+        for (int i = getStartIndexFor(t); i < intervals.size(); i++) {
+            HTInterval interval = intervals.get(i);
+            if (interval.intersects(t)) {
+                listener.addInterval(interval);
+            }
         }
     }
 
