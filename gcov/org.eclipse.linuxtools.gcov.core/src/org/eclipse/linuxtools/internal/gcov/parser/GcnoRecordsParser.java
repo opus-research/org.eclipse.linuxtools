@@ -36,7 +36,7 @@ public class GcnoRecordsParser {
     private static final int GCOV_TAG_LINES = 0x01450000;
 
     private GcnoFunction fnctn = null;
-    private final ArrayList<GcnoFunction> fnctns = new ArrayList<GcnoFunction>();
+    private final ArrayList<GcnoFunction> fnctns = new ArrayList<>();
     private final ArrayList<SourceFile> currentAllSrcs;
     private final HashMap<String, SourceFile> sourceMap;
 
@@ -45,11 +45,11 @@ public class GcnoRecordsParser {
         this.currentAllSrcs = AllSrcs;
     }
 
-    private SourceFile findOrAdd(String fileName, ArrayList<SourceFile> srcs) {
+    private SourceFile findOrAdd(String fileName) {
         SourceFile newsrc = sourceMap.get(fileName);
         if (newsrc == null) {
-            newsrc = new SourceFile(fileName, srcs.size() + 1);
-            srcs.add(newsrc);
+            newsrc = new SourceFile(fileName, currentAllSrcs.size() + 1);
+            currentAllSrcs.add(newsrc);
             sourceMap.put(fileName, newsrc);
         }
         return newsrc; // return the new added element
@@ -123,7 +123,7 @@ public class GcnoRecordsParser {
                     long fnctnFrstLnNmbr = (stream.readInt() & MasksGenerator.UNSIGNED_INT_MASK);
 
                     fnctn = new GcnoFunction(fnctnIdent, fnctnChksm, fnctnName, fnctnSrcFle, fnctnFrstLnNmbr);
-                    SourceFile srcFle2 = findOrAdd(fnctn.getSrcFile(), currentAllSrcs);
+                    SourceFile srcFle2 = findOrAdd(fnctn.getSrcFile());
                     if (fnctn.getFirstLineNmbr() >= srcFle2.getNumLines()) {
                         srcFle2.setNumLines((int) fnctn.getFirstLineNmbr() + 1);
                     }
@@ -133,7 +133,7 @@ public class GcnoRecordsParser {
                 }
 
                 else if (tag == GCOV_TAG_BLOCKS) {
-                    blocks = new ArrayList<Block>();
+                    blocks = new ArrayList<>();
                     for (int i = 0; i < length; i++) {
                         long BlckFlag = stream.readInt() & MasksGenerator.UNSIGNED_INT_MASK;
                         Block blck = new Block(BlckFlag);
@@ -144,7 +144,7 @@ public class GcnoRecordsParser {
                 } else if (tag == GCOV_TAG_ARCS) {
                     int srcBlockIndice = stream.readInt();
                     int nmbrArcs = (length - 1) / 2;
-                    ArrayList<Arc> arcs = new ArrayList<Arc>(nmbrArcs);
+                    ArrayList<Arc> arcs = new ArrayList<>(nmbrArcs);
 
                     for (int i = 0; i < nmbrArcs; i++) {
                         int dstnatnBlockIndice = stream.readInt();
@@ -212,7 +212,7 @@ public class GcnoRecordsParser {
                                 break;
                             }
 
-                            source = findOrAdd(fileName, currentAllSrcs);
+                            source = findOrAdd(fileName);
                             lineNos[ix++] = 0;
                             lineNos[ix++] = source.getIndex();
                         }
@@ -233,9 +233,5 @@ public class GcnoRecordsParser {
     /* Getters */
     public ArrayList<GcnoFunction> getFnctns() {
         return fnctns;
-    }
-
-    public ArrayList<SourceFile> getcurrentAllSrcs() {
-        return currentAllSrcs;
     }
 }
