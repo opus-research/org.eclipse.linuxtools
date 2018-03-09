@@ -20,21 +20,22 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 
 /**
- * This class exists mainly for code isolation/clarification purposes. It
- * contains all the methods and descriptors to handle reading/writing to the
- * tree-file on disk and all the caching mechanisms. Every HistoryTree should
- * contain 1 and only 1 HT_IO element.
+ * This class abstract inputs/outputs of the HistoryTree nodes.
+ *
+ * It contains all the methods and descriptors to handle reading/writing nodes
+ * to the tree-file on disk and all the caching mechanisms.
+ *
+ * This abstraction is mainly for code isolation/clarification purposes.
+ * Every HistoryTree must contain 1 and only 1 HT_IO element.
  *
  * @author Alexandre Montplaisir
  *
  */
 class HT_IO {
-
-    /* reference to the tree to which this IO-object belongs */
-    private final HistoryTree tree;
+    /* Configuration of the History Tree */
+    HTConfig fConfig;
 
     /* Fields related to the file I/O */
-    private final File historyTreeFile;
     private final FileInputStream fis;
     private final FileOutputStream fos;
     private final FileChannel fcIn;
@@ -47,17 +48,20 @@ class HT_IO {
     /**
      * Standard constructor
      *
-     * @param tree
+     * @param config
+     *             The configuration object for the StateHistoryTree
      * @param newFile
-     *            Are we creating a new file from scratch?
-     * @throws IOException
-     */
-    HT_IO(HistoryTree tree, boolean newFile) throws IOException {
-        this.tree = tree;
-        historyTreeFile = tree.getConfig().getStateFile();
-        boolean success1 = true;
+     *            Flag indicating that the file must be created from scratch
 
+     * @throws IOException
+     *             An exception can be thrown when file cannot be accessed
+     */
+    HT_IO(HTConfig config, boolean newFile) throws IOException {
+        fConfig = config;
+
+        File historyTreeFile = config.getStateFile();
         if (newFile) {
+            boolean success1 = true;
             /* Create a new empty History Tree file */
             if (historyTreeFile.exists()) {
                 success1 = historyTreeFile.delete();
@@ -93,14 +97,17 @@ class HT_IO {
      *             If the channel was closed before we could read
      */
     HTNode readNode(int seqNumber) throws ClosedChannelException {
-        HTNode node = readNodeFromMemory(seqNumber);
-        if (node == null) {
+        //HTNode node = readNodeFromMemory(seqNumber);
+        //if (node == null)
+        {
             return readNodeFromDisk(seqNumber);
         }
-        return node;
+        //return node;
     }
 
+    /*
     private HTNode readNodeFromMemory(int seqNumber) {
+
         for (HTNode node : tree.getLatestBranch()) {
             if (node.getSequenceNumber() == seqNumber) {
                 return node;
@@ -108,6 +115,7 @@ class HT_IO {
         }
         return null;
     }
+    */
 
     /**
      * This method here isn't private, if we know for sure the node cannot be in
@@ -130,7 +138,7 @@ class HT_IO {
         /* Lookup on disk */
         try {
             seekFCToNodePos(fcIn, seqNumber);
-            readNode = HTNode.readNode(tree.getConfig(), fcIn);
+            readNode = HTNode.readNode(fConfig, fcIn);
 
             /* Put the node in the cache. */
             fNodeCache[offset] = readNode;
@@ -164,26 +172,17 @@ class HT_IO {
         return this.fcOut;
     }
 
-    FileInputStream supplyATReader() {
+    FileInputStream supplyATReader(int node_offset) {
         try {
             /*
              * Position ourselves at the start of the Mapping section in the
              * file (which is right after the Blocks)
              */
-            seekFCToNodePos(fcIn, tree.getNodeCount());
+            seekFCToNodePos(fcIn, node_offset);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return fis;
-    }
-
-    File supplyATWriterFile() {
-        return tree.getConfig().getStateFile();
-    }
-
-    long supplyATWriterFilePos() {
-        return HistoryTree.TREE_HEADER_SIZE
-                + ((long) tree.getNodeCount() * tree.getConfig().getBlockSize());
     }
 
     synchronized void closeFile() {
@@ -198,6 +197,7 @@ class HT_IO {
     synchronized void deleteFile() {
         closeFile();
 
+        File historyTreeFile = fConfig.getStateFile();
         if (!historyTreeFile.delete()) {
             /* We didn't succeed in deleting the file */
             //TODO log it?
@@ -208,17 +208,18 @@ class HT_IO {
      * Seek the given FileChannel to the position corresponding to the node that
      * has seqNumber
      *
+     * @param fc
      * @param seqNumber
      * @throws IOException
      */
     private void seekFCToNodePos(FileChannel fc, int seqNumber)
             throws IOException {
-        fc.position(HistoryTree.TREE_HEADER_SIZE + (long) seqNumber
-                * tree.getConfig().getBlockSize());
         /*
-         * cast to (long) is needed to make sure the result is a long too and
+         * Cast to (long) is needed to make sure the result is a long too and
          * doesn't get truncated
          */
+        fc.position(HistoryTree.TREE_HEADER_SIZE
+                + ((long) seqNumber)  * fConfig.getBlockSize());
     }
 
 }
