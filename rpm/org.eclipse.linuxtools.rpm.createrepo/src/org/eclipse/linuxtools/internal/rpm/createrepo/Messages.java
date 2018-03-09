@@ -54,12 +54,6 @@ public final class Messages {
 	public static String CreaterepoNewWizardPageTwo_errorName;
 	/****/
 	public static String CreaterepoNewWizardPageTwo_errorURL;
-	/****/
-	public static String CreaterepoNewWizardPageTwo_tooltipID;
-	/****/
-	public static String CreaterepoNewWizardPageTwo_tooltipName;
-	/****/
-	public static String CreaterepoNewWizardPageTwo_tooltipURL;
 
 	// CreaterepoProject
 	/****/
