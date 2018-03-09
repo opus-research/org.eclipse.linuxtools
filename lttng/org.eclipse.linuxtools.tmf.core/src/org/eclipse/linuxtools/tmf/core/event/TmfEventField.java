@@ -64,7 +64,7 @@ public class TmfEventField implements ITmfEventField {
         /* Fill the fFieldNames and fNameMapping structures */
         final int nbFields = (fFields != null) ? fFields.length : 0;
         fFieldNames = new String[nbFields];
-        fNameMapping = new HashMap<>();
+        fNameMapping = new HashMap<String, ITmfEventField>();
 
         for (int i = 0; i < nbFields; i++) {
             final String curName = fFields[i].getName();

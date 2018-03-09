@@ -138,7 +138,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
 
     @Override
     public Map<String, ITmfStateSystem> getStateSystems() {
-        Map<String, ITmfStateSystem> map = new HashMap<>();
+        Map<String, ITmfStateSystem> map = new HashMap<String, ITmfStateSystem>();
         map.put(getId(), fStateSystem);
         return map;
     }
