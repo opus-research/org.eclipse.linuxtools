@@ -433,13 +433,13 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
      * @return a map with the names and values of the trace properties
      *         respectively as keys and values
      */
-    private Map<String, String> getTraceProperties() {
+    private ITmfTraceProperties getTraceProperties() {
         for (ITmfTrace openedTrace : TmfTraceManager.getInstance().getOpenedTraces()) {
             for (ITmfTrace singleTrace : TmfTraceManager.getTraceSet(openedTrace)) {
                 if (this.getLocation().toString().endsWith(singleTrace.getPath())) {
                     if (singleTrace instanceof ITmfTraceProperties) {
                         ITmfTraceProperties traceProperties = (ITmfTraceProperties) singleTrace;
-                        return traceProperties.getTraceProperties();
+                        return traceProperties;
                     }
                 }
             }
@@ -449,12 +449,14 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
 
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        Map<String, String> traceProperties = getTraceProperties();
-        if (!traceProperties.isEmpty()) {
-            IPropertyDescriptor[] propertyDescriptorArray = new IPropertyDescriptor[traceProperties.size() + sfDescriptors.length];
+        ITmfTraceProperties traceProperties = getTraceProperties();
+        int propertiesSize = traceProperties.getTracePropertiesSize();
+        if (propertiesSize != 0) {
+            IPropertyDescriptor[] propertyDescriptorArray = new IPropertyDescriptor[propertiesSize + sfDescriptors.length];
             int index = 0;
-            for (Map.Entry<String, String> varName : traceProperties.entrySet()) {
-                ReadOnlyTextPropertyDescriptor descriptor = new ReadOnlyTextPropertyDescriptor(this.getName() + "_" + varName.getKey(), varName.getKey()); //$NON-NLS-1$
+            for (String var : traceProperties) {
+                ReadOnlyTextPropertyDescriptor descriptor = new ReadOnlyTextPropertyDescriptor(
+                        this.getName() + "_" + var, var); //$NON-NLS-1$
                 descriptor.setCategory(sfTracePropertiesCategory);
                 propertyDescriptorArray[index] = descriptor;
                 index++;
@@ -494,11 +496,11 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             }
         }
 
-        Map<String, String> traceProperties = getTraceProperties();
-        if (id != null && !traceProperties.isEmpty()) {
+        ITmfTraceProperties traceProperties = getTraceProperties();
+        if (id != null && traceProperties != null) {
             String key = (String) id;
             key = key.replaceFirst(this.getName() + "_", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            String value = traceProperties.get(key);
+            String value = traceProperties.getTraceProperty(key);
             return value;
         }
 

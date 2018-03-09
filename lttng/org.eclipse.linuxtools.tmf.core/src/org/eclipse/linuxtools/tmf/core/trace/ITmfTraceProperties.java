@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
-import java.util.Map;
+import java.util.Iterator;
 
 /**
  * Interface for trace types to implement when they can provide additional
@@ -24,12 +24,26 @@ import java.util.Map;
  * @author Alexandre Montplaisir
  * @since 2.0
  */
-public interface ITmfTraceProperties {
+public interface ITmfTraceProperties extends Iterable<String> {
 
     /**
-     * Get the properties related to this trace.
+     * Retrieve the number of properties for this trace.
      *
-     * @return The map of properties, <name, value>
+     * @return The string value of the property
      */
-    public Map<String, String> getTraceProperties();
+    int getTracePropertiesSize();
+
+    /**
+     * Get a property related to this trace.
+     *
+     * @param key the name of the property to retrieve
+     * @return The string value of the property
+     */
+    String getTraceProperty(String key);
+
+    /**
+     * Returns an iterator to the keys.
+     */
+    @Override
+    public Iterator<String> iterator();
 }
