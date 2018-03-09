@@ -71,7 +71,7 @@ public final class AttributeTree {
         /* Message for exceptions, shouldn't be externalized */
         final String errorMessage = "The attribute tree file section is either invalid or corrupted."; //$NON-NLS-1$
 
-        ArrayList<String[]> list = new ArrayList<String[]>();
+        ArrayList<String[]> list = new ArrayList<>();
         byte[] curByteArray;
         String curFullString;
         String[] curStringArray;
@@ -144,12 +144,10 @@ public final class AttributeTree {
      * @return The total number of bytes written.
      */
     public int writeSelf(File file, long pos) {
-        RandomAccessFile raf = null;
         int total = 0;
         byte[] curByteArray;
 
-        try {
-            raf = new RandomAccessFile(file, "rw"); //$NON-NLS-1$
+        try (RandomAccessFile raf = new RandomAccessFile(file, "rw");) { //$NON-NLS-1$
             raf.seek(pos);
 
             /* Write the almost-magic number */
@@ -187,14 +185,6 @@ public final class AttributeTree {
 
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (raf != null) {
-                try {
-                    raf.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return total;
     }
@@ -346,7 +336,7 @@ public final class AttributeTree {
      */
     public List<Integer> getSubAttributes(int attributeQuark, boolean recursive)
             throws AttributeNotFoundException {
-        List<Integer> listOfChildren = new ArrayList<Integer>();
+        List<Integer> listOfChildren = new ArrayList<>();
         Attribute startingAttribute;
 
         /* Check if the quark is valid */

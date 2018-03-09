@@ -234,12 +234,12 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		Map<?, ?> targets = getHyperlinkDetectorTargets(sourceViewer);
 		HyperlinkDetectorRegistry hlDetectorRegistry = EditorsUI.getHyperlinkDetectorRegistry();
 		HyperlinkDetectorDescriptor[] hlDetectorDescriptor = hlDetectorRegistry.getHyperlinkDetectorDescriptors();
-		List<IHyperlinkDetector> tempHDList = new ArrayList<IHyperlinkDetector>();
+		List<IHyperlinkDetector> tempHDList = new ArrayList<>();
 
 		for (Map.Entry<?, ?> entry : targets.entrySet()) {
 			for (HyperlinkDetectorDescriptor hdd : hlDetectorDescriptor) {
 				try {
-					AbstractHyperlinkDetector ahld = hdd.createHyperlinkDetector();
+					AbstractHyperlinkDetector ahld = (AbstractHyperlinkDetector) hdd.createHyperlinkDetectorImplementation();
 					// filter using target id and not instance of URLHyperlinkDetector
 					// so that an option to open url with unresolved macros won't show
 					// however, allow URLHyperlinkWithMacroDetector
@@ -255,9 +255,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		}
 
 		if (!tempHDList.isEmpty()) {
-			IHyperlinkDetector[] rc = new IHyperlinkDetector[tempHDList.size()];
-			rc = tempHDList.toArray(rc);
-			return rc;
+			return tempHDList.toArray(new IHyperlinkDetector[tempHDList.size()]);
 		} else {
 			return null;
 		}
