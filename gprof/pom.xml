@@ -23,7 +23,7 @@
   <artifactId>linuxtools-gprof-parent</artifactId>
   <packaging>pom</packaging>
 
-  <name>Linux Tools GProf Parent</name>
+  <name>Eclipse Linux Tools GProf Parent</name>
 
   <licenses>
     <license>

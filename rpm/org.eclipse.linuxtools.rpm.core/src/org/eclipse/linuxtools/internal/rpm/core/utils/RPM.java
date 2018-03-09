@@ -42,7 +42,7 @@ public class RPM {
 		IEclipsePreferences node = DefaultScope.INSTANCE
 				.getNode(IRPMConstants.RPM_CORE_ID);
 		String rpmCmd = node.get(IRPMConstants.RPM_CMD, ""); //$NON-NLS-1$
-		macroDefines = new ArrayList<>();
+		macroDefines = new ArrayList<String>();
 
 		macroDefines.add(rpmCmd);
 		macroDefines.add("-v"); //$NON-NLS-1$
@@ -59,7 +59,7 @@ public class RPM {
 	 *             If something fails.
 	 */
 	public String install(IFile sourceRPM) throws CoreException {
-		List<String> command = new ArrayList<>();
+		List<String> command = new ArrayList<String>();
 		command.addAll(macroDefines);
 		command.add("-i"); //$NON-NLS-1$
 		command.add(sourceRPM.getLocation().toOSString());

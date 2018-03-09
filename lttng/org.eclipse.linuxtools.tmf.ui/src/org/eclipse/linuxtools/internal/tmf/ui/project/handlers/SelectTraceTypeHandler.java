@@ -14,10 +14,8 @@
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -37,7 +35,6 @@ import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.swt.widgets.Shell;
@@ -120,8 +117,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
         if (window == null) {
             return null;
         }
-        List<IStatus> statuses = new ArrayList<>();
-        Set<TmfProjectElement> projects = new HashSet<>();
+        List<IStatus> statuses = new ArrayList<IStatus>();
         boolean ok = true;
         for (Object element : fSelection.toList()) {
             TmfTraceElement trace = (TmfTraceElement) element;
@@ -147,16 +143,12 @@ public class SelectTraceTypeHandler extends AbstractHandler {
                     } else {
                         statuses.add(status);
                     }
-                    projects.add(trace.getProject());
                 } catch (CoreException e) {
                     Activator.getDefault().logError(Messages.SelectTraceTypeHandler_ErrorSelectingTrace + trace.getName(), e);
                 }
             }
-            trace.getProject();
         }
-        for (TmfProjectElement project : projects) {
-            project.refresh();
-        }
+        ((ITmfProjectModelElement) fSelection.getFirstElement()).getProject().refresh();
 
         if (!ok) {
             final Shell shell = window.getShell();

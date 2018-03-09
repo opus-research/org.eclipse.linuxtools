@@ -43,7 +43,6 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
@@ -102,10 +101,10 @@ public abstract class AbstractTimeGraphView extends TmfView {
     private List<TimeGraphEntry> fEntryList;
 
     /** The trace to entry list hash map */
-    private final Map<ITmfTrace, List<TimeGraphEntry>> fEntryListMap = new HashMap<>();
+    private final Map<ITmfTrace, List<TimeGraphEntry>> fEntryListMap = new HashMap<ITmfTrace, List<TimeGraphEntry>>();
 
     /* The trace to build thread hash map */
-    private final Map<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<>();
+    private final Map<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<ITmfTrace, BuildThread>();
 
     /** The start time */
     private long fStartTime;
@@ -777,7 +776,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
     @TmfSignalHandler
     public void traceOpened(TmfTraceOpenedSignal signal) {
         fTrace = signal.getTrace();
-        // Now we wait for TmfTraceRangeUpdatedSignal to fill the graph
+        loadTrace();
     }
 
     /**
@@ -793,19 +792,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
         }
         fTrace = signal.getTrace();
 
-        loadTrace();
-    }
-
-    /**
-     * @param signal
-     *          - the signal to handle
-     * @since 3.0
-     */
-    @TmfSignalHandler
-    public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
-        if (signal.getTrace() != fTrace) {
-            return;
-        }
         loadTrace();
     }
 
@@ -986,7 +972,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
      */
     protected List<ILinkEvent> getLinkList(long startTime, long endTime,
             long resolution, IProgressMonitor monitor) {
-        return new ArrayList<>();
+        return new ArrayList<ILinkEvent>();
     }
 
 
@@ -1004,7 +990,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 synchronized (fEntryListMap) {
                     fEntryList = fEntryListMap.get(fTrace);
                     if (fEntryList == null) {
-                        fEntryList = new ArrayList<>();
+                        fEntryList = new ArrayList<TimeGraphEntry>();
                     }
                     entries = fEntryList.toArray(new ITimeGraphEntry[0]);
                 }

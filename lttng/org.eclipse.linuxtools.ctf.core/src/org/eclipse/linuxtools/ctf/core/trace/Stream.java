@@ -55,12 +55,12 @@ public class Stream {
     /**
      * Maps event ids to events
      */
-    private Map<Long, IEventDeclaration> events = new HashMap<>();
+    private Map<Long, IEventDeclaration> events = new HashMap<Long, IEventDeclaration>();
 
     /**
      * The inputs associated to this stream
      */
-    private final Set<StreamInput> inputs = new HashSet<>();
+    private final Set<StreamInput> inputs = new HashSet<StreamInput>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -86,6 +86,7 @@ public class Stream {
      */
     public void setId(long id) {
         this.id = id;
+        this.events = trace.createEvents(this.id);
     }
 
     /**

@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.tmf.core.analysis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +46,10 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     private String fName, fId;
     private boolean fAutomatic = false, fStarted = false;
     private ITmfTrace fTrace;
-    private final Map<String, Object> fParameters = new HashMap<>();
-    private final List<String> fParameterNames = new ArrayList<>();
-    private final List<IAnalysisOutput> fOutputs = new ArrayList<>();
-    private List<IAnalysisParameterProvider> fParameterProviders = new ArrayList<>();
+    private final Map<String, Object> fParameters = new HashMap<String, Object>();
+    private final List<String> fParameterNames = new ArrayList<String>();
+    private final List<IAnalysisOutput> fOutputs = new ArrayList<IAnalysisOutput>();
+    private List<IAnalysisParameterProvider> fParameterProviders = new ArrayList<IAnalysisParameterProvider>();
     private Job fJob = null;
 
     private final Object syncObj = new Object();
@@ -184,19 +185,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     }
 
     /**
-     * Prepare analysis for execution.
-     *
-     * This method can be used, for example, to notify the trace instance about
-     * pending requests that are going to be sent in this analysis module. This
-     * notification allows the trace to coalesce these pending requests with
-     * other requests so that a trace is read only once for same range of data.
-     *
-     */
-    protected void prepareAnalysis() {
-        // do nothing by default
-    }
-
-    /**
      * Actually executes the analysis itself
      *
      * @param monitor
@@ -266,8 +254,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
             fStarted = true;
         }
 
-        prepareAnalysis();
-
         /*
          * Actual analysis will be run on a separate thread
          */
@@ -289,8 +275,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
                 if (!fAnalysisCancelled) {
                     return Status.OK_STATUS;
                 }
-                // Reset analysis so that it can be executed again.
-                resetAnalysis();
                 return Status.CANCEL_STATUS;
             }
 
@@ -314,8 +298,8 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     }
 
     @Override
-    public Iterable<IAnalysisOutput> getOutputs() {
-        return fOutputs;
+    public List<IAnalysisOutput> getOutputs() {
+        return Collections.unmodifiableList(fOutputs);
     }
 
     @Override

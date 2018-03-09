@@ -50,7 +50,6 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IActionBars;
 
@@ -582,6 +581,9 @@ public class HistogramView extends TmfView {
         fFullTraceHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
         fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
 
+        fFullTraceHistogram.setTimeRange(fTimeRangeHistogram.getStartTime(), fWindowSpan);
+        fTimeRangeHistogram.setTimeRange(fTimeRangeHistogram.getStartTime(), fWindowSpan);
+
         if ((fFullTraceRequest != null) && fFullTraceRequest.getRange().getEndTime().compareTo(signal.getRange().getEndTime()) < 0) {
             sendFullRangeRequest(fullRange);
         }
@@ -594,20 +596,9 @@ public class HistogramView extends TmfView {
      * @param signal the signal to process
      */
     @TmfSignalHandler
-    public void currentTimeUpdated(final TmfTimeSynchSignal signal) {
-        if (Display.getCurrent() == null) {
-            // Make sure the signal is handled in the UI thread
-            Display.getDefault().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (fParent.isDisposed()) {
-                        return;
-                    }
-                    currentTimeUpdated(signal);
-                }
-            });
-            return;
-        }
+    public void currentTimeUpdated(TmfTimeSynchSignal signal) {
+        // Because this can't happen :-)
+        assert (signal != null);
 
         // Update the selected time range
         ITmfTimestamp beginTime = signal.getBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
@@ -620,20 +611,9 @@ public class HistogramView extends TmfView {
      * @param signal the signal to process
      */
     @TmfSignalHandler
-    public void timeRangeUpdated(final TmfRangeSynchSignal signal) {
-        if (Display.getCurrent() == null) {
-            // Make sure the signal is handled in the UI thread
-            Display.getDefault().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (fParent.isDisposed()) {
-                        return;
-                    }
-                    timeRangeUpdated(signal);
-                }
-            });
-            return;
-        }
+    public void timeRangeUpdated(TmfRangeSynchSignal signal) {
+        // Because this can't happen :-)
+        assert (signal != null);
 
         if (fTrace != null) {
             // Validate the time range

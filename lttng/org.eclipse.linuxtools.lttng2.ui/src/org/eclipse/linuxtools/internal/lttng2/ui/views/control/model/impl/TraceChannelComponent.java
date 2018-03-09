@@ -105,7 +105,7 @@ public class TraceChannelComponent extends TraceControlComponent {
     public void setChannelInfo(IChannelInfo channelInfo) {
         fChannelInfo = channelInfo;
         IEventInfo[] events = fChannelInfo.getEvents();
-        List<ITraceControlComponent> eventComponents = new ArrayList<>();
+        List<ITraceControlComponent> eventComponents = new ArrayList<ITraceControlComponent>();
         for (int i = 0; i < events.length; i++) {
             TraceEventComponent event = null;
             if (events[i].getClass() == ProbeEventInfo.class) {

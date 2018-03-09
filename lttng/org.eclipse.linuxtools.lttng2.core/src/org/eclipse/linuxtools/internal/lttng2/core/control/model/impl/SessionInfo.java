@@ -45,7 +45,7 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
     /**
      * The domains information of this session.
      */
-    private final List<IDomainInfo> fDomains = new ArrayList<>();
+    private final List<IDomainInfo> fDomains = new ArrayList<IDomainInfo>();
     /**
      * Flag to indicate whether trace is streamed over network or not.
      */

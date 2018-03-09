@@ -28,7 +28,7 @@
   <version>3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Linux Tools LTTng Parent</name>
+  <name>Eclipse Linux Tools LTTng Parent</name>
 
   <licenses>
     <license>
@@ -43,11 +43,7 @@
       </comments>
     </license>
   </licenses>
-
-<properties>
-  <base.test.vmargs>-Xms256m -Xmx1024m -XX:MaxPermSize=256m</base.test.vmargs>
-</properties>
-
+  
 <profiles>
   <profile>
     <id>tracingRcp</id>
@@ -63,30 +59,8 @@
       <modules>
         <module>org.eclipse.linuxtools.lttng.releng-site</module>
       </modules>
-  </profile>
-  <profile>
-    <id>macosx</id>
-    <activation>
-      <os>
-        <family>mac</family>
-      </os>
-    </activation>
-    <properties>
-      <base.ui.test.vmargs>${base.test.vmargs} -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</base.ui.test.vmargs>
-    </properties>
-  </profile>
-  <profile>
-    <id>not-macosx</id>
-    <activation>
-      <os>
-        <family>!mac</family>
-      </os>
-    </activation>
-    <properties>
-      <!-- Disable webkit integration, especially unstable on Linux -->
-      <base.ui.test.vmargs>${base.test.vmargs} -Dorg.eclipse.swt.browser.DefaultType=mozilla</base.ui.test.vmargs>
-    </properties>
-  </profile>
+  </profile> 
+
 </profiles>
 
   <modules>
@@ -94,14 +68,12 @@
     <module>org.eclipse.linuxtools.ctf.core</module>
     <module>org.eclipse.linuxtools.ctf.core.tests</module>
     <module>org.eclipse.linuxtools.ctf.parser</module>
-    <module>org.eclipse.linuxtools.ctf.parser.tests</module>
 
     <module>org.eclipse.linuxtools.tmf</module>
     <module>org.eclipse.linuxtools.tmf.core</module>
     <module>org.eclipse.linuxtools.tmf.core.tests</module>
     <module>org.eclipse.linuxtools.tmf.ui</module>
     <module>org.eclipse.linuxtools.tmf.ui.tests</module>
-    <module>org.eclipse.linuxtools.tmf.ui.swtbot.tests</module>
     <module>org.eclipse.linuxtools.tmf.help</module>
 
     <module>org.eclipse.linuxtools.tmf.analysis.xml.core</module>
@@ -121,14 +93,12 @@
     <module>org.eclipse.linuxtools.lttng2.kernel.core.tests</module>
     <module>org.eclipse.linuxtools.lttng2.kernel.ui</module>
     <module>org.eclipse.linuxtools.lttng2.kernel.ui.tests</module>
-    <module>org.eclipse.linuxtools.lttng2.kernel.ui.swtbot.tests</module>
 
     <module>org.eclipse.linuxtools.lttng2.ust</module>
     <module>org.eclipse.linuxtools.lttng2.ust.core</module>
     <module>org.eclipse.linuxtools.lttng2.ust.core.tests</module>
     <module>org.eclipse.linuxtools.lttng2.ust.ui</module>
     <module>org.eclipse.linuxtools.lttng2.ust.ui.tests</module>
-
 
     <module>org.eclipse.linuxtools.gdbtrace</module>
     <module>org.eclipse.linuxtools.gdbtrace.core</module>
@@ -143,7 +113,6 @@
     <module>org.eclipse.linuxtools.tracing.rcp.help</module>
     <module>org.eclipse.linuxtools.tracing.rcp.ui</module>
 
-    <module>org.eclipse.linuxtools.tracing.examples</module>
   </modules>
 
     <build>

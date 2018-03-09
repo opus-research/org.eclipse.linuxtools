@@ -91,7 +91,6 @@ public class StringDefinition extends Definition {
      * Sets the string (value)
      *
      * @param str the string
-     * @since 3.0
      */
     public void setValue(String str) {
         fString = str;
