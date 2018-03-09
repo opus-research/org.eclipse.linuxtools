@@ -125,6 +125,8 @@ public class Metadata {
      *             If there was a problem parsing the metadata
      */
     public void parse() throws CTFReaderException {
+        CTFReaderException tempException = null;
+
         FileInputStream fis = null;
         FileChannel metadataFileChannel = null;
 
@@ -169,39 +171,43 @@ public class Metadata {
             gen.generate();
 
         } catch (FileNotFoundException e) {
-            throw new CTFReaderException("Cannot find metadata file!"); //$NON-NLS-1$
+            tempException = new CTFReaderException("Cannot find metadata file!"); //$NON-NLS-1$
         } catch (IOException e) {
             /* This would indicate a problem with the ANTLR library... */
-            throw new CTFReaderException(e);
+            tempException = new CTFReaderException(e);
         } catch (ParseException e) {
-            throw new CTFReaderException(e);
+            tempException = new CTFReaderException(e);
         } catch (RecognitionException e) {
-            throw new CtfAntlrException(e);
+            tempException = new CtfAntlrException(e);
         } catch (RewriteCardinalityException e){
-            throw new CtfAntlrException(e);
-        } finally {
-            /* Ghetto resource management. Java 7 will deliver us from this... */
-            if (metadataTextInput != null) {
-                try {
-                    metadataTextInput.close();
-                } catch (IOException e) {
-                    // Do nothing
-                }
+            tempException = new CtfAntlrException(e);
+        }
+
+        /* Ghetto resource management. Java 7 will deliver us from this... */
+        if (metadataTextInput != null) {
+            try {
+                metadataTextInput.close();
+            } catch (IOException e) {
+                // Do nothing
             }
-            if (metadataFileChannel != null) {
-                try {
-                    metadataFileChannel.close();
-                } catch (IOException e) {
-                    // Do nothing
-                }
+        }
+        if (metadataFileChannel != null) {
+            try {
+                metadataFileChannel.close();
+            } catch (IOException e) {
+                // Do nothing
             }
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    // Do nothing
-                }
+        }
+        if (fis != null) {
+            try {
+                fis.close();
+            } catch (IOException e) {
+                // Do nothing
             }
+        }
+
+        if (tempException != null) {
+            throw tempException;
         }
     }
 
@@ -285,18 +291,16 @@ public class Metadata {
         ByteBuffer headerByteBuffer = ByteBuffer.allocate(METADATA_PACKET_HEADER_SIZE);
 
         /* Read the header */
+        int nbBytesRead;
         try {
-            int nbBytesRead = metadataFileChannel.read(headerByteBuffer);
-
-            /* Return null if EOF */
-            if (nbBytesRead < 0) {
-                return null;
-            }
-
-            assert (nbBytesRead == METADATA_PACKET_HEADER_SIZE);
-
+            nbBytesRead = metadataFileChannel.read(headerByteBuffer);
         } catch (IOException e) {
             throw new CTFReaderException("Error reading the metadata header.", e); //$NON-NLS-1$
+        }
+
+        /* Return null if EOF */
+        if (nbBytesRead < 0) {
+            return null;
         }
 
         /* Set ByteBuffer's position to 0 */
@@ -304,6 +308,8 @@ public class Metadata {
 
         /* Use byte order that was detected with the magic number */
         headerByteBuffer.order(detectedByteOrder);
+
+        assert (nbBytesRead == METADATA_PACKET_HEADER_SIZE);
 
         MetadataPacketHeader header = new MetadataPacketHeader();
 
@@ -328,8 +334,10 @@ public class Metadata {
         UUID uuid = Utils.makeUUID(header.uuid);
         if (!trace.uuidIsSet()) {
             trace.setUUID(uuid);
-        } else if (!trace.getUUID().equals(uuid)) {
-            throw new CTFReaderException("UUID mismatch"); //$NON-NLS-1$
+        } else {
+            if (!trace.getUUID().equals(uuid)) {
+                throw new CTFReaderException("UUID mismatch"); //$NON-NLS-1$
+            }
         }
 
         /* Extract the text from the packet */
