@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 
@@ -31,7 +32,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
  * Meta-container for the History Tree. This structure contains all the
  * high-level data relevant to the tree.
  *
- * @author Alexandre Montplaisir
+ * @author alexmont
  *
  */
 class HistoryTree {
@@ -206,7 +207,6 @@ class HistoryTree {
      * file.
      *
      * @param requestedEndTime
-     *            The greatest timestamp present in the history tree
      */
     void closeTree(long requestedEndTime) {
         FileChannel fc;
@@ -264,6 +264,7 @@ class HistoryTree {
             try {
                 fc.close();
             } catch (IOException e) {
+                Activator.logError(e.getMessage());
             }
         }
         return;
@@ -328,7 +329,6 @@ class HistoryTree {
      * Insert an interval in the tree
      *
      * @param interval
-     *            The interval to be inserted
      */
     void insertInterval(HTInterval interval) throws TimeRangeException {
         if (interval.getStartTime() < config.getTreeStart()) {
@@ -378,6 +378,7 @@ class HistoryTree {
         if (interval.getEndTime() > this.treeEnd) {
             this.treeEnd = interval.getEndTime();
         }
+        return;
     }
 
     /**
@@ -419,6 +420,7 @@ class HistoryTree {
 
             latestBranch.set(i, newNode);
         }
+        return;
     }
 
     /**
@@ -468,7 +470,7 @@ class HistoryTree {
      * @return The newly created node
      */
     private CoreNode initNewCoreNode(int parentSeqNumber, long startTime) {
-        CoreNode newNode = new CoreNode(config, this.nodeCount, parentSeqNumber,
+        CoreNode newNode = new CoreNode(this, this.nodeCount, parentSeqNumber,
                 startTime);
         this.nodeCount++;
 
@@ -485,9 +487,7 @@ class HistoryTree {
      * branch.
      *
      * @param currentNode
-     *            The node on which the request is made
      * @param t
-     *            The timestamp to choose which child is the next one
      * @return The child node intersecting t
      * @throws ClosedChannelException
      *             If the file channel was closed while we were reading the tree
@@ -503,7 +503,6 @@ class HistoryTree {
                 break;
             }
         }
-
         /*
          * Once we exit this loop, we should have found a children to follow. If
          * we didn't, there's a problem.
@@ -624,35 +623,41 @@ class HistoryTree {
                 + latestBranch.get(latestBranch.size() - 1).getSequenceNumber();
     }
 
+    private int curDepth;
+
     /**
      * Start at currentNode and print the contents of all its children, in
      * pre-order. Give the root node in parameter to visit the whole tree, and
      * have a nice overview.
      */
-    /* Only used for debugging, shouldn't be externalized */
     @SuppressWarnings("nls")
     private void preOrderPrint(PrintWriter writer, boolean printIntervals,
-            CoreNode currentNode, int curDepth) {
+            CoreNode currentNode) {
+        /* Only used for debugging, shouldn't be externalized */
+        int i, j;
+        HTNode nextNode;
 
         writer.println(currentNode.toString());
         if (printIntervals) {
             currentNode.debugPrintIntervals(writer);
         }
+        curDepth++;
 
         try {
-            for (int i = 0; i < currentNode.getNbChildren(); i++) {
-                HTNode nextNode = treeIO.readNode(currentNode.getChild(i));
+            for (i = 0; i < currentNode.getNbChildren(); i++) {
+                nextNode = treeIO.readNode(currentNode.getChild(i));
                 assert (nextNode instanceof CoreNode); // TODO temporary
-                for (int j = 0; j < curDepth; j++) {
+                for (j = 0; j < curDepth - 1; j++) {
                     writer.print("  ");
                 }
                 writer.print("+-");
-                preOrderPrint(writer, printIntervals, (CoreNode) nextNode,
-                              curDepth + 1);
+                preOrderPrint(writer, printIntervals, (CoreNode) nextNode);
             }
         } catch (ClosedChannelException e) {
             e.printStackTrace();
         }
+        curDepth--;
+        return;
     }
 
     /**
@@ -661,16 +666,17 @@ class HistoryTree {
      * @param writer
      *            PrintWriter in which to write the output
      * @param printIntervals
-     *            Flag to enable full output of the interval information
+     *            Says if you want to output the full interval information
      */
     void debugPrintFullTree(PrintWriter writer, boolean printIntervals) {
         /* Only used for debugging, shouldn't be externalized */
-
-        this.preOrderPrint(writer, false, latestBranch.get(0), 0);
+        curDepth = 0;
+        this.preOrderPrint(writer, false, latestBranch.get(0));
 
         if (printIntervals) {
             writer.println("\nDetails of intervals:"); //$NON-NLS-1$
-            this.preOrderPrint(writer, true, latestBranch.get(0), 0);
+            curDepth = 0;
+            this.preOrderPrint(writer, true, latestBranch.get(0));
         }
         writer.println('\n');
     }

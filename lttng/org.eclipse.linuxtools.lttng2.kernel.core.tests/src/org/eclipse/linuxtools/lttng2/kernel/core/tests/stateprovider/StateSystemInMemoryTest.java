@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
+ *   Bernd Hufmann - Updated to new history builder interface
  ******************************************************************************/
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
@@ -15,6 +16,7 @@ package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfHistoryBuilder;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
 import org.junit.BeforeClass;
 
@@ -32,6 +34,8 @@ public class StateSystemInMemoryTest extends StateSystemTest {
     public static void initialize() {
         assumeTrue(testTrace.exists());
         input = new LttngKernelStateProvider(testTrace.getTrace());
-        ssq = TmfStateSystemFactory.newInMemHistory(input, true);
+        ITmfHistoryBuilder builder = TmfStateSystemFactory.newInMemHistory(input);
+        builder.build();
+        ssq = builder.getStateSystem();
     }
 }
