@@ -46,7 +46,7 @@ public abstract class TmfCommonXLineChartViewer extends TmfXYChartViewer {
     private static final double DEFAULT_MINY = Double.MAX_VALUE;
 
     /* The desired number of points per pixel */
-    private static final double RESOLUTION = 0.1;
+    private static final double RESOLUTION = 1.0;
 
     private static final int[] LINE_COLORS = { SWT.COLOR_BLUE, SWT.COLOR_RED, SWT.COLOR_GREEN,
             SWT.COLOR_MAGENTA, SWT.COLOR_CYAN,
