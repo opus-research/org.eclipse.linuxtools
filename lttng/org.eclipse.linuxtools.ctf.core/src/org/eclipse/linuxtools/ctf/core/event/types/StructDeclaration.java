@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -34,8 +34,8 @@ public class StructDeclaration implements IDeclaration {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final Map<String, IDeclaration> fields = new HashMap<String, IDeclaration>();
-    private final List<String> fieldsList = new LinkedList<String>();
+    private final Map<String, IDeclaration> fields = new HashMap<>();
+    private final List<String> fieldsList = new LinkedList<>();
     private long maxAlign;
 
     // ------------------------------------------------------------------------

@@ -16,7 +16,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.valgrind.massif.MassifSnapshot;
-import org.eclipse.linuxtools.valgrind.ui.ValgrindUIConstants;
+import org.eclipse.linuxtools.valgrind.ui.IValgrindToolView;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -44,7 +44,7 @@ import org.swtchart.LineStyle;
 import org.swtchart.Range;
 
 public class ChartEditor extends EditorPart {
-	protected Chart control;
+	private Chart control;
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
@@ -85,11 +85,11 @@ public class ChartEditor extends EditorPart {
 		heapChart.setChartControl(control);
 
 		final Color LIGHTYELLOW = new Color(Display.getDefault(), 255, 255, 225);
-		final Color WHITE = new Color(Display.getDefault(), 255, 255, 255);
-		final Color BLACK = new Color(Display.getDefault(), 0, 0, 0);
-		final Color RED = new Color(Display.getDefault(), 255, 0, 0);
+		final Color WHITE = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
+		final Color BLACK = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
+		final Color RED = Display.getDefault().getSystemColor(SWT.COLOR_RED);
 		final Color ORANGE = new Color(Display.getDefault(), 255, 165, 0);
-		final Color GREEN = new Color(Display.getDefault(), 0, 255, 0);
+		final Color GREEN = Display.getDefault().getSystemColor(SWT.COLOR_GREEN);
 		final Color DARK_BLUE = new Color(Display.getDefault(), 64, 128, 128);
 		final int TICK_GAP = 40;
 
@@ -129,7 +129,7 @@ public class ChartEditor extends EditorPart {
 
 		// data
 		final ILineSeries lsUseful = (ILineSeries) control.getSeriesSet().
-				createSeries(SeriesType.LINE, Messages.getString("HeapChart.Useful_Heap")); //$NON-NLS-1$);
+				createSeries(SeriesType.LINE, Messages.getString("HeapChart.Useful_Heap")); //$NON-NLS-1$;
 		lsUseful.setXSeries(heapChart.time);
 		lsUseful.setYSeries(heapChart.dataUseful);
 		lsUseful.setSymbolType(PlotSymbolType.DIAMOND);
@@ -137,7 +137,7 @@ public class ChartEditor extends EditorPart {
 		lsUseful.setLineColor(RED);
 
 		final ILineSeries lsExtra = (ILineSeries) control.getSeriesSet().
-				createSeries(SeriesType.LINE, Messages.getString("HeapChart.Extra_Heap")); //$NON-NLS-1$);
+				createSeries(SeriesType.LINE, Messages.getString("HeapChart.Extra_Heap")); //$NON-NLS-1$;
 		lsExtra.setXSeries(heapChart.time);
 		lsExtra.setYSeries(heapChart.dataExtra);
 		lsExtra.setSymbolType(PlotSymbolType.DIAMOND);
@@ -146,7 +146,7 @@ public class ChartEditor extends EditorPart {
 
 		if (heapChart.dataStacks != null){
 			final ILineSeries lsStack = (ILineSeries) control.getSeriesSet().
-					createSeries(SeriesType.LINE, Messages.getString("HeapChart.Stacks")); //$NON-NLS-1$);
+					createSeries(SeriesType.LINE, Messages.getString("HeapChart.Stacks")); //$NON-NLS-1$;
 			lsStack.setXSeries(heapChart.time);
 			lsStack.setYSeries(heapChart.dataStacks);
 			lsStack.setSymbolType(PlotSymbolType.DIAMOND);
@@ -155,7 +155,7 @@ public class ChartEditor extends EditorPart {
 		}
 
 		final ILineSeries lsTotal = (ILineSeries) control.getSeriesSet().
-				createSeries(SeriesType.LINE, Messages.getString("HeapChart.Total_Heap")); //$NON-NLS-1$);
+				createSeries(SeriesType.LINE, Messages.getString("HeapChart.Total_Heap")); //$NON-NLS-1$;
 		lsTotal.setXSeries(heapChart.time);
 		lsTotal.setYSeries(heapChart.dataTotal);
 		lsTotal.setSymbolType(PlotSymbolType.DIAMOND);
@@ -182,7 +182,7 @@ public class ChartEditor extends EditorPart {
 			public void mouseDown(MouseEvent e) {
 				showView();
 				TableViewer viewer = input.getView().getTableViewer();
-				input.getView().setTopControl(viewer.getControl());				
+				input.getView().setTopControl(viewer.getControl());
 
 				Point p = new Point(e.x, e.y);
 
@@ -240,17 +240,19 @@ public class ChartEditor extends EditorPart {
     /**
      * Shows the Valgrind view in the active page and gives it focus.
      */
-    public void showView() {
-            Display.getDefault().syncExec(new Runnable() {
-                    public void run() {
-                            try {
-                                    IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                                    activePage.showView(ValgrindUIConstants.VIEW_ID);
-                            } catch (PartInitException e) {
-                                    e.printStackTrace();
-                            }
-                    }
-            });
+    private void showView() {
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    IWorkbenchPage activePage = PlatformUI.getWorkbench()
+                            .getActiveWorkbenchWindow().getActivePage();
+                    activePage.showView(IValgrindToolView.VIEW_ID);
+                } catch (PartInitException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**

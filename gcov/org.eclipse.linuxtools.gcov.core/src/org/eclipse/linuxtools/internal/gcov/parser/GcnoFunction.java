@@ -25,7 +25,7 @@ public class GcnoFunction implements Serializable, Comparable<GcnoFunction> {
     private final long firstLineNmbr;
     private final String name;
     private final String srcFile;
-    private ArrayList<Block> functionBlocks = new ArrayList<Block>();
+    private ArrayList<Block> functionBlocks = new ArrayList<>();
     private int numCounts = 0, numBlocks = 0;
     private final CoverageInfo cvrge = new CoverageInfo();
 
@@ -77,8 +77,8 @@ public class GcnoFunction implements Serializable, Comparable<GcnoFunction> {
 
     public void solveGraphFnctn() {
         ArrayList<Block> fnctnBlcks = this.functionBlocks;
-        ArrayList<Block> validBlocks = new ArrayList<Block>();
-        ArrayList<Block> invalidBlocks = new ArrayList<Block>();
+        ArrayList<Block> validBlocks = new ArrayList<>();
+        ArrayList<Block> invalidBlocks = new ArrayList<>();
 
         // Function should contain at least one block
         if (fnctnBlcks.size() >= 2) {
@@ -88,8 +88,7 @@ public class GcnoFunction implements Serializable, Comparable<GcnoFunction> {
                 fnctnBlcks.get(fnctnBlcks.size() - 1).setNumSuccs(50000);
         }
 
-        for (int i = 0; i < fnctnBlcks.size(); i++) {
-            Block b = fnctnBlcks.get(i);
+        for (Block b: fnctnBlcks) {
             b.setInvalidChain(true);
             invalidBlocks.add(b);
         }
@@ -105,14 +104,17 @@ public class GcnoFunction implements Serializable, Comparable<GcnoFunction> {
 
                     if (invb.getNumSuccs() == 0) {
                         ArrayList<Arc> extArcs = invb.getExitArcs();
-                        for (Arc arc : extArcs)
+                        for (Arc arc : extArcs) {
                             total += arc.getCount();
+                        }
                     } else if (invb.getNumPreds() == 0) {
                         ArrayList<Arc> entrArcs = invb.getEntryArcs();
-                        for (Arc arc : entrArcs)
+                        for (Arc arc : entrArcs) {
                             total += arc.getCount();
-                    } else
+                        }
+                    } else {
                         continue;
+                    }
 
                     invb.setCount(total);
                     invb.setCountValid(true);
@@ -137,8 +139,9 @@ public class GcnoFunction implements Serializable, Comparable<GcnoFunction> {
 
                     for (Arc extAr : vb.getExitArcs()) {
                         total -= extAr.getCount();
-                        if (extAr.isCountValid() == false)
+                        if (extAr.isCountValid() == false) {
                             invarc = extAr;
+                        }
                     }
                     blcksdst = invarc.getDstnatnBlock();
                     invarc.setCountValid(true);
@@ -166,8 +169,9 @@ public class GcnoFunction implements Serializable, Comparable<GcnoFunction> {
 
                     for (Arc entrAr : vb.getEntryArcs()) {
                         total -= entrAr.getCount();
-                        if (entrAr.isCountValid() == false)
+                        if (entrAr.isCountValid() == false) {
                             invarc = entrAr;
+                        }
                     }
 
                     blcksrc = invarc.getSrcBlock();

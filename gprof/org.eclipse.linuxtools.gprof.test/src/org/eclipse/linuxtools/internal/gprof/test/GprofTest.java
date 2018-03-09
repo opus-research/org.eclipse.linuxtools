@@ -50,7 +50,7 @@ public class GprofTest {
 
 	@Parameters
 	public static Collection<Object[]> data() {
-		List<Object[]> params = new ArrayList<Object[]>();
+		List<Object[]> params = new ArrayList<>();
 		boolean addr2line2_16 = false;
 		try {
 			Process p = Runtime.getRuntime().exec("addr2line --version");
@@ -183,7 +183,7 @@ public class GprofTest {
 		AbstractSTTreeViewer gmonViewer = (AbstractSTTreeViewer) view
 				.getSTViewer();
 		GmonDecoder decoder = (GmonDecoder) gmonViewer.getInput();
-		int prof_rate = decoder.getHistogramDecoder().getProf_rate();
+		int prof_rate = decoder.getHistogramDecoder().getProfRate();
 		if (prof_rate == 0) {
 			return;
 		}

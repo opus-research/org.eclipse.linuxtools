@@ -10,7 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +39,7 @@ public class LinkedResourceMarkerTest extends AbstractLinkedResourceMemcheckTest
 		ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
 		IValgrindMessage[] errors = view.getMessages();
 
-		ArrayList<IMarker> markers = new ArrayList<IMarker>(Arrays.asList(proj
+		ArrayList<IMarker> markers = new ArrayList<>(Arrays.asList(proj
 				.getProject().findMarkers(ValgrindLaunchPlugin.MARKER_TYPE,
 						true, IResource.DEPTH_INFINITE)));
 		assertEquals(5, markers.size());
@@ -71,9 +72,7 @@ public class LinkedResourceMarkerTest extends AbstractLinkedResourceMemcheckTest
 				ix = i;
 			}
 		}
-		if (ix < 0) {
-			fail();
-		}
+		assertFalse(ix < 0);
 		markers.remove(ix);
 	}
 

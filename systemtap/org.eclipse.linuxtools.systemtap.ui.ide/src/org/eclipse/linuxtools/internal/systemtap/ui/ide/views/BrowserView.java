@@ -11,6 +11,8 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.views;
 
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -21,7 +23,11 @@ import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
@@ -89,11 +95,21 @@ public abstract class BrowserView extends ViewPart {
 		}
 	}
 
+	protected abstract Image getEntryImage(TreeNode treeObj);
+
+	protected Image getGenericImage(TreeNode treeObj) {
+		if (treeObj.getChildCount() == 0) {
+			return IDEPlugin.getImageDescriptor("icons/vars/var_unk.gif").createImage(); //$NON-NLS-1$
+		} else {
+			return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+		}
+	}
+
 	/**
 	 * Provides the icon and text for each entry in the tapset tree.
 	 * @author Ryan Morse
 	 */
-	static class ViewLabelProvider extends LabelProvider {
+	protected class ViewLabelProvider extends LabelProvider {
 		@Override
 		public String getText(Object obj) {
 			return obj.toString();
@@ -101,53 +117,7 @@ public abstract class BrowserView extends ViewPart {
 
 		@Override
 		public Image getImage(Object obj) {
-			TreeNode treeObj = (TreeNode)obj;
-			Image img;
-			String item = treeObj.getData().toString();
-
-			img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
-			if (treeObj.getChildCount() > 0) {
-				img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-			}
-
-
-			//Kernel Source
-			if(item.endsWith(".c")) {//$NON-NLS-1$
-				img = IDEPlugin.getImageDescriptor("icons/files/file_c.gif").createImage(); //$NON-NLS-1$
-			}
-			if(item.endsWith(".h")) {//$NON-NLS-1$
-				img = IDEPlugin.getImageDescriptor("icons/files/file_h.gif").createImage(); //$NON-NLS-1$
-			}
-
-			//Functions
-			if(item.endsWith(")") && !item.endsWith("\")")) { //$NON-NLS-1$ //$NON-NLS-2$
-				item = item.substring(0, item.indexOf('(')).trim();
-				if(item.endsWith(":long")) {//$NON-NLS-1$
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
-				} else if(item.endsWith(":string")) {//$NON-NLS-1$
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage(); //$NON-NLS-1$
-				} else {
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_void.gif").createImage(); //$NON-NLS-1$
-				}
-			} else {
-				//Probes
-				if(item.startsWith("probe")) {//$NON-NLS-1$
-					img = IDEPlugin.getImageDescriptor("icons/misc/probe_obj.gif").createImage(); //$NON-NLS-1$
-				}
-
-				//Probe variables
-				if(item.endsWith(":long")) {//$NON-NLS-1$
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
-				} else if(item.endsWith(":string")) {//$NON-NLS-1$
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage(); //$NON-NLS-1$
-				} else if(item.endsWith(":unknown")) {//$NON-NLS-1$
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_unk.gif").createImage(); //$NON-NLS-1$
-				} else {
-					img = IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
-				}
-			}
-
-			return img;
+			return getEntryImage((TreeNode) obj);
 		}
 	}
 
@@ -162,6 +132,18 @@ public abstract class BrowserView extends ViewPart {
 		IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
 		collapseHandler = new CollapseAllHandler(getViewer());
 		handlerService.activateHandler(CollapseAllHandler.COMMAND_ID, collapseHandler);
+	}
+
+	protected void registerContextMenu(String menuName) {
+		Control control = this.viewer.getControl();
+		MenuManager manager = new MenuManager(menuName);
+		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+		Menu menu = manager.createContextMenu(control);
+		viewer.getControl().setMenu(menu);
+
+		IWorkbenchPartSite partSite = getSite();
+		partSite.registerContextMenu(manager, viewer);
+		partSite.setSelectionProvider(viewer);
 	}
 
 	public TreeViewer getViewer() {

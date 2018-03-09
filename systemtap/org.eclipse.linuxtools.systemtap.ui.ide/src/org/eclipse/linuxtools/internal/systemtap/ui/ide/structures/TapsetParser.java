@@ -11,9 +11,9 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -21,12 +21,13 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 import org.eclipse.linuxtools.systemtap.structures.process.SystemtapProcessFactory;
 import org.eclipse.linuxtools.systemtap.structures.runnable.StringStreamGobbler;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
+import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -49,13 +50,11 @@ public abstract class TapsetParser extends Job {
 
 	private ArrayList<IUpdateListener> listeners;
 
-	private String[] tapsets;
 	protected boolean cancelRequested;
 
-	protected TapsetParser(String[] tapsets, String jobTitle) {
+	protected TapsetParser(String jobTitle) {
 		super(jobTitle);
-		this.tapsets = Arrays.copyOf(tapsets, tapsets.length);
-		listeners = new ArrayList<IUpdateListener>();
+		listeners = new ArrayList<>();
 		cancelRequested = false;
 	}
 
@@ -97,39 +96,45 @@ public abstract class TapsetParser extends Job {
 	/**
 	 * Runs the stap with the given options and returns the output generated
 	 * @param options String[] of any optional parameters to pass to stap
-	 * @param probe String containing the script to run stap on
-	 * @since 1.2
+	 * @param probe String containing the script to run stap on,
+	 * or <code>null</code> for scriptless commands
+	 * @param getErrors Set this to <code>true</code> if the script's error
+	 * stream contents should be returned instead of its standard output
 	 */
-	protected String runStap(String[] options, String probe) {
+	protected String runStap(String[] options, String probe, boolean getErrors) {
 		String[] args = null;
+		String[] tapsets = IDEPlugin.getDefault().getPreferenceStore()
+				.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
+		boolean noTapsets = tapsets[0].trim().length() == 0;
+		boolean noOptions = options[0].trim().length() == 0;
 
-		int size = 2;	//start at 2 for stap, script, options will be added in later
-		if (null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0) {
+		int size = probe != null ? 2 : 1;
+		if (tapsets.length > 0 && !noTapsets) {
 			size += tapsets.length<<1;
 		}
-		if (null != options && options.length > 0 && options[0].trim().length() > 0) {
+		if (options.length > 0 && !noOptions) {
 			size += options.length;
 		}
 
 		args = new String[size];
 		args[0] = "stap"; //$NON-NLS-1$
-		args[size-1] = probe;
-		args[size-2] = ""; //$NON-NLS-1$
+		if (probe != null) {
+			args[size-1] = probe;
+		}
 
 		//Add extra tapset directories
-		if(null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0) {
-			for(int i=0; i<tapsets.length; i++) {
-				args[2+(i<<1)] = "-I"; //$NON-NLS-1$
-				args[3+(i<<1)] = tapsets[i];
+		if (tapsets.length > 0 && !noTapsets) {
+			for (int i = 0; i < tapsets.length; i++) {
+				args[1 + 2*i] = "-I"; //$NON-NLS-1$
+				args[2 + 2*i] = tapsets[i];
 			}
 		}
-		if(null != options && options.length > 0 && options[0].trim().length() > 0) {
-			for(int i=0; i<options.length; i++) {
-				args[args.length-options.length-1+i] = options[i];
+		if (options.length > 0 && !noOptions) {
+			for (int i = 0, s = noTapsets ? 1 : 1 + tapsets.length*2; i<options.length; i++) {
+				args[s + i] = options[i];
 			}
 		}
 
-		String output = null;
 		try {
 			if (IDEPlugin.getDefault().getPreferenceStore().getBoolean(IDEPreferenceConstants.P_REMOTE_PROBES)) {
 				StringOutputStream str = new StringOutputStream();
@@ -141,37 +146,46 @@ public abstract class TapsetParser extends Job {
 				String password = p.getString(ConsoleLogPreferenceConstants.SCP_PASSWORD);
 
 				Channel channel = SystemtapProcessFactory.execRemoteAndWait(args,str, strErr, user, host, password);
-				if(channel == null){
+				if (channel == null) {
 					displayError(Messages.TapsetParser_CannotRunStapTitle, Messages.TapsetParser_CannotRunStapMessage);
 				}
 
-				output = str.toString();
+				return (!getErrors ? str : strErr).toString();
 			} else {
-				Process process = SystemtapProcessFactory.exec(args, null);
+				Process process = RuntimeProcessFactory.getFactory().exec(args, null, null);
 				if(process == null){
 					displayError(Messages.TapsetParser_CannotRunStapTitle, Messages.TapsetParser_CannotRunStapMessage);
-					return output;
+					return null;
 				}
 
 				StringStreamGobbler gobbler = new StringStreamGobbler(process.getInputStream());
+				StringStreamGobbler egobbler = null;
 				gobbler.start();
+				if (getErrors) {
+					egobbler = new StringStreamGobbler(process.getErrorStream());
+					egobbler.start();
+				}
 				process.waitFor();
-				output = gobbler.getOutput().toString();
+				gobbler.stop();
+				if (egobbler == null) {
+					return gobbler.getOutput().toString();
+				} else {
+					egobbler.stop();
+					return egobbler.getOutput().toString();
+				}
 			}
 
-		} catch (JSchException e) {
-			ExceptionErrorDialog.openError(Messages.TapsetParser_ErrorRunningSystemtap, e);
-		} catch (IOException e) {
+		} catch (JSchException|IOException e) {
 			ExceptionErrorDialog.openError(Messages.TapsetParser_ErrorRunningSystemtap, e);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		return output;
+		return null;
 	}
 
-	private void displayError(final String title, final String error){
+	private void displayError(final String title, final String error) {
     	Display.getDefault().asyncExec(new Runnable() {
     		@Override
 			public void run() {

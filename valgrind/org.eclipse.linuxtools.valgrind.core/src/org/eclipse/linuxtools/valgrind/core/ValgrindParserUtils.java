@@ -37,8 +37,7 @@ public final class ValgrindParserUtils {
 		String[] parts = line.split(delim, 2);
 		if (parts.length > 1 && isNumber(parts[1])) {
 			result = Long.parseLong(parts[1]);
-		}
-		else {
+		} else {
 			fail(line);
 		}
 		return result;
@@ -58,8 +57,7 @@ public final class ValgrindParserUtils {
 		String[] parts = line.split(delim, 2);
 		if (parts.length > 1) {
 			result = parts[1];
-		}
-		else {
+		} else {
 			fail(line);
 		}
 		return result;
@@ -75,9 +73,8 @@ public final class ValgrindParserUtils {
 	public static Integer parsePID(String filename, String prefix) throws IOException {
 		String pidstr = filename.substring(prefix.length(), filename.lastIndexOf(DOT));
 		if (isNumber(pidstr)) {
-			return new Integer(pidstr);
-		}
-		else {
+			return Integer.valueOf(pidstr);
+		} else {
 			throw new IOException("Cannot parse PID from output file"); //$NON-NLS-1$
 		}
 	}
@@ -108,8 +105,8 @@ public final class ValgrindParserUtils {
 	}
 
 	/**
-	 * Parses string ending with format ([FILE]:[LINE])
-	 * Assumes syntax is: "\(.*:[0-9]+\)$"
+	 * Parses string ending with format ([FILE]:[LINE MODULE])
+	 * Assumes syntax is: "\(.*:[0-9]+(\s.+)?\)$"
 	 * @param line - String with the above criteria
 	 * @return a tuple of [String filename, Integer line] 
 	 */
@@ -117,18 +114,27 @@ public final class ValgrindParserUtils {
 		String filename = null;
 		int lineNo = 0;
 	
-		int ix = line.lastIndexOf("("); //$NON-NLS-1$
+		int ix = line.lastIndexOf('(');
 		if (ix >= 0) {
 			String part = line.substring(ix, line.length());
 			part = part.substring(1, part.length() - 1); // remove leading and trailing parentheses
-			if ((ix = part.lastIndexOf(":")) >= 0) { //$NON-NLS-1$		
+			if ((ix = part.lastIndexOf(':')) >= 0) {
 				String strLineNo = part.substring(ix + 1);
 				if (isNumber(strLineNo)) {
 					lineNo = Integer.parseInt(strLineNo);
 					filename = part.substring(0, ix);
+				} else {
+					// handle format: (FILE:LINE MODULE)
+					int ix1 = strLineNo.indexOf(' ');
+					if (ix1 > 0) {
+						strLineNo = strLineNo.substring(0, ix1);
+						if (isNumber(strLineNo)) {
+							lineNo = Integer.parseInt(strLineNo);
+							filename = part.substring(0, ix);
+						}
+					}
 				}
-			}
-			else {
+			} else {
 				// check for "in " token (lib, with symbol)
 				part = part.replaceFirst("^in ", EMPTY_STRING); //$NON-NLS-1$
 				// check for "within " token (lib, without symbol)

@@ -24,16 +24,17 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
 public class SuppressionsContentAssistProcessor implements
 		IContentAssistProcessor {
-	
+
+	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
 			int offset) {
-		List<ICompletionProposal> completions = new ArrayList<ICompletionProposal>();
-		
-		IDocument doc = viewer.getDocument();		
+		List<ICompletionProposal> completions = new ArrayList<>();
+
+		IDocument doc = viewer.getDocument();
 		try {
 			// check if we're in the middle of a word
 			String prefix = completionWord(doc, offset);
-			
+
 			int replacementOffset = offset;
 			int replacementLength = 0;
 			if (prefix != null) {
@@ -45,32 +46,37 @@ public class SuppressionsContentAssistProcessor implements
 			String toolName = getToolName(doc, replacementOffset);
 			String[] words = getCompletionStrings(prefix, toolName);
 			for (String word : words) {
-				completions.add(new CompletionProposal(word, replacementOffset, replacementLength, word.length()));		
-			}			
+				completions.add(new CompletionProposal(word, replacementOffset, replacementLength, word.length()));
+			}
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
-		
+
 		return completions.toArray(new ICompletionProposal[completions.size()]);
 	}
 
+	@Override
 	public IContextInformation[] computeContextInformation(ITextViewer viewer,
 			int offset) {
 		return new IContextInformation[0];
 	}
 
+	@Override
 	public char[] getCompletionProposalAutoActivationCharacters() {
 		return null;
 	}
 
+	@Override
 	public char[] getContextInformationAutoActivationCharacters() {
 		return null;
 	}
 
+	@Override
 	public IContextInformationValidator getContextInformationValidator() {
 		return null;
 	}
 
+	@Override
 	public String getErrorMessage() {
 		return null;
 	}
@@ -92,19 +98,18 @@ public class SuppressionsContentAssistProcessor implements
 		}
 		return word;
 	}
-		
+
 	private String[] getCompletionStrings(String prefix, String toolName) {
-		List<String> words = new ArrayList<String>();
-		
+		List<String> words = new ArrayList<>();
+
 		// If the cursor is after "Memcheck:"
-		if (toolName != null && toolName.equals(SuppressionsElementScanner.MEMCHECK)) {			
+		if (toolName != null && toolName.equals(SuppressionsElementScanner.MEMCHECK)) {
 			for (String word : SuppressionsElementScanner.MEMCHECK_SUPP_TYPES) {
 				if (prefix == null || word.startsWith(prefix)) {
 					words.add(word);
 				}
 			}
-		}
-		else {
+		} else {
 			if (prefix == null || SuppressionsElementScanner.MEMCHECK.startsWith(prefix)) {
 				words.add(SuppressionsElementScanner.MEMCHECK + ":"); //$NON-NLS-1$
 			}
@@ -128,8 +133,7 @@ public class SuppressionsContentAssistProcessor implements
 					c = doc.getChar(n);
 					if (!Character.isLetter(c)) {
 						tool = doc.get(n + 1, offset - n - 1);
-					}
-					else if (n == 0) {
+					} else if (n == 0) {
 						// Beginning of file
 						tool = doc.get(0, offset - n);
 					}

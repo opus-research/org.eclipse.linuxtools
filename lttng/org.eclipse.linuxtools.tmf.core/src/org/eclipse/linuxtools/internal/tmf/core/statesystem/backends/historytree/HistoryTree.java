@@ -1,13 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
- * Copyright (c) 2010, 2011 École Polytechnique de Montréal
- * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
+ * Copyright (c) 2010, 2014 Ericsson, École Polytechnique de Montréal, and others
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
+ * Contributors:
+ *   Alexandre Montplaisir - Initial API and implementation
+ *   Florian Wininger - Add Extension and Leaf Node
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 
@@ -32,9 +34,8 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
  * high-level data relevant to the tree.
  *
  * @author Alexandre Montplaisir
- *
  */
-class HistoryTree {
+public class HistoryTree {
 
     /**
      * Size of the "tree header" in the tree-file The nodes will use this offset
@@ -46,7 +47,7 @@ class HistoryTree {
     private static final int HISTORY_FILE_MAGIC_NUMBER = 0x05FFA900;
 
     /** File format version. Increment when breaking compatibility. */
-    private static final int FILE_VERSION = 3;
+    private static final int FILE_VERSION = 4;
 
     // ------------------------------------------------------------------------
     // Tree-specific configuration
@@ -65,24 +66,30 @@ class HistoryTree {
     /** Latest timestamp found in the tree (at any given moment) */
     private long treeEnd;
 
-    /** How many nodes exist in this tree, total */
+    /** The total number of nodes that exists in this tree */
     private int nodeCount;
 
     /** "Cache" to keep the active nodes in memory */
-    private List<CoreNode> latestBranch;
+    private final List<HTNode> latestBranch;
 
     // ------------------------------------------------------------------------
     // Constructors/"Destructors"
     // ------------------------------------------------------------------------
 
     /**
-     * Create a new State History from scratch, using a SHTConfig object for
-     * configuration
+     * Create a new State History from scratch, using a {@link HTConfig} object
+     * for configuration.
+     *
+     * @param conf
+     *            The config to use for this History Tree.
+     * @throws IOException
+     *             If an error happens trying to open/write to the file
+     *             specified in the config
      */
-    HistoryTree(HTConfig conf) throws IOException {
+    public HistoryTree(HTConfig conf) throws IOException {
         /*
-         * Simple check to make sure we have enough place in the 0th block
-         * for the tree configuration
+         * Simple check to make sure we have enough place in the 0th block for
+         * the tree configuration
          */
         if (conf.getBlockSize() < TREE_HEADER_SIZE) {
             throw new IllegalArgumentException();
@@ -91,13 +98,13 @@ class HistoryTree {
         config = conf;
         treeEnd = conf.getTreeStart();
         nodeCount = 0;
-        latestBranch = new ArrayList<CoreNode>();
+        latestBranch = Collections.synchronizedList(new ArrayList<HTNode>());
 
         /* Prepare the IO object */
-        treeIO = new HT_IO(this, true);
+        treeIO = new HT_IO(config, true);
 
         /* Add the first node to the tree */
-        CoreNode firstNode = initNewCoreNode(-1, conf.getTreeStart());
+        LeafNode firstNode = initNewLeafNode(-1, conf.getTreeStart());
         latestBranch.add(firstNode);
     }
 
@@ -105,13 +112,14 @@ class HistoryTree {
      * "Reader" constructor : instantiate a SHTree from an existing tree file on
      * disk
      *
-     * @param existingFileName
+     * @param existingStateFile
      *            Path/filename of the history-file we are to open
      * @param expProviderVersion
      *            The expected version of the state provider
      * @throws IOException
+     *             If an error happens reading the file
      */
-    HistoryTree(File existingStateFile, int expProviderVersion) throws IOException {
+    public HistoryTree(File existingStateFile, int expProviderVersion) throws IOException {
         /*
          * Open the file ourselves, get the tree header information we need,
          * then pass on the descriptor to the TreeIO object.
@@ -128,178 +136,72 @@ class HistoryTree {
             throw new IOException("Empty target file"); //$NON-NLS-1$
         }
 
-        FileInputStream fis = new FileInputStream(existingStateFile);
-        ByteBuffer buffer = ByteBuffer.allocate(TREE_HEADER_SIZE);
-        FileChannel fc = fis.getChannel();
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        buffer.clear();
-        fc.read(buffer);
-        buffer.flip();
+        try (FileInputStream fis = new FileInputStream(existingStateFile);
+                FileChannel fc = fis.getChannel();) {
 
-        /*
-         * Check the magic number,to make sure we're opening the right type of
-         * file
-         */
-        res = buffer.getInt();
-        if (res != HISTORY_FILE_MAGIC_NUMBER) {
-            fc.close();
-            fis.close();
-            throw new IOException("Wrong magic number"); //$NON-NLS-1$
-        }
+            ByteBuffer buffer = ByteBuffer.allocate(TREE_HEADER_SIZE);
 
-        res = buffer.getInt(); /* File format version number */
-        if (res != FILE_VERSION) {
-            fc.close();
-            fis.close();
-            throw new IOException("Mismatching History Tree file format versions"); //$NON-NLS-1$
-        }
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            buffer.clear();
+            fc.read(buffer);
+            buffer.flip();
 
-        res = buffer.getInt(); /* Event handler's version number */
-        if (res != expProviderVersion &&
-                expProviderVersion != ITmfStateProvider.IGNORE_PROVIDER_VERSION) {
             /*
-             * The existing history was built using a event handler that doesn't
-             * match the current one in the framework. Information could be all
-             * wrong, so we'll force a rebuild of the history file instead.
+             * Check the magic number to make sure we're opening the right type
+             * of file
              */
-            fc.close();
-            fis.close();
-            throw new IOException("Mismatching event handler versions"); //$NON-NLS-1$
+            res = buffer.getInt();
+            if (res != HISTORY_FILE_MAGIC_NUMBER) {
+                throw new IOException("Wrong magic number"); //$NON-NLS-1$
+            }
+
+            res = buffer.getInt(); /* File format version number */
+            if (res != FILE_VERSION) {
+                throw new IOException("Mismatching History Tree file format versions"); //$NON-NLS-1$
+            }
+
+            res = buffer.getInt(); /* Event handler's version number */
+            if (res != expProviderVersion &&
+                    expProviderVersion != ITmfStateProvider.IGNORE_PROVIDER_VERSION) {
+                /*
+                 * The existing history was built using an event handler that
+                 * doesn't match the current one in the framework.
+                 *
+                 * Information could be all wrong. Instead of keeping an
+                 * incorrect history file, a rebuild is done.
+                 */
+                throw new IOException("Mismatching event handler versions"); //$NON-NLS-1$
+            }
+
+            bs = buffer.getInt(); /* Block Size */
+            maxc = buffer.getInt(); /* Max nb of children per node */
+
+            this.nodeCount = buffer.getInt();
+            rootNodeSeqNb = buffer.getInt();
+            startTime = buffer.getLong();
+
+            this.config = new HTConfig(existingStateFile, bs, maxc, expProviderVersion, startTime);
         }
 
-        bs = buffer.getInt(); /* Block Size */
-        maxc = buffer.getInt(); /* Max nb of children per node */
-
-        this.nodeCount = buffer.getInt();
-        rootNodeSeqNb = buffer.getInt();
-        startTime = buffer.getLong();
-
-        this.config = new HTConfig(existingStateFile, bs, maxc, expProviderVersion, startTime);
-        fc.close();
-        fis.close();
         /*
          * FIXME We close fis here and the TreeIO will then reopen the same
          * file, not extremely elegant. But how to pass the information here to
          * the SHT otherwise?
          */
-        this.treeIO = new HT_IO(this, false);
+        this.treeIO = new HT_IO(config, false);
 
-        rebuildLatestBranch(rootNodeSeqNb);
-        this.treeEnd = latestBranch.get(0).getNodeEnd();
+        this.latestBranch = buildLatestBranch(rootNodeSeqNb);
+        this.treeEnd = getRootNode().getNodeEnd();
 
         /*
          * Make sure the history start time we read previously is consistent
          * with was is actually in the root node.
          */
-        if (startTime != latestBranch.get(0).getNodeStart()) {
-            fc.close();
-            fis.close();
+        if (startTime != getRootNode().getNodeStart()) {
             throw new IOException("Inconsistent start times in the" + //$NON-NLS-1$
                     "history file, it might be corrupted."); //$NON-NLS-1$
         }
     }
-
-    /**
-     * "Save" the tree to disk. This method will cause the treeIO object to
-     * commit all nodes to disk and then return the RandomAccessFile descriptor
-     * so the Tree object can save its configuration into the header of the
-     * file.
-     *
-     * @param requestedEndTime
-     *            The greatest timestamp present in the history tree
-     */
-    void closeTree(long requestedEndTime) {
-        FileChannel fc;
-        ByteBuffer buffer;
-        int i, res;
-
-        /*
-         * Work-around the "empty branches" that get created when the root node
-         * becomes full. Overwrite the tree's end time with the original wanted
-         * end-time, to ensure no queries are sent into those empty nodes.
-         *
-         * This won't be needed once extended nodes are implemented.
-         */
-        this.treeEnd = requestedEndTime;
-
-        /* Close off the latest branch of the tree */
-        for (i = 0; i < latestBranch.size(); i++) {
-            latestBranch.get(i).closeThisNode(treeEnd);
-            treeIO.writeNode(latestBranch.get(i));
-        }
-
-        fc = treeIO.getFcOut();
-        buffer = ByteBuffer.allocate(TREE_HEADER_SIZE);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        buffer.clear();
-
-        /* Save the config of the tree to the header of the file */
-        try {
-            fc.position(0);
-
-            buffer.putInt(HISTORY_FILE_MAGIC_NUMBER);
-
-            buffer.putInt(FILE_VERSION);
-            buffer.putInt(config.getProviderVersion());
-
-            buffer.putInt(config.getBlockSize());
-            buffer.putInt(config.getMaxChildren());
-
-            buffer.putInt(nodeCount);
-
-            /* root node seq. nb */
-            buffer.putInt(latestBranch.get(0).getSequenceNumber());
-
-            /* start time of this history */
-            buffer.putLong(latestBranch.get(0).getNodeStart());
-
-            buffer.flip();
-            res = fc.write(buffer);
-            assert (res <= TREE_HEADER_SIZE);
-            /* done writing the file header */
-
-        } catch (IOException e) {
-            /* We should not have any problems at this point... */
-        } finally {
-            try {
-                fc.close();
-            } catch (IOException e) {
-            }
-        }
-        return;
-    }
-
-    // ------------------------------------------------------------------------
-    // Accessors
-    // ------------------------------------------------------------------------
-
-    HTConfig getConfig() {
-        return config;
-    }
-
-    long getTreeStart() {
-        return config.getTreeStart();
-    }
-
-    long getTreeEnd() {
-        return treeEnd;
-    }
-
-    int getNodeCount() {
-        return nodeCount;
-    }
-
-    HT_IO getTreeIO() {
-        return treeIO;
-    }
-
-    List<CoreNode> getLatestBranch() {
-        return Collections.unmodifiableList(latestBranch);
-    }
-
-    // ------------------------------------------------------------------------
-    // Operations
-    // ------------------------------------------------------------------------
 
     /**
      * Rebuild the latestBranch "cache" object by reading the nodes from disk
@@ -311,26 +213,222 @@ class HistoryTree {
      *            start
      * @throws ClosedChannelException
      */
-    private void rebuildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
-        HTNode nextChildNode;
+    private List<HTNode> buildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
+        List<HTNode> list = new ArrayList<>();
 
-        this.latestBranch = new ArrayList<CoreNode>();
+        HTNode nextChildNode = treeIO.readNode(rootNodeSeqNb);
+        list.add(nextChildNode);
 
-        nextChildNode = treeIO.readNodeFromDisk(rootNodeSeqNb);
-        latestBranch.add((CoreNode) nextChildNode);
-        while (latestBranch.get(latestBranch.size() - 1).getNbChildren() > 0) {
-            nextChildNode = treeIO.readNodeFromDisk(latestBranch.get(latestBranch.size() - 1).getLatestChild());
-            latestBranch.add((CoreNode) nextChildNode);
+        /* Follow the last branch up to the leaf */
+        while (nextChildNode.getNodeType() == HTNode.NodeType.CORE) {
+            nextChildNode = treeIO.readNode(((CoreNode) nextChildNode).getLatestChild());
+            list.add(nextChildNode);
         }
+        return Collections.synchronizedList(list);
     }
 
     /**
-     * Insert an interval in the tree
+     * "Save" the tree to disk. This method will cause the treeIO object to
+     * commit all nodes to disk and then return the RandomAccessFile descriptor
+     * so the Tree object can save its configuration into the header of the
+     * file.
+     *
+     * @param requestedEndTime
+     *            The greatest timestamp present in the history tree
+     */
+    public void closeTree(long requestedEndTime) {
+        /* This is an important operation, queries can wait */
+        synchronized (latestBranch) {
+            /*
+             * Work-around the "empty branches" that get created when the root
+             * node becomes full. Overwrite the tree's end time with the
+             * original wanted end-time, to ensure no queries are sent into
+             * those empty nodes.
+             *
+             * This won't be needed once extended nodes are implemented.
+             */
+            this.treeEnd = requestedEndTime;
+
+            /* Close off the latest branch of the tree */
+            for (int i = 0; i < latestBranch.size(); i++) {
+                latestBranch.get(i).closeThisNode(treeEnd);
+                treeIO.writeNode(latestBranch.get(i));
+            }
+
+            try (FileChannel fc = treeIO.getFcOut();) {
+                ByteBuffer buffer = ByteBuffer.allocate(TREE_HEADER_SIZE);
+                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                buffer.clear();
+
+                /* Save the config of the tree to the header of the file */
+                fc.position(0);
+
+                buffer.putInt(HISTORY_FILE_MAGIC_NUMBER);
+
+                buffer.putInt(FILE_VERSION);
+                buffer.putInt(config.getProviderVersion());
+
+                buffer.putInt(config.getBlockSize());
+                buffer.putInt(config.getMaxChildren());
+
+                buffer.putInt(nodeCount);
+
+                /* root node seq. nb */
+                buffer.putInt(latestBranch.get(0).getSequenceNumber());
+
+                /* start time of this history */
+                buffer.putLong(latestBranch.get(0).getNodeStart());
+
+                buffer.flip();
+                int res = fc.write(buffer);
+                assert (res <= TREE_HEADER_SIZE);
+                /* done writing the file header */
+
+            } catch (IOException e) {
+                /*
+                 * If we were able to write so far, there should not be any
+                 * problem at this point...
+                 */
+                throw new RuntimeException("State system write error"); //$NON-NLS-1$
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Accessors
+    // ------------------------------------------------------------------------
+
+    /**
+     * Get the start time of this tree.
+     *
+     * @return The start time
+     */
+    public long getTreeStart() {
+        return config.getTreeStart();
+    }
+
+    /**
+     * Get the current end time of this tree.
+     *
+     * @return The end time
+     */
+    public long getTreeEnd() {
+        return treeEnd;
+    }
+
+    /**
+     * Get the number of nodes in this tree.
+     *
+     * @return The number of nodes
+     */
+    public int getNodeCount() {
+        return nodeCount;
+    }
+
+    /**
+     * Get the current root node of this tree
+     *
+     * @return The root node
+     */
+    public HTNode getRootNode() {
+        return latestBranch.get(0);
+    }
+
+    // ------------------------------------------------------------------------
+    // HT_IO interface
+    // ------------------------------------------------------------------------
+
+    /**
+     * Return the FileInputStream reader with which we will read an attribute
+     * tree (it will be sought to the correct position).
+     *
+     * @return The FileInputStream indicating the file and position from which
+     *         the attribute tree can be read.
+     */
+    public FileInputStream supplyATReader() {
+        return treeIO.supplyATReader(getNodeCount());
+    }
+
+    /**
+     * Return the file to which we will write the attribute tree.
+     *
+     * @return The file to which we will write the attribute tree
+     */
+    public File supplyATWriterFile() {
+        return config.getStateFile();
+    }
+
+    /**
+     * Return the position in the file (given by {@link #supplyATWriterFile})
+     * where to start writing the attribute tree.
+     *
+     * @return The position in the file where to start writing
+     */
+    public long supplyATWriterFilePos() {
+        return HistoryTree.TREE_HEADER_SIZE
+                + ((long) getNodeCount() * config.getBlockSize());
+    }
+
+    /**
+     * Read a node from the tree.
+     *
+     * @param seqNumber
+     *            The sequence number of the node to read
+     * @return The node
+     * @throws ClosedChannelException
+     *             If the tree IO is unavailable
+     */
+    public HTNode readNode(int seqNumber) throws ClosedChannelException {
+        /* Try to read the node from memory */
+        synchronized (latestBranch) {
+            for (HTNode node : latestBranch) {
+                if (node.getSequenceNumber() == seqNumber) {
+                    return node;
+                }
+            }
+        }
+
+        /* Read the node from disk */
+        return treeIO.readNode(seqNumber);
+    }
+
+    /**
+     * Write a node object to the history file.
+     *
+     * @param node
+     *            The node to write to disk
+     */
+    public void writeNode(HTNode node) {
+        treeIO.writeNode(node);
+    }
+
+    /**
+     * Close the history file.
+     */
+    public void closeFile() {
+        treeIO.closeFile();
+    }
+
+    /**
+     * Delete the history file.
+     */
+    public void deleteFile() {
+        treeIO.deleteFile();
+    }
+
+    // ------------------------------------------------------------------------
+    // Operations
+    // ------------------------------------------------------------------------
+
+    /**
+     * Insert an interval in the tree.
      *
      * @param interval
      *            The interval to be inserted
+     * @throws TimeRangeException
+     *             If the start of end time of the interval are invalid
      */
-    void insertInterval(HTInterval interval) throws TimeRangeException {
+    public void insertInterval(HTInterval interval) throws TimeRangeException {
         if (interval.getStartTime() < config.getTreeStart()) {
             throw new TimeRangeException();
         }
@@ -388,36 +486,52 @@ class HistoryTree {
      *            The index in latestBranch where we start adding
      */
     private void addSiblingNode(int indexOfNode) {
-        int i;
-        CoreNode newNode, prevNode;
-        long splitTime = treeEnd;
+        synchronized (latestBranch) {
+            final long splitTime = treeEnd;
 
-        assert (indexOfNode < latestBranch.size());
+            if (indexOfNode >= latestBranch.size()) {
+                /*
+                 * We need to make sure (indexOfNode - 1) doesn't get the last
+                 * node in the branch, because that one is a Leaf Node.
+                 */
+                throw new IllegalStateException();
+            }
 
-        /* Check if we need to add a new root node */
-        if (indexOfNode == 0) {
-            addNewRootNode();
-            return;
-        }
+            /* Check if we need to add a new root node */
+            if (indexOfNode == 0) {
+                addNewRootNode();
+                return;
+            }
 
-        /* Check if we can indeed add a child to the target parent */
-        if (latestBranch.get(indexOfNode - 1).getNbChildren() == config.getMaxChildren()) {
-            /* If not, add a branch starting one level higher instead */
-            addSiblingNode(indexOfNode - 1);
-            return;
-        }
+            /* Check if we can indeed add a child to the target parent */
+            if (((CoreNode) latestBranch.get(indexOfNode - 1)).getNbChildren() == config.getMaxChildren()) {
+                /* If not, add a branch starting one level higher instead */
+                addSiblingNode(indexOfNode - 1);
+                return;
+            }
 
-        /* Split off the new branch from the old one */
-        for (i = indexOfNode; i < latestBranch.size(); i++) {
-            latestBranch.get(i).closeThisNode(splitTime);
-            treeIO.writeNode(latestBranch.get(i));
+            /* Split off the new branch from the old one */
+            for (int i = indexOfNode; i < latestBranch.size(); i++) {
+                latestBranch.get(i).closeThisNode(splitTime);
+                treeIO.writeNode(latestBranch.get(i));
 
-            prevNode = latestBranch.get(i - 1);
-            newNode = initNewCoreNode(prevNode.getSequenceNumber(),
-                    splitTime + 1);
-            prevNode.linkNewChild(newNode);
+                CoreNode prevNode = (CoreNode) latestBranch.get(i - 1);
+                HTNode newNode;
 
-            latestBranch.set(i, newNode);
+                switch (latestBranch.get(i).getNodeType()) {
+                case CORE:
+                    newNode = initNewCoreNode(prevNode.getSequenceNumber(), splitTime + 1);
+                    break;
+                case LEAF:
+                    newNode = initNewLeafNode(prevNode.getSequenceNumber(), splitTime + 1);
+                    break;
+                default:
+                    throw new IllegalStateException();
+                }
+
+                prevNode.linkNewChild(newNode);
+                latestBranch.set(i, newNode);
+            }
         }
     }
 
@@ -426,18 +540,17 @@ class HistoryTree {
      * latestBranch
      */
     private void addNewRootNode() {
-        int i, depth;
-        CoreNode oldRootNode, newRootNode, newNode, prevNode;
-        long splitTime = this.treeEnd;
+        final long splitTime = this.treeEnd;
 
-        oldRootNode = latestBranch.get(0);
-        newRootNode = initNewCoreNode(-1, config.getTreeStart());
+        HTNode oldRootNode = latestBranch.get(0);
+        CoreNode newRootNode = initNewCoreNode(-1, config.getTreeStart());
 
         /* Tell the old root node that it isn't root anymore */
         oldRootNode.setParentSequenceNumber(newRootNode.getSequenceNumber());
 
         /* Close off the whole current latestBranch */
-        for (i = 0; i < latestBranch.size(); i++) {
+
+        for (int i = 0; i < latestBranch.size(); i++) {
             latestBranch.get(i).closeThisNode(splitTime);
             treeIO.writeNode(latestBranch.get(i));
         }
@@ -446,20 +559,28 @@ class HistoryTree {
         newRootNode.linkNewChild(oldRootNode);
 
         /* Rebuild a new latestBranch */
-        depth = latestBranch.size();
-        latestBranch = new ArrayList<CoreNode>();
+        int depth = latestBranch.size();
+        latestBranch.clear();
         latestBranch.add(newRootNode);
-        for (i = 1; i < depth + 1; i++) {
-            prevNode = latestBranch.get(i - 1);
-            newNode = initNewCoreNode(prevNode.getParentSequenceNumber(),
+
+        // Create new coreNode
+        for (int i = 1; i < depth + 1; i++) {
+            CoreNode prevNode = (CoreNode) latestBranch.get(i - 1);
+            CoreNode newNode = initNewCoreNode(prevNode.getParentSequenceNumber(),
                     splitTime + 1);
             prevNode.linkNewChild(newNode);
             latestBranch.add(newNode);
         }
+
+        // Create the new leafNode
+        CoreNode prevNode = (CoreNode) latestBranch.get(depth);
+        LeafNode newNode = initNewLeafNode(prevNode.getParentSequenceNumber(), splitTime + 1);
+        prevNode.linkNewChild(newNode);
+        latestBranch.add(newNode);
     }
 
     /**
-     * Add a new empty node to the tree.
+     * Add a new empty core node to the tree.
      *
      * @param parentSeqNumber
      *            Sequence number of this node's parent
@@ -469,6 +590,27 @@ class HistoryTree {
      */
     private CoreNode initNewCoreNode(int parentSeqNumber, long startTime) {
         CoreNode newNode = new CoreNode(config, this.nodeCount, parentSeqNumber,
+                startTime);
+        this.nodeCount++;
+
+        /* Update the treeEnd if needed */
+        if (startTime >= this.treeEnd) {
+            this.treeEnd = startTime + 1;
+        }
+        return newNode;
+    }
+
+    /**
+     * Add a new empty leaf node to the tree.
+     *
+     * @param parentSeqNumber
+     *            Sequence number of this node's parent
+     * @param startTime
+     *            Start time of the new node
+     * @return The newly created node
+     */
+    private LeafNode initNewLeafNode(int parentSeqNumber, long startTime) {
+        LeafNode newNode = new LeafNode(config, this.nodeCount, parentSeqNumber,
                 startTime);
         this.nodeCount++;
 
@@ -492,7 +634,7 @@ class HistoryTree {
      * @throws ClosedChannelException
      *             If the file channel was closed while we were reading the tree
      */
-    HTNode selectNextChild(CoreNode currentNode, long t) throws ClosedChannelException {
+    public HTNode selectNextChild(CoreNode currentNode, long t) throws ClosedChannelException {
         assert (currentNode.getNbChildren() > 0);
         int potentialNextSeqNb = currentNode.getSequenceNumber();
 
@@ -515,13 +657,18 @@ class HistoryTree {
          * through the whole latestBranch array if we know for sure the next
          * node has to be on disk
          */
-        if (currentNode.isDone()) {
-            return treeIO.readNodeFromDisk(potentialNextSeqNb);
+        if (currentNode.isOnDisk()) {
+            return treeIO.readNode(potentialNextSeqNb);
         }
-        return treeIO.readNode(potentialNextSeqNb);
+        return readNode(potentialNextSeqNb);
     }
 
-    long getFileSize() {
+    /**
+     * Get the current size of the history file.
+     *
+     * @return The history file size
+     */
+    public long getFileSize() {
         return config.getStateFile().length();
     }
 
@@ -529,10 +676,19 @@ class HistoryTree {
     // Test/debugging methods
     // ------------------------------------------------------------------------
 
-    /* Only used for debugging, shouldn't be externalized */
+    /**
+     * Debugging method to make sure all intervals contained in the given node
+     * have valid start and end times.
+     *
+     * @param zenode
+     *            The node to check
+     * @return True if everything is fine, false if there is at least one
+     *         invalid timestamp (end time < start time, time outside of the
+     *         range of the node, etc.)
+     */
     @SuppressWarnings("nls")
-    boolean checkNodeIntegrity(HTNode zenode) {
-
+    public boolean checkNodeIntegrity(HTNode zenode) {
+        /* Only used for debugging, shouldn't be externalized */
         HTNode otherNode;
         CoreNode node;
         StringBuffer buf = new StringBuffer();
@@ -559,7 +715,7 @@ class HistoryTree {
                             + otherNode.getSequenceNumber() + ")\n");
                     ret = false;
                 }
-                if (node.isDone()) {
+                if (node.isOnDisk()) {
                     otherNode = treeIO.readNode(node.getLatestChild());
                     if (node.getNodeEnd() != otherNode.getNodeEnd()) {
                         buf.append("End time of node (" + node.getNodeEnd()
@@ -572,8 +728,8 @@ class HistoryTree {
             }
 
             /*
-             * Test that the childStartTimes[] array matches the real nodes' start
-             * times
+             * Test that the childStartTimes[] array matches the real nodes'
+             * start times
              */
             for (int i = 0; i < node.getNbChildren(); i++) {
                 otherNode = treeIO.readNode(node.getChild(i));
@@ -600,7 +756,11 @@ class HistoryTree {
         return ret;
     }
 
-    void checkIntegrity() {
+    /**
+     * Check the integrity of all the nodes in the tree. Calls
+     * {@link #checkNodeIntegrity} for every node in the tree.
+     */
+    public void checkIntegrity() {
         try {
             for (int i = 0; i < nodeCount; i++) {
                 checkNodeIntegrity(treeIO.readNode(i));
@@ -632,26 +792,44 @@ class HistoryTree {
     /* Only used for debugging, shouldn't be externalized */
     @SuppressWarnings("nls")
     private void preOrderPrint(PrintWriter writer, boolean printIntervals,
-            CoreNode currentNode, int curDepth) {
+            HTNode currentNode, int curDepth) {
 
         writer.println(currentNode.toString());
         if (printIntervals) {
             currentNode.debugPrintIntervals(writer);
         }
 
-        try {
-            for (int i = 0; i < currentNode.getNbChildren(); i++) {
-                HTNode nextNode = treeIO.readNode(currentNode.getChild(i));
-                assert (nextNode instanceof CoreNode); // TODO temporary
-                for (int j = 0; j < curDepth; j++) {
-                    writer.print("  ");
+        switch (currentNode.getNodeType()) {
+        case LEAF:
+            /* Stop if it's the leaf node */
+            return;
+
+        case CORE:
+            try {
+                final CoreNode node = (CoreNode) currentNode;
+                /* Print the extensions, if any */
+                int extension = node.getExtensionSequenceNumber();
+                while (extension != -1) {
+                    HTNode nextNode = treeIO.readNode(extension);
+                    preOrderPrint(writer, printIntervals, nextNode, curDepth);
                 }
-                writer.print("+-");
-                preOrderPrint(writer, printIntervals, (CoreNode) nextNode,
-                              curDepth + 1);
+
+                /* Print the child nodes */
+                for (int i = 0; i < node.getNbChildren(); i++) {
+                    HTNode nextNode = treeIO.readNode(node.getChild(i));
+                    for (int j = 0; j < curDepth; j++) {
+                        writer.print("  ");
+                    }
+                    writer.print("+-");
+                    preOrderPrint(writer, printIntervals, nextNode, curDepth + 1);
+                }
+            } catch (ClosedChannelException e) {
+                Activator.logError(e.getMessage());
             }
-        } catch (ClosedChannelException e) {
-            e.printStackTrace();
+            break;
+
+        default:
+            break;
         }
     }
 
@@ -663,7 +841,7 @@ class HistoryTree {
      * @param printIntervals
      *            Flag to enable full output of the interval information
      */
-    void debugPrintFullTree(PrintWriter writer, boolean printIntervals) {
+    public void debugPrintFullTree(PrintWriter writer, boolean printIntervals) {
         /* Only used for debugging, shouldn't be externalized */
 
         this.preOrderPrint(writer, false, latestBranch.get(0), 0);

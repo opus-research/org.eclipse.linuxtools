@@ -11,6 +11,7 @@
 
 package org.eclipse.linuxtools.systemtap.structures.tests;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -19,6 +20,7 @@ import java.io.File;
 
 import org.eclipse.linuxtools.systemtap.structures.LoggingStreamDaemon;
 import org.eclipse.linuxtools.systemtap.structures.runnable.StreamGobbler;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,10 +40,10 @@ public class LoggingStreamDaemonTest {
 
 	@Test
 	public void testGetOutput() {
-		assertTrue("".equals(daemon.getOutput()));
+		assertTrue(daemon.getOutput().isEmpty());
 
 		daemon.handleDataEvent("test");
-		assertTrue("test".equals(daemon.getOutput()));
+		assertEquals("test", daemon.getOutput());
 	}
 
 	@Test
@@ -59,8 +61,8 @@ public class LoggingStreamDaemonTest {
 		f.delete();
 	}
 
-	@Test
-	public void testDispose() {
+	@After
+	public void tearDown() {
 		daemon.dispose();
 		assertNull(daemon.getOutput());
 	}

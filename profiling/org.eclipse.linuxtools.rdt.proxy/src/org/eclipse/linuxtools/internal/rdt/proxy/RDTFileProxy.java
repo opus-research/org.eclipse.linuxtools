@@ -22,13 +22,11 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
-import org.eclipse.linuxtools.rdt.proxy.Activator;
-import org.eclipse.linuxtools.rdt.proxy.RDTProxyManager;
-import org.eclipse.ptp.remote.core.IRemoteConnection;
-import org.eclipse.ptp.remote.core.IRemoteFileManager;
-import org.eclipse.ptp.remote.core.IRemoteResource;
-import org.eclipse.ptp.remote.core.IRemoteServices;
-import org.eclipse.ptp.remote.core.RemoteServices;
+import org.eclipse.remote.core.IRemoteConnection;
+import org.eclipse.remote.core.IRemoteFileManager;
+import org.eclipse.remote.core.IRemoteResource;
+import org.eclipse.remote.core.IRemoteServices;
+import org.eclipse.remote.core.RemoteServices;
 
 public class RDTFileProxy implements IRemoteFileProxy {
 
@@ -39,11 +37,12 @@ public class RDTFileProxy implements IRemoteFileProxy {
 	private void initialize(URI uri) throws CoreException {
 	        IRemoteServices services = RemoteServices.getRemoteServices(uri);
 		IRemoteConnection connection = services.getConnectionManager().getConnection(uri);
-		if (connection != null)
-			manager = services.getFileManager(connection);
-		else
+		if (connection != null) {
+			manager = connection.getFileManager();
+		} else {
 			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 					Activator.getResourceString("Connection.error"))); //$NON-NLS-1$
+		}
 	}
 
 	public RDTFileProxy(URI uri) throws CoreException {
@@ -59,8 +58,8 @@ public class RDTFileProxy implements IRemoteFileProxy {
 			remoteRes = (IRemoteResource)resource.getAdapter(IRemoteResource.class);
 			if (project.hasNature(RDTProxyManager.SYNC_NATURE)) {
 				uri = remoteRes.getActiveLocationURI();
-			} 
-		} 
+			}
+		}
 		initialize(uri);
 	}
 

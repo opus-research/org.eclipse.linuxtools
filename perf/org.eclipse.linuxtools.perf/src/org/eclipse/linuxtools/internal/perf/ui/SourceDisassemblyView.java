@@ -100,7 +100,7 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 	 * @param input text content of widget.
 	 */
 	private void setStyledText (String input) {
-		List<StyleRange> styles = new ArrayList<StyleRange> ();
+		List<StyleRange> styles = new ArrayList<> ();
 		int ptr = 0;
 
 		text.setText(input);
@@ -155,7 +155,7 @@ public class SourceDisassemblyView extends ViewPart implements IFindReplaceTarge
 	/**
 	 * Create find dialog and set is as a toolbar action.
 	 */
-	public void setupFindDialog() {
+	private void setupFindDialog() {
 		FindReplaceAction findAction = new FindReplaceAction(
 				Platform.getResourceBundle(PerfPlugin.getDefault().getBundle()),
 				null, text.getShell(), this);

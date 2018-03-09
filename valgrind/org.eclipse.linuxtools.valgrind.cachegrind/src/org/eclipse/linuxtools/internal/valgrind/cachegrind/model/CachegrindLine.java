@@ -14,9 +14,9 @@ import org.eclipse.core.runtime.IAdaptable;
 
 
 public class CachegrindLine implements ICachegrindElement {
-	protected CachegrindFunction parent;
-	protected int line;
-	protected long[] values;
+	private CachegrindFunction parent;
+	private int line;
+	private long[] values;
 	
 	public CachegrindLine(CachegrindFunction parent, int line, long[] values) {
 		this.parent = parent;
@@ -24,6 +24,7 @@ public class CachegrindLine implements ICachegrindElement {
 		this.values = values;
 	}
 
+	@Override
 	public ICachegrindElement[] getChildren() {
 		return null;
 	}
@@ -36,10 +37,12 @@ public class CachegrindLine implements ICachegrindElement {
 		return values;
 	}
 
+	@Override
 	public ICachegrindElement getParent() {
 		return parent;
 	}
 	
+	@Override
 	public int compareTo(ICachegrindElement o) {
 		int result = 0;
 		if (o instanceof CachegrindLine) {
@@ -48,6 +51,7 @@ public class CachegrindLine implements ICachegrindElement {
 		return result;
 	}
 
+	@Override
 	public IAdaptable getModel() {
 		return null;
 	}

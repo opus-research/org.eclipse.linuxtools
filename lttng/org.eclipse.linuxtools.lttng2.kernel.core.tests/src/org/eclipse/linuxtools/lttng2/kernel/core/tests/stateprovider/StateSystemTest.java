@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -24,10 +24,9 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
+import org.eclipse.linuxtools.tmf.ctf.core.tests.shared.CtfTmfTestTrace;
 import org.junit.Test;
 
 /**
@@ -51,7 +50,6 @@ public abstract class StateSystemTest {
     /** Number of nanoseconds in one second */
     private static final long NANOSECS_PER_SEC = 1000000000L;
 
-    protected static ITmfStateProvider input;
     protected static ITmfStateSystem ssq;
 
     /* Offset in the trace + start time of the trace */
@@ -424,4 +422,25 @@ public abstract class StateSystemTest {
             fail();
         }
     }
+
+    @Test
+    public void testParentAttribute() {
+        String[] path = { "CPUs/0/Current_thread",
+                          "CPUs/0",
+                          "CPUs" };
+        try {
+            int q = ssq.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
+            for (int i = 0; i < path.length; i++) {
+                String name = ssq.getFullAttributePath(q);
+                assertEquals(path[i], name);
+                q = ssq.getParentAttributeQuark(q);
+            }
+            assertEquals(-1, q);
+            q = ssq.getParentAttributeQuark(q);
+            assertEquals(-1, q);
+        } catch (AttributeNotFoundException e) {
+            fail();
+        }
+    }
+
 }

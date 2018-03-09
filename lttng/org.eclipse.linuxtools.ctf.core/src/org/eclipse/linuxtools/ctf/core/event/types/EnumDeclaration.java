@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -36,7 +36,7 @@ public class EnumDeclaration implements IDeclaration {
 
     private final EnumTable fTable = new EnumTable();
     private final IntegerDeclaration fContainerType;
-    private final Set<String> fLabels = new HashSet<String>();
+    private final Set<String> fLabels = new HashSet<>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -117,6 +117,7 @@ public class EnumDeclaration implements IDeclaration {
      * Gets a set of labels of the enum
      *
      * @return A set of labels of the enum, can be empty but not null
+     * @since 3.0
      */
     public Set<String> getLabels() {
         return Collections.unmodifiableSet(fLabels);
@@ -128,7 +129,7 @@ public class EnumDeclaration implements IDeclaration {
      */
     private class EnumTable {
 
-        private final List<LabelAndRange> ranges = new LinkedList<LabelAndRange>();
+        private final List<LabelAndRange> ranges = new LinkedList<>();
 
         public EnumTable() {
         }

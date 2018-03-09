@@ -44,10 +44,8 @@ public class WrongDeallocationResolutionTest extends AbstractValgrindTest {
 		return "org.eclipse.linuxtools.valgrind.launch.memcheck"; //$NON-NLS-1$
 	}
 
-	@Override
 	@Before
-	public void setUp() throws Exception {
-		super.setUp();
+	public void prep() throws Exception {
 		proj = createProjectAndBuild("wrongDeallocTest"); //$NON-NLS-1$
 		ILaunchConfiguration config = createConfiguration(proj.getProject());
 		doLaunch(config, "wrongDeallocTest"); //$NON-NLS-1$
@@ -55,14 +53,16 @@ public class WrongDeallocationResolutionTest extends AbstractValgrindTest {
 		document = new Document();
 		InputStream fileInputStream = proj.getProject()
 				.getFile("wrongDealloc.cpp").getContents(); //$NON-NLS-1$
-		Scanner scanner = new Scanner(fileInputStream).useDelimiter("\\A"); //$NON-NLS-1$
-		String content;
-		if (scanner.hasNext()) {
-			content = scanner.next();
-		} else {
-			content = EMPTY_STRING;
+		try (Scanner scanner = new Scanner(fileInputStream)) {
+			scanner.useDelimiter("\\A"); //$NON-NLS-1$
+			String content;
+			if (scanner.hasNext()) {
+				content = scanner.next();
+			} else {
+				content = EMPTY_STRING;
+			}
+			document.set(content);
 		}
-		document.set(content);
 		markers = proj.getProject().findMarkers(VALGRIND_MARKER_TYPE, true, 1);
 		Arrays.sort(markers, new MarkerComparator());
 	}

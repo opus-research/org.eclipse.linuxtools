@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -20,7 +20,6 @@ import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.ITmfStateIntervalListener;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
@@ -38,9 +37,6 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
     /** The history tree that sits underneath */
     protected final HistoryTree sht;
-
-    /** Direct reference to the tree's IO object */
-    private final HT_IO treeIO;
 
     /** Indicates if the history tree construction is done */
     protected boolean isFinishedBuilding = false;
@@ -71,7 +67,6 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         final HTConfig conf = new HTConfig(newStateFile, blockSize, maxChildren,
                 providerVersion, startTime);
         sht = new HistoryTree(conf);
-        treeIO = sht.getTreeIO();
     }
 
     /**
@@ -111,7 +106,6 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     public HistoryTreeBackend(File existingStateFile, int providerVersion)
             throws IOException {
         sht = new HistoryTree(existingStateFile, providerVersion);
-        treeIO = sht.getTreeIO();
         isFinishedBuilding = true;
     }
 
@@ -143,35 +137,35 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
     @Override
     public FileInputStream supplyAttributeTreeReader() {
-        return treeIO.supplyATReader();
+        return sht.supplyATReader();
     }
 
     @Override
     public File supplyAttributeTreeWriterFile() {
-        return treeIO.supplyATWriterFile();
+        return sht.supplyATWriterFile();
     }
 
     @Override
     public long supplyAttributeTreeWriterFilePosition() {
-        return treeIO.supplyATWriterFilePos();
+        return sht.supplyATWriterFilePos();
     }
 
     @Override
     public void removeFiles() {
-        treeIO.deleteFile();
+        sht.deleteFile();
     }
 
     @Override
     public void dispose() {
         if (isFinishedBuilding) {
-            treeIO.closeFile();
+            sht.closeFile();
         } else {
             /*
              * The build is being interrupted, delete the file we partially
              * built since it won't be complete, so shouldn't be re-used in the
              * future (.deleteFile() will close the file first)
              */
-            treeIO.deleteFile();
+            sht.deleteFile();
         }
     }
 
@@ -184,45 +178,24 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         }
 
         /* We start by reading the information in the root node */
-        // FIXME using CoreNode for now, we'll have to redo this part to handle
-        // different node types
-        CoreNode currentNode = sht.getLatestBranch().get(0);
+        HTNode currentNode = sht.getRootNode();
         currentNode.writeInfoFromNode(stateInfo, t);
 
         /* Then we follow the branch down in the relevant children */
         try {
-            while (currentNode.getNbChildren() > 0) {
-                currentNode = (CoreNode) sht.selectNextChild(currentNode, t);
+            while (currentNode.getNodeType() == HTNode.NodeType.CORE) {
+                currentNode = sht.selectNextChild((CoreNode) currentNode, t);
                 currentNode.writeInfoFromNode(stateInfo, t);
             }
         } catch (ClosedChannelException e) {
             throw new StateSystemDisposedException(e);
         }
-    }
 
-
-    @Override
-    public void doQuery(ITmfStateIntervalListener listener, long t) throws TimeRangeException, StateSystemDisposedException {
-        if (!checkValidTime(t)) {
-            /* We can't possibly have information about this query */
-            throw new TimeRangeException();
-        }
-
-        /* Reading information from the root node */
-        // FIXME using CoreNode for now, we'll have to redo this part to handle
-        // different node types
-        CoreNode currentNode = sht.getLatestBranch().get(0);
-        currentNode.writeInfoFromNode(listener, t);
-
-        /* Follow the branch down in the relevant children */
-        try {
-            while (currentNode.getNbChildren() > 0) {
-                currentNode = (CoreNode) sht.selectNextChild(currentNode, t);
-                currentNode.writeInfoFromNode(listener, t);
-            }
-        } catch (ClosedChannelException e) {
-            throw new StateSystemDisposedException(e);
-        }
+        /*
+         * The stateInfo should now be filled with everything needed, we pass
+         * the control back to the State System.
+         */
+        return;
     }
 
     @Override
@@ -250,14 +223,12 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
             throw new TimeRangeException();
         }
 
-        // FIXME using CoreNode for now, we'll have to redo this part to handle
-        // different node types
-        CoreNode currentNode = sht.getLatestBranch().get(0);
+        HTNode currentNode = sht.getRootNode();
         HTInterval interval = currentNode.getRelevantInterval(key, t);
 
         try {
-            while (interval == null && currentNode.getNbChildren() > 0) {
-                currentNode = (CoreNode) sht.selectNextChild(currentNode, t);
+            while (interval == null && currentNode.getNodeType() == HTNode.NodeType.CORE) {
+                currentNode = sht.selectNextChild((CoreNode)currentNode, t);
                 interval = currentNode.getRelevantInterval(key, t);
             }
         } catch (ClosedChannelException e) {
@@ -281,15 +252,6 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     }
 
     /**
-     * Return the current depth of the tree, ie the number of node levels.
-     *
-     * @return The tree depth
-     */
-    public int getTreeDepth() {
-        return sht.getLatestBranch().size();
-    }
-
-    /**
      * Return the average node usage as a percentage (between 0 and 100)
      *
      * @return Average node usage %
@@ -301,8 +263,8 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         try {
             for (int seq = 0; seq < sht.getNodeCount(); seq++) {
-                node = treeIO.readNode(seq);
-                total += node.getNodeUsagePRC();
+                node = sht.readNode(seq);
+                total += node.getNodeUsagePercent();
             }
         } catch (ClosedChannelException e) {
             e.printStackTrace();
@@ -341,5 +303,4 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         sht.debugPrintFullTree(writer, printIntervals);
     }
-
 }

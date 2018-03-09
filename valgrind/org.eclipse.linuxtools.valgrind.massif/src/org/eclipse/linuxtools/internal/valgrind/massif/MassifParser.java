@@ -42,14 +42,12 @@ public class MassifParser {
 	private static final String DETAILED = "detailed"; //$NON-NLS-1$
 	private static final String EMPTY = "empty"; //$NON-NLS-1$
 
-	protected Integer pid;
-	protected MassifSnapshot[] snapshots;
+	private Integer pid;
+	private MassifSnapshot[] snapshots;
 
 	public MassifParser(File inputFile) throws IOException {
-		ArrayList<MassifSnapshot> list = new ArrayList<MassifSnapshot>();
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(inputFile));
+		ArrayList<MassifSnapshot> list = new ArrayList<>();
+		try (BufferedReader br = new BufferedReader(new FileReader(inputFile))){
 			String line;
 			MassifSnapshot snapshot = null;
 			String cmd = null;
@@ -64,11 +62,9 @@ public class MassifParser {
 			while ((line = br.readLine()) != null) {
 				if (line.startsWith(CMD + COLON)){
 					cmd = ValgrindParserUtils.parseStrValue(line, COLON + SPACE);
-				}
-				else if (line.startsWith(TIME_UNIT + COLON)) {
+				} else if (line.startsWith(TIME_UNIT + COLON)) {
 					unit = parseTimeUnit(line);
-				}			
-				else if (line.startsWith(SNAPSHOT)) {
+				} else if (line.startsWith(SNAPSHOT)) {
 					if (snapshot != null) {
 						// this snapshot finished parsing
 						list.add(snapshot);
@@ -77,20 +73,15 @@ public class MassifParser {
 					snapshot = new MassifSnapshot(n);
 					snapshot.setCmd(cmd);
 					snapshot.setUnit(unit);
-				}
-				else if (line.startsWith(TIME + EQUALS)) {
+				} else if (line.startsWith(TIME + EQUALS)) {
 					snapshot.setTime(ValgrindParserUtils.parseLongValue(line, EQUALS));
-				}
-				else if (line.startsWith(MEM_HEAP_B + EQUALS)) {
+				} else if (line.startsWith(MEM_HEAP_B + EQUALS)) {
 					snapshot.setHeapBytes(ValgrindParserUtils.parseLongValue(line, EQUALS));
-				}
-				else if (line.startsWith(MEM_HEAP_EXTRA_B + EQUALS)) {
+				} else if (line.startsWith(MEM_HEAP_EXTRA_B + EQUALS)) {
 					snapshot.setHeapExtra(ValgrindParserUtils.parseLongValue(line, EQUALS));
-				}
-				else if (line.startsWith(MEM_STACKS_B + EQUALS)) {
+				} else if (line.startsWith(MEM_STACKS_B + EQUALS)) {
 					snapshot.setStacks(ValgrindParserUtils.parseLongValue(line, EQUALS));
-				}
-				else if (line.startsWith(HEAP_TREE + EQUALS)) {
+				} else if (line.startsWith(HEAP_TREE + EQUALS)) {
 					SnapshotType type = parseSnapshotType(line);
 					snapshot.setType(type);
 					switch (type) {
@@ -107,10 +98,6 @@ public class MassifParser {
 				list.add(snapshot);
 			}
 			snapshots = list.toArray(new MassifSnapshot[list.size()]);
-		} finally {
-			if (br != null) {
-				br.close();
-			}
 		}
 	}
 
@@ -139,8 +126,7 @@ public class MassifParser {
 		double percentage;
 		if (numBytes.intValue() == 0) {
 			percentage = 0;
-		}
-		else {
+		} else {
 			percentage = numBytes.doubleValue() / snapshot.getTotal() * 100;
 		}
 
@@ -165,8 +151,7 @@ public class MassifParser {
 			lineNo = (Integer) subparts[1];
 			
 			node = new MassifHeapTreeNode(parent, percentage, numBytes, address, function, filename, lineNo);
-		}
-		else {
+		} else {
 			// concatenate the rest
 			StringBuffer text = new StringBuffer();
 			for (int i = 2; i < parts.length; i++) {
@@ -186,7 +171,7 @@ public class MassifParser {
 
 	private String parseFunction(String start, String line) throws IOException {
 		String function = null;
-		int ix = line.lastIndexOf("("); //$NON-NLS-1$
+		int ix = line.lastIndexOf('(');
 		if (ix >= 0) {
 			function = line.substring(line.indexOf(start), ix);
 		}
@@ -233,7 +218,7 @@ public class MassifParser {
 		return snapshots;
 	}
 
-	protected SnapshotType parseSnapshotType(String line) throws IOException {
+	private SnapshotType parseSnapshotType(String line) throws IOException {
 		SnapshotType result = null;
 		String[] parts = line.split(EQUALS);
 		if (parts.length > 1) {
@@ -254,7 +239,7 @@ public class MassifParser {
 		return result;
 	}
 	
-	protected TimeUnit parseTimeUnit(String line) throws IOException {
+	private TimeUnit parseTimeUnit(String line) throws IOException {
 		TimeUnit result = null;
 		String[] parts = line.split(COLON + SPACE);
 		if (parts.length > 1) {

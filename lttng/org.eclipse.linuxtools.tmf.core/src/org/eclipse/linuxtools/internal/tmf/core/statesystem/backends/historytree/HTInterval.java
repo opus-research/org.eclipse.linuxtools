@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
- * Copyright (c) 2010, 2011 École Polytechnique de Montréal
+ * Copyright (c) 2012, 2014 Ericsson, École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
  * All rights reserved. This program and the accompanying materials are
@@ -8,6 +7,9 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
+ * Contributors:
+ *    Alexandre Montplaisir - Initial API and implementation
+ *    Florian Wininger - Allow to change the size of a interval
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree;
@@ -25,12 +27,23 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * The interval component, which will be contained in a node of the History
  * Tree.
  *
- * @author alexmont
- *
+ * @author Alexandre Montplaisir
  */
-final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
+public final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
     private static final String errMsg = "Invalid interval data. Maybe your file is corrupt?"; //$NON-NLS-1$
+
+    /**
+     * Size of an entry in the data section.
+     *
+     * <pre>
+     *   16  2 x Timevalue/long (interval start + end)
+     * +  4  int (key)
+     * +  1  byte (type)
+     * +  4  int (valueOffset)
+     * </pre>
+     */
+    private static final int DATA_ENTRY_SIZE = 25;
 
     /* 'Byte' equivalent for state values types */
     private static final byte TYPE_NULL = -1;
@@ -59,12 +72,18 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      * Standard constructor
      *
      * @param intervalStart
+     *            Start time of the interval
      * @param intervalEnd
+     *            End time of the interval
      * @param attribute
+     *            Attribute (quark) to which the state represented by this
+     *            interval belongs
      * @param value
+     *            State value represented by this interval
      * @throws TimeRangeException
+     *             If the start time or end time are invalid
      */
-    HTInterval(long intervalStart, long intervalEnd, int attribute,
+    public HTInterval(long intervalStart, long intervalEnd, int attribute,
             TmfStateValue value) throws TimeRangeException {
         if (intervalStart > intervalEnd) {
             throw new TimeRangeException();
@@ -82,13 +101,6 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      * reading it from disk (with {@link #readFrom}), we already know the size
      * of the strings entry, so there is no need to call
      * {@link #computeStringsEntrySize()} and do an extra copy.
-     *
-     * @param intervalStart
-     * @param intervalEnd
-     * @param attribute
-     * @param value
-     * @param size
-     * @throws TimeRangeException
      */
     private HTInterval(long intervalStart, long intervalEnd, int attribute,
             TmfStateValue value, int size) throws TimeRangeException {
@@ -104,14 +116,16 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
     }
 
     /**
-     * Reader constructor. Builds the interval using an already-allocated
+     * Reader factory method. Builds the interval using an already-allocated
      * ByteBuffer, which normally comes from a NIO FileChannel.
      *
      * @param buffer
      *            The ByteBuffer from which to read the information
+     * @return The interval object
      * @throws IOException
+     *             If there was an error reading from the buffer
      */
-    final static HTInterval readFrom(ByteBuffer buffer) throws IOException {
+    public static final HTInterval readFrom(ByteBuffer buffer) throws IOException {
         HTInterval interval;
         long intervalStart, intervalEnd;
         int attribute;
@@ -227,7 +241,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      *            StateValues.
      * @return The size of the Strings Entry that was written, if any.
      */
-    int writeInterval(ByteBuffer buffer, int endPosOfStringEntry) {
+    public int writeInterval(ByteBuffer buffer, int endPosOfStringEntry) {
         buffer.putLong(start);
         buffer.putLong(end);
         buffer.putInt(attribute);
@@ -365,10 +379,10 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
     /**
      * Total serialized size of this interval
      *
-     * @return
+     * @return The interval size
      */
-    int getIntervalSize() {
-        return stringsEntrySize + HTNode.DATA_ENTRY_SIZE;
+    public int getIntervalSize() {
+        return stringsEntrySize + DATA_ENTRY_SIZE;
     }
 
     private int computeStringsEntrySize() {

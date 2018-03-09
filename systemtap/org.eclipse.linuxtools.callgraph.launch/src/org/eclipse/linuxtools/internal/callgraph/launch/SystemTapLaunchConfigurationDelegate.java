@@ -60,8 +60,6 @@ public class SystemTapLaunchConfigurationDelegate extends
 	private String outputPath = ""; //$NON-NLS-1$
 	private boolean needsBinary = false; // Set to false if we want to use SystemTap
 	private boolean needsArguments = false;
-	@SuppressWarnings("unused")
-	private boolean useColour = false;
 	private String binaryArguments = ""; //$NON-NLS-1$
 	private String partialCommand = ""; //$NON-NLS-1$
 	private String stap = ""; //$NON-NLS-1$
@@ -82,7 +80,6 @@ public class SystemTapLaunchConfigurationDelegate extends
 		 outputPath = ""; //$NON-NLS-1$
 		 needsBinary = false; // Set to false if we want to use SystemTap
 		 needsArguments = false;
-		 useColour = false;
 		 binaryArguments = ""; //$NON-NLS-1$
 	}
 
@@ -105,10 +102,6 @@ public class SystemTapLaunchConfigurationDelegate extends
 		/*
 		 * Set variables
 		 */
-		if (config.getAttribute(LaunchConfigurationConstants.USE_COLOUR,
-				LaunchConfigurationConstants.DEFAULT_USE_COLOUR)) {
-			useColour = true;
-		}
 		if (!config.getAttribute(LaunchConfigurationConstants.ARGUMENTS,
 				LaunchConfigurationConstants.DEFAULT_ARGUMENTS).equals(
 				LaunchConfigurationConstants.DEFAULT_ARGUMENTS)) {
@@ -146,12 +139,13 @@ public class SystemTapLaunchConfigurationDelegate extends
 			temporaryScript.delete();
 			try {
 				temporaryScript.createNewFile();
-				FileWriter fstream = new FileWriter(temporaryScript);
-				BufferedWriter out = new BufferedWriter(fstream);
-				out.write(config.getAttribute(
-						LaunchConfigurationConstants.GENERATED_SCRIPT,
-						LaunchConfigurationConstants.DEFAULT_GENERATED_SCRIPT));
-				out.close();
+				try (FileWriter fstream = new FileWriter(temporaryScript);
+						BufferedWriter out = new BufferedWriter(fstream)) {
+					out.write(config
+							.getAttribute(
+									LaunchConfigurationConstants.GENERATED_SCRIPT,
+									LaunchConfigurationConstants.DEFAULT_GENERATED_SCRIPT));
+				}
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -188,7 +182,7 @@ public class SystemTapLaunchConfigurationDelegate extends
 			return;
 		}
 
-		finishLaunch(launch, config, m, true);
+		finishLaunch(launch, config, m);
 	}
 
 	/**
@@ -196,16 +190,15 @@ public class SystemTapLaunchConfigurationDelegate extends
 	 * @return
 	 */
 	public String getCommand() {
-		if (cmd.length() > 0) {
+		if (!cmd.isEmpty()) {
 			return cmd;
-		}
-		else {
+		} else {
 			return Messages.getString("SystemTapLaunchConfigurationDelegate.NoCommand"); //$NON-NLS-1$
 		}
 	}
 
 	private void finishLaunch(ILaunch launch, ILaunchConfiguration config,
-			IProgressMonitor monitor, boolean retry) {
+			IProgressMonitor monitor) {
 
 		try {
 			// Check for cancellation
@@ -263,17 +256,11 @@ public class SystemTapLaunchConfigurationDelegate extends
 			}
 
 			//Put command into a shell script
-			String cmd = generateCommand(config);
+			String cmd = generateCommand();
 			File script = File.createTempFile("org.eclipse.linuxtools.profiling.launch" + System.currentTimeMillis(), ".sh"); //$NON-NLS-1$ //$NON-NLS-2$
 			String data = "#!/bin/sh\nexec " + cmd; //$NON-NLS-1$
-			FileOutputStream out = null;
-			try {
-				out = new FileOutputStream(script);
+			try (FileOutputStream out = new FileOutputStream(script)){
 				out.write(data.getBytes());
-			} finally {
-				if (out != null) {
-					out.close();
-				}
 			}
 
 			String [] commandArray = new String [] {"sh", script.getAbsolutePath()}; //$NON-NLS-1$
@@ -324,7 +311,7 @@ public class SystemTapLaunchConfigurationDelegate extends
 						return;
 					}
 
-					errorHandler.finishHandling(monitor, scriptPath);
+					errorHandler.finishHandling();
 					if (errorHandler.isErrorRecognized()) {
 						SystemTapUIErrorMessages errorDialog = new SystemTapUIErrorMessages(
 								Messages.getString("SystemTapLaunchConfigurationDelegate.CallGraphGenericError"),  //$NON-NLS-1$
@@ -350,11 +337,7 @@ public class SystemTapLaunchConfigurationDelegate extends
 					(Helper.getConsoleByName(config.getName())), message);
 			dw.schedule();
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (CoreException e) {
+		} catch (IOException|InterruptedException|CoreException e) {
 			e.printStackTrace();
 		} finally {
 			monitor.done();
@@ -424,7 +407,7 @@ public class SystemTapLaunchConfigurationDelegate extends
 		}
 	}
 
-	public String generateCommand(ILaunchConfiguration config) {
+	public String generateCommand() {
 		// Generate the command
 		cmd = SystemTapCommandGenerator.generateCommand(escapeSpecialCharacters(scriptPath), escapeSpecialCharacters(binaryPath),
 				partialCommand, needsBinary, needsArguments, escapeSpecialCharacters(arguments), binaryArguments, stap);

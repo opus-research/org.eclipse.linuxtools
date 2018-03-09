@@ -11,12 +11,17 @@
 package org.eclipse.linuxtools.internal.valgrind.massif.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.linuxtools.internal.valgrind.massif.MassifHeapTreeNode;
@@ -24,6 +29,8 @@ import org.eclipse.linuxtools.internal.valgrind.massif.MassifPlugin;
 import org.eclipse.linuxtools.internal.valgrind.massif.MassifSnapshot;
 import org.eclipse.linuxtools.internal.valgrind.massif.MassifSnapshot.SnapshotType;
 import org.eclipse.linuxtools.internal.valgrind.tests.AbstractValgrindTest;
+import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindUIPlugin;
+import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindViewPart;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -38,46 +45,32 @@ public abstract class AbstractMassifTest extends AbstractValgrindTest {
 		return MassifPlugin.TOOL_ID;
 	}
 
-	protected void checkFile(IProject proj, MassifHeapTreeNode node) {
-		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		IEditorInput input = editor.getEditorInput();
-		if (input instanceof IFileEditorInput) {
-			IFileEditorInput fileInput = (IFileEditorInput) input;
-			IResource expectedResource = proj.findMember(node.getFilename());
-			if (expectedResource != null) {
-				File expectedFile = expectedResource.getLocation().toFile();
-				File actualFile = fileInput.getFile().getLocation().toFile();
-				assertEquals(expectedFile, actualFile);
-			}
-			else {
-				fail();
-			}
-		}
-		else {
-			fail();
-		}
-	}
+    protected void checkFile(IProject proj, MassifHeapTreeNode node) {
+        IEditorPart editor = PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        IEditorInput input = editor.getEditorInput();
+        assertTrue(input instanceof IFileEditorInput);
+        IFileEditorInput fileInput = (IFileEditorInput) input;
+        IResource expectedResource = proj.findMember(node.getFilename());
+        assertNotNull(expectedResource);
+        File expectedFile = expectedResource.getLocation().toFile();
+        File actualFile = fileInput.getFile().getLocation().toFile();
+        assertEquals(expectedFile, actualFile);
+    }
 
-	protected void checkLine(MassifHeapTreeNode node) {
-		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor instanceof ITextEditor) {
-			ITextEditor textEditor = (ITextEditor) editor;
+    protected void checkLine(MassifHeapTreeNode node) {
+        IEditorPart editor = PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        assertTrue(editor instanceof ITextEditor);
+        ITextEditor textEditor = (ITextEditor) editor;
 
-			ISelection selection = textEditor.getSelectionProvider().getSelection();
-			if (selection instanceof TextSelection) {
-				TextSelection textSelection = (TextSelection) selection;
-				int line = textSelection.getStartLine() + 1; // zero-indexed
+        ISelection selection = textEditor.getSelectionProvider().getSelection();
+        assertTrue(selection instanceof TextSelection);
+        TextSelection textSelection = (TextSelection) selection;
+        int line = textSelection.getStartLine() + 1; // zero-indexed
 
-				assertEquals(node.getLine(), line);
-			}
-			else {
-				fail();
-			}
-		}
-		else {
-			fail();
-		}
-	}
+        assertEquals(node.getLine(), line);
+    }
 
 	/**
 	 * Check snapshots contain the expected used bytes.
@@ -110,6 +103,23 @@ public abstract class AbstractMassifTest extends AbstractValgrindTest {
 			assertEquals(expectedHeapExtraBytes, snapshot.getHeapExtra());
 			assertEquals(expectedHeapBytes + expectedHeapExtraBytes, snapshot.getTotal());
 		}
+	}
+
+	protected IAction getToolbarAction(String actionId) {
+		IAction result = null;
+		ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
+		IToolBarManager manager = view.getViewSite().getActionBars()
+				.getToolBarManager();
+		for (IContributionItem item : manager.getItems()) {
+			if (item instanceof ActionContributionItem) {
+				ActionContributionItem actionItem = (ActionContributionItem) item;
+				if (actionItem.getAction().getId()
+						.equals(actionId)) {
+					result = actionItem.getAction();
+				}
+			}
+		}
+		return result;
 	}
 
 }

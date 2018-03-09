@@ -14,7 +14,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.JFaceResources;
@@ -31,9 +30,9 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.linuxtools.dataviewers.charts.actions.SaveChartAction;
 import org.eclipse.linuxtools.internal.valgrind.massif.MassifSnapshot.SnapshotType;
 import org.eclipse.linuxtools.internal.valgrind.massif.charting.ChartEditorInput;
-import org.eclipse.linuxtools.internal.valgrind.massif.charting.ChartPNG;
 import org.eclipse.linuxtools.internal.valgrind.massif.charting.HeapChart;
 import org.eclipse.linuxtools.valgrind.ui.IValgrindToolView;
 import org.eclipse.swt.SWT;
@@ -47,8 +46,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IEditorInput;
@@ -61,19 +58,19 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class MassifViewPart extends ViewPart implements IValgrindToolView {
 
-	protected static final String TITLE_STACKS = Messages
+	private static final String TITLE_STACKS = Messages
 	.getString("MassifViewPart.Stacks"); //$NON-NLS-1$
-	protected static final String TITLE_EXTRA = Messages
+	private static final String TITLE_EXTRA = Messages
 	.getString("MassifViewPart.Extra_Heap"); //$NON-NLS-1$
-	protected static final String TITLE_USEFUL = Messages
+	private static final String TITLE_USEFUL = Messages
 	.getString("MassifViewPart.Useful_Heap"); //$NON-NLS-1$
-	protected static final String TITLE_TOTAL = Messages
+	private static final String TITLE_TOTAL = Messages
 	.getString("MassifViewPart.Total"); //$NON-NLS-1$
-	protected static final String TITLE_TIME = Messages
+	private static final String TITLE_TIME = Messages
 	.getString("MassifViewPart.Time"); //$NON-NLS-1$
-	protected static final String TITLE_NUMBER = Messages
+	private static final String TITLE_NUMBER = Messages
 	.getString("MassifViewPart.Snapshot"); //$NON-NLS-1$
-	protected static final String TREE_ACTION = MassifPlugin.PLUGIN_ID
+	private static final String TREE_ACTION = MassifPlugin.PLUGIN_ID
 	+ ".treeAction"; //$NON-NLS-1$
 	public static final String CHART_ACTION = MassifPlugin.PLUGIN_ID
 	+ ".chartAction"; //$NON-NLS-1$
@@ -82,28 +79,27 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 	public static final String SAVE_CHART_ACTION = MassifPlugin.PLUGIN_ID
 	+ ".saveChartAction"; //$NON-NLS-1$
 
-	protected MassifOutput output;
-	protected Integer pid;
+	private MassifOutput output;
+	private Integer pid;
 
-	protected Composite top;
-	protected StackLayout stackLayout;
-	protected TableViewer viewer;
-	protected MassifTreeViewer treeViewer;
-	protected MassifHeapTreeNode[] nodes;
-	protected String chartName;
+	private Composite top;
+	private StackLayout stackLayout;
+	private TableViewer viewer;
+	private MassifTreeViewer treeViewer;
+	private MassifHeapTreeNode[] nodes;
+	private String chartName;
 
-	protected static final int COLUMN_SIZE = 125;
+	private static final int COLUMN_SIZE = 125;
 
-	protected Action treeAction;
-	protected Action chartAction;
-	protected MassifPidMenuAction pidAction;
-	protected Action saveChartAction;
+	private Action treeAction;
+	private MassifPidMenuAction pidAction;
+	private SaveChartAction saveChartAction;
 
-	protected List<ChartEditorInput> chartInputs;
+	private List<ChartEditorInput> chartInputs;
 
 	@Override
 	public void createPartControl(Composite parent) {
-		chartInputs = new ArrayList<ChartEditorInput>();
+		chartInputs = new ArrayList<>();
 
 		top = new Composite(parent, SWT.NONE);
 		stackLayout = new StackLayout();
@@ -137,6 +133,7 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		treeViewer.getViewer().getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				MassifSnapshot snapshot = (MassifSnapshot) ((IStructuredSelection) event
 						.getSelection()).getFirstElement();
@@ -225,16 +222,17 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		};
 	}
 
+	@Override
 	public IAction[] getToolbarActions() {
 		pidAction = new MassifPidMenuAction(this);
 		pidAction.setId(PID_ACTION);
 
-		chartAction = new Action(
+		Action chartAction = new Action(
 				Messages.getString("MassifViewPart.Display_Heap_Allocation"), IAction.AS_PUSH_BUTTON) { //$NON-NLS-1$
 			@Override
 			public void run() {
 				ChartEditorInput input = getChartInput(pid);
-				if (input != null) {					
+				if (input != null) {
 					displayChart(input);
 				}
 			}
@@ -245,22 +243,9 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		chartAction.setToolTipText(Messages
 				.getString("MassifViewPart.Display_Heap_Allocation")); //$NON-NLS-1$
 
-		saveChartAction = new Action(Messages.getString("MassifViewPart.Save_Chart"), IAction.AS_PUSH_BUTTON) { //$NON-NLS-1$
-			@Override
-			public void run() {
-				ChartEditorInput currentInput = getChartInput(pid);
-				String path = getChartSavePath(currentInput.getName() + ".png"); //$NON-NLS-1$
-				if (path != null) {
-					ChartPNG renderer = new ChartPNG(currentInput.getChart());
-					renderer.renderPNG(Path.fromOSString(path));
-				}
-			}
-		};
+		saveChartAction = new SaveChartAction();
 		saveChartAction.setId(SAVE_CHART_ACTION);
-		saveChartAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(
-				MassifPlugin.PLUGIN_ID, "icons/chart-save.png")); //$NON-NLS-1$
-		saveChartAction.setToolTipText(Messages.getString("MassifViewPart.Save_Chart")); //$NON-NLS-1$
-		
+
 		treeAction = new Action(
 				Messages.getString("MassifViewPart.Show_Heap_Tree"), IAction.AS_CHECK_BOX) { //$NON-NLS-1$
 			@Override
@@ -282,19 +267,8 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 
 		return new IAction[] { pidAction, chartAction, saveChartAction, treeAction };
 	}
-	
-	protected String getChartSavePath(String defaultName) {
-		Shell parent = new Shell(Display.getDefault());
-		FileDialog dialog = new FileDialog(parent, SWT.SAVE);
-		dialog.setText(Messages.getString("MassifViewPart.Save_chart_dialog_title")); //$NON-NLS-1$
-		dialog.setOverwrite(true);
-		dialog.setFilterExtensions(new String[] { ".png" }); //$NON-NLS-1$
-		dialog.setFileName(defaultName);
 
-		return dialog.open();
-	}
-
-	protected void createChart(MassifSnapshot[] snapshots) {
+	private void createChart(MassifSnapshot[] snapshots) {
 		String title = chartName + " [PID: " + pid + "]";  //$NON-NLS-1$//$NON-NLS-2$
 		HeapChart chart = new HeapChart(snapshots, title);
 
@@ -306,8 +280,9 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		displayChart(input);
 	}
 
-	protected void displayChart(final ChartEditorInput chartInput) {
+	private void displayChart(final ChartEditorInput chartInput) {
 		Display.getDefault().syncExec(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					IWorkbenchPage page = PlatformUI.getWorkbench()
@@ -318,16 +293,17 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 				}
 			}
 		});
+		saveChartAction.setChart(chartInput.getChart().getChartControl(), chartInput.getName());
 	}
 
-	protected String getInputName(String description) {
+	private String getInputName(String description) {
 		String launchName;
 		try {
 			launchName = description.substring(0, description
 					.indexOf("[massif")); //$NON-NLS-1$
 		}
 		catch(IndexOutOfBoundsException e) {
-			launchName = "(No chart title)";
+			launchName = "(No chart title)"; //$NON-NLS-1$
 		}
 		return launchName.trim();
 	}
@@ -337,8 +313,10 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		viewer.getTable().setFocus();
 	}
 
+	@Override
 	public void refreshView() {
 		if (output != null && pid != null) {
+			saveChartAction.setChart(null);
 			MassifSnapshot[] snapshots = output.getSnapshots(pid);
 			pidAction.setPids(output.getPids());
 			if (snapshots != null) {
@@ -420,9 +398,10 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 		return treeViewer;
 	}
 
-	protected static class MassifLabelProvider extends LabelProvider implements
+	private static class MassifLabelProvider extends LabelProvider implements
 	ITableLabelProvider, IFontProvider {
 
+		@Override
 		public Image getColumnImage(Object element, int columnIndex) {
 			Image image = null;
 			if (columnIndex == 0) {
@@ -440,6 +419,7 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 			return image;
 		}
 
+		@Override
 		public String getColumnText(Object element, int columnIndex) {
 			MassifSnapshot snapshot = (MassifSnapshot) element;
 			DecimalFormat df = new DecimalFormat("#,##0"); //$NON-NLS-1$
@@ -459,6 +439,7 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 			}
 		}
 
+		@Override
 		public Font getFont(Object element) {
 			Font font = null;
 			MassifSnapshot snapshot = (MassifSnapshot) element;
@@ -473,13 +454,13 @@ public class MassifViewPart extends ViewPart implements IValgrindToolView {
 			return font;
 		}
 	}
-	
+
 	public void setChartName(String chartName) {
 		this.chartName = chartName;
 	}
 
 	private MassifSnapshot[] getDetailed(MassifSnapshot[] snapshots) {
-		ArrayList<MassifSnapshot> list = new ArrayList<MassifSnapshot>();
+		ArrayList<MassifSnapshot> list = new ArrayList<>();
 		for (MassifSnapshot snapshot : snapshots) {
 			if (snapshot.getType() != SnapshotType.EMPTY) {
 				list.add(snapshot);

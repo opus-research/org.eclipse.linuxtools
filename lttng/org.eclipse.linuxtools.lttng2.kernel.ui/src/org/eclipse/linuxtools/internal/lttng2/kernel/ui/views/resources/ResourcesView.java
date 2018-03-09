@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2014 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -14,13 +14,17 @@
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesEntry.Type;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.core.analysis.LttngKernelAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -28,7 +32,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.NullTimeEvent;
@@ -49,6 +52,9 @@ public class ResourcesView extends AbstractTimeGraphView {
             Messages.ResourcesView_stateTypeName
     };
 
+    // Timeout between updates in the build thread in ms
+    private static final long BUILD_UPDATE_TIMEOUT = 500;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -60,6 +66,10 @@ public class ResourcesView extends AbstractTimeGraphView {
         super(ID, new ResourcesPresentationProvider());
         setFilterColumns(FILTER_COLUMN_NAMES);
     }
+
+    // ------------------------------------------------------------------------
+    // Internal
+    // ------------------------------------------------------------------------
 
     @Override
     protected String getNextText() {
@@ -81,89 +91,120 @@ public class ResourcesView extends AbstractTimeGraphView {
         return Messages.ResourcesView_previousResourceActionToolTipText;
     }
 
-    // ------------------------------------------------------------------------
-    // Internal
-    // ------------------------------------------------------------------------
-
     @Override
-    protected void buildEventList(ITmfTrace trace, IProgressMonitor monitor) {
-        setStartTime(Long.MAX_VALUE);
-        setEndTime(Long.MIN_VALUE);
+    protected void buildEventList(ITmfTrace trace, ITmfTrace parentTrace, IProgressMonitor monitor) {
+        LttngKernelAnalysisModule module = trace.getAnalysisModuleOfClass(LttngKernelAnalysisModule.class, LttngKernelAnalysisModule.ID);
+        if (module == null) {
+            return;
+        }
+        module.schedule();
+        module.waitForInitialization();
+        ITmfStateSystem ssq = module.getStateSystem();
+        if (ssq == null) {
+            return;
+        }
 
-        ArrayList<ResourcesEntry> entryList = new ArrayList<ResourcesEntry>();
-        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
+        Map<Integer, ResourcesEntry> entryMap = new HashMap<>();
+        TimeGraphEntry traceEntry = null;
+
+        long startTime = ssq.getStartTime();
+        long start = startTime;
+        setStartTime(Math.min(getStartTime(), startTime));
+        boolean complete = false;
+        while (!complete) {
             if (monitor.isCanceled()) {
                 return;
             }
-            if (aTrace instanceof LttngKernelTrace) {
-                LttngKernelTrace lttngKernelTrace = (LttngKernelTrace) aTrace;
-                ITmfStateSystem ssq = lttngKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
-                if (!ssq.waitUntilBuilt()) {
+            complete = ssq.waitUntilBuilt(BUILD_UPDATE_TIMEOUT);
+            if (ssq.isCancelled()) {
+                return;
+            }
+            long end = ssq.getCurrentEndTime();
+            if (start == end && !complete) { // when complete execute one last time regardless of end time
+                continue;
+            }
+            long endTime = end + 1;
+            setEndTime(Math.max(getEndTime(), endTime));
+
+            if (traceEntry == null) {
+                traceEntry = new ResourcesEntry(trace, trace.getName(), startTime, endTime, 0);
+                List<TimeGraphEntry> entryList = Collections.singletonList(traceEntry);
+                addToEntryList(parentTrace, entryList);
+            } else {
+                traceEntry.updateEndTime(endTime);
+            }
+
+            List<Integer> cpuQuarks = ssq.getQuarks(Attributes.CPUS, "*"); //$NON-NLS-1$
+            for (Integer cpuQuark : cpuQuarks) {
+                int cpu = Integer.parseInt(ssq.getAttributeName(cpuQuark));
+                ResourcesEntry entry = entryMap.get(cpuQuark);
+                if (entry == null) {
+                    entry = new ResourcesEntry(cpuQuark, trace, startTime, endTime, Type.CPU, cpu);
+                    entryMap.put(cpuQuark, entry);
+                    traceEntry.addChild(entry);
+                } else {
+                    entry.updateEndTime(endTime);
+                }
+            }
+            List<Integer> irqQuarks = ssq.getQuarks(Attributes.RESOURCES, Attributes.IRQS, "*"); //$NON-NLS-1$
+            for (Integer irqQuark : irqQuarks) {
+                int irq = Integer.parseInt(ssq.getAttributeName(irqQuark));
+                ResourcesEntry entry = entryMap.get(irqQuark);
+                if (entry == null) {
+                    entry = new ResourcesEntry(irqQuark, trace, startTime, endTime, Type.IRQ, irq);
+                    entryMap.put(irqQuark, entry);
+                    traceEntry.addChild(entry);
+                } else {
+                    entry.updateEndTime(endTime);
+                }
+            }
+            List<Integer> softIrqQuarks = ssq.getQuarks(Attributes.RESOURCES, Attributes.SOFT_IRQS, "*"); //$NON-NLS-1$
+            for (Integer softIrqQuark : softIrqQuarks) {
+                int softIrq = Integer.parseInt(ssq.getAttributeName(softIrqQuark));
+                ResourcesEntry entry = entryMap.get(softIrqQuark);
+                if (entry == null) {
+                    entry = new ResourcesEntry(softIrqQuark, trace, startTime, endTime, Type.SOFT_IRQ, softIrq);
+                    entryMap.put(softIrqQuark, entry);
+                    traceEntry.addChild(entry);
+                } else {
+                    entry.updateEndTime(endTime);
+                }
+            }
+
+            if (parentTrace.equals(getTrace())) {
+                refresh();
+            }
+            long resolution = Math.max(1, (endTime - ssq.getStartTime()) / getDisplayWidth());
+            for (TimeGraphEntry entry : traceEntry.getChildren()) {
+                if (monitor.isCanceled()) {
                     return;
                 }
-                long startTime = ssq.getStartTime();
-                long endTime = ssq.getCurrentEndTime() + 1;
-                ResourcesEntry groupEntry = new ResourcesEntry(lttngKernelTrace, aTrace.getName(), startTime, endTime, 0);
-                entryList.add(groupEntry);
-                setStartTime(Math.min(getStartTime(), startTime));
-                setEndTime(Math.max(getEndTime(), endTime));
-                List<Integer> cpuQuarks = ssq.getQuarks(Attributes.CPUS, "*"); //$NON-NLS-1$
-                ResourcesEntry[] cpuEntries = new ResourcesEntry[cpuQuarks.size()];
-                for (int i = 0; i < cpuQuarks.size(); i++) {
-                    int cpuQuark = cpuQuarks.get(i);
-                    int cpu = Integer.parseInt(ssq.getAttributeName(cpuQuark));
-                    ResourcesEntry entry = new ResourcesEntry(cpuQuark, lttngKernelTrace, getStartTime(), getEndTime(), Type.CPU, cpu);
-                    groupEntry.addChild(entry);
-                    cpuEntries[i] = entry;
+                List<ITimeEvent> eventList = getEventList(entry, start, endTime, resolution, monitor);
+                if (eventList != null) {
+                    for (ITimeEvent event : eventList) {
+                        entry.addEvent(event);
+                    }
                 }
-                List<Integer> irqQuarks = ssq.getQuarks(Attributes.RESOURCES, Attributes.IRQS, "*"); //$NON-NLS-1$
-                ResourcesEntry[] irqEntries = new ResourcesEntry[irqQuarks.size()];
-                for (int i = 0; i < irqQuarks.size(); i++) {
-                    int irqQuark = irqQuarks.get(i);
-                    int irq = Integer.parseInt(ssq.getAttributeName(irqQuark));
-                    ResourcesEntry entry = new ResourcesEntry(irqQuark, lttngKernelTrace, getStartTime(), getEndTime(), Type.IRQ, irq);
-                    groupEntry.addChild(entry);
-                    irqEntries[i] = entry;
-                }
-                List<Integer> softIrqQuarks = ssq.getQuarks(Attributes.RESOURCES, Attributes.SOFT_IRQS, "*"); //$NON-NLS-1$
-                ResourcesEntry[] softIrqEntries = new ResourcesEntry[softIrqQuarks.size()];
-                for (int i = 0; i < softIrqQuarks.size(); i++) {
-                    int softIrqQuark = softIrqQuarks.get(i);
-                    int softIrq = Integer.parseInt(ssq.getAttributeName(softIrqQuark));
-                    ResourcesEntry entry = new ResourcesEntry(softIrqQuark, lttngKernelTrace, getStartTime(), getEndTime(), Type.SOFT_IRQ, softIrq);
-                    groupEntry.addChild(entry);
-                    softIrqEntries[i] = entry;
-                }
-            }
-        }
-        putEntryList(trace, new ArrayList<TimeGraphEntry>(entryList));
-
-        if (trace.equals(getTrace())) {
-            refresh();
-        }
-        for (ResourcesEntry traceEntry : entryList) {
-            if (monitor.isCanceled()) {
-                return;
-            }
-            LttngKernelTrace lttngKernelTrace = traceEntry.getTrace();
-            ITmfStateSystem ssq = lttngKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
-            long startTime = ssq.getStartTime();
-            long endTime = ssq.getCurrentEndTime() + 1;
-            long resolution = (endTime - startTime) / getDisplayWidth();
-            for (TimeGraphEntry entry : traceEntry.getChildren()) {
-                List<ITimeEvent> eventList = getEventList(entry, startTime, endTime, resolution, monitor);
-                entry.setEventList(eventList);
                 redraw();
             }
+
+            start = end;
         }
     }
 
     @Override
-    protected List<ITimeEvent> getEventList(TimeGraphEntry entry,
+    protected @Nullable List<ITimeEvent> getEventList(TimeGraphEntry entry,
             long startTime, long endTime, long resolution,
             IProgressMonitor monitor) {
         ResourcesEntry resourcesEntry = (ResourcesEntry) entry;
-        ITmfStateSystem ssq = resourcesEntry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+        LttngKernelAnalysisModule module = resourcesEntry.getTrace().getAnalysisModuleOfClass(LttngKernelAnalysisModule.class, LttngKernelAnalysisModule.ID);
+        if (module == null) {
+            return null;
+        }
+        ITmfStateSystem ssq = module.getStateSystem();
+        if (ssq == null) {
+            return null;
+        }
         final long realStart = Math.max(startTime, ssq.getStartTime());
         final long realEnd = Math.min(endTime, ssq.getCurrentEndTime() + 1);
         if (realEnd <= realStart) {
@@ -176,7 +217,7 @@ public class ResourcesView extends AbstractTimeGraphView {
             if (resourcesEntry.getType().equals(Type.CPU)) {
                 int statusQuark = ssq.getQuarkRelative(quark, Attributes.STATUS);
                 List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
-                eventList = new ArrayList<ITimeEvent>(statusIntervals.size());
+                eventList = new ArrayList<>(statusIntervals.size());
                 long lastEndTime = -1;
                 for (ITmfStateInterval statusInterval : statusIntervals) {
                     if (monitor.isCanceled()) {
@@ -198,7 +239,7 @@ public class ResourcesView extends AbstractTimeGraphView {
                 }
             } else if (resourcesEntry.getType().equals(Type.IRQ)) {
                 List<ITmfStateInterval> irqIntervals = ssq.queryHistoryRange(quark, realStart, realEnd - 1, resolution, monitor);
-                eventList = new ArrayList<ITimeEvent>(irqIntervals.size());
+                eventList = new ArrayList<>(irqIntervals.size());
                 long lastEndTime = -1;
                 boolean lastIsNull = true;
                 for (ITmfStateInterval irqInterval : irqIntervals) {
@@ -231,7 +272,7 @@ public class ResourcesView extends AbstractTimeGraphView {
                 }
             } else if (resourcesEntry.getType().equals(Type.SOFT_IRQ)) {
                 List<ITmfStateInterval> softIrqIntervals = ssq.queryHistoryRange(quark, realStart, realEnd - 1, resolution, monitor);
-                eventList = new ArrayList<ITimeEvent>(softIrqIntervals.size());
+                eventList = new ArrayList<>(softIrqIntervals.size());
                 long lastEndTime = -1;
                 boolean lastIsNull = true;
                 for (ITmfStateInterval softIrqInterval : softIrqIntervals) {
@@ -263,11 +304,7 @@ public class ResourcesView extends AbstractTimeGraphView {
                 }
             }
 
-        } catch (AttributeNotFoundException e) {
-            e.printStackTrace();
-        } catch (TimeRangeException e) {
-            e.printStackTrace();
-        } catch (StateValueTypeException e) {
+        } catch (AttributeNotFoundException | TimeRangeException | StateValueTypeException e) {
             e.printStackTrace();
         } catch (StateSystemDisposedException e) {
             /* Ignored */

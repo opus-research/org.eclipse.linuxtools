@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -100,29 +100,6 @@ public class ArrayDefinition extends Definition {
         return declaration;
     }
 
-    /**
-     * Sometimes, strings are encoded as an array of 1-byte integers (each one
-     * being an UTF-8 byte).
-     *
-     * @return true if this array is in fact an UTF-8 string. false if it's a
-     *         "normal" array of generic Definition's.
-     */
-    public boolean isString() {
-        IntegerDeclaration elemInt;
-
-        if (declaration.getElementType() instanceof IntegerDeclaration) {
-            /*
-             * If the first byte is a "character", we'll consider the whole
-             * array a character string.
-             */
-            elemInt = (IntegerDeclaration) declaration.getElementType();
-            if (elemInt.isCharacter()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -138,7 +115,7 @@ public class ArrayDefinition extends Definition {
     public String toString() {
         StringBuilder b = new StringBuilder();
 
-        if (this.isString()) {
+        if (declaration.isString()) {
             for (Definition def : definitions) {
                 IntegerDefinition character = (IntegerDefinition) def;
 

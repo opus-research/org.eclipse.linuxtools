@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.systemtap.structures;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,9 +22,19 @@ import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 
 public class UpdateManager {
 	public UpdateManager(int delay) {
-		updateListeners = new ArrayList<IUpdateListener>();
+		updateListeners = new ArrayList<>();
 		stopped = false;
 		disposed = false;
+		restart(delay);
+	}
+
+	/**
+	 * @since 3.0
+	 */
+	public void restart(int delay) {
+		if (timer != null) {
+			timer.cancel();
+		}
 		timer = new Timer("Update Manager", true); //$NON-NLS-1$
 		timer.scheduleAtFixedRate(new Notify(), delay, delay);
 	}
@@ -35,18 +46,23 @@ public class UpdateManager {
 		if(!stopped) {
 			stopped = true;
 			timer.cancel();
-			for(int i=0; i<updateListeners.size(); i++)
-				removeUpdateListener(updateListeners.get(i));
+			synchronized (updateListeners) {
+				for(int i=0; i<updateListeners.size(); i++) {
+					removeUpdateListener(updateListeners.get(i));
+				}
+			}
 		}
 	}
 
 	public void addUpdateListener(IUpdateListener l) {
-		if(!updateListeners.contains(l))
+		if(!updateListeners.contains(l)) {
 			updateListeners.add(l);
+		}
 	}
 	public void removeUpdateListener(IUpdateListener l) {
-		if(updateListeners.contains(l))
+		if(updateListeners.contains(l)) {
 			updateListeners.remove(l);
+		}
 	}
 
 	public boolean isRunning() {
@@ -69,14 +85,17 @@ public class UpdateManager {
 		@Override
 		public void run() {
 			if(!stopped) {
-				for(int i = 0; i < updateListeners.size(); i++)
-					(updateListeners.get(i)).handleUpdateEvent();
+				synchronized (updateListeners) {
+					for(int i = 0; i < updateListeners.size(); i++) {
+						(updateListeners.get(i)).handleUpdateEvent();
+					}
+				}
 			}
 		}
 	}
 
 	private Timer timer;
-	private ArrayList<IUpdateListener> updateListeners;
+	private List<IUpdateListener> updateListeners;
 	private boolean stopped;
 	private boolean disposed;
 }

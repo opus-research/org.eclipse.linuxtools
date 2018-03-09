@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.internal.callgraph.core;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
@@ -24,7 +25,7 @@ import org.eclipse.ui.PlatformUI;
  */
 public class ViewFactory {
 
-	private static ArrayList<IViewPart> views;
+	private static List<IViewPart> views;
 	private static SystemTapView newView;
 
 	/**
@@ -91,7 +92,7 @@ public class ViewFactory {
 	 */
 	public static void addView(SystemTapView view) {
 		if (views == null) {
-			views = new ArrayList<IViewPart>();
+			views = new ArrayList<>();
 		}
 		views.add(view);
 	}

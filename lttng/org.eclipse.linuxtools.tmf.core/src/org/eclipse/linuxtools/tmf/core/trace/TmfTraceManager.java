@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -20,8 +20,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEventFilterAppliedSignal;
@@ -64,7 +68,7 @@ public final class TmfTraceManager {
     // ------------------------------------------------------------------------
 
     private TmfTraceManager() {
-        fTraces = new LinkedHashMap<ITmfTrace, TmfTraceContext>();
+        fTraces = new LinkedHashMap<>();
         TmfSignalManager.registerVIP(this);
     }
 
@@ -86,17 +90,6 @@ public final class TmfTraceManager {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
-    /**
-     * Return the current selected time.
-     *
-     * @return the current time stamp
-     * @deprecated As of 2.1, use {@link #getSelectionBeginTime()} and {@link #getSelectionEndTime()}
-     */
-    @Deprecated
-    public synchronized ITmfTimestamp getCurrentTime() {
-        return getCurrentTraceContext().getSelectionBegin();
-    }
 
     /**
      * @return The begin timestamp of selection
@@ -163,6 +156,22 @@ public final class TmfTraceManager {
         return Collections.unmodifiableSet(fTraces.keySet());
     }
 
+    /**
+     * Get the editor file for an opened trace.
+     *
+     * @param trace
+     *            the trace
+     * @return the editor file or null if the trace is not opened
+     * @since 3.0
+     */
+    public synchronized IFile getTraceEditorFile(ITmfTrace trace) {
+        TmfTraceContext ctx = fTraces.get(trace);
+        if (ctx != null) {
+            return ctx.getEditorFile();
+        }
+        return null;
+    }
+
     private TmfTraceContext getCurrentTraceContext() {
         TmfTraceContext curCtx = fTraces.get(fCurrentTrace);
         if (curCtx == null) {
@@ -222,6 +231,35 @@ public final class TmfTraceManager {
         return supplDir + File.separator;
     }
 
+    /**
+     * Refresh the supplementary files resources for a trace, so it can pick up
+     * new files that got created.
+     *
+     * @param trace
+     *            The trace for which to refresh the supplementary files
+     * @since 3.0
+     */
+    public static void refreshSupplementaryFiles(ITmfTrace trace) {
+        IResource resource = trace.getResource();
+        if (resource != null && resource.exists()) {
+            String supplFolderPath = getSupplementaryFileDir(trace);
+            IProject project = resource.getProject();
+            /* Remove the project's path from the supplementary path dir */
+            if (!supplFolderPath.startsWith(project.getLocationURI().getPath())) {
+                Activator.logWarning(String.format("Supplementary files folder for trace %s is not within the project.", trace.getName())); //$NON-NLS-1$
+                return;
+            }
+            IFolder supplFolder = project.getFolder(supplFolderPath.substring(project.getLocationURI().getPath().length()));
+            if (supplFolder.exists()) {
+                try {
+                    supplFolder.refreshLocal(IResource.DEPTH_INFINITE, null);
+                } catch (CoreException e) {
+                    Activator.logError("Error refreshing resources", e); //$NON-NLS-1$
+                }
+            }
+        }
+    }
+
     // ------------------------------------------------------------------------
     // Signal handlers
     // ------------------------------------------------------------------------
@@ -235,6 +273,7 @@ public final class TmfTraceManager {
     @TmfSignalHandler
     public synchronized void traceOpened(final TmfTraceOpenedSignal signal) {
         final ITmfTrace trace = signal.getTrace();
+        final IFile editorFile = signal.getEditorFile();
         final ITmfTimestamp startTs = trace.getStartTime();
 
         /* Calculate the initial time range */
@@ -243,7 +282,7 @@ public final class TmfTraceManager {
         long endTime = startTs.normalize(0, SCALE).getValue() + offset;
         final TmfTimeRange startTr = new TmfTimeRange(startTs, new TmfTimestamp(endTime, SCALE));
 
-        final TmfTraceContext startCtx = new TmfTraceContext(startTs, startTs, startTr);
+        final TmfTraceContext startCtx = new TmfTraceContext(startTs, startTs, startTr, editorFile);
 
         fTraces.put(trace, startCtx);
 

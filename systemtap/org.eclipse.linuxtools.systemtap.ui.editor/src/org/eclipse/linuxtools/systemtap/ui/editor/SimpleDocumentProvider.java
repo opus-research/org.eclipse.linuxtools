@@ -45,26 +45,23 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 	protected IDocument createDocument(Object element) throws CoreException {
 		if (element instanceof IEditorInput) {
 			IDocument document= new Document();
-			if (setDocumentContent(document, (IEditorInput) element)) {
-				setupDocument(document);
-			}
+			setDocumentContent(document, (IEditorInput) element);
 			return document;
 		}
-	
+
 		return null;
 	}
-	
+
 	/**
 	 * Tries to read the file pointed at by <code>input</code> if it is an
 	 * <code>IPathEditorInput</code>. If the file does not exist, <code>true</code>
 	 * is returned.
-	 *  
+	 *
 	 * @param document the document to fill with the contents of <code>input</code>
 	 * @param input the editor input
-	 * @return <code>true</code> if setting the content was successful or no file exists, <code>false</code> otherwise
 	 * @throws CoreException if reading the file fails
 	 */
-	private boolean setDocumentContent(IDocument document, IEditorInput input) throws CoreException {
+	private static void setDocumentContent(IDocument document, IEditorInput input) throws CoreException {
 		Reader reader = null;
 		try {
 			if (input instanceof FileStoreEditorInput){
@@ -72,20 +69,20 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 			} else if (input instanceof IPathEditorInput){
 				reader= new FileReader(((IPathEditorInput)input).getPath().toFile());
 			} else {
-				return false;
+				return;
 			}
 		} catch (FileNotFoundException e) {
 			// return empty document and save later
-			return true;
+			return;
 		} catch (MalformedURLException e) {
 			throw new CoreException(new Status(IStatus.ERROR, EditorPlugin.ID ,Localization.getString("SimpleDocumentProvider.incorrectURL"), e)); //$NON-NLS-1$
 		} catch (IOException e) {
 			throw new CoreException(new Status(IStatus.ERROR, EditorPlugin.ID, Localization.getString("SimpleDocumentProvider.errorCreatingFile"), e)); //$NON-NLS-1$
 		}
-		
+
 		try {
 			setDocumentContent(document, reader);
-			return true;
+			return;
 		} catch (IOException e) {
 			throw new CoreException(new Status(IStatus.ERROR, EditorPlugin.ID, IStatus.OK, Localization.getString("SimpleDocumentProvider.errorCreatingFile"), e)); //$NON-NLS-1$
 		}
@@ -93,15 +90,14 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 
 	/**
 	 * Reads in document content from a reader and fills <code>document</code>
-	 * 
+	 *
 	 * @param document the document to fill
 	 * @param reader the source
 	 * @throws IOException if reading fails
 	 */
-	private void setDocumentContent(IDocument document, Reader reader) throws IOException {
-		Reader in= new BufferedReader(reader);
-		try {
-			
+	private static void setDocumentContent(IDocument document, Reader reader) throws IOException {
+		try (Reader in= new BufferedReader(reader)) {
+
 			StringBuffer buffer= new StringBuffer(512);
 			char[] readBuffer= new char[512];
 			int n= in.read(readBuffer);
@@ -109,19 +105,9 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 				buffer.append(readBuffer, 0, n);
 				n= in.read(readBuffer);
 			}
-			
-			document.set(buffer.toString());
-		} finally {
-			in.close();
-		}
-	}
 
-	/**
-	 * Set up the document - default implementation does nothing.
-	 * 
-	 * @param document the new document
-	 */
-	protected void setupDocument(IDocument document) {
+			document.set(buffer.toString());
+		}
 	}
 
 	/*
@@ -141,7 +127,7 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 			IPathEditorInput pei= (IPathEditorInput) element;
 			IPath path= pei.getPath();
 			File file= path.toFile();
-			
+
 			try {
 				file.createNewFile();
 
@@ -149,10 +135,12 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 					if (file.canWrite()) {
 						Writer writer= new FileWriter(file);
 						writeDocumentContent(document, writer, monitor);
-					} else
+					} else {
 						throw new CoreException(new Status(IStatus.ERROR, EditorPlugin.ID, IStatus.OK, "file is read-only", null)); //$NON-NLS-1$
-				} else
+					}
+				} else {
 					throw new CoreException(new Status(IStatus.ERROR, EditorPlugin.ID, IStatus.OK, "error creating file", null)); //$NON-NLS-1$
+				}
 			} catch (IOException e) {
 				throw new CoreException(new Status(IStatus.ERROR, EditorPlugin.ID, IStatus.OK, Localization.getString("errorCreatingFile"), e)); //$NON-NLS-1$
 			}
@@ -161,18 +149,15 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 
 	/**
 	 * Saves the document contents to a stream.
-	 * 
+	 *
 	 * @param document the document to save
 	 * @param writer the stream to save it to
 	 * @param monitor a progress monitor to report progress
 	 * @throws IOException if writing fails
 	 */
-	private void writeDocumentContent(IDocument document, Writer writer, IProgressMonitor monitor) throws IOException {
-		Writer out= new BufferedWriter(writer);
-		try {
+	private static void writeDocumentContent(IDocument document, Writer writer, IProgressMonitor monitor) throws IOException {
+		try (Writer out= new BufferedWriter(writer)) {
 			out.write(document.get());
-		} finally {
-			out.close();
 		}
 	}
 
@@ -183,7 +168,7 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 	protected IRunnableContext getOperationRunner(IProgressMonitor monitor) {
 		return null;
 	}
-	
+
 	/*
 	 * @see org.eclipse.ui.texteditor.IDocumentProviderExtension#isModifiable(java.lang.Object)
 	 */
@@ -196,7 +181,7 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 		}
 		return false;
 	}
-	
+
 	/*
 	 * @see org.eclipse.ui.texteditor.IDocumentProviderExtension#isReadOnly(java.lang.Object)
 	 */
@@ -204,7 +189,7 @@ public class SimpleDocumentProvider extends AbstractDocumentProvider {
 	public boolean isReadOnly(Object element) {
 		return !isModifiable(element);
 	}
-	
+
 	/*
 	 * @see org.eclipse.ui.texteditor.IDocumentProviderExtension#isStateValidated(java.lang.Object)
 	 */

@@ -14,9 +14,7 @@ package org.eclipse.linuxtools.internal.rpm.ui.editor.outline;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.Activator;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.parser.SpecfilePreamble;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
@@ -26,29 +24,16 @@ import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfilePackageContainer;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileSection;
 import org.eclipse.swt.graphics.Image;
 
-public class SpecfileLabelProvider implements ILabelProvider {
+public class SpecfileLabelProvider extends LabelProvider {
 
 	private static final String PREAMBLE_ICON="icons/preamble_obj.gif"; //$NON-NLS-1$
 	private static final String SECTION_ICON="icons/section_obj.gif"; //$NON-NLS-1$
 	private static final String PACKAGES_ICON="icons/packages_obj.gif"; //$NON-NLS-1$
 	private static final String PACKAGE_ICON="icons/package_obj.gif"; //$NON-NLS-1$
-	private IProject project;
-
-	@Override
-	public void addListener(ILabelProviderListener listener) {
-	}
-
-	@Override
-	public void dispose() {
-	}
 
 	@Override
 	public boolean isLabelProperty(Object element, String property) {
 		return false;
-	}
-
-	@Override
-	public void removeListener(ILabelProviderListener listener) {
 	}
 
 	@Override
@@ -86,14 +71,6 @@ public class SpecfileLabelProvider implements ILabelProvider {
 			str = ((SpecfilePackage) element).getName();
 		}
 		return filterMacros(str.trim());
-	}
-
-	/**
-	 * Sets IProject
-	 * @since 2.1
-	 */
-	protected void setProject(IProject project) {
-		this.project=project;
 	}
 
 	/**

@@ -27,25 +27,25 @@ public class ValgrindCoreParser {
 	private static final String AT = "at"; //$NON-NLS-1$
 	private static final String BY = "by"; //$NON-NLS-1$
 
-	protected List<IValgrindMessage> messages;
-	protected int pid;
-	protected ILaunch launch;
+	private List<IValgrindMessage> messages;
+	private int pid;
+	private ILaunch launch;
 
 	public ValgrindCoreParser(File inputFile, ILaunch launch) throws IOException {
 		this.launch = launch;
-		BufferedReader br = new BufferedReader(new FileReader(inputFile));
 		// keep track of nested messages and their corresponding indents
-		Stack<IValgrindMessage> messageStack = new Stack<IValgrindMessage>();
-		Stack<Integer> indentStack = new Stack<Integer>();
-		messages = new ArrayList<IValgrindMessage>();
+		Stack<IValgrindMessage> messageStack = new Stack<>();
+		Stack<Integer> indentStack = new Stack<>();
+		messages = new ArrayList<>();
 
-		try { 
+		try (BufferedReader br = new BufferedReader(new FileReader(inputFile))) { 
 			pid = ValgrindParserUtils.parsePID(inputFile.getName(), CommandLineConstants.LOG_PREFIX);
 			String line;
 			while ((line = br.readLine()) != null) {
 				// remove PID string
 				// might encounter warnings also #325130
-				line = line.replaceFirst("==\\d+==|\\*\\*\\d+\\*\\*", ""); //$NON-NLS-1$ //$NON-NLS-2$
+				// fixed #423371 - handle timestamp (e.g. ==00:00:00:01.175 52756728==)
+				line = line.replaceFirst("==([\\d:\\.]+\\s)?\\d+==|\\*\\*\\d+\\*\\*", ""); //$NON-NLS-1$ //$NON-NLS-2$
 
 				int indent;
 				for (indent = 0; indent < line.length()
@@ -94,14 +94,10 @@ public class ValgrindCoreParser {
 					}
 				}
 			}
-		} finally {
-			if (br != null) {
-				br.close();
-			}
 		}
 	}
 
-	protected IValgrindMessage getMessage(IValgrindMessage message, String line) {
+	private IValgrindMessage getMessage(IValgrindMessage message, String line) {
 		if (line.startsWith(AT) || line.startsWith(BY)) {
 			Object[] parsed = ValgrindParserUtils.parseFilename(line);
 			String filename = (String) parsed[0];
@@ -113,15 +109,5 @@ public class ValgrindCoreParser {
 	
 	public IValgrindMessage[] getMessages() {
 		return messages.toArray(new IValgrindMessage[messages.size()]);
-	}
-	
-	public void printMessages(IValgrindMessage m, int indent) {
-		for (int i = 0; i < indent; i++) {
-			System.out.print(" "); //$NON-NLS-1$
-		}
-		System.out.println(m.getText());
-		for (IValgrindMessage child : m.getChildren()) {
-			printMessages(child, indent + 1);
-		}
 	}
 }

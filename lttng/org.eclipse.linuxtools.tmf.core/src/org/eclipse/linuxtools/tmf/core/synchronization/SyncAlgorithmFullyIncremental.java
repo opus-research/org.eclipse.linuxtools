@@ -17,6 +17,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +57,7 @@ public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
      * Initialization of the attributes
      */
     public SyncAlgorithmFullyIncremental() {
-        fSyncs = new LinkedList<ConvexHull>();
+        fSyncs = new LinkedList<>();
     }
 
     /**
@@ -70,12 +71,13 @@ public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
     }
 
     @Override
-    public void init(ITmfTrace[] fTraces) {
+    public void init(Collection<ITmfTrace> traces) {
+        ITmfTrace[] traceArr = traces.toArray(new ITmfTrace[traces.size()]);
         fSyncs.clear();
         /* Create a convex hull for all trace pairs */
-        for (int i = 0; i < fTraces.length; i++) {
-            for (int j = i + 1; j < fTraces.length; j++) {
-                ConvexHull algo = new ConvexHull(fTraces[i].getName(), fTraces[j].getName());
+        for (int i = 0; i < traceArr.length; i++) {
+            for (int j = i + 1; j < traceArr.length; j++) {
+                ConvexHull algo = new ConvexHull(traceArr[i].getName(), traceArr[j].getName());
                 fSyncs.add(algo);
             }
         }
@@ -162,7 +164,7 @@ public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
 
     @Override
     public Map<String, Map<String, Object>> getStats() {
-        Map<String, Map<String, Object>> statmap = new LinkedHashMap<String, Map<String, Object>>();
+        Map<String, Map<String, Object>> statmap = new LinkedHashMap<>();
         for (ConvexHull traceSync : fSyncs) {
             statmap.put(traceSync.getReferenceTrace() + " <==> " + traceSync.getOtherTrace(), traceSync.getStats()); //$NON-NLS-1$
         }
@@ -189,13 +191,13 @@ public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
          * The list of meaningful points on the upper hull (received by the
          * reference trace, below in a graph)
          */
-        private final LinkedList<SyncPoint> fUpperBoundList = new LinkedList<SyncPoint>();
+        private final LinkedList<SyncPoint> fUpperBoundList = new LinkedList<>();
 
         /**
          * The list of meaninful points on the lower hull (sent by the reference
          * trace, above in a graph)
          */
-        private final LinkedList<SyncPoint> fLowerBoundList = new LinkedList<SyncPoint>();
+        private final LinkedList<SyncPoint> fLowerBoundList = new LinkedList<>();
 
         /** Points forming the line with maximum slope */
         private final SyncPoint[] fLmax;
@@ -213,7 +215,7 @@ public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
         private String fReferenceTrace = "", fOtherTrace = ""; //$NON-NLS-1$//$NON-NLS-2$
         private SyncQuality fQuality;
 
-        private Map<String, Object> fStats = new LinkedHashMap<String, Object>();
+        private Map<String, Object> fStats = new LinkedHashMap<>();
 
         /**
          * Initialization of the attributes

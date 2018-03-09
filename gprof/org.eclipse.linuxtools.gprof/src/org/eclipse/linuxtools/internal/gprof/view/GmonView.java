@@ -123,13 +123,6 @@ public class GmonView extends AbstractSTDataView {
     	});
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView#contributeToToolbar(org.eclipse.jface.action
-     * .IToolBarManager)
-     */
     @Override
     protected void contributeToToolbar(IToolBarManager manager) {
         manager.add(new Separator());
@@ -144,11 +137,6 @@ public class GmonView extends AbstractSTDataView {
         manager.add(new ChartAction(getViewSite().getShell(), getSTViewer()));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView#createActions()
-     */
     @Override
     protected void createActions() {
         super.createActions();
@@ -200,10 +188,6 @@ public class GmonView extends AbstractSTDataView {
     	//        return color5 == null ? DEFAULT_BG : color5;
     }
 
-    public Label getLabel() {
-        return label;
-    }
-
     @Override
     protected AbstractSTViewer createAbstractSTViewer(Composite parent) {
         return new GmonViewer(parent);
@@ -217,14 +201,14 @@ public class GmonView extends AbstractSTDataView {
      * @param titleLabel
      *            the title label
      */
-    public static void setHistTitle(GmonDecoder decoder, Label titleLabel) {
+    private static void setHistTitle(GmonDecoder decoder, Label titleLabel) {
         String title = " gmon file: " //$NON-NLS-1$
                 + decoder.getGmonFile() + "\n program file: " //$NON-NLS-1$
                 + decoder.getProgram().getPath() + "\n" //$NON-NLS-1$
                 + " timestamp: " + decoder.getGmonFileTimeStamp(); //$NON-NLS-1$
         HistogramDecoder histo = decoder.getHistogramDecoder();
         if (histo.hasValues()) {
-            double prof_rate = histo.getProf_rate();
+            double prof_rate = histo.getProfRate();
             String period = ""; //$NON-NLS-1$
             if (prof_rate != 0) {
                 char tUnit = histo.getTimeDimension();
@@ -291,7 +275,7 @@ public class GmonView extends AbstractSTDataView {
             }
             gmonview = (GmonView) page.showView(ID, secondary_id_usually_path_to_gmon_file,
                     IWorkbenchPage.VIEW_ACTIVATE);
-            if (decoder.getHistogramDecoder().getProf_rate() == 0) {
+            if (decoder.getHistogramDecoder().getProfRate() == 0) {
                 gmonview.switchSampleTime.setToolTipText("Unable to display time, because profiling rate is null"); //$NON-NLS-1$
                 gmonview.switchSampleTime.setEnabled(false);
             }
@@ -309,11 +293,6 @@ public class GmonView extends AbstractSTDataView {
         return gmonview;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView#createExportToCSVAction()
-     */
     @Override
     protected IAction createExportToCSVAction() {
         IAction action = new STExportToCSVAction(this.getSTViewer()) {

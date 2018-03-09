@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,15 +36,13 @@ public class SaveSessionTest {
 	private static final String PERF_STATS_FILE_PATH = "stat_data"; //$NON-NLS-1$
 	private static final String DATA_FILE_NAME = "data"; //$NON-NLS-1$
 	private static final String DATA_FILE_EXT = "ext"; //$NON-NLS-1$
-	private ArrayList<IPath> testFiles = new ArrayList<IPath>();
+	private ArrayList<IPath> testFiles = new ArrayList<>();
 
 	@After
 	public void tearDown(){
 		for (IPath f : testFiles) {
 			File file = f.toFile();
-			if(!file.delete()){
-				fail();
-			}
+			assertTrue(file.delete());
 		}
 	}
 
@@ -56,7 +53,7 @@ public class SaveSessionTest {
 		assertEquals(WORKING_DIR, handler.getWorkingDir().toOSString());
 
 		IPath path = handler.getNewDataLocation(DATA_FILE_NAME, DATA_FILE_EXT);
-		assertEquals(WORKING_DIR + DATA_FILE_NAME + '.' + DATA_FILE_EXT, //$NON-NLS-1$
+		assertEquals(WORKING_DIR + DATA_FILE_NAME + '.' + DATA_FILE_EXT,
 				path.toOSString());
 
 		assertTrue(handler.isEnabled());

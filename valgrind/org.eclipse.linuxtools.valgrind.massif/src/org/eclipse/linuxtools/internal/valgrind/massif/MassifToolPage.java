@@ -48,38 +48,40 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 	private static final Version VER_3_6_0 = new Version(3, 6, 0);
 		
 	// Massif controls
-	protected Button heapButton;
-	protected Spinner heapAdminSpinner;
-	protected Button stacksButton;
-	protected Spinner depthSpinner;
-	protected List allocFnList;
-	protected List ignoreFnList;
-	protected Spinner thresholdSpinner;
-	protected Spinner peakInaccuracySpinner;
-	protected Combo timeUnitCombo;
-	protected Spinner detailedFreqSpinner;
-	protected Spinner maxSnapshotsSpinner;
-	protected Button alignmentButton;
-	protected Spinner alignmentSpinner;
+	private Button heapButton;
+	private Spinner heapAdminSpinner;
+	private Button stacksButton;
+	private Spinner depthSpinner;
+	private List allocFnList;
+	private List ignoreFnList;
+	private Spinner thresholdSpinner;
+	private Spinner peakInaccuracySpinner;
+	private Combo timeUnitCombo;
+	private Spinner detailedFreqSpinner;
+	private Spinner maxSnapshotsSpinner;
+	private Button alignmentButton;
+	private Spinner alignmentSpinner;
 	
 	// VG >= 3.6.0
-	protected Button pagesasheapButton;
+	private Button pagesasheapButton;
 	
-	protected boolean isInitializing = false;
-	protected Version valgrindVersion;
+	private boolean isInitializing = false;
+	private Version valgrindVersion;
 	
-	protected SelectionListener selectListener = new SelectionAdapter() {
+	private SelectionListener selectListener = new SelectionAdapter() {
 		@Override
 		public void widgetSelected(SelectionEvent e) {
 			updateLaunchConfigurationDialog();
 		}
 	};
-	protected ModifyListener modifyListener = new ModifyListener() {
+	private ModifyListener modifyListener = new ModifyListener() {
+		@Override
 		public void modifyText(ModifyEvent e) {
 			updateLaunchConfigurationDialog();	
 		}			
 	};
 	
+	@Override
 	public void createControl(Composite parent) {
 		Composite top = new Composite(parent, SWT.NONE);
 		
@@ -304,7 +306,7 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		});
 	}
 
-	protected void handleAllocNewButtonPressed() {
+	private void handleAllocNewButtonPressed() {
 		InputDialog dialog = new InputDialog(getShell(), Messages.getString("MassifToolPage.New_Allocation_Function"), Messages.getString("MassifToolPage.Function_name"), "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		if (dialog.open() == Window.OK) {
 			String function = dialog.getValue();
@@ -314,12 +316,12 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		}
 	}
 
-	protected void handleAllocRemoveButtonPressed() {
+	private void handleAllocRemoveButtonPressed() {
 		 int[] selections = allocFnList.getSelectionIndices();
 		 allocFnList.remove(selections);
 	}
 
-	protected void handleIgnoreNewButtonPressed() {
+	private void handleIgnoreNewButtonPressed() {
 		InputDialog dialog = new InputDialog(getShell(), Messages.getString("MassifToolPage.New_Ignore_Function"), Messages.getString("MassifToolPage.Function_name"), "", null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		if (dialog.open() == Window.OK) {
 			String function = dialog.getValue();
@@ -329,16 +331,17 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		}
 	}
 
-	protected void handleIgnoreRemoveButtonPressed() {
+	private void handleIgnoreRemoveButtonPressed() {
 		 int[] selections = ignoreFnList.getSelectionIndices();
 		 ignoreFnList.remove(selections);
 	}
 
+	@Override
 	public String getName() {
 		return Messages.getString("MassifToolPage.Massif_Options"); //$NON-NLS-1$
 	}
 
-	@SuppressWarnings("unchecked")
+	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		isInitializing = true;
 		try {
@@ -356,11 +359,9 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 			String timeUnit = configuration.getAttribute(MassifLaunchConstants.ATTR_MASSIF_TIMEUNIT, MassifLaunchConstants.DEFAULT_MASSIF_TIMEUNIT);
 			if (timeUnit.equals(MassifLaunchConstants.TIME_I)) {
 				timeUnitCombo.select(0);
-			}
-			else if (timeUnit.equals(MassifLaunchConstants.TIME_MS)) {
+			} else if (timeUnit.equals(MassifLaunchConstants.TIME_MS)) {
 				timeUnitCombo.select(1);
-			}
-			else {
+			} else {
 				timeUnitCombo.select(2);
 			}
 			
@@ -381,6 +382,7 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		isInitializing = false;
 	}
 
+	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(MassifLaunchConstants.ATTR_MASSIF_HEAP, heapButton.getSelection());
 		configuration.setAttribute(MassifLaunchConstants.ATTR_MASSIF_HEAPADMIN, heapAdminSpinner.getSelection());
@@ -394,11 +396,9 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		String value;
 		if (ix == 0) {
 			value = MassifLaunchConstants.TIME_I;
-		}
-		else if (ix == 1) {
+		} else if (ix == 1) {
 			value = MassifLaunchConstants.TIME_MS;
-		}
-		else {
+		} else {
 			value = MassifLaunchConstants.TIME_B;
 		}
 		configuration.setAttribute(MassifLaunchConstants.ATTR_MASSIF_TIMEUNIT, value);
@@ -431,6 +431,7 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		return result;
 	}
 	
+	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(LaunchConfigurationConstants.ATTR_TOOL, MassifPlugin.TOOL_ID);
 		configuration.setAttribute(MassifLaunchConstants.ATTR_MASSIF_HEAP, MassifLaunchConstants.DEFAULT_MASSIF_HEAP);
@@ -452,17 +453,11 @@ public class MassifToolPage extends AbstractLaunchConfigurationTab
 		}
 	}
 	
+	@Override
 	public void setValgrindVersion(Version ver) {
 		valgrindVersion = ver;
 	}
 
-	protected void createHorizontalSpacer(Composite comp, int numlines) {
-		Label lbl = new Label(comp, SWT.NONE);
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = numlines;
-		lbl.setLayoutData(gd);
-	}
-	
 	@Override
 	protected void updateLaunchConfigurationDialog() {
 		if (!isInitializing) {

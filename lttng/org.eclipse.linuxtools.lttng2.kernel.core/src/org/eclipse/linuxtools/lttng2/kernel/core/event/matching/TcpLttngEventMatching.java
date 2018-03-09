@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2013, 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.TcpEventStrings;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
@@ -24,6 +23,7 @@ import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventMatching.MatchingT
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfNetworkEventMatching.Direction;
 import org.eclipse.linuxtools.tmf.core.event.matching.ITmfNetworkMatchDefinition;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
 
 /**
  * Class to match tcp type events. This class applies to traces obtained with
@@ -63,7 +63,7 @@ public class TcpLttngEventMatching implements ITmfNetworkMatchDefinition {
      */
     @Override
     public List<Object> getUniqueField(ITmfEvent event) {
-        List<Object> keys = new ArrayList<Object>();
+        List<Object> keys = new ArrayList<>();
 
         TmfEventField field = (TmfEventField) event.getContent();
         ITmfEventField data;

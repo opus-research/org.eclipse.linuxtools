@@ -153,7 +153,7 @@ public class CovView extends AbstractSTDataView {
         });
     }
 
-    public static void setCovViewTitle(CovView view, String title, String binaryPath, String timestamp) {
+    private static void setCovViewTitle(CovView view, String title, String binaryPath, String timestamp) {
         String viewText = NLS.bind(Messages.CovView_view_title, new Object[] { title, binaryPath, timestamp });
         view.label.setText(viewText);
         view.label.getParent().layout(true);
@@ -169,18 +169,16 @@ public class CovView extends AbstractSTDataView {
 
             // parse and process coverage data
             CovManager cvrgeMnger = new CovManager(binaryPath, project);
-            List<String> gcdaPaths = new LinkedList<String>();
+            List<String> gcdaPaths = new LinkedList<>();
             gcdaPaths.add(gcdaFile);
             cvrgeMnger.processCovFiles(gcdaPaths, gcdaFile);
             // generate model for view
             cvrgeMnger.fillGcovView();
 
             for (SourceFile sf : cvrgeMnger.getSourceMap().values()) {
-                OpenSourceFileAction.sharedInstance.openAnnotatedSourceFile(project, binary, sf, 0);
+                OpenSourceFileAction.openAnnotatedSourceFile(project, binary, sf, 0);
             }
-        } catch (CoreException e) {
-            reportError(e);
-        } catch (IOException e) {
+        } catch (CoreException|IOException e) {
             reportError(e);
         }
     }
@@ -211,11 +209,7 @@ public class CovView extends AbstractSTDataView {
             String timestamp = DateFormat.getInstance().format(date);
             CovView cvrgeView = displayCovResults(cvrgeMnger, timestamp);
             return cvrgeView;
-        } catch (InterruptedException e) {
-            reportError(e);
-        } catch (IOException e) {
-            reportError(e);
-        } catch (CoreException e) {
+        } catch (InterruptedException|IOException|CoreException e) {
             reportError(e);
         }
         return null;
@@ -239,7 +233,7 @@ public class CovView extends AbstractSTDataView {
      * Used by Test engine and OpenSerAction
      * @param cvrgeMnger
      */
-    public static CovView displayCovResults(CovManager cvrgeMnger, String timestamp) throws PartInitException {
+    private static CovView displayCovResults(CovManager cvrgeMnger, String timestamp) throws PartInitException {
         // load an Eclipse view
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         IWorkbenchPage page = window.getActivePage();
@@ -267,27 +261,11 @@ public class CovView extends AbstractSTDataView {
             public void run() {
                 Object o = getSTViewer().getInput();
                 if (o instanceof CovManager) {
-                    getExporter().setFilePath(getDefaultCSVPath());
+                    getExporter().setFilePath(defaultCSVPath);
                 }
                 super.run();
             }
         };
         return action;
     }
-
-    /**
-     * @return the defaultCSVPath
-     */
-    public String getDefaultCSVPath() {
-        return defaultCSVPath;
-    }
-
-    /**
-     * @param defaultCSVPath
-     *            the defaultCSVPath to set
-     */
-    public void setDefaultCSVPath(String defaultCSVPath) {
-        this.defaultCSVPath = defaultCSVPath;
-    }
-
 }

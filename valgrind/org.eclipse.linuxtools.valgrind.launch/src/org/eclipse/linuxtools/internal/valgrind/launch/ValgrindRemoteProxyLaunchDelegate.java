@@ -70,13 +70,13 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 
 		try {
 
-			Process p = RuntimeProcessFactory.getFactory().exec(cmdArray, project);
+			Process p = RuntimeProcessFactory.getFactory().exec(cmdArray,
+					project);
 
-			BufferedReader stdout = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String commandOutput = stdout.readLine();
-			stdout.close();
-
-			return commandOutput;
+			try (BufferedReader stdout = new BufferedReader(
+					new InputStreamReader(p.getInputStream()))) {
+				return stdout.readLine();
+			}
 		} catch (IOException e) {
 			return null;
 		}
@@ -90,7 +90,7 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 		Version valgrindVersion;
 		String verString = whichVersion(project);
 
-		if (verString == null || verString.equals(EMPTY_STRING)){
+		if (verString == null || verString.isEmpty()){
 			throw new CoreException(new Status(IStatus.ERROR, ValgrindLaunchPlugin.PLUGIN_ID, Messages.getString("ValgrindLaunchPlugin.Couldn't_determine_version"))); //$NON-NLS-1$
 		}
 
@@ -99,10 +99,9 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 		if (verString.indexOf(VERSION_DELIMITER) > 0) {
 			verString = verString.substring(0, verString.indexOf(VERSION_DELIMITER));
 		}
-		if (verString.length() > 0) {
+		if (!verString.isEmpty()) {
 			valgrindVersion = Version.parseVersion(verString);
-		}
-		else {
+		} else {
 			throw new CoreException(new Status(IStatus.ERROR, ValgrindLaunchPlugin.PLUGIN_ID, Messages.getString("ValgrindLaunchPlugin.Couldn't_determine_version"))); //$NON-NLS-1$
 		}
 
@@ -141,7 +140,7 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 			getPlugin().setCurrentLaunch(null);
 
 			this.configUtils = new ConfigUtils(config);
-			IProject project = ConfigUtils.getProject(configUtils.getProjectName());
+			IProject project = configUtils.getProject();
 			URI exeURI = new URI(configUtils.getExecutablePath());
 			RemoteConnection exeRC = new RemoteConnection(exeURI);
 			monitor.worked(1);
@@ -287,13 +286,7 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 			ValgrindUIPlugin.getDefault().showView();
 			monitor.worked(1);
 
-		} catch (URISyntaxException e) {
-			abort(e.getLocalizedMessage(), null, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
-		} catch (IOException e) {
-			abort(e.getLocalizedMessage(), null, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
-		} catch (RemoteConnectionException e) {
-			abort(e.getLocalizedMessage(), null, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
-		} catch (InterruptedException e) {
+		} catch (URISyntaxException|IOException|RemoteConnectionException|InterruptedException e) {
 			abort(e.getLocalizedMessage(), null, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
 		} finally {
 			monitor.done();
@@ -301,9 +294,8 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 		}
 	}
 
-	protected String createLaunchStr(IPath valgrindPath) throws CoreException {
-		String projectName = configUtils.getProjectName();
-		IProject project = ConfigUtils.getProject(projectName);
+	private String createLaunchStr(IPath valgrindPath) throws CoreException {
+		IProject project = configUtils.getProject();
 		URI projectURI = project.getLocationURI();
 
 		String host = projectURI.getHost();
@@ -317,9 +309,9 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 		String location;
 
 		if(host == null){
-			location = "remote host";
+			location = "remote host"; //$NON-NLS-1$
 		} else {
-			location = projectURI.getScheme() + "://" + host;
+			location = projectURI.getScheme() + "://" + host; //$NON-NLS-1$
 		}
 
 		return config.getName()
@@ -329,9 +321,5 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 	@Override
 	protected String getPluginID() {
 		return ValgrindLaunchPlugin.PLUGIN_ID;
-	}
-
-	public void onError(Throwable t) {
-		// for now do nothing
 	}
 }

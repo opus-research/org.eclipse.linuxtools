@@ -20,14 +20,16 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.PreferenceConstants;
 import org.eclipse.linuxtools.man.parser.ManPage;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
-import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.PreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 
 
@@ -51,11 +53,19 @@ public final class TapsetLibrary {
 		return probeTree;
 	}
 
+	public static TreeNode getStaticProbes() {
+		return probeTree == null ? null : probeTree.getChildByName(Messages.ProbeParser_staticProbes);
+	}
+
+	public static TreeNode getProbeAliases() {
+		return probeTree == null ? null : probeTree.getChildByName(Messages.ProbeParser_aliasProbes);
+	}
+
 	public static TreeNode getFunctions() {
 		return functionTree;
 	}
 
-	private static HashMap<String, String> pages = new HashMap<String, String>();
+	private static HashMap<String, String> pages = new HashMap<>();
 
 	/**
 	 * Returns the documentation for the given probe, function, or tapset.
@@ -67,7 +77,7 @@ public final class TapsetLibrary {
 
 			// If the requested element is a probe variable
 			// fetch the documentation for the parent probe then check the map
-			if (element.matches("probe::.*::.*")){ //$NON-NLS-1$
+			if (element.matches("probe::.*::.*")) { //$NON-NLS-1$
 				String probe = element.split("::")[1]; //$NON-NLS-1$
 				getDocumentation("probe::" + probe); //$NON-NLS-1$
 				return pages.get(element);
@@ -82,7 +92,7 @@ public final class TapsetLibrary {
 					element.startsWith("probe::")) { //$NON-NLS-1$
 				// If this is a probe parse out the variables
 				String[] sections = documentation.split("VALUES"); //$NON-NLS-1$
-				if (sections.length > 1){
+				if (sections.length > 1) {
 					// Discard any other sections
 					String variablesString = sections[1].split("CONTEXT|DESCRIPTION|SystemTap Tapset Reference")[0].trim(); //$NON-NLS-1$
 					String[] variables = variablesString.split("\n"); //$NON-NLS-1$
@@ -92,7 +102,7 @@ public final class TapsetLibrary {
 							String variableName = variables[i].trim();
 							StringBuilder variableDocumentation = new StringBuilder();
 							i++;
-							while (i < variables.length && !variables[i].isEmpty()){
+							while (i < variables.length && !variables[i].isEmpty()) {
 								variableDocumentation.append(variables[i].trim());
 								variableDocumentation.append("\n"); //$NON-NLS-1$
 								i++;
@@ -115,14 +125,23 @@ public final class TapsetLibrary {
 	 * @return
 	 * @since 2.0
 	 */
-	public static synchronized String getAndCacheDocumentation(String element){
+	public static synchronized String getAndCacheDocumentation(String element) {
 		String doc = pages.get(element);
-		if (doc == null){
+		if (doc == null) {
 			doc = getDocumentation(element);
 			pages.put(element, doc);
 		}
 		return doc;
 	}
+
+	private static IPropertyChangeListener propertyChangeListener = new IPropertyChangeListener() {
+		@Override
+		public void propertyChange(PropertyChangeEvent event) {
+			if (event.getProperty().equals(IDEPreferenceConstants.P_TAPSETS)) {
+				runStapParser();
+			}
+		}
+	};
 
 	/**
 	 * This method will attempt to get the most up-to-date information.
@@ -137,6 +156,7 @@ public final class TapsetLibrary {
 		}
 
 		IPreferenceStore preferenceStore = IDEPlugin.getDefault().getPreferenceStore();
+		preferenceStore.addPropertyChangeListener(propertyChangeListener);
 
 		if (preferenceStore.contains(IDEPreferenceConstants.P_STORED_TREE)
 				&& preferenceStore.getBoolean(IDEPreferenceConstants.P_STORED_TREE)
@@ -152,6 +172,8 @@ public final class TapsetLibrary {
 	 * to get the information directly from the files.
 	 */
 	private static void runStapParser() {
+		SharedParser.getInstance().clearTapsetContents();
+
 		functionParser = FunctionParser.getInstance();
 		functionParser.addListener(functionCompletionListener);
 		functionParser.schedule();
@@ -187,15 +209,13 @@ public final class TapsetLibrary {
 			return false;
 		}
 
-		if(null != tapsets) {
-			for(int i=0; i<tapsets.length; i++) {
-				f = new File(tapsets[i]);
-				if (f.lastModified() > treesDate) {
-					return false;
-				}
-				if (f.canRead() && !checkIsCurrentFolder(treesDate, f)) {
-					return false;
-				}
+		for(int i=0; i<tapsets.length; i++) {
+			f = new File(tapsets[i]);
+			if (f.lastModified() > treesDate) {
+				return false;
+			}
+			if (f.canRead() && !checkIsCurrentFolder(treesDate, f)) {
+				return false;
 			}
 		}
 		return true;
@@ -209,7 +229,7 @@ public final class TapsetLibrary {
 	public static File getTapsetLocation(IPreferenceStore p) {
 		File f;
 		String path = p.getString(PreferenceConstants.P_ENV[2][0]);
-		if(path.trim().equals("")) { //$NON-NLS-1$
+		if(path.trim().isEmpty()) {
 			f = new File("/usr/share/systemtap/tapset"); //$NON-NLS-1$
 			if(!f.exists()) {
 				f = new File("/usr/local/share/systemtap/tapset"); //$NON-NLS-1$
@@ -277,7 +297,7 @@ public final class TapsetLibrary {
 		return true;
 	}
 
-	private static Job cacheFunctionManpages = new Job(Localization.getString("TapsetLibrary.0")){ //$NON-NLS-1$
+	private static Job cacheFunctionManpages = new Job(Localization.getString("TapsetLibrary.0")) { //$NON-NLS-1$
 		private boolean cancelled;
 
 		@Override
@@ -298,7 +318,7 @@ public final class TapsetLibrary {
 
 	};
 
-	private static Job cacheProbeManpages = new Job(Localization.getString("TapsetLibrary.1")){ //$NON-NLS-1$
+	private static Job cacheProbeManpages = new Job(Localization.getString("TapsetLibrary.1")) { //$NON-NLS-1$
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			TreeNode node = probeParser.getProbes();
@@ -341,7 +361,7 @@ public final class TapsetLibrary {
 	 * @since 2.0
 	 */
 	public static void waitForInitialization() {
-		while (functionParser.getResult() == null){
+		while (functionParser.getResult() == null) {
 			try {
 				synchronized (functionParser) {
 					functionParser.wait(5000);
@@ -350,7 +370,7 @@ public final class TapsetLibrary {
 				break;
 			}
 		}
-		while (probeParser.getResult() == null){
+		while (probeParser.getResult() == null) {
 			try {
 				synchronized (probeParser) {
 					probeParser.wait(5000);
@@ -366,8 +386,8 @@ public final class TapsetLibrary {
 	 * {@link TapsetLibrary#init()} such as the {@link TapsetParser}
 	 * @since 1.2
 	 */
-	public static void stop(){
-		if(null != functionParser){
+	public static void stop() {
+		if(null != functionParser) {
 			functionParser.cancel();
 			cacheFunctionManpages.cancel();
 			try {
@@ -378,7 +398,7 @@ public final class TapsetLibrary {
 				// continue stopping.
 			}
 		}
-		if(probeParser != null){
+		if(probeParser != null) {
 			probeParser.cancel();
 			cacheProbeManpages.cancel();
 			try {

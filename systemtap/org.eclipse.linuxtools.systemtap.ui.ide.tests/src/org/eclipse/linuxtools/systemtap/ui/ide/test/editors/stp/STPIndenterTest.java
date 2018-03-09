@@ -40,16 +40,8 @@ import org.osgi.framework.BundleReference;
 public class STPIndenterTest extends TestCase {
 
 	private static class MockSTPDocumentProvider extends STPDocumentProvider{
-		private IDocument document;
-
 		MockSTPDocumentProvider(IDocument document){
-			this.document = document;
 			this.setupDocument(document);
-		}
-
-		@Override
-		protected IDocument createDocument(Object element) {
-			return document;
 		}
 	}
 
@@ -108,7 +100,9 @@ public class STPIndenterTest extends TestCase {
 				if (bundle != null) {
 					in = FileLocator.openStream(bundle, filePath, false);
 				} else {
-					in = clazz.getResourceAsStream('/' + classFile);
+					try (InputStream inTry = clazz.getResourceAsStream('/' + classFile)) {
+						in = inTry;
+					}
 				}
 			} catch (IOException e) {
 				if (superclass == null || !superclass.getPackage().equals(clazz.getPackage())) {
@@ -118,10 +112,9 @@ public class STPIndenterTest extends TestCase {
 				continue;
 			}
 
-		    BufferedReader br = new BufferedReader(new InputStreamReader(in));
-		    try {
+		    try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
 		    	// Read the java file collecting comments until we encounter the test method.
-			    List<StringBuilder> contents = new ArrayList<StringBuilder>();
+			    List<StringBuilder> contents = new ArrayList<>();
 			    StringBuilder content = new StringBuilder();
 			    for (String line = br.readLine(); line != null; line = br.readLine()) {
 			    	line = line.replaceFirst("^\\s*", ""); // Replace leading whitespace, preserve trailing
@@ -145,8 +138,6 @@ public class STPIndenterTest extends TestCase {
 			    		}
 			    	}
 			    }
-		    } finally {
-		    	br.close();
 		    }
 
 			if (superclass == null || !superclass.getPackage().equals(clazz.getPackage())) {

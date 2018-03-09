@@ -8,9 +8,9 @@
  *
  * Contributors:
  *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
- *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially 
+ *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially
  *        written in the now-defunct OprofileSession class
- *    QNX Software Systems and others - the section of code marked in the launch 
+ *    QNX Software Systems and others - the section of code marked in the launch
  *        method, and the exec method
  *    Thavidu Ranatunga (IBM) - This code is based on the AbstractOprofileLauncher
  *        class code for the OProfile plugin.  Part of that was originally adapted
@@ -20,14 +20,10 @@
 package org.eclipse.linuxtools.internal.perf.remote.launch;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.console.*;
-
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -36,6 +32,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -55,16 +54,20 @@ import org.eclipse.linuxtools.internal.perf.StatData;
 import org.eclipse.linuxtools.internal.perf.launch.Messages;
 import org.eclipse.linuxtools.internal.perf.ui.SourceDisassemblyView;
 import org.eclipse.linuxtools.internal.perf.ui.StatView;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
+import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.RemoteConnection;
 import org.eclipse.linuxtools.profiling.launch.RemoteConnectionException;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
-import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.IOConsole;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
 import org.osgi.framework.Version;
 
 public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate {
@@ -85,7 +88,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		try {
 			this.configUtils = new ConfigUtils(config);
-			project = ConfigUtils.getProject(configUtils.getProjectName());
+			project = configUtils.getProject();
 			// check if Perf exists in $PATH
 			if (! PerfCore.checkPerfInPath(project))
 			{
@@ -134,7 +137,7 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				workingDir = workingDirRFP.getResource(workingDirURI.getPath());
 				//Build the commandline string to run perf recording the given project
 				String arguments[] = getProgramArgumentsArray( config ); //Program args from launch config.
-				ArrayList<String> command = new ArrayList<String>( 4 + arguments.length );
+				ArrayList<String> command = new ArrayList<>( 4 + arguments.length );
 				Version perfVersion = PerfCore.getPerfVersion(config);
 				command.addAll(Arrays.asList(PerfCore.getRecordString(config, perfVersion))); //Get the base commandline string (with flags/options based on config)
 				command.add( remoteBinFile.toOSString() ); // Add the path to the executable
@@ -153,15 +156,14 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				MessageConsoleStream stream = console.newMessageStream();
 
 				if (pProxy != null) {
-					BufferedReader error = new BufferedReader(
-							new InputStreamReader(pProxy.getErrorStream()));
-					String err;
-					err = error.readLine();
-					while (err != null) {
-						stream.println(err);
-						err = error.readLine();
+					try (BufferedReader error = new BufferedReader(
+							new InputStreamReader(pProxy.getErrorStream()))) {
+						String err = error.readLine();
+						while (err != null) {
+							stream.println(err);
+							err = error.readLine();
+						}
 					}
-					error.close();
 				}
 
 
@@ -221,9 +223,9 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 				IFileStore perfDataFileStore = proxy.getResource(perfDataURI.getPath());
 				IFileInfo info = perfDataFileStore.fetchInfo();
 				info.setAttribute(EFS.ATTRIBUTE_READ_ONLY, true);
-				perfDataFileStore.putInfo(info, EFS.SET_ATTRIBUTES, null);				
+				perfDataFileStore.putInfo(info, EFS.SET_ATTRIBUTES, null);
 
-				PerfCore.RefreshView(renderProcessLabel(exeURI.getPath()));
+				PerfCore.refreshView(renderProcessLabel(exeURI.getPath()));
 				if (config.getAttribute(PerfPlugin.ATTR_ShowSourceDisassembly,
 						PerfPlugin.ATTR_ShowSourceDisassembly_default)) {
 					showSourceDisassembly(Path.fromPortableString(workingDirURI.toString() + IPath.SEPARATOR));
@@ -262,9 +264,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 	 */
 	private void showStat(ILaunchConfiguration config, ILaunch launch)
 			throws CoreException {
-		//Find the binary path
-		this.configUtils = new ConfigUtils(config);
-
 		// Build the command line string
 		String arguments[] = getProgramArgumentsArray(config);
 
@@ -285,7 +284,6 @@ public class PerfLaunchConfigDelegate extends ProfileLaunchConfigurationDelegate
 		Object[] titleArgs = new Object[]{binURI.getPath(), args.toString(), String.valueOf(runCount)};
 		String title = renderProcessLabel(MessageFormat.format(Messages.PerfLaunchConfigDelegate_stat_title, titleArgs));
 
-		@SuppressWarnings("unchecked")
 		List<String> configEvents = config.getAttribute(PerfPlugin.ATTR_SelectedEvents,
 				PerfPlugin.ATTR_SelectedEvents_default);
 

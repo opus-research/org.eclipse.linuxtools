@@ -11,11 +11,13 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.views;
 
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.FunctionBrowserAction;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.ISingleTypedNode;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
 
 
 
@@ -30,7 +32,6 @@ public class FunctionBrowserView extends BrowserView {
 	private FunctionBrowserAction doubleClickAction;
 	private TreeNode functions;
 	private TreeNode localFunctions;
-	private Menu menu;
 
 	/**
 	 * Creates the UI on the given <code>Composite</code>
@@ -42,6 +43,23 @@ public class FunctionBrowserView extends BrowserView {
 		TapsetLibrary.addFunctionListener(new ViewUpdater());
 		refresh();
 		makeActions();
+	}
+
+	@Override
+	protected Image getEntryImage(TreeNode treeObj) {
+		if (!(treeObj.getData() instanceof ISingleTypedNode)) {
+			return IDEPlugin.getImageDescriptor("icons/vars/var_unk.gif").createImage(); //$NON-NLS-1$
+		}
+		String type = ((ISingleTypedNode) treeObj.getData()).getType();
+		if (type == null) {
+			return IDEPlugin.getImageDescriptor("icons/vars/var_void.gif").createImage(); //$NON-NLS-1$
+		} else if (type.equals("long")) {//$NON-NLS-1$
+			return IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
+		} else if (type.equals("string")) {//$NON-NLS-1$
+			return IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage(); //$NON-NLS-1$
+		} else {
+			return IDEPlugin.getImageDescriptor("icons/vars/var_unk.gif").createImage(); //$NON-NLS-1$
+		}
 	}
 
 	/**
@@ -82,6 +100,7 @@ public class FunctionBrowserView extends BrowserView {
 	private void makeActions() {
 		doubleClickAction = new FunctionBrowserAction(getSite().getWorkbenchWindow(), this);
 		viewer.addDoubleClickListener(doubleClickAction);
+		registerContextMenu("functionPopup"); //$NON-NLS-1$
 	}
 
 	@Override
@@ -102,10 +121,6 @@ public class FunctionBrowserView extends BrowserView {
 			functions.dispose();
 		}
 		functions = null;
-		if(null != menu) {
-			menu.dispose();
-		}
-		menu = null;
 		TapsetLibrary.stop();
 	}
 }

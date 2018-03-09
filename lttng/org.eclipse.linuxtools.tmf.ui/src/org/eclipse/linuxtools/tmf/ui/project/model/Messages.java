@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Jean-Christian Kouamé - Initial API and implementation
+ *   Patrick Tasse - Add support for source location
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -24,11 +25,31 @@ public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.ui.project.model.messages"; //$NON-NLS-1$
 
-    /** Instantiate analysis message box title */
+    /** Instantiate analysis message box title
+     * @since 3.0*/
     public static String TmfAnalysisElement_InstantiateAnalysis;
 
-    /** The message when analysis view is not available */
+    /** The message when analysis view is not available
+     * @since 3.0*/
     public static String TmfAnalysisViewOutput_ViewUnavailable;
+    /** Analysis view title
+     * @since 3.0 */
+    public static String TmfAnalysisViewOutput_Title;
+
+    /** Error message when closing editor
+     * @since 3.0 */
+    public static String TmfCommonProjectElement_ErrorClosingEditor;
+
+    /** Error message when refreshing persistent property
+     * @since 3.0 */
+    public static String TmfCommonProjectElement_ErrorRefreshingProperty;
+
+    /** Error message when instantiating trace
+     * @since 3.0 */
+    public static String TmfExperimentElement_ErrorInstantiatingTrace;
+    /** Experiment text
+     * @since 3.0*/
+    public static String TmfExperimentElement_TypeName;
 
     /** The category of the resource properties */
     public static String TmfTraceElement_ResourceProperties;
@@ -48,39 +69,48 @@ public class Messages extends NLS {
     /** The descriptor for the event type property */
     public static String TmfTraceElement_EventType;
 
-    /** The description for the linked property */
+    /** The descriptor for the linked property */
     public static String TmfTraceElement_IsLinked;
+
+    /** The descriptor for the source location property
+     * @since 3.0*/
+    public static String TmfTraceElement_SourceLocation;
+
+    /** Trace text
+     * @since 3.0*/
+    public static String TmfTraceElement_TypeName;
     /**
      * The title for the select trace type dialog
      * @since 2.2
      * */
     public static String TmfTraceType_SelectTraceType;
 
-    /** Error opening a trace */
-    public static String TmfOpenTraceHelper_ErrorOpeningTrace;
-    /** Error opening an experiment */
-    public static String TmfOpenTraceHelper_ErrorOpeningExperiment;
+    /** Error opening a trace or experiment
+     * @since 3.0*/
+    public static String TmfOpenTraceHelper_ErrorOpeningElement;
     /** Could not link trace */
     public static String TmfOpenTraceHelper_LinkFailed;
     /** No trace type match */
     public static String TmfOpenTraceHelper_NoTraceTypeMatch;
-    /** Open Trace*/
-    public static String TmfOpenTraceHelper_OpenTrace;
-    /** Open Experiment*/
-    public static String TmfOpenTraceHelper_OpenExperiment;
+    /** Open trace or experiment
+     * @since 3.0*/
+    public static String TmfOpenTraceHelper_OpenElement;
     /** Reduce was too efficient, no candidates found! */
     public static String TmfOpenTraceHelper_ReduceError;
+    /** No trace or experiment type
+     * @since 3.0*/
+    public static String TmfOpenTraceHelper_NoTraceOrExperimentType;
     /** No trace type */
     public static String TmfOpenTraceHelper_NoTraceType;
-    /** Error opening trace*/
-    public static String TmfOpenTraceHelper_ErrorTrace;
-    /** Error opening experiment */
-    public static String TmfOpenTraceHelper_ErrorExperiment;
+    /** Error opening trace or experiment
+     * @since 3.0*/
+    public static String TmfOpenTraceHelper_ErrorElement;
     /** Init error */
     public static String TmfOpenTraceHelper_InitError;
+    /** Trace not found
+     * @since 3.0*/
+    public static String TmfOpenTraceHelper_TraceNotFound;
 
-    /** Analysis view title */
-    public static String TmfAnalysisViewOutput_Title;
 
     static {
         // initialize resource bundle

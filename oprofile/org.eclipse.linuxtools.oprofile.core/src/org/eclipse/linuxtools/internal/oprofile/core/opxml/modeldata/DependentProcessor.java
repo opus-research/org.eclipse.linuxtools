@@ -47,7 +47,7 @@ public class DependentProcessor extends XMLProcessor {
 	@Override
 	public void reset(Object callData) {
 		image = new OpModelImage();
-		imageList = new ArrayList<OpModelImage>();
+		imageList = new ArrayList<>();
 	}
 	/**
 	 * @see org.eclipse.linuxtools.internal.oprofile.core.XMLProcessor#startElement(String)
@@ -55,7 +55,7 @@ public class DependentProcessor extends XMLProcessor {
 	@Override
 	public void startElement(String name, Attributes attrs, Object callData) {
 		if (name.equals(IMAGE_TAG)) {
-			image.setName(valid_string(attrs.getValue(ATTR_IMAGENAME)));
+			image.setName(validString(attrs.getValue(ATTR_IMAGENAME)));
 			image.setCount(Integer.parseInt(attrs.getValue(ATTR_COUNT)));
 		} else if (name.equals(SYMBOLS_TAG)) {
 			OprofileSAXHandler.getInstance(callData).push(_symbolsProcessor);

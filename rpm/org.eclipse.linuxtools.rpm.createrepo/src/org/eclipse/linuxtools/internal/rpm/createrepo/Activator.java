@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.rpm.createrepo;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.linuxtools.rpm.createrepo.CreaterepoPreferenceConstants;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -80,8 +79,18 @@ public class Activator extends AbstractUIPlugin {
 	 *
 	 * @return True if it is being used, false otherwise.
 	 */
-	public static boolean isConfEnabled() {
+	public static boolean isProjectPrefEnabled() {
 		return getDefault().getPreferenceStore().getBoolean(CreaterepoPreferenceConstants.PREF_GENERAL_ENABLED);
+	}
+
+	/**
+	 * Get the enabled status of using the delta preferences of
+	 * createrepo.
+	 *
+	 * @return True if it is being used, false otherwise.
+	 */
+	public static boolean isDeltaPrefEnabled() {
+		return getDefault().getPreferenceStore().getBoolean(CreaterepoPreferenceConstants.PREF_DELTA_ENABLE);
 	}
 
 	/**

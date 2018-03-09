@@ -4,7 +4,7 @@
       label="%featureName"
       version="3.0.0.qualifier"
       provider-name="%featureProvider"
-      license-feature="org.eclipse.linuxtools.license.feature"
+      license-feature="org.eclipse.license"
       license-feature-version="1.0.0.qualifier">
 
    <description>
@@ -22,11 +22,6 @@
    <url>
       <update label="Linux Tools Update Site" url="http://download.eclipse.org/linuxtools/update"/>
    </url>
-
-   <includes
-         id="org.eclipse.linuxtools.ctf"
-         version="0.0.0"
-         name="Common Trace Format (CTF)"/>
 
    <requires>
       <import plugin="org.eclipse.linuxtools.ctf.core" version="3.0.0" match="greaterOrEqual"/>
@@ -62,5 +57,19 @@
          download-size="0"
          install-size="0"
          version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.linuxtools.tmf.analysis.xml.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.linuxtools.tmf.analysis.xml.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>

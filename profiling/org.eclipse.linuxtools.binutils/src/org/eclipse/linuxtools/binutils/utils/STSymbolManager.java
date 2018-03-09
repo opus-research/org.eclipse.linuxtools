@@ -45,12 +45,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.binutils.Activator;
+import org.eclipse.linuxtools.internal.Activator;
 
 /**
  * This class Is a utility on top of c++filt and addr2line. It allows an easy conversion between address and source
  * location, and between mangled and demangled symbols.
- * @author Xavier Raynaud <xavier.raynaud@st.com>
  */
 public class STSymbolManager {
 
@@ -74,10 +73,10 @@ public class STSymbolManager {
         private long startTime;
     }
 
-    /** Map of all living instance of addr2line */
-    private final HashMap<IBinaryObject, AutoDisposeAddr2line> addr2lines = new HashMap<IBinaryObject, AutoDisposeAddr2line>();
-    /** Map of all living instance of cppfilt */
-    private final HashMap<String, AutoDisposeCPPFilt> cppfilts = new HashMap<String, AutoDisposeCPPFilt>();
+	/** Map of all living instance of addr2line */
+	private final HashMap<IBinaryObject, AutoDisposeAddr2line> addr2lines = new HashMap<>();
+	/** Map of all living instance of cppfilt */
+	private final HashMap<String, AutoDisposeCPPFilt> cppfilts = new HashMap<>();
 
     /**
      * Constructor
@@ -95,8 +94,8 @@ public class STSymbolManager {
                         }
                         cleanup();
                     } while (true);
-                } catch (Exception _) {
-                    Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, _.getMessage(), _);
+                } catch (Exception e) {
+                    Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
                     Activator.getDefault().getLog().log(s);
                 }
             }
@@ -140,8 +139,10 @@ public class STSymbolManager {
             AutoDisposeAddr2line ada2l = entry.getValue();
             long diff = currentTime - ada2l.startTime;
             if (diff > AUTO_DISPOSE_TIMEOUT) {
-                ada2l.addr2line.dispose();
-                ada2l.addr2line = null;
+				if (ada2l.addr2line != null) {
+					ada2l.addr2line.dispose();
+					ada2l.addr2line = null;
+				}
                 iter.remove();
             }
         }
@@ -164,6 +165,7 @@ public class STSymbolManager {
     /**
      * Demangle the given symbol
      * @param symbol
+     * @param project The project to be
      * @return The demangled symbol.
      */
     public synchronized String demangle(ISymbol symbol, IProject project) {
@@ -176,6 +178,7 @@ public class STSymbolManager {
      * Demangle the given symbol
      * @param program
      * @param symbolName
+     * @param project
      * @return The demangled symbol.
      */
     public synchronized String demangle(IBinaryObject program, String symbolName, IProject project) {
@@ -185,6 +188,9 @@ public class STSymbolManager {
 
     /**
      * Demangle the given symbol
+     * @param symbolName
+     * @param cpu
+     * @param project
      * @param symbol
      * @return
      */
@@ -193,7 +199,7 @@ public class STSymbolManager {
         if (cppfilt != null && (symbolName.startsWith("_Z") || symbolName.startsWith("_G"))) { //$NON-NLS-1$ //$NON-NLS-2$
             try {
                 symbolName = cppfilt.getFunction(symbolName);
-            } catch (IOException _) {
+            } catch (IOException e) {
                 // TODO: log the error ?
             }
         }
@@ -201,58 +207,9 @@ public class STSymbolManager {
     }
 
     /**
-     * @param symbol
-     * @return the location (as returned by addr2line, e.g. file:line) of the given address
-     */
-    public synchronized String getLine(ISymbol symbol, IProject project) {
-        IBinaryObject binary = symbol.getBinaryObject();
-        IAddress address = symbol.getAddress();
-        return getLine(binary, address, project);
-    }
-
-    /**
      * @param program
      * @param address
-     * @return the location (as returned by addr2line, e.g. file:line) of the given address
-     */
-    public synchronized String getLine(IBinaryObject program, IAddress address, IProject project) {
-        Addr2line addr2line = getAddr2line(program, project);
-        if (addr2line == null)
-            return "??:0"; //$NON-NLS-1$
-        try {
-            return addr2line.getLine(address);
-        } catch (IOException _) {
-            // TODO: log the error ?;
-            // Perhaps log the error only once, because
-            // this method is called many many times...
-            return "??:0"; //$NON-NLS-1$
-        }
-    }
-
-    /**
-     * @param program
-     * @param address
-     *            an address, in hex, octal or decimal format (0xabcdef, 07654, 12345)
-     * @return the location (as returned by addr2line, e.g. file:line) of the given address
-     */
-    public synchronized String getLine(IBinaryObject program, String address, IProject project) {
-        IAddress addr = program.getAddressFactory().createAddress(address);
-        return getLine(program, addr, project);
-    }
-
-    /**
-     * @param program
-     * @param address
-     * @return the location (as returned by addr2line, e.g. file:line) of the given address
-     */
-    public synchronized String getLine(IBinaryObject program, long address, IProject project) {
-        IAddress addr = program.getAddressFactory().createAddress(Long.toString(address));
-        return getLine(program, addr, project);
-    }
-
-    /**
-     * @param program
-     * @param address
+     * @param project
      * @return the line number of the given address
      */
     public synchronized int getLineNumber(IBinaryObject program, IAddress address, IProject project) {
@@ -261,7 +218,7 @@ public class STSymbolManager {
             return -1;
         try {
             return addr2line.getLineNumber(address);
-        } catch (IOException _) {
+        } catch (IOException e) {
             // TODO: log the error ?;
             // Perhaps log the error only once, because
             // this method is called many many times...
@@ -270,27 +227,8 @@ public class STSymbolManager {
     }
 
     /**
-     * @param program
-     * @param address
-     * @return the line number of the given address
-     */
-    public synchronized int getLineNumber(IBinaryObject program, String address, IProject project) {
-        IAddress addr = program.getAddressFactory().createAddress(address);
-        return getLineNumber(program, addr, project);
-    }
-
-    /**
-     * @param program
-     * @param address
-     * @return the line number of the given address
-     */
-    public synchronized int getLineNumber(IBinaryObject program, long address, IProject project) {
-        IAddress addr = program.getAddressFactory().createAddress(Long.toString(address));
-        return getLineNumber(program, addr, project);
-    }
-
-    /**
      * @param symbol
+     * @param project
      * @return the line number of the given symbol
      */
     public int getLineNumber(ISymbol symbol, IProject project) {
@@ -302,6 +240,7 @@ public class STSymbolManager {
     /**
      * @param program
      * @param address
+     * @param project
      * @return the file name of the given address
      */
     public synchronized String getFileName(IBinaryObject program, IAddress address, IProject project) {
@@ -310,7 +249,7 @@ public class STSymbolManager {
             return null;
         try {
             return addr2line.getFileName(address);
-        } catch (IOException _) {
+        } catch (IOException e) {
             // TODO: log the error ?;
             // Perhaps log the error only once, because
             // this method is called many many times...
@@ -319,27 +258,8 @@ public class STSymbolManager {
     }
 
     /**
-     * @param program
-     * @param address
-     * @return the file name of the given address
-     */
-    public synchronized String getFileName(IBinaryObject program, String address, IProject project) {
-        IAddress addr = program.getAddressFactory().createAddress(address);
-        return getFileName(program, addr, project);
-    }
-
-    /**
-     * @param program
-     * @param address
-     * @return the file name of the given address
-     */
-    public synchronized String getFileName(IBinaryObject program, long address, IProject project) {
-        IAddress addr = program.getAddressFactory().createAddress(Long.toString(address));
-        return getFileName(program, addr, project);
-    }
-
-    /**
      * @param symbol
+     * @param project
      * @return the filename of the given symbol
      */
     public String getFilename(ISymbol symbol, IProject project) {
@@ -349,50 +269,10 @@ public class STSymbolManager {
     }
 
     /**
-     * @param program
-     * @param address
-     *            an address
-     * @return the function name of the given address, based on addr2line output
-     */
-    public synchronized String getFunctionName(IBinaryObject program, long address, IProject project) {
-        IAddress addr = program.getAddressFactory().createAddress(Long.toString(address));
-        return getFunctionName(program, addr, project);
-    }
-
-    /**
-     * @param program
-     * @param address
-     *            an address, in hex, octal or decimal format (0xabcdef, 07654, 12345)
-     * @return the function name of the given address, based on addr2line output
-     */
-    public synchronized String getFunctionName(IBinaryObject program, String address, IProject project) {
-        IAddress addr = program.getAddressFactory().createAddress(address);
-        return getFunctionName(program, addr, project);
-    }
-
-    /**
-     * @param program
-     * @param address
-     *            an address
-     * @return the function name of the given address, based on addr2line output
-     */
-    public synchronized String getFunctionName(IBinaryObject program, IAddress address, IProject project) {
-        Addr2line addr2line = getAddr2line(program, project);
-        if (addr2line == null)
-            return null;
-        try {
-            return addr2line.getFunction(address);
-        } catch (IOException _) {
-            // TODO: log the error ?;
-            // Perhaps log the error only once, because
-            // this method is called many many times...
-            return null;
-        }
-    }
-
-    /**
      * Gets the c++filt support for the given program Note that the instance if kept in a local hashmap, and discarded
      * after 30 seconds of inactivity.
+     * @param cpu
+     * @param project
      * @param program
      * @return an instance of CPPFilt suitable for the given program
      */
@@ -404,8 +284,8 @@ public class STSymbolManager {
         }
         if (adCppfilt.cppfilt == null) {
             try {
-                adCppfilt.cppfilt = STCPPFiltFactory.getCPPFilt(cpu, project);
-            } catch (IOException _) {
+                adCppfilt.cppfilt = STBinutilsFactoryManager.getCPPFilt(cpu, project);
+            } catch (IOException e) {
                 // TODO: log the error ?;
                 // Perhaps log the error only once, because
                 // this method is called many many times...
@@ -420,6 +300,7 @@ public class STSymbolManager {
      * Gets the addr2line support for the given program Note that the instance if kept in a local hashmap, and discarded
      * after 30 seconds of inactivity.
      * @param program
+     * @param project
      * @return an instance of Addr2line suitable for the given program
      */
     private synchronized Addr2line getAddr2line(IBinaryObject program, IProject project) {
@@ -430,9 +311,9 @@ public class STSymbolManager {
         }
         if (adAddr2line.addr2line == null) {
             try {
-                adAddr2line.addr2line = STAddr2LineFactory.getAddr2line(program.getCPU(), program.getPath()
+                adAddr2line.addr2line = STBinutilsFactoryManager.getAddr2line(program.getCPU(), program.getPath()
                         .toOSString(), project);
-            } catch (IOException _) {
+            } catch (IOException e) {
                 // TODO: log the error ?;
                 // Perhaps log the error only once, because
                 // this method is called many many times...
@@ -478,7 +359,7 @@ public class STSymbolManager {
      * @param defaultparser
      * @return a IBinaryObject
      */
-    public IBinaryObject getBinaryObject(IPath path, IBinaryParser defaultparser) {
+    private IBinaryObject getBinaryObject(IPath path, IBinaryParser defaultparser) {
         IFile c = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
         List<IBinaryParser> parsers;
         if (c != null) {
@@ -487,14 +368,14 @@ public class STSymbolManager {
                 return object;
             parsers = getBinaryParser(c.getProject());
         } else {
-            parsers = new LinkedList<IBinaryParser>();
+            parsers = new LinkedList<>();
         }
 
         if (defaultparser == null) {
             try {
                 defaultparser = CCorePlugin.getDefault().getDefaultBinaryParser();
-            } catch (CoreException _) {
-                Activator.getDefault().getLog().log(_.getStatus());
+            } catch (CoreException e) {
+                Activator.getDefault().getLog().log(e.getStatus());
             }
         }
         if (defaultparser != null) {
@@ -533,12 +414,8 @@ public class STSymbolManager {
     private IBinaryObject validateBinary(IBinaryFile o) {
         if (o instanceof IBinaryObject) {
             IBinaryObject object = (IBinaryObject) o;
-            String s = null;
-            try {
-                s = object.getCPU(); //
-            } catch (Exception _) {
-            }
-            if (s != null && s.length() > 0) {
+            String s = object.getCPU(); //
+            if (s != null && !s.isEmpty()) {
                 return object;
             }
         }
@@ -548,8 +425,9 @@ public class STSymbolManager {
     private IBinaryObject buildBinaryObject(IPath path, List<IBinaryParser> parsers) {
         for (IBinaryParser iBinaryParser : parsers) {
             IBinaryObject o = buildBinaryObject(path, iBinaryParser);
-            if (o != null)
+            if (o != null) {
                 return o;
+            }
         }
         return null;
     }
@@ -557,14 +435,18 @@ public class STSymbolManager {
     /**
      * Build a binary object with the given file and parser. Also verify that the builded binary object is valid (@see
      * #validateBinary)
+     * @param path The path to the binary object.
+     * @param parser Parser to use to parse the object.
+     * @return The newly parsed object.
      */
     private IBinaryObject buildBinaryObject(IPath path, IBinaryParser parser) {
-        if (parser == null)
+        if (parser == null) {
             return null;
+        }
         IBinaryFile bf = null;
         try {
             bf = parser.getBinary(path);
-        } catch (IOException _) {
+        } catch (IOException e) {
             // do nothing ?
         }
         return validateBinary(bf);
@@ -572,6 +454,8 @@ public class STSymbolManager {
 
     /**
      * Ask the workbench to find if a binary object already exist for the given file
+     * @param c The file to look binary object for.
+     * @return The binary object if found, null otherwise.
      */
     private IBinaryObject getAlreadyExistingBinaryObject(IFile c) {
         IProject project = c.getProject();
@@ -587,7 +471,7 @@ public class STSymbolManager {
                             return validateBinary(binaryObject);
                         }
                     }
-                } catch (CModelException _) {
+                } catch (CModelException e) {
                 }
             }
         }
@@ -595,10 +479,12 @@ public class STSymbolManager {
     }
 
     /**
-     * Retrieve the list of binary parsers defined for the given project
+     * Retrieve the list of binary parsers defined for the given project.
+     * @param project The project.
+     * @return The binary parsers for this project.
      */
     private List<IBinaryParser> getBinaryParser(IProject project) {
-        List<IBinaryParser> parsers = new LinkedList<IBinaryParser>();
+        List<IBinaryParser> parsers = new LinkedList<>();
 
         ICProjectDescription projDesc = CCorePlugin.getDefault().getProjectDescription(project);
         if (projDesc == null)
@@ -616,9 +502,10 @@ public class STSymbolManager {
                     if (element2.getName().equalsIgnoreCase("cextension")) { //$NON-NLS-1$
                         try {
                             IBinaryParser parser = (IBinaryParser) element2.createExecutableExtension("run"); //$NON-NLS-1$
-                            if (parser != null)
+                            if (parser != null) {
                                 parsers.add(parser);
-                        } catch (CoreException _) {
+                            }
+                        } catch (CoreException e) {
                             // TODO: handle exception ?
                         }
                     }

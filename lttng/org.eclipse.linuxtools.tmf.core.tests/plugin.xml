@@ -28,13 +28,13 @@
          </tracetype>
       </module>
       <module
-         id="org.eclipse.linuxtools.tmf.core.tests.analysis.testctf"
-         name="Test analysis ctf"
-         analysis_module="org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestCtfAnalysis"
+         id="org.eclipse.linuxtools.tmf.core.tests.analysis.testother"
+         name="Test other analysis"
+         analysis_module="org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestAnalysis2"
          automatic="true">
          <tracetype
                applies="true"
-               class="org.eclipse.linuxtools.tmf.tests.stubs.ctf.CtfTmfTraceStub">
+               class="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub2">
          </tracetype>
       </module>
       <module
@@ -46,6 +46,35 @@
                class="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub">
          </tracetype>
       </module>
+      <module
+            analysis_module="org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestExperimentAnalysis"
+            id="org.eclipse.linuxtools.tmf.core.tests.experiment"
+            name="Experiment analysis">
+         <tracetype
+               applies="true"
+               class="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub">
+         </tracetype>
+      </module>
+   </extension>
+   <extension
+         point="org.eclipse.linuxtools.tmf.core.tracetype">
+      <category
+            id="org.eclipse.linuxtools.tmf.core.tests.category"
+            name="Test trace">
+      </category>
+      <type
+            category="org.eclipse.linuxtools.tmf.core.tests.category"
+            event_type="org.eclipse.linuxtools.tmf.core.event.TmfEvent"
+            id="org.eclipse.linuxtools.tmf.core.tests.tracetype"
+            name="TMF Tests"
+            trace_type="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub">
+      </type>
+      <experiment
+            category="org.eclipse.linuxtools.tmf.core.tests.category"
+            id="org.eclipse.linuxtools.tmf.core.tests.experimenttype"
+            name="Test experiment"
+            experiment_type="org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub">
+      </experiment>
    </extension>
 
 </plugin>

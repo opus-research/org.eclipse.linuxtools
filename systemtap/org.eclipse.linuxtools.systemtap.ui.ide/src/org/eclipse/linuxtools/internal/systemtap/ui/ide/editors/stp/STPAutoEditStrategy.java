@@ -207,7 +207,7 @@ public class STPAutoEditStrategy extends
 			c.length =  Math.max(contentStart - c.offset, 0);
 
 			// insert closing brace on new line after an unclosed opening brace
-			if (getBracketCount(d, start, c.offset, true) > 0 && fCloseBrace && !isClosedBrace(d, c.offset, c.length)) {
+			if (getBracketCount(d, start, c.offset, true) > 0 && fCloseBrace && !isClosedBrace(d, c.offset)) {
 				c.caretOffset = c.offset + buf.length();
 				c.shiftsCaret = false;
 
@@ -415,7 +415,7 @@ public class STPAutoEditStrategy extends
 		return position;
 	}
 
-	private boolean isClosedBrace(IDocument document, int offset, int length) {
+	private boolean isClosedBrace(IDocument document, int offset) {
 		return getBlockBalance(document, offset, fPartitioning) <= 0;
 	}
 
@@ -752,7 +752,7 @@ public class STPAutoEditStrategy extends
 			int first= document.computeNumberOfLines(prefix) + firstLine; // don't format first line
 			int lines= temp.getNumberOfLines();
 			boolean changed= false;
-			boolean indentInsideLineComments= IndentUtil.indentInsideLineComments(fProject);
+			boolean indentInsideLineComments= true;
 
 			for (int l= first; l < lines; l++) { // we don't change the number of lines while adding indents
 				IRegion r= temp.getLineInformation(l);
@@ -938,7 +938,7 @@ public class STPAutoEditStrategy extends
 	 * @return the number of spaces displayed for a tabulator in the editor
 	 */
 	private int getVisualTabLengthPreference() {
-		return CodeFormatterUtil.getTabWidth(fProject);
+		return CodeFormatterUtil.getTabWidth();
 	}
 
 	private int getPeerPosition(IDocument document, DocumentCommand command) {

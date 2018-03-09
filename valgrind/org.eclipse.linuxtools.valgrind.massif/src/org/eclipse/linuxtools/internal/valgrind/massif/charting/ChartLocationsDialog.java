@@ -23,7 +23,7 @@ import org.eclipse.ui.dialogs.ListDialog;
 
 public class ChartLocationsDialog extends ListDialog {
 
-	protected List<MassifHeapTreeNode> allocs;
+	private List<MassifHeapTreeNode> allocs;
 
 	public ChartLocationsDialog(Shell parent) {
 		super(parent);
@@ -41,7 +41,7 @@ public class ChartLocationsDialog extends ListDialog {
 	public void setInput(MassifSnapshot snapshot) {
 		MassifHeapTreeNode node = snapshot.getRoot();
 
-		allocs = new ArrayList<MassifHeapTreeNode>(node.getChildren().length);
+		allocs = new ArrayList<>(node.getChildren().length);
 
 		for (MassifHeapTreeNode alloc : node.getChildren()) {
 			if (alloc.hasSourceFile()) {

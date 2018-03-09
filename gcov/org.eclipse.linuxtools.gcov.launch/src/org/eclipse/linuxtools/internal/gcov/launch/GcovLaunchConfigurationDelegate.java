@@ -32,6 +32,7 @@ import org.eclipse.debug.core.ILaunchesListener2;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.gcov.parser.CovManager;
 import org.eclipse.linuxtools.internal.gcov.view.CovView;
+import org.eclipse.linuxtools.internal.gcov.view.annotatedsource.GcovAnnotationModelTracker;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
@@ -100,13 +101,15 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 
 							try {
 								List<String> gcdaPaths = cvrgeMnger.getGCDALocations();
-								if (gcdaPaths.size() == 0) {
+								if (gcdaPaths.isEmpty()) {
 									String title = GcovLaunchMessages.GcovCompilerOptions_msg;
 									String message = GcovLaunchMessages.GcovCompileAgain_msg;
 									Shell parent = PlatformUI.getWorkbench().getDisplay().getActiveShell();
 									MessageDialog.openWarning(parent, title, message);
 								}
 								CovView.displayCovResults(s, null);
+								GcovAnnotationModelTracker.getInstance().addProject(getProject(), exePath);
+								GcovAnnotationModelTracker.getInstance().annotateAllCEditors();
 							} catch (InterruptedException e) {
 								// Do nothing
 							}
@@ -132,7 +135,7 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 
 	/* all these functions exist to be overridden by the test class in order to allow launch testing */
 
-	protected IProject getProject(){
+	private IProject getProject(){
 		try{
 			return CDebugUtils.verifyCProject(config).getProject();
 		} catch (CoreException e) {
@@ -148,7 +151,7 @@ public class GcovLaunchConfigurationDelegate extends ProfileLaunchConfigurationD
 	  * @throws CoreException
 	  * @since 1.1
 	  */
-	protected IPath getExePath(ILaunchConfiguration config) throws CoreException{
+	private static IPath getExePath(ILaunchConfiguration config) throws CoreException{
 		return CDebugUtils.verifyProgramPath( config );
 	}
 

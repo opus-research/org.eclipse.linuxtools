@@ -17,6 +17,7 @@ package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -399,12 +400,14 @@ public class TmfMultiTraceExperimentTest {
         assertTrue("Experiment context type", context instanceof TmfExperimentContext);
         TmfExperimentContext ctx = (TmfExperimentContext) context;
 
-        int nbTraces = ctx.getContexts().length;
+        int nbTraces = ctx.getNbTraces();
 
         // expRank = sum(trace ranks) - nbTraces + 1 (if lastTraceRead != NO_TRACE)
         long expRank = -nbTraces + ((ctx.getLastTrace() != TmfExperimentContext.NO_TRACE) ? 1 : 0);
         for (int i = 0; i < nbTraces; i++) {
-            long rank = ctx.getContexts()[i].getRank();
+            ITmfContext subContext = ctx.getContext(i);
+            assertNotNull(subContext);
+            long rank = subContext.getRank();
             if (rank == -1) {
                 expRank = -1;
                 break;
@@ -675,7 +678,7 @@ public class TmfMultiTraceExperimentTest {
     @Test
     public void testProcessRequestForNbEvents() throws InterruptedException {
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -703,7 +706,7 @@ public class TmfMultiTraceExperimentTest {
     @Test
     public void testProcessRequestForAllEvents() throws InterruptedException {
         final int nbEvents  = ITmfEventRequest.ALL_DATA;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
         final long nbExpectedEvents = NB_EVENTS;
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
@@ -737,7 +740,7 @@ public class TmfMultiTraceExperimentTest {
     public void testCancel() throws InterruptedException {
         final int nbEvents  = NB_EVENTS;
         final int limit = BLOCK_SIZE;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,

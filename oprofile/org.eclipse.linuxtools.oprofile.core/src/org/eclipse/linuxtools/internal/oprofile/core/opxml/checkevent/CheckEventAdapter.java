@@ -46,7 +46,6 @@ public class CheckEventAdapter extends AbstractDataAdapter {
 	private String unitMask; // the unit mask for the event
 	private String cpuCounter; // the cpu counter used for profiling
 	private Document resultDoc; // the document to hold the generated xml
-	private Element resultRoot; // the root corresponding to the generated xml
 	private String returnCode; // the return code to be used in the generated xml
 
 	public CheckEventAdapter(String ctr, String event, String umask) {
@@ -91,7 +90,7 @@ public class CheckEventAdapter extends AbstractDataAdapter {
 	 * otherwise.
 	 */
 	private boolean isValidUnitMask() {
-		TreeSet<Integer> bitMaskSet = new TreeSet<Integer> ();
+		TreeSet<Integer> bitMaskSet = new TreeSet<> ();
 		Element unitMasksTag = (Element) event.getElementsByTagName(UNIT_MASKS).item(0);
 
 		if (unitMasksTag == null){
@@ -154,7 +153,7 @@ public class CheckEventAdapter extends AbstractDataAdapter {
 	}
 
 	private void createXML() {
-		resultRoot = resultDoc.createElement(CHECK_EVENTS);
+		Element resultRoot = resultDoc.createElement(CHECK_EVENTS);
 		Element resultTag = resultDoc.createElement(RESULT);
 		resultTag.setTextContent(returnCode);
 		resultRoot.appendChild(resultTag);

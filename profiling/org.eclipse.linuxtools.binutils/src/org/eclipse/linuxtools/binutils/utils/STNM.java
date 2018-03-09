@@ -22,48 +22,35 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.linuxtools.tools.launch.core.factory.CdtSpawnerProcessFactory;
 
 /**
- * This class launches NM and parses output
+ * This class launches NM and parses output.
  */
 public class STNM {
 
-    private static Pattern undef_pattern = null;
-    private static Pattern normal_pattern = null;
+    private static Pattern UNDEF_PATTERN = Pattern.compile("^\\s+U\\s+(\\S+)"); //$NON-NLS-1$
+    private static Pattern NORMAL_PATTERN = Pattern.compile("^(\\S+)\\s+([AaTtBbDd])\\s+(\\S+)"); //$NON-NLS-1$
 
     private final STNMSymbolsHandler handler;
 
     /**
      * Constructor
-     * 
+     *
      * @param command
      *            the nm to call
      * @param params
      *            nm params
      * @param file
      *            file to parse
-     * @throws IOException
-     */
-    public STNM(String command, String[] params, String file, STNMSymbolsHandler handler) throws IOException {
-        this(command, params, file, handler, null);
-    }
-
-    /**
-     * Constructor
-     * 
-     * @param command
-     *            the nm to call
-     * @param params
-     *            nm params
-     * @param file
-     *            file to parse
+     * @param handler The symbol handler.
      * @param project
      *            the project to get the path to use to run nm
-     * @throws IOException
+     * @throws IOException If an IOException occured.
      */
     public STNM(String command, String[] params, String file, STNMSymbolsHandler handler, IProject project)
             throws IOException {
         this.handler = handler;
-        if (handler != null)
+        if (handler != null) {
             init(command, params, file, project);
+        }
     }
 
     private void init(String command, String[] params, String file, IProject project) throws IOException {
@@ -87,16 +74,9 @@ public class STNM {
 
         // See matcher.java for regular expression string data definitions.
 
-        if (undef_pattern == null) {
-            undef_pattern = Pattern.compile("^\\s+U\\s+(\\S+)"); //$NON-NLS-1$
-        }
-
-        if (normal_pattern == null) {
-            normal_pattern = Pattern.compile("^(\\S+)\\s+([AaTtBbDd])\\s+(\\S+)"); //$NON-NLS-1$
-        }
         while ((line = reader.readLine()) != null) {
-            Matcher undef_matcher = undef_pattern.matcher(line);
-            Matcher normal_matcher = normal_pattern.matcher(line);
+            Matcher undef_matcher = UNDEF_PATTERN.matcher(line);
+            Matcher normal_matcher = NORMAL_PATTERN.matcher(line);
             try {
                 if (undef_matcher.matches()) {
                     handler.foundUndefSymbol(undef_matcher.group(1));
@@ -120,9 +100,7 @@ public class STNM {
                         break;
                     }
                 }
-            } catch (NumberFormatException e) {
-                // ignore.
-            } catch (IndexOutOfBoundsException e) {
+            } catch (NumberFormatException|IndexOutOfBoundsException e) {
                 // ignore
             }
         }

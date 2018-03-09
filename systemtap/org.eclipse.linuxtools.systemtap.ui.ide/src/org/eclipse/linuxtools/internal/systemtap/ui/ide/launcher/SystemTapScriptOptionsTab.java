@@ -22,7 +22,7 @@ import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -48,7 +48,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 	private Text text[] = new Text[IDEPreferenceConstants.STAP_STRING_OPTIONS.length];
 	private Text targetProgramText;
 
-	private ModifyListener modifyListiner = new ModifyListener() {
+	private ModifyListener modifyListener = new ModifyListener() {
 		@Override
 		public void modifyText(ModifyEvent e) {
 			updateLaunchConfigurationDialog();
@@ -73,11 +73,11 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 
 		this.fileDialog = new FileDialog(PlatformUI.getWorkbench()
 				.getActiveWorkbenchWindow().getShell(), SWT.OPEN);
-		fileDialog.setText(Messages.SystemTapScriptOptionsTab_0);
+		fileDialog.setText(Messages.SystemTapScriptOptionsTab_selectExec);
 		fileDialog.setFilterPath(Platform.getLocation().toOSString());
 		// Target Executable path
 		Group targetExecutableGroup = new Group(comp, SWT.SHADOW_ETCHED_IN);
-		targetExecutableGroup.setText(Messages.SystemTapScriptOptionsTab_1);
+		targetExecutableGroup.setText(Messages.SystemTapScriptOptionsTab_targetExec);
 		targetExecutableGroup
 				.setToolTipText(Messages.SystemTapScriptOptionsTab_targetToolTip);
 
@@ -90,18 +90,21 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 				| SWT.BORDER);
 		targetProgramText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
 				true));
-		targetProgramText.addModifyListener(modifyListiner);
+		targetProgramText.addModifyListener(modifyListener);
 		Button selectTargetProgramButton = new Button(targetExecutableGroup, 0);
 		GridData gridData = new GridData();
 
 		selectTargetProgramButton.setLayoutData(gridData);
 		selectTargetProgramButton
-				.setText(Messages.SystemTapScriptLaunchConfigurationTab_1);
+				.setText(Messages.SystemTapScriptLaunchConfigurationTab_browse);
 		selectTargetProgramButton.addSelectionListener(new SelectionListener() {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				targetProgramText.setText(fileDialog.open());
+				String fileName = fileDialog.open();
+				if (fileName != null) {
+					targetProgramText.setText(fileName);
+				}
 			}
 
 			@Override
@@ -112,7 +115,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		// Check boxes
 		Composite cmpChkBoxes = new Composite(comp, SWT.NONE);
 		cmpChkBoxes.setLayout(twoColumnGridLayout);
-		cmpChkBoxes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		cmpChkBoxes.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 
 		for (int i = 0; i < IDEPreferenceConstants.STAP_BOOLEAN_OPTIONS.length; i++) {
 			checkBox[i] = new Button(cmpChkBoxes, SWT.CHECK);
@@ -134,7 +137,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 					.setToolTipText(IDEPreferenceConstants.STAP_BOOLEAN_OPTIONS[i][IDEPreferenceConstants.TOOLTIP]);
 
 			if (IDEPreferenceConstants.STAP_BOOLEAN_OPTIONS[i][IDEPreferenceConstants.FLAG]
-					.contains(Messages.SystemTapScriptOptionsTab_3)) {
+					.contains(Messages.SystemTapScriptOptionsTab_dyninst)) {
 				this.dyninstCheckBox = checkBox[i];
 			}
 		}
@@ -142,7 +145,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		// Labels and Text fields
 		Composite cmpTxtBoxes = new Composite(comp, SWT.NONE);
 		cmpTxtBoxes.setLayout(twoColumnGridLayout);
-		cmpTxtBoxes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		cmpTxtBoxes.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 
 		Label label;
 		for (int i = 0; i < IDEPreferenceConstants.STAP_STRING_OPTIONS.length; i++) {
@@ -151,8 +154,8 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 					+ " (" + IDEPreferenceConstants.STAP_STRING_OPTIONS[i][IDEPreferenceConstants.FLAG] + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 			label.setToolTipText(IDEPreferenceConstants.STAP_STRING_OPTIONS[i][IDEPreferenceConstants.TOOLTIP]);
 			text[i] = new Text(cmpTxtBoxes, SWT.BORDER);
-			text[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-			text[i].addModifyListener(modifyListiner);
+			text[i].setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, true));
+			text[i].addModifyListener(modifyListener);
 			text[i].setToolTipText(IDEPreferenceConstants.STAP_STRING_OPTIONS[i][IDEPreferenceConstants.TOOLTIP]);
 
 			if (IDEPreferenceConstants.STAP_STRING_OPTIONS[i][IDEPreferenceConstants.FLAG]
@@ -162,10 +165,11 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		}
 
 		label = new Label(cmpTxtBoxes, SWT.NONE);
-		label.setText(Messages.SystemTapScriptOptionsTab_2);
-		this.miscCommandsText = new Text(cmpTxtBoxes, SWT.BORDER);
-		this.miscCommandsText.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
+		label.setText(Messages.SystemTapScriptOptionsTab_otherOptions);
+		miscCommandsText = new Text(cmpTxtBoxes, SWT.BORDER);
+		miscCommandsText.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING,
 				true, true));
+		miscCommandsText.addModifyListener(modifyListener);
 	}
 
 	@Override
@@ -248,7 +252,7 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public String getName() {
-		return Messages.SystemTapScriptLaunchConfigurationTab_10;
+		return Messages.SystemTapScriptLaunchConfigurationTab_tabName;
 	}
 
 	@Override
@@ -260,12 +264,12 @@ public class SystemTapScriptOptionsTab extends AbstractLaunchConfigurationTab {
 		if (this.dyninstCheckBox.getSelection()
 				&& this.targetProgramText.getText().isEmpty()
 				&& this.targetPidText.getText().isEmpty()) {
-			setErrorMessage(Messages.SystemTapScriptOptionsTab_4);
+			setErrorMessage(Messages.SystemTapScriptOptionsTab_dyninstError);
 			return false;
 		}
 
 		if (!this.targetPidText.getText().isEmpty() && !this.targetPidText.getText().matches("[0-9]*")) { //$NON-NLS-1$
-			setErrorMessage(Messages.SystemTapScriptOptionsTab_5);
+			setErrorMessage(Messages.SystemTapScriptOptionsTab_pidError);
 			return false;
 		}
 

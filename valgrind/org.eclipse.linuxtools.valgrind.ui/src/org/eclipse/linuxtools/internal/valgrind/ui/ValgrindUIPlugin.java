@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.valgrind.ui.IValgrindToolView;
-import org.eclipse.linuxtools.valgrind.ui.ValgrindUIConstants;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -29,10 +28,10 @@ import org.osgi.framework.BundleContext;
 
 public class ValgrindUIPlugin extends AbstractUIPlugin {
 
-	// The plug-in ID
+	/**
+	 * The plug-in ID.
+	 */
 	public static final String PLUGIN_ID = "org.eclipse.linuxtools.valgrind.ui"; //$NON-NLS-1$
-	public static final String TOOLBAR_LOC_GROUP_ID = "toolbarLocal"; //$NON-NLS-1$
-	public static final String TOOLBAR_EXT_GROUP_ID = "toolbarExtensions"; //$NON-NLS-1$
 
 	// Extension point constants
 	private static final String VIEW_EXT_ID = "valgrindToolViews"; //$NON-NLS-1$
@@ -40,14 +39,14 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 	protected static final String EXT_ATTR_ID = "definitionId"; //$NON-NLS-1$
 	protected static final String EXT_ATTR_CLASS = "class"; //$NON-NLS-1$
 
-	protected HashMap<String, IConfigurationElement> toolMap;
+	private HashMap<String, IConfigurationElement> toolMap;
 
 	// The shared instance
 	private static ValgrindUIPlugin plugin;
 
-	protected ValgrindViewPart view;
+	private ValgrindViewPart view;
 	// The page containing the created Valgrind view
-	protected IWorkbenchPage activePage;
+	private IWorkbenchPage activePage;
 
 	/*
 	 * (non-Javadoc)
@@ -84,16 +83,14 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 			public void run() {
 				try {
 					activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-					activePage.showView(ValgrindUIConstants.VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
+					activePage.showView(IValgrindToolView.VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
 					// Bug #366831 Need to show the view otherwise the toolbar is disposed.
-					activePage.showView(ValgrindUIConstants.VIEW_ID);
+					activePage.showView(IValgrindToolView.VIEW_ID);
 
 					// create the view's tool specific controls and populate content description
 					view.createDynamicContent(contentDescription, toolID);
 
 					view.refreshView();
-				} catch (PartInitException e) {
-					e.printStackTrace();
 				} catch (CoreException e) {
 					e.printStackTrace();
 				}
@@ -109,7 +106,7 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 			@Override
 			public void run() {
 				try {
-					activePage.showView(ValgrindUIConstants.VIEW_ID);
+					activePage.showView(IValgrindToolView.VIEW_ID);
 				} catch (PartInitException e) {
 					e.printStackTrace();
 				}
@@ -160,8 +157,8 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 		return view;
 	}
 
-	protected void initializeToolMap() {
-		toolMap = new HashMap<String, IConfigurationElement>();
+	private void initializeToolMap() {
+		toolMap = new HashMap<>();
 		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(PLUGIN_ID, VIEW_EXT_ID);
 		IConfigurationElement[] configs = extPoint.getConfigurationElements();
 		for (IConfigurationElement config : configs) {
@@ -174,7 +171,7 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 		}
 	}
 
-	protected HashMap<String, IConfigurationElement> getToolMap() {
+	private HashMap<String, IConfigurationElement> getToolMap() {
 		if (toolMap == null) {
 			initializeToolMap();
 		}

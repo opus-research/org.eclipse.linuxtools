@@ -25,7 +25,6 @@ import org.eclipse.linuxtools.internal.gprof.view.histogram.TreeElement;
  *
  * HistRoot => HistFunction => CGCategory (parent/children) => CGArc
  *
- * @author Xavier Raynaud <xavier.raynaud@st.com>
  */
 public class CallGraphContentProvider implements ITreeContentProvider {
 
@@ -72,7 +71,7 @@ public class CallGraphContentProvider implements ITreeContentProvider {
 	}
 
 	protected LinkedList<? extends TreeElement> getFunctionChildrenList(HistRoot root) {
-		LinkedList<TreeElement> ret = new LinkedList<TreeElement>();
+		LinkedList<TreeElement> ret = new LinkedList<>();
 		LinkedList<? extends TreeElement> list = root.getChildren();
 		for (TreeElement histTreeElem : list) {
 			LinkedList<? extends TreeElement> partialList = histTreeElem.getChildren();

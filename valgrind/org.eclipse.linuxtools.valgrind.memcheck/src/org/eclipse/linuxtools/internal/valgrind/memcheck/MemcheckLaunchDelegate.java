@@ -30,12 +30,13 @@ public class MemcheckLaunchDelegate implements IValgrindLaunchDelegate {
 	private static final String YES = "yes"; //$NON-NLS-1$
 	private static final String HEX = "0x"; //$NON-NLS-1$
 
-	public void handleLaunch(ILaunchConfiguration config, ILaunch launch, IPath outDir, IProgressMonitor monitor) throws CoreException {
+	@Override
+	public void handleLaunch(ILaunchConfiguration config, ILaunch launch, IPath outDir, IProgressMonitor monitor) {
 	}
 	
-	@SuppressWarnings("unchecked")
+	@Override
 	public String[] getCommandArray(ILaunchConfiguration config, Version ver, IPath logDir) throws CoreException {
-		ArrayList<String> opts = new ArrayList<String>();
+		ArrayList<String> opts = new ArrayList<>();
 		
 		opts.add(MemcheckCommandConstants.OPT_LEAKCHECK + EQUALS + (config.getAttribute(MemcheckLaunchConstants.ATTR_MEMCHECK_LEAKCHECK, MemcheckLaunchConstants.DEFAULT_MEMCHECK_LEAKCHECK) ? YES : NO));
 		opts.add(MemcheckCommandConstants.OPT_SHOWREACH + EQUALS + (config.getAttribute(MemcheckLaunchConstants.ATTR_MEMCHECK_SHOWREACH, MemcheckLaunchConstants.DEFAULT_MEMCHECK_SHOWREACH) ? YES : NO));
@@ -74,7 +75,7 @@ public class MemcheckLaunchDelegate implements IValgrindLaunchDelegate {
 		return opts.toArray(new String[opts.size()]);
 	}
 
-	public void initializeView(IValgrindToolView view, String contentDescription, IProgressMonitor monitor)
-			throws CoreException {
+	@Override
+	public void initializeView(IValgrindToolView view, String contentDescription, IProgressMonitor monitor) {
 	}
 }

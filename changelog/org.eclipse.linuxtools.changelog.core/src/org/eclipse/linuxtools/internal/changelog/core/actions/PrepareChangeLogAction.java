@@ -35,7 +35,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
@@ -57,7 +56,6 @@ import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfo;
 import org.eclipse.team.core.synchronize.SyncInfoSet;
 import org.eclipse.team.ui.synchronize.ISynchronizeModelElement;
-import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -77,14 +75,6 @@ import org.eclipse.ui.part.FileEditorInput;
  *
  */
 public class PrepareChangeLogAction extends ChangeLogAction {
-
-	protected IProject currentProject;
-	/**
-	 * Provides IDocument given editor input
-	 *
-	 * @author klee
-	 *
-	 */
 
 	protected boolean changeLogModified = false;
 	protected boolean newEntryWritten = false;
@@ -137,7 +127,7 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 	}
 
 	/**
-	 * @see IActionDelegate#run(IAction)
+	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
 	 */
 	protected void doRun() {
 		IRunnableWithProgress code = new IRunnableWithProgress() {
@@ -273,9 +263,9 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 		Object element = selected.getFirstElement();
 
 		IResource resource = null;
-		Vector<PatchFile> newList = new Vector<PatchFile>();
-		Vector<PatchFile> removeList = new Vector<PatchFile>();
-		Vector<PatchFile> changeList = new Vector<PatchFile>();
+		Vector<PatchFile> newList = new Vector<>();
+		Vector<PatchFile> removeList = new Vector<>();
+		Vector<PatchFile> changeList = new Vector<>();
 		int totalChanges = 0;
 
 		if (element instanceof IResource) {
@@ -397,9 +387,7 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 		}
 	}
 
-	protected IEditorPart changelog;
-
-	public void outputMultipleEntryChangeLog(PatchFile pf, String[] functionGuess) {
+	private void outputMultipleEntryChangeLog(PatchFile pf, String[] functionGuess) {
 
 		String defaultContent = null;
 
@@ -439,7 +427,7 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 		IConfigurationElement formatterConfigElement = extensionManager
         .getFormatterConfigElement();
 
-		if (formatterConfigElement.getAttribute("inFile").toLowerCase().equals( //$NON-NLS-1$
+		if (formatterConfigElement.getAttribute("inFile").equalsIgnoreCase( //$NON-NLS-1$
 		    "true")) { //$NON-NLS-1$
 			try {
 				changelog = openEditor((IFile)pf.getResource());
@@ -563,13 +551,13 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 			IDocument doc = mdp.createDocument(fei);
 			IDocument olddoc = msdp.createDocument(sei);
 
-			HashMap<String, String> functionNamesMap = new HashMap<String, String>();
-			ArrayList<String> nameList = new ArrayList<String>();
+			HashMap<String, String> functionNamesMap = new HashMap<>();
+			ArrayList<String> nameList = new ArrayList<>();
 
 			// for all the ranges
 			for (PatchRangeElement tpre: patchFileInfo.getRanges()) {
 
-				for (int j = tpre.ffromLine; j <= tpre.ftoLine; j++) {
+				for (int j = tpre.fromLine; j <= tpre.toLine; j++) {
 
 					String functionGuess = "";
 					// add func that determines type of file.
@@ -599,19 +587,10 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 			fnames = new String[nameList.size()];
 			fnames = nameList.toArray(fnames);
 
-		} catch (CoreException e) {
+		} catch (CoreException|BadLocationException e) {
 			ChangelogPlugin.getDefault().getLog().log(
 					new Status(IStatus.ERROR, ChangelogPlugin.PLUGIN_ID, IStatus.ERROR,
 							e.getMessage(), e));
-		} catch (BadLocationException e) {
-			ChangelogPlugin.getDefault().getLog().log(
-					new Status(IStatus.ERROR, ChangelogPlugin.PLUGIN_ID, IStatus.ERROR,
-							e.getMessage(), e));
-		} catch (Exception e) {
-			ChangelogPlugin.getDefault().getLog().log(
-					new Status(IStatus.ERROR, ChangelogPlugin.PLUGIN_ID, IStatus.ERROR,
-							e.getMessage(), e));
-			e.printStackTrace();
 		}
 		return fnames;
 	}

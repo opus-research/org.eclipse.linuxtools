@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -162,14 +162,12 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
         if (fType == Type.NUM) {
             if (fValueNumber != null) {
                 if (value instanceof Number) {
-                    Double valueDouble = ((Number) value).doubleValue();
-                    return (valueDouble.compareTo(fValueNumber.doubleValue()) == fResult) ^ fNot;
+                    double valueDouble = ((Number) value).doubleValue();
+                    return (Double.compare(valueDouble, fValueNumber.doubleValue()) == fResult) ^ fNot;
                 }
                 try {
-                    Double valueDouble = NumberFormat.getInstance().parse(value.toString())
-                                    .doubleValue();
-                    return (valueDouble.compareTo(fValueNumber.doubleValue()) == fResult)
-                                    ^ fNot;
+                    double valueDouble = NumberFormat.getInstance().parse(value.toString()).doubleValue();
+                    return (Double.compare(valueDouble, fValueNumber.doubleValue()) == fResult) ^ fNot;
                 } catch (ParseException e) {
                 }
             }
@@ -201,7 +199,7 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
 
 	@Override
 	public List<String> getValidChildren() {
-		return new ArrayList<String>(0);
+		return new ArrayList<>(0);
 	}
 
 	@Override

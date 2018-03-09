@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -23,7 +23,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
@@ -73,7 +72,7 @@ public class InMemoryBackend implements IStateHistoryBackend {
 
     private final TreeSet<ITmfStateInterval> intervals;
     private final long startTime;
-    private long latestTime;
+    private volatile long latestTime;
 
     /**
      * Constructor
@@ -84,7 +83,7 @@ public class InMemoryBackend implements IStateHistoryBackend {
     public InMemoryBackend(long startTime) {
         this.startTime = startTime;
         this.latestTime = startTime;
-        this.intervals = new TreeSet<ITmfStateInterval>(END_COMPARATOR);
+        this.intervals = new TreeSet<>(END_COMPARATOR);
     }
 
     @Override
@@ -107,13 +106,15 @@ public class InMemoryBackend implements IStateHistoryBackend {
 
         ITmfStateInterval interval = new TmfStateInterval(stateStartTime, stateEndTime, quark, value);
 
+        /* Add the interval into the tree */
+        synchronized (intervals) {
+            intervals.add(interval);
+        }
+
         /* Update the "latest seen time" */
         if (stateEndTime > latestTime) {
             latestTime = stateEndTime;
         }
-
-        /* Add the interval into the tree */
-        intervals.add(interval);
     }
 
     @Override
@@ -127,35 +128,16 @@ public class InMemoryBackend implements IStateHistoryBackend {
          * The intervals are sorted by end time, so we can binary search to get
          * the first possible interval, then only compare their start times.
          */
-
-        Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
-        for (int modCount = 0; iter.hasNext() && modCount < currentStateInfo.size();) {
-            ITmfStateInterval entry = iter.next();
-            final long entryStartTime = entry.getStartTime();
-            if (entryStartTime <= t) {
-                /* Add this interval to the returned values */
-                currentStateInfo.set(entry.getAttribute(), entry);
-                modCount++;
-            }
-        }
-    }
-
-    @Override
-    public void doQuery(ITmfStateIntervalListener listener, long t) throws TimeRangeException, StateSystemDisposedException {
-        if (!checkValidTime(t)) {
-            throw new TimeRangeException();
-        }
-
-        /*
-         * The intervals are sorted by end time, so we can binary search to get
-         * the first possible interval, then only compare their start times.
-         */
-
-        Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
-        while (iter.hasNext()) {
-            ITmfStateInterval entry = iter.next();
-            if (entry.intersects(t)) {
-                listener.addInterval(entry);
+        synchronized (intervals) {
+            Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
+            for (int modCount = 0; iter.hasNext() && modCount < currentStateInfo.size();) {
+                ITmfStateInterval entry = iter.next();
+                final long entryStartTime = entry.getStartTime();
+                if (entryStartTime <= t) {
+                    /* Add this interval to the returned values */
+                    currentStateInfo.set(entry.getAttribute(), entry);
+                    modCount++;
+                }
             }
         }
     }
@@ -171,15 +153,17 @@ public class InMemoryBackend implements IStateHistoryBackend {
          * The intervals are sorted by end time, so we can binary search to get
          * the first possible interval, then only compare their start times.
          */
-        Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
-        while (iter.hasNext()) {
-            ITmfStateInterval entry = iter.next();
-            final boolean attributeMatches = (entry.getAttribute() == attributeQuark);
-            final long entryStartTime = entry.getStartTime();
-            if (attributeMatches) {
-                if (entryStartTime <= t) {
-                    /* This is the droid we are looking for */
-                    return entry;
+        synchronized (intervals) {
+            Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
+            while (iter.hasNext()) {
+                ITmfStateInterval entry = iter.next();
+                final boolean attributeMatches = (entry.getAttribute() == attributeQuark);
+                final long entryStartTime = entry.getStartTime();
+                if (attributeMatches) {
+                    if (entryStartTime <= t) {
+                        /* This is the droid we are looking for */
+                        return entry;
+                    }
                 }
             }
         }
@@ -229,7 +213,9 @@ public class InMemoryBackend implements IStateHistoryBackend {
 
     @Override
     public void debugPrint(PrintWriter writer) {
-        writer.println(intervals.toString());
+        synchronized (intervals) {
+            writer.println(intervals.toString());
+        }
     }
 
     private static Iterator<ITmfStateInterval> serachforEndTime(TreeSet<ITmfStateInterval> tree, long time) {

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -49,11 +49,11 @@ public class KeyBindingsManager {
     /**
      * The list of view names.
      */
-    private Set<String> fViews = new HashSet<String>();
+    private Set<String> fViews = new HashSet<>();
     /**
      * The list of activations Activations to store
      */
-    private List<IHandlerActivation> fHandlerActivations = new ArrayList<IHandlerActivation>();
+    private List<IHandlerActivation> fHandlerActivations = new ArrayList<>();
     /**
      * The action reference for moving to a message in view.
      */
