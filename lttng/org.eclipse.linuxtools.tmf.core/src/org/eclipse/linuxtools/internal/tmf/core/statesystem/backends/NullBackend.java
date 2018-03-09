@@ -93,6 +93,11 @@ public class NullBackend implements IStateHistoryBackend {
         /* Cannot do past queries */
     }
 
+    @Override
+    public void doQuery(ITmfStateIntervalListener listener, long t) {
+        /* Cannot do past queries */
+    }
+
     /**
      * Null back-ends cannot run queries. 'null' will be returned.
      *
@@ -119,4 +124,5 @@ public class NullBackend implements IStateHistoryBackend {
     public void debugPrint(PrintWriter writer) {
         writer.println("Null history backend"); //$NON-NLS-1$
     }
+
 }

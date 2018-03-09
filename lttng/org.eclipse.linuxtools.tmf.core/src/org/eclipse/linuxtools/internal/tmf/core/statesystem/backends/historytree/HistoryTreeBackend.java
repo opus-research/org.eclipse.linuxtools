@@ -20,6 +20,7 @@ import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.ITmfStateIntervalListener;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
@@ -30,7 +31,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * History Tree backend for storing a state history. This is the basic version
  * that runs in the same thread as the class creating it.
  *
- * @author alexmont
+ * @author Alexandre Montplaisir
  *
  */
 public class HistoryTreeBackend implements IStateHistoryBackend {
@@ -197,12 +198,31 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         } catch (ClosedChannelException e) {
             throw new StateSystemDisposedException(e);
         }
+    }
 
-        /*
-         * The stateInfo should now be filled with everything needed, we pass
-         * the control back to the State System.
-         */
-        return;
+
+    @Override
+    public void doQuery(ITmfStateIntervalListener listener, long t) throws TimeRangeException, StateSystemDisposedException {
+        if (!checkValidTime(t)) {
+            /* We can't possibly have information about this query */
+            throw new TimeRangeException();
+        }
+
+        /* Reading information from the root node */
+        // FIXME using CoreNode for now, we'll have to redo this part to handle
+        // different node types
+        CoreNode currentNode = sht.getLatestBranch().get(0);
+        currentNode.writeInfoFromNode(listener, t);
+
+        /* Follow the branch down in the relevant children */
+        try {
+            while (currentNode.getNbChildren() > 0) {
+                currentNode = (CoreNode) sht.selectNextChild(currentNode, t);
+                currentNode.writeInfoFromNode(listener, t);
+            }
+        } catch (ClosedChannelException e) {
+            throw new StateSystemDisposedException(e);
+        }
     }
 
     @Override
@@ -321,4 +341,5 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         sht.debugPrintFullTree(writer, printIntervals);
     }
+
 }
