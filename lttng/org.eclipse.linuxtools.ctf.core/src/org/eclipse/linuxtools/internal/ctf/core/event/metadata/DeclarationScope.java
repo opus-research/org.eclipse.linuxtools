@@ -21,13 +21,17 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 
+/*
+ * TODO: The notion of "symbols" and the notion of "scope" are misused in this parser, which lead to inefficient tree management. It should be cleaned up.
+ */
+
 /**
  * <b><u>DeclarationScope</u></b>
  * <p>
  * A DeclarationScope keeps track of the various CTF declarations for a given
  * scope.
  */
-public class DeclarationScope {
+ class DeclarationScope {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -92,7 +96,7 @@ public class DeclarationScope {
             throws ParseException {
         /* Check if the type has been defined in the current scope */
         if (types.containsKey(name)) {
-            throw new ParseException(Messages.TypeAlreadyDefined + ':' + name);
+            throw new ParseException("Type has already been defined:" + name); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
@@ -109,10 +113,10 @@ public class DeclarationScope {
      * @throws ParseException
      *             if an identifier with the same name has already been defined.
      */
-    public void registerIdentifier( String name, IDeclaration declaration) throws ParseException{
+    public void registerIdentifier(String name, IDeclaration declaration) throws ParseException {
         /* Check if the type has been defined in the current scope */
         if (identifiers.containsKey(name)) {
-            throw new ParseException(Messages.IdentifierAlreadyDefined + ':' + name);
+            throw new ParseException("Identifier has already been defined:" + name); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
@@ -133,7 +137,7 @@ public class DeclarationScope {
             throws ParseException {
         /* Check if the struct has been defined in the current scope. */
         if (structs.containsKey(name)) {
-            throw new ParseException(Messages.StructAlreadyDefined + ':' + name);
+            throw new ParseException("Struct has already been defined:" + name); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
@@ -158,7 +162,7 @@ public class DeclarationScope {
             throws ParseException {
         /* Check if the enum has been defined in the current scope. */
         if (lookupEnum(name) != null) {
-            throw new ParseException(Messages.EnumAlreadyDefined + ':' + name);
+            throw new ParseException("Enum has already been defined:" + name); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
@@ -183,7 +187,7 @@ public class DeclarationScope {
             throws ParseException {
         /* Check if the variant has been defined in the current scope. */
         if (lookupVariant(name) != null) {
-            throw new ParseException(Messages.VariantAlreadyDefined + ':' + name);
+            throw new ParseException("Variant has already been defined:" + name); //$NON-NLS-1$
         }
 
         /* Add it to the register. */
@@ -219,12 +223,12 @@ public class DeclarationScope {
      * @return The type declaration, or null if no type with that name has been
      *         defined.
      */
-    public IDeclaration rlookupType(String name) {
+    public IDeclaration lookupTypeRecursive(String name) {
         IDeclaration declaration = lookupType(name);
         if (declaration != null) {
             return declaration;
         } else if (parentScope != null) {
-            return parentScope.rlookupType(name);
+            return parentScope.lookupTypeRecursive(name);
         } else {
             return null;
         }
@@ -251,12 +255,12 @@ public class DeclarationScope {
      * @return The struct declaration, or null if no struct with that name has
      *         been defined.
      */
-    public StructDeclaration rlookupStruct(String name) {
+    public StructDeclaration lookupStructRecursive(String name) {
         StructDeclaration declaration = lookupStruct(name);
         if (declaration != null) {
             return declaration;
         } else if (parentScope != null) {
-            return parentScope.rlookupStruct(name);
+            return parentScope.lookupStructRecursive(name);
         } else {
             return null;
         }
@@ -283,12 +287,12 @@ public class DeclarationScope {
      * @return The enum declaration, or null if no enum with that name has been
      *         defined.
      */
-    public EnumDeclaration rlookupEnum(String name) {
+    public EnumDeclaration lookupEnumRecursive(String name) {
         EnumDeclaration declaration = lookupEnum(name);
         if (declaration != null) {
             return declaration;
         } else if (parentScope != null) {
-            return parentScope.rlookupEnum(name);
+            return parentScope.lookupEnumRecursive(name);
         } else {
             return null;
         }
@@ -315,20 +319,20 @@ public class DeclarationScope {
      * @return The variant declaration, or null if no variant with that name has
      *         been defined.
      */
-    public VariantDeclaration rlookupVariant(String name) {
+    public VariantDeclaration lookupVariantRecursive(String name) {
         VariantDeclaration declaration = lookupVariant(name);
         if (declaration != null) {
             return declaration;
         } else if (parentScope != null) {
-            return parentScope.rlookupVariant(name);
+            return parentScope.lookupVariantRecursive(name);
         } else {
             return null;
         }
     }
 
     /**
-     * Looks through the list of structs and variants of a scope to
-     * find if a field exists.
+     * Looks through the list of structs and variants of a scope to find if a
+     * field exists.
      *
      * @param identifier
      *            the field name
@@ -346,12 +350,12 @@ public class DeclarationScope {
      *            the field name
      * @return the declaration of the type associated to that identifier
      */
-    public IDeclaration rLookupIdentifier(String identifier) {
+    public IDeclaration lookupIdentifierRecursive(String identifier) {
         IDeclaration declaration = lookupIdentifier(identifier);
         if (declaration != null) {
             return declaration;
         } else if (parentScope != null) {
-            return parentScope.rLookupIdentifier(identifier);
+            return parentScope.lookupIdentifierRecursive(identifier);
         }
         return null;
     }
@@ -380,7 +384,7 @@ public class DeclarationScope {
         if (types.containsKey(name)) {
             types.put(name, newType);
         } else {
-            throw new ParseException(Messages.TraceDoesNotContainType + ':' + name);
+            throw new ParseException("Trace does not contain type:" + name); //$NON-NLS-1$
         }
     }
 
