@@ -45,7 +45,6 @@
           <testClass>org.eclipse.linuxtools.tmf.ui.tests.AllTmfUITests</testClass>
           <useUIHarness>true</useUIHarness>
           <useUIThread>true</useUIThread>
-          <argLine>${base.ui.test.vmargs}</argLine>
           <product>org.eclipse.platform.ide</product>
         </configuration>
       </plugin>
