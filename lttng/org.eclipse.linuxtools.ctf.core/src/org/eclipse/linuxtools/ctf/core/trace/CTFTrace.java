@@ -136,6 +136,9 @@ public class CTFTrace implements IDefinitionScope {
     private static final FileFilter METADATA_FILE_FILTER = new MetadataFileFilter();
     private static final Comparator<File> METADATA_COMPARATOR = new MetadataComparator();
 
+    /** map of all the event types */
+    private final Map<Long, HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long, IEventDeclaration>>();
+
     /** map of all the indexes */
     private final Map<StreamInput, StreamInputPacketIndex> indexes = new HashMap<StreamInput, StreamInputPacketIndex>();
 
@@ -258,7 +261,7 @@ public class CTFTrace implements IDefinitionScope {
      * @since 2.0
      */
     public Map<Long, IEventDeclaration> getEvents(Long streamId) {
-        return streams.get(streamId).getEvents();
+        return eventDecs.get(streamId);
     }
 
     /**
@@ -644,12 +647,13 @@ public class CTFTrace implements IDefinitionScope {
             throw new ParseException("Stream id already exists"); //$NON-NLS-1$
         }
 
-        /* This stream is valid and has an unique id. */
+        /* It should be ok now. */
         streams.put(stream.getId(), stream);
+        eventDecs.put(stream.getId(), new HashMap<Long, IEventDeclaration>());
     }
 
     /**
-     * Gets the Environment variables from the trace metadata (See CTF spec)
+     * gets the Environment variables from the trace metadata (See CTF spec)
      *
      * @return the environment variables in a map form (key value)
      * @since 2.0
@@ -802,6 +806,34 @@ public class CTFTrace implements IDefinitionScope {
             retVal = nanos;
         }
         return retVal - getOffset();
+    }
+
+    /**
+     * Does a given stream contain any events?
+     *
+     * @param id
+     *            the stream ID
+     * @return true if the stream has events.
+     */
+    public boolean hasEvents(Long id) {
+        return eventDecs.containsKey(id);
+    }
+
+    /**
+     * Add an event declaration map to the events map.
+     *
+     * @param id
+     *            the id of a stream
+     * @return the hashmap containing events.
+     * @since 2.0
+     */
+    public Map<Long, IEventDeclaration> createEvents(Long id) {
+        HashMap<Long, IEventDeclaration> value = eventDecs.get(id);
+        if (value == null) {
+            value = new HashMap<Long, IEventDeclaration>();
+            eventDecs.put(id, value);
+        }
+        return value;
     }
 
     /**
