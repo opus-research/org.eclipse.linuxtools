@@ -27,6 +27,7 @@ import org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput;
  * State System Module for lttng kernel traces
  *
  * @author Geneviève Bastien
+ * @since 3.0
  */
 public class LttngKernelAnalysisModule extends TmfStateSystemAnalysisModule {
 

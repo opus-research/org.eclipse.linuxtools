@@ -67,7 +67,13 @@ public final class Messages {
 	/****/
 	public static String Createrepo_jobName;
 	/****/
+	public static String Createrepo_jobCancelled;
+	/****/
 	public static String Createrepo_errorExecuting;
+	/****/
+	public static String Createrepo_errorTryingToFindCommand;
+	/****/
+	public static String Createrepo_errorCommandNotFound;
 
 	// RepoFormEditor
 	/****/
@@ -175,6 +181,8 @@ public final class Messages {
 	/****/
 	public static String CreaterepoDeltaPropertyPage_groupLabel;
 	/****/
+	public static String CreaterepoDeltaPropertyPage_groupDirectoryLabel;
+	/****/
 	public static String CreaterepoDeltaPropertyPage_booleanEnableLabel;
 	/****/
 	public static String CreaterepoDeltaPropertyPage_maxNumberOfDeltas;
@@ -182,6 +190,14 @@ public final class Messages {
 	public static String CreaterepoDeltaPropertyPage_maxDeltaSize;
 	/****/
 	public static String CreaterepoDeltaPropertyPage_errorInvalidText;
+	/****/
+	public static String CreaterepoDeltaPropertyPage_directoryDescription;
+	/****/
+	public static String CreaterepoDeltaPropertyPage_directoryDialogLabel;
+
+	// ImportRPMDropListener
+	/****/
+	public static String ImportRPMDropListener_errorCopyingFileToProject;
 
 	static {
 		// initialize resource bundle

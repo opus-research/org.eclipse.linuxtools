@@ -11,23 +11,16 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
+import java.io.IOException;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,8 +33,6 @@ import org.junit.Test;
 public class PartialStateSystemTest extends StateSystemTest {
 
     private static File stateFile;
-    private static final String TEST_FILE_NAME = "test-partial";
-
 
     /**
      * Initialization
@@ -49,19 +40,16 @@ public class PartialStateSystemTest extends StateSystemTest {
     @BeforeClass
     public static void initialize() {
         assumeTrue(testTrace.exists());
-        stateFile = new File(TmfTraceManager.getSupplementaryFileDir(testTrace.getTrace()) + TEST_FILE_NAME);
-
-        TestLttngKernelAnalysisModule module = new TestLttngKernelAnalysisModule(TEST_FILE_NAME);
         try {
-            module.setTrace(testTrace.getTrace());
-        } catch (TmfAnalysisException e) {
+            stateFile = File.createTempFile("test-partial", ".ht");
+
+            input = new LttngKernelStateProvider(testTrace.getTrace());
+            ssq = TmfStateSystemFactory.newPartialHistory(stateFile, input, true);
+        } catch (IOException e) {
+            fail();
+        } catch (TmfTraceException e) {
             fail();
         }
-        module.schedule();
-        assertTrue(module.waitForCompletion(new NullProgressMonitor()));
-        ssq = module.getStateSystem();
-
-        assertNotNull(ssq);
     }
 
     /**
@@ -132,40 +120,5 @@ public class PartialStateSystemTest extends StateSystemTest {
     @Test(expected = UnsupportedOperationException.class)
     public void testRangeQueryInvalidTime2() throws TimeRangeException {
         super.testRangeQueryInvalidTime2();
-    }
-
-    private static class TestLttngKernelAnalysisModule extends TmfStateSystemAnalysisModule {
-
-        private final String htFileName;
-
-        /**
-         * Constructor adding the views to the analysis
-         * @param htFileName
-         *      The History File Name
-         */
-        public TestLttngKernelAnalysisModule(String htFileName) {
-            super();
-            this.htFileName = htFileName;
-        }
-
-        @Override
-        protected @NonNull ITmfStateProvider createStateProvider() {
-            ITmfTrace trace = getTrace();
-            if (!(trace instanceof CtfTmfTrace)) {
-                throw new IllegalStateException("TestLttngKernelAnalysisModule: trace should be of type CtfTmfTrace"); //$NON-NLS-1$
-            }
-            return new LttngKernelStateProvider((CtfTmfTrace) trace);
-        }
-
-        @Override
-        protected StateSystemBackendType getBackendType() {
-            return StateSystemBackendType.PARTIAL;
-        }
-
-        @Override
-        protected String getSsFileName() {
-            return htFileName;
-        }
-
     }
 }
