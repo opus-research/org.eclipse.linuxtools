@@ -161,7 +161,7 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 	}
 
 	protected void initializeToolMap() {
-		toolMap = new HashMap<>();
+		toolMap = new HashMap<String, IConfigurationElement>();
 		IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint(PLUGIN_ID, VIEW_EXT_ID);
 		IConfigurationElement[] configs = extPoint.getConfigurationElements();
 		for (IConfigurationElement config : configs) {

@@ -55,16 +55,14 @@ public class WrongDeallocationResolutionTest extends AbstractValgrindTest {
 		document = new Document();
 		InputStream fileInputStream = proj.getProject()
 				.getFile("wrongDealloc.cpp").getContents(); //$NON-NLS-1$
-		try (Scanner scanner = new Scanner(fileInputStream)) {
-			scanner.useDelimiter("\\A"); //$NON-NLS-1$
-			String content;
-			if (scanner.hasNext()) {
-				content = scanner.next();
-			} else {
-				content = EMPTY_STRING;
-			}
-			document.set(content);
+		Scanner scanner = new Scanner(fileInputStream).useDelimiter("\\A"); //$NON-NLS-1$
+		String content;
+		if (scanner.hasNext()) {
+			content = scanner.next();
+		} else {
+			content = EMPTY_STRING;
 		}
+		document.set(content);
 		markers = proj.getProject().findMarkers(VALGRIND_MARKER_TYPE, true, 1);
 		Arrays.sort(markers, new MarkerComparator());
 	}

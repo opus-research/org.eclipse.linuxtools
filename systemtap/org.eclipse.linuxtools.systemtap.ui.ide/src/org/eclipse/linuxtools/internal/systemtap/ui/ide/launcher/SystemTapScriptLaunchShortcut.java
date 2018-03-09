@@ -69,7 +69,7 @@ public class SystemTapScriptLaunchShortcut extends ProfileLaunchShortcut {
 
 	protected ILaunchConfiguration findLaunchConfiguration(String scriptPath, String scriptProject) {
 		ILaunchConfiguration configuration = null;
-		ArrayList<ILaunchConfiguration> candidateConfigurations = new ArrayList<>();
+		ArrayList<ILaunchConfiguration> candidateConfigurations = new ArrayList<ILaunchConfiguration>();
 		try {
 			ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 			ILaunchConfiguration[] configs = launchManager
@@ -83,7 +83,7 @@ public class SystemTapScriptLaunchShortcut extends ProfileLaunchShortcut {
 
 			int candidateCount = candidateConfigurations.size();
 			if (candidateCount == 0) {
-				LinkedList<String> configNames = new LinkedList<>();
+				LinkedList<String> configNames = new LinkedList<String>();
 				configs = launchManager.getLaunchConfigurations();
 				for (ILaunchConfiguration config : configs) {
 					configNames.add(config.getName());

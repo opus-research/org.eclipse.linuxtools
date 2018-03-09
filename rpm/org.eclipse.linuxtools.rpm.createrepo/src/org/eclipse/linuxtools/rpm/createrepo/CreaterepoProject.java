@@ -104,7 +104,7 @@ public class CreaterepoProject {
 	private void createContentFolder() throws CoreException {
 		content = getProject().getFolder(ICreaterepoConstants.CONTENT_FOLDER);
 		if (!content.exists()) {
-			content.create(true, true, monitor);
+			content.create(false, true, monitor);
 		}
 	}
 
@@ -212,7 +212,7 @@ public class CreaterepoProject {
 	 * @throws CoreException Thrown when unable to look into the project.
 	 */
 	public List<IResource> getRPMs() throws CoreException {
-		List<IResource> rpms = new ArrayList<>();
+		List<IResource> rpms = new ArrayList<IResource>();
 		if (!getContentFolder().exists()) {
 			return rpms;
 		}
@@ -244,7 +244,7 @@ public class CreaterepoProject {
 	 * @return The command arguments.
 	 */
 	private List<String> getCommandArguments() {
-		List<String> commands = new ArrayList<>();
+		List<String> commands = new ArrayList<String>();
 		CreaterepoCommandCreator creator = new CreaterepoCommandCreator(projectPreferences);
 		commands.addAll(creator.getCommands());
 		return commands;

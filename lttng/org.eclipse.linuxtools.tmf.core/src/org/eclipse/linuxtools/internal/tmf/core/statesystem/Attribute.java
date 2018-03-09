@@ -54,7 +54,7 @@ public abstract class Attribute {
         this.parent = parent;
         this.quark = quark;
         this.name = name;
-        this.subAttributes = new ArrayList<>();
+        this.subAttributes = new ArrayList<Attribute>();
     }
 
     // ------------------------------------------------------------------------
@@ -157,7 +157,7 @@ public abstract class Attribute {
      * @return
      */
     private String[] getFullAttribute() {
-        LinkedList<String> list = new LinkedList<>();
+        LinkedList<String> list = new LinkedList<String>();
         Attribute curNode = this;
 
         /* Add recursive parents to the list, but stop at the root node */
@@ -245,7 +245,7 @@ final class AlphaNumAttribute extends Attribute {
 
     public AlphaNumAttribute(Attribute parent, String name, int quark) {
         super(parent, name, quark);
-        this.subAttributesMap = new HashMap<>();
+        this.subAttributesMap = new HashMap<String, Integer>();
     }
 
     @Override

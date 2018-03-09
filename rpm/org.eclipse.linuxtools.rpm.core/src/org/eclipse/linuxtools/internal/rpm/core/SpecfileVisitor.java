@@ -22,7 +22,7 @@ import org.eclipse.core.resources.IResourceVisitor;
  */
 public class SpecfileVisitor implements IResourceVisitor {
 
-	private List<IResource> paths = new ArrayList<>();
+	private List<IResource> paths = new ArrayList<IResource>();
 
 	@Override
 	public boolean visit(IResource resource) {

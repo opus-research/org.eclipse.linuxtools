@@ -28,14 +28,14 @@ public class TimeGraphEntry implements ITimeGraphEntry {
     private TimeGraphEntry fParent = null;
 
     /** List of child entries */
-    private final List<TimeGraphEntry> fChildren = new ArrayList<>();
+    private final List<TimeGraphEntry> fChildren = new ArrayList<TimeGraphEntry>();
 
     /** Name of this entry (text to show) */
     private String fName;
     private long fStartTime = -1;
     private long fEndTime = -1;
-    private List<ITimeEvent> fEventList = new ArrayList<>();
-    private List<ITimeEvent> fZoomedEventList = new ArrayList<>();
+    private List<ITimeEvent> fEventList = new ArrayList<ITimeEvent>();
+    private List<ITimeEvent> fZoomedEventList = new ArrayList<ITimeEvent>();
 
     /**
      * Constructor
@@ -156,9 +156,9 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      */
     public void setEventList(List<ITimeEvent> eventList) {
         if (eventList != null) {
-            fEventList = new ArrayList<>(eventList);
+            fEventList = new ArrayList<ITimeEvent>(eventList);
         } else {
-            fEventList = new ArrayList<>();
+            fEventList = new ArrayList<ITimeEvent>();
         }
     }
 
@@ -170,9 +170,9 @@ public class TimeGraphEntry implements ITimeGraphEntry {
      */
     public void setZoomedEventList(List<ITimeEvent> eventList) {
         if (eventList != null) {
-            fZoomedEventList = new ArrayList<>(eventList);
+            fZoomedEventList = new ArrayList<ITimeEvent>(eventList);
         } else {
-            fZoomedEventList = new ArrayList<>();
+            fZoomedEventList = new ArrayList<ITimeEvent>();
         }
     }
 

@@ -35,12 +35,12 @@ public class TmfNetworkEventMatching extends TmfEventMatching {
     /**
      * Hashtables for unmatches incoming events
      */
-    private final List<Map<List<Object>, ITmfEvent>> fUnmatchedIn = new ArrayList<>();
+    private final List<Map<List<Object>, ITmfEvent>> fUnmatchedIn = new ArrayList<Map<List<Object>, ITmfEvent>>();
 
     /**
      * Hashtables for unmatches outgoing events
      */
-    private final List<Map<List<Object>, ITmfEvent>> fUnmatchedOut = new ArrayList<>();
+    private final List<Map<List<Object>, ITmfEvent>> fUnmatchedOut = new ArrayList<Map<List<Object>, ITmfEvent>>();
 
     /**
      * Enum for in and out types
