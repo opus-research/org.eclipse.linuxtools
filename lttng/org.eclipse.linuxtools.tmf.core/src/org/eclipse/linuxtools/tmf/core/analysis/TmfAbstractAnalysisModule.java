@@ -59,6 +59,8 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
 
     private boolean fAnalysisCancelled = false;
 
+    private boolean fIsNotifyPendingReqNeeded = false;
+
     @Override
     public boolean isAutomatic() {
         return fAutomatic;
@@ -254,6 +256,13 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
             fStarted = true;
         }
 
+        // Tell the trace that a request is pending (done the in Job below)
+        if (fTrace != null) {
+            // Assume that there are pending requests
+            fTrace.notifyPendingRequest(true);
+            setNotifyPendingReqNeeded(true);
+        }
+
         /*
          * Actual analysis will be run on a separate thread
          */
@@ -264,6 +273,12 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
                     monitor.beginTask("", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
                     broadcast(new TmfStartAnalysisSignal(TmfAbstractAnalysisModule.this, TmfAbstractAnalysisModule.this));
                     fAnalysisCancelled = !executeAnalysis(monitor);
+
+                    // Notify pending request if needed
+                    if ((fTrace != null) && isNotifyPendingReqNeeded()) {
+                        fTrace.notifyPendingRequest(false);
+                        setNotifyPendingReqNeeded(false);
+                    }
                 } catch (TmfAnalysisException e) {
                     Activator.logError("Error executing analysis with trace " + getTrace().getName(), e); //$NON-NLS-1$
                 } finally {
@@ -389,4 +404,20 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
         return text;
     }
 
+    /**
+     * Flag to used to indicate that notify pending request is needed.
+     * @return true if request notify is needed else false
+     */
+    protected boolean isNotifyPendingReqNeeded() {
+        return fIsNotifyPendingReqNeeded;
+    }
+
+    /**
+     * Sets flag about pending requests.
+     * @param notify true if notify request needed else false
+     *
+     */
+    protected void setNotifyPendingReqNeeded(boolean notify) {
+         fIsNotifyPendingReqNeeded = notify;
+    }
 }
