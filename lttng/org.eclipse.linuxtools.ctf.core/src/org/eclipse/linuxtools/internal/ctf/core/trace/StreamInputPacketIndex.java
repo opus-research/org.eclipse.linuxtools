@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -34,7 +34,7 @@ public class StreamInputPacketIndex {
      * Entries of the index. They are sorted by increasing begin timestamp.
      * index builder.
      */
-    private final Vector<StreamInputPacketIndexEntry> entries = new Vector<>();
+    private final Vector<StreamInputPacketIndexEntry> entries = new Vector<StreamInputPacketIndexEntry>();
 
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates

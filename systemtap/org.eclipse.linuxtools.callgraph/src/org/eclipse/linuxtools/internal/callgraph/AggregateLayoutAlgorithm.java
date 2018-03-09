@@ -25,9 +25,9 @@ import org.eclipse.zest.layouts.dataStructures.InternalRelationship;
  */
 public class AggregateLayoutAlgorithm extends GridLayoutAlgorithm{
 
-	private ArrayList<Long> list;
-	private Long totalTime;
-	private int graphWidth;
+	protected ArrayList<Long> list;
+	protected Long totalTime;
+	protected int graphWidth;
 
 
 	/**
@@ -40,7 +40,7 @@ public class AggregateLayoutAlgorithm extends GridLayoutAlgorithm{
 	public AggregateLayoutAlgorithm(int styles, TreeSet<Entry<String, Long>> entries, Long time, int width){
 		super(styles);
 
-		list = new ArrayList<>();
+		list = new ArrayList<Long>();
 		for (Entry<String, Long> ent : entries) {
 			list.add(ent.getValue());
 		}

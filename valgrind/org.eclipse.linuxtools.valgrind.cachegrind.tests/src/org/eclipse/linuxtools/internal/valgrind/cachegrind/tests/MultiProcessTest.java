@@ -29,8 +29,10 @@ import org.junit.Test;
 public class MultiProcessTest extends AbstractCachegrindTest {
 	private ICProject refProj;
 
+	@Override
 	@Before
-	public void prep() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		refProj = createProjectAndBuild("cpptest"); //$NON-NLS-1$
 		proj = createProjectAndBuild("multiProcTest"); //$NON-NLS-1$
 	}

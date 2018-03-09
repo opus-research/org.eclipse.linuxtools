@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.eclipse.cdt.utils.pty.PTY;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -84,28 +83,24 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 				IPath whichPath = new Path(proxy.toPath(whichUri));
 				IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(project);
 				Process pProxy = launcher.execute(whichPath, new String[]{command}, envp, null, new NullProgressMonitor());
-				if (pProxy != null) {
-
+				if (pProxy != null){
+					BufferedReader error = new BufferedReader(new InputStreamReader(pProxy.getErrorStream()));
+					BufferedReader reader = new BufferedReader(new InputStreamReader(pProxy.getInputStream()));
 					String errorLine;
-					try (BufferedReader error = new BufferedReader(
-							new InputStreamReader(pProxy.getErrorStream()))) {
-						if ((errorLine = error.readLine()) != null) {
-							throw new IOException(errorLine);
-						}
+					if((errorLine = error.readLine()) != null){
+						throw new IOException(errorLine);
 					}
-					ArrayList<String> lines = new ArrayList<>();
-					try (BufferedReader reader = new BufferedReader(
-							new InputStreamReader(pProxy.getInputStream()))) {
-						String readLine = reader.readLine();
-						while (readLine != null) {
-							lines.add(readLine);
-							readLine = reader.readLine();
-						}
+					error.close();
+					String readLine = reader.readLine();
+					ArrayList<String> lines = new ArrayList<String>();
+					while (readLine != null) {
+						lines.add(readLine);
+						readLine = reader.readLine();
 					}
+					reader.close();
 					if (!lines.isEmpty()) {
 						if (project.getLocationURI() != null) {
-							if (project.getLocationURI().toString()
-									.startsWith("rse:")) { //$NON-NLS-1$
+							if (project.getLocationURI().toString().startsWith("rse:")) { //$NON-NLS-1$
 								// RSE output
 								if (lines.size() > 1) {
 									command = lines.get(lines.size() - 2);
@@ -202,7 +197,7 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 	 *
 	 * @since 1.1
 	 */
-	private Process exec(String cmd, String[] envp, IFileStore dir, IProject project)
+	public Process exec(String cmd, String[] envp, IFileStore dir, IProject project)
 		throws IOException {
 		return exec(tokenizeCommand(cmd), envp, dir, project);
 	}
@@ -221,25 +216,6 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 	 * @since 1.1
 	 */
 	public Process exec(String cmdarray[], String[] envp, IFileStore dir, IProject project)
-			throws IOException {
-		return exec(cmdarray, envp, dir, project, null);
-	}
-
-	/**
-	 * Execute one command using the path selected in 'Linux Tools Path' preference page
-	 * in the informed project.
-	 * @param cmdarray An array with the command to be executed and its params.
-	 * @param envp An array with extra enviroment variables to be used when running
-	 * the command
-	 * @param dir The directory used as current directory to run the command.
-	 * @param project The current project. If null, only system path will be
-	 * used to look for the command.
-	 * @param pty PTY for use with Eclipse Console.
-	 * @return The process started by exec.
-	 *
-	 * @since 2.1
-	 */
-	public Process exec(String cmdarray[], String[] envp, IFileStore dir, IProject project, PTY pty)
 		throws IOException {
 
 		Process p = null;
@@ -270,21 +246,61 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 			}
 
 
-			List<String> cmdlist = new ArrayList<>(Arrays.asList(cmdarray));
+			List<String> cmdlist = new ArrayList<String>(Arrays.asList(cmdarray));
 			cmdlist.remove(0);
 			cmdlist.toArray(cmdarray);
 			cmdarray = cmdlist.toArray(new String[0]);
 
-			if (pty == null) {
-				p = launcher.execute(path, cmdarray, envp, changeToDir , new NullProgressMonitor());
-			} else {
-				p = launcher.execute(path, cmdarray, envp, changeToDir , new NullProgressMonitor(), pty);
-			}
+			p = launcher.execute(path, cmdarray, envp, changeToDir , new NullProgressMonitor());
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
 
 		return p;
+	}
+
+	/**
+	 * Execute one command, as root, using the path selected in 'Linux Tools Path'
+	 * preference page in the informed project.
+	 * @param cmd The desired command
+	 * @param project The current project. If null, only system path will be
+	 * used to look for the command.
+	 * @return The process started by sudoExec
+	 */
+	public Process sudoExec(String cmd, IProject project) throws IOException {
+		return sudoExec(cmd, null, (IFileStore)null, project);
+	}
+
+	/**
+	 * Execute one command, as root, using the path selected in 'Linux Tools Path'
+	 * preference page in the informed project.
+	 * @param cmd The desired command
+	 * @param envp An array with extra enviroment variables to be used when running
+	 * the command
+	 * @param project The current project. If null, only system path will be
+	 * used to look for the command.
+	 * @return The process started by sudoExec
+	 */
+	public Process sudoExec(String cmd, String[] envp, IProject project) throws IOException {
+		return exec(cmd, envp, (IFileStore)null, project);
+	}
+
+	/**
+	 * Execute one command, as root, using the path selected in 'Linux Tools Path'
+	 * preference page in the informed project.
+	 * @param cmd The desired command
+	 * @param envp An array with extra enviroment variables to be used when running
+	 * the command
+	 * @param dir The directory used as current directory to run the command.
+	 * @param project The current project. If null, only system path will be
+	 * used to look for the command.
+	 * @return The process started by sudoExec
+	 *
+	 * @since 1.1
+	 */
+	public Process sudoExec(String cmd, String[] envp, IFileStore dir, IProject project)
+			throws IOException {
+			return sudoExec(tokenizeCommand(cmd), envp, dir, project);
 	}
 
 	/**
@@ -309,7 +325,7 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 	 * used to look for the command.
 	 * @return The process started by sudoExec
 	 */
-	private Process sudoExec(String[] cmdarray, String[] envp, IProject project) throws IOException {
+	public Process sudoExec(String[] cmdarray, String[] envp, IProject project) throws IOException {
 		return sudoExec(cmdarray, envp, (IFileStore)null, project);
 	}
 
@@ -326,11 +342,11 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 	 *
 	 * @since 1.1
 	 */
-	private Process sudoExec(String[] cmdarray, String[] envp, IFileStore dir, IProject project) throws IOException {
+	public Process sudoExec(String[] cmdarray, String[] envp, IFileStore dir, IProject project) throws IOException {
 		URI uri = URI.create("sudo"); //$NON-NLS-1$
 
 		List<String> cmdList = Arrays.asList(cmdarray);
-		ArrayList<String> cmdArrayList = new ArrayList<>(cmdList);
+		ArrayList<String> cmdArrayList = new ArrayList<String>(cmdList);
 		cmdArrayList.add(0, "-n"); //$NON-NLS-1$
 
 		String[] cmdArraySudo = new String[cmdArrayList.size()];
@@ -358,7 +374,7 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
 				}
 			}
 
-			List<String> cmdlist = new ArrayList<>(Arrays.asList(cmdArraySudo));
+			List<String> cmdlist = new ArrayList<String>(Arrays.asList(cmdArraySudo));
 			cmdlist.remove(0);
 			cmdlist.toArray(cmdArraySudo);
 			cmdArraySudo = cmdlist.toArray(new String[0]);

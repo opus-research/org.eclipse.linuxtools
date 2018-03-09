@@ -55,7 +55,7 @@ public class PerfOpenData extends ProfileLaunchShortcut implements
                                 ILaunchConfiguration config = createDefaultConfiguration(projectName);
                                 PerfCore.Report(config, null, null, null, fileURI.getPath(), null);
                                 String timestamp = DateFormat.getInstance().format(new Date(eFile.getLocalTimeStamp()));
-                                PerfCore.refreshView(fileURI.toString() + " (" + timestamp + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                                PerfCore.RefreshView(fileURI.toString() + " (" + timestamp + ")"); //$NON-NLS-1$ //$NON-NLS-2$
                         }
                 }
         } else {
@@ -63,7 +63,7 @@ public class PerfOpenData extends ProfileLaunchShortcut implements
                 ILaunchConfiguration config = createDefaultConfiguration(projectName);
                 PerfCore.Report(config, null, null, null, file.toOSString(), null);
                 String timestamp = DateFormat.getInstance().format(new Date(location.getLocalTimeStamp()));
-                PerfCore.refreshView(file.toOSString() + " (" + timestamp + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                PerfCore.RefreshView(file.toOSString() + " (" + timestamp + ")"); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -86,7 +86,7 @@ public class PerfOpenData extends ProfileLaunchShortcut implements
 	 * @param projectName
 	 * @return ILaunchConfiguration based on String projectName
 	 */
-	private ILaunchConfiguration createDefaultConfiguration(String projectName) {
+	protected ILaunchConfiguration createDefaultConfiguration(String projectName) {
 		ILaunchConfiguration config = null;
 		try {
 			ILaunchConfigurationType configType = getLaunchConfigType();

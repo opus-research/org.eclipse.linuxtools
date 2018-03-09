@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.perf;
 
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -84,7 +85,7 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 	 * @param file File to generate uniqure id from.
 	 * @return String unique id for specified file.
 	 */
-	private String generateFileID(IPath file) {
+	public String generateFileID(IPath file) {
 		return file.toOSString() + dataID;
 	}
 
@@ -162,7 +163,7 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 	public ArrayList<PMStatEntry> getComparisonStats() {
 		ArrayList<PMStatEntry> oldStats = collectStats(oldFile);
 		ArrayList<PMStatEntry> newStats = collectStats(newFile);
-		ArrayList<PMStatEntry> result = new ArrayList<>();
+		ArrayList<PMStatEntry> result = new ArrayList<PMStatEntry>();
 
 		for (PMStatEntry oldEntry : oldStats) {
 			for (PMStatEntry newEntry : newStats) {
@@ -182,8 +183,8 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 	 * @param file file to collect from
 	 * @return List containing statistics entries from the given file.
 	 */
-	private static ArrayList<PMStatEntry> collectStats(IPath file) {
-		ArrayList<PMStatEntry> result = new ArrayList<>();
+	public static ArrayList<PMStatEntry> collectStats(IPath file) {
+		ArrayList<PMStatEntry> result = new ArrayList<PMStatEntry>();
 		BufferedReader statReader = null;
 		URI fileURI = null;
 		try {
@@ -242,7 +243,13 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 				}
 			}
 			return result;
-		} catch (IOException|CoreException|URISyntaxException e) {
+		} catch (FileNotFoundException e) {
+			PerfPlugin.getDefault().openError(e, Messages.MsgError);
+		} catch (IOException e) {
+			PerfPlugin.getDefault().openError(e, Messages.MsgError);
+		} catch (CoreException e) {
+			PerfPlugin.getDefault().openError(e, Messages.MsgError);
+		} catch (URISyntaxException e) {
 			PerfPlugin.getDefault().openError(e, Messages.MsgError);
 		} finally {
 			try {
@@ -264,7 +271,7 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 	 * @return Formatting string representing the proper way to format the given
 	 *         table.
 	 */
-	private String getFormat(String[][] table) {
+	public String getFormat(String[][] table) {
 		// all entries have the same number of columns
 		int[] maxCharLen = new int[table[0].length];
 
@@ -276,7 +283,7 @@ public class StatComparisonData extends BaseDataManipulator implements IPerfData
 		}
 
 		// prepare format arguments
-		ArrayList<Integer> arguments = new ArrayList<>();
+		ArrayList<Integer> arguments = new ArrayList<Integer>();
 		for (int length : maxCharLen) {
 			arguments.add(length);
 		}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -13,12 +13,12 @@
 package org.eclipse.linuxtools.internal.tmf.core.statesystem;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * An Attribute is a "node" in the Attribute Tree. It represents a smallest
@@ -30,62 +30,41 @@ import com.google.common.collect.ImmutableList;
  * @author alexmont
  *
  */
-public final class Attribute {
+abstract class Attribute {
 
     private final Attribute parent;
     private final String name;
     private final int quark;
-
-    /** The sub-attributes (<basename, attribute>) of this attribute */
-    private final Map<String, Attribute> subAttributes;
+    protected final List<Attribute> subAttributes;
 
     /**
      * Constructor
-     *
-     * @param parent
-     *            The parent attribute of this one. Can be 'null' to represent
-     *            this attribute is the root node of the tree.
-     * @param name
-     *            Base name of this attribute
-     * @param quark
-     *            The integer representation of this attribute
      */
-    public Attribute(Attribute parent, String name, int quark) {
+    Attribute(Attribute parent, String name, int quark) {
         this.parent = parent;
         this.quark = quark;
         this.name = name;
-        this.subAttributes = Collections.synchronizedMap(new HashMap<String, Attribute>());
+        this.subAttributes = new ArrayList<Attribute>();
     }
 
-    // ------------------------------------------------------------------------
-    // Accessors
-    // ------------------------------------------------------------------------
-
     /**
-     * Get the quark (integer representation) of this attribute.
-     *
-     * @return The quark of this attribute
+     * @name Accessors
      */
-    public int getQuark() {
+
+    int getQuark() {
         return quark;
     }
 
-    /**
-     * Get the name of this attribute.
-     *
-     * @return The name of this attribute
-     */
-    public String getName() {
-        return name;
+    Attribute getParent() {
+        return parent;
     }
 
-    /**
-     * Get the list of child attributes below this one.
-     *
-     * @return The child attributes.
-     */
-    public Iterable<Attribute> getSubAttributes() {
-        return ImmutableList.copyOf(subAttributes.values());
+    List<Attribute> getSubAttributes() {
+        return Collections.unmodifiableList(subAttributes);
+    }
+
+    String getName() {
+        return name;
     }
 
     /**
@@ -95,7 +74,7 @@ public final class Attribute {
      *            The path we are looking for, *relative to this node*.
      * @return The matching quark, or -1 if that attribute does not exist.
      */
-    public int getSubAttributeQuark(String... path) {
+    int getSubAttributeQuark(String... path) {
         return this.getSubAttributeQuark(path, 0);
     }
 
@@ -110,7 +89,7 @@ public final class Attribute {
      * @return The Node object matching the last element in the path, or "null"
      *         if that attribute does not exist.
      */
-    public Attribute getSubAttributeNode(String... path) {
+    Attribute getSubAttributeNode(String... path) {
         return this.getSubAttributeNode(path, 0);
     }
 
@@ -128,63 +107,9 @@ public final class Attribute {
         return targetNode.getQuark();
     }
 
-    /**
-     * Get the parent attribute of this attribute
-     *
-     * @return The parent attribute
-     */
-    public Attribute getParentAttribute() {
-        return this.parent;
-    }
-
-    /**
-     * Get the parent quark of this attribute
-     *
-     * @return The quark of the parent attribute
-     */
-    public int getParentAttributeQuark() {
-        return this.parent.getQuark();
-    }
-
     /* The methods how to access children are left to derived classes */
-
-    /**
-     * Add a sub-attribute to this attribute
-     *
-     * @param newSubAttribute The new attribute to add
-     */
-    public void addSubAttribute(Attribute newSubAttribute) {
-        if (newSubAttribute == null || newSubAttribute.getName() == null) {
-            throw new IllegalArgumentException();
-        }
-        subAttributes.put(newSubAttribute.getName(), newSubAttribute);
-    }
-
-    /**
-     * Get a sub-attribute from this node's sub-attributes
-     *
-     * @param path
-     *            The *full* path to the attribute
-     * @param index
-     *            The index in 'path' where this attribute is located
-     *            (indicating where to start searching).
-     * @return The requested attribute
-     */
-    private Attribute getSubAttributeNode(String[] path, int index) {
-        final Attribute nextNode = subAttributes.get(path[index]);
-
-        if (nextNode == null) {
-            /* We don't have the expected child => the attribute does not exist */
-            return null;
-        }
-        if (index == path.length - 1) {
-            /* It's our job to process this request */
-            return nextNode;
-        }
-
-        /* Pass on the rest of the path to the relevant child */
-        return nextNode.getSubAttributeNode(path, index + 1);
-    }
+    abstract void addSubAttribute(Attribute newSubAttribute);
+    abstract Attribute getSubAttributeNode(String[] path, int index);
 
     /**
      * Return a String array composed of the full (absolute) path representing
@@ -192,14 +117,14 @@ public final class Attribute {
      *
      * @return
      */
-    private String[] getFullAttribute() {
-        LinkedList<String> list = new LinkedList<>();
+    String[] getFullAttribute() {
+        LinkedList<String> list = new LinkedList<String>();
         Attribute curNode = this;
 
         /* Add recursive parents to the list, but stop at the root node */
-        while (curNode.parent != null) {
+        while (curNode.getParent() != null) {
             list.addFirst(curNode.getName());
-            curNode = curNode.parent;
+            curNode = curNode.getParent();
         }
 
         return list.toArray(new String[0]);
@@ -209,9 +134,9 @@ public final class Attribute {
      * Return the absolute path of this attribute, as a single slash-separated
      * String.
      *
-     * @return The full name of this attribute
+     * @return
      */
-    public String getFullAttributeName() {
+    String getFullAttributeName() {
         String[] array = this.getFullAttribute();
         StringBuffer buf = new StringBuffer();
 
@@ -231,6 +156,8 @@ public final class Attribute {
     private int curDepth;
 
     private void attributeNodeToString(PrintWriter writer, Attribute currentNode) {
+        int j;
+
         writer.println(currentNode.getName() + " (" + currentNode.quark + ')'); //$NON-NLS-1$
         curDepth++;
 
@@ -239,7 +166,7 @@ public final class Attribute {
             if (nextNode == null) {
                 continue;
             }
-            for (int j = 0; j < curDepth - 1; j++) {
+            for (j = 0; j < curDepth - 1; j++) {
                 writer.print("  "); //$NON-NLS-1$
             }
             writer.print("  "); //$NON-NLS-1$
@@ -249,18 +176,60 @@ public final class Attribute {
         return;
     }
 
-    /**
-     * Debugging method to print the contents of this attribute
-     *
-     * @param writer
-     *            PrintWriter where to write the information
-     */
-    public void debugPrint(PrintWriter writer) {
+    void debugPrint(PrintWriter writer) {
         /* Only used for debugging, shouldn't be externalized */
         writer.println("------------------------------"); //$NON-NLS-1$
         writer.println("Attribute tree: (quark)\n"); //$NON-NLS-1$
         curDepth = 0;
         attributeNodeToString(writer, this);
         writer.print('\n');
+    }
+}
+
+/**
+ * This is the basic implementation, where sub-attributes names can be composed
+ * of any alphanumeric characters, and are stored as Strings. A HashMap is used
+ * to access them.
+ *
+ * @author alexmont
+ *
+ */
+final class AlphaNumAttribute extends Attribute {
+
+    private Map<String, Integer> subAttributesMap;
+
+    AlphaNumAttribute(Attribute parent, String name, int quark) {
+        super(parent, name, quark);
+        this.subAttributesMap = new HashMap<String, Integer>();
+    }
+
+    @Override
+    synchronized void addSubAttribute(Attribute newSubAttribute) {
+        assert (newSubAttribute != null);
+        assert (newSubAttribute.getName() != null);
+        /* This should catch buggy state changing statements */
+        assert (!newSubAttribute.getName().equals(this.getName()));
+
+        subAttributesMap.put(newSubAttribute.getName(), subAttributes.size());
+        subAttributes.add(newSubAttribute);
+    }
+
+    @Override
+    protected synchronized Attribute getSubAttributeNode(String[] path,
+            int index) {
+        Integer indexOfNextNode = subAttributesMap.get(path[index]);
+        Attribute nextNode;
+
+        if (indexOfNextNode == null) {
+            /* We don't have the expected child => the attribute does not exist */
+            return null;
+        }
+        if (index == path.length - 1) {
+            /* It's our job to process this request */
+            return subAttributes.get(indexOfNextNode);
+        }
+
+        nextNode = subAttributes.get(indexOfNextNode);
+        return nextNode.getSubAttributeNode(path, index + 1);
     }
 }

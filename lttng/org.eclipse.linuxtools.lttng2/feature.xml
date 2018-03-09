@@ -4,7 +4,7 @@
       label="%featureName"
       version="3.0.0.qualifier"
       provider-name="%featureProvider"
-      license-feature="org.eclipse.license"
+      license-feature="org.eclipse.linuxtools.license.feature"
       license-feature-version="1.0.0.qualifier">
 
    <description url="http://www.example.com/description">
@@ -24,8 +24,14 @@
    </url>
 
    <includes
-         id="org.eclipse.linuxtools.tmf.ctf"
-         version="0.0.0"/>
+         id="org.eclipse.linuxtools.tmf"
+         version="0.0.0"
+         name="Tracing and Monitoring Framework (TMF)"/>
+
+   <includes
+         id="org.eclipse.linuxtools.ctf"
+         version="0.0.0"
+         name="Common Trace Format (CTF)"/>
 
    <requires>
       <import plugin="org.eclipse.core.runtime"/>

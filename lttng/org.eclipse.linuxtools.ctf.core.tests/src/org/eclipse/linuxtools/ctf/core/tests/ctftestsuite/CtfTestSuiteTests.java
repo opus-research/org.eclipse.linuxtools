@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -44,18 +44,7 @@ public class CtfTestSuiteTests {
     @Rule
     public TestRule globalTimeout = new Timeout(10000);
 
-    private static final String BASE_PATH = "traces/ctf-testsuite/tests/1.8/";
-
-    /**
-     * Test we know are currently failing. Ignore them so we can at least run
-     * the others.
-     *
-     * TODO Actually fix them!
-     */
-    private static final String[] IGNORED_TESTS = {
-            "regression/metadata/pass/sequence-typedef-length",
-            "regression/metadata/pass/array-of-struct"
-    };
+    private static final String basePath = "traces/ctf-testsuite/tests/1.8/";
 
     private final String fTracePath;
     private final boolean fExpectSuccess;
@@ -71,22 +60,22 @@ public class CtfTestSuiteTests {
      */
     @Parameters(name = "{index}: {0}")
     public static Iterable<Object[]> getTracePaths() {
-        final List<Object[]> dirs = new LinkedList<>();
+        final List<Object[]> dirs = new LinkedList<Object[]>();
 
-        addDirsFrom(dirs, BASE_PATH + "fuzzing/metadata/fail", false);
-        addDirsFrom(dirs, BASE_PATH + "fuzzing/metadata/pass", true);
-        addDirsFrom(dirs, BASE_PATH + "fuzzing/stream/fail", false);
-        addDirsFrom(dirs, BASE_PATH + "fuzzing/stream/pass", true);
+        addDirsFrom(dirs, basePath + "fuzzing/metadata/fail", false);
+        addDirsFrom(dirs, basePath + "fuzzing/metadata/pass", true);
+        addDirsFrom(dirs, basePath + "fuzzing/stream/fail", false);
+        addDirsFrom(dirs, basePath + "fuzzing/stream/pass", true);
 
-        addDirsFrom(dirs, BASE_PATH + "regression/metadata/fail", false);
-        addDirsFrom(dirs, BASE_PATH + "regression/metadata/pass", true);
-        addDirsFrom(dirs, BASE_PATH + "regression/stream/fail", false);
-        addDirsFrom(dirs, BASE_PATH + "regression/stream/pass", true);
+        addDirsFrom(dirs, basePath + "regression/metadata/fail", false);
+        addDirsFrom(dirs, basePath + "regression/metadata/pass", true);
+        addDirsFrom(dirs, basePath + "regression/stream/fail", false);
+        addDirsFrom(dirs, basePath + "regression/stream/pass", true);
 
-        addDirsFrom(dirs, BASE_PATH + "stress/metadata/fail", false);
-        addDirsFrom(dirs, BASE_PATH + "stress/metadata/pass", true);
-        addDirsFrom(dirs, BASE_PATH + "stress/stream/fail", false);
-        addDirsFrom(dirs, BASE_PATH + "stress/stream/pass", true);
+        addDirsFrom(dirs, basePath + "stress/metadata/fail", false);
+        addDirsFrom(dirs, basePath + "stress/metadata/pass", true);
+        addDirsFrom(dirs, basePath + "stress/stream/fail", false);
+        addDirsFrom(dirs, basePath + "stress/stream/pass", true);
 
         return dirs;
     }
@@ -97,24 +86,11 @@ public class CtfTestSuiteTests {
             return;
         }
         for (File traceDir : traceDirs) {
-            /* Skip the "run.sh" files and blacklisted tests */
-            if (!traceDir.isDirectory() || testIsBlacklisted(traceDir.getPath())) {
-                continue;
-            }
-
-            /* Add this test case to the list of tests to run */
-            Object array[] = new Object[] { traceDir.getPath(), expectSuccess };
-            dirs.add(array);
-        }
-    }
-
-    private static boolean testIsBlacklisted(String fullPath) {
-        for (String ignoredTest : IGNORED_TESTS) {
-            if (fullPath.contains(new File(ignoredTest).getPath())) {
-                return true;
+            if (traceDir.isDirectory()) {
+                Object array[] = new Object[] { traceDir.getPath(), expectSuccess };
+                dirs.add(array);
             }
         }
-        return false;
     }
 
     // ------------------------------------------------------------------------
@@ -143,11 +119,14 @@ public class CtfTestSuiteTests {
      */
     @Test
     public void testTrace() {
-        try (/* Instantiate the trace (which implies parsing the metadata) */
-                CTFTrace trace = new CTFTrace(fTracePath);
-                /* Read the trace until the end */
-                CTFTraceReader reader = new CTFTraceReader(trace);) {
+        CTFTrace trace = null;
+        CTFTraceReader reader = null;
+        try {
+            /* Instantiate the trace object (which implies parsing the metadata) */
+            trace = new CTFTrace(fTracePath);
 
+            /* Read the trace until the end */
+            reader = new CTFTraceReader(trace);
             reader.getCurrentEventDef();
             while (reader.advance()) {
                 assertNotNull(reader.getCurrentEventDef());
@@ -158,6 +137,14 @@ public class CtfTestSuiteTests {
             checkIfWeShouldFail(e);
         } catch (OutOfMemoryError e) {
             checkIfWeShouldFail(e);
+        } finally {
+            if (reader != null) {
+                reader.dispose();
+            }
+            if (trace != null) {
+                trace.dispose();
+            }
+
         }
     }
 

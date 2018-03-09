@@ -10,10 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,18 +56,13 @@ public class StatData extends AbstractDataManipulator {
 
 	@Override
 	public void parse() {
-		String file;
-		try {
-			String prefix = PerfPlugin.PERF_DEFAULT_STAT.replace('.', '-');
-			file = Files.createTempFile(prefix, "").toString(); //$NON-NLS-1$
-			String [] cmd = getCommand(this.prog, this.args, file);
-			performCommand(cmd, file);
-		} catch (IOException e) {
-		}
+		String [] cmd = getCommand(this.prog, this.args);
+		// perf stat prints the data to standard error
+		performCommand(cmd, 2);
 	}
 
-	protected String [] getCommand(String prog, String [] args, String file) {
-		List<String> ret = new ArrayList<>(Arrays.asList(
+	protected String [] getCommand(String prog, String [] args) {
+		List<String> ret = new ArrayList<String>(Arrays.asList(
 				new String[] {"perf", "stat" })); //$NON-NLS-1$ //$NON-NLS-2$
 		if (runCount > 1) {
 			ret.add("-r"); //$NON-NLS-1$
@@ -81,8 +74,6 @@ public class StatData extends AbstractDataManipulator {
 				ret.add(event);
 			}
 		}
-		ret.add("-o"); //$NON-NLS-1$
-		ret.add(file);
 		ret.add(prog);
 		ret.addAll(Arrays.asList(args));
 		return ret.toArray(new String [0]);
@@ -136,7 +127,9 @@ public class StatData extends AbstractDataManipulator {
 			}
 			PerfSaveStatsHandler saveStats = new PerfSaveStatsHandler();
 			saveStats.saveData(PerfPlugin.PERF_COMMAND);
-		} catch (URISyntaxException|CoreException e) {
+		} catch (URISyntaxException e) {
+			MessageDialog.openError(Display.getCurrent().getActiveShell(), Messages.MsgProxyError, Messages.MsgProxyError);
+		} catch (CoreException e) {
 			MessageDialog.openError(Display.getCurrent().getActiveShell(), Messages.MsgProxyError, Messages.MsgProxyError);
 		}
 	}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011-2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -38,29 +38,29 @@ public class Stream {
     /**
      * The numerical ID of the stream
      */
-    private Long fId = null;
+    private Long id = null;
 
     /**
      * Declarations of the stream-specific structures
      */
-    private StructDeclaration fPacketContextDecl = null;
-    private StructDeclaration fEventHeaderDecl = null;
-    private StructDeclaration fEventContextDecl = null;
+    private StructDeclaration packetContextDecl = null;
+    private StructDeclaration eventHeaderDecl = null;
+    private StructDeclaration eventContextDecl = null;
 
     /**
      * The trace to which the stream belongs
      */
-    private CTFTrace fTrace = null;
+    private CTFTrace trace = null;
 
     /**
      * Maps event ids to events
      */
-    private Map<Long, IEventDeclaration> fEvents = new HashMap<>();
+    private Map<Long, IEventDeclaration> events = new HashMap<Long, IEventDeclaration>();
 
     /**
      * The inputs associated to this stream
      */
-    private final Set<StreamInput> fInputs = new HashSet<>();
+    private final Set<StreamInput> inputs = new HashSet<StreamInput>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -73,7 +73,7 @@ public class Stream {
      *            The trace to which belongs this stream.
      */
     public Stream(CTFTrace trace) {
-        fTrace = trace;
+        this.trace = trace;
     }
 
     // ------------------------------------------------------------------------
@@ -85,7 +85,8 @@ public class Stream {
      * @param id the id of a stream
      */
     public void setId(long id) {
-        fId = id;
+        this.id = id;
+        this.events = trace.createEvents(this.id);
     }
 
     /**
@@ -93,7 +94,7 @@ public class Stream {
      * @return id the id of a stream
      */
     public Long getId() {
-        return fId;
+        return id;
     }
 
     /**
@@ -102,7 +103,7 @@ public class Stream {
      * @return If the ID is set or not
      */
     public boolean isIdSet() {
-        return fId != null;
+        return id != null;
     }
 
     /**
@@ -110,7 +111,7 @@ public class Stream {
      * @return is the event header set (timestamp and stuff) (see Ctf Spec)
      */
     public boolean isEventHeaderSet() {
-        return fEventHeaderDecl != null;
+        return eventHeaderDecl != null;
     }
 
     /**
@@ -118,7 +119,7 @@ public class Stream {
     * @return is the event context set (pid and stuff) (see Ctf Spec)
     */
     public boolean isEventContextSet() {
-        return fEventContextDecl != null;
+        return eventContextDecl != null;
     }
 
     /**
@@ -126,7 +127,7 @@ public class Stream {
      * @return Is the packet context set (see Ctf Spec)
      */
     public boolean isPacketContextSet() {
-        return fPacketContextDecl != null;
+        return packetContextDecl != null;
     }
 
     /**
@@ -134,7 +135,7 @@ public class Stream {
      * @param eventHeader the current event header for all events in this stream
      */
     public void setEventHeader(StructDeclaration eventHeader) {
-        fEventHeaderDecl = eventHeader;
+        this.eventHeaderDecl = eventHeader;
     }
 
     /**
@@ -142,7 +143,7 @@ public class Stream {
      * @param eventContext the context for all events in this stream
      */
     public void setEventContext(StructDeclaration eventContext) {
-        fEventContextDecl = eventContext;
+        this.eventContextDecl = eventContext;
     }
 
     /**
@@ -150,7 +151,7 @@ public class Stream {
      * @param packetContext the packet context for all packets in this stream
      */
     public void setPacketContext(StructDeclaration packetContext) {
-        fPacketContextDecl = packetContext;
+        this.packetContextDecl = packetContext;
     }
 
     /**
@@ -158,7 +159,7 @@ public class Stream {
      * @return the event header declaration in structdeclaration form
      */
     public StructDeclaration getEventHeaderDecl() {
-        return fEventHeaderDecl;
+        return eventHeaderDecl;
     }
 
     /**
@@ -166,7 +167,7 @@ public class Stream {
      * @return the event context declaration in structdeclaration form
      */
     public StructDeclaration getEventContextDecl() {
-        return fEventContextDecl;
+        return eventContextDecl;
     }
 
     /**
@@ -174,7 +175,7 @@ public class Stream {
      * @return the packet context declaration in structdeclaration form
      */
     public StructDeclaration getPacketContextDecl() {
-        return fPacketContextDecl;
+        return packetContextDecl;
     }
 
     /**
@@ -182,7 +183,7 @@ public class Stream {
      * @return the set of all stream inputs for this stream
      */
     public Set<StreamInput> getStreamInputs() {
-        return fInputs;
+        return inputs;
     }
 
     /**
@@ -190,7 +191,7 @@ public class Stream {
      * @return the parent trace
      */
     public CTFTrace getTrace() {
-        return fTrace;
+        return trace;
     }
 
     /**
@@ -198,7 +199,7 @@ public class Stream {
      * @return all the event declarations for this stream, using the id as a key for the hashmap.
      */
     public Map<Long, IEventDeclaration> getEvents() {
-        return fEvents;
+        return events;
     }
 
     // ------------------------------------------------------------------------
@@ -225,7 +226,7 @@ public class Stream {
          * If there is an event without id (the null key), it must be the only
          * one
          */
-        if (fEvents.get(null) != null) {
+        if (events.get(null) != null) {
             throw new ParseException(
                     "Event without id with multiple events in a stream"); //$NON-NLS-1$
         }
@@ -234,20 +235,20 @@ public class Stream {
          * If there is an event without id (the null key), it must be the only
          * one
          */
-        if ((event.getId() == null) && (fEvents.size() != 0)) {
+        if ((event.getId() == null) && (events.size() != 0)) {
             throw new ParseException(
                     "Event without id with multiple events in a stream"); //$NON-NLS-1$
         }
 
         /* Check if an event with the same ID already exists */
-        if (fEvents.get(event.getId()) != null) {
+        if (events.get(event.getId()) != null) {
             throw new ParseException("Event id already exists"); //$NON-NLS-1$
         }
         if (event.getId() == null) {
-            fEvents.put(EventDeclaration.UNSET_EVENT_ID, event);
+            events.put(EventDeclaration.UNSET_EVENT_ID, event);
         } else {
             /* Put the event in the map */
-            fEvents.put(event.getId(), event);
+            events.put(event.getId(), event);
         }
     }
 
@@ -258,14 +259,14 @@ public class Stream {
      *            The StreamInput to add.
      */
     public void addInput(StreamInput input) {
-        fInputs.add(input);
+        inputs.add(input);
     }
 
     @Override
     public String toString() {
-        return "Stream [id=" + fId + ", packetContextDecl=" + fPacketContextDecl //$NON-NLS-1$ //$NON-NLS-2$
-                + ", eventHeaderDecl=" + fEventHeaderDecl //$NON-NLS-1$
-                + ", eventContextDecl=" + fEventContextDecl + ", trace=" + fTrace //$NON-NLS-1$ //$NON-NLS-2$
-                + ", events=" + fEvents + ", inputs=" + fInputs + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "Stream [id=" + id + ", packetContextDecl=" + packetContextDecl //$NON-NLS-1$ //$NON-NLS-2$
+                + ", eventHeaderDecl=" + eventHeaderDecl //$NON-NLS-1$
+                + ", eventContextDecl=" + eventContextDecl + ", trace=" + trace //$NON-NLS-1$ //$NON-NLS-2$
+                + ", events=" + events + ", inputs=" + inputs + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

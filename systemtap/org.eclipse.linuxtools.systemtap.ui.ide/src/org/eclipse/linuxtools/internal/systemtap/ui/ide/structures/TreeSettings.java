@@ -20,6 +20,7 @@ import java.util.Calendar;
 
 import org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.ui.systemtapgui.SystemTapGUISettings;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.XMLMemento;
@@ -98,7 +99,9 @@ public final class TreeSettings {
 			return false;
 		}
 
-		try (FileReader reader = new FileReader(settingsFile)) {
+		try {
+			FileReader reader = new FileReader(settingsFile);
+
 			if(!reader.ready()) {
 				reader.close();
 				return false;
@@ -133,7 +136,11 @@ public final class TreeSettings {
 
 			child = data.getChild("modifiedDate"); //$NON-NLS-1$
 			treeFileDate = Long.parseLong(child.getString("date")); //$NON-NLS-1$
-		} catch(IOException|WorkbenchException fnfe) {
+		} catch(FileNotFoundException fnfe) {
+			return false;
+		} catch(WorkbenchException we) {
+			return false;
+		} catch(IOException e) {
 			return false;
 		}
 
@@ -252,7 +259,7 @@ public final class TreeSettings {
 	}
 
 	private static boolean openFile() {
-		settingsFile = new File(System.getenv("HOME") + "/.systemtapgui/" + fileName); //$NON-NLS-1$ //$NON-NLS-2$
+		settingsFile = new File(SystemTapGUISettings.settingsFolder.getAbsolutePath() + fileName);
 
 		try {
 			if (!settingsFile.exists()){

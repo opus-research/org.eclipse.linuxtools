@@ -21,6 +21,7 @@ import org.junit.runners.Suite;
 		CopierTest.class, IndexedObjectTest.class, KernelSourceTreeTest.class,
 		LoggingStreamDaemonTest.class, SortTest.class, StreamGobblerTest.class,
 		StringFormatterTest.class, TreeDefinitionNodeTest.class,
-		TreeNodeTest.class})
+		TreeNodeTest.class,
+		ZipArchiveTest.class})
 public class AllTests {
 }

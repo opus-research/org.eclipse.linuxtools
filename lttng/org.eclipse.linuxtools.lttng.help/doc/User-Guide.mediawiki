@@ -2,6 +2,7 @@
 = Overview =
 
 LTTng (Linux Trace Toolkit, next generation) is a highly efficient tracing tool for Linux that can be used to track down kernel and application performance issues as well as troubleshoot problems involving multiple concurrent processes and threads. It consists of a set of kernel modules, daemons - to collect the raw tracing data - and a set of tools to control, visualize and analyze the generated data. It also provides support for user space application instrumentation.
+
 For more information about LTTng, refer to the project [http://lttng.org site]
 
 '''Note''': This User Guide covers the integration of the latest LTTng (v2.0) in Eclipse. The legacy version (v0.x) of both the tracer and the LTTng integration are no longer being maintained.
@@ -188,63 +189,37 @@ Tracing projects have two sub-folders: '''Traces''' which holds the individual t
 
 === Importing Traces in a Project ===
 
-The '''Traces''' folder holds the set of traces available for a tracing project. The following chapters will explain different ways to import traces to the '''Traces''' folder of a tracing project.
-
 ==== Open Trace File, Open Trace Directory ====
 
-To open a single trace, right-click on the '''Traces''' folder and select '''Open Trace File...''' (for single trace files) or '''Open Trace directory...''' (for directory traces such as Common Trace Format (CTF) traces).
+To open a single trace, right-click on the Traces folder and select '''Open Trace File...''' (for logs and such) or '''Open Trace directory...''' (for CTF traces).
 
 [[Image:images/OpenTraceFile.png]]
 
-A new dialog will show for selecting a trace to open. Select a trace file or directory and then click on '''OK'''. Now, the trace viewer will attempt to detect the trace types of the selected trace. The auto detection algorithm will validate the trace against all known trace types. If multiple trace types are valid, a trace type is chosen based on a confidence criteria. The validation process and the computation of the confidence level are trace type specific. After successful validation the trace will be linked into the '''Traces''' folder and then opened with the detected trace type.
+Select the file or directory, and the trace will be imported into the selected Traces folder. It will attempt to auto-detect the trace type. If the trace validates as more than one trace type, a window will prompt the user to select a trace type. Once a trace type is selected, the trace will load.
 
 Note that a trace type is an extension point of the '''Tracing and Monitoring Framework (TMF)'''. Depending on the which features are loaded, the list of available trace types can vary.
-
-==== Importing ====
-
-To import a set of traces to the '''Traces''' folder, right-click on the '''Traces''' folder and select '''Import...''' from the context-sensitive menu.
-
-[[Image:images/ProjectImportTraceAction.png]]
-
-At this point, the '''Import Trace Wizard''' will show for selecting traces to import. By default, it shows the correct destination directory where the traces will be imported to. Now, specify the location of the traces in the '''Source directory'''. For that click on the button '''Browse''', browse the media to the location of the traces and click on '''OK'''. Then select the traces to import in the list of files and folders. Optionally, select the '''Trace Type''' from the drop-down menu.
-
-If '''Trace Type''' is set to '''<Automatic Detection>''', the wizard will attempt to detect the trace types of the selected files. The automatic detection algorithm validates a trace against all known trace types. If multiple trace types are valid, a trace type is chosen based on a confidence criteria. The validation process and the computation of the confidence level are trace type specific. Optionally, '''Import unrecognized traces''' can be selected to import trace files that could not be automatically detected by '''<Automatic Detection>'''.
-
-Select or deselect the checkboxes for '''Overwrite existing trace without warning''' and '''Create links into workspace'''. When all options are configured, click on '''Finish'''.
-
-Note that traces of certain types (e.g. LTTng Kernel) are actually a composite of multiple channel traces grouped under a folder. Either the folder or its files can be selected to import the trace.
-
-[[Image:images/ProjectImportTraceDialog.png]]
-
-If a trace already exists with the same name, the user can choose to rename the imported trace, overwrite the original trace or skip the trace. When rename is chosen, a number is appended to the trace name, for example smalltrace becomes smalltrace(2).
-
-[[Image:images/ProjectImportTraceDialogRename.png]]
-
-If one selects '''Rename All''', '''Overwrite All''' or '''Skip All''' the choice will be applied for all traces with a name conflict.
-
-Upon successful importing, the traces will be stored in the '''Traces''' folder. If a trace type was associated to a trace, then the corresponding icon will be displayed. If no trace type is detected the unknown icon [[Image:images/unknown_parser.gif]] will be displayed. Linked traces will have a little arrow as decorator on the right bottom corner.
-
-Note that trace type is an extension point of the '''Tracing and Monitoring Framework (TMF)'''. Depending on the which features are loaded, the list of trace types can vary.
-
-Alternatively, one can open the '''Import...''' menu from the '''File''' main menu.
-
-[[Image:images/importImages/importImportMenu.png]]
-
-Then select '''Trace Import''' and click on '''Next>'''.
-
-[[Image:images/ProjectImportWizardSelect.png]]
-
-At this point, the '''Import Trace Wizard''' will show. To import traces to the tracing project, follow the instructions that were described above.
 
 ==== Batch Importing ====
 
 The '''Batch Import Trace Wizard''' allows users to search their media for traces and import multiple traces of varying trace types simultaneously. It also handles name clashes and renaming of traces.
 
-To import a set of traces to the '''Traces''' folder, right-click on the '''Traces''' folder and select '''Batch Import...''' from the context-sensitive menu. 
+The '''Traces''' folder holds the set of traces available for a tracing project. To import a set of traces to the '''Traces''' folder, one can open the '''Import...''' menu from the '''File''' main menu.
+
+[[Image:images/importImages/importImportMenu.png]]
+
+Then select '''Batch Trace Import'''
+
+[[Image:images/importImages/importMenuSelect.png]]
+
+Or one can select the '''Traces''' folder by double clicking on the project name.
+
+[[Image:images/importImages/importSelectTracingProject.png]]
+
+Then click the right mouse button on the '''Traces''' folder. Then select '''Batch Import...''' menu item in the context-sensitive menu.
 
 [[Image:images/importImages/importBatchImport.png]]
 
-At this point, the '''Batch Import Wizard''' is opened.
+At this point, the '''Batch import wizard''' is opened.
 
 The '''Available trace types''' page is visible. Select a trace type to scan for by clicking an item in trace types tree. If one selects a parent element, the new state will be propagated to the children.
 
@@ -302,12 +277,6 @@ If the '''Finish''' button is grayed, or if the user wishes to import to a diffe
 You will then see the traces in the '''Traces''' folder as shown below and can '''open''' them by '''double-clicking''' on them. For more details on how to open a trace see section [[#Opening_a_Trace_or_Experiment|Opening a Trace or Experiment]].
 
 [[Image:images/importImages/importFinish.png]]
-
-Alternatively, one can open the '''Import...''' menu from the '''File''' main menu.
-
-[[Image:images/importImages/importImportMenu.png]]
-
-Then select '''Batch Trace Import''' and click on next. This will open the '''Batch Import Wizard'''. To import traces to the tracing project, follow the instructions as described above. 
 
 === Trace Package Exporting and Importing ===
 
@@ -483,15 +452,13 @@ A trace or experiment can be open by double-clicking the left mouse button on th
 
 [[Image:images/OpenTraceAction.png]]
 
-When opening a trace or experiment all currently opened views will be filled which are defined for the corresponding trace type. Additionally, an internal index will be created for fast navigation within a trace. For LTTng 2.0 kernel traces a persistent state history will also be build. This state history will be used in different views to display kernel state information.
-
-If a trace resource is a file (and not a directory), then the '''Open With''' menu item is available in the context-sensitive menu and can be used to open the trace source file with any applicable internal or external editor. In that case the trace will not be processed by the tracing application.
+When opening a trace or experiment all currently open view will be filled which are defined for the corresponding trace type. Additionally, an internal index will be created for fast navigation within a trace. For LTTng 2.0 kernel traces a persistent state history will also be build. This state history will be used in different views to display kernel state information.
 
 === Drag and Drop ===
 
 Traces can be also be imported to a project by dragging from another tracing project and dropping to the project's trace folder. The trace will be copied and the trace type will be set.
 
-Any resource can be dragged and dropped from a non-tracing project, and any file or folder can be dragged from an external tool, into a tracing project's trace folder. The resource will be copied or imported as a new trace and it will be attempted to detect the trace types of the imported resource. The automatic detection algorithm validates a trace against all known trace types. If multiple trace types are valid, a trace type is chosen based on a confidence criteria. The validation process and the computation of the confidence level are trace type specific. If no trace type is detected the user needs to set the trace type manually.
+Any resource can be dragged and dropped from a non-tracing project, and any file or folder can be dragged from an external tool, into a tracing project's trace folder. The resource will be copied or imported as a new trace, however the trace type will be unknown and need to be set manually by the user.
 
 To import the trace as a link, use the platform-specific key modifier while dragging the source trace. A link will be created in the target project to the trace's location on the file system.
 
@@ -611,8 +578,6 @@ The Histogram View displays the trace events distribution with respect to time. 
 [[Image:images/HistogramView.png]]
 
 The '''Hide Lost Events''' toggle button [[Image:images/hide_lost_events.gif]] in the local toolbar allows to hide the bars of lost events. When the button is selected it can be toggled again to show the lost events.
-
-The '''Activate Trace Coloring''' toggle button [[Image:images/show_hist_traces.gif]] in the local toolbar allows to use separate colors for each trace of an experiment. Note that this feature is not available if your experiment contains more than twenty two traces. When activated, a legend is displayed at the bottom on the histogram view.
 
 On the top left, there are three text controls:
 
@@ -753,30 +718,6 @@ Double-clicking on a call stack event will zoom the time graph to the selected f
 
 Clicking the '''Select Next Event''' or '''Select Previous Event''' or using the left and right arrows will navigate to the next or previous call stack event, and select the function currently at the top of the call stack.
 
-Clicking the '''Import Mapping File''' ([[Image:images/import.gif]]) icon will open a file selection dialog, allowing you to import a text file containing mappings from function addresses to function names. If the callstack provider for the current trace type only provides function addresses, a mapping file will be required to get the function names in the view. See the following sections for an example with LTTng-UST traces.
-
-=== Using the Callstack View with LTTng-UST traces ===
-
-There is support in the LTTng-UST integration plugin to display the callstack of applications traced with the ''liblttng-ust-cyg-profile.so'' library (see the ''liblttng-ust-cyg-profile'' man page for additional information). To do so, you need to:
-
-* Recompile your application with "''-g -finstrument-functions''".
-* Add the ''vtid'' and ''procname'' contexts to your trace session. See the [[#Adding Contexts to Channels and Events of a Domain | Adding Contexts to Channels and Events of a Domain]] section. Or if using the command-line:
-** <pre>lttng add-context -u -t vtid -t procname</pre>
-* Preload the ''liblttng-ust-cyg-profile'' library when running your program:
-** <pre>LD_PRELOAD=/usr/lib/liblttng-ust-cyg-profile.so ./myprogram</pre>
-
-Once you load the resulting trace, making sure it's set to the ''Common Trace Format - LTTng UST Trace'' type, the Callstack View should be populated with the relevant information. However, since GCC's cyg-profile instrumentation only provides function addresses, and not names, an additional step is required to get the function names showing in the view. The following section explains how to do so.
-
-=== Importing a function name mapping file for LTTng-UST traces ===
-
-If you followed the steps in the previous section, you should have a Callstack View populated with function entries and exits. However, the view will display the function addresses instead of names in the intervals, which are not very useful by themselves. To get the actual function names, you need to:
-
-* Generate a mapping file from the binary, using:
-** <pre>nm myprogram > mapping.txt</pre>
-* Click the '''Import Mapping File''' ([[Image:images/import.gif]]) button in the Callstack View, and select the ''mapping.txt'' file that was just created.
-
-The view should now update to display the function names instead. Make sure the binary used for taking the trace is the one used for this step too (otherwise, there is a good chance of the addresses not being the same).
-
 == Custom Parsers ==
 
 Custom parser wizards allow the user to define their own parsers for text or XML traces. The user defines how the input should be parsed into internal trace events and identifies the event fields that should be created and displayed. Traces created using a custom parser can be correlated with other built-in traces or traces added by plug-in extension.
@@ -794,7 +735,7 @@ Fill out the first wizard page with the following information:
 
 * '''Log type:''' Enter a name for the custom log entries, which is also the name of the custom parser.
 * '''Time Stamp format:''' Enter the date and time pattern that will be used to output the Time Stamp.<br>
-Note: information about date and time patterns can be found here: [../reference/api/org/eclipse/linuxtools/tmf/core/timestamp/TmfTimestampFormat.html TmfTimestampFormat]
+Note: information about date and time patterns can be found here: [http://java.sun.com/javase/6/docs/api/java/text/SimpleDateFormat.html]
 
 Click the '''Add next line''', '''Add child line''' or '''Remove line''' buttons to create a new line of input or delete it. For each line of input, enter the following information:
 
@@ -862,7 +803,7 @@ Fill out the first wizard page with the following information:
 * '''Log type:''' Enter a name for the custom log entries, which is also the name of the custom parser.
 * '''Time Stamp format:''' Enter the date and time pattern that will be used to output the Time Stamp.<br>
 
-Note: information about date and time patterns can be found here: [../reference/api/org/eclipse/linuxtools/tmf/core/timestamp/TmfTimestampFormat.html TmfTimestampFormat]
+Note: information about date and time patterns can be found here: [http://java.sun.com/javase/6/docs/api/java/text/SimpleDateFormat.html]
 
 Click the '''Add document element''' button to create a new document element and enter a name for the root-level document element of the XML file.
 

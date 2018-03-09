@@ -56,23 +56,9 @@
             locationURI="toolbar:formsToolbar">
          <command
                commandId="org.eclipse.linuxtools.rpm.createrepo.executeCommand"
-               icon="icons/refresh.gif"
-               style="push"
-               tooltip="%update.command">
-            <parameter
-                  name="executionType"
-                  value="refresh">
-            </parameter>
-         </command>
-         <command
-               commandId="org.eclipse.linuxtools.rpm.createrepo.executeCommand"
                icon="icons/run_exc.gif"
                style="push"
-               tooltip="%main.name">
-            <parameter
-                  name="executionType"
-                  value="createrepo">
-            </parameter>
+               tooltip="%execute.command">
          </command>
       </menuContribution>
    </extension>
@@ -81,17 +67,12 @@
       <command
             id="org.eclipse.linuxtools.rpm.createrepo.executeCommand"
             name="%execute.command">
-         <commandParameter
-               id="executionType"
-               name="executionType"
-               optional="false">
-         </commandParameter>
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="org.eclipse.linuxtools.internal.rpm.createrepo.handler.CreaterepoCommandHandler"
+            class="org.eclipse.linuxtools.internal.rpm.createrepo.handler.CreaterepoExecuteCommandHandler"
             commandId="org.eclipse.linuxtools.rpm.createrepo.executeCommand">
       </handler>
    </extension>
@@ -115,7 +96,7 @@
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
-               class="org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProjectNature">
+               class="org.eclipse.linuxtools.rpm.createrepo.CreaterepoProjectNature">
          </run>
       </runtime>
    </extension>

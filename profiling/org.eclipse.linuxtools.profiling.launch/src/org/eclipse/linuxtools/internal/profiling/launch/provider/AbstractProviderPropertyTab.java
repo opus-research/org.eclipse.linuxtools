@@ -175,7 +175,7 @@ public abstract class AbstractProviderPropertyTab extends AbstractCPropertyTab {
 	}
 
 	private void updateOptionsEnable() {
-		if (useProjectSetting.getSelection()) {
+		if (useProjectSetting.getSelection() == true) {
 			projectSettingsGroup.setEnabled(true);
 			setButtonsEnabled(true);
 			fLink.setVisible(false);
@@ -188,9 +188,8 @@ public abstract class AbstractProviderPropertyTab extends AbstractCPropertyTab {
 
 	@Override
 	protected void performDefaults() {
-		if (useProjectSetting.getSelection()) {
+		if (useProjectSetting.getSelection() == true)
 			updateValue(getPreferenceStore().getDefaultString(ProviderProfileConstants.PREFS_KEY + getType()));
-		}
 		updateOptionsEnable();
 	}
 

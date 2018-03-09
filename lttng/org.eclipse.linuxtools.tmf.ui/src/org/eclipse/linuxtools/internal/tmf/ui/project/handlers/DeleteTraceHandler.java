@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -113,6 +113,10 @@ public class DeleteTraceHandler extends AbstractHandler {
                 final TmfTraceElement trace = (TmfTraceElement) element;
                 try {
                     trace.delete(null);
+
+                    // Refresh the project
+                    trace.getProject().refresh();
+
                 } catch (final CoreException e) {
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override

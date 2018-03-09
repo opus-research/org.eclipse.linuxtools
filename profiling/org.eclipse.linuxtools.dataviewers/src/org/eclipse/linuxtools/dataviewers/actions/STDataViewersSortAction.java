@@ -28,9 +28,9 @@ public class STDataViewersSortAction extends Action {
     private final STDataViewersSortDialog dialog;
 
     /**
-     * Creates the action for the given viewer.
+     * Constructor
      *
-     * @param stViewer The AbstractSTViewer to create the action for.
+     * @param stViewer
      */
     public STDataViewersSortAction(AbstractSTViewer stViewer) {
 		super(STDataViewersMessages.sortAction_title, STDataViewersImages
@@ -39,11 +39,16 @@ public class STDataViewersSortAction extends Action {
 		this.stViewer = stViewer;
 
 		// building a sort dialog
-		dialog = new STDataViewersSortDialog(stViewer.getViewer().getControl().getShell(), stViewer.getTableSorter());
+		dialog = getSortDialog();
 
 		setEnabled(true);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.jface.action.Action#run()
+     */
     @Override
 	public void run() {
         if (dialog.open() == Window.OK && dialog.isDirty()) {
@@ -55,5 +60,14 @@ public class STDataViewersSortAction extends Action {
             });
 
         }
+    }
+
+    /**
+     * Return a sort dialog for the receiver.
+     *
+     * @return TableSortDialog
+     */
+    protected STDataViewersSortDialog getSortDialog() {
+        return new STDataViewersSortDialog(stViewer.getViewer().getControl().getShell(), stViewer.getTableSorter());
     }
 }

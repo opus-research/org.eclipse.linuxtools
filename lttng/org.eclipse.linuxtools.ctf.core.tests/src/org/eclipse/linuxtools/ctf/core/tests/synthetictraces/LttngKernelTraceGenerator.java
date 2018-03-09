@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
- *   Marc-Andre Laperle - Move generation to traces folder
  *******************************************************************************/
 
 package org.eclipse.linuxtools.ctf.core.tests.synthetictraces;
@@ -17,18 +16,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.ctf.core.tests.CtfCoreTestPlugin;
 
 /**
  * Generate a kernel trace
@@ -155,6 +148,7 @@ public class LttngKernelTraceGenerator {
     private final long fDuration;
     private final long fNbEvents;
     private final int fNbChans;
+    private File fPath;
 
     private static final String[] sfProcesses = {
             "IDLE",
@@ -169,8 +163,9 @@ public class LttngKernelTraceGenerator {
     };
 
 
-    private static final String TRACES_DIRECTORY = "traces";
-    private static final String TRACE_NAME = "synthetic-trace";
+    private static final String DIRECTORY_NAME = "synthetic-trace";
+    // not using createTempFile as this is a directory
+    private static final String PATH = System.getProperty("java.io.tmpdir") + File.separator + DIRECTORY_NAME;
 
     /**
      * Main, not always needed
@@ -179,9 +174,7 @@ public class LttngKernelTraceGenerator {
      *            args
      */
     public static void main(String[] args) {
-        // not using createTempFile as this is a directory
-        String path = System.getProperty("java.io.tmpdir") + File.separator + TRACE_NAME;
-        generateLttngKernelTrace(new File(path));
+        generateLttngKernelTrace();
     }
 
     /**
@@ -190,7 +183,7 @@ public class LttngKernelTraceGenerator {
      * @return the name of the trace
      */
     public static String getName() {
-        return TRACE_NAME;
+        return DIRECTORY_NAME;
     }
 
     /**
@@ -199,36 +192,20 @@ public class LttngKernelTraceGenerator {
      * @return the path
      */
     public static String getPath() {
-        CtfCoreTestPlugin plugin = CtfCoreTestPlugin.getDefault();
-        if (plugin == null) {
-            return null;
-        }
-        URL location = FileLocator.find(plugin.getBundle(), new Path(TRACES_DIRECTORY), null);
-        File file = null;
-        try {
-            IPath path = new Path(FileLocator.toFileURL(location).getPath()).append(TRACE_NAME);
-            file = path.toFile();
-        } catch (IOException e) {
-            // Shouldn't happen but at least throw something to get the test to fail early
-            throw new IllegalStateException();
-        }
-
+        final File file = new File(PATH);
         if (!file.exists()) {
-            generateLttngKernelTrace(file);
+            generateLttngKernelTrace();
         }
         return file.getAbsolutePath();
     }
 
     /**
      * Generate a trace
-     *
-     * @param file
-     *            the file to write the trace to
      */
-    public static void generateLttngKernelTrace(File file) {
+    public static void generateLttngKernelTrace() {
         final int cpus = 25;
         LttngKernelTraceGenerator gt = new LttngKernelTraceGenerator(2l * Integer.MAX_VALUE - 100, 500000, cpus);
-        gt.writeTrace(file);
+        gt.writeTrace(PATH);
     }
 
     /**
@@ -251,35 +228,39 @@ public class LttngKernelTraceGenerator {
     /**
      * Write the trace to a file
      *
-     * @param file
-     *            the file to write the trace to
+     * @param path
+     *            the path to write the trace to
      */
-    public void writeTrace(File file) {
+    public void writeTrace(String path) {
+        fPath = new File(path);
 
-        if (!file.exists()) {
-            file.mkdir();
+        if (!fPath.exists()) {
+            fPath.mkdir();
         } else {
-            if (file.isFile()) {
-                file.delete();
-                file.mkdir();
+            if (fPath.isFile()) {
+                fPath.delete();
+                fPath.mkdir();
             } else {
                 // the ctf parser doesn't recurse, so we don't need to.
-                final File[] listFiles = file.listFiles();
+                final File[] listFiles = fPath.listFiles();
                 for (File child : listFiles) {
                     child.delete();
                 }
             }
         }
 
-        File metadataFile = new File(file.getPath() + File.separator + "metadata");
+        fPath.deleteOnExit();
+        File metadataFile = new File(fPath.getPath() + File.separator + "metadata");
+        metadataFile.deleteOnExit();
         File[] streams = new File[fNbChans];
         FileChannel[] channels = new FileChannel[fNbChans];
         FileOutputStream fos = null;
 
         try {
             for (int i = 0; i < fNbChans; i++) {
-                streams[i] = new File(file.getPath() + File.separator + "channel" + i);
+                streams[i] = new File(fPath.getPath() + File.separator + "channel" + i);
                 channels[i] = new FileOutputStream(streams[i]).getChannel();
+                streams[i].deleteOnExit();
             }
         } catch (FileNotFoundException e) {
         }

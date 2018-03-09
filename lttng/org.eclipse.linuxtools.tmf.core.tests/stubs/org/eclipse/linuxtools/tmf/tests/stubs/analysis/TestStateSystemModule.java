@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.tmf.tests.stubs.analysis;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 
@@ -21,11 +21,10 @@ import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
  *
  * @author Geneviève Bastien
  */
-@NonNullByDefault
 public class TestStateSystemModule extends TmfStateSystemAnalysisModule {
 
     @Override
-    protected ITmfStateProvider createStateProvider() {
+    protected @NonNull ITmfStateProvider createStateProvider() {
         return new TestStateSystemProvider(getTrace());
     }
 

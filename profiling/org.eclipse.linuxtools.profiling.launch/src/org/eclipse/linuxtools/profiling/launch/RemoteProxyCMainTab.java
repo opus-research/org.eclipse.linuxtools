@@ -874,9 +874,9 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 	 * If one is null and the other isn't, they are considered unequal.  If
 	 * they are both non-null, the result is the same as the
 	 * String.equals() method.
-	 * @param s1 First string to compare.
-	 * @param s2 Second string to compare.
-	 * @return Return true if equal, false otherwise.
+	 * @param s1
+	 * @param s2
+	 * @return
 	 */
 	private static boolean equal(String s1, String s2) {
 		if (s1 == null && s2 == null)
@@ -1094,9 +1094,10 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
 		}
 
 		String projectDir = EMPTY_STRING;
+		ConfigUtils configUtils = new ConfigUtils(config);
 		IProject project = null;
 		try {
-			project = ConfigUtils.getProject(ConfigUtils.getProjectName(config));
+			project = ConfigUtils.getProject(configUtils.getProjectName());
 		} catch (CoreException e) {
 			setErrorMessage(fPreviouslyCheckedWorkingDirErrorMsg = ProxyLaunchMessages.error_accessing_working_directory);
 		}

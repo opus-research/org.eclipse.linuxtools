@@ -12,18 +12,15 @@ package org.eclipse.linuxtools.callgraph.launch.tests;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.linuxtools.internal.callgraph.core.LaunchConfigurationConstants;
 import org.eclipse.linuxtools.internal.callgraph.launch.LaunchStapGraph;
 import org.eclipse.linuxtools.internal.callgraph.launch.SystemTapLaunchConfigurationDelegate;
-import org.junit.After;
 import org.junit.Test;
 
-public class ConfigurationTest extends AbstractStapTest {
+public class ConfigurationTest extends AbstractStapTest{
 
 
 	/**
@@ -96,16 +93,12 @@ public class ConfigurationTest extends AbstractStapTest {
 				+ " -F --skip-badvars --ignore-dwarf -q " + " -c '" + testBinaryPath
 				+ "' " + testScriptPath + " --runtime=dyninst " + testArguments + " >& "
 				+ testOutputPath,
-				del.generateCommand());
+				del.generateCommand(config));
 
 		killStap();
 	}
 
-	@After
-	public void deleteFiles() {
-		File file = new File("/tmp/ThisFileDoesNothingDeleteIt");
-		if (file.exists()) {
-			file.delete();
-		}
-	}
+
+
+
 }

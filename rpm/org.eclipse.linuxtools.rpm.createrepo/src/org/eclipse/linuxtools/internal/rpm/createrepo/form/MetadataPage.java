@@ -20,14 +20,14 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
-import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoPreferenceConstants;
-import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProject;
-import org.eclipse.linuxtools.internal.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.eclipse.linuxtools.internal.rpm.createrepo.tree.CreaterepoCategoryModel;
 import org.eclipse.linuxtools.internal.rpm.createrepo.tree.CreaterepoTreeCategory;
 import org.eclipse.linuxtools.internal.rpm.createrepo.tree.CreaterepoTreeContentProvider;
 import org.eclipse.linuxtools.internal.rpm.createrepo.tree.CreaterepoTreeLabelProvider;
+import org.eclipse.linuxtools.rpm.createrepo.CreaterepoPreferenceConstants;
+import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
+import org.eclipse.linuxtools.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -127,17 +127,6 @@ public class MetadataPage extends FormPage {
 		if (!prefRevisionTxt.isEmpty()) {
 			revisionTxt.setText(prefRevisionTxt);
 		}
-		revisionTxt.addSelectionListener(new SelectionAdapter() {
-			/*
-			 * (non-Javadoc)
-			 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-			 */
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				String revisionText = revisionTxt.getText().trim();
-				savePreferences(CreaterepoPreferenceConstants.PREF_REVISION, revisionText);
-			}
-		});
 		revSection.setClient(sectionClient);
 		//---------- REVISION SECTION END
 
@@ -172,8 +161,8 @@ public class MetadataPage extends FormPage {
 				| SWT.VERTICAL | SWT.LEFT_TO_RIGHT | SWT.SMOOTH);
 		tagsTreeViewer.setContentProvider(new CreaterepoTreeContentProvider());
 		tagsTreeViewer.setLabelProvider(new CreaterepoTreeLabelProvider());
-		CreaterepoCategoryModel model = new CreaterepoCategoryModel(project);
-		tagsTreeViewer.setInput(model);
+		CreaterepoCategoryModel test = new CreaterepoCategoryModel(project);
+		tagsTreeViewer.setInput(test);
 		// change the tag text field on change (make editing tag easier)
 		tagsTreeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override

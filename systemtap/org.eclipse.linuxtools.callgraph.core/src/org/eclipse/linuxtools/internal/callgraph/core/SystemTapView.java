@@ -228,7 +228,7 @@ public abstract class SystemTapView extends ViewPart {
     }
 
 
-    private void createHelpActions() {
+    public void createHelpActions() {
         helpVersion = new Action(Messages.getString("SystemTapView.Version")) { //$NON-NLS-1$
             @Override
 			public void run() {
@@ -261,7 +261,7 @@ public abstract class SystemTapView extends ViewPart {
         };
     }
 
-    private void createSaveAction() {
+    protected void createSaveAction() {
         //Save callgraph.out
         saveFile = new Action(Messages.getString("SystemTapView.SaveMenu")){ //$NON-NLS-1$
             @Override
@@ -316,8 +316,15 @@ public abstract class SystemTapView extends ViewPart {
 				return;
 			}
 
-			try  (FileInputStream fileIn = new FileInputStream(sFile); FileOutputStream fileOut = new FileOutputStream(file);
-					FileChannel channelIn = fileIn.getChannel(); FileChannel channelOut = fileOut.getChannel()){
+			FileInputStream fileIn = null;
+			FileOutputStream fileOut = null;
+			FileChannel channelIn = null;
+			FileChannel channelOut = null;
+			try {
+				fileIn = new FileInputStream(sFile);
+				fileOut = new FileOutputStream(file);
+				channelIn = fileIn.getChannel();
+				channelOut = fileOut.getChannel();
 
 				if (channelIn == null || channelOut == null) {
 					return;
@@ -328,6 +335,20 @@ public abstract class SystemTapView extends ViewPart {
 						FileChannel.MapMode.READ_ONLY, 0, size);
 
 				channelOut.write(buf);
+
+			} finally {
+				if (channelIn != null) {
+					channelIn.close();
+				}
+				if (channelOut != null) {
+					channelOut.close();
+				}
+				if (fileIn != null) {
+					fileIn.close();
+				}
+				if (fileOut != null) {
+					fileOut.close();
+				}
 			}
 		} catch (IOException e) {
 			CallgraphCorePlugin.logException(e);

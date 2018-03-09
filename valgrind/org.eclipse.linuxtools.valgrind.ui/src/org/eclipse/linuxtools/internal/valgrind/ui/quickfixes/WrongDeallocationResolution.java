@@ -42,6 +42,9 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 	private static final String DELETE = "delete"; //$NON-NLS-1$
 	private static final String FREE = "free"; //$NON-NLS-1$
 	private static final String NEW = "new"; //$NON-NLS-1$
+	private int allocLine;
+	private int allocOffset;
+	private int allocLength;
 
 	@Override
 	public void apply(IMarker marker, IDocument document) {
@@ -80,7 +83,12 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 				removeMarker(nestedFile, nestedLine, marker.getType());
 				marker.delete();
 			}
-		} catch (BadLocationException|CoreException e ){
+		} catch (BadLocationException e ){
+			Status status = new Status(IStatus.ERROR, ValgrindUIPlugin.PLUGIN_ID, null, e);
+			String title = Messages.getString("ValgrindMemcheckQuickFixes.Valgrind_error_title"); //$NON-NLS-1$
+			String message = Messages.getString("ValgrindMemcheckQuickFixes.Error_applying_quickfix"); //$NON-NLS-1$
+			showErrorMessage(title, message, status);
+		} catch (CoreException e ){
 			Status status = new Status(IStatus.ERROR, ValgrindUIPlugin.PLUGIN_ID, null, e);
 			String title = Messages.getString("ValgrindMemcheckQuickFixes.Valgrind_error_title"); //$NON-NLS-1$
 			String message = Messages.getString("ValgrindMemcheckQuickFixes.Error_applying_quickfix"); //$NON-NLS-1$
@@ -127,6 +135,7 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 	 * @param marker {@link IMarker} object that points to where the wrong de-allocation function is
 	 * @return {@link String} object containing the allocation function
 	 * @throws BadLocationException
+	 * @throws ValgrindMessagesException
 	 */
 	private String getAllocFunction(IMarker marker, IDocument document) throws BadLocationException {
 		IValgrindMessage allocMessage = null;
@@ -143,9 +152,9 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 			}
 		}
 		if(allocMessage instanceof ValgrindStackFrame){
-			int allocLine = ((ValgrindStackFrame)allocMessage).getLine() - 1;
-			int allocOffset = document.getLineOffset(allocLine);
-			int allocLength = document.getLineLength(allocLine);
+			allocLine = ((ValgrindStackFrame)allocMessage).getLine() - 1;
+			allocOffset = document.getLineOffset(allocLine);
+			allocLength = document.getLineLength(allocLine);
 			return document.get(allocOffset, allocLength);
 		}
 		return null;
@@ -168,11 +177,11 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 	 * Returns all of the messages from the currently active Valgrind view that
 	 * contains a given {@link String} in their description.
 	 * @param text the {@link String} to match the Valgrind messages' descriptions
-	 * @return All messages containing the given text.
+	 * @return
 	 */
 	private IValgrindMessage[] getMessagesByText(String text) {
 		ValgrindViewPart valgrindView = ValgrindUIPlugin.getDefault().getView();
-		ArrayList<IValgrindMessage> foundMessages = new ArrayList<>();
+		ArrayList<IValgrindMessage> foundMessages = new ArrayList<IValgrindMessage>();
 
 		if(valgrindView != null){
 			IValgrindMessage[] messages = valgrindView.getMessages();
@@ -191,7 +200,7 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 	}
 
 	/**
-	 * Return the last nested element from a given {@link IValgrindMessage}, or null if there are
+	 * Return the last nested element from a given {@link ValgrindMessage}, or null if there are
 	 * no nested messages.
 	 * @param message
 	 * @return The {@link ValgrindStackFrame} in the bottom of the nested stack
@@ -208,10 +217,10 @@ public class WrongDeallocationResolution extends AbstractValgrindMarkerResolutio
 	}
 
 	/**
-	 * Returns the {@link IValgrindMessage} element from the Valgrind View that represents
+	 * Returns the {@link ValgrindMessage} element from the Valgrind View that represents
 	 * a given Marker
 	 * @param marker the marker to which the ValgrindMessage relates
-	 * @return {@link IValgrindMessage} that represents the {@link IMarker}
+	 * @return {@link ValgrindMessage} that represents the {@link IMarker}
 	 */
 	private IValgrindMessage getMessage(IMarker marker) {
 		IValgrindMessage message = null;

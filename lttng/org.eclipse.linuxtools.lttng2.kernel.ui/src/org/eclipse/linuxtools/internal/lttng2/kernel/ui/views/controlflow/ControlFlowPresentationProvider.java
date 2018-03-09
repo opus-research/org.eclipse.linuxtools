@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,9 +19,8 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
-import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
-import org.eclipse.linuxtools.lttng2.kernel.core.analysis.LttngKernelAnalysisModule;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -121,20 +120,13 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
 
     @Override
     public Map<String, String> getEventHoverToolTipInfo(ITimeEvent event) {
-        Map<String, String> retMap = new LinkedHashMap<>();
+        Map<String, String> retMap = new LinkedHashMap<String, String>();
         if (!(event instanceof TimeEvent) || !((TimeEvent) event).hasValue() ||
                 !(event.getEntry() instanceof ControlFlowEntry)) {
             return retMap;
         }
         ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModuleOfClass(LttngKernelAnalysisModule.class, LttngKernelAnalysisModule.ID);
-        if (module == null) {
-            return retMap;
-        }
-        ITmfStateSystem ssq = module.getStateSystem();
-        if (ssq == null) {
-            return retMap;
-        }
+        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
         int tid = entry.getThreadId();
 
         try {
@@ -154,8 +146,12 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
                 }
             }
 
-        } catch (AttributeNotFoundException | TimeRangeException | StateValueTypeException e) {
-            Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (TimeRangeException e) {
+            e.printStackTrace();
+        } catch (StateValueTypeException e) {
+            e.printStackTrace();
         } catch (StateSystemDisposedException e) {
             /* Ignored */
         }
@@ -169,8 +165,10 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
                     retMap.put(Messages.ControlFlowView_attributeSyscallName, state.toString());
                 }
 
-            } catch (AttributeNotFoundException | TimeRangeException e) {
-                Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+            } catch (AttributeNotFoundException e) {
+                e.printStackTrace();
+            } catch (TimeRangeException e) {
+                e.printStackTrace();
             } catch (StateSystemDisposedException e) {
                 /* Ignored */
             }
@@ -188,14 +186,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             return;
         }
         ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModuleOfClass(LttngKernelAnalysisModule.class, LttngKernelAnalysisModule.ID);
-        if (module == null) {
-            return;
-        }
-        ITmfStateSystem ss = module.getStateSystem();
-        if (ss == null) {
-            return;
-        }
+        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
         int status = ((TimeEvent) event).getValue();
 
         if (status != StateValues.PROCESS_STATUS_RUN_SYSCALL) {
@@ -209,8 +200,10 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
                 gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_WHITE));
                 Utils.drawText(gc, state.toString().substring(4), bounds.x, bounds.y - 2, bounds.width, true, true);
             }
-        } catch (AttributeNotFoundException | TimeRangeException e) {
-            Activator.getDefault().logError("Error in ControlFlowPresentationProvider", e); //$NON-NLS-1$
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (TimeRangeException e) {
+            e.printStackTrace();
         } catch (StateSystemDisposedException e) {
             /* Ignored */
         }

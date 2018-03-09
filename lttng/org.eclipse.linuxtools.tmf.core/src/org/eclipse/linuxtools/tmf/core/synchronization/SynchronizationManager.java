@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.tmf.core.synchronization;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
@@ -46,7 +45,7 @@ public abstract class SynchronizationManager extends TmfComponent {
      *            file
      * @return The synchronization object
      */
-    public static SynchronizationAlgorithm synchronizeTraces(final File syncFile, final Collection<ITmfTrace> traces, boolean doSync) {
+    public static SynchronizationAlgorithm synchronizeTraces(final File syncFile, final ITmfTrace[] traces, boolean doSync) {
 
         SynchronizationAlgorithm syncAlgo;
         if (doSync) {
@@ -79,7 +78,7 @@ public abstract class SynchronizationManager extends TmfComponent {
      *            file
      * @return The synchronization object
      */
-    public static SynchronizationAlgorithm synchronizeTraces(final File syncFile, final Collection<ITmfTrace> traces, SynchronizationAlgorithm algo, boolean doSync) {
+    public static SynchronizationAlgorithm synchronizeTraces(final File syncFile, final ITmfTrace[] traces, SynchronizationAlgorithm algo, boolean doSync) {
 
         SynchronizationAlgorithm syncAlgo;
         if (doSync) {
@@ -117,7 +116,7 @@ public abstract class SynchronizationManager extends TmfComponent {
         return null;
     }
 
-    private static SynchronizationAlgorithm synchronize(final File syncFile, final Collection<ITmfTrace> traces, SynchronizationAlgorithm syncAlgo) {
+    private static SynchronizationAlgorithm synchronize(final File syncFile, final ITmfTrace[] traces, SynchronizationAlgorithm syncAlgo) {
         ITmfEventMatching matching = new TmfNetworkEventMatching(traces, syncAlgo);
         matching.matchEvents();
 

@@ -175,7 +175,7 @@ public class ProviderFramework {
 	 * @since 1.2
 	 */
 	public static HashMap<String, String> getProviderNamesForType(String type) {
-		HashMap<String, String> ret = new HashMap<>();
+		HashMap<String, String> ret = new HashMap<String, String>();
 		IConfigurationElement[] configs = getConfigurationElements();
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
@@ -201,7 +201,7 @@ public class ProviderFramework {
 	 * @since 2.0
 	 */
 	public static SortedMap<String, String> getAllProviderNames() {
-		SortedMap<String, String> ret = new TreeMap<>();
+		SortedMap<String, String> ret = new TreeMap<String, String>();
 		IConfigurationElement[] configs = getConfigurationElements();
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
@@ -224,7 +224,7 @@ public class ProviderFramework {
 	 */
 	public static ArrayList<IConfigurationElement> getOrderedConfigElements(String type) {
 		IConfigurationElement[] configs = getConfigurationElements();
-		ArrayList<IConfigurationElement> configList = new ArrayList<>();
+		ArrayList<IConfigurationElement> configList = new ArrayList<IConfigurationElement>();
 
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
@@ -408,7 +408,7 @@ public class ProviderFramework {
 	 * @since 2.0
 	 */
 	public static String[] getProviderIdsForType(String type) {
-		ArrayList<String> ret = new ArrayList<> ();
+		ArrayList<String> ret = new ArrayList<String> ();
 		IConfigurationElement[] configs = getConfigurationElements();
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
@@ -432,7 +432,7 @@ public class ProviderFramework {
 	 * @since 2.0
 	 */
 	public static String[] getProviderCategories() {
-		Set<String> ret = new TreeSet<> ();
+		Set<String> ret = new TreeSet<String> ();
 		IConfigurationElement[] configs = getConfigurationElements();
 		for (IConfigurationElement config : configs) {
 			if (config.getName().equals("provider")) { //$NON-NLS-1$
@@ -474,8 +474,8 @@ public class ProviderFramework {
 							IProject project = (IProject)resource;
 							ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(project),
 									ProviderProfileConstants.PLUGIN_ID);
-							boolean use_project_settings = store.getBoolean(ProviderProfileConstants.USE_PROJECT_SETTINGS + type);
-							if (use_project_settings) {
+							Boolean use_project_settings = store.getBoolean(ProviderProfileConstants.USE_PROJECT_SETTINGS + type);
+							if (use_project_settings.booleanValue() == true) {
 								String provider = store.getString(ProviderProfileConstants.PREFS_KEY + type);
 								if (!provider.isEmpty())
 									providerId = provider;
@@ -494,6 +494,7 @@ public class ProviderFramework {
 					ProviderProfileConstants.PLUGIN_ID).get(
 							ProviderProfileConstants.PREFS_KEY + type, ""); //$NON-NLS-1$
 			if (providerId.isEmpty() || getConfigurationDelegateFromId(providerId) == null) {
+
 				// Get highest priority provider
 				providerId = getHighestProviderId(type);
 			}

@@ -13,12 +13,12 @@
 package org.eclipse.linuxtools.tmf.core.event.matching;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -49,16 +49,16 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
     /**
      * The array of traces to match
      */
-    private final Collection<ITmfTrace> fTraces;
+    private final ITmfTrace[] fTraces;
 
     /**
      * The class to call once a match is found
      */
     private final IMatchProcessingUnit fMatches;
 
-    private static final Map<MatchingType, List<ITmfMatchEventDefinition>> fMatchDefinitions = new HashMap<>();
+    private static final Map<MatchingType, List<ITmfMatchEventDefinition>> fMatchDefinitions = new HashMap<MatchingType, List<ITmfMatchEventDefinition>>();
 
-    private final Map<ITmfTrace, ITmfMatchEventDefinition> fMatchMap = new HashMap<>();
+    private final Map<ITmfTrace, ITmfMatchEventDefinition> fMatchMap = new HashMap<ITmfTrace, ITmfMatchEventDefinition>();
 
     /**
      * Constructor with multiple traces and a match processing object
@@ -68,7 +68,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      * @param tmfEventMatches
      *            The match processing class
      */
-    public TmfEventMatching(Collection<ITmfTrace> traces, IMatchProcessingUnit tmfEventMatches) {
+    public TmfEventMatching(ITmfTrace[] traces, IMatchProcessingUnit tmfEventMatches) {
         if (tmfEventMatches == null) {
             throw new IllegalArgumentException();
         }
@@ -81,7 +81,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      *
      * @return The traces
      */
-    protected Collection<? extends ITmfTrace> getTraces() {
+    protected ITmfTrace[] getTraces() {
         return fTraces;
     }
 
@@ -149,10 +149,10 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      *
      * @param event
      *            The event to match
-     * @param trace
-     *            The trace to which this event belongs
+     * @param traceno
+     *            The number of the trace this event belongs to
      */
-    protected abstract void matchEvent(ITmfEvent event, ITmfTrace trace);
+    protected abstract void matchEvent(ITmfEvent event, int traceno);
 
     /**
      * Returns the matching type this class implements
@@ -170,7 +170,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
     public boolean matchEvents() {
 
         /* Are there traces to match? If no, return false */
-        if (!(fTraces.size() > 0)) {
+        if (!(fTraces.length > 0)) {
             return false;
         }
 
@@ -196,14 +196,15 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
          * would be preferable to have experiment
          * </pre>
          */
-        for (ITmfTrace trace : fTraces) {
-            EventMatchingBuildRequest request = new EventMatchingBuildRequest(this, trace);
+        for (int i = 0; i < fTraces.length; i++) {
+
+            EventMatchingBuildRequest request = new EventMatchingBuildRequest(this, i);
 
             /*
              * Send the request to the trace here, since there is probably no
              * experiment.
              */
-            trace.sendRequest(request);
+            fTraces[i].sendRequest(request);
             try {
                 request.waitForCompletion();
             } catch (InterruptedException e) {
@@ -236,23 +237,23 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
 class EventMatchingBuildRequest extends TmfEventRequest {
 
     private final TmfEventMatching matching;
-    private final ITmfTrace trace;
+    private final int traceno;
 
-    EventMatchingBuildRequest(TmfEventMatching matching, ITmfTrace trace) {
-        super(ITmfEvent.class,
+    EventMatchingBuildRequest(TmfEventMatching matching, int traceno) {
+        super(CtfTmfEvent.class,
                 TmfTimeRange.ETERNITY,
                 0,
                 ITmfEventRequest.ALL_DATA,
                 ITmfEventRequest.ExecutionType.FOREGROUND);
         this.matching = matching;
-        this.trace = trace;
+        this.traceno = traceno;
     }
 
     @Override
     public void handleData(final ITmfEvent event) {
         super.handleData(event);
         if (event != null) {
-            matching.matchEvent(event, trace);
+            matching.matchEvent(event, traceno);
         }
     }
 

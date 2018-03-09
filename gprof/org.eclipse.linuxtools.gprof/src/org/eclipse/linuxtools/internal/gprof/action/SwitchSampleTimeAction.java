@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.TreeColumn;
 public class SwitchSampleTimeAction extends Action {
 
 	private final AbstractSTDataView view;
-
+	
 	/**
 	 * Constructor
 	 * @param name name of the action
@@ -44,12 +44,15 @@ public class SwitchSampleTimeAction extends Action {
 		this.view = view;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.action.Action#run()
+	 */
 	@Override
 	public void run() {
 		AbstractSTTreeViewer gmonViewer = (AbstractSTTreeViewer)view.getSTViewer();
 		GmonDecoder decoder = (GmonDecoder) gmonViewer.getInput();
 		if(decoder != null){
-			int prof_rate = decoder.getHistogramDecoder().getProfRate();
+			int prof_rate = decoder.getHistogramDecoder().getProf_rate();
 
 			if (prof_rate == 0) {
 				MessageDialog.openError(view.getSite().getShell(),
@@ -65,6 +68,6 @@ public class SwitchSampleTimeAction extends Action {
 			gmonViewer.getViewer().refresh();
 		}
 	}
-
-
+	
+	
 }

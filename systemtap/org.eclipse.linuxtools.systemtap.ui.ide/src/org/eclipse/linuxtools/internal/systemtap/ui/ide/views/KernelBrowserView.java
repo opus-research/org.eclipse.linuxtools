@@ -31,10 +31,9 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenc
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.PathPreferencePage;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
-import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.KernelSourceTree;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
 
@@ -120,22 +119,10 @@ public class KernelBrowserView extends BrowserView {
 	/**
 	 * Wires up all of the actions for this browser, such as double and right click handlers.
 	 */
-	private void makeActions() {
+	public void makeActions() {
 		doubleClickAction = new KernelSourceAction(getSite().getWorkbenchWindow(), this);
 		viewer.addDoubleClickListener(doubleClickAction);
 		IDEPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(propertyChangeListener);
-	}
-
-	@Override
-	protected Image getEntryImage(TreeNode treeObj) {
-		String item = treeObj.getData().toString();
-		if(item.endsWith(".c")) { //$NON-NLS-1$
-			return IDEPlugin.getImageDescriptor("icons/files/file_c.gif").createImage(); //$NON-NLS-1$
-		}
-		if(item.endsWith(".h")) { //$NON-NLS-1$
-			return IDEPlugin.getImageDescriptor("icons/files/file_h.gif").createImage(); //$NON-NLS-1$
-		}
-		return getGenericImage(treeObj);
 	}
 
 	/**

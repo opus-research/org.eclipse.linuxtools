@@ -53,7 +53,15 @@ public class PerfSaveStatsHandler extends AbstractSaveDataHandler {
 			info.setAttribute(EFS.ATTRIBUTE_READ_ONLY, true);
 			newDataFileStore.putInfo(info, EFS.SET_ATTRIBUTES, null);
 			return newDataLoc;
-		} catch (IOException|CoreException|URISyntaxException e) {
+		} catch (IOException e) {
+			openErroDialog(Messages.PerfSaveStat_error_title,
+					Messages.PerfSaveStat_error_msg,
+					newDataLoc.lastSegment());
+		} catch (CoreException e) {
+			openErroDialog(Messages.PerfSaveStat_error_title,
+					Messages.PerfSaveStat_error_msg,
+					newDataLoc.lastSegment());
+		} catch (URISyntaxException e) {
 			openErroDialog(Messages.PerfSaveStat_error_title,
 					Messages.PerfSaveStat_error_msg,
 					newDataLoc.lastSegment());

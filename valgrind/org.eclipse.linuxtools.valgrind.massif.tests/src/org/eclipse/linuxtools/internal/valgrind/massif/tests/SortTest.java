@@ -50,8 +50,10 @@ public class SortTest extends AbstractMassifTest {
 		{ 0 }, { 1 }, { 2 }, { 3 }, { 4 }, { 5 } });
 	}
 
+	@Override
 	@Before
-	public void prep() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild("alloctest"); //$NON-NLS-1$
 
 		ILaunchConfiguration config = createConfiguration(proj.getProject());

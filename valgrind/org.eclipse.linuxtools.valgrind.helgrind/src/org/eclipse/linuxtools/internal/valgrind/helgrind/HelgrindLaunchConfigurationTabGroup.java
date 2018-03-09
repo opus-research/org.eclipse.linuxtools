@@ -20,7 +20,7 @@ public class HelgrindLaunchConfigurationTabGroup extends
 	@Override
 	public AbstractLaunchConfigurationTab[] getProfileTabs() {
 		return new AbstractLaunchConfigurationTab[] {
-			new ValgrindSingleToolOptionsTab(HelgrindPlugin.TOOL_ID)
+			new ValgrindSingleToolOptionsTab("org.eclipse.linuxtools.valgrind.launch.helgrind"), //$NON-NLS-1$
 		};
 	}	
 	

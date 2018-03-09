@@ -24,6 +24,9 @@ public class STAnnotatedSourceNotFoundEditor extends STCSourceNotFoundEditor {
 
     public static final String ID = "org.eclipse.linuxtools.gcov.view.annotatedsource.STAnnotatedSourceNotFoundEditor"; //$NON-NLS-1$
 
+    public STAnnotatedSourceNotFoundEditor() {
+    }
+
     /*
      * (non-Javadoc)
      * @see
@@ -36,7 +39,7 @@ public class STAnnotatedSourceNotFoundEditor extends STCSourceNotFoundEditor {
         if (input instanceof STAnnotatedSourceNotFoundEditorInput) {
             STAnnotatedSourceNotFoundEditorInput editorInput = (STAnnotatedSourceNotFoundEditorInput) input;
             SourceFile sf = editorInput.getSourceFile();
-            OpenSourceFileAction.openAnnotatedSourceFile(project, null, sf, sourceLoc, lineNumber);
+            OpenSourceFileAction.sharedInstance.openAnnotatedSourceFile(project, null, sf, sourceLoc, lineNumber);
         } else {
             super.openSourceFileAtLocation(project, sourceLoc, lineNumber);
         }

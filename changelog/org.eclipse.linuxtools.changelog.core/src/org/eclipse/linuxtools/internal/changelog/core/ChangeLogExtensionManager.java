@@ -28,47 +28,49 @@ import org.eclipse.linuxtools.changelog.core.IParserChangeLogContrib;
 
 /**
  * This class will manage extension related operations.
- *
+ * 
  * @author klee
- *
+ * 
  */
 public final class ChangeLogExtensionManager {
 
-
-    private static final ChangeLogExtensionManager EXM = new ChangeLogExtensionManager();
-
+	
+	private static final ChangeLogExtensionManager exm = new ChangeLogExtensionManager();
+	
 
 	// These are used as a simple cache so we don't have to iterate over
 	// all extensions to formatContribution every time the action is invoked.
-	private IConfigurationElement cachedPrefFormatter = null;
+	protected IConfigurationElement cachedPrefFormatter = null;
 
-	private IConfigurationElement[] cachedInFileFormateters = null;
+	protected IConfigurationElement[] cachedInFileFormateters = null;
 
-	private IExtensionPoint parserExtensions = null;
+	protected IExtensionPoint parserExtensions = null;
 
-	private IExtensionPoint formatterExtensions = null;
+	protected IExtensionPoint formatterExtensions = null;
 
-	private IParserChangeLogContrib parserContributor = null;
+	protected IParserChangeLogContrib parserContributor = null;
 
-	private IConfigurationElement formatterConfigElementToUse = null;
-
+	protected IFormatterChangeLogContrib formatterContributor = null;
+	
+	protected IConfigurationElement formatterConfigElementToUse = null;
+	
 	private ChangeLogExtensionManager() {
 		getParserContributions();
 		getFormatterContributions();
 	}
-
+	
 	public static ChangeLogExtensionManager getExtensionManager() {
-		return EXM;
+		return exm;
 	}
 
-	private void getFormatterContributions() {
+	protected void getFormatterContributions() {
 		formatterExtensions = Platform
 				.getExtensionRegistry()
 				.getExtensionPoint(
 						"org.eclipse.linuxtools.changelog.core", "formatterContribution"); //$NON-NLS-1$
 	}
 
-	private void getParserContributions() {
+	protected void getParserContributions() {
 
 		parserExtensions = Platform.getExtensionRegistry().getExtensionPoint(
 				"org.eclipse.linuxtools.changelog.core", "parserContribution"); //$NON-NLS-1$
@@ -76,7 +78,7 @@ public final class ChangeLogExtensionManager {
 	}
 
 	public IParserChangeLogContrib getParserContributor(String editorName) {
-
+		
 		 if (parserExtensions != null) {
 			IConfigurationElement[] elements = parserExtensions
 					.getConfigurationElements();
@@ -99,35 +101,35 @@ public final class ChangeLogExtensionManager {
 				}
 			}
 		}
-
-
-
+		
+		
+		
 		return null;
 	}
 
 
 
-
+	
 	public IConfigurationElement getFormatterConfigElement() {
 		return formatterConfigElementToUse;
 	}
-
+	
 	/**
 	 * Fetches formatterName formatter from extension, but if there exists a inline
 	 * formatter for entryFileName, then it uses that inline formatter.
 	 */
 	public IFormatterChangeLogContrib getFormatterContributor(String entryFilePath, String formatterName) {
-
-
+		
+		
 		// extract just file name;
 		String fileName;
-
+	
 		int lastDir = entryFilePath.lastIndexOf('/');
 		if ((lastDir >= 0) && (lastDir +1 <= entryFilePath.length()))
 			fileName = entryFilePath.substring(lastDir + 1, entryFilePath.length());
 		else
 			fileName = entryFilePath;
-
+		
 		// We don't yet know which formatter to use
 		formatterConfigElementToUse = null;
 
@@ -139,12 +141,12 @@ public final class ChangeLogExtensionManager {
 
 			// cache the in-file formatters on the first run
 			if (cachedInFileFormateters == null) {
-				List<IConfigurationElement> inFileFormatters = new LinkedList<>();
+				List<IConfigurationElement> inFileFormatters = new LinkedList<IConfigurationElement>();
 				for (int i = 0; i < elements.length; i++) {
 					IConfigurationElement formatterConfigElement = elements[i];
 					if (formatterConfigElement.getName().equals("formatter") // $NON-NLS-1$
 							&& formatterConfigElement.getAttribute("inFile") // $NON-NLS-1$
-									.equalsIgnoreCase("true")) { // $NON-NLS-1$
+									.toLowerCase().equals("true")) { // $NON-NLS-1$
 						inFileFormatters.add(elements[i]);
 					}
 				}
@@ -213,7 +215,7 @@ public final class ChangeLogExtensionManager {
 					for (int i = 0; i < elements.length; i++) {
 						IConfigurationElement formatterConfigElement = elements[i];
 						if (formatterConfigElement.getName()
-								.equals("formatter") && formatterConfigElement.getAttribute("inFile").equalsIgnoreCase("false")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+								.equals("formatter") && formatterConfigElement.getAttribute("inFile").toLowerCase().equals("false")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 							if (formatterConfigElement.getAttribute("name") // $NON-NLS-1$
 									.equals(formatterName))
 								cachedPrefFormatter = formatterConfigElement;
@@ -243,8 +245,8 @@ public final class ChangeLogExtensionManager {
 			}
 		}
 
-
-
+		
+		
 		try {
 			return (IFormatterChangeLogContrib) formatterConfigElementToUse
 					.createExecutableExtension("class"); // $NON-NLS-1$
@@ -255,6 +257,8 @@ public final class ChangeLogExtensionManager {
 							.getMessage(), e));
 			e.printStackTrace();
 		}
+		
+		
 		return null;
 	}
 }

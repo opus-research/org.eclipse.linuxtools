@@ -153,7 +153,7 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
 		@Override
 		protected String[] parseString(String stringList) {
 			StringTokenizer st = new StringTokenizer(stringList, ";\n\r"); //$NON-NLS-1$
-			ArrayList<String> v = new ArrayList<>();
+			ArrayList<String> v = new ArrayList<String>();
 			while (st.hasMoreTokens()) {
 				v.add(st.nextToken());
 			}

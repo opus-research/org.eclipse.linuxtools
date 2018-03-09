@@ -32,16 +32,16 @@ import org.eclipse.ui.part.PageBook;
 import org.eclipse.ui.part.ViewPart;
 
 public class ValgrindViewPart extends ViewPart {
-    private static final String TOOLBAR_LOC_GROUP_ID = "toolbarLocal"; //$NON-NLS-1$
-	private PageBook pageBook;
-	private Composite dynamicViewHolder;
-	private IValgrindToolView dynamicView;
-	private ActionContributionItem[] dynamicActions;
-	private IValgrindMessage[] messages;
-	private CoreMessagesViewer messagesViewer;
-	private Action showCoreAction;
-	private Action showToolAction;
-	private boolean hasDynamicContent = false;
+
+	protected PageBook pageBook;
+	protected Composite dynamicViewHolder;
+	protected IValgrindToolView dynamicView;
+	protected ActionContributionItem[] dynamicActions;
+	protected IValgrindMessage[] messages;
+	protected CoreMessagesViewer messagesViewer;
+	protected Action showCoreAction;
+	protected Action showToolAction;
+	protected boolean hasDynamicContent = false;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -117,10 +117,11 @@ public class ValgrindViewPart extends ViewPart {
 				dynamicActions = new ActionContributionItem[actions.length];
 				for (int i = 0; i < actions.length; i++) {
 					dynamicActions[i] = new ActionContributionItem(actions[i]);
-					toolbar.appendToGroup(TOOLBAR_LOC_GROUP_ID, dynamicActions[i]);
+					toolbar.appendToGroup(ValgrindUIPlugin.TOOLBAR_LOC_GROUP_ID, dynamicActions[i]);
 				}
 			}
-		} else {
+		}
+		else {
 			dynamicView = null;
 		}
 

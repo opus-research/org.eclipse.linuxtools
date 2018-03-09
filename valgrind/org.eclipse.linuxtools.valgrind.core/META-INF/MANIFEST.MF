@@ -7,17 +7,13 @@ Bundle-Vendor: %Bundle-Vendor.0
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.linuxtools.tools.launch.core
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.linuxtools.internal.valgrind.core;
   x-friends:="org.eclipse.linuxtools.valgrind.launch,
    org.eclipse.linuxtools.valgrind.tests,
    org.eclipse.linuxtools.valgrind.ui,
-   org.eclipse.linuxtools.valgrind.tests,
-   org.eclipse.linuxtools.valgrind.cachegrind.tests,
-   org.eclipse.linuxtools.valgrind.helgrind.tests,
-   org.eclipse.linuxtools.valgrind.massif.tests,
-   org.eclipse.linuxtools.valgrind.memcheck.tests",
+   org.eclipse.linuxtools.valgrind.helgrind.tests",
  org.eclipse.linuxtools.valgrind.core
 Import-Package: org.eclipse.cdt.utils.pty,
  org.eclipse.core.resources,

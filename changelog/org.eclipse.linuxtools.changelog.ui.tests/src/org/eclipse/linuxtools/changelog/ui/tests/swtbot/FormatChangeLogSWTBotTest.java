@@ -10,7 +10,6 @@ package org.eclipse.linuxtools.changelog.ui.tests.swtbot;
 import static org.eclipse.swtbot.eclipse.finder.matchers.WidgetMatcherFactory.withPartName;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -141,7 +140,7 @@ public class FormatChangeLogSWTBotTest {
 		String thirdLine = swtBotEclipseEditor.getTextOnLine(2);
 		// FIXME: These assertions are lame.
 		assertTrue(secondLine.isEmpty());
-		assertFalse(thirdLine.isEmpty());
+		assertTrue(!thirdLine.isEmpty());
 	}
 
 }

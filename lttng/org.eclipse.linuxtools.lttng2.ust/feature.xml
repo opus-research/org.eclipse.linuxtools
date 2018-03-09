@@ -5,7 +5,7 @@
       label="%featureName"
       version="3.0.0.qualifier"
       provider-name="%featureProvider"
-      license-feature="org.eclipse.license"
+      license-feature="org.eclipse.linuxtools.license.feature"
       license-feature-version="1.0.0.qualifier">
 
    <description>
@@ -25,14 +25,19 @@
    </url>
 
    <includes
+         id="org.eclipse.linuxtools.tmf"
+         version="0.0.0"
+         name="Tracing and Monitoring Framework (TMF)"/>
+
+   <includes
          id="org.eclipse.linuxtools.lttng2"
          version="0.0.0"
          name="Linux Tracing Toolkit next generation (LTTng)"/>
 
    <includes
-         id="org.eclipse.linuxtools.tmf.ctf"
+         id="org.eclipse.linuxtools.ctf"
          version="0.0.0"
-         name="CTF Support for TMF"/>
+         name="Common Trace Format (CTF)"/>
 
    <requires>
       <import plugin="org.eclipse.core.runtime"/>

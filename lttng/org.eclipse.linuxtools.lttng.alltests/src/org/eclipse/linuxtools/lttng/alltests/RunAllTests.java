@@ -21,7 +21,6 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     org.eclipse.linuxtools.ctf.core.tests.AllCtfCoreTests.class,
-    org.eclipse.linuxtools.ctf.parser.tests.AllCtfParserTests.class,
     org.eclipse.linuxtools.gdbtrace.core.tests.AllGdbTraceCoreTests.class,
     org.eclipse.linuxtools.gdbtrace.ui.tests.AllGdbTraceUITests.class,
     org.eclipse.linuxtools.lttng2.core.tests.AllTests.class,
@@ -32,7 +31,6 @@ import org.junit.runners.Suite;
     org.eclipse.linuxtools.lttng2.ust.ui.tests.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.AllTmfCoreTests.class,
     org.eclipse.linuxtools.tmf.ui.tests.AllTmfUITests.class,
-    org.eclipse.linuxtools.tmf.ctf.core.tests.AllTests.class
 })
 public class RunAllTests {
 

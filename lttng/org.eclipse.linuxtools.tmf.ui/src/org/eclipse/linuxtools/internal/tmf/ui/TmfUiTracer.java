@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,13 +23,13 @@ public class TmfUiTracer {
 
     private static String pluginID = Activator.PLUGIN_ID;
 
-    static boolean ERROR   = false;
-    static boolean WARNING = false;
-    static boolean INFO    = false;
+    static Boolean ERROR   = Boolean.FALSE;
+    static Boolean WARNING = Boolean.FALSE;
+    static Boolean INFO    = Boolean.FALSE;
 
-    static boolean INDEX   = false;
-    static boolean DISPLAY = false;
-    static boolean SORTING = false;
+    static Boolean INDEX   = Boolean.FALSE;
+    static Boolean DISPLAY = Boolean.FALSE;
+    static Boolean SORTING = Boolean.FALSE;
 
     private static String LOGNAME = "traceUI.log";
     private static BufferedWriter fTraceLog = null;

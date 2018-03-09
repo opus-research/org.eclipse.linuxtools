@@ -50,26 +50,21 @@
 
   <properties>
     <mirror-repo-name>updates-nightly</mirror-repo-name>
-    <tycho-version>0.21.0-SNAPSHOT</tycho-version>
-    <tycho-extras-version>0.21.0-SNAPSHOT</tycho-extras-version>
-    <platform-version-name>luna</platform-version-name>
+    <tycho-version>0.19.0</tycho-version>
+    <tycho-extras-version>0.19.0</tycho-extras-version>
+    <platform-version-name>kepler</platform-version-name>
     <eclipse-site>http://download.eclipse.org/releases/${platform-version-name}</eclipse-site>
     <swtbot-site>http://download.eclipse.org/technology/swtbot/snapshots</swtbot-site>
-    <orbit-site>http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository</orbit-site>
+    <orbit-site>http://download.eclipse.org/tools/orbit/downloads/drops/R20130118183705/repository</orbit-site>
     <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.jacoco.reportPath>${project.basedir}/../../target/jacoco.exec</sonar.jacoco.reportPath>
-    <sonar.java.source>1.7</sonar.java.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <pluginRepositories>
     <pluginRepository>
       <id>repo.eclipse.org</id>
       <url>https://repo.eclipse.org/content/groups/releases/</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>tycho-snapshots</id>
-      <url>https://oss.sonatype.org/content/groups/public/</url>
     </pluginRepository>
   </pluginRepositories>
   <repositories>
@@ -83,18 +78,13 @@
       <layout>p2</layout>
       <url>${orbit-site}</url>
     </repository>
-    <repository>
-      <id>license-feature</id>
-      <url>http://download.eclipse.org/cbi/updates/license/</url>
-      <layout>p2</layout>
-    </repository>
   </repositories>
-
+  
   <profiles>
     <profile>
       <id>platform-kepler</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <activeByDefault>true</activeByDefault>
         <property>
           <name>platform-version-name</name>
           <value>kepler</value>
@@ -114,22 +104,22 @@
       </repositories>
     </profile>
     <profile>
-      <id>platform-luna</id>
+      <id>platform-kepler-staging</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
         <property>
           <name>platform-version-name</name>
-          <value>luna</value>
+          <value>kepler-staging</value>
         </property>
       </activation>
       <properties>
-        <eclipse-site>http://download.eclipse.org/releases/luna</eclipse-site>
+        <eclipse-site>http://download.eclipse.org/releases/staging</eclipse-site>
         <platform-version>[4.3,)</platform-version>
         <sdk-version>4.3</sdk-version>
       </properties>
       <repositories>
         <repository>
-          <id>luna</id>
+          <id>kepler-staging</id>
           <layout>p2</layout>
           <url>${eclipse-site}</url>
         </repository>
@@ -242,6 +232,7 @@
     <module>perf</module>
     <module>profiling</module>
     <module>rpm</module>
+    <module>rpmstubby</module>
     <module>systemtap</module>
     <module>valgrind</module>
     <module>releng</module>
@@ -308,7 +299,7 @@
        <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.0.201403182114</version>
+        <version>0.6.3.201306030806</version>
         <executions>
           <execution>
            <id>pre-test</id>
@@ -317,7 +308,7 @@
            </goals>
 	   <configuration>
               <!-- Where to put jacoco coverage report -->
-              <destFile>${sonar.jacoco.reportPath}</destFile>
+              <destFile>${sonar.jacoco.reportPath}</destFile> 
               <includes>
                 <include>org.eclipse.linuxtools.*</include>
               </includes>
@@ -362,7 +353,7 @@
                </dependency>
             </dependencies>
             <product>org.eclipse.platform.ide</product>
- 	    <argLine>${tycho.testArgLine} -Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m</argLine>
+ 	    <argLine>${tycho.testArgLine} -Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m</argLine> 
 	  </configuration>
 	</plugin>
         <plugin>

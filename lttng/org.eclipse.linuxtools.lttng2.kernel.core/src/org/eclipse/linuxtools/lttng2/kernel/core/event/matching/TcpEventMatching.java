@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -16,13 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.TcpEventStrings;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.matching.ITmfNetworkMatchDefinition;
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventMatching.MatchingType;
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfNetworkEventMatching.Direction;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
 
 /**
  * Class to match tcp type events. This matching class applies to traces
@@ -75,7 +75,7 @@ public class TcpEventMatching implements ITmfNetworkMatchDefinition {
      */
     @Override
     public List<Object> getUniqueField(ITmfEvent event) {
-        List<Object> keys = new ArrayList<>();
+        List<Object> keys = new ArrayList<Object>();
 
         keys.add(event.getContent().getField(TcpEventStrings.SEQ).getValue());
         keys.add(event.getContent().getField(TcpEventStrings.ACKSEQ).getValue());

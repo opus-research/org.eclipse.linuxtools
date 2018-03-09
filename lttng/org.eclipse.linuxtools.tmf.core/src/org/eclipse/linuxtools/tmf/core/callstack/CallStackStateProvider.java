@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -64,6 +64,8 @@ import org.eclipse.osgi.util.NLS;
  */
 public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
 
+    /** CallStack state system ID */
+    public static final String ID = "org.eclipse.linuxtools.tmf.callstack"; //$NON-NLS-1$
     /** Thread attribute */
     public static final String THREADS = "Threads"; //$NON-NLS-1$
     /** CallStack stack-attribute */
@@ -71,8 +73,6 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
     /** Undefined function exit name */
     public static final String UNDEFINED = "UNDEFINED"; //$NON-NLS-1$
 
-    /** CallStack state system ID */
-    private static final String ID = "org.eclipse.linuxtools.tmf.callstack"; //$NON-NLS-1$
     /** Dummy function name for when no function is expected */
     private static final String NO_FUNCTION = "no function"; //$NON-NLS-1$
 
@@ -144,7 +144,6 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
      *            The event to check
      * @return If false, the event will be ignored by the state provider. If
      *         true processing will continue.
-     * @since 3.0
      */
     protected abstract boolean considerEvent(ITmfEvent event);
 
@@ -174,7 +173,6 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
      * @param event
      *            The event
      * @return The thread name (as will be shown in the view)
-     * @since 3.0
      */
     protected abstract String getThreadName(ITmfEvent event);
 }

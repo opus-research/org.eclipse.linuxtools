@@ -10,13 +10,9 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.profiling.launch;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
-import org.eclipse.cdt.core.CCorePlugin;
 import org.eclipse.cdt.core.CommandLauncher;
-import org.eclipse.cdt.utils.pty.PTY;
-import org.eclipse.cdt.utils.spawner.ProcessFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,21 +31,7 @@ public class LocalLauncher implements IRemoteCommandLauncher {
 			IPath changeToDirectory, IProgressMonitor monitor)
 			throws CoreException {
 		launcher.showCommand(true);
-		return launcher.execute(commandPath, args, env, changeToDirectory, monitor);
-	}
-
-	@Override
-	public Process execute(IPath commandPath, String[] args, String[] env,
-			IPath changeToDirectory, IProgressMonitor monitor, PTY pty) {
-		String [] mergedCommand = new String [args.length + 1];
-		System.arraycopy(args, 0, mergedCommand, 1, args.length);
-		mergedCommand[0] = commandPath.toOSString();
-		Process p = null;
-		try {
-			p = ProcessFactory.getFactory().exec(mergedCommand, env, changeToDirectory.toFile(), pty);
-		} catch (IOException e) {
-			CCorePlugin.log(e);
-		}
+		Process p = launcher.execute(commandPath, args, env, changeToDirectory, monitor);
 		return p;
 	}
 

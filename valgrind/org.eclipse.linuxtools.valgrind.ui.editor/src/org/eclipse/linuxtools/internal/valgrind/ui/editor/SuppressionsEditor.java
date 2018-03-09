@@ -28,6 +28,7 @@ import org.eclipse.ui.editors.text.TextEditor;
 public class SuppressionsEditor extends TextEditor {
 	
 	private ColorManager colorManager;
+	private ProjectionSupport projectionSupport;
 	private ProjectionAnnotationModel annotationModel;
 	private Annotation[] oldAnnotations;
 	
@@ -42,7 +43,7 @@ public class SuppressionsEditor extends TextEditor {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		ProjectionViewer viewer =(ProjectionViewer)getSourceViewer();
-		ProjectionSupport projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
+	    projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
 	    projectionSupport.install();
 	    viewer.doOperation(ProjectionViewer.TOGGLE);
 	    annotationModel = viewer.getProjectionAnnotationModel();
@@ -60,7 +61,7 @@ public class SuppressionsEditor extends TextEditor {
 	
 	public void updateFoldingStructure(Position[] updatedPositions)	{		
 		Annotation[] updatedAnnotations = new Annotation[updatedPositions.length];
-		HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<>();
+		HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
 		for (int i = 0; i < updatedPositions.length; i++) {
 			ProjectionAnnotation annotation = new ProjectionAnnotation();	
 			newAnnotations.put(annotation, updatedPositions[i]);

@@ -23,6 +23,11 @@ public class ValgrindStackFrame extends AbstractValgrindMessage {
 		this.line = line;
 	}
 	
+	@Override
+	public ILaunch getLaunch() {
+		return launch;
+	}
+	
 	public String getFile() {
 		return file;
 	}

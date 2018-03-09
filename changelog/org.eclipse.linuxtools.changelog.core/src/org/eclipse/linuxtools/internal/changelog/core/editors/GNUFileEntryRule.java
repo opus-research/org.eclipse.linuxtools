@@ -130,10 +130,9 @@ public class GNUFileEntryRule implements IPredicateRule {
 	 * @param scanner
 	 *            the scanner to be used
 	 */
-	private void unreadBuffer(ICharacterScanner scanner) {
-		for (int i = fBuffer.length() - 1; i >= 0; i--) {
+	protected void unreadBuffer(ICharacterScanner scanner) {
+		for (int i = fBuffer.length() - 1; i >= 0; i--)
 			scanner.unread();
-		}
 		started = false;
 	}
 

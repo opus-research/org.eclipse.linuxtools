@@ -45,26 +45,26 @@ import org.eclipse.swt.widgets.Composite;
  */
 public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigurationTab {
 
-	private String type;
-	private String name;
-	private String id;
-	private Composite top;
-	private Combo providerCombo;
-	private AbstractLaunchConfigurationTab[] tabs;
-	private ILaunchConfiguration initial;
-	private Map<String, String> comboItems;
-	private CTabFolder tabgroup;
-	protected Image img;
+	String type;
+	String name;
+	String id;
+	Composite top;
+	Combo providerCombo;
+	AbstractLaunchConfigurationTab[] tabs;
+	ILaunchConfiguration initial;
+	Map<String, String> comboItems;
+	CTabFolder tabgroup;
+	Image img;
 
 	// if tabs are being initialized do not call performApply()
-	private Map<String, Boolean> initialized = new HashMap<> ();
+	HashMap<String, Boolean> initialized = new HashMap<String, Boolean> ();
 
 	/**
 	 * Get list of profiling providers for the user to choose from.
 	 *
 	 * @return Map of provider ids and provider tool names
 	 */
-	protected abstract Map<String, String> getProviders();
+	abstract protected Map<String, String> getProviders();
 
 	@Override
 	public void createControl(Composite parent) {
@@ -101,9 +101,9 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 	 *
 	 * @return default provider id
 	 */
-	protected abstract String getDefaultProviderId();
+	abstract protected String getDefaultProviderId();
 
-	private void loadTabGroupItems(CTabFolder tabgroup, String curProviderId) {
+	public void loadTabGroupItems(CTabFolder tabgroup, String curProviderId) {
 		// dispose of old tabs and their state
 		for (CTabItem item : tabgroup.getItems()) {
 			item.dispose();
@@ -128,11 +128,10 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 			} catch (CoreException e) {
 				// do nothing
 			}
-			if (profilingToolName == null) {
+			if (profilingToolName == null)
 				setErrorMessage(NLS.bind(Messages.ProfilingTab_specified_providerid_not_installed, curProviderId));
-			} else {
+			else
 				setErrorMessage(NLS.bind(Messages.ProfilingTab_specified_profiler_not_installed, profilingToolName));
-			}
 			return;
 		}
 		tabs = tabGroupConfig.getProfileTabs();
@@ -286,7 +285,7 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 	 * @return the provider ID or an empty string if the configuration
 	 * has no provider ID defined.
 	 */
-	private String getProviderId() {
+	protected String getProviderId() {
 		try {
 			return initial.getAttribute(
 					ProviderProfileConstants.PROVIDER_CONFIG_ATT, ""); //$NON-NLS-1$
@@ -316,7 +315,7 @@ public abstract class AbstractProfilingOptionsTab extends ProfileLaunchConfigura
 	 * @param name name of item
 	 * @return index of given name, -1 if it not found
 	 */
-	private int getItemIndex(Combo combo, String name) {
+	protected int getItemIndex(Combo combo, String name) {
 		int itemCount = combo.getItemCount();
 		for (int i = 0; i < itemCount; i++) {
 			if (combo.getItem(i).equals(name)) {

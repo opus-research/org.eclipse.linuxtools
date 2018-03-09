@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,11 +15,11 @@ package org.eclipse.linuxtools.internal.lttng2.ust.core.trace.callstack;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.linuxtools.lttng2.ust.core.trace.LttngUstTrace;
 import org.eclipse.linuxtools.tmf.core.callstack.CallStackStateProvider;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfEvent;
 
 /**
  * Callstack provider for LTTng-UST traces.
@@ -50,10 +50,10 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
     private static final String FIELD_ADDR = "addr"; //$NON-NLS-1$
 
     /** Event names indicating function entry */
-    private static final Set<String> FUNC_ENTRY_EVENTS = new HashSet<>();
+    private static final Set<String> FUNC_ENTRY_EVENTS = new HashSet<String>();
 
     /** Event names indicating function exit */
-    private static final Set<String> FUNC_EXIT_EVENTS = new HashSet<>();
+    private static final Set<String> FUNC_EXIT_EVENTS = new HashSet<String>();
 
     static {
         /* This seems overkill, but it will be checked every event. Gotta go FAST! */
@@ -80,13 +80,19 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
      * @param trace
      *            The UST trace
      */
-    public LttngUstCallStackProvider(ITmfTrace trace) {
+    public LttngUstCallStackProvider(LttngUstTrace trace) {
         super(trace);
     }
 
     // ------------------------------------------------------------------------
     // Methods from AbstractTmfStateProvider
     // ------------------------------------------------------------------------
+
+    @Override
+    public LttngUstTrace getTrace() {
+        /* Type is enforced by the constructor */
+        return (LttngUstTrace) super.getTrace();
+    }
 
     @Override
     public LttngUstCallStackProvider getNewInstance() {
@@ -122,7 +128,7 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
 
     @Override
     public String functionEntry(ITmfEvent event) {
-        String eventName = event.getType().getName();
+        String eventName = ((CtfTmfEvent) event).getEventName();
         if (!FUNC_ENTRY_EVENTS.contains(eventName)) {
             return null;
         }
@@ -132,7 +138,7 @@ public class LttngUstCallStackProvider extends CallStackStateProvider {
 
     @Override
     public String functionExit(ITmfEvent event) {
-        String eventName = event.getType().getName();
+        String eventName = ((CtfTmfEvent) event).getEventName();
         if (!FUNC_EXIT_EVENTS.contains(eventName)) {
             return null;
         }

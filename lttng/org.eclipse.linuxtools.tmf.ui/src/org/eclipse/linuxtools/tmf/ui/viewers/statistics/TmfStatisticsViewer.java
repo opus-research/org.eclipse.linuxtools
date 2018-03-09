@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -23,13 +23,12 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
+import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStatisticsEventTypesModule;
-import org.eclipse.linuxtools.tmf.core.statistics.TmfStatisticsModule;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -60,38 +59,92 @@ import org.eclipse.swt.widgets.Listener;
  * It is linked to a single ITmfTrace until its disposal.
  *
  * @author Mathieu Denis
+ * @version 2.0
  * @since 2.0
  */
 public class TmfStatisticsViewer extends TmfViewer {
 
-    /** Timestamp scale used for all statistics (nanosecond) */
-    private static final byte TIME_SCALE = ITmfTimestamp.NANOSECOND_SCALE;
+    /**
+     * Timestamp scale (nanosecond)
+     */
+    public static final byte TIME_SCALE = ITmfTimestamp.NANOSECOND_SCALE;
 
-    /** The delay (in ms) between each update in live-reading mode */
-    private static final long LIVE_UPDATE_DELAY = 1000;
+    /**
+     * Default PAGE_SIZE for background requests.
+     */
+    protected static final int PAGE_SIZE = 50000;
 
-    /** The actual tree viewer to display */
-    private TreeViewer fTreeViewer;
+    /**
+     * Refresh frequency.
+     */
+    protected final Long STATS_INPUT_CHANGED_REFRESH = 5000L;
 
-    /** The statistics tree linked to this viewer */
-    private TmfStatisticsTree fStatisticsData;
+    /**
+     * The actual tree viewer to display
+     */
+    protected TreeViewer fTreeViewer;
 
-    /** Update range synchronization object */
-    private final Object fStatisticsRangeUpdateSyncObj = new Object();
+    /**
+     * The statistics tree linked to this viewer
+     */
+    protected TmfStatisticsTree fStatisticsData;
 
-    /** The trace that is displayed by this viewer */
-    private ITmfTrace fTrace;
+    /**
+     * Update synchronization parameter (used for streaming): Update busy
+     * indicator.
+     */
+    protected boolean fStatisticsUpdateBusy = false;
 
-    /** Indicates to process all events */
+    /**
+     * Update synchronization parameter (used for streaming): Update pending
+     * indicator.
+     */
+    protected boolean fStatisticsUpdatePending = false;
+
+    /**
+     * Update synchronization parameter (used for streaming): Pending Update
+     * time range.
+     */
+    protected TmfTimeRange fStatisticsUpdateRange = null;
+
+    /**
+     * Update synchronization object.
+     */
+    protected final Object fStatisticsUpdateSyncObj = new Object();
+
+    /**
+     * Update range synchronization object.
+     */
+    protected final Object fStatisticsRangeUpdateSyncObj = new Object();
+
+    /**
+     * The trace that is displayed by this viewer
+     */
+    protected ITmfTrace fTrace;
+
+    /**
+     * Stores the requested time range.
+     */
+    protected TmfTimeRange fRequestedTimerange;
+
+    /**
+     * Indicates to process all events
+     */
     private boolean fProcessAll;
 
-    /** View instance counter (for multiple statistics views) */
+    /**
+     * View instance counter (for multiple statistics views)
+     */
     private static int fCountInstance = 0;
 
-    /** Number of this instance. Used as an instance ID. */
+    /**
+     * Number of this instance. Used as an instance ID.
+     */
     private int fInstanceNb;
 
-    /** Object to store the cursor while waiting for the trace to load */
+    /**
+     * Object to store the cursor while waiting for the trace to load
+     */
     private Cursor fWaitCursor = null;
 
     /**
@@ -101,11 +154,22 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     private int fWaitCursorCount = 0;
 
-    /** Tells to send a time range request when the trace gets updated. */
+    /**
+     * Tells to send a time range request when the trace gets updated.
+     */
     private boolean fSendRangeRequest = true;
 
     /** Reference to the trace manager */
     private final TmfTraceManager fTraceManager;
+
+    /**
+     * Empty constructor. To be used in conjunction with
+     * {@link TmfStatisticsViewer#init(Composite, String, ITmfTrace)}
+     */
+    public TmfStatisticsViewer() {
+        super();
+        fTraceManager = TmfTraceManager.getInstance();
+    }
 
     /**
      * Create a basic statistics viewer. To be used in conjunction with
@@ -191,6 +255,20 @@ public class TmfStatisticsViewer extends TmfViewer {
     }
 
     /**
+     * Handles the time range updated signal. It updates the time range
+     * statistics.
+     *
+     * @param signal
+     *            Contains the information about the new selected time range.
+     * @deprecated
+     *            As of 2.1, use {@link #timeSynchUpdated(TmfTimeSynchSignal)}
+     */
+    @Deprecated
+    @TmfSignalHandler
+    public void timeRangeUpdated(TmfRangeSynchSignal signal) {
+    }
+
+    /**
      * Handles the time synch updated signal. It updates the time range
      * statistics.
      *
@@ -207,6 +285,65 @@ public class TmfStatisticsViewer extends TmfViewer {
         ITmfTimestamp end = signal.getEndTime();
         TmfTimeRange timeRange = new TmfTimeRange(begin, end);
         requestTimeRangeData(fTrace, timeRange);
+    }
+
+    /**
+     * Whenever a trace's statistics back-end finishes computing the statistics
+     * for a given interval, it will send the StatsUpdated signal. This method
+     * will receive this signal and update the statistics view accordingly.
+     *
+     * @param sig
+     *            The signal that is received
+     */
+    @TmfSignalHandler
+    public void statsUpdated(TmfStatsUpdatedSignal sig) {
+        /* Only handle this signal if it's about the trace we represent. */
+        if (!isListeningTo(sig.getTrace())) {
+            return;
+        }
+
+        final TmfStatisticsTree statsData = TmfStatisticsTreeManager.getStatTree(getTreeID());
+        Map<String, Long> map = sig.getEventsPerType();
+        String name = sig.getTrace().getName();
+        boolean isGlobal = sig.isGlobal();
+
+        /*
+         * "Global", "partial", "total", etc., it's all very confusing...
+         *
+         * The base view shows the total count for the trace and for
+         * each even types, organized in columns like this:
+         *
+         *                   |  Global  |  Time range |
+         * trace name        |    A     |      B      |
+         *    Event Type     |          |             |
+         *       <event 1>   |    C     |      D      |
+         *       <event 2>   |   ...    |     ...     |
+         *         ...       |          |             |
+         *
+         * Here, we called the cells like this:
+         *  A : GlobalTotal
+         *  B : TimeRangeTotal
+         *  C : GlobalTypeCount(s)
+         *  D : TimeRangeTypeCount(s)
+         */
+
+        /* Fill in an the event counts (either cells C or D) */
+        for (Map.Entry<String, Long> entry : map.entrySet()) {
+            statsData.setTypeCount(name, entry.getKey(), isGlobal, entry.getValue());
+        }
+
+        /*
+         * Calculate the totals (cell A or B, depending if isGlobal). We will
+         * use the results of the previous request instead of sending another
+         * one.
+         */
+        long globalTotal = 0;
+        for (long val : map.values()) {
+            globalTotal += val;
+        }
+        statsData.setTotal(name, isGlobal, globalTotal);
+
+        modelComplete(isGlobal);
     }
 
     // ------------------------------------------------------------------------
@@ -230,6 +367,25 @@ public class TmfStatisticsViewer extends TmfViewer {
      */
     public Object getInput() {
         return fTreeViewer.getInput();
+    }
+
+    /**
+     * Return the size of the request when performing background request.
+     *
+     * @return the block size for background request.
+     */
+    public int getPageSize() {
+        return PAGE_SIZE;
+    }
+
+    /**
+     * Return the number of events to receive before a refresh of the viewer is
+     * performed.
+     *
+     * @return the input refresh rate
+     */
+    public long getRefreshRate() {
+        return STATS_INPUT_CHANGED_REFRESH;
     }
 
     /**
@@ -294,7 +450,6 @@ public class TmfStatisticsViewer extends TmfViewer {
      *
      * @param request
      *            The request to be canceled
-     * @since 3.0
      */
     protected void cancelOngoingRequest(ITmfEventRequest request) {
         if (request != null && !request.isCompleted()) {
@@ -465,6 +620,7 @@ public class TmfStatisticsViewer extends TmfViewer {
 
         // Sets the input to a clean data model
         fTreeViewer.setInput(statisticsTreeNode);
+        resetUpdateSynchronization();
     }
 
     /**
@@ -491,6 +647,9 @@ public class TmfStatisticsViewer extends TmfViewer {
     protected void modelComplete(boolean global) {
         refresh();
         waitCursor(false);
+        if (global) {
+            sendPendingUpdate();
+        }
     }
 
     /**
@@ -506,6 +665,8 @@ public class TmfStatisticsViewer extends TmfViewer {
              * No need to reset the global number of events, since the index of
              * the last requested event is known.
              */
+            resetUpdateSynchronization();
+            sendPendingUpdate();
         } else {    // Clean the partial statistics
             resetTimeRangeValue();
         }
@@ -534,6 +695,7 @@ public class TmfStatisticsViewer extends TmfViewer {
      *            The range to request to the trace
      */
     protected void requestTimeRangeData(final ITmfTrace trace, final TmfTimeRange timeRange) {
+        fRequestedTimerange = timeRange;
         buildStatisticsTree(trace, timeRange, false);
     }
 
@@ -553,7 +715,7 @@ public class TmfStatisticsViewer extends TmfViewer {
      *            Tells if the request is for the global event count or the
      *            partial one.
      */
-    private void buildStatisticsTree(final ITmfTrace trace, final TmfTimeRange timeRange, final boolean isGlobal) {
+    private void buildStatisticsTree(final ITmfTrace trace, TmfTimeRange timeRange, boolean isGlobal) {
         final TmfStatisticsTreeNode statTree = TmfStatisticsTreeManager.getStatTreeRoot(getTreeID());
         final TmfStatisticsTree statsData = TmfStatisticsTreeManager.getStatTree(getTreeID());
         if (statsData == null) {
@@ -572,115 +734,29 @@ public class TmfStatisticsViewer extends TmfViewer {
                     continue;
                 }
 
-                /* Retrieve the statistics object */
-                final TmfStatisticsModule statsMod = aTrace.getAnalysisModuleOfClass(TmfStatisticsModule.class, TmfStatisticsModule.ID);
-                if (statsMod == null) {
-                    /* No statistics module available for this trace */
+                /* Retrieves the statistics object */
+                final ITmfStatistics stats = aTrace.getStatistics();
+                if (stats == null) {
+                    /*
+                     * The statistics provider for this trace is not accessible
+                     * (yet?). Try the next one.
+                     */
                     continue;
                 }
 
-                /* Run the potentially long queries in a separate thread */
-                Thread statsThread = new Thread("Statistics update") { //$NON-NLS-1$
-                    @Override
-                    public void run() {
-                        /* Wait until the analysis is ready to be queried */
-                        statsMod.waitForInitialization();
-                        ITmfStatistics stats = statsMod.getStatistics();
-                        if (stats == null) {
-                            /* It should have worked, but didn't */
-                            throw new IllegalStateException();
-                        }
+                /* The generic statistics are stored in nanoseconds, so we must make
+                 * sure the time range is scaled correctly. */
+                long start = timeRange.getStartTime().normalize(0, TIME_SCALE).getValue();
+                long end = timeRange.getEndTime().normalize(0, TIME_SCALE).getValue();
 
-                        /*
-                         * The generic statistics are stored in nanoseconds, so
-                         * we must make sure the time range is scaled correctly.
-                         */
-                        long start = timeRange.getStartTime().normalize(0, TIME_SCALE).getValue();
-                        long end = timeRange.getEndTime().normalize(0, TIME_SCALE).getValue();
-
-                        /*
-                         * Wait on the state system object we are going to query.
-                         *
-                         * TODO Eventually this could be exposed through the
-                         * TmfStateSystemAnalysisModule directly.
-                         */
-                        ITmfStateSystem ss = statsMod.getStateSystem(TmfStatisticsEventTypesModule.ID);
-                        if (ss == null) {
-                            /* It should be instantiated after the
-                             * statsMod.waitForInitialization() above. */
-                            throw new IllegalStateException();
-                        }
-
-                        /*
-                         * Periodically update the statistics while they are
-                         * being built (or, if the back-end is already completely
-                         * built, it will skip over the while() immediately.
-                         */
-                        while(!ss.waitUntilBuilt(LIVE_UPDATE_DELAY)) {
-                            Map<String, Long> map = stats.getEventTypesInRange(start, end);
-                            updateStats(aTrace, isGlobal, map);
-                        }
-                        /* Query one last time for the final values */
-                        Map<String, Long> map = stats.getEventTypesInRange(start, end);
-                        updateStats(aTrace, isGlobal, map);
-                    }
-                };
-                statsThread.start();
+                /*
+                 * Send a request to update the statistics view. The result will
+                 * be sent through a {@link TmfStatsUpdatedSignal}, and will be
+                 * processed by the signal handler.
+                 */
+                aTrace.getStatistics().updateStats(isGlobal, start, end);
             }
         }
-    }
-
-    /*
-     * Update statistics for a given trace
-     */
-    private void updateStats(ITmfTrace trace, boolean isGlobal, Map<String, Long> eventsPerType) {
-
-        final TmfStatisticsTree statsData = TmfStatisticsTreeManager.getStatTree(getTreeID());
-        if (statsData == null) {
-            /* The stat tree  has been disposed, abort mission. */
-            return;
-        }
-
-        Map<String, Long> map = eventsPerType;
-        String name = trace.getName();
-
-        /*
-         * "Global", "partial", "total", etc., it's all very confusing...
-         *
-         * The base view shows the total count for the trace and for
-         * each even types, organized in columns like this:
-         *
-         *                   |  Global  |  Time range |
-         * trace name        |    A     |      B      |
-         *    Event Type     |          |             |
-         *       <event 1>   |    C     |      D      |
-         *       <event 2>   |   ...    |     ...     |
-         *         ...       |          |             |
-         *
-         * Here, we called the cells like this:
-         *  A : GlobalTotal
-         *  B : TimeRangeTotal
-         *  C : GlobalTypeCount(s)
-         *  D : TimeRangeTypeCount(s)
-         */
-
-        /* Fill in an the event counts (either cells C or D) */
-        for (Map.Entry<String, Long> entry : map.entrySet()) {
-            statsData.setTypeCount(name, entry.getKey(), isGlobal, entry.getValue());
-        }
-
-        /*
-         * Calculate the totals (cell A or B, depending if isGlobal). We will
-         * use the results of the previous request instead of sending another
-         * one.
-         */
-        long globalTotal = 0;
-        for (long val : map.values()) {
-            globalTotal += val;
-        }
-        statsData.setTotal(name, isGlobal, globalTotal);
-
-        modelComplete(isGlobal);
     }
 
     /**
@@ -743,6 +819,58 @@ public class TmfStatisticsViewer extends TmfViewer {
                     }
                 }
             });
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Methods reserved for the streaming functionality
+    // ------------------------------------------------------------------------
+
+    /**
+     * Resets update synchronization information
+     */
+    protected void resetUpdateSynchronization() {
+        synchronized (fStatisticsUpdateSyncObj) {
+            fStatisticsUpdateBusy = false;
+            fStatisticsUpdatePending = false;
+            fStatisticsUpdateRange = null;
+        }
+    }
+
+    /**
+     * Checks if statistics update is ongoing. If it is ongoing, the new time
+     * range is stored as pending
+     *
+     * @param timeRange
+     *            - new time range
+     * @return true if statistic update is ongoing else false
+     */
+    protected boolean checkUpdateBusy(TmfTimeRange timeRange) {
+        synchronized (fStatisticsUpdateSyncObj) {
+            if (fStatisticsUpdateBusy) {
+                fStatisticsUpdatePending = true;
+                if (fStatisticsUpdateRange == null
+                        || timeRange.getEndTime().compareTo(fStatisticsUpdateRange.getEndTime()) > 0) {
+                    fStatisticsUpdateRange = timeRange;
+                }
+                return true;
+            }
+            fStatisticsUpdateBusy = true;
+            return false;
+        }
+    }
+
+    /**
+     * Sends pending request (if any)
+     */
+    protected void sendPendingUpdate() {
+        synchronized (fStatisticsUpdateSyncObj) {
+            fStatisticsUpdateBusy = false;
+            if (fStatisticsUpdatePending) {
+                fStatisticsUpdatePending = false;
+                requestData(fTrace, fStatisticsUpdateRange);
+                fStatisticsUpdateRange = null;
+            }
         }
     }
 }

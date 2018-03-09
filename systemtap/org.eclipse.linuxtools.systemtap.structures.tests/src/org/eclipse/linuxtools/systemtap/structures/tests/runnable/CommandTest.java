@@ -20,7 +20,6 @@ import static org.junit.Assume.assumeTrue;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.systemtap.structures.runnable.Command;
 import org.eclipse.linuxtools.systemtap.ui.tests.SystemtapTest;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,23 +35,18 @@ public class CommandTest extends SystemtapTest{
 	public void testCommand() {
 		assertNotNull("Command not null", tc);
 
-		tc.dispose();
 		tc = new Command(null, null);
 		assertNotNull("Command not null", tc);
 
-		tc.dispose();
 		tc = new Command(new String[] {}, null);
 		assertNotNull("Command not null", tc);
 
-		tc.dispose();
 		tc = new Command(new String[] {""}, null);
 		assertNotNull("Command not null", tc);
 
-		tc.dispose();
 		tc = new Command(new String[] {"a"}, null);
 		assertNotNull("Command not null", tc);
 
-		tc.dispose();
 		tc = new Command(new String[] {"ls", "/"}, null);
 		assertNotNull("Command not null", tc);
 	}
@@ -68,6 +62,13 @@ public class CommandTest extends SystemtapTest{
 	@Test
 	public void testGetReturnValue() {
 		assertEquals(Integer.MAX_VALUE, tc.getReturnValue());
+	}
+
+	@Test
+	public void testIsDisposed() {
+		assertFalse(tc.isDisposed());
+		tc.dispose();
+		assertTrue(tc.isDisposed());
 	}
 
 	@Test
@@ -106,12 +107,6 @@ public class CommandTest extends SystemtapTest{
 	@Test
 	public void testDispose() {
 		assertFalse(tc.isDisposed());
-		tc.dispose();
-		assertTrue(tc.isDisposed());
-	}
-
-	@After
-	public void tearDown() {
 		tc.dispose();
 		assertTrue(tc.isDisposed());
 	}

@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.valgrind.massif;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.sourcelookup.ISourceLookupDirector;
 import org.eclipse.jface.text.BadLocationException;
@@ -32,9 +33,11 @@ public class MassifPlugin extends AbstractUIPlugin {
 	// The shared instance
 	private static MassifPlugin plugin;
 	
+	protected ILaunchConfiguration config;
+	
 	// Needed for source lookup on massif output, since massif only supplies filenames
 	// and not full paths
-	private ISourceLocator locator;
+	protected ISourceLocator locator;
 
 	public static final String TOOL_ID = "org.eclipse.linuxtools.valgrind.launch.massif"; //$NON-NLS-1$
 	
@@ -74,9 +77,10 @@ public class MassifPlugin extends AbstractUIPlugin {
 	
 	public void openEditorForNode(MassifHeapTreeNode element) {
 		// do source lookup
-		if (locator instanceof ISourceLookupDirector) {
-			Object obj = ((ISourceLookupDirector) locator).getSourceElement(element.getFilename());
-			if (obj instanceof IStorage){
+		ISourceLocator sourceLocator = MassifPlugin.getDefault().getSourceLocator();
+		if (sourceLocator instanceof ISourceLookupDirector) {
+			Object obj = ((ISourceLookupDirector) sourceLocator).getSourceElement(element.getFilename());
+			if (obj != null && obj instanceof IStorage){
 				try {
 					// Most likely a remote project
 					if (obj instanceof IFile) {
@@ -86,17 +90,31 @@ public class MassifPlugin extends AbstractUIPlugin {
 						String fullFilePath = ((IStorage) obj).getFullPath().toOSString();
 						ProfileUIUtils.openEditorAndSelect(fullFilePath, element.getLine());
 					}
-				} catch (PartInitException|BadLocationException e) {
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				} catch (BadLocationException e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
 	
+	public ISourceLocator getSourceLocator() {
+		return locator;
+	}
+	
 	protected void setSourceLocator(ISourceLocator locator) {
 		this.locator = locator;
 	}
 	
+	public ILaunchConfiguration getConfig() {
+		return config;
+	}
+	
+	public void setConfig(ILaunchConfiguration config) {
+		this.config = config;
+	}
+
 	/**
 	 * Returns the shared instance
 	 *

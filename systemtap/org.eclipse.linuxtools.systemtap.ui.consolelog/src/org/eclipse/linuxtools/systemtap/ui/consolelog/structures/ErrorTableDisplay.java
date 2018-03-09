@@ -46,7 +46,7 @@ public class ErrorTableDisplay {
 	 * Creates the table for displaying error messages in.
 	 * @param parent The container for the new error table.
 	 */
-	private void createControl(Composite parent) {
+	public void createControl(Composite parent) {
 		table = new Table(parent, SWT.SINGLE);
 		table.setHeaderVisible(true);
 		table.getVerticalBar().setVisible(true);
@@ -87,7 +87,7 @@ public class ErrorTableDisplay {
 	 * @param row The pre-divied sections of the error message.
 	 * @param img The image to display with the error.
 	 */
-	private void addRow(final String[] row, final Image img) {
+	public void addRow(final String[] row, final Image img) {
 		table.getDisplay().syncExec(new Runnable() {
 			@Override
 			public void run() {

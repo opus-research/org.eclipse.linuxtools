@@ -53,8 +53,8 @@ public class STDataViewersSortDialog extends TrayDialog {
     /**
      * Create a new instance of the receiver.
      *
-     * @param parentShell The parent shell for the dialog.
-     * @param sorter The sorter to be used
+     * @param parentShell
+     * @param sorter
      */
     public STDataViewersSortDialog(Shell parentShell, STDataViewersComparator sorter) {
         super(parentShell);
@@ -145,7 +145,7 @@ public class STDataViewersSortDialog extends TrayDialog {
                 priorityCombos[i].addSelectionListener(new SelectionAdapter() {
                     @Override
 					public void widgetSelected(SelectionEvent e) {
-                        List<String> allItems = new ArrayList<>(Arrays.asList(priorityCombos[index].getItems()));
+                        List<String> allItems = new ArrayList<String>(Arrays.asList(priorityCombos[index].getItems()));
                         computeSelectionItems(index, allItems);
                         markDirty();
                     }
@@ -264,8 +264,8 @@ public class STDataViewersSortDialog extends TrayDialog {
 
     private void updateUI(int[] priorities, int[] directions) {
         Item[] columns = sorter.getColumns();
-        List<String> allItems = new ArrayList<>();
-        List<Integer> allDirections = new ArrayList<>();
+        List<String> allItems = new ArrayList<String>();
+        List<Integer> allDirections = new ArrayList<Integer>();
         for (int i = 0; i < columns.length; i++) {
             if (priorities == null || directions == null) {
                 allItems.add(columns[i].getText());

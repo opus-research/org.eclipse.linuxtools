@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -97,7 +97,7 @@ public abstract class ChangeChannelStateHandler extends BaseControlViewHandler {
 
                         if (kernelDomain != null) {
                             session = (TraceSessionComponent)kernelDomain.getParent();
-                            List<String> channelNames = new ArrayList<>();
+                            List<String> channelNames = new ArrayList<String>();
                             for (Iterator<TraceChannelComponent> iterator = kernelChannels.iterator(); iterator.hasNext();) {
                                 // Enable all selected channels which are disabled
                                 TraceChannelComponent channel = iterator.next();
@@ -120,7 +120,7 @@ public abstract class ChangeChannelStateHandler extends BaseControlViewHandler {
                                 session = (TraceSessionComponent)ustDomain.getParent();
                             }
 
-                            List<String> channelNames = new ArrayList<>();
+                            List<String> channelNames = new ArrayList<String>();
                             for (Iterator<TraceChannelComponent> iterator = ustChannels.iterator(); iterator.hasNext();) {
                                 // Enable all selected channels which are disabled
                                 TraceChannelComponent channel = iterator.next();
@@ -171,8 +171,8 @@ public abstract class ChangeChannelStateHandler extends BaseControlViewHandler {
 
         TraceDomainComponent kernelDomain = null;
         TraceDomainComponent ustDomain = null;
-        List<TraceChannelComponent> kernelChannels = new ArrayList<>();
-        List<TraceChannelComponent> ustChannels = new ArrayList<>();
+        List<TraceChannelComponent> kernelChannels = new ArrayList<TraceChannelComponent>();
+        List<TraceChannelComponent> ustChannels = new ArrayList<TraceChannelComponent>();
 
         // Check if one or more session are selected
         ISelection selection = page.getSelection(ControlView.ID);
@@ -258,9 +258,9 @@ public abstract class ChangeChannelStateHandler extends BaseControlViewHandler {
         public Parameter(TraceDomainComponent kernelDomain, TraceDomainComponent ustDomain, List<TraceChannelComponent> kernelChannels, List<TraceChannelComponent> ustChannels) {
             fKernelDomain = kernelDomain;
             fUstDomain = ustDomain;
-            fKernelChannels = new ArrayList<>();
+            fKernelChannels = new ArrayList<TraceChannelComponent>();
             fKernelChannels.addAll(kernelChannels);
-            fUstChannels = new ArrayList<>();
+            fUstChannels = new ArrayList<TraceChannelComponent>();
             fUstChannels.addAll(ustChannels);
         }
 

@@ -43,9 +43,15 @@ import org.eclipse.ui.PlatformUI;
 
 public class ValgrindExportWizardPage extends WizardPage {
 
-	private IPath outputPath;
-	private CheckboxTableViewer viewer;
-	private Text destText;
+	protected IPath outputPath;
+	protected CheckboxTableViewer viewer;
+	protected Text destText;
+	protected Button selectAllButton;
+	protected Button deselectAllButton;
+
+	protected ValgrindExportWizardPage(String pageName) {
+		super(pageName);
+	}
 
 	protected ValgrindExportWizardPage(String pageName, String title, ImageDescriptor titleImage) {
 		super(pageName, title, titleImage);
@@ -97,7 +103,7 @@ public class ValgrindExportWizardPage extends WizardPage {
 		selectAllNoneTop.setLayout(new GridLayout(2, true));
 		selectAllNoneTop.setLayoutData(new GridData(SWT.TRAIL, SWT.DEFAULT, false, false));
 
-		Button selectAllButton = new Button(selectAllNoneTop, SWT.NONE);
+		selectAllButton = new Button(selectAllNoneTop, SWT.NONE);
 		selectAllButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		selectAllButton.setText(Messages.getString("ValgrindExportWizardPage.Select_all")); //$NON-NLS-1$
 		selectAllButton.addSelectionListener(new SelectionAdapter() {
@@ -107,7 +113,7 @@ public class ValgrindExportWizardPage extends WizardPage {
 			}
 		});
 
-		Button deselectAllButton = new Button(selectAllNoneTop, SWT.NONE);
+		deselectAllButton = new Button(selectAllNoneTop, SWT.NONE);
 		deselectAllButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		deselectAllButton.setText(Messages.getString("ValgrindExportWizardPage.Deselect_all")); //$NON-NLS-1$
 		deselectAllButton.addSelectionListener(new SelectionAdapter() {
@@ -180,7 +186,7 @@ public class ValgrindExportWizardPage extends WizardPage {
 		});
 	}
 
-	private boolean isValid() {
+	protected boolean isValid() {
 		boolean valid = false;
 		int length = -1;
 
@@ -215,7 +221,7 @@ public class ValgrindExportWizardPage extends WizardPage {
 		return valid;
 	}
 
-	private ValgrindLaunchPlugin getPlugin() {
+	protected ValgrindLaunchPlugin getPlugin() {
 		return ValgrindLaunchPlugin.getDefault();
 	}
 
@@ -226,4 +232,13 @@ public class ValgrindExportWizardPage extends WizardPage {
 	public Text getDestText() {
 		return destText;
 	}
+
+	public Button getSelectAllButton() {
+		return selectAllButton;
+	}
+
+	public Button getDeselectAllButton() {
+		return deselectAllButton;
+	}
+
 }

@@ -10,14 +10,17 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 
+import org.eclipse.core.resources.IProject;
 
 public class CodeFormatterUtil {
 
-	public static int getTabWidth() {
+	public static int getTabWidth(IProject fProject) {
+		// TODO Auto-generated method stub
 		return 4;
 	}
 
-	public static int getIndentWidth() {
+	public static int getIndentWidth(IProject fProject) {
+		// TODO Auto-generated method stub
 		return 4;
 	}
 

@@ -22,11 +22,11 @@ import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindLine;
 import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindOutput;
 import org.eclipse.linuxtools.valgrind.core.ValgrindParserUtils;
 
-public final class CachegrindParser {
+public class CachegrindParser {
 	private static final String COLON = ":"; //$NON-NLS-1$
 	private static final String SPACE = " "; //$NON-NLS-1$
 	private static final String EQUALS = "="; //$NON-NLS-1$
-
+	
 	private static final String CMD = "cmd"; //$NON-NLS-1$
 	private static final String DESC = "desc"; //$NON-NLS-1$
 	private static final String FL = "fl"; //$NON-NLS-1$
@@ -38,7 +38,7 @@ public final class CachegrindParser {
 
 	protected static CachegrindParser instance;
 
-	private CachegrindParser() {
+	protected CachegrindParser() {
 	}
 
 	public static CachegrindParser getParser() {
@@ -49,31 +49,39 @@ public final class CachegrindParser {
 	}
 
 	public void parse(CachegrindOutput output, File cgOut) throws IOException {
-		try (BufferedReader br = new BufferedReader(new FileReader(cgOut))) {
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(cgOut));
 			output.setPid(ValgrindParserUtils.parsePID(cgOut.getName(), CachegrindLaunchDelegate.OUT_PREFIX));
 
 			String line;
 			CachegrindFile curFl = null;
 			CachegrindFunction curFn = null;
-			while ((line = br.readLine()) != null) {
+			while ((line = br.readLine()) != null) {		
 				if (line.startsWith(EVENTS + COLON)) {
 					output.setEvents(ValgrindParserUtils.parseStrValue(line, COLON + SPACE).split(SPACE));
-				} else if (line.startsWith(CMD + COLON)) {
-					//continue
-				} else if (line.startsWith(DESC + COLON)) {
+				}
+				else if (line.startsWith(CMD + COLON)) {
+					output.setCommand(ValgrindParserUtils.parseStrValue(line, COLON + SPACE));
+				}
+				else if (line.startsWith(DESC + COLON)) {
 					CachegrindDescription description = parseDescription(line);
 					output.addDescription(description);
-				} else if (line.startsWith(FL + EQUALS)) {
+				}
+				else if (line.startsWith(FL + EQUALS)) {
 					curFl = new CachegrindFile(output, ValgrindParserUtils.parseStrValue(line, EQUALS));
 					output.addFile(curFl);
-				} else if (line.startsWith(FN + EQUALS)) {
+				}
+				else if (line.startsWith(FN + EQUALS)) {				
 					if (curFl != null) {
 						curFn = new CachegrindFunction(curFl, ValgrindParserUtils.parseStrValue(line, EQUALS));
 						curFl.addFunction(curFn);
-					} else {
+					}
+					else {
 						ValgrindParserUtils.fail(line);
 					}
-				} else if (line.startsWith(SUMMARY + COLON)) {
+				}
+				else if (line.startsWith(SUMMARY + COLON)) {
 					long[] summary = parseData(line, ValgrindParserUtils.parseStrValue(line, COLON + SPACE).split(SPACE));
 					output.setSummary(summary);
 				}
@@ -85,13 +93,19 @@ public final class CachegrindParser {
 						long[] data = parseData(line, tokens[1].split(SPACE));
 						if (curFn != null) {
 							curFn.addLine(new CachegrindLine(curFn, lineNo, data));
-						} else {
+						}
+						else {
 							ValgrindParserUtils.fail(line);
 						}
-					} else {
+					}
+					else {
 						ValgrindParserUtils.fail(line);
 					}
 				}
+			}
+		} finally {
+			if (br != null) {
+				br.close();
 			}
 		}
 	}
@@ -114,11 +128,13 @@ public final class CachegrindParser {
 			String name = tokens[1];
 			tokens = tokens[2].split(COMMA + SPACE);
 			if (tokens.length == 3) {
-				desc = new CachegrindDescription(name);
-			} else {
+				desc = new CachegrindDescription(name, tokens[0], tokens[1], tokens[2]);
+			}
+			else {
 				ValgrindParserUtils.fail(line);
 			}
-		} else {
+		}
+		else {
 			ValgrindParserUtils.fail(line);
 		}
 		return desc;

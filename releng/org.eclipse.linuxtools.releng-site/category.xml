@@ -40,7 +40,13 @@
    <feature url="features/org.eclipse.linuxtools.profiling_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.profiling" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
+   <feature url="features/org.eclipse.linuxtools.tools.launch_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.tools.launch" version="0.0.0">
+      <category name="Linux Tools"/>
+   </feature>
    <feature url="features/org.eclipse.linuxtools.rpm_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.rpm" version="0.0.0">
+      <category name="Linux Tools"/>
+   </feature>
+   <feature url="features/org.eclipse.linuxtools.rpmstubby.feature_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.rpmstubby.feature" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.systemtap_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.systemtap" version="0.0.0">
@@ -86,12 +92,6 @@
    <iu id="org.swtchart" version="0.0.0">
       <category name="Linux Tools"/>
    </iu>
-   <iu id="org.cyberneko.html" version="0.0.0">
-      <category name="Linux Tools"/>
-   </iu>
-   <iu id="org.apache.xerces" version="0.0.0">
-      <category name="Linux Tools"/>
-   </iu>
    <feature url="features/org.eclipse.linuxtools.cdt.libhover.feature.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.cdt.libhover.feature.source" version="0.0.0">
       <category name="Linux Tools Sources"/>
    </feature>
@@ -128,7 +128,13 @@
    <feature url="features/org.eclipse.linuxtools.profiling.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.profiling.source" version="0.0.0">
       <category name="Linux Tools Sources"/>
    </feature>
+   <feature url="features/org.eclipse.linuxtools.tools.launch.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.tools.launch.source" version="0.0.0">
+      <category name="Linux Tools Sources"/>
+   </feature>
    <feature url="features/org.eclipse.linuxtools.rpm.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.rpm.source" version="0.0.0">
+      <category name="Linux Tools Sources"/>
+   </feature>
+   <feature url="features/org.eclipse.linuxtools.rpmstubby.feature.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.rpmstubby.feature.source" version="0.0.0">
       <category name="Linux Tools Sources"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.systemtap.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.systemtap.source" version="0.0.0">

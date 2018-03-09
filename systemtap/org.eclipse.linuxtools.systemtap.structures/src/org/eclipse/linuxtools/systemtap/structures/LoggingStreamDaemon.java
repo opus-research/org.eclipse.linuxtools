@@ -39,7 +39,7 @@ public class LoggingStreamDaemon implements IGobblerListener {
 	/**
 	 * Pushes output to log.
 	 */
-	private void pushData() {
+	protected void pushData() {
 		if(null != writer) {
 			try {
 				writer.write(output.toString());
@@ -66,14 +66,15 @@ public class LoggingStreamDaemon implements IGobblerListener {
 	public String getOutput() {
 		if(null == outputFile)
 			return null;
-		if(output.length() > 0) pushData();
-		try (FileReader reader = new FileReader(outputFile)) {
+		try {
+			if(output.length() > 0) pushData();
+			FileReader reader = new FileReader(outputFile);
 			char[] buffer = new char[BUFFER_SIZE];
 			int count;
 			StringBuilder builder = new StringBuilder();
-			while(-1 != (count = reader.read(buffer))) {
+			while(-1 != (count = reader.read(buffer)))
 				builder.append(buffer, 0, count);
-			}
+			reader.close();
 			return builder.toString();
 		} catch(IOException ioe) {}
 		return null;
@@ -92,17 +93,16 @@ public class LoggingStreamDaemon implements IGobblerListener {
 				file.getParentFile().mkdirs();
 				file.createNewFile();
 			}
+			FileReader r = new FileReader(outputFile);
 			FileWriter w = new FileWriter(file, true);
-			try (FileReader r = new FileReader(outputFile)) {
-				char[] buffer = new char[BUFFER_SIZE];
-				int count;
-				while (-1 != (count = r.read(buffer))) {
-					w.write(new String(buffer, 0, count));
-				}
-			}
+			char[] buffer = new char[BUFFER_SIZE];
+			int count;
+			while(-1 != (count = r.read(buffer)))
+				w.write(new String(buffer, 0, count));
 			w.flush();
 			writer.close();
 			writer = w;
+			r.close();
 			outputFile.delete();
 			outputFile = file;
 			saveLog = true;

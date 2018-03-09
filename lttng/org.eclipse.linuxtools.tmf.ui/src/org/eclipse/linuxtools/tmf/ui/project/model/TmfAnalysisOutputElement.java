@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisOutput;
 import org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput;
 import org.eclipse.swt.graphics.Image;
@@ -45,7 +44,6 @@ public class TmfAnalysisOutputElement extends TmfProjectModelElement {
     protected TmfAnalysisOutputElement(String name, IResource resource, ITmfProjectModelElement parent, IAnalysisOutput output) {
         super(name, resource, parent);
         fOutput = output;
-        parent.addChild(this);
     }
 
     @Override
@@ -63,14 +61,7 @@ public class TmfAnalysisOutputElement extends TmfProjectModelElement {
             IViewDescriptor descr = PlatformUI.getWorkbench().getViewRegistry().find(
                     ((TmfAnalysisViewOutput) fOutput).getViewId());
             if (descr != null) {
-                Activator bundle = Activator.getDefault();
-                String key = descr.getId();
-                Image icon = bundle.getImageRegistry().get(key);
-                if (icon == null) {
-                    icon = descr.getImageDescriptor().createImage();
-                    bundle.getImageRegistry().put(key, icon);
-                }
-                return icon;
+                return descr.getImageDescriptor().createImage();
             }
         }
         return null;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntr
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class StreamInputReader implements AutoCloseable {
+public class StreamInputReader {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -37,35 +37,30 @@ public class StreamInputReader implements AutoCloseable {
     /**
      * The StreamInput we are reading.
      */
-    private final StreamInput fStreamInput;
+    private final StreamInput streamInput;
 
     /**
      * The packet reader used to read packets from this trace file.
      */
-    private final StreamInputPacketReader fPacketReader;
+    private final StreamInputPacketReader packetReader;
 
     /**
      * Iterator on the packet index
      */
-    private int fPacketIndex;
+    private int packetIndex;
 
     /**
      * Reference to the current event of this trace file (iow, the last on that
      * was read, the next one to be returned)
      */
-    private EventDefinition fCurrentEvent = null;
+    private EventDefinition currentEvent = null;
 
-    private int fId;
+    private int name;
 
-    private CTFTraceReader fParent;
+    private CTFTraceReader parent;
 
     /** Map of all the event types */
-    private final Map<Long, EventDefinition> fEventDefs = new HashMap<>();
-
-    /**
-     * Live trace reading
-     */
-    private boolean fLive = false;
+    private final Map<Long, EventDefinition> eventDefs = new HashMap<Long, EventDefinition>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -81,12 +76,12 @@ public class StreamInputReader implements AutoCloseable {
      * @since 2.0
      */
     public StreamInputReader(StreamInput streamInput) throws CTFReaderException {
-        fStreamInput = streamInput;
-        fPacketReader = new StreamInputPacketReader(this);
+        this.streamInput = streamInput;
+        this.packetReader = new StreamInputPacketReader(this);
         /*
          * Get the iterator on the packet index.
          */
-        fPacketIndex = 0;
+        this.packetIndex = 0;
         /*
          * Make first packet the current one.
          */
@@ -96,11 +91,10 @@ public class StreamInputReader implements AutoCloseable {
     /**
      * Dispose the StreamInputReader
      *
-     * @since 3.0
+     * @since 2.0
      */
-    @Override
-    public void close() {
-        fPacketReader.close();
+    public void dispose() {
+        packetReader.dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -114,7 +108,7 @@ public class StreamInputReader implements AutoCloseable {
      *         finished/empty/malformed
      */
     public EventDefinition getCurrentEvent() {
-        return fCurrentEvent;
+        return this.currentEvent;
     }
 
     /**
@@ -123,7 +117,7 @@ public class StreamInputReader implements AutoCloseable {
      * @return the current packet context (size, lost events and such)
      */
     public StructDefinition getCurrentPacketContext() {
-        return fPacketReader.getStreamPacketContextDef();
+        return this.packetReader.getStreamPacketContextDef();
     }
 
     /**
@@ -132,7 +126,7 @@ public class StreamInputReader implements AutoCloseable {
      * @return the trace byte order
      */
     public ByteOrder getByteOrder() {
-        return fStreamInput.getStream().getTrace().getByteOrder();
+        return streamInput.getStream().getTrace().getByteOrder();
     }
 
     /**
@@ -141,7 +135,7 @@ public class StreamInputReader implements AutoCloseable {
      * @return gets the stream name (it's a number)
      */
     public int getName() {
-        return fId;
+        return this.name;
     }
 
     /**
@@ -151,7 +145,7 @@ public class StreamInputReader implements AutoCloseable {
      *            the name of the stream, (it's a number)
      */
     public void setName(int name) {
-        fId = name;
+        this.name = name;
     }
 
     /**
@@ -161,7 +155,7 @@ public class StreamInputReader implements AutoCloseable {
      * @return The CPU id (a number)
      */
     public int getCPU() {
-        return fPacketReader.getCPU();
+        return this.packetReader.getCPU();
     }
 
     /**
@@ -170,14 +164,14 @@ public class StreamInputReader implements AutoCloseable {
      * @return The filename of the stream being read
      */
     public String getFilename() {
-        return fStreamInput.getFilename();
+        return streamInput.getFilename();
     }
 
     /*
      * for internal use only
      */
     StreamInput getStreamInput() {
-        return fStreamInput;
+        return streamInput;
     }
 
     /**
@@ -187,7 +181,7 @@ public class StreamInputReader implements AutoCloseable {
      * @since 2.1
      */
     public Map<Long, EventDefinition> getEventDefinitions() {
-        return Collections.unmodifiableMap(fEventDefs);
+        return Collections.unmodifiableMap(eventDefs);
     }
 
     /**
@@ -201,28 +195,7 @@ public class StreamInputReader implements AutoCloseable {
      * @since 2.1
      */
     public void addEventDefinition(Long id, EventDefinition def) {
-        fEventDefs.put(id, def);
-    }
-
-    /**
-     * Set the trace to live mode
-     *
-     * @param live
-     *            whether the trace is read live or not
-     * @since 3.0
-     */
-    public void setLive(boolean live) {
-        fLive = live;
-    }
-
-    /**
-     * Get if the trace is to read live or not
-     *
-     * @return whether the trace is live or not
-     * @since 3.0
-     */
-    public boolean isLive() {
-        return fLive;
+        eventDefs.put(id, def);
     }
 
     // ------------------------------------------------------------------------
@@ -234,31 +207,29 @@ public class StreamInputReader implements AutoCloseable {
      * @return If an event has been successfully read.
      * @throws CTFReaderException
      *             if an error occurs
-     * @since 3.0
      */
-    public CTFResponse readNextEvent() throws CTFReaderException {
+    public boolean readNextEvent() throws CTFReaderException {
 
         /*
          * Change packet if needed
          */
-        if (!fPacketReader.hasMoreEvents()) {
-            final StreamInputPacketIndexEntry prevPacket = fPacketReader
+        if (!this.packetReader.hasMoreEvents()) {
+            final StreamInputPacketIndexEntry prevPacket = this.packetReader
                     .getCurrentPacket();
-            if (prevPacket != null || fLive ) {
+            if (prevPacket != null) {
                 goToNextPacket();
             }
-
         }
 
         /*
          * If an event is available, read it.
          */
-        if (fPacketReader.hasMoreEvents()) {
-            setCurrentEvent(fPacketReader.readNextEvent());
-            return CTFResponse.OK;
+        if (this.packetReader.hasMoreEvents()) {
+            this.setCurrentEvent(this.packetReader.readNextEvent());
+            return true;
         }
         this.setCurrentEvent(null);
-        return fLive ? CTFResponse.WAIT : CTFResponse.FINISH;
+        return false;
     }
 
     /**
@@ -268,18 +239,15 @@ public class StreamInputReader implements AutoCloseable {
      *             if an error occurs
      */
     private void goToNextPacket() throws CTFReaderException {
-        fPacketIndex++;
-        // did we already index the packet?
-        if (getPacketSize() >= (fPacketIndex + 1)) {
-            fPacketReader.setCurrentPacket(getPacket());
+        packetIndex++;
+        if (getPacketSize() >= (packetIndex + 1)) {
+            this.packetReader.setCurrentPacket(getPacket());
         } else {
-            // go to the next packet if there is one, index it at the same time
-            if (fStreamInput.addPacketHeaderIndex()) {
-                fPacketIndex = getPacketSize() - 1;
-                fPacketReader.setCurrentPacket(getPacket());
+            if (this.streamInput.addPacketHeaderIndex()) {
+                packetIndex = getPacketSize() - 1;
+                this.packetReader.setCurrentPacket(getPacket());
             } else {
-                // out of packets
-                fPacketReader.setCurrentPacket(null);
+                this.packetReader.setCurrentPacket(null);
             }
         }
     }
@@ -288,7 +256,7 @@ public class StreamInputReader implements AutoCloseable {
      * @return
      */
     private int getPacketSize() {
-        return fStreamInput.getIndex().getEntries().size();
+        return streamInput.getIndex().getEntries().size();
     }
 
     /**
@@ -309,27 +277,25 @@ public class StreamInputReader implements AutoCloseable {
         /*
          * index up to the desired timestamp.
          */
-        while ((fPacketReader.getCurrentPacket() != null)
-                && (fPacketReader.getCurrentPacket().getTimestampEnd() < timestamp)) {
+        while ((this.packetReader.getCurrentPacket() != null)
+                && (this.packetReader.getCurrentPacket().getTimestampEnd() < timestamp)) {
             try {
-                fStreamInput.addPacketHeaderIndex();
+                this.streamInput.addPacketHeaderIndex();
                 goToNextPacket();
             } catch (CTFReaderException e) {
                 // do nothing here
             }
         }
-        if (fPacketReader.getCurrentPacket() == null) {
+        if (this.packetReader.getCurrentPacket() == null) {
             gotoPacket(timestamp);
         }
 
         /*
-         * Advance until either of these conditions are met:
-         *
-         * - reached the end of the trace file (the given timestamp is after the
-         * last event)
-         *
-         * - found the first event with a timestamp greater or equal the given
-         * timestamp.
+         * Advance until either of these conditions are met
+         * <ul>
+         *  <li> reached the end of the trace file (the given timestamp is after the last event), </li>
+         *  <li> found the first event with a timestamp greater  or equal the given timestamp. </li>
+         * </ul>
          */
         readNextEvent();
         boolean done = (this.getCurrentEvent() == null);
@@ -343,12 +309,11 @@ public class StreamInputReader implements AutoCloseable {
 
     /**
      * @param timestamp
-     *            the time to seek
      * @throws CTFReaderException
      *             if an error occurs
      */
     private void gotoPacket(long timestamp) throws CTFReaderException {
-        fPacketIndex = fStreamInput.getIndex().search(timestamp)
+        this.packetIndex = this.streamInput.getIndex().search(timestamp)
                 .previousIndex();
         /*
          * Switch to this packet.
@@ -366,7 +331,7 @@ public class StreamInputReader implements AutoCloseable {
         /*
          * Search in the index for the packet to search in.
          */
-        final int len = fStreamInput.getIndex().getEntries().size();
+        final int len = this.streamInput.getIndex().getEntries().size();
 
         /*
          * Go to beginning of trace.
@@ -375,7 +340,7 @@ public class StreamInputReader implements AutoCloseable {
         /*
          * if the trace is empty.
          */
-        if ((len == 0) || (fPacketReader.hasMoreEvents() == false)) {
+        if ((len == 0) || (this.packetReader.hasMoreEvents() == false)) {
             /*
              * This means the trace is empty. abort.
              */
@@ -385,9 +350,9 @@ public class StreamInputReader implements AutoCloseable {
          * Go to the last packet that contains events.
          */
         for (int pos = len - 1; pos > 0; pos--) {
-            fPacketIndex = pos;
-            fPacketReader.setCurrentPacket(getPacket());
-            if (fPacketReader.hasMoreEvents()) {
+            packetIndex = pos;
+            this.packetReader.setCurrentPacket(getPacket());
+            if (this.packetReader.hasMoreEvents()) {
                 break;
             }
         }
@@ -396,8 +361,8 @@ public class StreamInputReader implements AutoCloseable {
          * Go until the end of that packet
          */
         EventDefinition prevEvent = null;
-        while (fCurrentEvent != null) {
-            prevEvent = fCurrentEvent;
+        while (this.currentEvent != null) {
+            prevEvent = this.currentEvent;
             this.readNextEvent();
         }
         /*
@@ -410,7 +375,7 @@ public class StreamInputReader implements AutoCloseable {
      * @return the parent
      */
     public CTFTraceReader getParent() {
-        return fParent;
+        return parent;
     }
 
     /**
@@ -418,7 +383,7 @@ public class StreamInputReader implements AutoCloseable {
      *            the parent to set
      */
     public void setParent(CTFTraceReader parent) {
-        fParent = parent;
+        this.parent = parent;
     }
 
     /**
@@ -428,34 +393,34 @@ public class StreamInputReader implements AutoCloseable {
      *            the event to set
      */
     public void setCurrentEvent(EventDefinition currentEvent) {
-        fCurrentEvent = currentEvent;
+        this.currentEvent = currentEvent;
     }
 
     /**
      * @return the packetIndexIt
      */
     private int getPacketIndex() {
-        return fPacketIndex;
+        return packetIndex;
     }
 
     private StreamInputPacketIndexEntry getPacket() {
-        return fStreamInput.getIndex().getEntries().get(getPacketIndex());
+        return streamInput.getIndex().getEntries().get(getPacketIndex());
     }
 
     /**
      * @return the packetReader
      */
     public StreamInputPacketReader getPacketReader() {
-        return fPacketReader;
+        return packetReader;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + fId;
+        result = (prime * result) + name;
         result = (prime * result)
-                + ((fStreamInput == null) ? 0 : fStreamInput.hashCode());
+                + ((streamInput == null) ? 0 : streamInput.hashCode());
         return result;
     }
 
@@ -471,14 +436,14 @@ public class StreamInputReader implements AutoCloseable {
             return false;
         }
         StreamInputReader other = (StreamInputReader) obj;
-        if (fId != other.fId) {
+        if (name != other.name) {
             return false;
         }
-        if (fStreamInput == null) {
-            if (other.fStreamInput != null) {
+        if (streamInput == null) {
+            if (other.streamInput != null) {
                 return false;
             }
-        } else if (!fStreamInput.equals(other.fStreamInput)) {
+        } else if (!streamInput.equals(other.streamInput)) {
             return false;
         }
         return true;
@@ -487,6 +452,6 @@ public class StreamInputReader implements AutoCloseable {
     @Override
     public String toString() {
         // this helps debugging
-        return fId + ' ' + fCurrentEvent.toString();
+        return this.name + ' ' + this.currentEvent.toString();
     }
 }

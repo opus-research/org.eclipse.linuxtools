@@ -14,9 +14,6 @@ package org.eclipse.linuxtools.tmf.core.tests.synchronization;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collection;
-import java.util.LinkedList;
-
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventDependency;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.SyncAlgorithmFullyIncremental;
@@ -24,7 +21,6 @@ import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithm;
 import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithm.SyncQuality;
 import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfSyncEventStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.Before;
@@ -39,7 +35,7 @@ import org.junit.Test;
 public class SyncTest {
 
     private TmfTraceStub t1, t2;
-    private Collection<ITmfTrace> fTraces;
+    private TmfTraceStub[] fTraces;
 
     /**
      * Initializing the traces
@@ -50,10 +46,7 @@ public class SyncTest {
         t1.init("t1");
         t2 = new TmfTraceStub();
         t2.init("t2");
-
-        Collection<ITmfTrace> traces = new LinkedList<>();
-        traces.add(t1);
-        traces.add(t2);
+        TmfTraceStub[] traces = { t1, t2 };
         fTraces = traces;
     }
 

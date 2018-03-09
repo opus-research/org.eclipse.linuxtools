@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.TextConsole;
 
@@ -38,6 +39,63 @@ public class Helper {
 		return null;
 	}
 
+
+	/**
+	 * @param name : A String that can be found in the console (BE AS SPECIFIC AS POSSIBLE)
+	 * @return The text contained within that console
+	 */
+	public static String getMainConsoleTextByName(String name){
+		TextConsole proc = getConsoleByName(name);
+		return proc.getDocument().get();
+	}
+
+	public static IDocument getConsoleDocumentByName(String name) {
+		return Helper.getConsoleByName(name).getDocument();
+	}
+
+	/**
+	 * @param absoluteFilePath : the absolute path to the file
+	 * @param content : the text to be written
+	 */
+	public static void writeToFile(String absoluteFilePath, String content){
+		try {
+			FileWriter fstream;
+			fstream = new FileWriter(absoluteFilePath);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write(content);
+			out.close();
+		} catch (IOException e) {
+			SystemTapUIErrorMessages err = new SystemTapUIErrorMessages
+					(Messages.getString("SystemTapView.FileIOErr"), //$NON-NLS-1$
+					Messages.getString("SystemTapView.FileIOErr"), //$NON-NLS-1$
+					Messages.getString("SystemTapView.FileIOErrMsg")); //$NON-NLS-1$
+			err.schedule();
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Append a String to a file
+	 * @param absoluteFilePath : The absolute path to the file to which we will append.
+	 * @param content : The contents to append.
+	 */
+	public static void appendToFile(String absoluteFilePath, String content) {
+		try {
+			FileWriter fstream;
+			fstream = new FileWriter(absoluteFilePath, true);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.append(content);
+			out.close();
+		} catch (IOException e) {
+			SystemTapUIErrorMessages err = new SystemTapUIErrorMessages
+					(Messages.getString("SystemTapView.FileIOErr"), //$NON-NLS-1$
+					Messages.getString("SystemTapView.FileIOErr"), //$NON-NLS-1$
+					Messages.getString("SystemTapView.FileIOErrMsg")); //$NON-NLS-1$
+			err.schedule();
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * Read the contents of a file
 	 * @param absoluteFilePath : The absolute path of the file from which to read.
@@ -45,9 +103,10 @@ public class Helper {
 	 */
 	public static String readFile(String absoluteFilePath) {
 
-		try (BufferedReader bw = new BufferedReader(new FileReader(new File(absoluteFilePath)))) {
+		try {
 			String output = ""; //$NON-NLS-1$
 			String tmp = ""; //$NON-NLS-1$
+			BufferedReader bw = new BufferedReader(new FileReader(new File(absoluteFilePath)));
 			while ((tmp = bw.readLine()) != null) {
 				output+=tmp + "\n"; //$NON-NLS-1$
 			}

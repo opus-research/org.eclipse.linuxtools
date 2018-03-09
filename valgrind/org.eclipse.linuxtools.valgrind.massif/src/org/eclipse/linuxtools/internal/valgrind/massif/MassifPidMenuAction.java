@@ -23,9 +23,9 @@ import org.eclipse.swt.widgets.MenuItem;
 
 public class MassifPidMenuAction extends Action implements IMenuCreator {
 
-	private Menu menu;
-	private MassifViewPart view;
-	private Integer[] pids;
+	protected Menu menu;
+	protected MassifViewPart view;
+	protected Integer[] pids;
 
 	public MassifPidMenuAction(MassifViewPart view) {
 		super(Messages.getString("MassifPidMenuAction.Select_Process_ID"), IAction.AS_DROP_DOWN_MENU); //$NON-NLS-1$
@@ -36,21 +36,19 @@ public class MassifPidMenuAction extends Action implements IMenuCreator {
 		setMenuCreator(this);
 	}
 
-	@Override
 	public void dispose() {
 		if (menu != null) {
 			menu.dispose();
 		}
 	}
 
-	@Override
 	public Menu getMenu(Control parent) {
 		if (menu == null) {
 			if (pids != null) {
 				menu = new Menu(parent);
 				for (int i = 0; i < pids.length; i++) {
 					final Integer pid = pids[i];
-					ActionContributionItem item = new ActionContributionItem(new Action("PID " + pids[i], IAction.AS_RADIO_BUTTON) { //$NON-NLS-1$
+					ActionContributionItem item = new ActionContributionItem(new Action("PID " + String.valueOf(pids[i]), IAction.AS_RADIO_BUTTON) { //$NON-NLS-1$
 						@Override
 						public void run() {
 							MenuItem[] items = menu.getItems();
@@ -61,7 +59,6 @@ public class MassifPidMenuAction extends Action implements IMenuCreator {
 							setChecked(true);
 							view.setPid(pid);
 							Display.getDefault().syncExec(new Runnable() {
-								@Override
 								public void run() {
 									view.refreshView();
 								}							
@@ -78,7 +75,6 @@ public class MassifPidMenuAction extends Action implements IMenuCreator {
 		return menu;
 	}
 
-	@Override
 	public Menu getMenu(Menu parent) {
 		return null;
 	}

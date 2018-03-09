@@ -17,32 +17,38 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.eclipse.cdt.utils.pty.PTY;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
-import org.eclipse.remote.core.IRemoteConnection;
-import org.eclipse.remote.core.IRemoteFileManager;
-import org.eclipse.remote.core.IRemoteProcess;
-import org.eclipse.remote.core.IRemoteProcessBuilder;
-import org.eclipse.remote.core.IRemoteResource;
-import org.eclipse.remote.core.IRemoteServices;
-import org.eclipse.remote.core.RemoteProcessAdapter;
-import org.eclipse.remote.core.RemoteServices;
+import org.eclipse.linuxtools.rdt.proxy.Activator;
+import org.eclipse.linuxtools.rdt.proxy.RDTProxyManager;
+import org.eclipse.ptp.remote.core.IRemoteConnection;
+import org.eclipse.ptp.remote.core.IRemoteFileManager;
+import org.eclipse.ptp.remote.core.IRemoteProcess;
+import org.eclipse.ptp.remote.core.IRemoteProcessBuilder;
+import org.eclipse.ptp.remote.core.IRemoteResource;
+import org.eclipse.ptp.remote.core.IRemoteServices;
+import org.eclipse.ptp.remote.core.RemoteServices;
+import org.eclipse.ptp.remote.core.RemoteProcessAdapter;
 
 /**
  * @noextend This class is not intended to be subclassed by clients.
  */
 public class RDTCommandLauncher implements IRemoteCommandLauncher {
 
-	private IRemoteProcess fProcess;
-	private boolean fShowCommand;
-	private String[] fCommandArgs;
+	public final static int COMMAND_CANCELED = IRemoteCommandLauncher.COMMAND_CANCELED;
+	public final static int ILLEGAL_COMMAND = IRemoteCommandLauncher.ILLEGAL_COMMAND;
+	public final static int OK = IRemoteCommandLauncher.OK;
 
-	private String fErrorMessage = ""; //$NON-NLS-1$
+	
+	protected IRemoteProcess fProcess;
+	protected boolean fShowCommand;
+	protected String[] fCommandArgs;
+
+	protected String fErrorMessage = ""; //$NON-NLS-1$
 
 	private String lineSeparator;
 	private URI uri;
@@ -50,7 +56,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 	/**
 	 * The number of milliseconds to pause between polling.
 	 */
-	private static final long DELAY = 50L;
+	protected static final long DELAY = 50L;
 
 	/**
 	 * Creates a new launcher Fills in stderr and stdout output to the given
@@ -85,6 +91,10 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 		lineSeparator = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
+	public void showCommand(boolean show) {
+		fShowCommand = show;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.cdt.core.ICommandLauncher#getErrorMessage()
 	 */
@@ -94,42 +104,56 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.eclipse.cdt.core.ICommandLauncher#setErrorMessage(java.lang.String)
+	 */
+	public void setErrorMessage(String error) {
+		fErrorMessage = error;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.eclipse.cdt.core.ICommandLauncher#getCommandArgs()
 	 */
-	private String[] getCommandArgs() {
+	public String[] getCommandArgs() {
 		return fCommandArgs;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.cdt.core.ICommandLauncher#getCommandLine()
+	 */
+	public String getCommandLine() {
+		return getCommandLine(getCommandArgs());
 	}
 
 	/**
 	 * Constructs a command array that will be passed to the process
 	 */
-	private static String[] constructCommandArray(String command, String[] commandArgs) {
+	protected String[] constructCommandArray(String command, String[] commandArgs) {
 		String[] args = new String[1 + commandArgs.length];
 		args[0] = command;
 		System.arraycopy(commandArgs, 0, args, 1, commandArgs.length);
 		return args;
 	}
 
-
+	
 	/**
 	 * @see org.eclipse.cdt.core.IRemoteCommandLauncher#execute(IPath, String[], String[], IPath, IProgressMonitor)
 	 */
 	@Override
-	public Process execute(IPath commandPath, String[] args, String[] env, IPath changeToDirectory, IProgressMonitor monitor, PTY pty) {
+	public Process execute(IPath commandPath, String[] args, String[] env, IPath changeToDirectory, IProgressMonitor monitor) {
 		try {
 			// add platform specific arguments (shell invocation)
 			fCommandArgs = constructCommandArray(commandPath.toOSString(), args);
 			fShowCommand = true;
 			IRemoteServices services = RemoteServices.getRemoteServices(uri);
 			IRemoteConnection connection = services.getConnectionManager().getConnection(uri);
-			IRemoteFileManager fm = connection.getFileManager();
-			IRemoteProcessBuilder builder = connection.getProcessBuilder(Arrays.asList(fCommandArgs));
+			IRemoteFileManager fm = services.getFileManager(connection);
+			IRemoteProcessBuilder builder = services.getProcessBuilder(connection, Arrays.asList(fCommandArgs));
 
 			if (changeToDirectory != null)
 				builder.directory(fm.getResource(changeToDirectory.toString()));
-
+			
 			Map<String,String> envMap = builder.environment();
-
+			
 			for (int i = 0; i < env.length; ++i) {
 				String s = env[i];
 				String[] tokens = s.split("=", 2); //$NON-NLS-1$
@@ -148,7 +172,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 			fProcess = builder.start();
 			fErrorMessage = ""; //$NON-NLS-1$
 		} catch (IOException e) {
-			fErrorMessage = e.getMessage();
+			setErrorMessage(e.getMessage());
 			return null;
 		}
 		return new RemoteProcessAdapter(fProcess);
@@ -183,7 +207,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 		if (monitor.isCanceled()) {
 			closure.terminate();
 			state = COMMAND_CANCELED;
-			fErrorMessage = Activator.getResourceString("CommandLauncher.error.commandCanceled"); //$NON-NLS-1$
+			setErrorMessage(Activator.getResourceString("CommandLauncher.error.commandCanceled")); //$NON-NLS-1$
 		}
 
 		try {
@@ -194,7 +218,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 		return state;
 	}
 
-	private void printCommandLine(OutputStream os) {
+	protected void printCommandLine(OutputStream os) {
 		if (os != null) {
 			String cmd = getCommandLine(getCommandArgs());
 			try {
@@ -206,7 +230,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 		}
 	}
 
-	private String getCommandLine(String[] commandArgs) {
+	protected String getCommandLine(String[] commandArgs) {
 		StringBuffer buf = new StringBuffer();
 		if (fCommandArgs != null) {
 			for (String commandArg : commandArgs) {
@@ -216,12 +240,6 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
 			buf.append(lineSeparator);
 		}
 		return buf.toString();
-	}
-
-	@Override
-	public Process execute(IPath commandPath, String[] args, String[] env,
-			IPath changeToDirectory, IProgressMonitor monitor) {
-		return execute(commandPath, args, env, changeToDirectory, monitor, null);
 	}
 
 }

@@ -16,16 +16,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.systemtap.structures.StructuresPlugin;
 import org.eclipse.linuxtools.systemtap.structures.LoggingStreamDaemon;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IGobblerListener;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
+import org.eclipse.linuxtools.systemtap.structures.process.SystemtapProcessFactory;
+
+
 
 /**
  * A class to spawn a separate thread to run a <code>Process</code>.
@@ -45,7 +45,6 @@ public class Command implements Runnable {
 	 * @since 2.0
 	 */
 	protected boolean stopped = false;
-	private boolean started = false;
 	/**
 	 * @since 2.0
 	 */
@@ -56,18 +55,14 @@ public class Command implements Runnable {
 	protected StreamGobbler errorGobbler = null;
 
 	private boolean disposed = false;
-	private List<IGobblerListener> inputListeners = new ArrayList<>();	//Only used to allow adding listeners before creating the StreamGobbler
-	private List<IGobblerListener> errorListeners = new ArrayList<>();	//Only used to allow adding listeners before creating the StreamGobbler
+	private ArrayList<IGobblerListener> inputListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
+	private ArrayList<IGobblerListener> errorListeners = new ArrayList<IGobblerListener>();	//Only used to allow adding listeners before creating the StreamGobbler
 	private int returnVal = Integer.MAX_VALUE;
 
 	private String[] cmd;
 	private String[] envVars;
 	protected Process process;
-	/**
-	 * @since 2.1
-	 */
-	protected IProject project = null;
-	private final LoggingStreamDaemon logger;
+	private LoggingStreamDaemon logger;
 
 	public static final int ERROR_STREAM = 0;
 	public static final int INPUT_STREAM = 1;
@@ -82,20 +77,6 @@ public class Command implements Runnable {
 	 * @since 2.0
 	 */
 	public Command(String[] cmd, String[] envVars) {
-		this(cmd, envVars, null);
-	}
-
-	/**
-	 * Spawns the new thread that this class will run in.  From the Runnable
-	 * interface spawning the new thread automatically calls the run() method.
-	 * This must be called by the implementing class in order to start the
-	 * StreamGobbler.
-	 * @param cmd The entire command to run
-	 * @param envVars List of all environment variables to use
-	 * @param project The project this script belongs to or null
-	 * @since 2.1
-	 */
-	public Command(String[] cmd, String[] envVars, IProject project) {
 		if (cmd != null) {
 			this.cmd = Arrays.copyOf(cmd, cmd.length);
 		}
@@ -103,7 +84,6 @@ public class Command implements Runnable {
 		if (envVars != null) {
 			this.envVars = Arrays.copyOf(envVars, envVars.length);
 		}
-		this.project = project;
 		logger = new LoggingStreamDaemon();
 		addInputStreamListener(logger);
 	}
@@ -118,7 +98,6 @@ public class Command implements Runnable {
 		if(status.isOK()) {
 			Thread t = new Thread(this, cmd[0]);
 			t.start();
-			started = true;
 		} else {
 			stop();
 			returnVal = Integer.MIN_VALUE;
@@ -133,7 +112,7 @@ public class Command implements Runnable {
 	 */
 	protected IStatus init() {
 		try {
-			process = RuntimeProcessFactory.getFactory().exec(cmd, envVars, project);
+			process = SystemtapProcessFactory.exec(cmd, envVars);
 
 			if (process == null){
 				return new Status(IStatus.ERROR, StructuresPlugin.PLUGIN_ID, Messages.Command_failedToRunSystemtap);
@@ -209,21 +188,11 @@ public class Command implements Runnable {
 	}
 
 	/**
-	 * Method to check whether or not the process is running.
+	 * Method to check whether or not the process in running.
 	 * @return The execution status.
 	 */
 	public boolean isRunning() {
 		return !stopped;
-	}
-
-	/**
-	 * Method to check whether or not the process has began to run.
-	 * @return <code>false</code> before the process begins to run or
-	 * if initialization of the process has failed; <code>true</code> otherwise.
-	 * @since 3.0
-	 */
-	public boolean hasStarted() {
-		return started;
 	}
 
 	/**
@@ -269,6 +238,30 @@ public class Command implements Runnable {
 	}
 
 	/**
+	 * Returns the list of everything that is listening the the InputStream
+	 * @return List of all <code>IGobblerListeners</code> that are monitoring the stream.
+	 */
+	public ArrayList<IGobblerListener> getInputStreamListeners() {
+		if(null != inputGobbler) {
+			return inputGobbler.getDataListeners();
+		} else {
+			return inputListeners;
+		}
+	}
+
+	/**
+	 * Returns the list of everything that is listening the the ErrorStream
+	 * @return List of all <code>IGobblerListeners</code> that are monitoring the stream.
+	 */
+	public ArrayList<IGobblerListener> getErrorStreamListeners() {
+		if(null != errorGobbler) {
+			return errorGobbler.getDataListeners();
+		} else {
+			return errorListeners;
+		}
+	}
+
+	/**
 	 * Removes the provided listener from those monitoring the InputStream.
 	 * @param listener An </code>IGobblerListener</code> that is monitoring the stream.
 	 */
@@ -302,6 +295,18 @@ public class Command implements Runnable {
 	}
 
 	/**
+	 * Gets all of the output from the input stream.
+	 * @return String containing the entire output from the input stream.
+	 */
+	public String getOutput() {
+		if(!isDisposed()) {
+			return logger.getOutput();
+		} else {
+			return null;
+		}
+	}
+
+	/**
 	 * Disposes of all internal components of this class. Nothing in the class should be
 	 * referenced after this is called.
 	 */
@@ -327,14 +332,6 @@ public class Command implements Runnable {
 			errorGobbler = null;
 			logger.dispose();
 		}
-	}
-
-	/**
-	 * @return The process of this command.
-	 * @since 3.0
-	 */
-	public Process getProcess() {
-		return process;
 	}
 
 }

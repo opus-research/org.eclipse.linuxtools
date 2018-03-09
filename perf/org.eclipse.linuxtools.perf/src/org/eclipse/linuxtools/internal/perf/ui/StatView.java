@@ -62,7 +62,7 @@ public class StatView extends ViewPart {
 	/**
 	 * Update to most recent statistics data.
 	 */
-	private void updateData(){
+	public void updateData(){
 		IPerfData data = PerfPlugin.getDefault().getStatData();
 		if (data != null) {
 			setStyledText(data.getPerfData());

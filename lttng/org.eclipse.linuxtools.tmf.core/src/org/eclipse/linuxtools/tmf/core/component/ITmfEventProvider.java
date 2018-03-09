@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -20,10 +20,10 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
  * This is the interface of the data providers in TMF. Data providers have the
  * capability of handling data requests.
  *
+ * @version 1.0
  * @author Francois Chouinard
  *
  * @see TmfEventProvider
- * @since 3.0
  */
 public interface ITmfEventProvider extends ITmfComponent {
 
@@ -33,6 +33,11 @@ public interface ITmfEventProvider extends ITmfComponent {
      * @param request The request to process
      */
     void sendRequest(ITmfEventRequest request);
+
+    /**
+     * Queue the coalesced requests.
+     */
+    void fireRequest();
 
     /**
      * Increments/decrements the pending requests counters and fires the request

@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.cdt.core.model.IBinary;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -30,14 +29,14 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 	//TODO: Do not let this class persist, or otherwise change it so persistence doesn't matter.
 	private String partialScriptPath;
 	private String funcs;
-	private List<String> exclusions;
+	private ArrayList<String> exclusions;
 	private String projectName;
 	protected static final String ATTR_PARSER = "org.eclipse.linuxtools.callgraph.graphparser"; //$NON-NLS-1$
 	protected static final String ATTR_VIEWER = "org.eclipse.linuxtools.callgraph.callgraphview";  //$NON-NLS-1$
 
 	public LaunchStapGraph() {
 		funcs = null;
-		exclusions = new ArrayList<>();
+		exclusions = new ArrayList<String>();
 		projectName = null;
 	}
 
@@ -103,6 +102,10 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 
 	}
 
+	public void setFuncs(String val) {
+		funcs = val;
+	}
+
 	/**
 	 * Generates the call and return function probes for the specified function
 	 * @param function
@@ -119,7 +122,7 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 	 * @param bw
 	 * @return
 	 */
-	private String writeFunctionListToScript(String resourceToSearchFor) {
+	public String writeFunctionListToScript(String resourceToSearchFor) {
 		String toWrite = getFunctionsFromBinary(bin, resourceToSearchFor);
 
 		if (toWrite == null || toWrite.length() < 1) {
@@ -158,17 +161,20 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 					"printf(\"" + projectName + "\\n\")\n" + //$NON-NLS-1$ //$NON-NLS-2$
 					"}"; //$NON-NLS-1$
  		File partialScript = new File(partialScriptPath);
-		try (BufferedReader scriptReader = new BufferedReader(new FileReader(
-				partialScript))) {
-			while ((temp = scriptReader.readLine()) != null) {
-				toWrite += temp + "\n"; //$NON-NLS-1$
-			}
-			scriptReader.close();
+		BufferedReader scriptReader = new BufferedReader(new FileReader(
+				partialScript));
+		while ((temp = scriptReader.readLine()) != null) {
+			toWrite += temp + "\n";  //$NON-NLS-1$
 		}
+		scriptReader.close();
 
 		return toWrite;
 	}
 
+
+	public void setExclusions(ArrayList<String> e) {
+		exclusions = e;
+	}
 
 	@Override
 	public String generateScript() throws IOException {
@@ -180,6 +186,10 @@ public class LaunchStapGraph extends SystemTapLaunchShortcut {
 		scriptContents += writeFromPartialScript(projectName);
 
 		return scriptContents;
+	}
+
+	public void setPartialScriptPath(String val) {
+		partialScriptPath = val;
 	}
 
 	@Override

@@ -16,18 +16,24 @@ package org.eclipse.linuxtools.internal.rpm.rpmlint.resolutions;
  *
  */
 public class HardcodedPackagerTag extends ARemoveLineResolution {
-    /**
-     * Rpmlint warning id.
-     */
-    public static final String ID = "hardcoded-packager-tag"; //$NON-NLS-1$
+	/**
+	 * Rpmlint warning id.
+	 */
+	public static final String ID = "hardcoded-packager-tag"; //$NON-NLS-1$
 
-    @Override
-    public String getDescription() {
-        return Messages.HardcodedPackagerTag_0;
-    }
+	/**
+	 * @see org.eclipse.ui.IMarkerResolution2#getDescription()
+	 */
+	@Override
+	public String getDescription() {
+		return Messages.HardcodedPackagerTag_0;
+	}
 
-    @Override
-    public String getLabel() {
-        return ID;
-    }
+	/**
+	 * @see org.eclipse.ui.IMarkerResolution#getLabel()
+	 */
+	@Override
+	public String getLabel() {
+		return ID;
+	}
 }

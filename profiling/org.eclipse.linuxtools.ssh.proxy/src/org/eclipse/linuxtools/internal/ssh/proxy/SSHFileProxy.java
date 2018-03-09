@@ -19,47 +19,47 @@ import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 
 public class SSHFileProxy extends SSHBase implements IRemoteFileProxy {
 
-    private URI uri;
+	URI uri;
+	
+	public SSHFileProxy(URI uri) {
+		super(uri);
+		this.uri = uri;
+	}
 
-    public SSHFileProxy(URI uri) {
-        super(uri);
-        this.uri = uri;
-    }
+	@Override
+	public URI toURI(IPath path) {
+		return uri;
+	}
 
-    @Override
-    public URI toURI(IPath path) {
-        return uri;
-    }
+	@Override
+	public URI toURI(String path) {
+		return uri.resolve(path);
+	}
 
-    @Override
-    public URI toURI(String path) {
-        return uri.resolve(path);
-    }
+	@Override
+	public String toPath(URI uri) {
+		return uri.getPath();
+	}
 
-    @Override
-    public String toPath(URI uri) {
-        return uri.getPath();
-    }
+	@Override
+	public String getDirectorySeparator() {
+		return "/"; //$NON-NLS-1$
+	}
 
-    @Override
-    public String getDirectorySeparator() {
-        return "/"; //$NON-NLS-1$
-    }
+	@Override
+	public IFileStore getResource(String path) {
+		try {
+			URI newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(),
+					path, uri.getQuery(), uri.getFragment());
+			return new SSHFileStore(newUri, this);
+		} catch (URISyntaxException e) {
+			//This is not suppose to happen
+			return null;
+		}
+	}
 
-    @Override
-    public IFileStore getResource(String path) {
-        try {
-            URI newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(),
-                    path, uri.getQuery(), uri.getFragment());
-            return new SSHFileStore(newUri, this);
-        } catch (URISyntaxException e) {
-            //This is not suppose to happen
-            return null;
-        }
-    }
-
-    @Override
-    public URI getWorkingDir() {
-        return uri;
-    }
+	@Override
+	public URI getWorkingDir() {
+		return uri;
+	}
 }

@@ -17,7 +17,7 @@ import java.util.WeakHashMap;
 import org.eclipse.cdt.core.IBinaryParser.IBinaryObject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.binutils.utils.STBinutilsFactoryManager;
+import org.eclipse.linuxtools.binutils.utils.STNMFactory;
 import org.eclipse.linuxtools.binutils.utils.STNMSymbolsHandler;
 import org.eclipse.linuxtools.binutils.utils.STSymbolManager;
 
@@ -25,7 +25,7 @@ public class STGcovProgramChecker implements STNMSymbolsHandler {
 
     private boolean gcovFound = false;
     private long timestamp;
-    private final static WeakHashMap<File, STGcovProgramChecker> map = new WeakHashMap<>();
+    private final static WeakHashMap<File, STGcovProgramChecker> map = new WeakHashMap<File, STGcovProgramChecker>();
 
     /** Private Constructor */
     private STGcovProgramChecker(long timestamp) {
@@ -37,14 +37,14 @@ public class STGcovProgramChecker implements STNMSymbolsHandler {
         STGcovProgramChecker pg = map.get(program);
         if (pg == null) {
             pg = new STGcovProgramChecker(program.lastModified());
-            STBinutilsFactoryManager.getNM(object.getCPU(), object.getPath().toOSString(), pg, project);
+            STNMFactory.getNM(object.getCPU(), object.getPath().toOSString(), pg, project);
             map.put(program, pg);
         } else {
             long fileTime = program.lastModified();
             if (fileTime > pg.timestamp) {
                 pg.timestamp = fileTime;
                 pg.gcovFound = false;
-                STBinutilsFactoryManager.getNM(object.getCPU(), object.getPath().toOSString(), pg, project);
+                STNMFactory.getNM(object.getCPU(), object.getPath().toOSString(), pg, project);
             }
         }
         return pg;

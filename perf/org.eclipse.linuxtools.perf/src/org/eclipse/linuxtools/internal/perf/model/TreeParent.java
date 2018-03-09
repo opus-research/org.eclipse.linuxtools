@@ -11,26 +11,25 @@
 package org.eclipse.linuxtools.internal.perf.model;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TreeParent {
 	private String name;
 	private TreeParent parent;
-	private List<TreeParent> children;
+	private ArrayList<TreeParent> children;
 	private float percent = -1;
 	private double samples = -1;
 
 	public TreeParent(String name, float percent) {
 		this.name = name;
 		this.percent = percent;
-		children = new ArrayList<>();
+		children = new ArrayList<TreeParent>();
 	}
 
 	public TreeParent(String name, float percent, double samples) {
 		this(name, percent);
 		this.samples = samples;
 	}
-
+	
 	public String getName() {
 		return name;
 	}
@@ -45,7 +44,7 @@ public class TreeParent {
 
 	@Override
 	public String toString() {
-		return getName() + " (" + getFormattedSamples() + " samples)";  //$NON-NLS-1$//$NON-NLS-2$
+		return getName() + " (" + getFormattedSamples() + " samples)";
 	}
 
 	public Boolean equals(String s) {
@@ -62,16 +61,16 @@ public class TreeParent {
 
 	/**
 	 * Get the number of samples collected for this element.
-	 *
+	 * 
 	 * If this element is a child of PMSymbol (eg. PMLineRef) we should
 	 * calculate its samples using its given percentage and the number of
 	 * samples from its parent. If this element is a parent of PMSymbol we
 	 * should calculate its samples by accumulating all samples from its
 	 * children.
-	 *
+	 * 
 	 * @return the number of samples
 	 */
-	private double getSamples () {
+	public double getSamples () {
 		// Child of PMSymbol, distribute samples by percentage
 		if (this instanceof PMLineRef) {
 			if (samples == -1) {
@@ -101,7 +100,7 @@ public class TreeParent {
 
 	public TreeParent(String name) {
 		this.name = name;
-		children = new ArrayList<>();
+		children = new ArrayList<TreeParent>();
 	}
 
 	public void addChild(TreeParent child) {
@@ -137,7 +136,7 @@ public class TreeParent {
 		children.clear();
 	}
 
-	private void recalculatePercentage() {
+	public void recalculatePercentage() {
 		if (getPercent() != -1 && (this instanceof PMDso || this instanceof PMFile)){
 			percent = 0;
 			// Re-sum its children percentages

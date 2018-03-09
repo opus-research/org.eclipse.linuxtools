@@ -21,6 +21,8 @@ public class TranslationUnitVisitor implements ICElementVisitor {
 		functions = ""; //$NON-NLS-1$
 	}
 
+	private long time;
+
 	@Override
 	public boolean visit(ICElement arg0) {
 		if (arg0.getElementType() == ICElement.C_FUNCTION) {
@@ -33,4 +35,13 @@ public class TranslationUnitVisitor implements ICElementVisitor {
 	public String getFunctions() {
 		return functions;
 	}
+
+	public int getNumberOfFunctions() {
+		return (functions.split(" ").length); //$NON-NLS-1$
+	}
+
+	public double getTime() {
+		return time;
+	}
+
 }

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2014 Intel Corporation and others
+ * Copyright (c) 2007, 2013 Intel Corporation and others
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,7 +14,6 @@
  *   Geneviève Bastien, École Polytechnique de Montréal - Move code to
  *                            provide base classes for time graph view
  *                            Add display of links between items
- *   Xavier Raynaud, Kalray - Code optimization
  *****************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
@@ -22,9 +21,7 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.resource.JFaceResources;
@@ -134,15 +131,15 @@ public class TimeGraphControl extends TimeGraphBaseControl
     private ITimeGraphPresentationProvider fTimeGraphProvider = null;
     private ItemData fItemData = null;
     private List<SelectionListener> fSelectionListeners;
-    private final List<ISelectionChangedListener> fSelectionChangedListeners = new ArrayList<>();
-    private final List<ITimeGraphTreeListener> fTreeListeners = new ArrayList<>();
-    private final List<MenuDetectListener> fTimeGraphEntryMenuListeners = new ArrayList<>();
-    private final List<MenuDetectListener> fTimeEventMenuListeners = new ArrayList<>();
+    private final List<ISelectionChangedListener> fSelectionChangedListeners = new ArrayList<ISelectionChangedListener>();
+    private final List<ITimeGraphTreeListener> fTreeListeners = new ArrayList<ITimeGraphTreeListener>();
+    private final List<MenuDetectListener> fTimeGraphEntryMenuListeners = new ArrayList<MenuDetectListener>();
+    private final List<MenuDetectListener> fTimeEventMenuListeners = new ArrayList<MenuDetectListener>();
     private final Cursor fDragCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_HAND);
     private final Cursor fResizeCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_IBEAM);
     private final Cursor fWaitCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_WAIT);
     private final Cursor fZoomCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_SIZEWE);
-    private final List<ViewerFilter> fFilters = new ArrayList<>();
+    private final List<ViewerFilter> fFilters = new ArrayList<ViewerFilter>();
     private MenuDetectEvent fPendingMenuDetectEvent = null;
     private boolean fHideArrows = false;
 
@@ -243,26 +240,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
     }
 
     /**
-     * Gets the timegraph provider used by this timegraph viewer.
-     *
-     * @return the timegraph provider, or <code>null</code> if not set.
-     * @since 3.0
-     */
-    public ITimeGraphPresentationProvider getTimeGraphProvider() {
-        return fTimeGraphProvider;
-    }
-
-    /**
-     * Gets the color map used by this timegraph viewer.
-     *
-     * @return a color map, or <code>null</code> if not set.
-     * @since 3.0
-     */
-    public Color[] getEventColorMap() {
-        return fEventColorMap;
-    }
-
-    /**
      * Assign the given time provider
      *
      * @param timeProvider
@@ -310,7 +287,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
         }
         if (null == fSelectionListeners) {
-            fSelectionListeners = new ArrayList<>();
+            fSelectionListeners = new ArrayList<SelectionListener>();
         }
         fSelectionListeners.add(listener);
     }
@@ -359,7 +336,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
      * @return The array of traces
      */
     public ITimeGraphEntry[] getTraces() {
-        return fItemData.getEntries();
+        return fItemData.getTraces();
     }
 
     /**
@@ -368,7 +345,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
      * @return The array of filters
      */
     public boolean[] getTraceFilter() {
-        return fItemData.getEntryFilter();
+        return fItemData.getTraceFilter();
     }
 
     /**
@@ -642,12 +619,18 @@ public class TimeGraphControl extends TimeGraphBaseControl
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public ISelection getSelection() {
         TimeGraphSelection sel = new TimeGraphSelection();
         ITimeGraphEntry trace = getSelectedTrace();
         if (null != trace && null != fTimeProvider) {
-            long selectedTime = fTimeProvider.getSelectionBegin();
+            long selectedTime;
+            if (fTimeProvider instanceof ITimeDataProvider2) {
+                selectedTime = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
+            } else {
+                selectedTime = fTimeProvider.getSelectedTime();
+            }
             ITimeEvent event = Utils.findEvent(trace, selectedTime, 0);
             if (event != null) {
                 sel.add(event);
@@ -732,7 +715,14 @@ public class TimeGraphControl extends TimeGraphBaseControl
         if (trace == null) {
             return;
         }
-        long selectedTime = fTimeProvider.getSelectionBegin();
+        long selectedTime;
+        if (fTimeProvider instanceof ITimeDataProvider2) {
+            selectedTime = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
+        } else {
+            @SuppressWarnings("deprecation")
+            long time = fTimeProvider.getSelectedTime();
+            selectedTime = time;
+        }
         long endTime = fTimeProvider.getEndTime();
         ITimeEvent nextEvent;
         if (-1 == n && selectedTime > endTime) {
@@ -844,8 +834,15 @@ public class TimeGraphControl extends TimeGraphBaseControl
         if (prevRange == 0) {
             return;
         }
-        ITimeDataProvider provider = fTimeProvider;
-        long selTime = (provider.getSelectionEnd() + provider.getSelectionBegin()) / 2;
+        long selTime;
+        if (fTimeProvider instanceof ITimeDataProvider2) {
+            ITimeDataProvider2 provider = ((ITimeDataProvider2) fTimeProvider);
+            selTime = (provider.getSelectionEnd() + provider.getSelectionBegin()) / 2;
+        } else {
+            @SuppressWarnings("deprecation")
+            long selectedTime = fTimeProvider.getSelectedTime();
+            selTime = selectedTime;
+        }
         if (selTime <= prevTime0 || selTime >= prevTime1) {
             selTime = (prevTime0 + prevTime1) / 2;
         }
@@ -874,8 +871,15 @@ public class TimeGraphControl extends TimeGraphBaseControl
     public void zoomOut() {
         long prevTime0 = fTimeProvider.getTime0();
         long prevTime1 = fTimeProvider.getTime1();
-        ITimeDataProvider provider = fTimeProvider;
-        long selTime = (provider.getSelectionEnd() + provider.getSelectionBegin()) / 2;
+        long selTime;
+        if (fTimeProvider instanceof ITimeDataProvider2) {
+            ITimeDataProvider2 provider = ((ITimeDataProvider2) fTimeProvider);
+            selTime = (provider.getSelectionEnd() + provider.getSelectionBegin()) / 2;
+        } else {
+            @SuppressWarnings("deprecation")
+            long selectedTime = fTimeProvider.getSelectedTime();
+            selTime = selectedTime;
+        }
         if (selTime <= prevTime0 || selTime >= prevTime1) {
             selTime = (prevTime0 + prevTime1) / 2;
         }
@@ -912,7 +916,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
         if (trace == null) {
             return;
         }
-        long selectedTime = fTimeProvider.getSelectionBegin();
+        long selectedTime = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
         for (ILinkEvent link : fItemData.fLinks) {
             if (link.getEntry() == trace && link.getTime() == selectedTime) {
                 selectItem(link.getDestinationEntry(), false);
@@ -938,7 +942,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
         if (trace == null) {
             return;
         }
-        long selectedTime = fTimeProvider.getSelectionBegin();
+        long selectedTime = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
         for (ILinkEvent link : fItemData.fLinks) {
             if (link.getDestinationEntry() == trace && link.getTime() + link.getDuration() == selectedTime) {
                 selectItem(link.getEntry(), false);
@@ -963,7 +967,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
         ITimeGraphEntry trace = null;
         int idx = getSelectedIndex();
         if (idx >= 0) {
-            trace = fItemData.fExpandedItems[idx].fEntry;
+            trace = fItemData.fExpandedItems[idx].fTrace;
         }
         return trace;
     }
@@ -995,21 +999,13 @@ public class TimeGraphControl extends TimeGraphBaseControl
                 adjustScrolls();
                 redraw();
                 toggled = true;
-                fireTreeEvent(item.fEntry, item.fExpanded);
+                fireTreeEvent(item.fTrace, item.fExpanded);
             }
         }
         return toggled;
     }
 
-    /**
-     * Gets the index of the item at the given location.
-     *
-     * @param y
-     *            the y coordinate
-     * @return the index of the item at the given location, of -1 if none.
-     * @since 3.0
-     */
-    protected int getItemIndexAtY(int y) {
+    int getItemIndexAtY(int y) {
         if (y < 0) {
             return -1;
         }
@@ -1031,18 +1027,9 @@ public class TimeGraphControl extends TimeGraphBaseControl
         return Math.abs(x - nameWidth) < SNAP_WIDTH;
     }
 
-    /**
-     * Gets the {@link ITimeGraphEntry} at the given location.
-     *
-     * @param pt
-     *            a point in the widget
-     * @return the {@link ITimeGraphEntry} at this point, or <code>null</code>
-     *         if none.
-     * @since 3.0
-     */
-    protected ITimeGraphEntry getEntry(Point pt) {
+    ITimeGraphEntry getEntry(Point pt) {
         int idx = getItemIndexAtY(pt.y);
-        return idx >= 0 ? fItemData.fExpandedItems[idx].fEntry : null;
+        return idx >= 0 ? fItemData.fExpandedItems[idx].fTrace : null;
     }
 
     /**
@@ -1175,9 +1162,9 @@ public class TimeGraphControl extends TimeGraphBaseControl
      * @return The expanded elements
      */
     public ITimeGraphEntry[] getExpandedElements() {
-        ArrayList<ITimeGraphEntry> elements = new ArrayList<>();
+        ArrayList<ITimeGraphEntry> elements = new ArrayList<ITimeGraphEntry>();
         for (Item item : fItemData.fExpandedItems) {
-            elements.add(item.fEntry);
+            elements.add(item.fTrace);
         }
         return elements.toArray(new ITimeGraphEntry[0]);
     }
@@ -1242,8 +1229,17 @@ public class TimeGraphControl extends TimeGraphBaseControl
 
         long time0 = fTimeProvider.getTime0();
         long time1 = fTimeProvider.getTime1();
-        long selectionBegin = fTimeProvider.getSelectionBegin();
-        long selectionEnd = fTimeProvider.getSelectionEnd();
+        long selectionBegin;
+        long selectionEnd;
+        if (fTimeProvider instanceof ITimeDataProvider2) {
+            selectionBegin = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
+            selectionEnd = ((ITimeDataProvider2) fTimeProvider).getSelectionEnd();
+        } else {
+            @SuppressWarnings("deprecation")
+            long selectedTime = fTimeProvider.getSelectedTime();
+            selectionBegin = selectedTime;
+            selectionEnd = selectedTime;
+        }
         double pixelsPerNanoSec = (bounds.width - nameSpace <= RIGHT_MARGIN) ? 0 : (double) (bounds.width - nameSpace - RIGHT_MARGIN) / (time1 - time0);
         int x0 = bounds.x + nameSpace + (int) ((selectionBegin - time0) * pixelsPerNanoSec);
         int x1 = bounds.x + nameSpace + (int) ((selectionEnd - time0) * pixelsPerNanoSec);
@@ -1342,17 +1338,24 @@ public class TimeGraphControl extends TimeGraphBaseControl
      * @param gc Graphics context
      */
     protected void drawItem(Item item, Rectangle bounds, ITimeDataProvider timeProvider, int i, int nameSpace, GC gc) {
-        ITimeGraphEntry entry = item.fEntry;
+        ITimeGraphEntry entry = item.fTrace;
         long time0 = timeProvider.getTime0();
         long time1 = timeProvider.getTime1();
-        long selectedTime = fTimeProvider.getSelectionBegin();
+        long selectedTime;
+        if (fTimeProvider instanceof ITimeDataProvider2) {
+            selectedTime = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
+        } else {
+            @SuppressWarnings("deprecation")
+            long time = fTimeProvider.getSelectedTime();
+            selectedTime = time;
+        }
 
         Rectangle nameRect = getNameRect(bounds, i, nameSpace);
         if (nameRect.y >= bounds.y + bounds.height) {
             return;
         }
 
-        if (! item.fEntry.hasTimeEvents()) {
+        if (! item.fTrace.hasTimeEvents()) {
             Rectangle statesRect = getStatesRect(bounds, i, nameSpace);
             nameRect.width += statesRect.width;
             drawName(item, nameRect, gc);
@@ -1377,7 +1380,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
         // K pixels per second
         double pixelsPerNanoSec = (rect.width <= RIGHT_MARGIN) ? 0 : (double) (rect.width - RIGHT_MARGIN) / (time1 - time0);
 
-        if (item.fEntry.hasTimeEvents()) {
+        if (item.fTrace.hasTimeEvents()) {
             fillSpace(rect, gc, selected);
             // Drawing rectangle is smaller than reserved space
             stateRect.y += 3;
@@ -1561,7 +1564,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
      *            Graphics context
      */
     protected void drawName(Item item, Rectangle bounds, GC gc) {
-        boolean hasTimeEvents = item.fEntry.hasTimeEvents();
+        boolean hasTimeEvents = item.fTrace.hasTimeEvents();
         if (! hasTimeEvents) {
             gc.setBackground(getColorScheme().getBkColorGroup(item.fSelected, fIsInFocus));
             gc.fillRectangle(bounds);
@@ -1600,7 +1603,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
         }
         leftMargin += EXPAND_SIZE + MARGIN;
 
-        Image img = fTimeGraphProvider.getItemImage(item.fEntry);
+        Image img = fTimeGraphProvider.getItemImage(item.fTrace);
         if (img != null) {
             // draw icon
             int imgHeight = img.getImageData().height;
@@ -1677,15 +1680,15 @@ public class TimeGraphControl extends TimeGraphBaseControl
             return false;
         }
         boolean visible = rect.width == 0 ? false : true;
-        Color black =  Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
-        gc.setForeground(black);
 
         if (visible) {
             if (colorIdx == ITimeGraphPresentationProvider.TRANSPARENT) {
                 // Only draw the top and bottom borders
+                gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
                 gc.drawLine(rect.x, rect.y, rect.x + rect.width - 1, rect.y);
                 gc.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width - 1, rect.y + rect.height - 1);
                 if (rect.width == 1) {
+                    gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
                     gc.drawPoint(rect.x, rect.y - 2);
                 }
                 return false;
@@ -1694,19 +1697,24 @@ public class TimeGraphControl extends TimeGraphBaseControl
             if (colorIdx < fEventColorMap.length) {
                 stateColor = fEventColorMap[colorIdx];
             } else {
-                stateColor = black;
+                stateColor = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
             }
 
             boolean reallySelected = timeSelected && selected;
             // fill all rect area
             gc.setBackground(stateColor);
             gc.fillRectangle(rect);
+            // get the border color?
+            gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
 
-            if (reallySelected) {
-                gc.drawLine(rect.x, rect.y - 1, rect.x + rect.width - 1, rect.y - 1);
-                gc.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width - 1, rect.y + rect.height);
+            // draw bounds
+            if (!reallySelected) {
+                // Draw the top and bottom borders i.e. no side borders
+                gc.drawLine(rect.x, rect.y, rect.x + rect.width - 1, rect.y);
+                gc.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width - 1, rect.y + rect.height - 1);
             }
         } else {
+            gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
             gc.drawPoint(rect.x, rect.y - 2);
         }
         fTimeGraphProvider.postDrawEvent(event, rect, gc);
@@ -1892,13 +1900,15 @@ public class TimeGraphControl extends TimeGraphBaseControl
             cursor = fDragCursor;
         } else if ((stateMask & SWT.MODIFIER_MASK) == SWT.SHIFT) {
             cursor = fResizeCursor;
-        } else if (!isOverSplitLine(x)) {
-            long selectionBegin = fTimeProvider.getSelectionBegin();
-            long selectionEnd = fTimeProvider.getSelectionEnd();
-            int xBegin = getXForTime(selectionBegin);
-            int xEnd = getXForTime(selectionEnd);
-            if (Math.abs(x - xBegin) < SNAP_WIDTH || Math.abs(x - xEnd) < SNAP_WIDTH) {
-                cursor = fResizeCursor;
+        } else {
+            if (!isOverSplitLine(x) &&fTimeProvider instanceof ITimeDataProvider2) {
+                long selectionBegin = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
+                long selectionEnd = ((ITimeDataProvider2) fTimeProvider).getSelectionEnd();
+                int xBegin = getXForTime(selectionBegin);
+                int xEnd = getXForTime(selectionEnd);
+                if (Math.abs(x - xBegin) < SNAP_WIDTH || Math.abs(x - xEnd) < SNAP_WIDTH) {
+                    cursor = fResizeCursor;
+                }
             }
         }
         if (getCursor() != cursor) {
@@ -1918,14 +1928,20 @@ public class TimeGraphControl extends TimeGraphBaseControl
                 message.append("T: "); //$NON-NLS-1$
                 message.append(new TmfNanoTimestamp(time).toString());
                 message.append("     T1: "); //$NON-NLS-1$
-                long selectionBegin = fTimeProvider.getSelectionBegin();
-                long selectionEnd = fTimeProvider.getSelectionEnd();
-                message.append(new TmfNanoTimestamp(Math.min(selectionBegin, selectionEnd)).toString());
-                if (selectionBegin != selectionEnd) {
-                    message.append("     T2: "); //$NON-NLS-1$
-                    message.append(new TmfNanoTimestamp(Math.max(selectionBegin, selectionEnd)).toString());
-                    message.append("     \u0394: "); //$NON-NLS-1$
-                    message.append(new TmfTimestampDelta(Math.abs(selectionBegin - selectionEnd), ITmfTimestamp.NANOSECOND_SCALE));
+                if (fTimeProvider instanceof ITimeDataProvider2) {
+                    long selectionBegin = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
+                    long selectionEnd = ((ITimeDataProvider2) fTimeProvider).getSelectionEnd();
+                    message.append(new TmfNanoTimestamp(Math.min(selectionBegin, selectionEnd)).toString());
+                    if (selectionBegin != selectionEnd) {
+                        message.append("     T2: "); //$NON-NLS-1$
+                        message.append(new TmfNanoTimestamp(Math.max(selectionBegin, selectionEnd)).toString());
+                        message.append("     \u0394: "); //$NON-NLS-1$
+                        message.append(new TmfTimestampDelta(Math.abs(selectionBegin - selectionEnd), ITmfTimestamp.NANOSECOND_SCALE));
+                    }
+                } else {
+                    @SuppressWarnings("deprecation")
+                    long selectedTime = fTimeProvider.getSelectedTime();
+                    message.append(new TmfNanoTimestamp(selectedTime));
                 }
             }
         } else if (fDragState == DRAG_SELECTION || fDragState == DRAG_ZOOM) {
@@ -1971,9 +1987,11 @@ public class TimeGraphControl extends TimeGraphBaseControl
             fDragX = e.x;
             fTimeProvider.setNameSpace(e.x);
         } else if (DRAG_SELECTION == fDragState) {
-            fDragX = Math.min(Math.max(e.x, fTimeProvider.getNameSpace()), size.x - RIGHT_MARGIN);
-            redraw();
-            fTimeGraphScale.setDragRange(fDragX0, fDragX);
+            if (fTimeProvider instanceof ITimeDataProvider2) {
+                fDragX = Math.min(Math.max(e.x, fTimeProvider.getNameSpace()), size.x - RIGHT_MARGIN);
+                redraw();
+                fTimeGraphScale.setDragRange(fDragX0, fDragX);
+            }
         } else if (DRAG_ZOOM == fDragState) {
             fDragX = Math.min(Math.max(e.x, fTimeProvider.getNameSpace()), size.x - RIGHT_MARGIN);
             redraw();
@@ -2058,27 +2076,29 @@ public class TimeGraphControl extends TimeGraphBaseControl
                 fDragX = e.x;
                 fDragX0 = fDragX;
                 fDragTime0 = getTimeAtX(fDragX0);
-                long selectionBegin = fTimeProvider.getSelectionBegin();
-                long selectionEnd = fTimeProvider.getSelectionEnd();
-                int xBegin = getXForTime(selectionBegin);
-                int xEnd = getXForTime(selectionEnd);
-                if ((e.stateMask & SWT.MODIFIER_MASK) == SWT.SHIFT) {
-                    long time = getTimeAtX(e.x);
-                    if (Math.abs(time - selectionBegin) < Math.abs(time - selectionEnd)) {
-                        fDragX0 = xEnd;
-                        fDragTime0 = selectionEnd;
+                if (fTimeProvider instanceof ITimeDataProvider2) {
+                    long selectionBegin = ((ITimeDataProvider2) fTimeProvider).getSelectionBegin();
+                    long selectionEnd = ((ITimeDataProvider2) fTimeProvider).getSelectionEnd();
+                    int xBegin = getXForTime(selectionBegin);
+                    int xEnd = getXForTime(selectionEnd);
+                    if ((e.stateMask & SWT.MODIFIER_MASK) == SWT.SHIFT) {
+                        long time = getTimeAtX(e.x);
+                        if (Math.abs(time - selectionBegin) < Math.abs(time - selectionEnd)) {
+                            fDragX0 = xEnd;
+                            fDragTime0 = selectionEnd;
+                        } else {
+                            fDragX0 = xBegin;
+                            fDragTime0 = selectionBegin;
+                        }
                     } else {
-                        fDragX0 = xBegin;
-                        fDragTime0 = selectionBegin;
-                    }
-                } else {
-                    long time = getTimeAtX(e.x);
-                    if (Math.abs(e.x - xBegin) < SNAP_WIDTH && Math.abs(time - selectionBegin) <= Math.abs(time - selectionEnd)) {
-                        fDragX0 = xEnd;
-                        fDragTime0 = selectionEnd;
-                    } else if (Math.abs(e.x - xEnd) < SNAP_WIDTH && Math.abs(time - selectionEnd) <= Math.abs(time - selectionBegin)) {
-                        fDragX0 = xBegin;
-                        fDragTime0 = selectionBegin;
+                        long time = getTimeAtX(e.x);
+                        if (Math.abs(e.x - xBegin) < SNAP_WIDTH && Math.abs(time - selectionBegin) <= Math.abs(time - selectionEnd)) {
+                            fDragX0 = xEnd;
+                            fDragTime0 = selectionEnd;
+                        } else if (Math.abs(e.x - xEnd) < SNAP_WIDTH && Math.abs(time - selectionEnd) <= Math.abs(time - selectionBegin)) {
+                            fDragX0 = xBegin;
+                            fDragTime0 = selectionBegin;
+                        }
                     }
                 }
                 fTime0bak = fTimeProvider.getTime0();
@@ -2134,9 +2154,9 @@ public class TimeGraphControl extends TimeGraphBaseControl
                     long time0 = fDragTime0;
                     long time1 = getTimeAtX(fDragX);
                     if (time0 <= time1) {
-                        fTimeProvider.setSelectionRangeNotify(time0, time1);
+                        ((ITimeDataProvider2) fTimeProvider).setSelectionRangeNotify(time0, time1);
                     } else {
-                        fTimeProvider.setSelectionRangeNotify(time1, time0);
+                        ((ITimeDataProvider2) fTimeProvider).setSelectionRangeNotify(time1, time0);
                     }
                 }
                 fDragState = DRAG_NONE;
@@ -2390,9 +2410,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
         fFilters.remove(filter);
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void colorSettingsChanged(StateItem[] stateItems) {
         /* Destroy previous colors from the resource manager */
@@ -2413,42 +2430,59 @@ public class TimeGraphControl extends TimeGraphBaseControl
     }
 
     private class ItemData {
-        private final Map<ITimeGraphEntry, Item> fItemMap = new LinkedHashMap<>();
         private Item[] fExpandedItems = new Item[0];
         private Item[] fItems = new Item[0];
-        private ITimeGraphEntry fRootEntries[] = new ITimeGraphEntry[0];
-        private List<ILinkEvent> fLinks = new ArrayList<>();
-        private boolean fEntryFilter[] = new boolean[0];
-        private final ArrayList<ITimeGraphEntry> fFilteredOut = new ArrayList<>();
+        private ITimeGraphEntry fTraces[] = new ITimeGraphEntry[0];
+        private List<ILinkEvent> fLinks = new ArrayList<ILinkEvent>();
+        private boolean fTraceFilter[] = new boolean[0];
+        private final ArrayList<ITimeGraphEntry> fFilteredOut = new ArrayList<ITimeGraphEntry>();
 
         public ItemData() {
         }
 
-        public Item findItem(ITimeGraphEntry entry) {
-            return fItemMap.get(entry);
+        Item findItem(ITimeGraphEntry entry) {
+            if (entry == null) {
+                return null;
+            }
+
+            for (int i = 0; i < fItems.length; i++) {
+                Item item = fItems[i];
+                if (item.fTrace == entry) {
+                    return item;
+                }
+            }
+
+            return null;
         }
 
-        public int findItemIndex(ITimeGraphEntry entry) {
-            Item item = fItemMap.get(entry);
-            if (item == null) {
+        int findItemIndex(ITimeGraphEntry trace) {
+            if (trace == null) {
                 return -1;
             }
-            return item.fExpandedIndex;
+
+            for (int i = 0; i < fExpandedItems.length; i++) {
+                Item item = fExpandedItems[i];
+                if (item.fTrace == trace) {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public void refreshData() {
-            fItemMap.clear();
+            List<Item> itemList = new ArrayList<Item>();
             fFilteredOut.clear();
             ITimeGraphEntry selection = getSelectedTrace();
-            for (int i = 0; i < fRootEntries.length; i++) {
-                ITimeGraphEntry entry = fRootEntries[i];
-                refreshData(fItemMap, null, 0, entry);
+            for (int i = 0; i < fTraces.length; i++) {
+                ITimeGraphEntry entry = fTraces[i];
+                refreshData(itemList, null, 0, entry);
             }
-            fItems = fItemMap.values().toArray(new Item[0]);
+            fItems = itemList.toArray(new Item[0]);
             updateExpandedItems();
             if (selection != null) {
                 for (Item item : fExpandedItems) {
-                    if (item.fEntry == selection) {
+                    if (item.fTrace == selection) {
                         item.fSelected = true;
                         break;
                     }
@@ -2456,7 +2490,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
             }
         }
 
-        private void refreshData(Map<ITimeGraphEntry, Item> itemMap, Item parent, int level, ITimeGraphEntry entry) {
+        private void refreshData(List<Item> itemList, Item parent, int level, ITimeGraphEntry entry) {
             Item item = new Item(entry, entry.getName(), level);
             if (parent != null) {
                 parent.fChildren.add(item);
@@ -2466,23 +2500,20 @@ public class TimeGraphControl extends TimeGraphBaseControl
             } else {
                 item.fItemHeight = fGlobalItemHeight;
             }
-            itemMap.put(entry, item);
+            itemList.add(item);
             if (entry.hasChildren()) {
                 item.fExpanded = true;
                 item.fHasChildren = true;
                 for (ITimeGraphEntry child : entry.getChildren()) {
-                    refreshData(itemMap, item, level + 1, child);
+                    refreshData(itemList, item, level + 1, child);
                 }
             }
         }
 
         public void updateExpandedItems() {
-            for (Item item : fItems) {
-                item.fExpandedIndex = -1;
-            }
-            List<Item> expandedItemList = new ArrayList<>();
-            for (int i = 0; i < fRootEntries.length; i++) {
-                ITimeGraphEntry entry = fRootEntries[i];
+            List<Item> expandedItemList = new ArrayList<Item>();
+            for (int i = 0; i < fTraces.length; i++) {
+                ITimeGraphEntry entry = fTraces[i];
                 Item item = findItem(entry);
                 refreshExpanded(expandedItemList, item);
             }
@@ -2494,13 +2525,12 @@ public class TimeGraphControl extends TimeGraphBaseControl
             // Check for filters
             boolean display = true;
             for (ViewerFilter filter : fFilters) {
-                if (!filter.select(null, item.fEntry.getParent(), item.fEntry)) {
+                if (!filter.select(null, item.fTrace.getParent(), item.fTrace)) {
                     display = false;
                     break;
                 }
             }
             if (display) {
-                item.fExpandedIndex = expandedItemList.size();
                 expandedItemList.add(item);
                 if (item.fHasChildren && item.fExpanded) {
                     for (Item child : item.fChildren) {
@@ -2510,18 +2540,18 @@ public class TimeGraphControl extends TimeGraphBaseControl
             }
         }
 
-        public void refreshData(ITimeGraphEntry[] entries) {
-            if (entries == null) {
-                fEntryFilter = null;
-                fRootEntries = null;
+        public void refreshData(ITimeGraphEntry traces[]) {
+            if (traces == null) {
+                fTraceFilter = null;
+                fTraces = null;
             } else {
-                if (entries.length == 0) {
-                    fEntryFilter = null;
-                } else if (fEntryFilter == null || entries.length != fEntryFilter.length) {
-                    fEntryFilter = new boolean[entries.length];
-                    java.util.Arrays.fill(fEntryFilter, true);
+                if (traces.length == 0) {
+                    fTraceFilter = null;
+                } else if (fTraceFilter == null || traces.length != fTraceFilter.length) {
+                    fTraceFilter = new boolean[traces.length];
+                    java.util.Arrays.fill(fTraceFilter, true);
                 }
-                fRootEntries = Arrays.copyOf(entries, entries.length);
+                fTraces = Arrays.copyOf(traces, traces.length);
             }
 
             refreshData();
@@ -2532,16 +2562,16 @@ public class TimeGraphControl extends TimeGraphBaseControl
             if (events != null) {
                 fLinks = events;
             } else {
-                fLinks = new ArrayList<>();
+                fLinks = new ArrayList<ILinkEvent>();
             }
         }
 
-        public ITimeGraphEntry[] getEntries() {
-            return fRootEntries;
+        public ITimeGraphEntry[] getTraces() {
+            return fTraces;
         }
 
-        public boolean[] getEntryFilter() {
-            return fEntryFilter;
+        public boolean[] getTraceFilter() {
+            return fTraceFilter;
         }
 
         public List<ITimeGraphEntry> getFilteredOut() {
@@ -2551,20 +2581,19 @@ public class TimeGraphControl extends TimeGraphBaseControl
 
     private class Item {
         private boolean fExpanded;
-        private int fExpandedIndex;
         private boolean fSelected;
         private boolean fHasChildren;
         private int fItemHeight;
-        private final int fLevel;
-        private final List<Item> fChildren;
-        private final String fName;
-        private final ITimeGraphEntry fEntry;
+        private int fLevel;
+        private List<Item> fChildren;
+        private String fName;
+        private ITimeGraphEntry fTrace;
 
-        public Item(ITimeGraphEntry entry, String name, int level) {
-            this.fEntry = entry;
+        public Item(ITimeGraphEntry trace, String name, int level) {
+            this.fTrace = trace;
             this.fName = name;
             this.fLevel = level;
-            this.fChildren = new ArrayList<>();
+            this.fChildren = new ArrayList<Item>();
         }
 
         @Override
@@ -2603,7 +2632,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
         int idx = getItemIndexAtY(p.y);
         if (idx >= 0 && idx < fItemData.fExpandedItems.length) {
             Item item = fItemData.fExpandedItems[idx];
-            ITimeGraphEntry entry = item.fEntry;
+            ITimeGraphEntry entry = item.fTrace;
             if (entry.hasTimeEvents()) {
                 ITimeEvent event = Utils.findEvent(entry, getTimeAtX(p.x), 2);
                 if (event != null) {

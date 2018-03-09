@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.dataviewers.charts.provider;
 
 import java.util.List;
 
+import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField;
 import org.eclipse.linuxtools.dataviewers.piechart.PieChart;
 import org.eclipse.linuxtools.internal.dataviewers.charts.Activator;
@@ -30,11 +31,12 @@ import org.swtchart.ITitle;
 import org.swtchart.LineStyle;
 
 /**
- * A utility class that handles the charts creation (pie chart and bar chart)
+ * A utility class that handles the charts creation (pie chart & bar chart)
+ *
+ * @author Marzia Maugeri <marzia.maugeri@st.com>
+ *
  */
-public final class ChartFactory {
-
-    private ChartFactory() {}
+public class ChartFactory {
 
     /**
      * Produces a pie chart from the input objects.
@@ -58,7 +60,13 @@ public final class ChartFactory {
 
             view = (ChartView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                     .showView(ChartView.VIEW_ID, String.valueOf(ChartView.getSecId()), IWorkbenchPage.VIEW_ACTIVATE);
-            PieChart chart = new PieChart(view.getParent(), SWT.NONE);
+
+            String[] pieChartNames = new String [valFields.size()];
+            for (int i = 0; i < valFields.size(); i++) {
+                pieChartNames[i] = valFields.get(i).getColumnHeaderText();
+            }
+
+            PieChart chart = new PieChart(view.getParent(), SWT.NONE, pieChartNames);
 
             chart.setBackground(WHITE);
             chart.setBackgroundInPlotArea(GRAD);
@@ -186,5 +194,13 @@ public final class ChartFactory {
 
     private static int getRC() {
         return (int) (Math.random() * 255);
+    }
+
+    /**
+     * @param viewer
+     * @return the field used to provide the labels to the series
+     */
+    public ISTDataViewersField getLabelField(AbstractSTViewer viewer) {
+        return viewer.getAllFields()[0];
     }
 }

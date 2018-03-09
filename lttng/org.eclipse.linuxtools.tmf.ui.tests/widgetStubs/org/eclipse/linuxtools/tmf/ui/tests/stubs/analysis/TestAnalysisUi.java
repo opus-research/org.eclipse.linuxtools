@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.ui.tests.stubs.analysis;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAbstractAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput;
 
 /**
  * Stub for an analysis module with outputs
@@ -31,6 +32,7 @@ public class TestAnalysisUi extends TmfAbstractAnalysisModule {
      */
     public TestAnalysisUi() {
         super();
+        registerOutput(new TmfAnalysisViewOutput(VIEW_ID));
     }
 
     @Override

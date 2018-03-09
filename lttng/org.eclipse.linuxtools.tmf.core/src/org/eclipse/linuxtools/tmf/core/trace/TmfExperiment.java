@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,20 +12,18 @@
  *   Patrick Tasse - Updated for removal of context clone
  *   Patrick Tasse - Updated for ranks in experiment location
  *   Geneviève Bastien - Added support of experiment synchronization
- *                       Added the initExperiment method and default constructor
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
@@ -88,21 +86,16 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
      */
     private boolean fInitialized = false;
 
+    /**
+     * The experiment bookmarks file
+     */
+    private IFile fBookmarksFile;
+
     // ------------------------------------------------------------------------
     // Construction
     // ------------------------------------------------------------------------
 
     /**
-     * Default constructor
-     * @since 3.0
-     */
-    public TmfExperiment() {
-        super();
-    }
-
-    /**
-     * Constructor with parameters
-     *
      * @param type
      *            the event type
      * @param id
@@ -160,7 +153,23 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
      *            the resource associated to the experiment
      */
     public TmfExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
-        initExperiment(type, path, traces, indexPageSize, resource);
+        setCacheSize(indexPageSize);
+        setStreamingInterval(0);
+        setParser(this);
+        fTraces = traces;
+        try {
+            super.initialize(resource, path, type);
+        } catch (TmfTraceException e) {
+            e.printStackTrace();
+        }
+
+        if (resource != null) {
+            try {
+                this.synchronizeTraces();
+            } catch (TmfTraceException e) {
+                Activator.logError("Error synchronizing experiment", e); //$NON-NLS-1$
+            }
+        }
     }
 
     @Override
@@ -200,43 +209,6 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
     }
 
     /**
-     * Initialization of an experiment, taking the type, path, traces,
-     * indexPageSize and resource
-     *
-     * @param type
-     *            the event type
-     * @param path
-     *            the experiment path
-     * @param traces
-     *            the experiment set of traces
-     * @param indexPageSize
-     *            the experiment index page size
-     * @param resource
-     *            the resource associated to the experiment
-     * @since 3.0
-     */
-    public void initExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
-        setCacheSize(indexPageSize);
-        setStreamingInterval(0);
-        setParser(this);
-        // traces have to be set before super.initialize()
-        fTraces = traces;
-        try {
-            super.initialize(resource, path, type);
-        } catch (TmfTraceException e) {
-            Activator.logError("Error initializing experiment", e); //$NON-NLS-1$
-        }
-
-        if (resource != null) {
-            try {
-                this.synchronizeTraces();
-            } catch (TmfTraceException e) {
-                Activator.logError("Error synchronizing experiment", e); //$NON-NLS-1$
-            }
-        }
-    }
-
-    /**
      * @since 2.0
      */
     @Override
@@ -271,6 +243,25 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
         final ITmfEvent event = getNext(context);
         context.dispose();
         return (event != null) ? event.getTimestamp() : null;
+    }
+
+    /**
+     * Set the file to be used for bookmarks on this experiment
+     *
+     * @param file
+     *            the bookmarks file
+     */
+    public void setBookmarksFile(final IFile file) {
+        fBookmarksFile = file;
+    }
+
+    /**
+     * Get the file used for bookmarks on this experiment
+     *
+     * @return the bookmarks file or null if none is set
+     */
+    public IFile getBookmarksFile() {
+        return fBookmarksFile;
     }
 
     // ------------------------------------------------------------------------
@@ -333,10 +324,10 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
         for (int i = 0; i < fTraces.length; i++) {
             // Get the relevant trace attributes
             final ITmfContext traceContext = fTraces[i].seekEvent(locations[i]);
-            context.setContext(i, traceContext);
+            context.getContexts()[i] = traceContext;
             traceContext.setRank(ranks[i]);
             locations[i] = traceContext.getLocation(); // update location after seek
-            context.setEvent(i, fTraces[i].getNext(traceContext));
+            context.getEvents()[i] = fTraces[i].getNext(traceContext);
             rank += ranks[i];
         }
 
@@ -413,8 +404,8 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
         // trace
         final int lastTrace = expContext.getLastTrace();
         if (lastTrace != TmfExperimentContext.NO_TRACE) {
-            final ITmfContext traceContext = expContext.getContext(lastTrace);
-            expContext.setEvent(lastTrace, fTraces[lastTrace].getNext(traceContext));
+            final ITmfContext traceContext = expContext.getContexts()[lastTrace];
+            expContext.getEvents()[lastTrace] = fTraces[lastTrace].getNext(traceContext);
             expContext.setLastTrace(TmfExperimentContext.NO_TRACE);
         }
 
@@ -422,7 +413,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
         int trace = TmfExperimentContext.NO_TRACE;
         ITmfTimestamp timestamp = TmfTimestamp.BIG_CRUNCH;
         for (int i = 0; i < fTraces.length; i++) {
-            final ITmfEvent event = expContext.getEvent(i);
+            final ITmfEvent event = expContext.getEvents()[i];
             if (event != null && event.getTimestamp() != null) {
                 final ITmfTimestamp otherTS = event.getTimestamp();
                 if (otherTS.compareTo(timestamp, true) < 0) {
@@ -434,15 +425,12 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
 
         ITmfEvent event = null;
         if (trace != TmfExperimentContext.NO_TRACE) {
-            event = expContext.getEvent(trace);
+            event = expContext.getEvents()[trace];
             if (event != null) {
                 updateAttributes(expContext, event.getTimestamp());
                 expContext.increaseRank();
                 expContext.setLastTrace(trace);
-                final ITmfContext traceContext = expContext.getContext(trace);
-                if (traceContext == null) {
-                    throw new IllegalStateException();
-                }
+                final ITmfContext traceContext = expContext.getContexts()[trace];
 
                 // Update the experiment location
                 TmfLocationArray locationArray = new TmfLocationArray(
@@ -517,7 +505,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
 
         final File syncFile = (supplDirectory != null) ? new File(supplDirectory + File.separator + SYNCHRONIZATION_FILE_NAME) : null;
 
-        final SynchronizationAlgorithm syncAlgo = SynchronizationManager.synchronizeTraces(syncFile, Arrays.asList(fTraces), doSync);
+        final SynchronizationAlgorithm syncAlgo = SynchronizationManager.synchronizeTraces(syncFile, fTraces, doSync);
 
         final TmfTraceSynchronizedSignal signal = new TmfTraceSynchronizedSignal(this, syncAlgo);
 
@@ -630,20 +618,9 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
     public void traceOpened(TmfTraceOpenedSignal signal) {
         if (signal.getTrace() == this) {
             initializeStreamingMonitor();
-
-            /* Initialize the analysis */
-            MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, null, null);
-            status.add(executeAnalysis());
-            if (!status.isOK()) {
-                Activator.log(status);
-            }
-            TmfTraceManager.refreshSupplementaryFiles(this);
         }
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public synchronized int getCheckpointSize() {
         int totalCheckpointSize = 0;
@@ -670,9 +647,6 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
         return totalCheckpointSize;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
         ITmfLocation[] locations = new ITmfLocation[fTraces.length];

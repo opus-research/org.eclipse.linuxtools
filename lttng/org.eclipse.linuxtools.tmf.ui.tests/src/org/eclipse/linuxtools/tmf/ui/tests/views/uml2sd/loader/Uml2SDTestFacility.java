@@ -37,7 +37,6 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.FilterCriteria;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.FilterListDialog;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.LoadersManager;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.loader.TmfUml2SDSyncLoader;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
@@ -63,7 +62,7 @@ public class Uml2SDTestFacility {
     private TmfUml2SDTestTrace    fParser = null;
     private TmfExperiment fExperiment = null;
 
-    private volatile boolean fIsInitialized = false;
+    private boolean fIsInitialized = false;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -153,14 +152,8 @@ public class Uml2SDTestFacility {
      */
     public void dispose() {
         if (fIsInitialized) {
-            ITmfTrace trace = fTrace;
-            TmfExperiment experiment = fExperiment;
-            if (trace == null || experiment == null) {
-                throw new IllegalStateException();
-            }
-
-            trace.broadcast(new TmfTraceClosedSignal(this, experiment));
-            experiment.dispose();
+            fTrace.broadcast(new TmfTraceClosedSignal(this, fExperiment));
+            fExperiment.dispose();
 
             // Wait for all Eclipse jobs to finish
             waitForJobs();
@@ -180,11 +173,6 @@ public class Uml2SDTestFacility {
             final long endTimeMillis = System.currentTimeMillis() + waitTimeMillis;
             while(System.currentTimeMillis() < endTimeMillis) {
                 if (!display.readAndDispatch()) {
-                    if ("cocoa".equals (SWT.getPlatform ())) {
-                        // The display needs to be woken up because it's possible
-                        // to get in a state where nothing will wake up the UI thread
-                        display.asyncExec(null);
-                    }
                     display.sleep();
                 }
                 display.update();
@@ -323,13 +311,8 @@ public class Uml2SDTestFacility {
      * Disposes the experiment.
      */
     public void disposeExperiment() {
-        ITmfTrace trace = fTrace;
-        TmfExperiment experiment = fExperiment;
-        if (trace == null || experiment == null) {
-            throw new IllegalStateException();
-        }
-        trace.broadcast(new TmfTraceClosedSignal(this, experiment));
-        experiment.dispose();
+        fTrace.broadcast(new TmfTraceClosedSignal(this, fExperiment));
+        fExperiment.dispose();
         delay(IUml2SDTestConstants.GUI_REFESH_DELAY);
     }
 
@@ -338,7 +321,7 @@ public class Uml2SDTestFacility {
      */
     public void createFilterCriteria() {
         // Create Filter Criteria and save tme
-        final List<FilterCriteria> filterToSave = new ArrayList<>();
+        final List<FilterCriteria> filterToSave = new ArrayList<FilterCriteria>();
         Criteria criteria = new Criteria();
         criteria.setLifeLineSelected(true);
         criteria.setExpression(IUml2SDTestConstants.FIRST_PLAYER_NAME);

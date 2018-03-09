@@ -16,13 +16,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class XMLParser {
 
-	private Map<Integer, HashMap<String,String>> keyValues;
-	private List<Integer> idList;
+	private HashMap<Integer, HashMap<String,String>> keyValues;
+	private ArrayList<Integer> idList;
 	private int id;
 	private int currentlyIn;
 	private static final String ATTR_NAME = "name"; //$NON-NLS-1$
@@ -35,12 +33,12 @@ public class XMLParser {
 		if (keyValues != null) {
 			keyValues.clear();
 		}
-		keyValues = new HashMap<>();
+		keyValues = new HashMap<Integer,HashMap<String,String>>();
 
 		if (idList != null) {
 			idList.clear();
 		}
-		idList = new ArrayList<>();
+		idList = new ArrayList<Integer>();
 
 		textMode = false;
 	}
@@ -84,7 +82,7 @@ public class XMLParser {
 					//This tag opens and closes in one line
 					id++;
 					String[] tokens = line.split(" "); //$NON-NLS-1$
-					HashMap<String,String> map = new HashMap<>();
+					HashMap<String,String> map = new HashMap<String,String>();
 					map.put(ATTR_NAME, tokens[0]);
 					keyValues.put(id,map);
 					textMode = false;
@@ -99,7 +97,7 @@ public class XMLParser {
 					String[] tokens = line.split(" "); //$NON-NLS-1$
 
 					//Add name variable
-					HashMap<String,String> map = new HashMap<>();
+					HashMap<String,String> map = new HashMap<String,String>();
 					map.put(ATTR_NAME, tokens[0]);
 					keyValues.put(id,map);
 
@@ -128,7 +126,7 @@ public class XMLParser {
 	 * @param tokens
 	 * @param start
 	 */
-	private void addAttributes(int id, String[] tokens, int start) {
+	public void addAttributes(int id, String[] tokens, int start) {
 		HashMap<String,String> map = keyValues.get(id);
 		int nameless = 0;
 
@@ -166,23 +164,34 @@ public class XMLParser {
 		keyValues.put(id, map);
 	}
 
-	private static String getContents(File file) {
-		StringBuilder contents = new StringBuilder();
-
-		try (BufferedReader input = new BufferedReader(new FileReader(file))) {
-			String line = null;
-			while ((line = input.readLine()) != null) {
-				contents.append(line);
-				contents.append("\n"); //$NON-NLS-1$
-			}
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-
-		return contents.toString();
+	public HashMap<Integer, HashMap<String,String>> getKeyValues() {
+		return keyValues;
 	}
 
-	  private void setTextMode(boolean val) {
+
+
+	  static public String getContents(File file) {
+		    StringBuilder contents = new StringBuilder();
+
+		    try {
+		      BufferedReader input =  new BufferedReader(new FileReader(file));
+		      try {
+		        String line = null;
+		        while (( line = input.readLine()) != null){
+		          contents.append(line);
+		          contents.append("\n"); //$NON-NLS-1$
+		        }
+		      } finally {
+		        input.close();
+		      }
+		    } catch (IOException ex){
+		      ex.printStackTrace();
+		    }
+
+		    return contents.toString();
+		  }
+
+	  public void setTextMode(boolean val) {
 		  textMode = val;
 	  }
 }

@@ -126,7 +126,7 @@ public class PrepareChangelogKeyHandler extends AbstractHandler {
 	/**
 	 * Returns active shell.
 	 */
-	private Shell getActiveWorkbenchShell() {
+	protected Shell getActiveWorkbenchShell() {
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		if (window != null) {
 			return window.getShell();

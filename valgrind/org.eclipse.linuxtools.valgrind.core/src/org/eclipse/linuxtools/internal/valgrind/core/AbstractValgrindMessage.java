@@ -17,13 +17,13 @@ import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 
 public class AbstractValgrindMessage implements IValgrindMessage {
 
-	private IValgrindMessage parent;
-	private ILaunch launch;
-	private ArrayList<IValgrindMessage> children;
-	private String text;
+	protected IValgrindMessage parent;
+	protected ILaunch launch;
+	protected ArrayList<IValgrindMessage> children;
+	protected String text;
 
 	public AbstractValgrindMessage(IValgrindMessage parent, String text, ILaunch launch) {
-		children = new ArrayList<>();
+		children = new ArrayList<IValgrindMessage>();
 		this.parent = parent;
 		this.text = text;
 		this.launch = launch;

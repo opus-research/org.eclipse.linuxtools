@@ -36,8 +36,6 @@ import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindLine;
 import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindOutput;
 import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.ICachegrindElement;
 import org.eclipse.linuxtools.profiling.ui.ProfileUIUtils;
-import org.eclipse.linuxtools.valgrind.ui.CollapseAction;
-import org.eclipse.linuxtools.valgrind.ui.ExpandAction;
 import org.eclipse.linuxtools.valgrind.ui.IValgrindToolView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -54,33 +52,33 @@ import org.eclipse.ui.part.ViewPart;
 
 public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 
-	private CachegrindOutput[] outputs;
-	private TreeViewer viewer;
+	protected CachegrindOutput[] outputs;
+	protected TreeViewer viewer;
 
-	private static final int COLUMN_SIZE = 75;
-	private CachegrindLabelProvider labelProvider;
-	private CachegrindTreeContentProvider contentProvider;
-	private IDoubleClickListener doubleClickListener;
-	private ExpandAction expandAction;
-	private CollapseAction collapseAction;
-
+	protected static final int COLUMN_SIZE = 75;
+	protected CachegrindLabelProvider labelProvider;
+	protected CachegrindTreeContentProvider contentProvider;
+	protected IDoubleClickListener doubleClickListener;
+	protected ExpandAction expandAction;
+	protected CollapseAction collapseAction;
+	
 	// Events - Cache
-	private static final String IR = "Ir"; //$NON-NLS-1$
-	private static final String I1MR = "I1mr"; //$NON-NLS-1$
-	private static final String I2MR = "I2mr"; //$NON-NLS-1$
-	private static final String DR = "Dr"; //$NON-NLS-1$
-	private static final String D1MR = "D1mr"; //$NON-NLS-1$
-	private static final String D2MR = "D2mr"; //$NON-NLS-1$
-	private static final String DW = "Dw"; //$NON-NLS-1$
-	private static final String D1MW = "D1mw"; //$NON-NLS-1$
-	private static final String D2MW = "D2mw"; //$NON-NLS-1$
-
+	protected static final String IR = "Ir"; //$NON-NLS-1$
+	protected static final String I1MR = "I1mr"; //$NON-NLS-1$
+	protected static final String I2MR = "I2mr"; //$NON-NLS-1$
+	protected static final String DR = "Dr"; //$NON-NLS-1$
+	protected static final String D1MR = "D1mr"; //$NON-NLS-1$
+	protected static final String D2MR = "D2mr"; //$NON-NLS-1$
+	protected static final String DW = "Dw"; //$NON-NLS-1$
+	protected static final String D1MW = "D1mw"; //$NON-NLS-1$
+	protected static final String D2MW = "D2mw"; //$NON-NLS-1$
+	
 	// Events - Branch
-	private static final String BC = "Bc"; //$NON-NLS-1$
-	private static final String BCM = "Bcm"; //$NON-NLS-1$
-	private static final String BI = "Bi"; //$NON-NLS-1$
-	private static final String BIM = "Bim"; //$NON-NLS-1$
-
+	protected static final String BC = "Bc"; //$NON-NLS-1$
+	protected static final String BCM = "Bcm"; //$NON-NLS-1$
+	protected static final String BI = "Bi"; //$NON-NLS-1$
+	protected static final String BIM = "Bim"; //$NON-NLS-1$
+	
 	@Override
 	public void createPartControl(Composite parent) {
 		Composite top = new Composite(parent, SWT.NONE);
@@ -112,19 +110,20 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 		viewer.setLabelProvider(labelProvider);
 		viewer.setAutoExpandLevel(2);
 		doubleClickListener = new IDoubleClickListener() {
-			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				Object selection = ((StructuredSelection) event.getSelection()).getFirstElement();
 				String path = null;
 				int line = 0;
 				if (selection instanceof CachegrindFile) {
 					path = ((CachegrindFile) selection).getPath();
-				} else if (selection instanceof CachegrindLine) {
+				}
+				else if (selection instanceof CachegrindLine) {
 					CachegrindLine element = (CachegrindLine) selection;
 					CachegrindFile file = (CachegrindFile) element.getParent().getParent();
 					path = file.getPath();
 					line = element.getLine();
-				} else if (selection instanceof CachegrindFunction) {
+				}
+				else if (selection instanceof CachegrindFunction) {
 					CachegrindFunction function = (CachegrindFunction) selection;
 					path = ((CachegrindFile) function.getParent()).getPath();
 					if (function.getModel() instanceof ISourceReference) {
@@ -136,26 +135,27 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 							}
 						} catch (CModelException e) {
 							e.printStackTrace();
-						}
+						}						
 					}
 				}
 				if (path != null) {
 					try {
 						ProfileUIUtils.openEditorAndSelect(path, line);
-					} catch (PartInitException|BadLocationException e) {
+					} catch (PartInitException e) {
+						e.printStackTrace();
+					} catch (BadLocationException e) {
 						e.printStackTrace();
 					}
 				}
-			}
+			}			
 		};
 		viewer.addDoubleClickListener(doubleClickListener);
-
+		
 		expandAction = new ExpandAction(viewer);
 		collapseAction = new CollapseAction(viewer);
-
+		
 		MenuManager manager = new MenuManager();
 		manager.addMenuListener(new IMenuListener() {
-			@Override
 			public void menuAboutToShow(IMenuManager manager) {
 				ITreeSelection selection = (ITreeSelection) viewer.getSelection();
 				ICachegrindElement element = (ICachegrindElement) selection.getFirstElement();
@@ -163,10 +163,10 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 					manager.add(expandAction);
 					manager.add(collapseAction);
 				}
-			}
+			}			
 		});
-
-		manager.setRemoveAllWhenShown(true);
+		
+		manager.setRemoveAllWhenShown(true);	
 		Menu contextMenu = manager.createContextMenu(viewer.getTree());
 		viewer.getControl().setMenu(contextMenu);
 	}
@@ -176,12 +176,10 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 		viewer.getTree().setFocus();
 	}
 
-	@Override
 	public IAction[] getToolbarActions() {
 		return null;
 	}
 
-	@Override
 	public void refreshView() {
 		if (outputs != null && outputs.length > 0) {
 			String[] events = outputs[0].getEvents();
@@ -206,11 +204,11 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 	public CachegrindOutput[] getOutputs() {
 		return outputs;
 	}
-
+	
 	public TreeViewer getViewer() {
 		return viewer;
 	}
-
+	
 	public IDoubleClickListener getDoubleClickListener() {
 		return doubleClickListener;
 	}
@@ -237,7 +235,7 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 						ICachegrindElement o1 = (ICachegrindElement) e1;
 						ICachegrindElement o2 = (ICachegrindElement) e2;
 						long result = 0;
-
+						
 						int sortIndex = Arrays.asList(tree.getColumns()).indexOf(tree.getSortColumn());
 						if (sortIndex == 0) { // use compareTo
 							result = o1.compareTo(o2);
@@ -255,24 +253,24 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 							}
 							else if (o1 instanceof CachegrindOutput && o2 instanceof CachegrindOutput) {
 								v1 = ((CachegrindOutput) o1).getSummary();
-								v2 = ((CachegrindOutput) o2).getSummary();
+								v2 = ((CachegrindOutput) o2).getSummary(); 
 							}
-
+							
 							if (v1 != null && v2 != null) {
 								result = v1[sortIndex - 1] - v2[sortIndex - 1];
 							}
 						}
-
+						
 						// ascending or descending
 						result = direction == SWT.UP ? result : -result;
-
+						
 						// overflow check
 						if (result > Integer.MAX_VALUE) {
 							result = Integer.MAX_VALUE;
 						} else if (result < Integer.MIN_VALUE) {
 							result = Integer.MIN_VALUE;
 						}
-
+						
 						return (int) result;
 					}
 				});
@@ -284,29 +282,41 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 		String result = event;
 		if (event.equals(IR)) {
 			result = Messages.getString("CachegrindViewPart.Ir_long"); //$NON-NLS-1$
-		} else if (event.equals(I1MR)) {
+		}
+		else if (event.equals(I1MR)) {
 			result = Messages.getString("CachegrindViewPart.I1mr_long"); //$NON-NLS-1$
-		} else if (event.equals(I2MR)) {
+		}
+		else if (event.equals(I2MR)) {
 			result = Messages.getString("CachegrindViewPart.I2mr_long"); //$NON-NLS-1$
-		} else if (event.equals(DR)) {
+		}
+		else if (event.equals(DR)) {
 			result = Messages.getString("CachegrindViewPart.Dr_long"); //$NON-NLS-1$
-		} else if (event.equals(D1MR)) {
+		}
+		else if (event.equals(D1MR)) {
 			result = Messages.getString("CachegrindViewPart.D1mr_long"); //$NON-NLS-1$
-		} else if (event.equals(D2MR)) {
+		}
+		else if (event.equals(D2MR)) {
 			result = Messages.getString("CachegrindViewPart.D2mr_long"); //$NON-NLS-1$
-		} else if (event.equals(DW)) {
+		}
+		else if (event.equals(DW)) {
 			result = Messages.getString("CachegrindViewPart.Dw_long"); //$NON-NLS-1$
-		} else if (event.equals(D1MW)) {
+		}
+		else if (event.equals(D1MW)) {
 			result = Messages.getString("CachegrindViewPart.D1mw_long"); //$NON-NLS-1$
-		} else if (event.equals(D2MW)) {
+		}
+		else if (event.equals(D2MW)) {
 			result = Messages.getString("CachegrindViewPart.D2mw_long"); //$NON-NLS-1$
-		} else if (event.equals(BC)) {
+		}
+		else if (event.equals(BC)) {
 			result = Messages.getString("CachegrindViewPart.Bc_long"); //$NON-NLS-1$
-		} else if (event.equals(BCM)) {
+		}
+		else if (event.equals(BCM)) {
 			result = Messages.getString("CachegrindViewPart.Bcm_long"); //$NON-NLS-1$
-		} else if (event.equals(BI)) {
+		}
+		else if (event.equals(BI)) {
 			result = Messages.getString("CachegrindViewPart.Bi_long"); //$NON-NLS-1$
-		} else if (event.equals(BIM)) {
+		}
+		else if (event.equals(BIM)) {
 			result = Messages.getString("CachegrindViewPart.Bim_long"); //$NON-NLS-1$
 		}
 		return result;
@@ -314,7 +324,6 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 
 	protected static class CachegrindTreeContentProvider implements ITreeContentProvider {
 
-		@Override
 		public Object[] getChildren(Object parentElement) {
 			Object[] result = null;
 			if (parentElement instanceof CachegrindOutput[]) {
@@ -326,29 +335,27 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
 			return result;
 		}
 
-		@Override
 		public Object getParent(Object element) {
 			return ((ICachegrindElement) element).getParent();
 		}
 
-		@Override
 		public boolean hasChildren(Object element) {
 			ICachegrindElement[] children = (ICachegrindElement[]) getChildren(element);
 			return children != null && children.length > 0;
 		}
 
-		@Override
 		public Object[] getElements(Object inputElement) {
 			return getChildren(inputElement);
 		}
 
-		@Override
 		public void dispose() {
 		}
 
-		@Override
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		}
 
 	}
+
+	
+
 }

@@ -11,53 +11,51 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 
-import java.text.MessageFormat;
-import java.util.Scanner;
+import java.io.File;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.CommentRemover;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 
 /**
- * Runs stap -vp1 in order to get all of the functions
- * that are defined in the tapsets.  Builds function trees
+ * Runs stap -vp1 & stap -up2 in order to get all of the probes/functions
+ * that are defined in the tapsets.  Builds probeAlias and function trees
  * with the values obtained from the tapsets.
  *
+ * Ugly code is a result of two issues with getting stap output.  First,
+ * many tapsets do not work under stap -up2.  Second since the output
+ * is not a regular language, we can't create a nice lexor/parser combination
+ * to do everything nicely.
  * @author Ryan Morse
  * @since 2.0
  */
 public class FunctionParser extends TapsetParser {
 
-	static FunctionParser parser = null;
 	private TreeNode functions;
-
-	/**
-	 * The descriptor used for unresolvable types.
-	 */
-	public static final String UNKNOWN_TYPE = "unknown"; //$NON-NLS-1$
-
-	private static final String functionRegex = "(?s)(?<!\\w)function\\s+{0}(?:\\s*:\\s*(\\w+))?\\s*\\(([^)]+?)?\\)"; //$NON-NLS-1$
-	private static final Pattern pFunction = Pattern.compile("function (?!_)(\\w+) \\(.*?\\)"); //$NON-NLS-1$
-	private static final Pattern pParams = Pattern.compile("(\\w+)(?:\\s*:\\s*(\\w+))?"); //$NON-NLS-1$
-	private static final Pattern pAllCaps = Pattern.compile("[A-Z_1-9]*"); //$NON-NLS-1$
-	private static final Pattern pReturn = Pattern.compile("\\sreturn\\W"); //$NON-NLS-1$
+	static FunctionParser parser = null;
 
 	public static FunctionParser getInstance(){
 		if (parser != null) {
 			return parser;
 		}
-		parser = new FunctionParser();
+
+		String[] tapsets = IDEPlugin.getDefault().getPreferenceStore()
+				.getString(IDEPreferenceConstants.P_TAPSETS).split(File.pathSeparator);
+		parser = new FunctionParser(tapsets);
+
 		return parser;
 	}
 
-	private FunctionParser() {
-		super("Function Parser"); //$NON-NLS-1$
+	private FunctionParser(String[] tapsets) {
+		super(tapsets, "Function Parser"); //$NON-NLS-1$
+		functions = new TreeNode("", false); //$NON-NLS-1$
 	}
 
 	/**
@@ -69,119 +67,70 @@ public class FunctionParser extends TapsetParser {
 		return functions;
 	}
 
-	/**
-	 * This method will clean up everything from the run.
-	 */
-	public void dispose() {
-		functions.dispose();
-	}
-
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		boolean cancelled = runPass2Functions();
+		runPass2Functions();
 		functions.sortTree();
 		fireUpdateEvent();	//Inform listeners that everything is done
-		return new Status(!cancelled ? IStatus.OK : IStatus.CANCEL, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
+		return new Status(IStatus.OK, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
 	}
 
 	/**
 	 * This method is used to build up the list of functions that were found
 	 * during the first pass of stap.  Stap is invoked by: $stap -v -p1 -e
 	 * 'probe begin{}' and parsing the output.
-	 * 
-	 * FunctionTree organized as:
-	 *	Root->Functions->Parameters
-	 * 
-	 * @return <code>false</code> if a cancellation prevented all probes from being added;
-	 * <code>true</code> otherwise.
 	 */
-	private boolean runPass2Functions() {
-		String tapsetContents = SharedParser.getInstance().getTapsetContents();
-		if (cancelRequested) {
-			return false;
+	private void runPass2Functions() {
+		int i = 0;
+		TreeNode parent;
+		String script = "probe begin{}"; //$NON-NLS-1$
+		String result = runStap(new String[] {"-v", "-p1", "-e"}, script);   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+		if (result == null) {
+			return;
 		}
-		// Create a new function tree each time, so as to not add duplicates
-		functions = new TreeNode("", false); //$NON-NLS-1$
-		if (tapsetContents == null) {
-			// Functions are only drawn from the tapset dump, so exit if it's empty.
-			return true;
-		}
-		try (Scanner st = new Scanner(tapsetContents)) {
-			String filename = null;
-			String scriptText = null;
+		StringTokenizer st = new StringTokenizer(result, "\n", false); //$NON-NLS-1$
+		st.nextToken(); //skip that stap command
+		String tok = ""; //$NON-NLS-1$
+		String regex = "^function .*\\)\n$"; //match ^function and ending the line with ')' //$NON-NLS-1$
+		Pattern p = Pattern.compile(regex, Pattern.MULTILINE | Pattern.UNIX_LINES | Pattern.COMMENTS);
+		Pattern secondp = Pattern.compile("[\\W]"); //take our function line and split it up //$NON-NLS-1$
+		Pattern underscorep = Pattern.compile("^function _.*"); //remove any lines that "^function _" //$NON-NLS-1$
+		Pattern allCaps = Pattern.compile("[A-Z_1-9]*"); //$NON-NLS-1$
+		while(st.hasMoreTokens()) {
+			tok = st.nextToken();
+			Matcher m = p.matcher(tok);
+			while(m.find()) {
+				// this gives us function foo (bar, bar)
+				// we need to strip the ^function and functions with a leading _
+				String[] us = underscorep.split(m.group().toString());
 
-			SharedParser sparser = SharedParser.getInstance();
-			while (st.hasNextLine()) {
-				if (cancelRequested) {
-					return false;
-				}
-				String tok = st.nextLine();
-				Matcher mFilename = sparser.filePattern.matcher(tok);
-				if (mFilename.matches()) {
-					filename = mFilename.group(1).toString();
-					scriptText = null;
-				} else if (filename != null) {
-					Matcher mFunction = pFunction.matcher(tok);
-					if (mFunction.matches()) {
-						String functionName = mFunction.group(1);
-						if (pAllCaps.matcher(functionName).matches()) {
-							// Ignore ALL_CAPS functions, since they are not meant for end-user use.
-							continue;
+				for(String s : us) {
+					String[] test = secondp.split(s);
+					i = 0;
+					for(String t : test) {
+						// If i== 1 this is a function name.
+						// Ignore ALL_CAPS functions; they are not meant for end
+						// user use.
+						if(i == 1 && !allCaps.matcher(t).matches()) {
+							functions.add(new TreeNode(t, t, true));
 						}
-						if (scriptText == null) {
-							// If this is the first time seeing this file, remove its comments.
-							scriptText = CommentRemover.execWithFile(filename);
+						else if(i > 1 && t.length() >= 1) {
+							parent = functions.getChildAt(functions.getChildCount()-1);
+							parent.add(new TreeDefinitionNode("function " + t, t, parent.getData().toString(), false)); //$NON-NLS-1$
 						}
-						addFunctionFromScript(functionName, scriptText, filename);
+						i++;
 					}
 				}
 			}
-			return true;
 		}
+		functions.sortTree();
 	}
 
-	private void addFunctionFromScript(String functionName, String scriptText, String scriptFilename) {
-		String regex = MessageFormat.format(functionRegex, functionName);
-		Matcher mScript = Pattern.compile(regex).matcher(scriptText);
-		if (mScript.find()) {
-			String functionLine = mScript.group();
-			String functionType = mScript.group(1);
-			// If the function has no return type, look for a "return" statement to check
-			// if it's really a void function, or if its return type is just unspecified
-			if (functionType == null && getNextBlockContents(scriptText, mScript.end(), pReturn)) {
-				functionType = UNKNOWN_TYPE;
-			}
-			TreeDefinitionNode function = new TreeDefinitionNode(
-					new FunctionNodeData(functionLine, functionType),
-					functionName, scriptFilename, true);
-			functions.add(function);
-			addParamsFromString(mScript.group(2), function);
-		}
-	}
-
-	private boolean getNextBlockContents(String scriptText, int start, Pattern p) {
-		int end, bcount = 1;
-		start = scriptText.indexOf('{', start) + 1;
-		for (end = start; end < scriptText.length(); end++) {
-			char c = scriptText.charAt(end);
-			if (c == '{') {
-				bcount++;
-			} else if (c == '}' && --bcount == 0) {
-				break;
-			}
-		}
-		return p.matcher(scriptText.substring(start, end)).find();
-	}
-
-	private void addParamsFromString(String params, TreeNode parentFunction) {
-		if (params != null) {
-			Matcher mParams = pParams.matcher(params);
-			while (mParams.find()) {
-				parentFunction.add(new TreeNode(
-						new FuncparamNodeData(mParams.group(), mParams.group(2)),
-						mParams.group(1), false));
-			}
-		}
+	/**
+	 * This method will clean up everything from the run.
+	 */
+	public void dispose() {
+		functions.dispose();
 	}
 
 }

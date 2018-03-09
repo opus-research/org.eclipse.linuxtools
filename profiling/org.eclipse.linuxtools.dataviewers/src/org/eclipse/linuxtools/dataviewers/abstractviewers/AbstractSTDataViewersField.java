@@ -140,4 +140,9 @@ public abstract class AbstractSTDataViewersField implements ISTDataViewersField 
     public int getAlignment() {
         return SWT.NONE;
     }
+
+    @Override
+    public boolean isHyperLink(Object element) {
+        return false;
+    }
 }

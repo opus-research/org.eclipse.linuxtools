@@ -42,7 +42,7 @@ public class SystemTapTextView extends SystemTapView {
 		}
 	}
 
-	private void createViewer(Composite parent) {
+	public void createViewer(Composite parent) {
 		viewer = new StyledText(parent, SWT.READ_ONLY | SWT.MULTI
 				| SWT.V_SCROLL | SWT.WRAP);
 
@@ -58,8 +58,8 @@ public class SystemTapTextView extends SystemTapView {
 	 * and apply for the rest of the line or until another code is encountered
 	 * @param text
 	 */
-	private void prettyPrintln(String text) {
-		List<StyleRange> styles = new ArrayList<>();
+	public void prettyPrintln(String text) {
+		List<StyleRange> styles = new ArrayList<StyleRange>();
 		String[] txt = text.split("\\n"); //$NON-NLS-1$
 		int lineOffset = 0;
 		int inLineOffset;

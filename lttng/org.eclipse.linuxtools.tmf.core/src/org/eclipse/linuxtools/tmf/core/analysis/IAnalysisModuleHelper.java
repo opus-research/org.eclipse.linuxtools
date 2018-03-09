@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,9 +21,8 @@ import org.osgi.framework.Bundle;
  * creates module from a source when requested.
  *
  * @author Geneviève Bastien
- * @since 3.0
  */
-public interface IAnalysisModuleHelper extends IAnalysisRequirementProvider {
+public interface IAnalysisModuleHelper {
 
     // ------------------------------------
     // Getters
@@ -90,13 +89,6 @@ public interface IAnalysisModuleHelper extends IAnalysisRequirementProvider {
      */
     boolean appliesToTraceType(Class<? extends ITmfTrace> traceclass);
 
-    /**
-     * Gets the list of valid trace types that the analysis can operate on.
-     *
-     * @return List of the trace type
-     */
-    Iterable<Class<? extends ITmfTrace>> getValidTraceTypes();
-
     // ---------------------------------------
     // Functionalities
     // ---------------------------------------
@@ -104,10 +96,6 @@ public interface IAnalysisModuleHelper extends IAnalysisRequirementProvider {
     /**
      * Creates a new instance of the {@link IAnalysisModule} represented by this
      * helper and initializes it with the trace.
-     *
-     * After the module is fully created, this method should call
-     * {@link TmfAnalysisManager#analysisModuleCreated(IAnalysisModule)} in order
-     * for the new module listeners to be executed on this module.
      *
      * @param trace
      *            The trace to be linked to the module

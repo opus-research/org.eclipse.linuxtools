@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,8 +19,8 @@ import java.util.Map;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
 
 /**
  * Trace type content provider, a helper for showing trace types
@@ -30,8 +30,8 @@ import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
  */
 public class TraceTypeContentProvider implements ITreeContentProvider {
 
-    private final List<String> fTraceCategory = new ArrayList<>();
-    private final Map<String, List<TraceTypeHelper>> fTraceType = new HashMap<>();
+    private final List<String> fTraceCategory = new ArrayList<String>();
+    private final Map<String, List<TraceTypeHelper>> fTraceType = new HashMap<String, List<TraceTypeHelper>>();
 
     /**
      * Default Constructor
@@ -40,13 +40,14 @@ public class TraceTypeContentProvider implements ITreeContentProvider {
         fTraceType.clear();
         fTraceCategory.clear();
 
-        for (String category : TmfTraceType.getInstance().getTraceCategories()) {
-            List<TraceTypeHelper> value = TmfTraceType.getInstance().getTraceTypes(category);
-            if (!value.isEmpty()) {
-                fTraceCategory.add(category);
-                fTraceType.put(category, value);
-            }
+        for (String elem : TmfTraceType.getInstance().getTraceCategories()) {
+            fTraceCategory.add(elem);
         }
+        for (String key : fTraceCategory) {
+            List<TraceTypeHelper> value = TmfTraceType.getInstance().getTraceTypes(key);
+            fTraceType.put(key, value);
+        }
+
     }
 
     @Override

@@ -21,12 +21,10 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.gcov.dialog.OpenGCDialog;
 import org.eclipse.linuxtools.internal.gcov.view.CovView;
-import org.eclipse.linuxtools.internal.gcov.view.annotatedsource.GcovAnnotationModelTracker;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorLauncher;
@@ -74,11 +72,6 @@ public class OpenGCAction implements IEditorLauncher {
             return;
         }
         String binaryPath = d.getBinaryFile();
-
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(file).getProject();
-        GcovAnnotationModelTracker.getInstance().addProject(project, new Path(binaryPath));
-        GcovAnnotationModelTracker.getInstance().annotateAllCEditors();
-
         if (d.isCompleteCoverageResultWanted()) {
             CovView.displayCovResults(binaryPath, gcda.getAbsolutePath());
         } else {

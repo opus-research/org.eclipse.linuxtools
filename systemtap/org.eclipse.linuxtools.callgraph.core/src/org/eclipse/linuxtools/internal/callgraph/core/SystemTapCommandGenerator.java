@@ -22,9 +22,10 @@ public class SystemTapCommandGenerator {
 
 	private static boolean needsToSendCommand;
 	private static boolean needsArguments;
-	private static String arguments;
-	private static String scriptPath;
-	private static String flags;
+	protected static String arguments;
+	protected static String scriptPath;
+	protected static String flags;
+	protected static boolean isGuru;
 	private static String binaryPath = null;
 	private static String binaryArguments;
 	private static String command;
@@ -36,6 +37,7 @@ public class SystemTapCommandGenerator {
 		needsArguments = needsArgs;
 		binaryPath = binPath;
 		scriptPath = scrPath;
+		isGuru = false;
 		arguments = "--runtime=dyninst " + arg; //$NON-NLS-1$
 		flags = opts;
 		binaryArguments = binArguments;
@@ -58,9 +60,9 @@ public class SystemTapCommandGenerator {
 	 * Parses the data created from generateCommand
 	 * @return An array of strings to be joined and executed by the shell
 	 */
-	private static String[] buildScript() {
+	protected static String[] buildScript() {
 		//TODO: Take care of this in the next release. For now only the guru mode is sent
-		ArrayList<String> cmdList = new ArrayList<>();
+		ArrayList<String> cmdList = new ArrayList<String>();
 		String[] script;
 
 		if (flags.length() > 0){

@@ -37,8 +37,10 @@ import org.junit.Test;
 
 public class CModelLabelsTest extends AbstractCachegrindTest {
 
+	@Override
 	@Before
-	public void prep() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild("cpptest"); //$NON-NLS-1$
 	}
 

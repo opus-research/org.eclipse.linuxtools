@@ -16,14 +16,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelSession;
-import org.eclipse.linuxtools.oprofile.tests.TestPlugin;
-import org.eclipse.linuxtools.oprofile.tests.TestingOpModelRoot;
+import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelEvent;
 import org.eclipse.linuxtools.oprofile.ui.model.IUiModelElement;
 import org.eclipse.linuxtools.oprofile.ui.model.UiModelRoot;
 import org.eclipse.linuxtools.oprofile.ui.model.UiModelSample;
 import org.eclipse.linuxtools.oprofile.ui.model.UiModelSession;
 import org.eclipse.linuxtools.oprofile.ui.model.UiModelSymbol;
+import org.eclipse.linuxtools.oprofile.tests.TestPlugin;
+import org.eclipse.linuxtools.oprofile.tests.TestingOpModelRoot;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,16 +31,16 @@ public class TestUiDataModel {
 
 	private static class TestingUiModelRoot extends UiModelRoot {
 		@Override
-		protected OpModelSession[] getModelDataEvents() {
+		protected OpModelEvent[] getModelDataEvents() {
 			TestingOpModelRoot modelRoot = new TestingOpModelRoot();
 			modelRoot.refreshModel();
-			return modelRoot.getSessions();
+			return modelRoot.getEvents();
 		}
 	}
 
 	private static class TestingUiModelRoot2 extends UiModelRoot {
 		@Override
-		protected OpModelSession[] getModelDataEvents() {
+		protected OpModelEvent[] getModelDataEvents() {
 			return null;
 		}
 	}
@@ -80,80 +80,85 @@ public class TestUiDataModel {
 		assertNull(_uiModelRoot.getLabelText());
 		assertTrue(_uiModelRoot.hasChildren());
 
-		/* test UiModelSession*/
-		IUiModelElement sessions[] = _uiModelRoot.getChildren();
-		assertNotNull(sessions);
-		assertEquals(3, sessions.length);
-		assertNotNull(sessions[0]);
-		assertNotNull(sessions[1]);
-		assertNotNull(sessions[2]);
-
-		assertEquals(TestingOpModelRoot.NAME_E1, sessions[0].toString());
-		assertEquals(TestingOpModelRoot.NAME_E1, sessions[0].getLabelText());
-		assertTrue(sessions[0].hasChildren());
-		assertNull(sessions[0].getParent());		//events are top level tree elements
-		assertNotNull(sessions[0].getLabelImage());
-
-		assertEquals(TestingOpModelRoot.NAME_E2, sessions[1].toString());
-		assertEquals(TestingOpModelRoot.NAME_E2, sessions[1].getLabelText());
-		assertTrue(sessions[1].hasChildren());
-		assertNull(sessions[1].getParent());		//events are top level tree elements
-		assertNotNull(sessions[1].getLabelImage());
-
-
 		/* test UiModelEvent */
-		IUiModelElement[] e1_events = sessions[0].getChildren(), e2_events = sessions[1].getChildren();
-		assertNotNull(e1_events);
-		assertNotNull(e2_events);
-		assertEquals(1, e1_events.length);
-		assertEquals(4, e2_events.length);
-		assertNotNull(e1_events[0]);
-		assertNotNull(e2_events[0]);
-		assertNotNull(e2_events[1]);
-		assertNotNull(e2_events[2]);
-		assertNotNull(e2_events[3]);
+		IUiModelElement events[] = _uiModelRoot.getChildren();
+		assertNotNull(events);
+		assertEquals(3, events.length);
+		assertNotNull(events[0]);
+		assertNotNull(events[1]);
+		assertNotNull(events[2]);
 
-		assertEquals(TestingOpModelRoot.NAME_E1_S1, e1_events[0].toString());
-		assertEquals(TestingOpModelRoot.NAME_E1_S1, e1_events[0].getLabelText());
-		assertFalse(((UiModelSession)e1_events[0].getParent()).isDefaultSession());
-		assertTrue(e1_events[0].hasChildren());
-		assertEquals(sessions[0], e1_events[0].getParent());
-		assertNotNull(e1_events[0].getLabelImage());
+		assertEquals(TestingOpModelRoot.NAME_E1, events[0].toString());
+		assertEquals(TestingOpModelRoot.NAME_E1, events[0].getLabelText());
+		assertTrue(events[0].hasChildren());
+		assertNull(events[0].getParent());		//events are top level tree elements
+		assertNotNull(events[0].getLabelImage());
 
-		assertEquals(TestingOpModelRoot.NAME_E2_S1, e2_events[0].toString());
-		assertEquals(TestingOpModelRoot.NAME_E2_S1, e2_events[0].getLabelText());
-		assertFalse(((UiModelSession)e2_events[0].getParent()).isDefaultSession());
-		assertTrue(e2_events[0].hasChildren());
-		assertEquals(sessions[1], e2_events[0].getParent());
-		assertNotNull(e2_events[0].getLabelImage());
+		assertEquals(TestingOpModelRoot.NAME_E2, events[1].toString());
+		assertEquals(TestingOpModelRoot.NAME_E2, events[1].getLabelText());
+		assertTrue(events[1].hasChildren());
+		assertNull(events[1].getParent());		//events are top level tree elements
+		assertNotNull(events[1].getLabelImage());
 
-		assertEquals(TestingOpModelRoot.NAME_E2_S2, e2_events[1].toString());
-		assertEquals(TestingOpModelRoot.NAME_E2_S2, e2_events[1].getLabelText());
-		assertFalse(((UiModelSession)e2_events[1].getParent()).isDefaultSession());
-		assertTrue(e2_events[1].hasChildren());
-		assertEquals(sessions[1], e2_events[1].getParent());
-		assertNotNull(e2_events[1].getLabelImage());
+		assertTrue(events[2].toString().isEmpty());
+		assertTrue(events[2].getLabelText().isEmpty());
+		assertFalse(events[2].hasChildren());
+		assertNull(events[2].getParent());		//events are top level tree elements
+		assertNotNull(events[2].getLabelImage());
 
-		assertEquals(TestingOpModelRoot.NAME_E2_S3, e2_events[2].toString());
-		assertEquals(TestingOpModelRoot.NAME_E2_S3, e2_events[2].getLabelText());
-		assertFalse(((UiModelSession)e2_events[2].getParent()).isDefaultSession());
-		assertTrue(e2_events[2].hasChildren());
-		assertEquals(sessions[1], e2_events[2].getParent());
-		assertNotNull(e2_events[2].getLabelImage());
+		/* test UiModelSession */
+		IUiModelElement[] e1_sessions = events[0].getChildren(), e2_sessions = events[1].getChildren();
+		assertNotNull(e1_sessions);
+		assertNotNull(e2_sessions);
+		assertEquals(1, e1_sessions.length);
+		assertEquals(4, e2_sessions.length);
+		assertNotNull(e1_sessions[0]);
+		assertNotNull(e2_sessions[0]);
+		assertNotNull(e2_sessions[1]);
+		assertNotNull(e2_sessions[2]);
+		assertNotNull(e2_sessions[3]);
 
-		assertEquals(TestingOpModelRoot.NAME_E2_S4, e2_events[3].toString());
-		assertEquals(TestingOpModelRoot.NAME_E2_S4, e2_events[3].getLabelText());
-		assertFalse(((UiModelSession)e2_events[3].getParent()).isDefaultSession());
-		assertFalse(e2_events[3].hasChildren());
-		assertEquals(sessions[1], e2_events[3].getParent());
-		assertNotNull(e2_events[3].getLabelImage());
+		assertEquals(TestingOpModelRoot.NAME_E1_S1, e1_sessions[0].toString());
+		assertEquals(TestingOpModelRoot.NAME_E1_S1, e1_sessions[0].getLabelText());
+		assertFalse(((UiModelSession)e1_sessions[0]).isDefaultSession());
+		assertTrue(e1_sessions[0].hasChildren());
+		assertEquals(events[0], e1_sessions[0].getParent());
+		assertNotNull(e1_sessions[0].getLabelImage());
+
+		assertEquals(TestingOpModelRoot.NAME_E2_S1, e2_sessions[0].toString());
+		assertEquals(TestingOpModelRoot.NAME_E2_S1, e2_sessions[0].getLabelText());
+		assertFalse(((UiModelSession)e2_sessions[0]).isDefaultSession());
+		assertTrue(e2_sessions[0].hasChildren());
+		assertEquals(events[1], e2_sessions[0].getParent());
+		assertNotNull(e2_sessions[0].getLabelImage());
+
+		assertEquals(TestingOpModelRoot.NAME_E2_S2, e2_sessions[1].toString());
+		assertEquals(TestingOpModelRoot.NAME_E2_S2, e2_sessions[1].getLabelText());
+		assertFalse(((UiModelSession)e2_sessions[1]).isDefaultSession());
+		assertTrue(e2_sessions[1].hasChildren());
+		assertEquals(events[1], e2_sessions[1].getParent());
+		assertNotNull(e2_sessions[1].getLabelImage());
+
+		assertEquals(TestingOpModelRoot.NAME_E2_S3, e2_sessions[2].toString());
+		assertEquals(TestingOpModelRoot.NAME_E2_S3, e2_sessions[2].getLabelText());
+		assertFalse(((UiModelSession)e2_sessions[2]).isDefaultSession());
+		assertTrue(e2_sessions[2].hasChildren());
+		assertEquals(events[1], e2_sessions[2].getParent());
+		assertNotNull(e2_sessions[2].getLabelImage());
+
+		assertEquals(TestingOpModelRoot.NAME_E2_S4, e2_sessions[3].toString());
+		assertEquals(TestingOpModelRoot.NAME_E2_S4, e2_sessions[3].getLabelText());
+		assertFalse(((UiModelSession)e2_sessions[3]).isDefaultSession());
+		assertFalse(e2_sessions[3].hasChildren());
+		assertEquals(events[1], e2_sessions[3].getParent());
+		assertNotNull(e2_sessions[3].getLabelImage());
 
 		/* test UiModelImage and UiModelDependent */
-		IUiModelElement[] e1_s1_images = e1_events[0].getChildren(),
-							e2_s1_images = e2_events[0].getChildren(),
-							e2_s2_images = e2_events[1].getChildren(),
-							e2_s3_images = e2_events[2].getChildren(),
-							e2_s4_images = e2_events[3].getChildren();
+		IUiModelElement[] e1_s1_images = e1_sessions[0].getChildren(),
+							e2_s1_images = e2_sessions[0].getChildren(),
+							e2_s2_images = e2_sessions[1].getChildren(),
+							e2_s3_images = e2_sessions[2].getChildren(),
+							e2_s4_images = e2_sessions[3].getChildren();
 
 		assertNotNull(e1_s1_images);
 		assertNotNull(e2_s1_images);
@@ -177,37 +182,37 @@ public class TestUiDataModel {
 		assertNotNull(e1_s1_images[0].toString());
 		assertNotNull(e1_s1_images[0].getLabelText());
 		assertTrue(e1_s1_images[0].hasChildren());
-		assertEquals(e1_events[0], e1_s1_images[0].getParent());
+		assertEquals(e1_sessions[0], e1_s1_images[0].getParent());
 		assertNotNull(e1_s1_images[0].getLabelImage());
 
 		assertNotNull(e1_s1_images[1].toString());
 		assertNotNull(e1_s1_images[1].getLabelText());
 		assertTrue(e1_s1_images[1].hasChildren());
-		assertEquals(e1_events[0], e1_s1_images[1].getParent());
+		assertEquals(e1_sessions[0], e1_s1_images[1].getParent());
 		assertNotNull(e1_s1_images[1].getLabelImage());
 
 		assertNotNull(e2_s1_images[0].toString());
 		assertNotNull(e2_s1_images[0].getLabelText());
 		assertTrue(e2_s1_images[0].hasChildren());
-		assertEquals(e2_events[0], e2_s1_images[0].getParent());
+		assertEquals(e2_sessions[0], e2_s1_images[0].getParent());
 		assertNotNull(e2_s1_images[0].getLabelImage());
 
 		assertNotNull(e2_s1_images[1].toString());
 		assertNotNull(e2_s1_images[1].getLabelText());
 		assertTrue(e2_s1_images[1].hasChildren());
-		assertEquals(e2_events[0], e2_s1_images[1].getParent());
+		assertEquals(e2_sessions[0], e2_s1_images[1].getParent());
 		assertNotNull(e2_s1_images[1].getLabelImage());
 
 		assertNotNull(e2_s2_images[0].toString());
 		assertNotNull(e2_s2_images[0].getLabelText());
 		assertTrue(e2_s2_images[0].hasChildren());
-		assertEquals(e2_events[1], e2_s2_images[0].getParent());
+		assertEquals(e2_sessions[1], e2_s2_images[0].getParent());
 		assertNotNull(e2_s2_images[0].getLabelImage());
 
 		assertNotNull(e2_s3_images[0].toString());
 		assertNotNull(e2_s3_images[0].getLabelText());
 		assertFalse(e2_s3_images[0].hasChildren());
-		assertEquals(e2_events[2], e2_s3_images[0].getParent());
+		assertEquals(e2_sessions[2], e2_s3_images[0].getParent());
 		assertNotNull(e2_s3_images[0].getLabelImage());
 
 		/* test UiModelSymbol */
@@ -490,7 +495,7 @@ public class TestUiDataModel {
 		assertNotNull(e1_s1_i1_s1_samples[0].toString());
 		assertNotNull(e1_s1_i1_s1_samples[0].getLabelText());
 		assertEquals(42, ((UiModelSample)e1_s1_i1_s1_samples[0]).getLine());
-		assertEquals(0.6190, ((UiModelSample)e1_s1_i1_s1_samples[0]).getCountPercentage(), 0.0001);
+		assertEquals(0.6341, ((UiModelSample)e1_s1_i1_s1_samples[0]).getCountPercentage(), 0.0001);
 		assertNull(e1_s1_i1_s1_samples[0].getChildren());
 		assertFalse(e1_s1_i1_s1_samples[0].hasChildren());
 		assertEquals(e1_s1_i1_symbols[0], e1_s1_i1_s1_samples[0].getParent());
@@ -499,7 +504,7 @@ public class TestUiDataModel {
 		assertNotNull(e1_s1_i1_s1_samples[1].toString());
 		assertNotNull(e1_s1_i1_s1_samples[1].getLabelText());
 		assertEquals(36, ((UiModelSample)e1_s1_i1_s1_samples[1]).getLine());
-		assertEquals(0.1904, ((UiModelSample)e1_s1_i1_s1_samples[1]).getCountPercentage(), 0.0001);
+		assertEquals(0.1951, ((UiModelSample)e1_s1_i1_s1_samples[1]).getCountPercentage(), 0.0001);
 		assertNull(e1_s1_i1_s1_samples[1].getChildren());
 		assertFalse(e1_s1_i1_s1_samples[1].hasChildren());
 		assertEquals(e1_s1_i1_symbols[0], e1_s1_i1_s1_samples[1].getParent());
@@ -508,7 +513,7 @@ public class TestUiDataModel {
 		assertNotNull(e1_s1_i1_s1_samples[2].toString());
 		assertNotNull(e1_s1_i1_s1_samples[2].getLabelText());
 		assertEquals(31, ((UiModelSample)e1_s1_i1_s1_samples[2]).getLine());
-		assertEquals(0.0476, ((UiModelSample)e1_s1_i1_s1_samples[2]).getCountPercentage(), 0.0001);
+		assertEquals(0.0488, ((UiModelSample)e1_s1_i1_s1_samples[2]).getCountPercentage(), 0.0001);
 		assertNull(e1_s1_i1_s1_samples[2].getChildren());
 		assertFalse(e1_s1_i1_s1_samples[2].hasChildren());
 		assertEquals(e1_s1_i1_symbols[0], e1_s1_i1_s1_samples[2].getParent());
@@ -526,7 +531,7 @@ public class TestUiDataModel {
 		assertNotNull(e1_s1_i1_s2_samples[0].toString());
 		assertNotNull(e1_s1_i1_s2_samples[0].getLabelText());
 		assertEquals(94, ((UiModelSample)e1_s1_i1_s2_samples[0]).getLine());
-		assertEquals(0.0952, ((UiModelSample)e1_s1_i1_s2_samples[0]).getCountPercentage(), 0.0001);
+		assertEquals(0.0976, ((UiModelSample)e1_s1_i1_s2_samples[0]).getCountPercentage(), 0.0001);
 		assertNull(e1_s1_i1_s2_samples[0].getChildren());
 		assertFalse(e1_s1_i1_s2_samples[0].hasChildren());
 		assertEquals(e1_s1_i1_symbols[1], e1_s1_i1_s2_samples[0].getParent());
@@ -553,7 +558,7 @@ public class TestUiDataModel {
 		assertNotNull(e2_s1_i1_s1_samples[0].toString());
 		assertNotNull(e2_s1_i1_s1_samples[0].getLabelText());
 		assertEquals(42, ((UiModelSample)e2_s1_i1_s1_samples[0]).getLine());
-		assertEquals(0.6190, ((UiModelSample)e2_s1_i1_s1_samples[0]).getCountPercentage(), 0.0001);
+		assertEquals(0.6341, ((UiModelSample)e2_s1_i1_s1_samples[0]).getCountPercentage(), 0.0001);
 		assertNull(e2_s1_i1_s1_samples[0].getChildren());
 		assertFalse(e2_s1_i1_s1_samples[0].hasChildren());
 		assertEquals(e2_s1_i1_symbols[0], e2_s1_i1_s1_samples[0].getParent());
@@ -562,7 +567,7 @@ public class TestUiDataModel {
 		assertNotNull(e2_s1_i1_s1_samples[1].toString());
 		assertNotNull(e2_s1_i1_s1_samples[1].getLabelText());
 		assertEquals(36, ((UiModelSample)e2_s1_i1_s1_samples[1]).getLine());
-		assertEquals(0.1904, ((UiModelSample)e2_s1_i1_s1_samples[1]).getCountPercentage(), 0.0001);
+		assertEquals(0.1951, ((UiModelSample)e2_s1_i1_s1_samples[1]).getCountPercentage(), 0.0001);
 		assertNull(e2_s1_i1_s1_samples[1].getChildren());
 		assertFalse(e2_s1_i1_s1_samples[1].hasChildren());
 		assertEquals(e2_s1_i1_symbols[0], e2_s1_i1_s1_samples[1].getParent());
@@ -571,7 +576,7 @@ public class TestUiDataModel {
 		assertNotNull(e2_s1_i1_s1_samples[2].toString());
 		assertNotNull(e2_s1_i1_s1_samples[2].getLabelText());
 		assertEquals(31, ((UiModelSample)e2_s1_i1_s1_samples[2]).getLine());
-		assertEquals(0.0476, ((UiModelSample)e2_s1_i1_s1_samples[2]).getCountPercentage(), 0.0001);
+		assertEquals(0.0488, ((UiModelSample)e2_s1_i1_s1_samples[2]).getCountPercentage(), 0.0001);
 		assertNull(e2_s1_i1_s1_samples[2].getChildren());
 		assertFalse(e2_s1_i1_s1_samples[2].hasChildren());
 		assertEquals(e2_s1_i1_symbols[0], e2_s1_i1_s1_samples[2].getParent());
@@ -589,7 +594,7 @@ public class TestUiDataModel {
 		assertNotNull(e2_s1_i1_s2_samples[0].toString());
 		assertNotNull(e2_s1_i1_s2_samples[0].getLabelText());
 		assertEquals(94, ((UiModelSample)e2_s1_i1_s2_samples[0]).getLine());
-		assertEquals(0.0952, ((UiModelSample)e2_s1_i1_s2_samples[0]).getCountPercentage(), 0.0001);
+		assertEquals(0.0976, ((UiModelSample)e2_s1_i1_s2_samples[0]).getCountPercentage(), 0.0001);
 		assertNull(e2_s1_i1_s2_samples[0].getChildren());
 		assertFalse(e2_s1_i1_s2_samples[0].hasChildren());
 		assertEquals(e2_s1_i1_symbols[1], e2_s1_i1_s2_samples[0].getParent());

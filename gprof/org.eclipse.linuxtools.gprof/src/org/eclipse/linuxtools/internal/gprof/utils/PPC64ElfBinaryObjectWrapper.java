@@ -52,9 +52,8 @@ public class PPC64ElfBinaryObjectWrapper extends ElfBinaryObject {
 
 	@Override
 	public ISymbol[] getSymbols() {
-		if (symbols != null) {
+		if (symbols != null)
 			return symbols;
-		}
 
 		symbols = super.getSymbols();
 		try {
@@ -66,22 +65,19 @@ public class PPC64ElfBinaryObjectWrapper extends ElfBinaryObject {
 		}
 
 		//Failed to load data Section
-		if (dataSection == null) {
+		if (dataSection == null)
 			return symbols;
-		}
 
-		LinkedList<ISymbol> list = new LinkedList<>();
-		for (ISymbol s : symbols) {
+		LinkedList<ISymbol> list = new LinkedList<ISymbol>();
+		for (ISymbol s : symbols)
 			if (s.getType() == ISymbol.FUNCTION && s instanceof Symbol){
 				IAddress addr = fixAddr(s.getAddress());
-				if (addr == null) {
+				if (addr == null)
 					addr = s.getAddress();
-				}
 				list.add(new Symbol((BinaryObjectAdapter)s.getBinaryObject(), s.getName(), s.getType(), addr, s.getSize()));
 			} else {
 				list.add(s);
 			}
-		}
 
 		symbols = list.toArray(new Symbol[0]);
 		Arrays.sort(symbols);

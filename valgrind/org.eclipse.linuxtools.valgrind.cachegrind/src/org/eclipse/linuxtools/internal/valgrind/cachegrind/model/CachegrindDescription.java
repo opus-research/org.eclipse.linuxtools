@@ -11,10 +11,16 @@
 package org.eclipse.linuxtools.internal.valgrind.cachegrind.model;
 
 public class CachegrindDescription {
-	private String name;
+	protected String name;
+	protected String size;
+	protected String lineSize;
+	protected String assoc;
 	
-	public CachegrindDescription(String name) {
+	public CachegrindDescription(String name, String size, String lineSize, String assoc) {
 		this.name = name;
+		this.size = size;
+		this.lineSize = lineSize;
+		this.assoc = assoc;
 	}
 	
 	@Override
@@ -29,5 +35,17 @@ public class CachegrindDescription {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public String getSize() {
+		return size;
+	}
+	
+	public String getLineSize() {
+		return lineSize;
+	}
+	
+	public String getAssoc() {
+		return assoc;
 	}
 }

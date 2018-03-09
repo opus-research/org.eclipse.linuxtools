@@ -15,7 +15,7 @@ import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
-import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoPreferenceConstants;
+import org.eclipse.linuxtools.rpm.createrepo.CreaterepoPreferenceConstants;
 
 /**
  * Initialize the default preferences.
@@ -62,7 +62,6 @@ public class CreaterepoPreferenceInitializer extends
 		prefStore.setDefault(CreaterepoPreferenceConstants.PREF_DELTA_ENABLE, CreaterepoPreferenceConstants.DEFAULT_DELTA_ENABLE);
 		prefStore.setDefault(CreaterepoPreferenceConstants.PREF_NUM_DELTAS, CreaterepoPreferenceConstants.DEFAULT_NUM_DELTAS);
 		prefStore.setDefault(CreaterepoPreferenceConstants.PREF_MAX_DELTA_SIZE, CreaterepoPreferenceConstants.DEFAULT_MAX_DELTA_SIZE);
-		prefStore.setDefault(CreaterepoPreferenceConstants.PREF_OLD_PACKAGE_DIRS, CreaterepoPreferenceConstants.DEFAULT_OLD_PACKAGE_DIR_LIST);
 	}
 
 }

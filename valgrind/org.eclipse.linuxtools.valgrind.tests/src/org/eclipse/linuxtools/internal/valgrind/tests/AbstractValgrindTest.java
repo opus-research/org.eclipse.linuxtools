@@ -70,8 +70,8 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 	private List<ILaunch> launches;
 
 	@Before
-	public void setUp() {
-		launches = new ArrayList<>();
+	public void setUp() throws Exception {
+		launches = new ArrayList<ILaunch>();
 
 		// Substitute Valgrind command line interaction
 		ValgrindLaunchPlugin.getDefault().setValgrindCommand(
@@ -168,8 +168,12 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 	private void replaceLocation(File oldFile, File newFile, String[] from,
 			String[] to) {
 		if (oldFile.isFile()) {
-			try (BufferedReader br = new BufferedReader(new FileReader(oldFile));
-					PrintWriter pw = new PrintWriter(new FileWriter(newFile))) {
+			BufferedReader br = null;
+			PrintWriter pw = null;
+			try {
+				br = new BufferedReader(new FileReader(oldFile));
+				pw = new PrintWriter(new FileWriter(newFile));
+
 				String line;
 				while ((line = br.readLine()) != null) {
 					for (int i = 0; i < from.length; i++) {
@@ -180,6 +184,17 @@ public abstract class AbstractValgrindTest extends AbstractTest {
 
 			} catch (IOException e) {
 				e.printStackTrace();
+			} finally {
+				if (br != null) {
+					try {
+						br.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				if (pw != null) {
+					pw.close();
+				}
 			}
 		}
 	}

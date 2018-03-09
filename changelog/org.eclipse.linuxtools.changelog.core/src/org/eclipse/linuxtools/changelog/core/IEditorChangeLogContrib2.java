@@ -16,8 +16,8 @@ public interface IEditorChangeLogContrib2 {
 
 	/**
 	 * Perform documentation setup.  Use this to specify partitioning.
-	 *
+	 * 
 	 * @param document to set up.
 	 */
-	void setup(IDocument document);
+	public void setup(IDocument document);
 }

@@ -4,7 +4,7 @@
       label="%featureName"
       version="1.0.0.qualifier"
       provider-name="%featureProvider"
-      license-feature="org.eclipse.license"
+      license-feature="org.eclipse.linuxtools.license.feature"
       license-feature-version="1.0.0.qualifier">
 
    <description url="http://www.example.com/description">
@@ -34,6 +34,7 @@
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.cdt.ui"/>
       <import plugin="org.eclipse.cdt.core"/>
+      <import plugin="org.eclipse.linuxtools.dataviewers" version="4.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.core.resources" version="3.4.2" match="greaterOrEqual"/>
       <import plugin="com.ibm.icu"/>
       <import plugin="org.swtchart"/>
@@ -41,6 +42,13 @@
 
    <plugin
          id="org.eclipse.linuxtools.dataviewers"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.linuxtools.dataviewers.annotatedsourceeditor"
          download-size="0"
          install-size="0"
          version="0.0.0"

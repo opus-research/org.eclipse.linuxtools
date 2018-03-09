@@ -18,29 +18,41 @@ package org.eclipse.linuxtools.internal.rpm.rpmlint.resolutions;
  */
 public class SetupNotQuiet extends AReplaceTextResolution {
 
-    /**
-     * The rpmlint ID of the warning.
-     */
-    public static final String ID = "setup-not-quiet"; //$NON-NLS-1$
+	/**
+	 * The rpmlint ID of the warning.
+	 */
+	public static final String ID = "setup-not-quiet"; //$NON-NLS-1$
 
-    @Override
-    public String getOriginalString() {
-        return "%setup"; //$NON-NLS-1$
-    }
+	/**
+	 * @see org.eclipse.linuxtools.internal.rpm.rpmlint.resolutions.AReplaceTextResolution#getOriginalString()
+	 */
+	@Override
+	public String getOriginalString() {
+		return "%setup"; //$NON-NLS-1$
+	}
 
-    @Override
-    public String getReplaceString() {
-        return "%setup -q"; //$NON-NLS-1$
-    }
+	/**
+	 * @see org.eclipse.linuxtools.internal.rpm.rpmlint.resolutions.AReplaceTextResolution#getReplaceString()
+	 */
+	@Override
+	public String getReplaceString() {
+		return "%setup -q"; //$NON-NLS-1$
+	}
 
-    @Override
-    public String getDescription() {
-        return Messages.SetupNotQuiet_0;
-    }
+	/**
+	 * @see org.eclipse.ui.IMarkerResolution2#getDescription()
+	 */
+	@Override
+	public String getDescription() {
+		return Messages.SetupNotQuiet_0;
+	}
 
-    @Override
-    public String getLabel() {
-        return ID;
-    }
+	/**
+	 * @see org.eclipse.ui.IMarkerResolution#getLabel()
+	 */
+	@Override
+	public String getLabel() {
+		return ID;
+	}
 
 }

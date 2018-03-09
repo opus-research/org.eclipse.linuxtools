@@ -22,8 +22,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpInfo;
+import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelImage;
-import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelSession;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.checkevent.CheckEventsProcessor;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
@@ -33,7 +33,8 @@ import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 /**
  * Common class wrapper for all things Oprofile.
  */
-public class Oprofile {
+public class Oprofile
+{
 	// Ugh. Need to know whether the module is loaded without running oprofile commands...
 	private static final String[] OPROFILE_CPU_TYPE_FILES = {
 		"/dev/oprofile/cpu_type", //$NON-NLS-1$
@@ -62,9 +63,8 @@ public class Oprofile {
 	 */
 	static private void initializeOprofileModule() {
 		// Check if kernel module is loaded, if not, try to load it
-		if (!isKernelModuleLoaded()) {
+		if (!isKernelModuleLoaded())
 			initializeOprofile();
-		}
 
 		if (isKernelModuleLoaded()) {
 			initializeOprofileCore();
@@ -89,9 +89,8 @@ public class Oprofile {
 
 		for (int i = 0; i < OPROFILE_CPU_TYPE_FILES.length; ++i) {
 			IFileStore f = proxy.getResource(OPROFILE_CPU_TYPE_FILES[i]);
-			if (f.fetchInfo().exists()) {
+			if (f.fetchInfo().exists())
 				return true;
-			}
 		}
 		return false;
 	}
@@ -157,6 +156,15 @@ public class Oprofile {
 	}
 
 	/**
+	 * Finds the event with the given name
+	 * @param name the event's name (i.e., CPU_CLK_UNHALTED)
+	 * @return the event or <code>null</code> if not found
+	 */
+	public static OpEvent findEvent(String name) {
+		return info.findEvent(name);
+	}
+
+	/**
 	 * Get all the events that may be collected on the given counter.
 	 * @param num the counter number
 	 * @return an array of all valid events -- NEVER RETURNS NULL!
@@ -205,28 +213,29 @@ public class Oprofile {
 		try {
 			IRunnableWithProgress opxml = OprofileCorePlugin.getDefault().getOpxmlProvider().checkEvents(ctr, event, um, validResult);
 			opxml.run(null);
-		} catch (InvocationTargetException|InterruptedException e) {
+		} catch (InvocationTargetException e) {
+		} catch (InterruptedException e) {
 		}
 
 		return (validResult[0] == CheckEventsProcessor.EVENT_OK);
 	}
 
 	/**
-	 * Returns a list of all the session collected on the system, as well as
-	 * the event under each of them.
-	 * @since 3.0
+	 * Returns a list of all the events collected on the system, as well as
+	 * the sessions under each of them.
 	 * @returns a list of all collected events
 	 */
-	public static OpModelSession[] getSessions() {
-		OpModelSession[] events = null;
+	public static OpModelEvent[] getEvents() {
+		OpModelEvent[] events = null;
 
-		ArrayList<OpModelSession> sessionList = new ArrayList<>();
+		ArrayList<OpModelEvent> sessionList = new ArrayList<OpModelEvent>();
 		try {
 			IRunnableWithProgress opxml = OprofileCorePlugin.getDefault().getOpxmlProvider().sessions(sessionList);
 			opxml.run(null);
-			events = new OpModelSession[sessionList.size()];
+			events = new OpModelEvent[sessionList.size()];
 			sessionList.toArray(events);
-		} catch (InvocationTargetException|InterruptedException e) {
+		} catch (InvocationTargetException e) {
+		} catch (InterruptedException e) {
 		}
 		return events;
 	}
@@ -243,7 +252,8 @@ public class Oprofile {
 		try {
 			opxml = OprofileCorePlugin.getDefault().getOpxmlProvider().modelData(eventName, sessionName, image);
 			opxml.run(null);
-		} catch (InvocationTargetException|InterruptedException e) {
+		} catch (InvocationTargetException e) {
+		} catch (InterruptedException e) {
 		}
 
 		return image;
@@ -269,7 +279,6 @@ public class Oprofile {
 		public final static String OPERF_BINARY = "operf"; //$NON-NLS-1$
 		public final static String OPCONTROL_BINARY = "opcontrol"; //$NON-NLS-1$
 		private static String binary = OPCONTROL_BINARY;
-		public final static String OPERF_DATA = "oprofile_data";
 
 
 		/**

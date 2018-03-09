@@ -43,6 +43,15 @@ public abstract class StorageEditorInput implements IStorageEditorInput {
 	}
 
 	/**
+	 * Set new storage. For subclasses only.
+	 * @param storage
+	 */
+	protected void setStorage(IStorage storage) {
+		assert storage != null;
+		fStorage = storage;
+	}
+
+	/**
 	 * @see IStorageEditorInput#getImageDescriptor()
 	 */
 	@Override

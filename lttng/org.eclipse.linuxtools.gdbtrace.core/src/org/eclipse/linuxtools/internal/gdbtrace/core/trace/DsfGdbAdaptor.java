@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.eclipse.cdt.dsf.concurrent.DataRequestMonitor;
 import org.eclipse.cdt.dsf.concurrent.DsfExecutor;
@@ -35,7 +33,6 @@ import org.eclipse.cdt.dsf.debug.service.IBreakpoints.IBreakpointsTargetDMContex
 import org.eclipse.cdt.dsf.debug.service.IRunControl.IContainerDMContext;
 import org.eclipse.cdt.dsf.debug.service.command.ICommandControlService;
 import org.eclipse.cdt.dsf.debug.service.command.ICommandControlService.ICommandControlDMContext;
-import org.eclipse.cdt.dsf.gdb.IGdbDebugPreferenceConstants;
 import org.eclipse.cdt.dsf.gdb.internal.GdbPlugin;
 import org.eclipse.cdt.dsf.gdb.launching.GdbLaunch;
 import org.eclipse.cdt.dsf.gdb.service.GDBTraceControl_7_2.TraceRecordSelectedChangedEvent;
@@ -61,7 +58,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -79,7 +75,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.linuxtools.internal.gdbtrace.core.Activator;
 import org.eclipse.linuxtools.internal.gdbtrace.core.GdbTraceCorePlugin;
 import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEvent;
 import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEventContent;
@@ -121,8 +116,6 @@ public class DsfGdbAdaptor {
     private GdbTrace fGdbTrace;
 
     private int fNumberOfFrames = 0;
-    private boolean fIsTimeoutEnabled;
-    private int fTimeout;
 
     private ILaunch fLaunch;
     private boolean isTerminating;
@@ -138,13 +131,12 @@ public class DsfGdbAdaptor {
 
     // To save tracepoints detailed info.  The key is the rank of the
     // breakpoint (tracepoint is a kind of breakpoint)
-    private  Map<Integer, MIBreakpointDMData> fTpInfo = new HashMap<>();
+    private  Map<Integer, MIBreakpointDMData> fTpInfo = new HashMap<Integer, MIBreakpointDMData>();
 
     private TmfEventType tmfEventType = new TmfEventType(ITmfEventType.DEFAULT_CONTEXT_ID, "GDB Tracepoint", TmfEventField.makeRoot(new String[] { "Content" })); //$NON-NLS-1$ //$NON-NLS-2$
 
-    {
-        new DsfGdbPlatformEventListener();
-    }
+    @SuppressWarnings("unused")
+    private static DsfGdbPlatformEventListener fPlatformEventListener = new DsfGdbPlatformEventListener();
 
     /**
      * <b><u>DsfGdbPlatformEventListener</u></b>
@@ -155,7 +147,7 @@ public class DsfGdbAdaptor {
      * <p>
      * @author Francois Chouinard
      */
-    private class DsfGdbPlatformEventListener implements
+    private static class DsfGdbPlatformEventListener implements
     ILaunchesListener2, IDebugContextListener {
 
         /**
@@ -229,12 +221,7 @@ public class DsfGdbAdaptor {
                             };
                             try {
                                 executor.execute(getCurrentRecordQuery);
-                                ITraceRecordDMContext record;
-                                if (DsfGdbAdaptor.this.fIsTimeoutEnabled) {
-                                    record = getCurrentRecordQuery.get(fTimeout, TimeUnit.MILLISECONDS);
-                                } else {
-                                    record = getCurrentRecordQuery.get();
-                                }
+                                ITraceRecordDMContext record = getCurrentRecordQuery.get();
                                 // If we get a trace record, it means that this can be used
                                 if (record != null && record.getRecordId() != null) {
                                     int recordId = Integer.parseInt(record.getRecordId());
@@ -242,13 +229,8 @@ public class DsfGdbAdaptor {
                                     break;
                                 }
                             } catch (InterruptedException e) {
-                                Activator.logError("Interruption exception", e); //$NON-NLS-1$
-                            } catch (ExecutionException e) {
-                                Activator.logError("GDB exception", e); //$NON-NLS-1$
+                            } catch (java.util.concurrent.ExecutionException e) {
                             } catch (RejectedExecutionException e) {
-                                Activator.logError("Request rejected exception", e); //$NON-NLS-1$
-                            } catch (TimeoutException e) {
-                                Activator.logError("Timeout", e); //$NON-NLS-1$
                             } finally {
                                 tracker.dispose();
                             }
@@ -295,10 +277,6 @@ public class DsfGdbAdaptor {
      * Note: Requires GDB 7.2 or later
      */
     private void launchDGBPostMortemTrace() throws CoreException {
-        fIsTimeoutEnabled = Platform.getPreferencesService().getBoolean(GdbPlugin.PLUGIN_ID, IGdbDebugPreferenceConstants.PREF_COMMAND_TIMEOUT, false, null);
-        if (fIsTimeoutEnabled) {
-            fTimeout = Platform.getPreferencesService().getInt(GdbPlugin.PLUGIN_ID, IGdbDebugPreferenceConstants.PREF_COMMAND_TIMEOUT_VALUE, IGdbDebugPreferenceConstants.COMMAND_TIMEOUT_VALUE_DEFAULT, null);
-        }
 
         ILaunchConfigurationType configType = DebugPlugin
                 .getDefault()
@@ -468,19 +446,15 @@ public class DsfGdbAdaptor {
         };
         try {
             executor.execute(selectRecordQuery);
-            if (fIsTimeoutEnabled) {
-                selectRecordQuery.get(fTimeout, TimeUnit.MILLISECONDS); // blocks until time out
-            } else {
-                selectRecordQuery.get(); // blocks
-            }
-        } catch (InterruptedException e) {
-            Activator.logError("Interruption exception", e); //$NON-NLS-1$
-        } catch (ExecutionException e) {
-            Activator.logError("GDB exception", e); //$NON-NLS-1$
+            selectRecordQuery.get(); // blocks
         } catch (RejectedExecutionException e) {
-            Activator.logError("Request rejected exception", e); //$NON-NLS-1$
-        } catch (TimeoutException e) {
-            Activator.logError("Timeout", e); //$NON-NLS-1$
+
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         } finally {
             tracker.dispose();
         }
@@ -529,22 +503,14 @@ public class DsfGdbAdaptor {
         };
         try {
             executor.execute(selectRecordQuery);
-            ITraceStatusDMData data;
-            if (fIsTimeoutEnabled) {
-                data = selectRecordQuery.get(fTimeout, TimeUnit.MILLISECONDS); // blocks until time out
-            } else {
-                data = selectRecordQuery.get(); // blocks
-            }
-
+            ITraceStatusDMData data = selectRecordQuery.get(); // blocks
             frameNum = data.getNumberOfCollectedFrame();
         } catch (InterruptedException e) {
-            Activator.logError("Interruption exception", e); //$NON-NLS-1$
-        } catch (ExecutionException e) {
-            Activator.logError("GDB exception", e); //$NON-NLS-1$
+
+        } catch (java.util.concurrent.ExecutionException e) {
+
         } catch (RejectedExecutionException e) {
-            Activator.logError("Request rejected exception", e); //$NON-NLS-1$
-        } catch (TimeoutException e) {
-            Activator.logError("Timeout", e); //$NON-NLS-1$
+
         } finally {
             tracker.dispose();
         }
@@ -616,23 +582,13 @@ public class DsfGdbAdaptor {
         };
         try {
             executor.execute(selectRecordQuery);
-            if (fIsTimeoutEnabled) {
-                selectRecordQuery.get(fTimeout, TimeUnit.MILLISECONDS); // blocks until time out
-            } else {
-                selectRecordQuery.get(); // blocks
-            }
+            selectRecordQuery.get(); // blocks
         } catch (InterruptedException e) {
             status = false;
-            Activator.logError("Interruption exception", e); //$NON-NLS-1$
-        } catch (ExecutionException e) {
+        } catch (java.util.concurrent.ExecutionException e) {
             status = false;
-            Activator.logError("GDB exception", e); //$NON-NLS-1$
         } catch (RejectedExecutionException e) {
             status = false;
-            Activator.logError("Request rejected exception", e); //$NON-NLS-1$
-        } catch (TimeoutException e) {
-            status = false;
-            Activator.logError("Timeout", e); //$NON-NLS-1$
         } finally {
             tracker.dispose();
         }
@@ -683,12 +639,7 @@ public class DsfGdbAdaptor {
         try {
             // Execute the above query
             executor.execute(getFrameDataQuery);
-            ITraceRecordDMData data;
-            if (fIsTimeoutEnabled) {
-                data = getFrameDataQuery.get(fTimeout, TimeUnit.MILLISECONDS); // blocking call until time out
-            } else {
-                data = getFrameDataQuery.get();
-            }
+            ITraceRecordDMData data = getFrameDataQuery.get(); // blocking call
 
             if (data == null) {
                 return null;
@@ -729,8 +680,8 @@ public class DsfGdbAdaptor {
             return createExceptionEvent(rank, "GDB exception"); //$NON-NLS-1$
         } catch (RejectedExecutionException e) {
             return createExceptionEvent(rank, "Request rejected exception"); //$NON-NLS-1$
-        } catch (TimeoutException e) {
-            return createExceptionEvent(rank, "Timeout"); //$NON-NLS-1$
+        } catch (Exception e) {
+            return createExceptionEvent(rank, "General exception"); //$NON-NLS-1$
         }
 
         finally {

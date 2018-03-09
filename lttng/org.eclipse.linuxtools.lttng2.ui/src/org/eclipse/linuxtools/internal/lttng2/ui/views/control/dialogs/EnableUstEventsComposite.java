@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,6 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
- *   Marc-Andre Laperle - Add filtering textbox
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -22,7 +21,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.LogLevelType;
 import org.eclipse.linuxtools.internal.lttng2.core.control.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
@@ -45,8 +43,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.dialogs.FilteredTree;
-import org.eclipse.ui.dialogs.PatternFilter;
 
 /**
  * <p>
@@ -184,7 +180,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
 
     @Override
     public List<String> getEventNames() {
-        return new ArrayList<>(fSelectedEvents);
+        return new ArrayList<String>(fSelectedEvents);
     }
 
     @Override
@@ -260,10 +256,10 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
 
         // initialize tracepoint fields
         fIsAllTracepoints = false;
-        fSelectedEvents = new ArrayList<>();
+        fSelectedEvents = new ArrayList<String>();
         if (fIsTracepoints) {
             fIsAllTracepoints = fTracepointsViewer.getChecked(fProviderGroup);
-            Set<String> set = new HashSet<>();
+            Set<String> set = new HashSet<String>();
             Object[] checkedElements = fTracepointsViewer.getCheckedElements();
             for (int i = 0; i < checkedElements.length; i++) {
                 ITraceControlComponent component = (ITraceControlComponent)checkedElements[i];
@@ -379,21 +375,16 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         tpGroup.setLayout(layout);
         data = new GridData(GridData.FILL_BOTH);
         tpGroup.setLayoutData(data);
-        new FilteredTree(tpGroup, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER, new PatternFilter(), true) {
-            @Override
-            protected TreeViewer doCreateTreeViewer(Composite aparent, int style) {
-                fTracepointsViewer = new CheckboxTreeViewer(aparent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-                fTracepointsViewer.getTree().setToolTipText(Messages.TraceControl_EnableEventsTracepointTreeTooltip);
-                fTracepointsViewer.setContentProvider(new UstContentProvider());
 
-                fTracepointsViewer.setLabelProvider(new UstLabelProvider());
-                fTracepointsViewer.addCheckStateListener(new UstCheckStateListener());
+        fTracepointsViewer = new CheckboxTreeViewer(tpGroup, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+        fTracepointsViewer.getTree().setToolTipText(Messages.TraceControl_EnableEventsTracepointTreeTooltip);
+        fTracepointsViewer.setContentProvider(new UstContentProvider());
 
-                fTracepointsViewer.setInput(fProviderGroup.getParent());
-                fTracepointsViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
-                return fTracepointsViewer;
-            }
-        };
+        fTracepointsViewer.setLabelProvider(new UstLabelProvider());
+        fTracepointsViewer.addCheckStateListener(new UstCheckStateListener());
+
+        fTracepointsViewer.setInput(fProviderGroup.getParent());
+        fTracepointsViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
     /**

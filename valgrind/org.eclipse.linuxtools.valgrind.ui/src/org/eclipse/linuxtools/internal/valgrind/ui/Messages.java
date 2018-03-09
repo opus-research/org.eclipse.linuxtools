@@ -7,13 +7,12 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *******************************************************************************/
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.valgrind.ui;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-@SuppressWarnings("javadoc")
 public class Messages {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.valgrind.ui.messages"; //$NON-NLS-1$
 

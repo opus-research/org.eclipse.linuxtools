@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -69,7 +69,7 @@ public class TestAnalysis extends TmfAbstractAnalysisModule {
     public Object getParameter(String name) {
         Object value = super.getParameter(name);
         if ((value != null) && name.equals(PARAM_TEST) && (value instanceof String)) {
-            return Integer.decode((String) value);
+            return Integer.parseInt((String) value);
         }
         return value;
     }

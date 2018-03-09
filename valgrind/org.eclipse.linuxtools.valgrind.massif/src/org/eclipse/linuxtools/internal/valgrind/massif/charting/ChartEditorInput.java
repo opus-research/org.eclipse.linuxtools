@@ -19,11 +19,11 @@ import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class ChartEditorInput implements IEditorInput {
-
-	private HeapChart chart;
-	private MassifViewPart view;
-	private String name;
-	private Integer pid;
+	
+	protected HeapChart chart;
+	protected MassifViewPart view;
+	protected String name;
+	protected Integer pid;
 
 	public ChartEditorInput(HeapChart chart, MassifViewPart view, String name, Integer pid) {
 		this.chart = chart;
@@ -32,45 +32,39 @@ public class ChartEditorInput implements IEditorInput {
 		this.pid = pid;
 	}
 
-	@Override
 	public boolean exists() {
 		return false;
 	}
 
-	@Override
 	public ImageDescriptor getImageDescriptor() {
 		return AbstractUIPlugin.imageDescriptorFromPlugin(MassifPlugin.PLUGIN_ID, "icons/linecharticon.gif"); //$NON-NLS-1$
 	}
 
-	@Override
-	public String getName() {
+	public String getName() {		
 		return name;
 	}
-
+	
 	public Integer getPid() {
 		return pid;
 	}
 
-	@Override
 	public IPersistableElement getPersistable() {
 		return null;
 	}
 
-	@Override
 	public String getToolTipText() {
 		return NLS.bind(Messages.getString("ChartEditorInput.Heap_allocation_chart_for"), name); //$NON-NLS-1$
 	}
 
-	@Override
 	@SuppressWarnings("rawtypes")
 	public Object getAdapter(Class adapter) {
 		return null;
 	}
-
+	
 	public HeapChart getChart() {
 		return chart;
 	}
-
+	
 	public MassifViewPart getView() {
 		return view;
 	}

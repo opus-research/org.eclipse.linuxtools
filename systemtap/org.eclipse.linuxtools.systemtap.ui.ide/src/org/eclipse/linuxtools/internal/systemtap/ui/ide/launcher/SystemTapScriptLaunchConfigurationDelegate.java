@@ -15,7 +15,6 @@ import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -25,21 +24,18 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptChartHandler;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.RunScriptHandler;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.graphing.core.datasets.IDataSetParser;
-import org.eclipse.linuxtools.systemtap.graphing.core.datasets.IFilteredDataSet;
-import org.eclipse.linuxtools.systemtap.graphing.core.structures.GraphData;
-import org.eclipse.linuxtools.systemtap.structures.process.SystemTapRuntimeProcessFactory;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.RemoteScriptOptions;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
 
 public class SystemTapScriptLaunchConfigurationDelegate extends
 		LaunchConfigurationDelegate {
@@ -52,24 +48,13 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 	 * Keep a reference to the target running script's parent project, so only that project
 	 * will be saved when the script is run.
 	 */
-	@Override
-	protected IProject[] getBuildOrder(ILaunchConfiguration configuration, String mode) {
-		return scriptProject;
-	}
-
-	@Override
-	public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) {
-		return new SystemTapScriptLaunch(configuration, mode);
-	}
+    @Override
+    protected IProject[] getBuildOrder(ILaunchConfiguration configuration, String mode) {
+        return scriptProject;
+    }
 
 	@Override
 	public boolean preLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
-		// Force the configuration to use the proper Process Factory.
-		if (!configuration.getAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, "").equals(SystemTapRuntimeProcessFactory.PROCESS_FACTORY_ID)) { //$NON-NLS-1$
-			ILaunchConfigurationWorkingCopy wc = configuration.getWorkingCopy();
-			wc.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, SystemTapRuntimeProcessFactory.PROCESS_FACTORY_ID);
-			wc.doSave();
-		}
 		// Find the parent project of the target script.
 		IPath path = Path.fromOSString(configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.SCRIPT_PATH_ATTR, (String)null));
 		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
@@ -82,25 +67,19 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 		return true;
 	}
 
+	private String getPluginID() {
+		return this.getClass().getPackage().getName();
+	}
+
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
-		// Wait for other stap launches' consoles to be initiated before starting a new launch.
-		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-		for (ILaunch olaunch : manager.getLaunches()) {
-			if (olaunch.equals(launch)) {
-				continue;
-			}
-			if (olaunch instanceof SystemTapScriptLaunch && ((SystemTapScriptLaunch) olaunch).getConsole() == null) {
-				throw new CoreException(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID,
-						Messages.SystemTapScriptLaunchError_waitForConsoles));
-			}
+		if (!SystemTapScriptGraphOptionsTab.isValidLaunch(configuration)) {
+			throw new CoreException(new Status(IStatus.ERROR, getPluginID(), Messages.SystemTapScriptLaunchError_graph));
 		}
 
-		if (!SystemTapScriptGraphOptionsTab.isValidLaunch(configuration)) {
-			throw new CoreException(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, Messages.SystemTapScriptLaunchError_graph));
-		}
+		IPreferenceStore preferenceStore = ConsoleLogPlugin.getDefault().getPreferenceStore();
 
 		RunScriptHandler action;
 
@@ -110,7 +89,7 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 		int numGraphs = configuration.getAttribute(SystemTapScriptGraphOptionsTab.NUMBER_OF_REGEXS, 0);
 		if (runWithChart && numGraphs > 0){
 			List<IDataSetParser> parsers = SystemTapScriptGraphOptionsTab.createDatasetParsers(configuration);
-			List<IFilteredDataSet> dataSets = SystemTapScriptGraphOptionsTab.createDataset(configuration);
+			List<IDataSet> dataSets = SystemTapScriptGraphOptionsTab.createDataset(configuration);
 			List<String> names = SystemTapScriptGraphOptionsTab.createDatasetNames(configuration);
 			List<LinkedList<GraphData>> graphs = SystemTapScriptGraphOptionsTab.createGraphsFromConfiguration(configuration);
 			action = new RunScriptChartHandler(parsers, dataSets, names, graphs);
@@ -121,24 +100,32 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 		// Path
 		IPath scriptPath = new Path(configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.SCRIPT_PATH_ATTR, "")); //$NON-NLS-1$
 		if (!scriptPath.toFile().exists()) {
-			throw new CoreException(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID,
+			throw new CoreException(new Status(IStatus.ERROR, getPluginID(),
 					MessageFormat.format(Messages.SystemTapScriptLaunchError_fileNotFound, scriptPath.toString())));
 		}
 		String extension = scriptPath.getFileExtension();
 		if (extension == null || !extension.equals("stp")) { //$NON-NLS-1$
-			throw new CoreException(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID,
+			throw new CoreException(new Status(IStatus.ERROR, getPluginID(),
 					MessageFormat.format(Messages.SystemTapScriptLaunchError_fileNotStp, scriptPath.toString())));
 		}
 		action.setPath(scriptPath);
 
+		// User Name
+		String userName = configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.USER_NAME_ATTR, ""); //$NON-NLS-1$
+		preferenceStore.setValue(ConsoleLogPreferenceConstants.SCP_USER, userName);
+
+		// User Password
+		String password = configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.USER_PASS_ATTR, ""); //$NON-NLS-1$
+		preferenceStore.setValue(ConsoleLogPreferenceConstants.SCP_PASSWORD, password);
+
 		// Run locally and/or as current user.
 		boolean runAsCurrentUser = configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.CURRENT_USER_ATTR, true);
 		boolean runLocal = configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.LOCAL_HOST_ATTR, true);
+		action.setLocalScript(runLocal && runAsCurrentUser);
 
-		action.setRemoteScriptOptions(runLocal && runAsCurrentUser ? null : new RemoteScriptOptions(
-						configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.USER_NAME_ATTR, ""), //$NON-NLS-1$
-						configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.USER_PASS_ATTR, ""), //$NON-NLS-1$
-						configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.HOST_NAME_ATTR, "localhost"))); //$NON-NLS-1$
+		// Host Name.
+		String hostName = configuration.getAttribute(SystemTapScriptLaunchConfigurationTab.HOST_NAME_ATTR, "localhost"); //$NON-NLS-1$
+		preferenceStore.setValue(ConsoleLogPreferenceConstants.HOST_NAME, hostName);
 
 		String value = configuration.getAttribute(IDEPreferenceConstants.STAP_CMD_OPTION[IDEPreferenceConstants.KEY], ""); //$NON-NLS-1$
 		if (!value.isEmpty()){
@@ -167,12 +154,7 @@ public class SystemTapScriptLaunchConfigurationDelegate extends
 			action.addComandLineOptions(value);
 		}
 
-		action.setLaunch((SystemTapScriptLaunch) launch);
-		try {
-			action.execute(null);
-		} catch (ExecutionException e) {
-			throw new CoreException(new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, e.getMessage()));
-		}
+		action.execute(null);
 	}
 
 }

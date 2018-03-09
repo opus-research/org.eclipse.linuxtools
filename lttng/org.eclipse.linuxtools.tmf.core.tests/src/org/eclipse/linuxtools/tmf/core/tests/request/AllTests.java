@@ -23,6 +23,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     TmfCoalescedEventRequestTest.class,
     TmfEventRequestTest.class,
+    TmfSchedulerTest.class
 })
 public class AllTests {
 

@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.resources.IProject;
@@ -46,7 +45,7 @@ import org.osgi.framework.Version;
 
 public class PerfCore {
 
-	private static String spitStream(BufferedReader br, String blockTitle, PrintStream print) {
+	public static String spitStream(BufferedReader br, String blockTitle, PrintStream print) {
 
 		StringBuffer strBuf = new StringBuffer();
 		String line = null;
@@ -65,19 +64,19 @@ public class PerfCore {
 		return str;
 	}
 	// Maps event lists to host names for caching
-	private static Map<String,Map<String, List<String>>> eventsHostMap = null;
-	private static Map<String,List<String>> eventList = null;
+	private static HashMap<String,HashMap<String, ArrayList<String>>> eventsHostMap = null;
+	private static HashMap<String,ArrayList<String>> eventList = null;
 
 	/**
 	 * Gets the list of events for a given launch configuration. Uses a cache for each host
 	 * @param config
 	 * @return
 	 */
-	public static Map<String,List<String>> getEventList(ILaunchConfiguration config) {
+	public static HashMap<String,ArrayList<String>> getEventList(ILaunchConfiguration config) {
 		String projectHost = getHostName(config);
 
 		if(eventsHostMap == null){
-			eventsHostMap = new HashMap<>();
+			eventsHostMap = new HashMap<String, HashMap<String,ArrayList<String>>>();
 		}
 
 		// local projects have null hosts
@@ -122,8 +121,9 @@ public class PerfCore {
 		if(config == null){
 			return null;
 		} else {
+			ConfigUtils configUtils = new ConfigUtils(config);
 			try {
-				String projectName = ConfigUtils.getProjectName(config);
+				String projectName = configUtils.getProjectName();
 				// an empty string is not a legal path to file argument for ConfigUtils.getProject
 				if (projectName != null && !projectName.isEmpty()) {
 					return ConfigUtils.getProject(projectName);
@@ -136,8 +136,8 @@ public class PerfCore {
 		return null;
 	}
 
-	private static Map<String,List<String>> loadEventList(ILaunchConfiguration config){
-		Map<String,List<String>> events = new HashMap<>();
+	private static HashMap<String,ArrayList<String>> loadEventList(ILaunchConfiguration config){
+		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		IProject project = getProject(config);
 
 		if (!PerfCore.checkPerfInPath(project)) {
@@ -163,8 +163,8 @@ public class PerfCore {
 		return parseEventList(input);
 	}
 
-	public static Map<String,List<String>> parseEventList (BufferedReader input){
-		Map<String,List<String>> events = new HashMap<>();
+	public static HashMap<String,ArrayList<String>> parseEventList (BufferedReader input){
+		HashMap<String,ArrayList<String>> events = new HashMap<String,ArrayList<String>>();
 		String line;
 		try {
 			// Process list of events. Each line is of the form <event>\s+<category>.
@@ -185,9 +185,9 @@ public class PerfCore {
 						}
 						category = line.replaceFirst(".*\\[(.+)\\]", "$1").trim(); //$NON-NLS-1$ //$NON-NLS-2$
 					}
-					List<String> categoryEvents = events.get(category);
+					ArrayList<String> categoryEvents = events.get(category);
 					if (categoryEvents == null) {
-						categoryEvents = new ArrayList<>();
+						categoryEvents = new ArrayList<String>();
 						events.put(category, categoryEvents);
 					}
 					categoryEvents.add(event.trim());
@@ -232,11 +232,15 @@ public class PerfCore {
 	}
 
 
-	public static boolean checkPerfInPath(IProject project)	{
-		try	{
+	public static boolean checkPerfInPath(IProject project)
+	{
+		try
+		{
 			Process p = RuntimeProcessFactory.getFactory().exec(new String [] {PerfPlugin.PERF_COMMAND, "--version"}, project); //$NON-NLS-1$
 			return (p != null);
-		} catch (IOException e)	{
+		}
+		catch (IOException e)
+		{
 			return false;
 		}
 	}
@@ -247,18 +251,15 @@ public class PerfCore {
 		if (config == null) {
 			return base;
 		} else {
-			ArrayList<String> newCommand = new ArrayList<>();
+			ArrayList<String> newCommand = new ArrayList<String>();
 			newCommand.addAll(Arrays.asList(base));
 			try {
 				if (new Version(3, 11, 0).compareTo(perfVersion) > 0) {
 					// Removed as of 4a4d371a4dfbd3b84a7eab8d535d4c7c3647b09e from perf upstream (kernel)
 					newCommand.add("-f"); //$NON-NLS-1$
 				}
-				if (config.getAttribute(PerfPlugin.ATTR_Record_Realtime, PerfPlugin.ATTR_Record_Realtime_default)) {
+				if (config.getAttribute(PerfPlugin.ATTR_Record_Realtime, PerfPlugin.ATTR_Record_Realtime_default))
 					newCommand.add("-r"); //$NON-NLS-1$
-					int priority = config.getAttribute(PerfPlugin.ATTR_Record_Realtime_Priority, PerfPlugin.ATTR_Record_Realtime_Priority_default);
-					newCommand.add(Integer.toString(priority));
-				}
 				if (config.getAttribute(PerfPlugin.ATTR_Record_Verbose, PerfPlugin.ATTR_Record_Verbose_default))
 					newCommand.add("-v"); //$NON-NLS-1$
 				if (config.getAttribute(PerfPlugin.ATTR_Multiplex, PerfPlugin.ATTR_Multiplex_default))
@@ -277,7 +278,7 @@ public class PerfCore {
 	}
 
 	public static String[] getReportString(ILaunchConfiguration config, String perfDataLoc) {
-		ArrayList<String> base = new ArrayList<>();
+		ArrayList<String> base = new ArrayList<String>();
 		base.addAll(Arrays.asList(new String [] {PerfPlugin.PERF_COMMAND, "report", "--sort", "comm,dso,sym", "-n", "-t", "" + (char)1 }));//(char 1 as -t is a custom field seperator) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 		if (config != null) {
 			try {
@@ -311,7 +312,7 @@ public class PerfCore {
 	}
 
 	public static String[] getAnnotateString(ILaunchConfiguration config, String dso, String symbol, String perfDataLoc, boolean OldPerfVersion) {
-		ArrayList<String> base = new ArrayList<>();
+		ArrayList<String> base = new ArrayList<String>();
 		if (OldPerfVersion) {
 			base.addAll( Arrays.asList( new String[]{PerfPlugin.PERF_COMMAND, "annotate", "-s", symbol, "-l", "-P"} ) ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		} else {
@@ -404,7 +405,7 @@ public class PerfCore {
 				invisibleRoot, OldPerfVersion, input, error, null);
 	}
 
-	private static void parseRemoteReport(ILaunchConfiguration config,
+	public static void parseRemoteReport(ILaunchConfiguration config,
 			IPath workingDir, IProgressMonitor monitor, String perfDataLoc,
 			PrintStream print, TreeParent invisibleRoot,
 			boolean OldPerfVersion, BufferedReader input, BufferedReader error, IProject project) {
@@ -647,7 +648,7 @@ public class PerfCore {
 		}
 	}
 
-	public static void refreshView (final String title) {
+	public static void RefreshView (final String title) {
 		Display.getDefault().syncExec(new Runnable() {
 
 			@Override

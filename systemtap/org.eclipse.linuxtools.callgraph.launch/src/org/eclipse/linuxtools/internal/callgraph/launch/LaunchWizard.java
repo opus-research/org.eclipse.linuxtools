@@ -54,6 +54,7 @@ public class LaunchWizard extends SystemTapLaunchShortcut {
 
 	private Shell sh;
 	private Composite fileComp;
+	private boolean completed;
 
 	private static final int WIDTH = 670;
 	private static final int HEIGHT = 630;
@@ -112,6 +113,7 @@ public class LaunchWizard extends SystemTapLaunchShortcut {
 	@Override
 	public void launch(ISelection selection, String mode) {
 		super.initialize();
+		completed = false;
 		promptForInputs();
 
 		this.mode = mode;
@@ -254,6 +256,7 @@ public class LaunchWizard extends SystemTapLaunchShortcut {
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
+					completed = true;
 					sh.dispose();
 				}
 
@@ -261,11 +264,20 @@ public class LaunchWizard extends SystemTapLaunchShortcut {
 
 		//TODO: Verify that this works
 		Display.getCurrent().asyncExec(new Runnable() {
+
 			@Override
 			public void run() {
 				sh.open();
+				completed = true;
 			}
+
 		});
+
+
+	}
+
+	public boolean isCompleted() {
+		return completed;
 	}
 
 	@Override

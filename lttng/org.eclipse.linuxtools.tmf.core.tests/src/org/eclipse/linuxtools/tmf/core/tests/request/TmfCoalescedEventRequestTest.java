@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -410,19 +410,13 @@ public class TmfCoalescedEventRequestTest {
         }
     }
 
-    private static class TmfTestTriggerSignal2 extends TmfSignal {
-        public TmfTestTriggerSignal2(Object source) {
-            super(source);
-        }
-    }
-
     @TmfSignalHandler
     public void trigger(final TmfTestTriggerSignal signal) {
 
         TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final long REQUEST_OFFSET = 1000;
 
-        requestedEvents1 = new Vector<>();
+        requestedEvents1 = new Vector<ITmfEvent>();
         request1 = new TmfEventRequest(ITmfEvent.class, range, signal.fIndex,
                 NB_EVENTS, ExecutionType.FOREGROUND) {
             @Override
@@ -437,7 +431,7 @@ public class TmfCoalescedEventRequestTest {
             }
         };
 
-        requestedEvents2 = new Vector<>();
+        requestedEvents2 = new Vector<ITmfEvent>();
         request2 = new TmfEventRequest(ITmfEvent.class, range,
                 signal.fIndex + REQUEST_OFFSET, NB_EVENTS, ExecutionType.FOREGROUND) {
             @Override
@@ -449,7 +443,7 @@ public class TmfCoalescedEventRequestTest {
             }
         };
 
-        requestedEvents3 = new Vector<>();
+        requestedEvents3 = new Vector<ITmfEvent>();
         request3 = new TmfEventRequest(ITmfEvent.class, range,
                 signal.fIndex + 2 * REQUEST_OFFSET, NB_EVENTS, ExecutionType.FOREGROUND) {
             @Override
@@ -465,27 +459,6 @@ public class TmfCoalescedEventRequestTest {
         providers[0].sendRequest(request1);
         providers[0].sendRequest(request2);
         providers[0].sendRequest(request3);
-    }
-
-    /**
-     * @param signal
-     *            the trigger signal
-     */
-    @TmfSignalHandler
-    public void trigger(final TmfTestTriggerSignal2 signal) {
-        TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(100, -3), TmfTimestamp.BIG_CRUNCH);
-        requestedEvents1 = new Vector<>();
-        request1 = new TmfEventRequest(ITmfEvent.class, range, 0, 1, ExecutionType.FOREGROUND) {
-            @Override
-            public void handleData(ITmfEvent event) {
-                super.handleData(event);
-                if (!isCompleted()) {
-                    requestedEvents1.add(event);
-                }
-            }
-        };
-        providers = TmfProviderManager.getProviders(ITmfEvent.class, TmfTraceStub.class);
-        providers[0].sendRequest(request1);
     }
 
     public void runCoalescedRequest(long startIndex) throws InterruptedException {
@@ -564,27 +537,6 @@ public class TmfCoalescedEventRequestTest {
             assertEquals("Distinct events", i + 1 + request2.getIndex(), requestedEvents2.get(i).getTimestamp().getValue());
             assertEquals("Distinct events", i + 1 + request3.getIndex(), requestedEvents3.get(i).getTimestamp().getValue());
         }
-
-        TmfSignalManager.deregister(this);
-        fTrace.dispose();
-        fTrace = null;
-    }
-
-    @Test
-    public void testSingleTimeRequest() throws InterruptedException {
-
-        fTrace = setupTrace(TEST_TRACE.getFullPath());
-
-        TmfSignalManager.register(this);
-        TmfTestTriggerSignal2 signal = new TmfTestTriggerSignal2(this);
-        TmfSignalManager.dispatchSignal(signal);
-
-        request1.waitForCompletion();
-
-        assertTrue("Request1: isCompleted", request1.isCompleted());
-
-        // We have to have one event processed
-        assertEquals("Request1: nbEvents", 1, requestedEvents1.size());
 
         TmfSignalManager.deregister(this);
         fTrace.dispose();

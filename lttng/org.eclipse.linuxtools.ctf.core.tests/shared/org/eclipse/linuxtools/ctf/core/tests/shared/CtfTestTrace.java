@@ -54,10 +54,7 @@ public enum CtfTestTrace {
     SYNTHETIC_TRACE(LttngKernelTraceGenerator.getPath()),
 
     /** Trace with non-standard field sizes */
-    FUNKY_TRACE("../org.eclipse.linuxtools.ctf.core.tests/traces/funky_trace"),
-
-    /** Set of many traces, do not call getTrace */
-    TRACE_EXPERIMENT("../org.eclipse.linuxtools.ctf.core.tests/traces/exp");
+    FUNKY_TRACE("../org.eclipse.linuxtools.ctf.core.tests/traces/funky_trace");
 
 
     private final String fPath;

@@ -35,8 +35,8 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
+import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonOptions;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchMessages;
@@ -54,13 +54,10 @@ import org.eclipse.ui.PlatformUI;
 
 public abstract class AbstractOprofileLaunchConfigurationDelegate extends ProfileLaunchConfigurationDelegate {
 	protected ILaunchConfiguration config;
-	private static final String OPROFILE_DATA = "oprofile_data"; //$NON-NLS-1$
-	private static final String SESSION_DIR = "--session-dir="; //$NON-NLS-1$
-	private static final String EVENTS = "--events="; //$NON-NLS-1$
-	private static final String APPEND = "--append"; //$NON-NLS-1$
-	private static final String OPD_SETUP_EVENT_SEPARATOR = ":"; //$NON-NLS-1$
-	private static final String OPD_SETUP_EVENT_TRUE = "1"; //$NON-NLS-1$
-	private static final String OPD_SETUP_EVENT_FALSE = "0"; //$NON-NLS-1$
+	private String OPROFILE_DATA = "oprofile_data"; //$NON-NLS-1$
+	private String SESSION_DIR = "--session-dir="; //$NON-NLS-1$
+	private String EVENTS = "--events="; //$NON-NLS-1$
+	private String APPEND = "--append"; //$NON-NLS-1$
 
 	@Override
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
@@ -74,16 +71,14 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 
 		//if daemonEvents null or zero size, the default event will be used
 		OprofileDaemonEvent[] daemonEvents = null;
-		ArrayList<OprofileDaemonEvent> events = new ArrayList<>();
+		ArrayList<OprofileDaemonEvent> events = new ArrayList<OprofileDaemonEvent>();
 		if (!config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, false)) {
 			//get the events to profile from the counters
 			OprofileCounter[] counters = oprofileCounters(config);
 
 			for (int i = 0; i < counters.length; ++i) {
-				if (counters[i].getEnabled()) {
-					OprofileDaemonEvent[] counterEvents  = counters[i].getDaemonEvents();
-					events.addAll(Arrays.asList(counterEvents));
-				}
+				if (counters[i].getEnabled())
+					events.add(counters[i].getDaemonEvent());
 			}
 
 			daemonEvents = new OprofileDaemonEvent[events.size()];
@@ -95,9 +90,7 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 		 * originally in the CDT under LocalCDILaunchDelegate::RunLocalApplication
 		 */
 
-		if (!preExec(options, daemonEvents, launch)) {
-			return;
-		}
+		if (!preExec(options, daemonEvents, launch)) return;
 		Process process = null;
 		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
 			String arguments[] = getProgramArgumentsArray( config );
@@ -120,46 +113,24 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 		// outputing the profiling data to the project dir/OPROFILE_DATA
 		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
 
-			String eventsString=null;
-
-			// Event spec: "EVENT:count:mask:profileKernel:profileUser"
-			StringBuilder spec = new StringBuilder();
-			spec.append(EVENTS);
-			boolean isCommaAllowed = false;
+			String eventsString=EVENTS;
 			for (int i=0;i<events.size();i++) {
-				OprofileDaemonEvent event = events.get(i);
-				if(isCommaAllowed) {
-					spec.append(',');
-				}
-				spec.append(event.getEvent().getText());
-				spec.append(OPD_SETUP_EVENT_SEPARATOR);
-				spec.append(event.getResetCount());
-				spec.append(OPD_SETUP_EVENT_SEPARATOR);
-				spec.append(event.getEvent().getUnitMask().getMaskValue());
-				spec.append(OPD_SETUP_EVENT_SEPARATOR);
-				spec.append((event.getProfileKernel() ? OPD_SETUP_EVENT_TRUE : OPD_SETUP_EVENT_FALSE));
-				spec.append(OPD_SETUP_EVENT_SEPARATOR);
-				spec.append((event.getProfileUser() ? OPD_SETUP_EVENT_TRUE : OPD_SETUP_EVENT_FALSE));
-				isCommaAllowed = true;
+				eventsString+=events.get(i).getEvent().getText() + ":" + events.get(i).getEvent().getMinCount() + ","; //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			eventsString = spec.toString();
 
-			ArrayList<String> argArray = new ArrayList<>(Arrays.asList(getProgramArgumentsArray( config )));
+			ArrayList<String> argArray = new ArrayList<String>(Arrays.asList(getProgramArgumentsArray( config )));
 			IFolder dataFolder = Oprofile.OprofileProject.getProject().getFolder(OPROFILE_DATA);
 			if(!dataFolder.exists()) {
 				dataFolder.create(false, true, null);
 			}
 			argArray.add(0, exePath.toOSString());
-			if (events.size()>0) {
+			if (events.size()>0)
 				argArray.add(0,eventsString);
-			}
 			argArray.add(0, SESSION_DIR + oprofileWorkingDirURI(config).getPath() + IPath.SEPARATOR + OPROFILE_DATA);
 			argArray.add(0, OprofileProject.OPERF_BINARY);
 
 			for(int i = 0; i < options.getExecutionsNumber(); i++){
-				if (i!=0) {
-					argArray.add(APPEND);
-				}
+				if (i!=0) argArray.add(APPEND);
 				String[] arguments = new String[argArray.size()];
 				arguments = argArray.toArray(arguments);
 				try {
@@ -298,7 +269,6 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 		}
 		return null;
 	}
-
 	/**
 	 *
 	 * @param config
@@ -307,6 +277,8 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 	 * @since 1.1
 	 */
 	protected IPath getExePath(ILaunchConfiguration config) throws CoreException{
-		return CDebugUtils.verifyProgramPath( config );
+		IPath exePath = CDebugUtils.verifyProgramPath( config );
+
+		return exePath;
 	}
 }

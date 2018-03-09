@@ -17,5 +17,5 @@ public interface IGobblerListener {
 	 * called by streamgobbler when new data is present
 	 *
 	 */
-	void handleDataEvent(String line);
+	public void handleDataEvent(String line);
 }

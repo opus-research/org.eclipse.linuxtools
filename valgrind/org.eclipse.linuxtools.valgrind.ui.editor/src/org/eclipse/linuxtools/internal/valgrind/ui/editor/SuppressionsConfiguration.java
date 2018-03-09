@@ -65,7 +65,8 @@ public class SuppressionsConfiguration extends SourceViewerConfiguration {
 	@Override
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
 		SuppressionsReconcilingStrategy strategy = new SuppressionsReconcilingStrategy(editor);      
-        return new MonoReconciler(strategy, false);        
+        MonoReconciler reconciler = new MonoReconciler(strategy, false);        
+        return reconciler;
 	}
 	
 	@Override

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -17,6 +17,7 @@ import java.lang.reflect.Field;
 
 import org.antlr.runtime.MismatchedTokenException;
 import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.tree.RewriteCardinalityException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.parser.CTFLexer;
 
@@ -71,7 +72,7 @@ public class CtfAntlrException extends CTFReaderException {
      * @param e
      *            the previous rewrite exception (Antlr specific)
      */
-    public CtfAntlrException(Exception e) {
+    public CtfAntlrException(RewriteCardinalityException e) {
         super(e);
         this.fErrorLine = -1;
         this.fFile = "metadata"; //$NON-NLS-1$ // we're in CTF, the only thing using antlr is metadata

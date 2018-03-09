@@ -25,12 +25,12 @@ import org.xml.sax.Attributes;
 public class SessionsProcessor extends XMLProcessor {
 	public static class SessionInfo {
 		/**
-		 *  A list of Session as well as Events under each of them
+		 *  A list of SessionEvents
 		 */
-		public ArrayList<OpModelSession> list;
-
-		public SessionInfo(ArrayList<OpModelSession> session){
-			this.list = session;
+		public ArrayList<OpModelEvent> list;
+		
+		public SessionInfo(ArrayList<OpModelEvent> list){
+			this.list = list;
 		}
 	}
 	
@@ -54,20 +54,20 @@ public class SessionsProcessor extends XMLProcessor {
 	/**
 	 *  A list of all sessions
 	 */
-	private ArrayList<OpModelEvent> eventList;
-
+	private ArrayList<OpModelSession> sessionList;
+	
 	/**
 	 * @see org.eclipse.linuxtools.internal.oprofile.core.opxml.XMLProcessor#startElement(java.lang.String, org.xml.sax.Attributes, java.lang.Object)
 	 */
 	@Override
 	public void startElement(String name, Attributes attrs, Object callData) {
 		if (name.equals(SESSION_TAG)) {
-			String sessionName = validString(attrs.getValue(SESSION_NAME_ATTR));
-			currentSession = new OpModelSession(sessionName);
-			eventList = new ArrayList<>();
+			String sessionName = valid_string(attrs.getValue(SESSION_NAME_ATTR));
+			currentSession = new OpModelSession(currentEvent, sessionName);
 		} else if (name.equals(EVENT_TAG)) {
 			String eventName = attrs.getValue(EVENT_NAME_ATTR);
-			currentEvent = new OpModelEvent(currentSession,eventName);
+			currentEvent = new OpModelEvent(eventName);
+			sessionList = new ArrayList<OpModelSession>();
 		} else {
 			super.startElement(name, attrs, callData);
 		}
@@ -80,18 +80,18 @@ public class SessionsProcessor extends XMLProcessor {
 	public void endElement(String name, Object callData) {
 		if (name.equals(SESSION_TAG)) {
 			// Got end of session -- save in session list
-			OpModelEvent[] s = new OpModelEvent[eventList.size()];
-			eventList.toArray(s);
-			currentSession.setEvents(s);
-			SessionInfo info = (SessionInfo) callData;
-			info.list.add(currentSession);
+			sessionList.add(currentSession);
 			currentSession = null;
-			eventList = null;
 		} else if (name.equals(EVENT_TAG)) {
 			// Got end of event -- save session list into current OpModelEvent and
 			// save current event into call data
-			eventList.add(currentEvent);
+			OpModelSession[] s = new OpModelSession[sessionList.size()];
+			sessionList.toArray(s);
+			currentEvent.setSessions(s);
+			SessionInfo info = (SessionInfo) callData;
+			info.list.add(currentEvent);
 			currentEvent = null;
+			sessionList = null;
 		} else {
 			super.endElement(name, callData);
 		}

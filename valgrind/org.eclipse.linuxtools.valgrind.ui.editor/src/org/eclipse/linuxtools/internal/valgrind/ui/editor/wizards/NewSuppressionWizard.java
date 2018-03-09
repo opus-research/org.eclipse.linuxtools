@@ -34,6 +34,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
@@ -41,9 +42,9 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
- * This is a sample new wizard. Its role is to create a new file
+ * This is a sample new wizard. Its role is to create a new file 
  * resource in the provided container. If the container resource
- * (a folder or a project) is selected in the workspace
+ * (a folder or a project) is selected in the workspace 
  * when the wizard is opened, it will accept it as the target
  * container. The wizard creates one file with the extension
  * "mpe". If a sample multi-page editor (also available
@@ -63,7 +64,7 @@ public class NewSuppressionWizard extends Wizard implements INewWizard {
 		super();
 		setNeedsProgressMonitor(true);
 	}
-
+	
 	/**
 	 * Adding the page to the wizard.
 	 */
@@ -88,7 +89,6 @@ public class NewSuppressionWizard extends Wizard implements INewWizard {
 		final String containerName = page.getContainerFullPath().toOSString();
 		final String fileName = page.getFileName();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
-			@Override
 			public void run(IProgressMonitor monitor) throws InvocationTargetException {
 				try {
 					doFinish(containerName, fileName, monitor);
@@ -110,7 +110,7 @@ public class NewSuppressionWizard extends Wizard implements INewWizard {
 		}
 		return true;
 	}
-
+	
 	/**
 	 * The worker method. It will find the container, create the
 	 * file if missing or just replace its contents, and open
@@ -131,18 +131,19 @@ public class NewSuppressionWizard extends Wizard implements INewWizard {
 		}
 		IContainer container = (IContainer) resource;
 		final IFile file = container.getFile(new Path(fileName));
-		try (InputStream stream = openContentStream()){
+		try {
+			InputStream stream = openContentStream();
 			if (file.exists()) {
 				file.setContents(stream, true, true, monitor);
 			} else {
 				file.create(stream, true, monitor);
 			}
+			stream.close();
 		} catch (IOException e) {
 		}
 		monitor.worked(1);
 		monitor.setTaskName(Messages.getString("NewSuppressionWizard.Opening_file_task")); //$NON-NLS-1$
 		getShell().getDisplay().asyncExec(new Runnable() {
-			@Override
 			public void run() {
 				IWorkbenchPage page =
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -154,13 +155,15 @@ public class NewSuppressionWizard extends Wizard implements INewWizard {
 		});
 		monitor.worked(1);
 	}
-
+	
 	/**
 	 * We will initialize file contents with a sample text.
 	 */
 
 	private InputStream openContentStream() {
-		return new ByteArrayInputStream("{\n\t\n}".getBytes());
+		String contents =
+			"{\n\t\n}"; //$NON-NLS-1$
+		return new ByteArrayInputStream(contents.getBytes());
 	}
 
 	private void throwCoreException(String message) throws CoreException {
@@ -172,9 +175,8 @@ public class NewSuppressionWizard extends Wizard implements INewWizard {
 	/**
 	 * We will accept the selection in the workbench to see if
 	 * we can initialize from it.
-	 * @see org.eclipse.ui.IWorkbenchWizard#init(IWorkbench, IStructuredSelection)
+	 * @see IWorkbenchWizard#init(IWorkbench, IStructuredSelection)
 	 */
-	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.selection = selection;
 	}

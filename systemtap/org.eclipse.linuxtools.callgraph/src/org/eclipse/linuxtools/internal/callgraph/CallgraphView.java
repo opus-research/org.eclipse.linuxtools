@@ -11,10 +11,13 @@
 
 package org.eclipse.linuxtools.internal.callgraph;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -36,6 +39,7 @@ import org.eclipse.linuxtools.internal.callgraph.core.SystemTapParser;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapUIErrorMessages;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapView;
 import org.eclipse.linuxtools.internal.callgraph.graphlisteners.AutoScrollSelectionListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -81,8 +85,16 @@ public class CallgraphView extends SystemTapView {
 	private Action saveColDot;
 	private Action saveCurDot;
 	private Action saveText;
-	private ImageDescriptor playImage = getImageDescriptor("icons/perform.png"); //$NON-NLS-1$
-	private ImageDescriptor pauseImage = getImageDescriptor("icons/pause.gif"); //$NON-NLS-1$
+	ImageDescriptor playImage = getImageDescriptor("icons/perform.png"); //$NON-NLS-1$
+	ImageDescriptor pauseImage = getImageDescriptor("icons/pause.gif"); //$NON-NLS-1$
+
+	private IMenuManager menu;
+	private IMenuManager gotoMenu;
+	private IMenuManager view;
+	private IMenuManager animation;
+	private IMenuManager markers; // Unused
+	private IMenuManager saveMenu;
+	public IToolBarManager mgr;
 
 	private Composite graphComp;
 	private Composite treeComp;
@@ -103,8 +115,12 @@ public class CallgraphView extends SystemTapView {
 	@Override
 	public IStatus initializeView(Display targetDisplay, IProgressMonitor monitor) {
 
-		if (targetDisplay == null && Display.getCurrent() == null) {
-			Display.getDefault();
+		Display disp = targetDisplay;
+		if (disp == null) {
+			disp = Display.getCurrent();
+		}
+		if (disp == null) {
+			disp = Display.getDefault();
 		}
 
 		treeSize = 200;
@@ -124,6 +140,7 @@ public class CallgraphView extends SystemTapView {
 		papaGD.widthHint=160;
 		papaCanvas.setLayoutData(papaGD);
 
+
 		//Add first button
 		Image image = getImageDescriptor("icons/up.gif").createImage(); //$NON-NLS-1$
 		Button up = new Button(papaCanvas, SWT.PUSH);
@@ -134,8 +151,10 @@ public class CallgraphView extends SystemTapView {
 		up.setImage(image);
 		up.setToolTipText(Messages.getString("CallgraphView.ThumbNailUp")); //$NON-NLS-1$
 
+
 		//Add thumb canvas
 		Canvas thumbCanvas = new Canvas(papaCanvas, SWT.NONE);
+
 
 		//Add second button
 		image = getImageDescriptor("icons/down.gif").createImage(); //$NON-NLS-1$
@@ -147,6 +166,7 @@ public class CallgraphView extends SystemTapView {
 		down.setImage(image);
 		down.setToolTipText(Messages.getString("CallgraphView.ThumbNailDown")); //$NON-NLS-1$
 
+
 		//Initialize graph
 		g = new StapGraph(graphComp, SWT.BORDER, treeComp, papaCanvas, this);
 		g.setLayoutData(new GridData(masterComposite.getBounds().width,Display.getCurrent().getBounds().height - treeSize));
@@ -155,6 +175,7 @@ public class CallgraphView extends SystemTapView {
 				AutoScrollSelectionListener.AUTO_SCROLL_UP, g));
 		down.addSelectionListener(new AutoScrollSelectionListener(
 				AutoScrollSelectionListener.AUTO_SCROLL_DOWN, g));
+
 
 		//Initialize thumbnail
 		GridData thumbGD = new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
@@ -186,7 +207,7 @@ public class CallgraphView extends SystemTapView {
 
 
 		/*
-		 * Load graph data
+		 *                Load graph data
 		 */
 	    for (int id_parent : parser.serialMap.keySet()) {
 	    	if (id_parent < 0) {
@@ -259,10 +280,10 @@ public class CallgraphView extends SystemTapView {
 
 
 	    if (g.aggregateTime == null) {
-	    	g.aggregateTime = new HashMap<>();
+	    	g.aggregateTime = new HashMap<String, Long>();
 	    }
 		if (g.aggregateCount == null) {
-	    	g.aggregateCount = new HashMap<>();
+	    	g.aggregateCount = new HashMap<String, Integer>();
 		}
 
 	    g.aggregateCount.putAll(parser.countMap);
@@ -291,13 +312,13 @@ public class CallgraphView extends SystemTapView {
 	private IStatus finishLoad(IProgressMonitor monitor) {
 
 		if (g.aggregateCount == null) {
-	    	g.aggregateCount = new HashMap<>();
+	    	g.aggregateCount = new HashMap<String, Integer>();
 		}
 
 	    g.aggregateCount.putAll(parser.countMap);
 
 	    if (g.aggregateTime == null) {
-	    	g.aggregateTime = new HashMap<>();
+	    	g.aggregateTime = new HashMap<String, Long>();
 	    }
 	    g.aggregateTime.putAll(parser.aggregateTimeMap);
 
@@ -330,7 +351,7 @@ public class CallgraphView extends SystemTapView {
 	 * Enable or Disable the graph options
 	 * @param visible
 	 */
-	private void setGraphOptions (boolean visible){
+	public  void setGraphOptions (boolean visible){
 		play.setEnabled(visible);
 		saveFile.setEnabled(visible);
 		saveDot.setEnabled(visible);
@@ -359,7 +380,7 @@ public class CallgraphView extends SystemTapView {
 
 
 
-	private void makeTreeComp(int treeSize) {
+	public  void makeTreeComp(int treeSize) {
 		if (treeComp != null && !treeComp.isDisposed()) {
 			treeComp.dispose();
 		}
@@ -371,7 +392,7 @@ public class CallgraphView extends SystemTapView {
 		treeComp.setLayoutData(treegd);
 	}
 
-	private void makeGraphComp() {
+	public  void makeGraphComp() {
 		if (graphComp != null && !graphComp.isDisposed()) {
 			graphComp.dispose();
 		}
@@ -403,53 +424,7 @@ public class CallgraphView extends SystemTapView {
 		graphComp.setSize(masterComposite.getSize().x ,masterComposite.getSize().y);
 	}
 
-	/**
-	 * The action performed by saveText.
-	 */
-	private void saveTextAction() {
-		//Prints an 80 char table
-        Shell sh = new Shell();
-        FileDialog dialog = new FileDialog(sh, SWT.SAVE);
-        String filePath = dialog.open();
 
-        if (filePath == null) {
-        	return;
-        }
-        File f = new File(filePath);
-        f.delete();
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(f))) {
-        	f.createNewFile();
-			StringBuilder builder = new StringBuilder();
-			builder.append("                           Function                           | Called |  Time\n"); //$NON-NLS-1$
-
-			for (StapData k : g.nodeDataMap.values()) {
-        		if ( (!k.isCollapsed ) && !k.isOnlyChildWithThisName()) {
-        			continue;
-        		}
-				if (k.isCollapsed) {
-					StringBuilder name = new StringBuilder(k.name);
-					name = fixString(name, 60);
-					builder.append(" " + name + " | "); //$NON-NLS-1$ //$NON-NLS-2$
-
-					StringBuilder called = new StringBuilder("" + k.timesCalled); //$NON-NLS-1$
-					called = fixString(called, 6);
-
-					StringBuilder time = new StringBuilder("" + //$NON-NLS-1$
-							StapNode.numberFormat.format((float) k.getTime()/g.getTotalTime() * 100)
-							+ "%"); //$NON-NLS-1$
-					time = fixString(time, 6);
-
-					builder.append(called + " | " + time + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-
-				if (builder.length() > 0) {
-					out.append(builder.toString());
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * This is a callback that will allow us to create the viewer and
@@ -472,11 +447,11 @@ public class CallgraphView extends SystemTapView {
 		createActions();
 
 		//MENU FOR SYSTEMTAP BUTTONS
-		IToolBarManager mgr = getViewSite().getActionBars().getToolBarManager();
+		mgr = getViewSite().getActionBars().getToolBarManager();
 
 
 		//MENU FOR SYSTEMTAP GRAPH OPTIONS
-		IMenuManager menu = getViewSite().getActionBars().getMenuManager();
+		menu = getViewSite().getActionBars().getMenuManager();
 
 		// ADD OPTIONS TO THE GRAPH MENU
 		addFileMenu();
@@ -506,19 +481,67 @@ public class CallgraphView extends SystemTapView {
 		saveText = new Action (Messages.getString("CallgraphView.SaveCollapsedAsASCII")) { //$NON-NLS-1$
 			@Override
 			public void run() {
-				saveTextAction();
+				//Prints an 80 char table
+		        Shell sh = new Shell();
+		        FileDialog dialog = new FileDialog(sh, SWT.SAVE);
+		        String filePath = dialog.open();
+
+		        if (filePath == null) {
+		        	return;
+		        }
+		        File f = new File(filePath);
+		        f.delete();
+        		try {
+	            	f.createNewFile();
+					BufferedWriter out = new BufferedWriter(new FileWriter(f));
+					StringBuilder builder = new StringBuilder();
+					builder.append("                           Function                           | Called |  Time\n"); //$NON-NLS-1$
+
+					for (StapData k : g.nodeDataMap.values()) {
+	            		if ( (!k.isCollapsed ) && !k.isOnlyChildWithThisName()) {
+	            			continue;
+	            		}
+						if (k.isCollapsed) {
+							StringBuilder name = new StringBuilder(k.name);
+							name = fixString(name, 60);
+							builder.append(" " + name + " | "); //$NON-NLS-1$ //$NON-NLS-2$
+
+							StringBuilder called = new StringBuilder("" + k.timesCalled); //$NON-NLS-1$
+							called = fixString(called, 6);
+
+							StringBuilder time = new StringBuilder("" + //$NON-NLS-1$
+									StapNode.numberFormat.format((float) k.getTime()/g.getTotalTime() * 100)
+									+ "%"); //$NON-NLS-1$
+							time = fixString(time, 6);
+
+							builder.append(called + " | " + time + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+						}
+						if (builder.length() > 2000) {
+							out.append(builder.toString());
+							out.flush();
+							builder.setLength(0);
+						}
+					}
+
+					if (builder.length() > 0) {
+						out.append(builder.toString());
+					}
+					out.close();
+		        } catch (IOException e) {
+		        	e.printStackTrace();
+		        }
 			}
 		};
-		IMenuManager saveMenu = new MenuManager(Messages.getString("CallgraphView.SaveMenu")); //$NON-NLS-1$
+		saveMenu = new MenuManager(Messages.getString("CallgraphView.SaveMenu")); //$NON-NLS-1$
 		file.add(saveMenu);
 		saveMenu.add(saveCurDot);
 		saveMenu.add(saveColDot);
 		saveMenu.add(saveText);
 		saveMenu.add(saveDot);
-		IMenuManager view = new MenuManager(Messages.getString("CallgraphView.ViewMenu")); //$NON-NLS-1$
-		IMenuManager animation = new MenuManager(Messages.getString("CallgraphView.AnimationMenu")); //$NON-NLS-1$
-		IMenuManager markers = new MenuManager(Messages.getString("CallgraphView.Markers")); //$NON-NLS-1$
-		IMenuManager gotoMenu = new MenuManager(Messages.getString("CallgraphView.GoTo")); //$NON-NLS-1$
+		view = new MenuManager(Messages.getString("CallgraphView.ViewMenu")); //$NON-NLS-1$
+		animation = new MenuManager(Messages.getString("CallgraphView.AnimationMenu")); //$NON-NLS-1$
+		markers = new MenuManager(Messages.getString("CallgraphView.Markers")); //$NON-NLS-1$
+		gotoMenu = new MenuManager(Messages.getString("CallgraphView.GoTo")); //$NON-NLS-1$
 		menu.add(view);
 		menu.add(gotoMenu);
 		addHelpMenu();
@@ -557,7 +580,7 @@ public class CallgraphView extends SystemTapView {
 	}
 
 
-	private static StringBuilder fixString(StringBuilder name, int length) {
+	public StringBuilder fixString(StringBuilder name, int length) {
 		if (name.length() > length) {
 			name = new StringBuilder(name.substring(0, length - 1));
 		} else {
@@ -578,7 +601,7 @@ public class CallgraphView extends SystemTapView {
 	}
 
 
-	private void createViewActions() {
+	public void createViewActions() {
 		viewTreeview = new Action(Messages.getString("CallgraphView.TreeView")){ //$NON-NLS-1$
 			@Override
 			public void run() {
@@ -641,21 +664,46 @@ public class CallgraphView extends SystemTapView {
 		viewLevelview.setImageDescriptor(levelImage);
 
 
-		this.viewRefresh = new Action(Messages.getString("CallgraphView.Reset")){ //$NON-NLS-1$
+		setViewRefresh(new Action(Messages.getString("CallgraphView.Reset")){ //$NON-NLS-1$
 			@Override
 			public void run(){
 				g.reset();
 			}
-		};
+		});
 		ImageDescriptor refreshImage = getImageDescriptor("/icons/nav_refresh.gif"); //$NON-NLS-1$
 		getViewRefresh().setImageDescriptor(refreshImage);
 
 	}
 
+
+	public void stapPermissionError() {
+		Process p = null;
+		try {
+			p = new ProcessBuilder("/usr/bin/bash", "-c", "whoami").start(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		InputStreamReader isr = new InputStreamReader(p.getInputStream());
+		BufferedReader br = new BufferedReader(isr);
+		String user = null;
+		try {
+			user = br.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		SystemTapUIErrorMessages message = new SystemTapUIErrorMessages(
+				Messages.getString("CallgraphView.StapError1"),
+				Messages.getString("CallgraphView.StapError1"), NLS.bind(
+						Messages.getString("CallgraphView.StapError2"), user));
+		message.schedule();
+	}
 	/**
 	 * Populates Animate menu.
 	 */
-	private void createAnimateActions() {
+	public void createAnimateActions() {
 		//Set animation mode to slow
 		animationSlow = new Action(Messages.getString("CallgraphView.AnimationSlow"), IAction.AS_RADIO_BUTTON){ //$NON-NLS-1$
 			@Override
@@ -766,7 +814,7 @@ public class CallgraphView extends SystemTapView {
 /**
  * Convenience method for creating all the various actions
  */
-	private void createActions() {
+	public void createActions() {
 		createViewActions();
 		createAnimateActions();
 		createMarkerActions();
@@ -776,7 +824,7 @@ public class CallgraphView extends SystemTapView {
 
 	}
 
-	private void createMovementActions() {
+	public void createMovementActions() {
 		gotoNext = new Action(Messages.getString("CallgraphView.Next")) { //$NON-NLS-1$
 			@Override
 			public void run() {
@@ -821,7 +869,7 @@ public class CallgraphView extends SystemTapView {
 	 * Toggles the play/pause image
 	 * @param play
 	 */
-	private void togglePlayImage() {
+	protected void togglePlayImage() {
 		if (play.getToolTipText() == Messages.getString("CallgraphView.Pause")) { //$NON-NLS-1$
 			play.setImageDescriptor(playImage);
 			play.setToolTipText(Messages.getString("CallgraphView.Play")); //$NON-NLS-1$
@@ -832,7 +880,7 @@ public class CallgraphView extends SystemTapView {
 		}
 	}
 
-	private void createMarkerActions() {
+	public void createMarkerActions() {
 		markersNext = new Action(Messages.getString("CallgraphView.nextMarker")) { //$NON-NLS-1$
 			@Override
 			public void run() {
@@ -898,16 +946,34 @@ public class CallgraphView extends SystemTapView {
 		viewID = "org.eclipse.linuxtools.callgraph.callgraphview";		 //$NON-NLS-1$
 	}
 
+
+
 	public  Action getAnimationSlow() {
 		return animationSlow;
+	}
+
+	public  void setAnimation_slow(Action animationSlow) {
+		this.animationSlow = animationSlow;
 	}
 
 	public  Action getAnimationFast() {
 		return animationFast;
 	}
 
+	public  void setAnimation_fast(Action animationFast) {
+		this.animationFast = animationFast;
+	}
+
+	public  IMenuManager getAnimation() {
+		return animation;
+	}
+
 	public  Action getModeCollapsednodes() {
 		return modeCollapsedNodes;
+	}
+
+	public  void setViewRefresh(Action viewRefresh) {
+		this.viewRefresh = viewRefresh;
 	}
 
 	public  Action getViewRefresh() {
@@ -993,7 +1059,8 @@ public class CallgraphView extends SystemTapView {
 				return;
 			}
 
-            try (BufferedWriter out = new BufferedWriter(new FileWriter(f))) {
+            try {
+				BufferedWriter out = new BufferedWriter(new FileWriter(f));
 				StringBuilder build = new StringBuilder(""); //$NON-NLS-1$
 
 				out.write("digraph stapgraph {\n"); //$NON-NLS-1$
@@ -1024,6 +1091,9 @@ public class CallgraphView extends SystemTapView {
             	}
             	out.write("}"); //$NON-NLS-1$
             	out.flush();
+            	out.close();
+            } catch (FileNotFoundException e) {
+            	e.printStackTrace();
             } catch (IOException e) {
 				e.printStackTrace();
 			}

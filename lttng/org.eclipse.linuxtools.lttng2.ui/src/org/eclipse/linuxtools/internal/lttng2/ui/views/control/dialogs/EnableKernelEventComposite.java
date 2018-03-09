@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Marc-Andre Laperle - Add filtering textbox
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs;
 
@@ -19,7 +18,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.ITraceControlComponent;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.BaseEventComponent;
@@ -38,8 +36,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.dialogs.FilteredTree;
-import org.eclipse.ui.dialogs.PatternFilter;
 
 /**
  * <p>
@@ -186,7 +182,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
 
     @Override
     public List<String> getEventNames() {
-        return new ArrayList<>(fSelectedEvents);
+        return new ArrayList<String>(fSelectedEvents);
     }
 
     @Override
@@ -256,7 +252,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
 
         // initialize tracepoint fields
         fIsAllTracepoints = false;
-        fSelectedEvents = new ArrayList<>();
+        fSelectedEvents = new ArrayList<String>();
 
         if (fIsTracepoints) {
             List<ITraceControlComponent> comps = fProviderGroup.getChildren(KernelProviderComponent.class);
@@ -348,21 +344,15 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
         data = new GridData(GridData.FILL_BOTH);
         tracepointsGroup.setLayoutData(data);
 
-        new FilteredTree(tracepointsGroup, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER, new PatternFilter(), true) {
-            @Override
-            protected TreeViewer doCreateTreeViewer(Composite aparent, int style) {
-                fTracepointsViewer = new CheckboxTreeViewer(aparent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-                fTracepointsViewer.getTree().setToolTipText(Messages.TraceControl_EnableEventsTracepointTreeTooltip);
+        fTracepointsViewer = new CheckboxTreeViewer(tracepointsGroup, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+        fTracepointsViewer.getTree().setToolTipText(Messages.TraceControl_EnableEventsTracepointTreeTooltip);
 
-                fTracepointsViewer.setContentProvider(new KernelContentProvider());
-                fTracepointsViewer.setLabelProvider(new KernelLabelProvider());
-                fTracepointsViewer.addCheckStateListener(new KernelCheckListener());
-                fTracepointsViewer.setInput(fProviderGroup);
+        fTracepointsViewer.setContentProvider(new KernelContentProvider());
+        fTracepointsViewer.setLabelProvider(new KernelLabelProvider());
+        fTracepointsViewer.addCheckStateListener(new KernelCheckListener());
+        fTracepointsViewer.setInput(fProviderGroup);
 
-                fTracepointsViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
-                return fTracepointsViewer;
-            }
-        };
+        fTracepointsViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
     /**

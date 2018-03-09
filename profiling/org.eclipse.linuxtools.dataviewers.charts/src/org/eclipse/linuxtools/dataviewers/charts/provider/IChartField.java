@@ -14,14 +14,17 @@ import org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField;
 
 /**
  * The interface used by the charts to get a <code>Number</code> data from a field.
+ * 
+ * @author Marzia Maugeri <marzia.maugeri@st.com>
+ * 
  */
 public interface IChartField extends ISTDataViewersField {
 
     /**
      * Returns the number to display in the chart for this object.
-     *
+     * 
      * @param obj
      * @return the corresponding number value
      */
-    Number getNumber(Object obj);
+    public Number getNumber(Object obj);
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
@@ -32,7 +31,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStartAnalysisSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.osgi.util.NLS;
 
 /**
@@ -44,15 +43,13 @@ import org.eclipse.osgi.util.NLS;
  */
 public abstract class TmfAbstractAnalysisModule extends TmfComponent implements IAnalysisModule {
 
-    @NonNull private static final String UNDEFINED_ID = "undefined"; //$NON-NLS-1$
-
     private String fName, fId;
     private boolean fAutomatic = false, fStarted = false;
     private ITmfTrace fTrace;
-    private final Map<String, Object> fParameters = new HashMap<>();
-    private final List<String> fParameterNames = new ArrayList<>();
-    private final List<IAnalysisOutput> fOutputs = new ArrayList<>();
-    private List<IAnalysisParameterProvider> fParameterProviders = new ArrayList<>();
+    private final Map<String, Object> fParameters = new HashMap<String, Object>();
+    private final List<String> fParameterNames = new ArrayList<String>();
+    private final List<IAnalysisOutput> fOutputs = new ArrayList<IAnalysisOutput>();
+    private List<IAnalysisParameterProvider> fParameterProviders = new ArrayList<IAnalysisParameterProvider>();
     private Job fJob = null;
 
     private final Object syncObj = new Object();
@@ -83,14 +80,8 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     }
 
     @Override
-    @NonNull
     public String getId() {
-        String id = fId;
-        if (id == null) {
-            Activator.logError("Analysis module getId(): the id should not be null in class " + this.getClass().getSimpleName()); //$NON-NLS-1$
-            return UNDEFINED_ID;
-        }
-        return id;
+        return fId;
     }
 
     @Override
@@ -190,7 +181,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
      * Set the countdown latch back to 1 so the analysis can be executed again
      */
     protected void resetAnalysis() {
-        fFinishedLatch.countDown();
         fFinishedLatch = new CountDownLatch(1);
     }
 
@@ -222,6 +212,9 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
         fStarted = false;
         fJob = null;
         fFinishedLatch.countDown();
+        if (fTrace instanceof TmfTrace) {
+            ((TmfTrace) fTrace).refreshSupplementaryFiles();
+        }
     }
 
     /**
@@ -238,12 +231,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
             }
             fStarted = false;
         }
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        cancel();
     }
 
     private void execute() {
@@ -267,7 +254,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
             fStarted = true;
         }
 
-        final ITmfTrace trace = fTrace;
         /*
          * Actual analysis will be run on a separate thread
          */
@@ -285,13 +271,10 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
                         monitor.done();
                         setAnalysisCompleted();
                     }
-                    TmfTraceManager.refreshSupplementaryFiles(trace);
                 }
                 if (!fAnalysisCancelled) {
                     return Status.OK_STATUS;
                 }
-                // Reset analysis so that it can be executed again.
-                resetAnalysis();
                 return Status.CANCEL_STATUS;
             }
 
@@ -315,8 +298,8 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     }
 
     @Override
-    public Iterable<IAnalysisOutput> getOutputs() {
-        return fOutputs;
+    public List<IAnalysisOutput> getOutputs() {
+        return Collections.unmodifiableList(fOutputs);
     }
 
     @Override
@@ -327,20 +310,10 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     }
 
     @Override
-    public boolean waitForCompletion() {
-        try {
-            fFinishedLatch.await();
-        } catch (InterruptedException e) {
-            Activator.logError("Error while waiting for module completion", e); //$NON-NLS-1$
-        }
-        return !fAnalysisCancelled;
-    }
-
-    @Override
     public boolean waitForCompletion(IProgressMonitor monitor) {
         try {
-            while (!fFinishedLatch.await(500, TimeUnit.MILLISECONDS)) {
-                if (fAnalysisCancelled || monitor.isCanceled()) {
+            while (!fFinishedLatch.await(1, TimeUnit.MILLISECONDS)) {
+                if (monitor.isCanceled()) {
                     fAnalysisCancelled = true;
                     return false;
                 }
@@ -416,8 +389,4 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
         return text;
     }
 
-    @Override
-    public Iterable<TmfAnalysisRequirement> getAnalysisRequirements() {
-        return Collections.EMPTY_SET;
-    }
 }

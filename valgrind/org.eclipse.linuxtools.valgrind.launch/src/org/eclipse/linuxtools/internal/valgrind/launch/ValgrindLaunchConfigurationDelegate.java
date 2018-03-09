@@ -62,12 +62,13 @@ import org.osgi.framework.Version;
 
 public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurationDelegate {
 
-	private static final String NO = "no"; //$NON-NLS-1$
-	private static final String YES = "yes"; //$NON-NLS-1$
-	private static final String EQUALS = "="; //$NON-NLS-1$
+	protected static final String EMPTY_STRING = ""; //$NON-NLS-1$
+	protected static final String NO = "no"; //$NON-NLS-1$
+	protected static final String YES = "yes"; //$NON-NLS-1$
+	protected static final String EQUALS = "="; //$NON-NLS-1$
 
-	private static final String LOG_FILE = CommandLineConstants.LOG_PREFIX + "%p.txt"; //$NON-NLS-1$
-	private static final FileFilter LOG_FILTER = new FileFilter() {
+	protected static final String LOG_FILE = CommandLineConstants.LOG_PREFIX + "%p.txt"; //$NON-NLS-1$
+	protected static final FileFilter LOG_FILTER = new FileFilter() {
 		@Override
 		public boolean accept(File pathname) {
 			return pathname.getName().startsWith(CommandLineConstants.LOG_PREFIX);
@@ -137,7 +138,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 			// set the default source locator if required
 			setDefaultSourceLocator(launch, config);
 
-			ArrayList<String> cmdLine = new ArrayList<>(1 + arguments.length);
+			ArrayList<String> cmdLine = new ArrayList<String>(1 + arguments.length);
 			cmdLine.add(valgrindCommand);
 			cmdLine.addAll(Arrays.asList(opts));
 			cmdLine.add(exePath.toOSString());
@@ -152,7 +153,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 			}
 			// call Valgrind
 
-			command.execute(commandArray, getEnvironment(config), workDir, usePty, project);
+			command.execute(commandArray, getEnvironment(config), workDir, valgrindCommand, usePty, project);
 			monitor.worked(3);
 			process = createNewProcess(launch, command.getProcess(), commandArray[0]);
 			// set the command line used
@@ -206,7 +207,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 	}
 
 	protected IValgrindMessage[] parseLogs(IPath outputPath) throws IOException, CoreException {
-		List<IValgrindMessage> messages = new ArrayList<>();
+		List<IValgrindMessage> messages = new ArrayList<IValgrindMessage>();
 
 		for (File log : outputPath.toFile().listFiles(LOG_FILTER)) {
 			ValgrindCoreParser parser = new ValgrindCoreParser(log, launch);
@@ -223,10 +224,10 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 		return messages.toArray(new IValgrindMessage[messages.size()]);
 	}
 
-	private void createMarkers(IValgrindMessage[] messages) throws CoreException {
+	protected void createMarkers(IValgrindMessage[] messages) throws CoreException {
 		// find the topmost stack frame within the workspace to annotate with marker
 		// traverse nested errors as well
-		Stack<IValgrindMessage> messageStack = new Stack<>();
+		Stack<IValgrindMessage> messageStack = new Stack<IValgrindMessage>();
 		messageStack.addAll(Arrays.asList(messages));
 		while (!messageStack.isEmpty()) {
 			IValgrindMessage message = messageStack.pop();
@@ -289,7 +290,7 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 		return getPlugin().getToolDelegate(toolID);
 	}
 
-	private IPath verifyOutputPath(ILaunchConfiguration config) throws CoreException {
+	protected IPath verifyOutputPath(ILaunchConfiguration config) throws CoreException {
 		IPath result = null;
 		String strPath = config.getAttribute(LaunchConfigurationConstants.ATTR_INTERNAL_OUTPUT_DIR, (String) null);
 		if (strPath != null) {
@@ -317,17 +318,18 @@ public class ValgrindLaunchConfigurationDelegate extends ProfileLaunchConfigurat
 					throw new IOException(NLS.bind(Messages.getString("ValgrindOutputDirectory.Couldnt_delete"), outputFile.getAbsolutePath())); //$NON-NLS-1$
 				}
 			}
-		} else if (!outputDir.mkdir()) {
+		}
+		else if (!outputDir.mkdir()) {
 			throw new IOException(NLS.bind(Messages.getString("ValgrindOutputDirectory.Couldnt_create"), outputDir.getAbsolutePath())); //$NON-NLS-1$
 		}
 	}
 
-	private String createLaunchStr() {
+	protected String createLaunchStr() {
 		return config.getName() + " [" + getPlugin().getToolName(toolID) + "] " + process.getLabel(); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	protected String[] getValgrindArgumentsArray(ILaunchConfiguration config) throws CoreException {
-		ArrayList<String> opts = new ArrayList<>();
+		ArrayList<String> opts = new ArrayList<String>();
 		opts.add(CommandLineConstants.OPT_TOOL + EQUALS + getPlugin().getToolName(toolID));
 		opts.add(CommandLineConstants.OPT_QUIET); // suppress uninteresting output
 		opts.add(CommandLineConstants.OPT_LOGFILE + EQUALS + outputPath.append(LOG_FILE).toOSString());

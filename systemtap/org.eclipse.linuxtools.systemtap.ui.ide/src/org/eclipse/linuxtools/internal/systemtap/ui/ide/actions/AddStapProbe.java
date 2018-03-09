@@ -24,7 +24,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
-import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.editor.actions.file.NewFileAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
@@ -71,7 +71,7 @@ public class AddStapProbe extends AbstractRulerActionDelegate {
 
 				// gogo find comment segments
 				try {
-					ArrayList<Integer> commentChunks = new ArrayList<>();
+					ArrayList<Integer> commentChunks = new ArrayList<Integer>();
 					char[] chars = s.toCharArray();
 					int needle = 1;
 					int offset = document.getLineOffset(lineno);

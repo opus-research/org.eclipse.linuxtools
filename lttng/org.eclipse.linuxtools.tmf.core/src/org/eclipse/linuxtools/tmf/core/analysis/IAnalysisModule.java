@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,10 +12,10 @@
 
 package org.eclipse.linuxtools.tmf.core.analysis;
 
+import java.util.List;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.tmf.core.component.ITmfComponent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -42,7 +42,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Geneviève Bastien
  * @since 3.0
  */
-public interface IAnalysisModule extends ITmfComponent, IAnalysisRequirementProvider {
+public interface IAnalysisModule {
 
     // --------------------------------------------------------
     // Getters and setters
@@ -57,6 +57,13 @@ public interface IAnalysisModule extends ITmfComponent, IAnalysisRequirementProv
     void setName(String name);
 
     /**
+     * Gets the name of the analysis module
+     *
+     * @return Name of the module
+     */
+    String getName();
+
+    /**
      * Sets the id of the module
      *
      * @param id
@@ -69,7 +76,6 @@ public interface IAnalysisModule extends ITmfComponent, IAnalysisRequirementProv
      *
      * @return The id of the module
      */
-    @NonNull
     String getId();
 
     /**
@@ -159,7 +165,7 @@ public interface IAnalysisModule extends ITmfComponent, IAnalysisRequirementProv
      *
      * @return The list of {@link IAnalysisOutput}
      */
-    Iterable<IAnalysisOutput> getOutputs();
+    List<IAnalysisOutput> getOutputs();
 
     /**
      * Registers an output for this analysis
@@ -168,15 +174,6 @@ public interface IAnalysisModule extends ITmfComponent, IAnalysisRequirementProv
      *            The {@link IAnalysisOutput} object
      */
     void registerOutput(IAnalysisOutput output);
-
-    /**
-     * Block the calling thread until this analysis has completed (or has been
-     * cancelled).
-     *
-     * @return True if the analysis finished successfully, false if it was
-     *         cancelled.
-     */
-    boolean waitForCompletion();
 
     /**
      * Typically the output of an analysis will be available only after it is
@@ -199,7 +196,7 @@ public interface IAnalysisModule extends ITmfComponent, IAnalysisRequirementProv
     /**
      * Cancels the current analysis
      */
-    void cancel();
+    public void cancel();
 
     // -----------------------------------------------------
     // Utilities
@@ -239,4 +236,5 @@ public interface IAnalysisModule extends ITmfComponent, IAnalysisRequirementProv
      *            The of the parameter that changed
      */
     void notifyParameterChanged(String name);
+
 }

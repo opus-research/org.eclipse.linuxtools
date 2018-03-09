@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 École Polytechnique de Montréal
+ * Copyright (c) 2013 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -77,18 +77,18 @@ public class SynchronizeTracesHandler extends AbstractHandler {
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
         if (part == null) {
-            return Boolean.FALSE;
+            return false;
         }
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
-            return Boolean.FALSE;
+            return false;
         }
         ISelection selection = selectionProvider.getSelection();
 
         // Make sure selection contains only traces
         fSelection = null;
-        final ArrayList<TmfTraceElement> tl = new ArrayList<>();
-        final ArrayList<TmfExperimentElement> uiexperiment = new ArrayList<>();
+        final ArrayList<TmfTraceElement> tl = new ArrayList<TmfTraceElement>();
+        final ArrayList<TmfExperimentElement> uiexperiment = new ArrayList<TmfExperimentElement>();
         if (selection instanceof TreeSelection) {
             fSelection = (TreeSelection) selection;
             Iterator<Object> iterator = fSelection.iterator();

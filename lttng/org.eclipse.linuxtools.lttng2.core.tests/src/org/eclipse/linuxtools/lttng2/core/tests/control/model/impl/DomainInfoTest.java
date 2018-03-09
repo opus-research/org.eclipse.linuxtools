@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -117,7 +117,7 @@ public class DomainInfoTest {
         assertEquals(fChannelInfo1, fDomainInfo1.getChannels()[0]);
 
         IDomainInfo domain = new DomainInfo("domain");
-        List<IChannelInfo> list = new LinkedList<>();
+        List<IChannelInfo> list = new LinkedList<IChannelInfo>();
         list.add(fChannelInfo1);
         list.add(fChannelInfo2);
         domain.setChannels(list);

@@ -34,8 +34,10 @@ import org.junit.Test;
 public class DoubleClickTest extends AbstractMassifTest {
 	private MassifHeapTreeNode node;
 
+	@Override
 	@Before
-	public void prep() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		proj = createProjectAndBuild("alloctest"); //$NON-NLS-1$
 	}
 

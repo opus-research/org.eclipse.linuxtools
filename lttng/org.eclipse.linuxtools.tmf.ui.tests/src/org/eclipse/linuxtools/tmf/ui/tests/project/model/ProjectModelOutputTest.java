@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
@@ -26,7 +25,6 @@ import org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisOutputElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
-import org.eclipse.linuxtools.tmf.ui.tests.shared.ProjectModelTestData;
 import org.eclipse.linuxtools.tmf.ui.tests.stubs.analysis.TestAnalysisUi;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
@@ -106,11 +104,7 @@ public class ProjectModelOutputTest {
 
         /* To get the list of outputs the trace needs to be opened */
         analysis.activateParent();
-        try {
-            ProjectModelTestData.delayUntilTraceOpened(analysis.getParent());
-        } catch (TimeoutException e) {
-            fail("The analysis parent did not open in a reasonable time");
-        }
+        ProjectModelTestData.delayThread(500);
 
         /* Make sure the output list is not empty */
         List<TmfAnalysisOutputElement> outputList = analysis.getAvailableOutputs();
@@ -135,11 +129,7 @@ public class ProjectModelOutputTest {
         TmfAnalysisElement analysis = getTestAnalysisUi();
 
         analysis.activateParent();
-        try {
-            ProjectModelTestData.delayUntilTraceOpened(analysis.getParent());
-        } catch (TimeoutException e) {
-            fail("The analysis parent did not open in a reasonable time");
-        }
+        ProjectModelTestData.delayThread(1000);
 
         List<TmfAnalysisOutputElement> outputList = analysis.getAvailableOutputs();
         assertFalse(outputList.isEmpty());

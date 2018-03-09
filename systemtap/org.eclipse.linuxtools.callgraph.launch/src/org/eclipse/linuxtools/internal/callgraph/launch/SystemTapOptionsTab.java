@@ -36,12 +36,13 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.callgraph.core.LaunchConfigurationConstants;
 import org.eclipse.linuxtools.internal.callgraph.core.PluginConstants;
 import org.eclipse.linuxtools.internal.callgraph.core.SystemTapView;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -54,6 +55,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
@@ -76,45 +78,65 @@ import org.eclipse.ui.views.navigator.ResourceComparator;
  */
 public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 
+	//Control creation objects
+	protected Composite top;
+	protected ScrolledComposite scrollTop;
+	protected Combo toolsCombo;
+
+	protected TabFolder fileFolder;
+	protected TabFolder commandFolder;
+	protected TabFolder argumentsFolder;
+	protected TabFolder binaryArgumentsFolder;
+	protected TabFolder parserFolder;
+	protected TabFolder generatedScriptFolder;
+
 	//Controls
-	private Text scriptFile;
-	private Text binaryFile;
-	private Text arguments;
-	private Text outputFile;
-	private Text button_D_text;
-	private Text binaryArguments;
-	private Text parser;
-	private Text viewer;
+	protected Text scriptFile;
+	protected Text binaryFile;
+	protected Text arguments;
+	protected Text generatedScript;
+	protected Text outputFile;
+	protected Text button_D_text;
+	protected Text binaryArguments;
+	protected Text parser;
+	protected Text viewer;
 
-	private Button fileBrowseButton;
-	private Button workspaceBrowseButton;
-
-	private Button button_k;
-	private Button button_u;
-	private Button button_w;
-	private Button button_b;
-	private Button button_g;
-	private Button button_P;
-	private Button button_t;
-	private Button button_F;
-	private Button buttonSkipBadvars;
-	private Button buttonIgnoreDwarf;
-	private Button button_q;
-	private Button buttonGraphicsMode;
+	protected Button fileBrowseButton;
+	protected Button workspaceBrowseButton;
+	protected Button parserButton;
+	protected Button viewerButton;
 
 
-	private Spinner button_p_Spinner;
-	private Spinner button_s_Spinner;
-	private Spinner button_x_Spinner;
-	private Spinner button_v_Spinner;
+	protected Button button_k;
+	protected Button button_u;
+	protected Button button_w;
+	protected Button button_b;
+	protected Button button_g;
+	protected Button button_P;
+	protected Button button_t;
+	protected Button button_build;
+	protected Button button_F;
+	protected Button button_skip_badvars;
+	protected Button button_ignore_dwarf;
+	protected Button button_q;
+	protected Button needsBinaryButton;
+	protected Button needToGenerateScriptButton;
+	protected Button button_graphicsMode;
+
+
+	protected Spinner button_p_Spinner;
+	protected Spinner button_s_Spinner;
+	protected Spinner button_x_Spinner;
+	protected Spinner button_v_Spinner;
 
 	private Button useColourButton;
 
 	//Other variables
-	private String workspacePath;
-	private boolean outputFileHasChanged = false;
-	private boolean needsOverwritePermission = false;
-	private boolean overwritePermission = false;
+	protected String workspacePath;
+	protected String[] tools;
+	protected boolean output_file_has_changed = false;
+	protected boolean needsOverwritePermission = false;
+	protected boolean overwritePermission = false;
 	private boolean changeOverwrite = false;
 
 	/**
@@ -133,7 +155,7 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 	 * and a final
 	 */
 
-	private SelectionListener graphicsModeListener = new SelectionAdapter(){
+	protected SelectionListener graphicsModeListener = new SelectionAdapter(){
 		@Override
 		public void widgetSelected(SelectionEvent e) {
 			if (scriptFile.isEnabled()){
@@ -150,36 +172,36 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		}
 	};
 
-	private SelectionListener selectListener = new SelectionAdapter() {
+	protected SelectionListener selectListener = new SelectionAdapter() {
 		@Override
 		public void widgetSelected(SelectionEvent e) {
 			updateLaunchConfigurationDialog();
 		}
 	};
 
-	private ModifyListener modifyListener = new ModifyListener() {
+	protected ModifyListener modifyListener = new ModifyListener() {
 		@Override
 		public void modifyText(ModifyEvent e) {
 			updateLaunchConfigurationDialog();
 		}
 	};
 
-	private ModifyListener modifyListenerOutput = new ModifyListener() {
+	protected ModifyListener modifyListenerOutput = new ModifyListener() {
 		@Override
 		public void modifyText(ModifyEvent e) {
 			updateLaunchConfigurationDialog();
-			outputFileHasChanged = true;
+			output_file_has_changed = true;
 		}
 	};
 
-	private FocusListener focusListener = new FocusAdapter() {
+	protected FocusListener focusListener = new FocusAdapter() {
 
 		@Override
 		public void focusLost(FocusEvent e) {
-			if (outputFileHasChanged) {
+			if (output_file_has_changed) {
 				checkOverwrite();
 			}
-			outputFileHasChanged = false;
+			output_file_has_changed = false;
 
 			updateLaunchConfigurationDialog();
 		}
@@ -190,7 +212,7 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 	 *
 	 * Helps ensure validity of configuration.
 	 */
-	private void checkOverwrite() {
+	public void checkOverwrite() {
 		File f = new File(outputFile.getText());
 		changeOverwrite = true;
 		if (f.exists()) {
@@ -214,12 +236,23 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 	 */
 	@Override
 	public void createControl(Composite parent) {
+		scrollTop = new ScrolledComposite(parent,	SWT.H_SCROLL | SWT.V_SCROLL);
+		scrollTop.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		scrollTop.setExpandVertical(true);
+		scrollTop.setExpandHorizontal(true);
+
+		setControl(scrollTop);
+
+		top = new Composite(scrollTop, SWT.NONE);
+		top.setLayout(new GridLayout());
+
+		scrollTop.setContent(top);
+
 		/*
 		 * File folder - tab for selecting binary/stp file
 		 */
-		TabFolder fileFolder = new TabFolder(parent, SWT.BORDER);
+		fileFolder = new TabFolder(top, SWT.BORDER);
 		fileFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-		setControl(fileFolder);
 
 		TabItem fileTab = new TabItem(fileFolder, SWT.NONE);
 		fileTab.setText(Messages.getString("SystemTapOptionsTab.FilesTab")); //$NON-NLS-1$
@@ -233,8 +266,11 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 
 
 		/*
-		 * Commands tab - tab for selecting SystemTap commands
+		 * Commands folder - tab for selecting SystemTap commands
 		 */
+
+		commandFolder = new TabFolder(top, SWT.BORDER);
+		commandFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		TabItem commandTab = new TabItem(fileFolder, SWT.NONE);
 		commandTab.setText(Messages.getString("SystemTapOptionsTab.CommandsTab")); //$NON-NLS-1$
@@ -247,8 +283,11 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		commandTab.setControl(commandTop);
 
 		/*
-		 * Arguments tab - tab for selecting script arguments
+		 * Arguments folder - tab for selecting script arguments
 		 */
+		argumentsFolder = new TabFolder(top, SWT.BORDER);
+		argumentsFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
 		TabItem argumentsTab = new TabItem(fileFolder, SWT.NONE);
 		argumentsTab.setText(Messages.getString("SystemTapOptionsTab.Arguments")); //$NON-NLS-1$
 
@@ -261,8 +300,11 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 
 
 		/*
-		 * Binary Argument tab - tab for supplying arguments for a binary
+		 * Binary Argument folder - tab for supplying arguments for a binary
 		 */
+		binaryArgumentsFolder = new TabFolder(top, SWT.BORDER);
+		binaryArgumentsFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
 		TabItem binaryArgumentsTab = new TabItem(fileFolder, SWT.NONE);
 		binaryArgumentsTab.setText(Messages.getString("SystemTapOptionsTab.44")); //$NON-NLS-1$
 
@@ -275,8 +317,11 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 
 
 		/*
-		 * Parser tab -- Tab for selecting a parser and viewer to use
+		 * Parser folder -- Tab for selecting a parser and viewer to use
 		 */
+		parserFolder = new TabFolder(top, SWT.BORDER);
+		parserFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
 		TabItem parserTab = new TabItem(fileFolder, SWT.NONE);
 		parserTab.setText("Parser"); //$NON-NLS-1$
 
@@ -318,7 +363,7 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		parser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		parser.addModifyListener(modifyListener);
 
-		Button parserButton = createPushButton(browseTop,
+		parserButton = createPushButton(browseTop,
 				"Find parsers", null);  //$NON-NLS-1$
 		parserButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -345,7 +390,7 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		viewer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		viewer.addModifyListener(modifyListener);
 
-		Button viewerButton = createPushButton(browseTop,
+		viewerButton = createPushButton(browseTop,
 				"Find viewers", null);  //$NON-NLS-1$
 		viewerButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -358,7 +403,7 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 				IConfigurationElement[] extensions = reg
 						.getConfigurationElementsFor(PluginConstants.VIEW_RESOURCE,
 								PluginConstants.VIEW_NAME);
-				ArrayList<IConfigurationElement> ext = new ArrayList<>();
+				ArrayList<IConfigurationElement> ext = new ArrayList<IConfigurationElement>();
 				for (IConfigurationElement el : extensions) {
 					if (!el.getNamespaceIdentifier().contains("org.eclipse.linuxtools")) //$NON-NLS-1$
 						continue;
@@ -382,7 +427,32 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 
 	}
 
-	private void createArgumentsOption(Composite argumentsTop) {
+	protected void createGeneratedScriptOption(Composite generatedScriptTop) {
+		Composite browseTop = new Composite(generatedScriptTop, SWT.NONE);
+		browseTop.setLayout(new GridLayout(1, false));
+		GridData browseData = new GridData(GridData.FILL_HORIZONTAL);
+		browseTop.setLayoutData(browseData);
+
+
+		Label suppFileLabel = new Label(browseTop, SWT.NONE);
+		suppFileLabel.setText(Messages.getString("SystemTapOptionsTab.GeneratedScriptsTitle")); //$NON-NLS-1$
+
+		generatedScript = new Text(browseTop,SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL);
+
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.heightHint = 200;
+		generatedScript.setLayoutData(gd);
+		generatedScript.addModifyListener(modifyListener);
+
+		needToGenerateScriptButton = new Button(browseTop, SWT.CHECK);
+		needToGenerateScriptButton.setText(Messages.getString("SystemTapOptionsTab.GenerateScriptButton"));  //$NON-NLS-1$
+		needToGenerateScriptButton.addSelectionListener(selectListener);
+		needToGenerateScriptButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+
+	}
+
+	protected void createArgumentsOption(Composite argumentsTop) {
 		Composite browseTop = new Composite(argumentsTop, SWT.NONE);
 		browseTop.setLayout(new GridLayout(1, false));
 		GridData browseData = new GridData(GridData.FILL_HORIZONTAL);
@@ -409,7 +479,7 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		});
 	}
 
-	private void createFileOption(Composite top) {
+	protected void createFileOption(Composite top) {
 		Composite browseTop = new Composite(top, SWT.NONE);
 		browseTop.setLayout(new GridLayout(4, false));
 		browseTop.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -544,75 +614,99 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 
 
 
-	private void createCommandOption(Composite top) {
+	protected void createCommandOption(Composite top) {
+		Composite browseTop = new Composite(top, SWT.NONE);
+		browseTop.setLayout(new GridLayout(3, false));
+		GridData browseData = new GridData(GridData.FILL_HORIZONTAL);
+		browseTop.setLayoutData(browseData);
+
 		Composite buttonsTop = new Composite(top, SWT.NONE);
-		GridLayout gl = new GridLayout(2, true);
+		GridLayout gl = new GridLayout(2, false);
+		gl.horizontalSpacing = PluginConstants.SYSTEMTAP_OPTIONS_TAB_HORIZONTAL_SPACING;
 		buttonsTop.setLayout( gl );
-		GridData buttonsData = new GridData(SWT.FILL, SWT.BEGINNING, true, true);
+		GridData buttonsData = new GridData(SWT.CENTER, SWT.BEGINNING, true, true);
+		buttonsData.heightHint = 400;
 		buttonsTop.setLayoutData(buttonsData);
 
+
 		button_k = new Button(buttonsTop, SWT.CHECK);
-		button_k.setText(Messages.getString("SystemTapOptionsTab.KeepTemp")); //$NON-NLS-1$
+		button_k.setText(Messages.getString("SystemTapOptionsTab.20")); //$NON-NLS-1$
 		button_k.addSelectionListener(selectListener);
 		button_k.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_k.setToolTipText(Messages.getString("SystemTapOptionsTab.KeepTempToolTip")); //$NON-NLS-1$
+		button_k.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.5") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.6") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.7")); //$NON-NLS-1$
 
 		button_g = new Button(buttonsTop, SWT.CHECK);
-		button_g.setText(Messages.getString("SystemTapOptionsTab.Guru")); //$NON-NLS-1$
+		button_g.setText(Messages.getString("SystemTapOptionsTab.21")); //$NON-NLS-1$
 		button_g.addSelectionListener(selectListener);
 		button_g.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_g.setToolTipText(Messages.getString("SystemTapOptionsTab.GuruToolTip")); //$NON-NLS-1$
+		button_g.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.8") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.9")); //$NON-NLS-1$
 
 		button_P = new Button(buttonsTop, SWT.CHECK);
-		button_P.setText(Messages.getString("SystemTapOptionsTab.Prologue")); //$NON-NLS-1$
+		button_P.setText(Messages.getString("SystemTapOptionsTab.22")); //$NON-NLS-1$
 		button_P.addSelectionListener(selectListener);
 		button_P.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_P.setToolTipText(Messages.getString("SystemTapOptionsTab.PrologueSearchToolTip")); //$NON-NLS-1$
+		button_P.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.10") + //$NON-NLS-1$
+			    Messages.getString("SystemTapOptionsTab.11")); //$NON-NLS-1$
 
 		button_u = new Button(buttonsTop, SWT.CHECK);
-		button_u.setText(Messages.getString("SystemTapOptionsTab.Unused")); //$NON-NLS-1$
+		button_u.setText(Messages.getString("SystemTapOptionsTab.23")); //$NON-NLS-1$
 		button_u.addSelectionListener(selectListener);
 		button_u.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button_u.setToolTipText(
 				Messages.getString("SystemTapOptionsTab.12")); //$NON-NLS-1$
 
 		button_w = new Button(buttonsTop, SWT.CHECK);
-		button_w.setText(Messages.getString("SystemTapOptionsTab.Warnings")); //$NON-NLS-1$
+		button_w.setText(Messages.getString("SystemTapOptionsTab.24")); //$NON-NLS-1$
 		button_w.addSelectionListener(selectListener);
 		button_w.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_w.setToolTipText(Messages.getString("SystemTapOptionsTab.DisableWarningsToolTip")); //$NON-NLS-1$
+		button_w.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.13")+ //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.14")); //$NON-NLS-1$
 
 		button_b = new Button(buttonsTop, SWT.CHECK);
-		button_b.setText(Messages.getString("SystemTapOptionsTab.Bulk")); //$NON-NLS-1$
+		button_b.setText(Messages.getString("SystemTapOptionsTab.25")); //$NON-NLS-1$
 		button_b.addSelectionListener(selectListener);
 		button_b.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button_b.setToolTipText(
 				Messages.getString("SystemTapOptionsTab.15")); //$NON-NLS-1$
 
 		button_t = new Button(buttonsTop, SWT.CHECK);
-		button_t.setText(Messages.getString("SystemTapOptionsTab.Timing")); //$NON-NLS-1$
+		button_t.setText(Messages.getString("SystemTapOptionsTab.26")); //$NON-NLS-1$
 		button_t.addSelectionListener(selectListener);
 		button_t.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_t.setToolTipText(Messages.getString("SystemTapOptionsTab.CollectTimingToolTip")); //$NON-NLS-1$
+		button_t.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.16") + //$NON-NLS-1$
+			    Messages.getString("SystemTapOptionsTab.17")); //$NON-NLS-1$
 
 		button_F = new Button(buttonsTop, SWT.CHECK);
 		button_F.setText(Messages.getString("SystemTapOptionsTab.LeaveProbesRunning")); //$NON-NLS-1$
 		button_F.addSelectionListener(selectListener);
 		button_F.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_F.setToolTipText(Messages.getString("SystemTapOptionsTab.LeaveProbesToolTip")); //$NON-NLS-1$
+		button_F.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.27") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.28") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.29")); //$NON-NLS-1$
 
-		buttonSkipBadvars = new Button(buttonsTop, SWT.CHECK);
-		buttonSkipBadvars.setText(Messages.getString("SystemTapOptionsTab.IgnoreBadVars")); //$NON-NLS-1$
-		buttonSkipBadvars.addSelectionListener(selectListener);
-		buttonSkipBadvars.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		buttonSkipBadvars.setToolTipText(
+		button_skip_badvars = new Button(buttonsTop, SWT.CHECK);
+		button_skip_badvars.setText(Messages.getString("SystemTapOptionsTab.IgnoreBadVars")); //$NON-NLS-1$
+		button_skip_badvars.addSelectionListener(selectListener);
+		button_skip_badvars.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		button_skip_badvars.setToolTipText(
 				Messages.getString("SystemTapOptionsTab.30")); //$NON-NLS-1$
 
-		buttonIgnoreDwarf = new Button(buttonsTop, SWT.CHECK);
-		buttonIgnoreDwarf.setText(Messages.getString("SystemTapOptionsTab.ForTesting")); //$NON-NLS-1$
-		buttonIgnoreDwarf.addSelectionListener(selectListener);
-		buttonIgnoreDwarf.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		buttonIgnoreDwarf.setToolTipText(Messages.getString("SystemTapOptionsTab.IgnoreDebugToolTip")); //$NON-NLS-1$
+		button_ignore_dwarf = new Button(buttonsTop, SWT.CHECK);
+		button_ignore_dwarf.setText(Messages.getString("SystemTapOptionsTab.ForTesting")); //$NON-NLS-1$
+		button_ignore_dwarf.addSelectionListener(selectListener);
+		button_ignore_dwarf.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		button_ignore_dwarf.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.31") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.32")); //$NON-NLS-1$
 
 		button_q = new Button(buttonsTop, SWT.CHECK);
 		button_q.setText(Messages.getString("SystemTapOptionsTab.Button_qInfo")); //$NON-NLS-1$
@@ -620,75 +714,85 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		button_q.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button_q.setToolTipText(Messages.getString("SystemTapOptionsTab.33")); //$NON-NLS-1$
 
-		buttonGraphicsMode = new Button(buttonsTop, SWT.CHECK);
-		buttonGraphicsMode.setText(Messages.getString("SystemTapOptionsTab.3")); //$NON-NLS-1$
-		buttonGraphicsMode.addSelectionListener(graphicsModeListener);
-		buttonGraphicsMode.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		buttonGraphicsMode.setToolTipText(
-		        Messages.getString("SystemTapOptionsTab.41")); //$NON-NLS-1$
-
 		Composite button_p_Spinner_Top = new Composite(buttonsTop, SWT.NONE);
-		button_p_Spinner_Top.setLayout(new GridLayout(2, true));
-		button_p_Spinner_Top.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		button_p_Spinner_Top.setLayout(new GridLayout(3, false));
 		Label button_p_Spinner_Label = new Label(button_p_Spinner_Top, SWT.NONE);
 		button_p_Spinner_Label.setText(Messages.getString("SystemTapOptionsTab.19")); //$NON-NLS-1$
 		button_p_Spinner = new Spinner(button_p_Spinner_Top, SWT.BORDER);
 		button_p_Spinner.setMaximum(Integer.MAX_VALUE);
 		button_p_Spinner.addModifyListener(modifyListener);
 		button_p_Spinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_p_Spinner_Label.setToolTipText(Messages.getString("SystemTapOptionsTab.StopAfterPassToolTip")); //$NON-NLS-1$
+		button_p_Spinner_Label.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.34") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.35") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.36")); //$NON-NLS-1$
 
 		Composite button_s_Spinner_Top = new Composite(buttonsTop, SWT.NONE);
-		button_s_Spinner_Top.setLayout(new GridLayout(2, true));
-		button_s_Spinner_Top.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		button_s_Spinner_Top.setLayout(new GridLayout(2, false));
 		Label button_s_Spinner_Label = new Label(button_s_Spinner_Top, SWT.NONE);
 		button_s_Spinner_Label.setText(Messages.getString("SystemTapOptionsTab.BufferWith")); //$NON-NLS-1$
 		button_s_Spinner = new Spinner(button_s_Spinner_Top, SWT.BORDER);
 		button_s_Spinner.setMaximum(Integer.MAX_VALUE);
 		button_s_Spinner.addModifyListener(modifyListener);
 		button_s_Spinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_s_Spinner_Label.setToolTipText(Messages.getString("SystemTapOptionsTab.BufferWithToolTip")); //$NON-NLS-1$
+		button_s_Spinner_Label.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.37") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.38")); //$NON-NLS-1$
 
 		Composite button_x_Spinner_Top = new Composite(buttonsTop, SWT.NONE);
-		button_x_Spinner_Top.setLayout(new GridLayout(2, true));
-		button_x_Spinner_Top.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		button_x_Spinner_Top.setLayout(new GridLayout(2, false));
 		Label button_x_Spinner_Label = new Label(button_x_Spinner_Top, SWT.NONE);
 		button_x_Spinner_Label.setText(Messages.getString("SystemTapOptionsTab.TargetPID")); //$NON-NLS-1$
 		button_x_Spinner = new Spinner(button_x_Spinner_Top, SWT.BORDER);
 		button_x_Spinner.setMaximum(Integer.MAX_VALUE);
 		button_x_Spinner.addModifyListener(modifyListener);
 		button_x_Spinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_x_Spinner_Label.setToolTipText(Messages.getString("SystemTapOptionsTab.TargetPIDToolTip")); //$NON-NLS-1$
+		button_x_Spinner_Label.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.39") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.40")); //$NON-NLS-1$
 
 		Composite button_v_Spinner_Top = new Composite(buttonsTop, SWT.NONE);
-		button_v_Spinner_Top.setLayout(new GridLayout(2, true));
-		button_v_Spinner_Top.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		button_v_Spinner_Top.setLayout(new GridLayout(2, false));
 		Label button_v_Spinner_Label = new Label(button_v_Spinner_Top, SWT.NONE);
 		button_v_Spinner_Label.setText(Messages.getString("SystemTapOptionsTab.18")); //$NON-NLS-1$
 		button_v_Spinner = new Spinner(button_v_Spinner_Top, SWT.BORDER);
 		button_v_Spinner.setMaximum(3);
 		button_v_Spinner.addModifyListener(modifyListener);
 		button_v_Spinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		button_v_Spinner_Label.setToolTipText(Messages.getString("SystemTapOptionsTab.TargetPIDToolTip")); //$NON-NLS-1$
+		button_v_Spinner_Label.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.2") + //$NON-NLS-1$
+				Messages.getString("SystemTapOptionsTab.4")); //$NON-NLS-1$
 
+		button_graphicsMode = new Button(buttonsTop, SWT.CHECK);
+		button_graphicsMode.setText(Messages.getString("SystemTapOptionsTab.3")); //$NON-NLS-1$
+		button_graphicsMode.addSelectionListener(graphicsModeListener);
+		button_graphicsMode.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		button_graphicsMode.setToolTipText(
+				Messages.getString("SystemTapOptionsTab.41")); //$NON-NLS-1$
 
 		Label button_D_label = new Label(buttonsTop, SWT.NONE);
 		button_D_label.setText(Messages.getString("SystemTapOptionsTab.PreprocessorDirective")); //$NON-NLS-1$
 		button_D_text = new Text(buttonsTop, SWT.BORDER);
-		button_D_text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		button_D_text.setLayoutData(new GridData(200,15));
 		button_D_text.addModifyListener(modifyListener);
 		button_D_label.setToolTipText(
-					  Messages.getString("SystemTapOptionsTab.PreprocessorToolTip")); //$NON-NLS-1$
+					  Messages.getString("SystemTapOptionsTab.42") + //$NON-NLS-1$
+					  Messages.getString("SystemTapOptionsTab.43")); //$NON-NLS-1$
+
+
+
 	}
+
 
 	@Override
 	public String getName() {
 		return Messages.getString("SystemTapOptionsTab.MainTabName"); //$NON-NLS-1$
 	}
 
-	private Shell getActiveWorkbenchShell() {
+	protected Shell getActiveWorkbenchShell() {
 		return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 	}
+
 
 	private IBinary chooseBinary(IBinary[] binaries) {
 		ILabelProvider programLabelProvider = new CElementLabelProvider() {
@@ -749,8 +853,11 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		}
 	}
 
+
+
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
+
 
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
@@ -765,8 +872,8 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 			button_g.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_GURU, LaunchConfigurationConstants.DEFAULT_COMMAND_GURU));
 			button_P.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_PROLOGUE_SEARCH, LaunchConfigurationConstants.DEFAULT_COMMAND_PROLOGUE_SEARCH));
 			button_t.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_TIMING_INFO, LaunchConfigurationConstants.DEFAULT_COMMAND_TIMING_INFO));
-			buttonSkipBadvars.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_SKIP_BADVARS, LaunchConfigurationConstants.DEFAULT_COMMAND_SKIP_BADVARS));
-			buttonIgnoreDwarf.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_IGNORE_DWARF, LaunchConfigurationConstants.DEFAULT_COMMAND_IGNORE_DWARF));
+			button_skip_badvars.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_SKIP_BADVARS, LaunchConfigurationConstants.DEFAULT_COMMAND_SKIP_BADVARS));
+			button_ignore_dwarf.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_IGNORE_DWARF, LaunchConfigurationConstants.DEFAULT_COMMAND_IGNORE_DWARF));
 			button_q.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_TAPSET_COVERAGE, LaunchConfigurationConstants.DEFAULT_COMMAND_TAPSET_COVERAGE));
 			button_F.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_LEAVE_RUNNING, LaunchConfigurationConstants.DEFAULT_COMMAND_LEAVE_RUNNING));
 			button_s_Spinner.setSelection(configuration.getAttribute(LaunchConfigurationConstants.COMMAND_BUFFER_BYTES, LaunchConfigurationConstants.DEFAULT_COMMAND_BUFFER_BYTES));
@@ -784,6 +891,10 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 			parser.setText(configuration.getAttribute(LaunchConfigurationConstants.PARSER_CLASS, LaunchConfigurationConstants.DEFAULT_PARSER_CLASS));
 			viewer.setText(configuration.getAttribute(LaunchConfigurationConstants.VIEW_CLASS, LaunchConfigurationConstants.DEFAULT_VIEW_CLASS));
 
+			if (generatedScript != null){
+				generatedScript.setText(configuration.getAttribute(LaunchConfigurationConstants.GENERATED_SCRIPT, LaunchConfigurationConstants.DEFAULT_GENERATED_SCRIPT));
+				needToGenerateScriptButton.setSelection(configuration.getAttribute(LaunchConfigurationConstants.NEED_TO_GENERATE, LaunchConfigurationConstants.DEFAULT_NEED_TO_GENERATE));
+			}
 			useColourButton.setSelection(configuration.getAttribute(LaunchConfigurationConstants.USE_COLOUR, LaunchConfigurationConstants.DEFAULT_USE_COLOUR));
 
 		} catch (CoreException e) {
@@ -805,8 +916,8 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_DISABLE_WARNINGS, button_w.getSelection());
 		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_BULK_MODE, button_b.getSelection());
 		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_TIMING_INFO, button_t.getSelection());
-		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_SKIP_BADVARS, buttonSkipBadvars.getSelection());
-		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_IGNORE_DWARF, buttonIgnoreDwarf.getSelection());
+		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_SKIP_BADVARS, button_skip_badvars.getSelection());
+		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_IGNORE_DWARF, button_ignore_dwarf.getSelection());
 		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_TAPSET_COVERAGE, button_q.getSelection());
 		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_LEAVE_RUNNING, button_F.getSelection());
 		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_PASS, button_p_Spinner.getSelection());
@@ -824,9 +935,14 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		configuration.setAttribute(LaunchConfigurationConstants.BINARY_ARGUMENTS, binaryArguments.getText());
 		configuration.setAttribute(LaunchConfigurationConstants.OUTPUT_PATH, outputFile.getText());
 
+		if (generatedScript != null){
+			configuration.setAttribute(LaunchConfigurationConstants.GENERATED_SCRIPT, generatedScript.getText());
+			configuration.setAttribute(LaunchConfigurationConstants.NEED_TO_GENERATE, needToGenerateScriptButton.getSelection());
+		}
+
 		configuration.setAttribute(LaunchConfigurationConstants.USE_COLOUR, useColourButton.getSelection());
 
-		if (buttonGraphicsMode.getSelection()){
+		if (button_graphicsMode.getSelection()){
 			scriptFile.setEnabled(false);
 			workspaceBrowseButton.setEnabled(false);
 			fileBrowseButton.setEnabled(false);
@@ -840,7 +956,8 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		if (changeOverwrite) {
 			if (needsOverwritePermission && overwritePermission || !needsOverwritePermission) {
 				configuration.setAttribute(LaunchConfigurationConstants.OVERWRITE, true);
-			} else {
+			}
+			else {
 				configuration.setAttribute(LaunchConfigurationConstants.OVERWRITE, false);
 			}
 			changeOverwrite = false;
@@ -879,9 +996,12 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 		configuration.setAttribute(LaunchConfigurationConstants.PARSER_CLASS, LaunchConfigurationConstants.DEFAULT_PARSER_CLASS);
 		configuration.setAttribute(LaunchConfigurationConstants.VIEW_CLASS, LaunchConfigurationConstants.DEFAULT_VIEW_CLASS);
 
+
+
 		configuration.setAttribute(LaunchConfigurationConstants.USE_COLOUR, LaunchConfigurationConstants.DEFAULT_USE_COLOUR);
 
 		configuration.setAttribute(LaunchConfigurationConstants.COMMAND_LIST, ConfigurationOptionsSetter.setOptions(configuration));
+
 
 		ICElement cElement = null;
 		cElement = getContext(configuration, getPlatform(configuration));
@@ -892,7 +1012,8 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 			configuration.setMappedResources(null);
 		}
 
-		IBinary bin = getBinary(configuration);
+		IBinary bin = null;
+		bin = getBinary(configuration);
 		if (bin != null) {
 			String programName = bin.getResource().getProjectRelativePath().toString();
 			configuration.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, programName);
@@ -937,9 +1058,10 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 			}
 	}
 	return Messages.getString("SystemTapOptionsTab.1"); //$NON-NLS-1$
+
 	}
 
-	private static class ListLabelProvider extends LabelProvider {
+	private static class ListLabelProvider implements ILabelProvider {
 
 		@Override
 		public Image getImage(Object element) {
@@ -960,13 +1082,25 @@ public class SystemTapOptionsTab extends CLaunchConfigurationTab{
 				}
 
 		}
-		return Messages.getString("SystemTapOptionsTab.46"); //$NON-NLS-1$
+		return Messages.getString("SystemTapOptionsTab.46");		} //$NON-NLS-1$
+
+		@Override
+		public void addListener(ILabelProviderListener listener) {
+
 		}
 
+		@Override
+		public void dispose() {
+		}
 
 		@Override
 		public boolean isLabelProperty(Object element, String property) {
 			return false;
 		}
+
+		@Override
+		public void removeListener(ILabelProviderListener listener) {
+		}
+
 	}
 }

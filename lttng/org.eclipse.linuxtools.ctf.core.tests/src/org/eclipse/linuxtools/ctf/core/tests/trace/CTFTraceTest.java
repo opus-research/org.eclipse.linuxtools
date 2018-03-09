@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,7 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.nio.ByteOrder;
+import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
@@ -192,6 +193,15 @@ public class CTFTraceTest {
     }
 
     /**
+     * Run the Map<Long, Stream> getStreams() method test.
+     */
+    @Test
+    public void testGetStreams() {
+        Map<Long, Stream> result = fixture.getStreams();
+        assertNotNull(result);
+    }
+
+    /**
      * Run the File getTraceDirectory() method test.
      */
     @Test
@@ -347,7 +357,7 @@ public class CTFTraceTest {
     @Test
     public void testLookupEnvironment_1() {
         String key = "";
-        String result = fixture.getEnvironment().get(key);
+        String result = fixture.lookupEnvironment(key);
         assertNull(result);
     }
 
@@ -357,7 +367,7 @@ public class CTFTraceTest {
     @Test
     public void testLookupEnvironment_2() {
         String key = "otherTest";
-        String result = fixture.getEnvironment().get(key);
+        String result = fixture.lookupEnvironment(key);
         assertNull(result);
     }
 
@@ -368,7 +378,7 @@ public class CTFTraceTest {
     public void testLookupEnvironment_3() {
         String key = "test";
         fixture.addEnvironmentVar(key, key);
-        String result = fixture.getEnvironment().get(key);
+        String result = fixture.lookupEnvironment(key);
         assertTrue(result.equals(key));
     }
 
@@ -380,7 +390,7 @@ public class CTFTraceTest {
         String key = "test";
         fixture.addEnvironmentVar(key, "bozo");
         fixture.addEnvironmentVar(key, "the clown");
-        String result = fixture.getEnvironment().get(key);
+        String result = fixture.lookupEnvironment(key);
         assertNotNull(result);
     }
 

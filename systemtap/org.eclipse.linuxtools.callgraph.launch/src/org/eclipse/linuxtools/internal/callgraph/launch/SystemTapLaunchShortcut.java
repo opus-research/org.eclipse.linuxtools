@@ -31,12 +31,14 @@ import org.eclipse.cdt.core.model.ICProject;
 import org.eclipse.cdt.core.model.ITranslationUnit;
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -104,6 +106,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
  */
 public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	protected IEditorPart editor;
+	protected ILaunchConfiguration config;
 
 	private static final String USER_SELECTED_ALL = "ALL"; //$NON-NLS-1$
 	private static final String MAIN_FUNC_NAME = "main"; //$NON-NLS-1$
@@ -114,6 +117,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	protected String arguments;
 	protected String outputPath;
 	protected String binName;
+	protected String dirPath;
 	protected String generatedScript;
 	protected String parserID;
 	protected String viewID;
@@ -124,6 +128,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	protected boolean searchForResource;
 	protected IBinary bin;
 
+	private Button OKButton;
 	private boolean testMode = false;
 	protected String secondaryID = ""; //$NON-NLS-1$
 
@@ -133,6 +138,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 */
 	public void initialize() {
 		name = ""; //$NON-NLS-1$
+		dirPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
 		binaryPath = LaunchConfigurationConstants.DEFAULT_BINARY_PATH;
 		arguments = LaunchConfigurationConstants.DEFAULT_ARGUMENTS;
 		outputPath = PluginConstants.getDefaultIOPath();
@@ -154,6 +160,50 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			ILaunchConfigurationWorkingCopy wc) {
 		SystemTapOptionsTab tab = new SystemTapOptionsTab();
 		tab.setDefaults(wc);
+	}
+
+	protected boolean existsConfiguration(ILaunchConfigurationWorkingCopy wc) {
+		ILaunchConfigurationType configType = getLaunchConfigType();
+		try {
+			ILaunchConfiguration[] configs = DebugPlugin.getDefault()
+					.getLaunchManager().getLaunchConfigurations(configType);
+
+			for (int i = 0; i < configs.length; i++) {
+				if (configs[i] != null && configs[i].exists()
+						&& checkIfAttributesAreEqual(wc, configs[i])) {
+					config = configs[i];
+					return true;
+				}
+			}
+
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns true if two configurations are exactly identical (i.e. all
+	 * attributes are equal)
+	 *
+	 * @param first
+	 * @param second
+	 * @return True if two configurations are exactly identical (i.e. all
+	 *         attributes are equal)
+	 */
+	private boolean checkIfAttributesAreEqual(ILaunchConfiguration first,
+			ILaunchConfiguration second) {
+
+		try {
+			if (first.getAttributes().equals(second.getAttributes())) {
+				return true;
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 	/**
@@ -191,7 +241,19 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			wc.setAttribute(LaunchConfigurationConstants.USE_COLOUR,useColours);
 			wc.setAttribute(LaunchConfigurationConstants.PARSER_CLASS,parserID);
 			wc.setAttribute(LaunchConfigurationConstants.VIEW_CLASS, viewID);
-			wc.setAttribute(LaunchConfigurationConstants.SECONDARY_VIEW_ID, ""); //$NON-NLS-1$
+			wc.setAttribute(LaunchConfigurationConstants.SECONDARY_VIEW_ID, setSecondaryViewID());
+
+
+			/**
+			 * Enable this to save the default launch configuration
+			 */
+			/*try {
+				if (!existsConfiguration(wc)) {
+					config = wc.doSave();
+				}
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}*/
 
 			if (!testMode) {
 				DebugUITools.launch(wc, mode);
@@ -311,6 +373,27 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	}
 
 	/**
+	 * Creates a configuration with the given name - does not use a binary
+	 *
+	 * @param name
+	 * @return
+	 */
+	protected ILaunchConfigurationWorkingCopy createConfiguration(String name) {
+		ILaunchConfigurationWorkingCopy wc = null;
+		try {
+			ILaunchConfigurationType configType = getLaunchConfigType();
+			wc = configType.newInstance(null, getLaunchManager()
+					.generateLaunchConfigurationName(name));
+
+			setDefaultProfileAttributes(wc);
+
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		return wc;
+	}
+
+	/**
 	 * Allows null configurations to be launched. Any launch that uses a binary
 	 * should never call this configuration with a null parameter, and any
 	 * launch that does not use a binary should never call this function. The
@@ -359,6 +442,23 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 		return wc;
 	}
 
+	/**
+	 * Creates an error message stating that the launch failed for the specified
+	 * reason.
+	 *
+	 * @param reason
+	 */
+	protected void failedToLaunch(String reason) {
+		SystemTapUIErrorMessages mess = new SystemTapUIErrorMessages(
+				Messages.getString("SystemTapLaunchShortcut.StapLaunchFailed"), //$NON-NLS-1$
+				Messages
+						.getString("SystemTapLaunchShortcut.StapLaunchFailedTitle"), Messages.getString("SystemTapLaunchShortcut.StapLaunchFailedMessage") + reason); //$NON-NLS-1$ //$NON-NLS-2$
+		mess.schedule();
+	}
+
+	public void errorHandler() {
+	}
+
 	/*
 	 * The following are convenience methods for test programs, etc. to check
 	 * the value of certain protected parameters.
@@ -368,8 +468,24 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 		return getLaunchConfigType();
 	}
 
+	public ILaunchConfiguration getConfig() {
+		return config;
+	}
+
+	public String getScriptPath() {
+		return scriptPath;
+	}
+
+	public String getDirPath() {
+		return dirPath;
+	}
+
 	public String getArguments() {
 		return arguments;
+	}
+
+	public String getBinaryPath() {
+		return binaryPath;
 	}
 
 	/**
@@ -390,7 +506,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			return funcs;
 		}
 		try {
-			ArrayList<ICContainer> list = new ArrayList<>();
+			ArrayList<ICContainer> list = new ArrayList<ICContainer>();
 			TranslationUnitVisitor v = new TranslationUnitVisitor();
 
 			for (ICElement b : bin.getCProject().getChildrenOfType(
@@ -466,6 +582,8 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 			return funcs;
 
+		} catch (CModelException e) {
+			e.printStackTrace();
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -481,7 +599,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 *            : list of ICElements
 	 * @return
 	 */
-	private Object[] chooseUnit(List<ICContainer> list, int numberOfValidFiles) {
+	protected Object[] chooseUnit(List<ICContainer> list, int numberOfValidFiles) {
 		ListTreeContentProvider prov = new ListTreeContentProvider();
 
 		RuledTreeSelectionDialog dialog = new RuledTreeSelectionDialog(
@@ -502,14 +620,14 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				(int) (topLevel.length * 1.5), 3, 13));
 
 		dialog.create();
-		Button okButton = dialog.getOkButton();
+		OKButton = dialog.getOkButton();
 
 		Object[] result = null;
 
 		if (testMode) {
-			okButton.setSelection(true);
+			OKButton.setSelection(true);
 			result = list.toArray();
-			ArrayList<Object> output = new ArrayList<>();
+			ArrayList<Object> output = new ArrayList<Object>();
 			try {
 				for (Object obj : result) {
 					if (obj instanceof ICContainer) {
@@ -545,7 +663,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 			return null;
 		}
 
-		ArrayList<Object> output = new ArrayList<>();
+		ArrayList<Object> output = new ArrayList<Object>();
 		try {
 			for (Object obj : result) {
 				if (obj instanceof ICContainer) {
@@ -599,12 +717,29 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	}
 
 	/**
+	 * Convenience method for creating a new configuration
+	 *
+	 * @return a new configuration
+	 * @throws CoreException
+	 */
+	public ILaunchConfiguration getNewConfiguration() throws CoreException {
+		ILaunchConfigurationType configType = getLaunchConfigType();
+		ILaunchConfigurationWorkingCopy wc = configType.newInstance(
+				null,
+				getLaunchManager().generateLaunchConfigurationName(
+						"TestingConfiguration")); //$NON-NLS-1$
+
+		return wc.doSave();
+
+	}
+
+	/**
 	 * @param project
 	 *            : C Project Type
 	 * @return A String list of all functions contained within the specified C
 	 *         Project
 	 */
-	private static List<String> getAllFunctions(ICProject project,
+	public static ArrayList<String> getAllFunctions(ICProject project,
 			Object[] listOfFiles) {
 		try {
 			GetFunctionsJob j = new GetFunctionsJob(project
@@ -677,7 +812,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 		public GetFunctionsJob(String name, ICProject p, Object[] o) {
 			super(name);
-			functionList = new ArrayList<>();
+			functionList = new ArrayList<String>();
 			listOfFiles = Arrays.copyOf(o, o.length);
 			project = p;
 		}
@@ -721,7 +856,6 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 					m.worked(1);
 				}
-				index.releaseReadLock();
 
 			} catch (CoreException e) {
 				e.printStackTrace();
@@ -729,6 +863,7 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 				e.printStackTrace();
 			}
 
+			index.releaseReadLock();
 			return Status.OK_STATUS;
 		}
 
@@ -754,6 +889,10 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 
 	public String getScript() {
 		return generatedScript;
+	}
+
+	public Button getButton() {
+		return OKButton;
 	}
 
 	public void setTestMode(boolean val) {
@@ -821,4 +960,14 @@ public abstract class SystemTapLaunchShortcut extends ProfileLaunchShortcut {
 	 * correct script path or launch will fail.
 	 */
 	public abstract String setScriptPath();
+
+	/**
+	 * Overwrite to return a non-empty string if you want to be able to create
+	 * multiple views.
+	 * @return
+	 */
+	public String setSecondaryViewID() {
+		return ""; //$NON-NLS-1$
+	}
+
 }

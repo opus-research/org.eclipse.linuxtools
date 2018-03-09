@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,7 +17,6 @@ package org.eclipse.linuxtools.tmf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -25,8 +24,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Map;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
@@ -37,7 +38,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
+import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -47,7 +48,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
-import org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestExperimentAnalysis;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfExperimentStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.Before;
@@ -142,35 +142,6 @@ public class TmfExperimentTest {
     }
 
     // ------------------------------------------------------------------------
-    // Experiment setup
-    // ------------------------------------------------------------------------
-
-    @Test
-    public void testExperimentInitialization() {
-        /*
-         * Calling default constructor, then init should be equivalent to
-         * calling the full constructor
-         */
-
-        TmfExperimentStub experiment = new TmfExperimentStub();
-        experiment.initExperiment(ITmfEvent.class, EXPERIMENT, fTestTraces, 5000, null);
-        experiment.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, true);
-
-        assertEquals("GetId", EXPERIMENT, fExperiment.getName());
-        assertEquals("GetNbEvents", NB_EVENTS, fExperiment.getNbEvents());
-
-        final long nbExperimentEvents = fExperiment.getNbEvents();
-        assertEquals("GetNbEvents", NB_EVENTS, nbExperimentEvents);
-
-        final long nbTraceEvents = fExperiment.getTraces()[0].getNbEvents();
-        assertEquals("GetNbEvents", NB_EVENTS, nbTraceEvents);
-
-        final TmfTimeRange timeRange = fExperiment.getTimeRange();
-        assertEquals("getStartTime", 1, timeRange.getStartTime().getValue());
-        assertEquals("getEndTime", NB_EVENTS, timeRange.getEndTime().getValue());
-    }
-
-    // ------------------------------------------------------------------------
     // getTimestamp
     // ------------------------------------------------------------------------
 
@@ -188,21 +159,33 @@ public class TmfExperimentTest {
     }
 
     // ------------------------------------------------------------------------
+    // Bookmarks file handling
+    // ------------------------------------------------------------------------
+
+    @Test
+    public void testBookmarks() {
+        assertNull("GetBookmarksFile", fExperiment.getBookmarksFile());
+        IFile bookmarks = (IFile) fTestTraces[0].getResource();
+        fExperiment.setBookmarksFile(bookmarks);
+        assertEquals("GetBookmarksFile", bookmarks, fExperiment.getBookmarksFile());
+    }
+
+    // ------------------------------------------------------------------------
     // State system, statistics and modules methods
     // ------------------------------------------------------------------------
 
     @Test
+    public void testGetStatistics() {
+        /* There should not be any experiment-specific statistics */
+        ITmfStatistics stats = fExperiment.getStatistics();
+        assertNull(stats);
+    }
+
+    @Test
     public void testGetAnalysisModules() {
         /* There should not be any modules at this point */
-        Iterable<IAnalysisModule> modules = fExperiment.getAnalysisModules();
-        assertFalse(modules.iterator().hasNext());
-
-        /* Open the experiment, the modules should be populated */
-        fExperiment.traceOpened(new TmfTraceOpenedSignal(this, fExperiment, null));
-        modules = fExperiment.getAnalysisModules();
-        Iterable<TestExperimentAnalysis> testModules = fExperiment.getAnalysisModulesOfClass(TestExperimentAnalysis.class);
-        assertTrue(modules.iterator().hasNext());
-        assertTrue(testModules.iterator().hasNext());
+        Map<String, IAnalysisModule> modules = fExperiment.getAnalysisModules();
+        assertTrue(modules.isEmpty());
     }
 
     // ------------------------------------------------------------------------
@@ -565,14 +548,12 @@ public class TmfExperimentTest {
         assertTrue("Experiment context type", context instanceof TmfExperimentContext);
         TmfExperimentContext ctx = (TmfExperimentContext) context;
 
-        int nbTraces = ctx.getNbTraces();
+        int nbTraces = ctx.getContexts().length;
 
         // expRank = sum(trace ranks) - nbTraces + 1 (if lastTraceRead != NO_TRACE)
         long expRank = -nbTraces + ((ctx.getLastTrace() != TmfExperimentContext.NO_TRACE) ? 1 : 0);
         for (int i = 0; i < nbTraces; i++) {
-            ITmfContext subContext = ctx.getContext(i);
-            assertNotNull(subContext);
-            long rank = subContext.getRank();
+            long rank = ctx.getContexts()[i].getRank();
             if (rank == -1) {
                 expRank = -1;
                 break;
@@ -845,7 +826,7 @@ public class TmfExperimentTest {
     @Test
     public void testProcessRequestForNbEvents() throws InterruptedException {
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -873,7 +854,7 @@ public class TmfExperimentTest {
     @Test
     public void testProcessRequestForAllEvents() throws InterruptedException {
         final int nbEvents  = ITmfEventRequest.ALL_DATA;
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
         final long nbExpectedEvents = NB_EVENTS;
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
@@ -907,7 +888,7 @@ public class TmfExperimentTest {
     public void testCancel() throws InterruptedException {
         final int nbEvents = NB_EVENTS;
         final int limit = BLOCK_SIZE;
-        final Vector<ITmfEvent> requestedEvents = new Vector<>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,

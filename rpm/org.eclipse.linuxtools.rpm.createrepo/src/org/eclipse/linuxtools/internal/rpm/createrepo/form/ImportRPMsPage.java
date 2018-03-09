@@ -26,17 +26,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
-import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProject;
-import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoUtils;
-import org.eclipse.linuxtools.internal.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
-import org.eclipse.linuxtools.internal.rpm.createrepo.dnd.ImportRPMDropListener;
+import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
+import org.eclipse.linuxtools.rpm.createrepo.CreaterepoUtils;
+import org.eclipse.linuxtools.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.DND;
-import org.eclipse.swt.dnd.FileTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -152,11 +147,8 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 		layout = new GridLayout(2, false);
 		layout.marginWidth = 1; layout.marginHeight = 7;
 		sectionClient.setLayout(layout);
-		TreeViewer viewer = new TreeViewer(sectionClient, SWT.BORDER | SWT.MULTI | SWT.HORIZONTAL
+		tree = toolkit.createTree(sectionClient, SWT.BORDER | SWT.MULTI | SWT.HORIZONTAL
 				| SWT.VERTICAL | SWT.LEFT_TO_RIGHT | SWT.SMOOTH);
-		viewer.addDropSupport(DND.DROP_COPY, new Transfer[] {FileTransfer.getInstance()},
-				new ImportRPMDropListener(viewer, project));
-		tree = viewer.getTree();
 		tree.setLayoutData(expandComposite());
 
 		buttonList = toolkit.createComposite(sectionClient);
@@ -170,7 +162,7 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 				toolkit).addSelectionListener(new ImportButtonListener());
 		createPushButton(buttonList, Messages.ImportRPMsPage_buttonRemoveRPMs,
 				toolkit).addSelectionListener(new RemoveButtonListener());
-		createSpace();
+		createSpace(buttonList);
 
 		createPushButton(buttonList, Messages.ImportRPMsPage_buttonCreateRepo,
 				toolkit).addSelectionListener(new CreaterepoButtonListener());
@@ -203,7 +195,7 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 	 * @param toolkit The form toolkit used in creating a button.
 	 * @return The button created.
 	 */
-	private static Button createPushButton(Composite parent, String buttonText, FormToolkit toolkit) {
+	private Button createPushButton(Composite parent, String buttonText, FormToolkit toolkit) {
 		Button button = toolkit.createButton(parent, buttonText, SWT.PUSH | SWT.FLAT
 				| SWT.CENTER | SWT.LEFT_TO_RIGHT);
 		button.setFont(parent.getFont());
@@ -217,7 +209,7 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 	 *
 	 * @param parent The composite to attach a space to.
 	 */
-	private void createSpace() {
+	private void createSpace(Composite parent) {
 		new Label(buttonList, SWT.NONE).setLayoutData(new GridData(0,0));
 	}
 
@@ -281,21 +273,15 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 		public void widgetSelected(SelectionEvent e) {
 			IWorkbench workbench = PlatformUI.getWorkbench();
 			Shell shell = workbench.getModalDialogShellProvider().getShell();
-			FileDialog fileDialog = new FileDialog(shell, SWT.MULTI);
+			FileDialog fileDialog = new FileDialog(shell, SWT.SINGLE);
 			fileDialog.setFilterExtensions(EXTENSION_FILTERS);
 			if (fileDialog.open() != null) {
-				String[] files = fileDialog.getFileNames();
-				if (files.length > 0) {
-					String directoryPath = fileDialog.getFilterPath();
-					for (String file : files) {
-						File externalFile = new File(directoryPath, file);
-						try {
-							project.importRPM(externalFile);
-						} catch (CoreException e1) {
-							Activator.logError(Messages.ImportButtonListener_error, e1);
-						}
-					}
+				File externalFile = new File(fileDialog.getFilterPath(), fileDialog.getFileName());
+				try {
+					project.importRPM(externalFile);
 					refreshTree();
+				} catch (CoreException e1) {
+					Activator.logError(Messages.ImportButtonListener_error, e1);
 				}
 			}
 		}
@@ -412,10 +398,9 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 					(delta.getFlags() | delta.getKind()) == (IResourceDelta.OPEN | IResourceDelta.CHANGED)) {
 				return false;
 			}
-			// get the files that were removed/added and exit if nothing was removed/added
+			// get the files that were removed and exit if nothing was removed
 			IResourceDelta[] removedFiles = delta.getAffectedChildren(IResourceDelta.REMOVED);
-			IResourceDelta[] addedFiles = delta.getAffectedChildren(IResourceDelta.ADDED);
-			if (removedFiles.length <= 0 && addedFiles.length == 0) {
+			if (removedFiles.length <= 0) {
 				return false;
 			}
 			// check if at least 1 of the files removed is an RPM and break out if so
@@ -427,17 +412,8 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
 					break;
 				}
 			}
-			// check if at least 1 of the files added is an RPM and break out if so
-			boolean rpmsAdded = false;
-			for (IResourceDelta resourceDelta : addedFiles) {
-				String extension = resourceDelta.getResource().getFileExtension();
-				if (extension != null && extension.equals(ICreaterepoConstants.RPM_FILE_EXTENSION)) {
-					rpmsAdded = true;
-					break;
-				}
-			}
-			// exit if none of the removed/added files is an RPM; no need to update list
-			if (!rpmsDeleted && !rpmsAdded) {
+			// exit if none of the removed files is an RPM; no need to update list
+			if (!rpmsDeleted) {
 				return false;
 			}
 			// deals with updating the UI of the page

@@ -50,9 +50,8 @@ public class STCopyAction extends Action {
             Object obj = iterator.next();
             boolean needTab = false;
             for (ISTDataViewersField field : stViewer.getAllFields()) {
-                if (needTab) {
+                if (needTab)
                     sb.append("\t");
-                }
                 needTab = true;
                 if (field.getValue(obj) != null) {
                     sb.append(field.getValue(obj));

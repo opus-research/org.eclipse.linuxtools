@@ -90,7 +90,7 @@ public class ChartDialog extends Dialog {
     /**
      * Restores the state of this dialog
      */
-    private void restoreState() {
+    public void restoreState() {
             IDialogSettings settings = stViewer.getViewerSettings().getSection(TAG_SECTION_CHARTS_STATE);
             if (settings == null) {
                 settings = stViewer.getViewerSettings().addNewSection(TAG_SECTION_CHARTS_STATE);
@@ -114,7 +114,7 @@ public class ChartDialog extends Dialog {
     /**
      * Saves the state of this dialog
      */
-    private void saveState() {
+    public void saveState() {
             IDialogSettings settings = stViewer.getViewerSettings().getSection(TAG_SECTION_CHARTS_STATE);
             if (settings == null) {
                 settings = stViewer.getViewerSettings().addNewSection(TAG_SECTION_CHARTS_STATE);
@@ -280,7 +280,7 @@ public class ChartDialog extends Dialog {
      * @param listener
      */
     private void addColumnButtons(Composite comp, SelectionListener listener) {
-        columnButtons = new LinkedList<>();
+        columnButtons = new LinkedList<Button>();
         for (ISTDataViewersField field : stViewer.getAllFields()) {
             if (field instanceof IChartField) {
                 IChartField cField = (IChartField) field;
@@ -344,7 +344,7 @@ public class ChartDialog extends Dialog {
      * called whenever the text changes in the input field.
      * </p>
      */
-    private void validateInput() {
+    protected void validateInput() {
         String errorMessage = null;
 
         int selectedNum = 0;
@@ -373,7 +373,7 @@ public class ChartDialog extends Dialog {
      *            the error message, or <code>null</code> to clear
      * @since 3.0
      */
-    private void setErrorMessage(String errorMessage) {
+    public void setErrorMessage(String errorMessage) {
         errorMessageText.setText(errorMessage == null ? "" : errorMessage); //$NON-NLS-1$
         okButton.setEnabled(errorMessage == null);
         errorMessageText.getParent().update();
@@ -392,7 +392,7 @@ public class ChartDialog extends Dialog {
 
         ISTDataViewersField labelField = getLabelField(stViewer);
 
-        List<IChartField> selectedFields = new ArrayList<>();
+        List<IChartField> selectedFields = new ArrayList<IChartField>();
         for (Button button : columnButtons) {
             if (button.getSelection()) {
                 selectedFields.add((IChartField) button.getData());
@@ -420,7 +420,7 @@ public class ChartDialog extends Dialog {
      * @param viewer
      * @return the field used to provide the labels to the series
      */
-    private ISTDataViewersField getLabelField(AbstractSTViewer viewer) {
+    protected ISTDataViewersField getLabelField(AbstractSTViewer viewer) {
         return viewer.getAllFields()[0];
     }
 }

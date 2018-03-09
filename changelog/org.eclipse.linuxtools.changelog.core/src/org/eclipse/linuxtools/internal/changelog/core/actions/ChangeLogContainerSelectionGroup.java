@@ -80,6 +80,45 @@ public class ChangeLogContainerSelectionGroup extends Composite {
 	 *
 	 * @param parent
 	 *            The parent widget of the group.
+	 * @param listener
+	 *            A listener to forward events to. Can be null if no listener is
+	 *            required.
+	 * @param allowNewContainerName
+	 *            Enable the user to type in a new container name instead of
+	 *            just selecting from the existing ones.
+	 */
+	/*public ChangeLogContainerSelectionGroup(Composite parent, Listener listener,
+			boolean allowNewContainerName) {
+		this(parent, listener, allowNewContainerName, null);
+	}*/
+
+	/**
+	 * Creates a new instance of the widget.
+	 *
+	 * @param parent
+	 *            The parent widget of the group.
+	 * @param listener
+	 *            A listener to forward events to. Can be null if no listener is
+	 *            required.
+	 * @param allowNewContainerName
+	 *            Enable the user to type in a new container name instead of
+	 *            just selecting from the existing ones.
+	 * @param message
+	 *            The text to present to the user.
+	 */
+	/*public ChangeLogContainerSelectionGroup(Composite parent, Listener listener,
+			boolean allowNewContainerName, String message) {
+		this(parent, listener, allowNewContainerName, message, true);
+	}*/
+
+	/**
+	 * Creates a new instance of the widget.
+	 *
+	 * @param parent
+	 *            The parent widget of the group.
+	 * @param listener
+	 *            A listener to forward events to. Can be null if no listener is
+	 *            required.
 	 * @param allowNewContainerName
 	 *            Enable the user to type in a new container name instead of
 	 *            just selecting from the existing ones.
@@ -88,9 +127,10 @@ public class ChangeLogContainerSelectionGroup extends Composite {
 	 * @param showClosedProjects
 	 *            Whether or not to show closed projects.
 	 */
-	public ChangeLogContainerSelectionGroup(Composite parent, boolean allowNewContainerName, String message,
+	public ChangeLogContainerSelectionGroup(Composite parent, Listener listener,
+			boolean allowNewContainerName, String message,
 			boolean showClosedProjects, IContainer initialSelection) {
-		this(parent, allowNewContainerName, message,
+		this(parent, listener, allowNewContainerName, message,
 				showClosedProjects, SIZING_SELECTION_PANE_HEIGHT,
 				SIZING_SELECTION_PANE_WIDTH, initialSelection);
 	}
@@ -100,6 +140,9 @@ public class ChangeLogContainerSelectionGroup extends Composite {
 	 *
 	 * @param parent
 	 *            The parent widget of the group.
+	 * @param listener
+	 *            A listener to forward events to. Can be null if no listener is
+	 *            required.
 	 * @param allowNewContainerName
 	 *            Enable the user to type in a new container name instead of
 	 *            just selecting from the existing ones.
@@ -112,10 +155,11 @@ public class ChangeLogContainerSelectionGroup extends Composite {
 	 * @param widthHint
 	 *            width hint for the drill down composite
 	 */
-	public ChangeLogContainerSelectionGroup(Composite parent,
+	public ChangeLogContainerSelectionGroup(Composite parent, Listener listener,
 			boolean allowNewContainerName, String message,
 			boolean showClosedProjects, int heightHint, int widthHint, IContainer initialSelection) {
 		super(parent, SWT.NONE);
+		this.listener = listener;
 		this.allowNewContainerName = allowNewContainerName;
 		this.showClosedProjects = showClosedProjects;
 		this.initialSelection = initialSelection;
@@ -175,7 +219,7 @@ public class ChangeLogContainerSelectionGroup extends Composite {
 	 * @param heightHint height hint for the drill down composite
 	 * @param widthHint specifies the perfered width in pixels
 	 */
-	private void createContents(String message, int heightHint, int widthHint) {
+	public void createContents(String message, int heightHint, int widthHint) {
 		GridLayout layout = new GridLayout();
 		layout.marginWidth = 0;
 		setLayout(layout);
@@ -207,7 +251,7 @@ public class ChangeLogContainerSelectionGroup extends Composite {
 	 * @param heightHint
 	 *            height hint for the drill down composite
 	 */
-	private void createTreeViewer(int heightHint) {
+	protected void createTreeViewer(int heightHint) {
 		// Create drill down.
 		DrillDownComposite drillDown = new DrillDownComposite(this, SWT.BORDER);
 		GridData spec = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -272,18 +316,29 @@ public class ChangeLogContainerSelectionGroup extends Composite {
 	public IPath getContainerFullPath() {
 		if (allowNewContainerName) {
 			String pathName = containerNameField.getText();
-			if (pathName == null || pathName.isEmpty()) {
+			if (pathName == null || pathName.length() < 1) {
 				return null;
 			}
 			// The user may not have made this absolute so do it for them
 			return (new Path(TextProcessor.deprocess(pathName))).makeAbsolute();
 
 		}
-		if (selectedContainer == null) {
+		if (selectedContainer == null)
 			return null;
-		}
 		return selectedContainer.getFullPath();
 
+	}
+
+	/**
+	 * Gives focus to one of the widgets in the group, as determined by the
+	 * group.
+	 */
+	public void setInitialFocus() {
+		if (allowNewContainerName) {
+			containerNameField.setFocus();
+		} else {
+			treeViewer.getTree().setFocus();
+		}
 	}
 
 	/**
@@ -295,7 +350,7 @@ public class ChangeLogContainerSelectionGroup extends Composite {
 		selectedContainer = container;
 
 		// expand to and select the specified container
-		List<IContainer> itemsToExpand = new ArrayList<>();
+		List<IContainer> itemsToExpand = new ArrayList<IContainer>();
 		IContainer parent = container.getParent();
 		while (parent != null) {
 			itemsToExpand.add(0, parent);

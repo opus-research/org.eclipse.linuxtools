@@ -24,19 +24,19 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 
 public class CachegrindFunction implements ICachegrindElement {
-	private CachegrindFile parent;
-	private String name;
-	private List<CachegrindLine> lines;
-	private long[] totals;
+	protected CachegrindFile parent;
+	protected String name;
+	protected List<CachegrindLine> lines;
+	protected long[] totals;
 
-	private IAdaptable model;
+	protected IAdaptable model;
 
-	private static final String SCOPE_RESOLUTION = "::"; //$NON-NLS-1$
+	private static String SCOPE_RESOLUTION = "::"; //$NON-NLS-1$
 
 	public CachegrindFunction(CachegrindFile parent, String name) {
 		this.parent = parent;
 		this.name = name;
-		lines = new ArrayList<>();
+		lines = new ArrayList<CachegrindLine>();
 
 		IAdaptable pModel = parent.getModel();
 		if (pModel instanceof ICElement) {
@@ -44,7 +44,7 @@ public class CachegrindFunction implements ICachegrindElement {
 			try {
 				if (element instanceof ITranslationUnit) {
 					// Cachegrind labels parameter types for C++ methods
-					int paramIndex = name.indexOf('(');
+					int paramIndex = name.indexOf("("); //$NON-NLS-1$
 					if (paramIndex >= 0) {
 						name = name.substring(0, paramIndex);
 					}
@@ -75,7 +75,7 @@ public class CachegrindFunction implements ICachegrindElement {
 		}
 	}
 
-	private ICElement findElement(String name, IParent parent)
+	protected ICElement findElement(String name, IParent parent)
 	throws CModelException {
 		ICElement element = null;
 		List<ICElement> dom = parent.getChildrenOfType(ICElement.C_FUNCTION);
@@ -104,7 +104,6 @@ public class CachegrindFunction implements ICachegrindElement {
 		return name;
 	}
 
-	@Override
 	public IAdaptable getModel() {
 		return model;
 	}
@@ -117,7 +116,6 @@ public class CachegrindFunction implements ICachegrindElement {
 		return lines.toArray(new CachegrindLine[lines.size()]);
 	}
 
-	@Override
 	public ICachegrindElement[] getChildren() {
 		ICachegrindElement[] children = null;
 		// if there is only a summary don't return any children
@@ -127,12 +125,10 @@ public class CachegrindFunction implements ICachegrindElement {
 		return children;
 	}
 
-	@Override
 	public ICachegrindElement getParent() {
 		return parent;
 	}
 	
-	@Override
 	public int compareTo(ICachegrindElement o) {
 		int result = 0;
 		if (o instanceof CachegrindFunction) {

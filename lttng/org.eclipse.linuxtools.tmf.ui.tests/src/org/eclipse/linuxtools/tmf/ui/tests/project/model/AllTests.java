@@ -22,8 +22,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         ProjectModelAnalysisTest.class,
         ProjectModelOutputTest.class,
-        ProjectModelTraceTest.class,
-        TraceAndExperimentTypeTest.class
+        ProjectModelTraceTest.class
 })
 public class AllTests {
 

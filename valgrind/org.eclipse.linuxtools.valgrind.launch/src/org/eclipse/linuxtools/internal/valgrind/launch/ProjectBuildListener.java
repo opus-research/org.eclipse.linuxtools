@@ -61,7 +61,7 @@ public class ProjectBuildListener implements IResourceChangeListener {
 	 * @param project IProject project to compare against
 	 * @return boolean true if IResourceDelta is a project and equals the
 	 */
-	private boolean isProjectDelta(IResourceDelta delta, IProject project){
+	public boolean isProjectDelta(IResourceDelta delta, IProject project){
 		if(delta != null){
 			IResource resource = delta.getResource();
 			return delta.getKind() == IResourceDelta.CHANGED
@@ -79,7 +79,7 @@ public class ProjectBuildListener implements IResourceChangeListener {
 	 * @return boolean true if IResourceChangeEvent is a post-build event, false
 	 *         otherwise
 	 */
-	private boolean isPostBuildEvent(IResourceChangeEvent event) {
+	public boolean isPostBuildEvent(IResourceChangeEvent event) {
 		if(event != null){
 			int buildKind = event.getBuildKind();
 			return  event.getType() == IResourceChangeEvent.POST_BUILD
@@ -95,7 +95,7 @@ public class ProjectBuildListener implements IResourceChangeListener {
 	 *
 	 * @param project IProject project to clear markers from
 	 */
-	private void clearProjectMarkers(IProject project) {
+	protected void clearProjectMarkers(IProject project) {
 		try {
 
 			// remove project markers

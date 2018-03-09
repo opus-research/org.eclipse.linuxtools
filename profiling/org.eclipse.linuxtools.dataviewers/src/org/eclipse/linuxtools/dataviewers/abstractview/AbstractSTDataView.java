@@ -17,6 +17,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
@@ -67,7 +68,8 @@ public abstract class AbstractSTDataView extends ViewPart {
      * Create optional arbitrary Controls, on top of viewer. Does nothing by default. Can be used to display a title, or
      * some other informations.
      *
-     * @param parent The parent composite, with a gridlayout (1 column).
+     * @param parent
+     *            the parent composite, with a gridlayout (1 column)
      */
     protected abstract void createTitle(Composite parent) ;
 
@@ -78,8 +80,8 @@ public abstract class AbstractSTDataView extends ViewPart {
      * Subclasses may override it.
      * </p>
      *
-     * @param parent The parent composite.
-     * @return An AbstractSTViewer
+     * @param parent
+     * @return an AbstractSTViewer
      */
     protected abstract AbstractSTViewer createAbstractSTViewer(Composite parent);
 
@@ -89,10 +91,15 @@ public abstract class AbstractSTDataView extends ViewPart {
      * Subclasses may override it.
      * </p>
      *
-     * @param manager The IToolBarManager to contribute to.
+     * @param manager
      */
     protected abstract void contributeToToolbar(IToolBarManager manager);
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+     */
     @Override
 	public void createPartControl(Composite parent) {
         GridLayout gridLayout = new GridLayout(1, true);
@@ -144,7 +151,7 @@ public abstract class AbstractSTDataView extends ViewPart {
     /**
      * Creates the export To CSV actions.
      *
-     * @return IAction The newly created action.
+     * @return IAction
      */
     protected IAction createExportToCSVAction() {
         return new STExportToCSVAction(getSTViewer());
@@ -153,7 +160,7 @@ public abstract class AbstractSTDataView extends ViewPart {
     /**
      * Creates the collapse selection actions.
      *
-     * @return IAction The newly created action.
+     * @return IAction
      */
     private IAction createCollapseSelectionAction() {
         if (getSTViewer() instanceof AbstractSTTreeViewer) {
@@ -166,7 +173,7 @@ public abstract class AbstractSTDataView extends ViewPart {
     /**
      * Creates the expand selection actions.
      *
-     * @return IAction The newly created action.
+     * @return IAction
      */
     private IAction createExpandSelectionAction() {
         if (getSTViewer() instanceof AbstractSTTreeViewer) {
@@ -179,7 +186,7 @@ public abstract class AbstractSTDataView extends ViewPart {
     /**
      * Creates the collapse all action.
      *
-     * @return IAction The newly created action.
+     * @return IAction
      */
     private IAction createCollapseAllAction() {
         if (getSTViewer() instanceof AbstractSTTreeViewer) {
@@ -192,7 +199,7 @@ public abstract class AbstractSTDataView extends ViewPart {
     /**
      * Creates the expand all action.
      *
-     * @return IAction The newly created action.
+     * @return IAction
      */
     private IAction createExpandAllAction() {
         if (getSTViewer() instanceof AbstractSTTreeViewer) {
@@ -229,24 +236,20 @@ public abstract class AbstractSTDataView extends ViewPart {
      * You can override this method if you want - but remember to call <code>super.initToolBar()</code>.
      * </p>
      *
-     * @param manager The tool bar manager of this view.
+     * @param manager
+     *            the tool bar manager of this view
      */
     private void initToolBar(IToolBarManager manager) {
-        if (expandAllAction != null) {
+        if (expandAllAction != null)
             manager.add(expandAllAction);
-        }
-        if (collapseAllAction != null) {
+        if (collapseAllAction != null)
             manager.add(collapseAllAction);
-        }
-        if (hideShowColAction != null) {
+        if (hideShowColAction != null)
             manager.add(hideShowColAction);
-        }
-        if (exportToCSVAction != null) {
+        if (exportToCSVAction != null)
             manager.add(exportToCSVAction);
-        }
-        if (sortAction != null) {
+        if (sortAction != null)
             manager.add(sortAction);
-        }
         contributeToToolbar(manager);
         manager.update(true);
     }
@@ -254,7 +257,7 @@ public abstract class AbstractSTDataView extends ViewPart {
     /**
      * Init the menu for the receiver.
      *
-     * @param menu The IMenuManager to add to.
+     * @param menu
      */
     private void initMenu(IMenuManager menu) {
         if (preferencesAction != null) {
@@ -262,6 +265,11 @@ public abstract class AbstractSTDataView extends ViewPart {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+     */
     @Override
 	public void setFocus() {
         Viewer viewer = getSTViewer().getViewer();
@@ -280,10 +288,9 @@ public abstract class AbstractSTDataView extends ViewPart {
     }
 
     /**
-     * Shortcut for getViewer().setInput(input).
+     * Shortcut for getViewer().setInput(input) See {@link TreeViewer#setInput(Object)}
      *
-     * @param input The viewer input.
-     * @see org.eclipse.jface.viewers.TreeViewer#setInput(Object)
+     * @param input
      */
     public void setInput(Object input) {
         stViewer.getViewer().setInput(input);
@@ -295,10 +302,9 @@ public abstract class AbstractSTDataView extends ViewPart {
      * Subclasses may extend it. don't forget to call <code>super.fillContextMenu(...)</code>
      * </p>
      *
-     * @param manager The IMenuManager to fill.
-     * @since 6.0
+     * @param manager
      */
-    protected void fillContextMenu(IMenuManager manager) {
+    private void fillContextMenu(IMenuManager manager) {
     	Control control = stViewer.getViewer().getControl();
         if (control instanceof Tree) {
             Tree tree = (Tree) control;

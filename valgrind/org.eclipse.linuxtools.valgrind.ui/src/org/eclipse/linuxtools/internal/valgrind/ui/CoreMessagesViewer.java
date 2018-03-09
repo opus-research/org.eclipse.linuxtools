@@ -22,6 +22,7 @@ import org.eclipse.debug.core.sourcelookup.ISourceLookupParticipant;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -41,8 +42,6 @@ import org.eclipse.linuxtools.internal.valgrind.core.ValgrindError;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindStackFrame;
 import org.eclipse.linuxtools.profiling.ui.ProfileUIUtils;
 import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
-import org.eclipse.linuxtools.valgrind.ui.CollapseAction;
-import org.eclipse.linuxtools.valgrind.ui.ExpandAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -55,18 +54,20 @@ public class CoreMessagesViewer {
 
 	static ImageRegistry imageRegistry = new ImageRegistry();
 
-	private static final String VALGRIND_ERROR = "Valgrind_Error"; //$NON-NLS-1$
+	public static final String VALGRIND_ERROR = "Valgrind_Error"; //$NON-NLS-1$
 	/**
 	 * @since 0.10
 	 */
-	private static final String VALGRIND_INFO = "Valgrind_Info"; //$NON-NLS-1$
-	private static final String VALGRIND_ERROR_IMAGE = "icons/valgrind-error.png"; //$NON-NLS-1$
+	public static final String VALGRIND_INFO = "Valgrind_Info"; //$NON-NLS-1$
+	public static final String VALGRIND_ERROR_IMAGE = "icons/valgrind-error.png"; //$NON-NLS-1$
 	/**
 	 * @since 0.10
 	 */
 	public static final String VALGRIND_INFO_IMAGE = "icons/valgrind-info.png"; //$NON-NLS-1$
-	private IDoubleClickListener doubleClickListener;
-	private ITreeContentProvider contentProvider;
+	public IDoubleClickListener doubleClickListener;
+	public ITreeContentProvider contentProvider;
+	public IAction expandAction;
+	public IAction collapseAction;
 
 	private TreeViewer viewer;
 
@@ -131,9 +132,11 @@ public class CoreMessagesViewer {
 				Image image;
 				if (element instanceof ValgrindStackFrame) {
 					image = DebugUITools.getImage(IDebugUIConstants.IMG_OBJS_STACKFRAME);
-				} else if (element instanceof ValgrindError)  {
+				}
+				else if (element instanceof ValgrindError)  {
 					image = imageRegistry.get(VALGRIND_ERROR);
-				} else {
+				}
+				else {
 					image = imageRegistry.get(VALGRIND_INFO);
 				}
 				return image;
@@ -186,14 +189,17 @@ public class CoreMessagesViewer {
 
 					try {
 						ProfileUIUtils.openEditorAndSelect(result, frame.getLine());
-					} catch (PartInitException|BadLocationException e) {
+					} catch (PartInitException e) {
+						e.printStackTrace();
+					} catch (BadLocationException e) {
 						e.printStackTrace();
 					}
 				}
 				else {
 					if (viewer.getExpandedState(element)) {
 						viewer.collapseToLevel(element, AbstractTreeViewer.ALL_LEVELS);
-					} else {
+					}
+					else {
 						viewer.expandToLevel(element, 1);
 					}
 				}
@@ -201,8 +207,8 @@ public class CoreMessagesViewer {
 		};
 		viewer.addDoubleClickListener(doubleClickListener);
 
-		final ExpandAction expandAction = new ExpandAction(viewer);
-		final CollapseAction collapseAction = new CollapseAction(viewer);
+		expandAction = new ExpandAction(viewer);
+		collapseAction = new CollapseAction(viewer);
 
 		MenuManager manager = new MenuManager();
 		manager.addMenuListener(new IMenuListener() {

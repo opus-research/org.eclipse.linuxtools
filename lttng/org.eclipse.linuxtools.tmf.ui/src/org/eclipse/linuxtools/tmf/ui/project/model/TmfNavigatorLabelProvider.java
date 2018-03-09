@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,14 +16,11 @@ package org.eclipse.linuxtools.tmf.ui.project.model;
 import java.net.URL;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType.TraceElementType;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.ISharedImages;
@@ -104,36 +101,30 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
     @Override
     public Image getImage(Object element) {
 
-        if (element instanceof TmfCommonProjectElement) {
-            TmfCommonProjectElement trace = (TmfCommonProjectElement) element;
+        if (element instanceof TmfTraceElement) {
+            TmfTraceElement trace = (TmfTraceElement) element;
             try {
-                String traceType = trace.getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE);
-                if (traceType == null || TmfTraceType.getInstance().getTraceType(traceType) == null) {
+                if (trace.getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE) == null) {
                     return fUnknownTraceIcon;
                 }
-
-                IConfigurationElement traceUIAttributes = TmfTraceTypeUIUtils.getTraceUIAttributes(traceType, (element instanceof TmfTraceElement) ? TraceElementType.TRACE : TraceElementType.EXPERIMENT);
-                if (traceUIAttributes != null) {
-                    String iconAttr = traceUIAttributes.getAttribute(TmfTraceTypeUIUtils.ICON_ATTR);
-                    if (iconAttr != null) {
-                        String name = traceUIAttributes.getContributor().getName();
-                        if (name != null) {
-                            Bundle bundle = Platform.getBundle(name);
-                            if (bundle != null) {
-                                Image image = loadIcon(bundle, iconAttr);
-                                if (image != null) {
-                                    return image;
-                                }
-                            }
+                String name = trace.getResource().getPersistentProperty(TmfCommonConstants.TRACEBUNDLE);
+                String icon = trace.getResource().getPersistentProperty(TmfCommonConstants.TRACEICON);
+                if (name != null && icon != null) {
+                    Bundle bundle = Platform.getBundle(name);
+                    if (bundle != null) {
+                        Image image = loadIcon(bundle, icon);
+                        if (image != null) {
+                            return image;
                         }
                     }
-
+                    return fUnknownTraceIcon;
                 }
             } catch (CoreException e) {
             }
-            if (element instanceof TmfTraceElement) {
-                return fDefaultTraceIcon;
-            }
+            return fDefaultTraceIcon;
+        }
+
+        if (element instanceof TmfExperimentElement) {
             return fExperimentIcon;
         }
 
@@ -175,17 +166,17 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider {
 
         if (element instanceof TmfTraceFolder) {
             TmfTraceFolder folder = (TmfTraceFolder) element;
-            return folder.getName() + " [" + folder.getTraces().size() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+            return folder.getName() + " [" + folder.getTraces().size() + "]"; //$NON-NLS-1$//$NON-NLS-2$
         }
 
         if (element instanceof TmfExperimentElement) {
             TmfExperimentElement folder = (TmfExperimentElement) element;
-            return folder.getName() + " [" + folder.getTraces().size() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+            return folder.getName() + " [" + folder.getTraces().size() + "]"; //$NON-NLS-1$//$NON-NLS-2$
         }
 
         if (element instanceof TmfExperimentFolder) {
             TmfExperimentFolder folder = (TmfExperimentFolder) element;
-            return folder.getName() + " [" + folder.getChildren().size() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+            return folder.getName() + " [" + folder.getChildren().size() + "]"; //$NON-NLS-1$//$NON-NLS-2$
         }
 
         // Catch all
