@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -28,16 +28,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * Analysis module helpers for modules provided by xml files
+ * Analysis module helpers for modules provided by XML files
  *
  * @author Geneviève Bastien
  */
 public class TmfAnalysisModuleHelperXml implements IAnalysisModuleHelper {
 
     /**
-     * The types of analysis that can be xml-defined
-     *
-     * @author Geneviève Bastien
+     * The types of analysis that can be XML-defined
      */
     public enum XmlAnalysisModuleType {
         /** Analysis will be of type XmlStateSystemModule */
@@ -53,9 +51,9 @@ public class TmfAnalysisModuleHelperXml implements IAnalysisModuleHelper {
      * Constructor
      *
      * @param xmlFile
-     *            The xml file containing the details of this analysis
+     *            The XML file containing the details of this analysis
      * @param node
-     *            The xml node element
+     *            The XML node element
      * @param type
      *            The type of analysis
      */
@@ -74,7 +72,7 @@ public class TmfAnalysisModuleHelperXml implements IAnalysisModuleHelper {
 
     @Override
     public String getId() {
-        return fSourceElement.getAttribute(TmfXmlStrings.ANALYSISID);
+        return fSourceElement.getAttribute(TmfXmlStrings.ANALYSIS_ID);
     }
 
     @Override
@@ -88,7 +86,6 @@ public class TmfAnalysisModuleHelperXml implements IAnalysisModuleHelper {
 
     @Override
     public boolean isAutomatic() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -99,7 +96,6 @@ public class TmfAnalysisModuleHelperXml implements IAnalysisModuleHelper {
 
     @Override
     public String getIcon() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -110,7 +106,7 @@ public class TmfAnalysisModuleHelperXml implements IAnalysisModuleHelper {
 
     @Override
     public boolean appliesToTraceType(Class<? extends ITmfTrace> traceclass) {
-        /* Trace types may be available in xml header */
+        /* Trace types may be available in XML header */
         if (fHeadInfo == null) {
             return true;
         }
@@ -126,7 +122,6 @@ public class TmfAnalysisModuleHelperXml implements IAnalysisModuleHelper {
         case STATE_SYSTEM:
             module = new XmlStateSystemModule();
             XmlStateSystemModule ssModule = (XmlStateSystemModule) module;
-            module.setName(analysisid);
             module.setId(analysisid);
             ssModule.setXmlFile(new Path(fSourceFile.getAbsolutePath()));
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -23,7 +23,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Class to store the header information of XML-defined analysis
+ * Class to store and interpret the header information of XML-defined components
  *
  * @author Geneviève Bastien
  */
@@ -65,7 +65,7 @@ public class XmlHeadInfo {
 
     /**
      * Check whether, if this header information has trace types defined, this
-     * module applies to a given trace type.
+     * component applies to a given trace type.
      *
      * @param traceClass
      *            The trace type to check for
@@ -75,15 +75,18 @@ public class XmlHeadInfo {
     public boolean checkTraceType(Class<? extends ITmfTrace> traceClass) {
         /*
          * By default this returns true, child implementation who have access to
-         * tracetypes will override this
+         * trace types will override this
+         *
+         * TODO: actually check the trace type here when trace types are moved
+         * to o.e.l.tmf.core instead of o.e.l.tmf.ui
          */
         return true;
     }
 
     /**
-     * Get the name from the header information
+     * Get the name of this component from the header information
      *
-     * @return The name
+     * @return The name of the component
      */
     public String getName() {
         List<Element> elements = getElements(TmfXmlStrings.NAME);

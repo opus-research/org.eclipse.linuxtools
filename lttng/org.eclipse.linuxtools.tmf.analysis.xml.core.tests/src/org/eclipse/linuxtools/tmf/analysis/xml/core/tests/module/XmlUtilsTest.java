@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -28,7 +28,7 @@ import org.junit.After;
 import org.junit.Test;
 
 /**
- * Tests for the XmlUtils class
+ * Tests for the {@link XmlUtils} class
  *
  * @author Geneviève Bastien
  */
@@ -73,14 +73,14 @@ public class XmlUtilsTest {
     public void testXmlValidate() {
         File testXmlFile = TmfXmlTestFiles.VALID_FILE.getFile();
         if ((testXmlFile == null) || !testXmlFile.exists()) {
-            fail("Test file does not exist");
+            fail("XML test file does not exist");
         }
         assertTrue(XmlUtils.xmlValidate(testXmlFile));
         assertTrue(XmlUtils.getLastError().length() == 0);
 
         testXmlFile = TmfXmlTestFiles.INVALID_FILE.getFile();
         if ((testXmlFile == null) || !testXmlFile.exists()) {
-            fail("Test file does not exist");
+            fail("XML test file does not exist");
         }
         assertFalse(XmlUtils.xmlValidate(testXmlFile));
         assertTrue(XmlUtils.getLastError().length() > 0);
@@ -100,7 +100,7 @@ public class XmlUtilsTest {
         /* Add test_valid.xml file */
         File testXmlFile = TmfXmlTestFiles.VALID_FILE.getFile();
         if ((testXmlFile == null) || !testXmlFile.exists()) {
-            fail("Test file does not exist");
+            fail("XML test file does not exist");
         }
 
         XmlUtils.addXmlFile(testXmlFile);

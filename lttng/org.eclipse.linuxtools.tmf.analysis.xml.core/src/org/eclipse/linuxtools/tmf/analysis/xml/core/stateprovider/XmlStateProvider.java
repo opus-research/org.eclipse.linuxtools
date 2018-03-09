@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,28 +12,27 @@
 
 package org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.io.IOException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.core.Activator;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlAttribute;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlCondition;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlEventHandler;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlStateChange;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlStateValue;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.module.Messages;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlStrings;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
+import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
+import org.eclipse.osgi.util.NLS;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * This is the state change input plug-in for TMF's state system which handles
@@ -41,7 +40,7 @@ import org.w3c.dom.NodeList;
  *
  * @author Florian Wininger
  */
-public class XmlStateProvider extends XmlAbstractProvider {
+public class XmlStateProvider extends AbstractTmfStateProvider {
 
     /**
      * Version number of this state provider. Please bump this if you modify the
@@ -49,10 +48,10 @@ public class XmlStateProvider extends XmlAbstractProvider {
      */
     private static final int VERSION = 1;
 
-    private IPath fFile;
+    private IPath fFilePath;
 
-    /** List of all EventHandler */
-    private ArrayList<TmfXmlEventHandler> ssprovider = new ArrayList<>();
+    /** StateID */
+    private String fStateId;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -61,42 +60,30 @@ public class XmlStateProvider extends XmlAbstractProvider {
     /**
      * Instantiate a new state provider plug-in.
      *
-     * FIXME: Does the trace really need to be a Ctf trace? The analysis module
-     * should make sure the trace is of the right type
+     * FIXME: For now we only support CTF trace types. It may not be too hard to
+     * get rid of this requirement, but it hasn't been tested, so we leave it
      *
      * @param trace
-     *            The trace
+     *            The CTF trace
      * @param stateid
-     *            The state system id, corresponding to the analysisid attribute
-     *            of the stateprovider element of the Xml file
+     *            The state system id, corresponding to the analysis_id attribute
+     *            of the state provider element of the XML file
      * @param file
-     *            Xml file containing the state provider definition
+     *            Path to the XML file containing the state provider definition
      */
     public XmlStateProvider(CtfTmfTrace trace, String stateid, IPath file) {
-        super(trace, stateid);
-        fFile = file;
-        loadXML();
+        super(trace, CtfTmfEvent.class, stateid);
+        fStateId = stateid;
+        fFilePath = file;
     }
 
     /**
-     * Function to load the XML file structure
+     * Get the state id of the state provider
+     *
+     * @return The state id of the state provider
      */
-    protected void loadXML() {
-
-        Element doc = (Element) super.loadXMLFile(fFile);
-        if (doc == null) {
-            return;
-        }
-
-        /* parser for the eventhandler */
-        NodeList nodes = doc.getElementsByTagName(TmfXmlStrings.EVENT_HANDLER);
-        ssprovider = new ArrayList<>();
-
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node node = nodes.item(i);
-            TmfXmlEventHandler handler = new TmfXmlEventHandler(node, fStateValues);
-            ssprovider.add(handler);
-        }
+    public String getStateId() {
+        return fStateId;
     }
 
     // ------------------------------------------------------------------------
@@ -109,210 +96,74 @@ public class XmlStateProvider extends XmlAbstractProvider {
     }
 
     @Override
-    public void assignTargetStateSystem(ITmfStateSystemBuilder ssb) {
-        /* We can only set up the locations once the state system is assigned */
-        super.assignTargetStateSystem(ssb);
+    public XmlStateProvider getNewInstance() {
+        return new XmlStateProvider((CtfTmfTrace) this.getTrace(), getStateId(), fFilePath);
     }
 
     @Override
-    public XmlStateProvider getNewInstance() {
-        return new XmlStateProvider((CtfTmfTrace) this.getTrace(), this.getStateID(), fFile);
+    protected void eventHandle(ITmfEvent event) {
+        // TODO Auto-generated method stub
     }
 
+    // ------------------------------------------------------------------------
+    // Operations
+    // ------------------------------------------------------------------------
+
     /**
-     * Test conditions
+     * Loads the XML file and returns the element at the root of the current
+     * state provider.
      *
-     * @return 1 if condition is true, otherwise 0. If error -1.
-     * @throws AttributeNotFoundException
+     * @return The XML node at the root of the state provider
      */
-    private boolean testCondition(CtfTmfEvent event, TmfXmlCondition condition) throws AttributeNotFoundException {
-
-        // State Value
-        if (condition.getStateValue() != null) {
-            TmfXmlStateValue filter = condition.getStateValue();
-            int quark = -1;
-            for (TmfXmlAttribute attribute : filter.getAttributes()) {
-                quark = getQuark(attribute, event, quark);
-                // the query is not valid, we stop the state change
-                if (quark == -1) {
-                    throw new AttributeNotFoundException();
-                }
-            }
-
-            // the value in the XML file
-            ITmfStateValue valueXML;
-            valueXML = getValue(filter, event);
-
-            ITmfStateValue valueState;
-            // the value in the state
-            if (quark != -1) {
-                valueState = ss.queryOngoingState(quark);
-            }
-            // the value in the event field
-            else {
-                valueState = getEventField(filter, event);
-            }
-            return valueXML.equals(valueState);
-
-            // Condition Tree
-        } else if (!condition.getConditions().isEmpty()) {
-
-            if (condition.getOperator() == TmfXmlStrings.OP_EQUALS) {
-                return testCondition(event, condition.getConditions().get(0));
-            } else if (condition.getOperator() == TmfXmlStrings.OP_NOT) {
-                return !testCondition(event, condition.getConditions().get(0));
-            } else if (condition.getOperator() == TmfXmlStrings.OP_AND) {
-                boolean test = true;
-                for (TmfXmlCondition childCondition : condition.getConditions()) {
-                    test = test && testCondition(event, childCondition);
-                }
-                return test;
-            } else if (condition.getOperator() == TmfXmlStrings.OP_OR) {
-                boolean test = false;
-                for (TmfXmlCondition childCondition : condition.getConditions()) {
-                    test = test || testCondition(event, childCondition);
-                }
-                return test;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Make all change for a event
-     */
-    private void makeChange(CtfTmfEvent event) {
-        final String eventName = event.getEventName();
-        final long ts = event.getTimestamp().getValue();
+    protected Node loadXMLNode() {
 
         try {
-            for (TmfXmlEventHandler eventHandler : ssprovider) {
-                String eventHandlerName = eventHandler.getName();
+            File XMLFile = fFilePath.toFile();
+            if (XMLFile == null || !XMLFile.exists() || !XMLFile.isFile()) {
+                return null;
+            }
 
-                // test for correct name
-                boolean goodName = eventHandlerName.equals(eventName);
+            /* Load the XML File */
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder;
 
-                // test for the wildcart at the end
-                goodName = goodName || (eventHandlerName.endsWith(TmfXmlStrings.WILDCART)
-                        && eventName.startsWith(eventHandlerName.replace(TmfXmlStrings.WILDCART, TmfXmlStrings.NULL)));
+            dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(XMLFile);
+            doc.getDocumentElement().normalize();
 
-                if (!goodName) {
-                    return;
-                }
+            /* get the state providers and find the corresponding one */
+            NodeList stateproviderNodes = doc.getElementsByTagName(TmfXmlStrings.STATE_PROVIDER);
+            Element stateproviderNode = null;
 
-                // States Changes
-                for (TmfXmlStateChange stateChange : eventHandler.getStateChanges()) {
-                    // Conditions
-                    int quark = -1;
-                    boolean condition = true;
-                    boolean error = false; // error level
-
-                    // if we have at least one condition
-                    if (stateChange.getConditions() != null) {
-                        try {
-                            condition = testCondition(event, stateChange.getConditions());
-                        } catch (AttributeNotFoundException ae) {
-                            error = true;
-                        }
-                    }
-
-                    TmfXmlStateValue action = null;
-                    // if all condition are good
-                    if (condition) {
-                        action = stateChange.getThenValue();
-                    }
-                    else {
-                        action = stateChange.getElseValue();
-                    }
-
-                    if (action == null) {
-                        return;
-                    }
-
-                    quark = -1;
-                    for (TmfXmlAttribute attribute : action.getAttributes()) {
-                        quark = getQuark(attribute, event, quark);
-                        // the query is not valid, we stop the state
-                        // change
-                        if (quark == -1) {
-                            error = true;
-                            break;
-                        }
-                    }
-
-                    if (error) {
-                        return;
-                    }
-
-                    // auto increment the node
-                    if (action.getTypeValue() == TmfXmlStrings.VALUE_TYPE_INCREMENT) {
-                        ss.incrementAttribute(ts, quark);
-                    }
-                    else if (action.getTypeValue() == TmfXmlStrings.VALUE_TYPE_INCREMENT_TMFSTATE) {
-                        if (action.getValueTMF().getType() == ITmfStateValue.Type.INTEGER) {
-                            int increment = action.getValueTMF().unboxInt();
-                            int currentValue = ss.queryOngoingState(quark).unboxInt();
-                            ITmfStateValue value = TmfStateValue.newValueInt(increment + currentValue);
-                            ss.modifyAttribute(ts, value, quark);
-                        }
-                    }
-                    else if (action.getTypeValue() == TmfXmlStrings.VALUE_TYPE_INCREMENT_EVENTFIELD) {
-                        int increment = 0;
-                        ITmfStateValue incrementValue = getValue(action, event);
-                        if (incrementValue.getType() == ITmfStateValue.Type.INTEGER) {
-                            increment = incrementValue.unboxInt();
-                        }
-                        else if (incrementValue.getType() == ITmfStateValue.Type.LONG) {
-                            increment = (int) incrementValue.unboxLong();
-                        }
-                        int currentValue = ss.queryOngoingState(quark).unboxInt();
-                        ITmfStateValue value = TmfStateValue.newValueInt(increment + currentValue);
-                        ss.modifyAttribute(ts, value, quark);
-                    }
-                    // update the node
-                    else if (action.getTypeValue() != TmfXmlStrings.VALUE_TYPE_DELETE) {
-                        ITmfStateValue value = getValue(action, event);
-                        if (action.getStackAction() == TmfXmlStrings.VALUE_TYPE_PUSH) {
-                            ss.pushAttribute(ts, value, quark);
-                        } else if (action.getStackAction() == TmfXmlStrings.VALUE_TYPE_POP) {
-                            ss.popAttribute(ts, quark);
-                        } else {
-                            ss.modifyAttribute(ts, value, quark);
-                        }
-                    }
-                    // delete the node
-                    else {
-                        ss.removeAttribute(ts, quark);
-                    }
+            for (int i = 0; i < stateproviderNodes.getLength(); i++) {
+                Element node = (Element) stateproviderNodes.item(i);
+                String analysisid = node.getAttribute(TmfXmlStrings.ANALYSIS_ID);
+                if (analysisid.equals(fStateId)) {
+                    stateproviderNode = node;
                 }
             }
 
-        } catch (AttributeNotFoundException ae) {
-            /*
-             * This would indicate a problem with the logic of the manager here,
-             * so it shouldn't happen.
-             */
-            Activator.logError("Attribute not found", ae); //$NON-NLS-1$
-        } catch (TimeRangeException tre) {
-            /*
-             * This would happen if the events in the trace aren't ordered
-             * chronologically, which should never be the case ...
-             */
-            Activator.logError("TimeRangeException caught in the state system's event manager.  Are the events in the trace correctly ordered?", tre); //$NON-NLS-1$
-        } catch (StateValueTypeException sve) {
-            /*
-             * This would happen if we were trying to push/pop attributes not of
-             * type integer. Which, once again, should never happen.
-             */
-            Activator.logError("State value type error", sve); //$NON-NLS-1$
+            return stateproviderNode;
+        } catch (ParserConfigurationException e) {
+            Activator.logError("Error loading XML file", e); //$NON-NLS-1$
+        } catch (SAXException e) {
+            Activator.logError(NLS.bind(Messages.XmlUtils_XmlValidationError, e.getLocalizedMessage()), e);
+        } catch (IOException e) {
+            Activator.logError("Error loading XML file", e); //$NON-NLS-1$
         }
 
+        return null;
     }
 
-    @Override
-    protected void eventHandle(ITmfEvent ev) {
-        CtfTmfEvent event = (CtfTmfEvent) ev;
-        makeChange(event);
+    /**
+     * Function to load the XML file structure
+     */
+    protected void loadXML() {
+
+        Element doc = (Element) loadXMLNode();
+        if (doc == null) {
+            return;
+        }
     }
 
 }

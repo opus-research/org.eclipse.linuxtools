@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -23,7 +23,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- * Class to store the header information of xml-defined analysis
+ * Class to store and interpret the header information of XML-defined components
+ *
+ * TODO: When trace types are moved to the o.e.l.tmf.core plug-in, there will be
+ * no need for this class anymore, move to o.e.l.tmf.analysis.xml.core plug-in.
  *
  * @author Geneviève Bastien
  */
@@ -33,7 +36,7 @@ public class XmlHeadInfoUi extends XmlHeadInfo {
      * Constructor
      *
      * @param item
-     *            The Xml node corresponding to this header
+     *            The XML node corresponding to this header
      */
     public XmlHeadInfoUi(Node item) {
         super(item);

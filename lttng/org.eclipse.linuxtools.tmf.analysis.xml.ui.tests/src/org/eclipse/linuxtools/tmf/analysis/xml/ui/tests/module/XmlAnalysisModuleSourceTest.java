@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test suite for the xml analysis module source class
+ * Test suite for the {@link XmlAnalysisModuleSource} class
  *
  * @author Geneviève Bastien
  */
@@ -49,7 +49,7 @@ public class XmlAnalysisModuleSourceTest {
     }
 
     /**
-     * Empty the xml directory before the test, just in case
+     * Empty the XML directory before the test, just in case
      */
     @Before
     public void setUp() {
@@ -57,7 +57,7 @@ public class XmlAnalysisModuleSourceTest {
     }
 
     /**
-     * Empty the xml directory after the test
+     * Empty the XML directory after the test
      */
     @After
     public void cleanUp() {
@@ -71,46 +71,51 @@ public class XmlAnalysisModuleSourceTest {
     public void testPopulateModules() {
         XmlAnalysisModuleSource module = new XmlAnalysisModuleSource();
 
-        Map<String, IAnalysisModuleHelper> modules = module.getAnalysisModules();
-        assertTrue(modules.isEmpty());
+        Iterable<IAnalysisModuleHelper> modules = module.getAnalysisModules();
+        assertFalse(modules.iterator().hasNext());
 
-        /* use the test valid file for test */
+        /* use the valid XML test file */
         File testXmlFile = TmfXmlTestFiles.VALID_FILE.getFile();
         if ((testXmlFile == null) || !testXmlFile.exists()) {
-            fail("Test file does not exist");
+            fail("XML test file does not exist");
         }
 
         XmlUtils.addXmlFile(testXmlFile);
         XmlAnalysisModuleSource.notifyModuleChange();
         modules = module.getAnalysisModules();
 
-        assertFalse(modules.isEmpty());
+        assertTrue(modules.iterator().hasNext());
 
         assertTrue(findStateSystemModule(modules));
     }
 
-    private static boolean findStateSystemModule(Map<String, IAnalysisModuleHelper> modules) {
-        return modules.containsKey(SS_MODULE);
+    private static boolean findStateSystemModule(Iterable<IAnalysisModuleHelper> modules) {
+        for (IAnalysisModuleHelper helper : modules) {
+            if (SS_MODULE.equals(helper.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * Test the executable list refresh from the module helper
+     * Test that XML modules are available through the analysis manager
      */
     @Test
     public void testPopulateModulesWithAnalysisManager() {
 
         Map<String, IAnalysisModuleHelper> modules = TmfAnalysisManager.getAnalysisModules();
-        assertFalse(findStateSystemModule(modules));
+        assertFalse(findStateSystemModule(modules.values()));
 
-        /* use the test valid file for test */
+        /* use the valid XML test file */
         File testXmlFile = TmfXmlTestFiles.VALID_FILE.getFile();
         if ((testXmlFile == null) || !testXmlFile.exists()) {
-            fail("Test file does not exist");
+            fail("XML test file does not exist");
         }
 
         XmlUtils.addXmlFile(testXmlFile);
         XmlAnalysisModuleSource.notifyModuleChange();
         modules = TmfAnalysisManager.getAnalysisModules();
-        assertTrue(findStateSystemModule(modules));
+        assertTrue(findStateSystemModule(modules.values()));
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -26,6 +26,8 @@ public class Messages extends NLS {
     public static String XmlUtils_ErrorCopyingFile;
     /** XML parse error */
     public static String XmlUtils_XmlParseError;
+    /** Error occurred while validating XML */
+    public static String XmlUtils_XmlValidateError;
     /** XML validation error */
     public static String XmlUtils_XmlValidationError;
 

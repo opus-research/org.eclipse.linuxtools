@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -23,7 +23,7 @@ import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
 import org.eclipse.linuxtools.tmf.analysis.xml.ui.module.Messages;
 import org.eclipse.linuxtools.tmf.analysis.xml.ui.module.XmlAnalysisModuleSource;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
@@ -34,7 +34,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * Imports and validates an xml file
+ * Imports and validates an XML file
  *
  * @author Geneviève Bastien
  */
@@ -53,16 +53,13 @@ public class ImportXmlHandler extends AbstractHandler {
             if (XmlUtils.xmlValidate(file)) {
                 if (XmlUtils.addXmlFile(file)) {
                     XmlAnalysisModuleSource.notifyModuleChange();
-                    TmfTraceFolder folder = getTraceFolder();
                     /*
                      * FIXME: It refreshes the list of analysis under a trace,
                      * but since modules are instantiated when the trace opens,
                      * the changes won't apply to an opened trace, it needs to
                      * be closed then reopened
                      */
-                    if (folder != null) {
-                        folder.refresh();
-                    }
+                    refreshProject();
                 } else {
                     TraceUtils.displayErrorMsg(Messages.ImportXmlHandler_ImportXmlFile, XmlUtils.getLastError());
                 }
@@ -75,37 +72,36 @@ public class ImportXmlHandler extends AbstractHandler {
     }
 
     /**
-     * @return the trace folder or null
+     * Refresh the selected project with the new XML file import
      */
-    protected TmfTraceFolder getTraceFolder() {
+    private static void refreshProject() {
         // Check if we are closing down
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (window == null) {
-            return null;
+            return;
         }
 
         // Get the selection
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
         if (part == null) {
-            return null;
+            return;
         }
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
-            return null;
+            return;
         }
         ISelection selection = selectionProvider.getSelection();
 
-        TmfTraceFolder traceFolder = null;
         if (selection instanceof TreeSelection) {
             TreeSelection sel = (TreeSelection) selection;
             // There should be only one item selected as per the plugin.xml
             Object element = sel.getFirstElement();
-            if (element instanceof TmfTraceFolder) {
-                traceFolder = (TmfTraceFolder) element;
+            if (element instanceof TmfProjectModelElement) {
+                ((TmfProjectModelElement) element).getProject().refresh();
             }
         }
-        return traceFolder;
+
     }
 
 }

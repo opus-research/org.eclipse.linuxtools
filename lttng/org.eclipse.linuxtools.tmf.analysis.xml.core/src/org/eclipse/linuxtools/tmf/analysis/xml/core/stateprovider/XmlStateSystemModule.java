@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -27,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
  * @since 3.0
  */
 public class XmlStateSystemModule extends TmfStateSystemAnalysisModule
-    implements IXmlModule {
+        implements IXmlModule {
 
     private IPath fXmlFile;
     private XmlHeadInfo fHeadInfo = null;
@@ -71,7 +71,9 @@ public class XmlStateSystemModule extends TmfStateSystemAnalysisModule
     }
 
     /**
-     * @return file XML File name
+     * Get the path to the XML file containing this state provider definition.
+     *
+     * @return XML file path
      */
     public IPath getXmlFile() {
         return fXmlFile;
