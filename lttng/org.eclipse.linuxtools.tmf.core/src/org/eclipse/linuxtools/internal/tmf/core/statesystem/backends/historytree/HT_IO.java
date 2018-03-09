@@ -72,15 +72,16 @@ class HT_IO {
                 throw new IOException("Cannot create new file at " + //$NON-NLS-1$
                         historyTreeFile.getName());
             }
+            fis = new FileInputStream(historyTreeFile);
+            fos = new FileOutputStream(historyTreeFile, false);
+        } else {
+            /*
+             * We want to open an existing file, make sure we don't squash the
+             * existing content when opening the fos!
+             */
+            this.fis = new FileInputStream(historyTreeFile);
+            this.fos = new FileOutputStream(historyTreeFile, true);
         }
-
-        /*
-         * We want to open an existing file, make sure we don't squash the
-         * existing content when opening the fos!
-         */
-        this.fis = new FileInputStream(historyTreeFile);
-        this.fos = new FileOutputStream(historyTreeFile, true);
-
         this.fcIn = fis.getChannel();
         this.fcOut = fos.getChannel();
     }
