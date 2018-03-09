@@ -30,13 +30,16 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * History Tree backend for storing a state history. This is the basic version
  * that runs in the same thread as the class creating it.
  *
- * @author Alexandre Montplaisir
+ * @author alexmont
  *
  */
 public class HistoryTreeBackend implements IStateHistoryBackend {
 
     /** The history tree that sits underneath */
     protected final HistoryTree sht;
+
+    /** Direct reference to the tree's IO object */
+    private final HT_IO treeIO;
 
     /** Indicates if the history tree construction is done */
     protected boolean isFinishedBuilding = false;
@@ -67,6 +70,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         final HTConfig conf = new HTConfig(newStateFile, blockSize, maxChildren,
                 providerVersion, startTime);
         sht = new HistoryTree(conf);
+        treeIO = sht.getTreeIO();
     }
 
     /**
@@ -106,6 +110,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     public HistoryTreeBackend(File existingStateFile, int providerVersion)
             throws IOException {
         sht = new HistoryTree(existingStateFile, providerVersion);
+        treeIO = sht.getTreeIO();
         isFinishedBuilding = true;
     }
 
@@ -137,35 +142,35 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
     @Override
     public FileInputStream supplyAttributeTreeReader() {
-        return sht.supplyATReader();
+        return treeIO.supplyATReader();
     }
 
     @Override
     public File supplyAttributeTreeWriterFile() {
-        return sht.supplyATWriterFile();
+        return treeIO.supplyATWriterFile();
     }
 
     @Override
     public long supplyAttributeTreeWriterFilePosition() {
-        return sht.supplyATWriterFilePos();
+        return treeIO.supplyATWriterFilePos();
     }
 
     @Override
     public void removeFiles() {
-        sht.deleteFile();
+        treeIO.deleteFile();
     }
 
     @Override
     public void dispose() {
         if (isFinishedBuilding) {
-            sht.closeFile();
+            treeIO.closeFile();
         } else {
             /*
              * The build is being interrupted, delete the file we partially
              * built since it won't be complete, so shouldn't be re-used in the
              * future (.deleteFile() will close the file first)
              */
-            sht.deleteFile();
+            treeIO.deleteFile();
         }
     }
 
@@ -276,7 +281,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         try {
             for (int seq = 0; seq < sht.getNodeCount(); seq++) {
-                node = sht.readNode(seq);
+                node = treeIO.readNode(seq);
                 total += node.getNodeUsagePRC();
             }
         } catch (ClosedChannelException e) {

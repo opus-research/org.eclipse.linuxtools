@@ -461,9 +461,6 @@ public class CtfTmfTrace extends TmfTrace
 
     private static int fCheckpointSize = -1;
 
-    /**
-     * @since 3.0
-     */
     @Override
     public synchronized int getCheckpointSize() {
         if (fCheckpointSize == -1) {
@@ -482,9 +479,6 @@ public class CtfTmfTrace extends TmfTrace
         return new TmfBTreeTraceIndexer(this, interval);
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
         return new CtfLocation(bufferIn);

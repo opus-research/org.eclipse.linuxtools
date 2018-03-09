@@ -22,6 +22,7 @@ import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoUtils;
+import org.eclipse.linuxtools.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -29,10 +30,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.ide.ResourceUtil;
 
-/**
- * Handle the execution of the Update and Execute button.
- */
-public class CreaterepoCommandHandler extends AbstractHandler {
+public class CreaterepoExecuteCommandHandler extends AbstractHandler {
 
 	/*
 	 * (non-Javadoc)
@@ -40,7 +38,6 @@ public class CreaterepoCommandHandler extends AbstractHandler {
 	 */
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		final String executionType = event.getParameter("executionType"); //$NON-NLS-1$
 		try {
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IWorkbenchPage wbPage = wb.getActiveWorkbenchWindow().getActivePage();
@@ -54,11 +51,7 @@ public class CreaterepoCommandHandler extends AbstractHandler {
 						monitor.beginTask(Messages.CreaterepoProject_executeCreaterepo, IProgressMonitor.UNKNOWN);
 						MessageConsoleStream os = CreaterepoUtils.findConsole(Messages.CreaterepoProject_consoleName)
 								.newMessageStream();
-						if (executionType.equals("refresh")) { //$NON-NLS-1$
-							return project.update(os);
-						} else {
-							return project.createrepo(os);
-						}
+						return project.createrepo(os);
 					} catch (CoreException e) {
 						Activator.logError(Messages.Createrepo_errorExecuting, e);
 					} finally {
