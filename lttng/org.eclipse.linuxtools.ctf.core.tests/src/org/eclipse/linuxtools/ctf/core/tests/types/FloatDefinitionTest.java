@@ -21,7 +21,6 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -78,7 +77,7 @@ public class FloatDefinitionTest {
     }
 
     @Test
-    public void testFloat64Bit() throws CTFReaderException{
+    public void testFloat64Bit(){
         for(int i = 1; i < 63 ; i++) {
             parent = new FloatDeclaration(i, 64-i, ByteOrder.nativeOrder(), 0);
             fixture = parent.createDefinition(null, fieldName);
@@ -91,7 +90,7 @@ public class FloatDefinitionTest {
     }
 
     @Test
-    public void testFloat48Bit() throws CTFReaderException{
+    public void testFloat48Bit(){
         parent = new FloatDeclaration(12, 32, ByteOrder.nativeOrder(), 0);
         fixture = parent.createDefinition(null, fieldName);
         assertNotNull(fixture);
@@ -123,10 +122,9 @@ public class FloatDefinitionTest {
 
     /**
      * Run the void read(BitBuffer) method test.
-     * @throws CTFReaderException error
      */
     @Test
-    public void testRead() throws CTFReaderException {
+    public void testRead() {
         singleFixture.setValue(2.0);
         BitBuffer input = new BitBuffer(java.nio.ByteBuffer.allocateDirect(128));
         singleFixture.read(input);
