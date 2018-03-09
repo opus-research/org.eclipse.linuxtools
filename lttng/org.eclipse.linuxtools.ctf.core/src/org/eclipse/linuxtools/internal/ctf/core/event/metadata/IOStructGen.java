@@ -1145,6 +1145,10 @@ public class IOStructGen {
                     /* Sequence */
                     String lengthName = concatenateUnaryStrings(lengthChildren);
 
+                    /* check that lengthName was declared */
+                    if (!isIsUnsignedIntegerField(lengthName)) {
+                        throw new ParseException("Sequnce declared with length that is not an unsigned integer"); //$NON-NLS-1$
+                    }
                     /* Create the sequence declaration. */
                     declaration = new SequenceDeclaration(lengthName,
                             declaration);
@@ -1159,6 +1163,15 @@ public class IOStructGen {
         }
 
         return declaration;
+    }
+
+    private boolean isIsUnsignedIntegerField(String lengthName) {
+        IDeclaration decl = getCurrentScope().lookupIdentifierRecursive(lengthName);
+        if (decl instanceof IntegerDeclaration) {
+            return !((IntegerDeclaration) decl).isSigned();
+        }
+        return false;
+
     }
 
     /**
@@ -1319,7 +1332,7 @@ public class IOStructGen {
                 typeSpecifierList, pointerList);
 
         /* Use the string representation to search the type in the current scope */
-        IDeclaration decl = getCurrentScope().rlookupType(
+        IDeclaration decl = getCurrentScope().lookupTypeRecursive(
                 typeStringRepresentation);
 
         if (decl == null) {
@@ -1579,7 +1592,7 @@ public class IOStructGen {
                 /* Name and !body */
 
                 /* Lookup the name in the current scope. */
-                structDeclaration = getCurrentScope().rlookupStruct(structName);
+                structDeclaration = getCurrentScope().lookupStructRecursive(structName);
 
                 /*
                  * If not found, it means that a struct with such name has not
@@ -1675,6 +1688,7 @@ public class IOStructGen {
             IDeclaration decl = parseTypeDeclarator(typeDeclaratorNode,
                     typeSpecifierListNode, identifierSB);
             String fieldName = identifierSB.toString();
+            getCurrentScope().registerIdentifier(fieldName, decl);
 
             if (struct.hasField(fieldName)) {
                 throw new ParseException("struct: duplicate field " //$NON-NLS-1$
@@ -1742,13 +1756,13 @@ public class IOStructGen {
              * it could be because the enum was already declared.
              */
             if (enumName != null) {
-                enumDecl = getCurrentScope().rlookupEnum(enumName);
+                enumDecl = getCurrentScope().lookupEnumRecursive(enumName);
                 if (enumDecl != null) {
                     return (EnumDeclaration) enumDecl;
                 }
             }
 
-            IDeclaration decl = getCurrentScope().rlookupType("int"); //$NON-NLS-1$
+            IDeclaration decl = getCurrentScope().lookupTypeRecursive("int"); //$NON-NLS-1$
 
             if (decl == null) {
                 throw new ParseException(
@@ -1791,7 +1805,7 @@ public class IOStructGen {
                 /* Name and !body */
 
                 /* Lookup the name in the current scope. */
-                enumDeclaration = getCurrentScope().rlookupEnum(enumName);
+                enumDeclaration = getCurrentScope().lookupEnumRecursive(enumName);
 
                 /*
                  * If not found, it means that an enum with such name has not
@@ -2014,7 +2028,7 @@ public class IOStructGen {
                 /* Name and !body */
 
                 /* Lookup the name in the current scope. */
-                variantDeclaration = getCurrentScope().rlookupVariant(
+                variantDeclaration = getCurrentScope().lookupVariantRecursive(
                         variantName);
 
                 /*
@@ -2090,12 +2104,16 @@ public class IOStructGen {
             IDeclaration decl = parseTypeDeclarator(typeDeclaratorNode,
                     typeSpecifierListNode, identifierSB);
 
-            if (variant.hasField(identifierSB.toString())) {
+            String name = identifierSB.toString();
+
+            if (variant.hasField(name)) {
                 throw new ParseException("variant: duplicate field " //$NON-NLS-1$
-                        + identifierSB.toString());
+                        + name);
             }
 
-            variant.addField(identifierSB.toString(), decl);
+            getCurrentScope().registerIdentifier(name, decl);
+
+            variant.addField(name, decl);
         }
     }
 
