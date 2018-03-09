@@ -63,9 +63,6 @@
                 icon="icons/actions/run/run_exc.gif"
                 label="%action.run.name"
                 style="push">
-             <visibleWhen
-                   checkEnabled="true">
-             </visibleWhen>
           </command>
        </menuContribution>
        <menuContribution
@@ -93,13 +90,13 @@
 	<extension
 		point="org.eclipse.ui.editors">
 		<editor
-	        class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
-	        contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
-	        default="true"
-	        extensions="stp"
-	        icon="icons/views/page_obj.gif"
-	        id="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
-	        name="%editor.stp.name"/>
+        class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
+        contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+        default="true"
+        extensions="stp"
+        icon="icons/views/page_obj.gif"
+        id="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
+        name="%editor.stp.name"/>
 		<editor
 			name="%editor.simple.name"
 			id="org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor"
@@ -272,7 +269,6 @@
 			targetID="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective">
 			<actionSet id="org.eclipse.linuxtools.systemtap.ui.editor.FileActionSet"/>
 			<actionSet id="org.eclipse.linuxtools.systemtap.ui.ide.FileActionSet"/>
-			<actionSet id="org.eclipse.debug.ui.launchActionSet"/>
 
 		</perspectiveExtension>
 		<perspectiveExtension
@@ -310,9 +306,7 @@
     <shortcut
           class="org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptLaunchShortcut"
           id="org.eclipse.linuxtools.systemtap.ui.ide.StapLaunchShortcut"
-          label="%launch.run.name"
-          description="%launch.run.desc"
-          icon="icons/smileytap_small.gif"
+          label="Systemtap Script"
           modes="run">
        <contextualLaunch>
           <enablement>
@@ -335,7 +329,7 @@
                          </and>
                          <and>
                             <instanceof
-                                  value="org.eclipse.ui.IPathEditorInput">
+                                  value="org.eclipse.ui.IFileEditorInput">
                             </instanceof>
                             <with
                                   variable="activeEditorId">
