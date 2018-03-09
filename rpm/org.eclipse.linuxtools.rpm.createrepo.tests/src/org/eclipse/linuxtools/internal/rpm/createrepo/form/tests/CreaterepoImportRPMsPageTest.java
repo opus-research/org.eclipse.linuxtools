@@ -24,13 +24,10 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
-import org.eclipse.linuxtools.rpm.createrepo.CreaterepoUtils;
 import org.eclipse.linuxtools.rpm.createrepo.tests.CreaterepoProjectTest;
 import org.eclipse.linuxtools.rpm.createrepo.tests.ICreaterepoTestConstants;
 import org.eclipse.linuxtools.rpm.createrepo.tests.TestCreaterepoProject;
@@ -41,14 +38,12 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotMultiPageEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
-import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.junit.AfterClass;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -81,11 +76,6 @@ public class CreaterepoImportRPMsPageTest {
 		testProject = new TestCreaterepoProject();
 		assertTrue(testProject.getProject().exists());
 		bot = new SWTWorkbenchBot();
-		try {
-			bot.shell(ICreaterepoTestConstants.MAIN_SHELL).activate();
-		} catch (WidgetNotFoundException e) {
-			// cannot activate main shell, continue anyways
-		}
 		monitor = new NullProgressMonitor();
 	}
 
@@ -161,9 +151,6 @@ public class CreaterepoImportRPMsPageTest {
 	 */
 	@Test
 	public void testCreaterepo() throws CoreException {
-		// assume that there is creatrepo version of >= 0.9.8
-		IStatus validVersion = Createrepo.isCorrectVersion(CreaterepoUtils.findConsole("test").newMessageStream()); //$NON-NLS-1$
-		Assume.assumeTrue(validVersion.isOK());
 		importPageBot.button(Messages.ImportRPMsPage_buttonCreateRepo).click();
 		// make the bot wait until the download job shell closes before proceeding the tests
 		importPageBot.waitUntil(Conditions.shellCloses(bot.shell(Messages.Createrepo_jobName)));

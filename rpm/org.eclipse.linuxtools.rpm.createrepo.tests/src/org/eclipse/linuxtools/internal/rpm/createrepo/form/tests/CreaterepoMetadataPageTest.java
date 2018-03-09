@@ -36,7 +36,6 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotMultiPageEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
-import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
@@ -70,11 +69,6 @@ public class CreaterepoMetadataPageTest {
 		testProject = new TestCreaterepoProject();
 		assertTrue(testProject.getProject().exists());
 		bot = new SWTWorkbenchBot();
-		try {
-			bot.shell(ICreaterepoTestConstants.MAIN_SHELL).activate();
-		} catch (WidgetNotFoundException e) {
-			// cannot activate main shell, continue anyways
-		}
 	}
 
 	/**
