@@ -21,13 +21,14 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
+import org.eclipse.linuxtools.rpm.createrepo.CreaterepoUtils;
 import org.eclipse.linuxtools.rpm.createrepo.tests.CreaterepoProjectTest;
 import org.eclipse.linuxtools.rpm.createrepo.tests.ICreaterepoTestConstants;
 import org.eclipse.linuxtools.rpm.createrepo.tests.TestCreaterepoProject;
@@ -38,12 +39,14 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotMultiPageEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
+import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -64,10 +67,9 @@ public class CreaterepoImportRPMsPageTest {
 	private CreaterepoProject project;
 	private static SWTWorkbenchBot bot;
 	private SWTBot importPageBot;
-	private static NullProgressMonitor monitor;
 
 	/**
-	 * Initialize the test project.
+	 * Initialize the test project. Will close the welcome view.
 	 *
 	 * @throws CoreException
 	 */
@@ -76,7 +78,11 @@ public class CreaterepoImportRPMsPageTest {
 		testProject = new TestCreaterepoProject();
 		assertTrue(testProject.getProject().exists());
 		bot = new SWTWorkbenchBot();
-		monitor = new NullProgressMonitor();
+		try {
+			bot.shell(ICreaterepoTestConstants.MAIN_SHELL).activate();
+		} catch (WidgetNotFoundException e) {
+			// cannot activate main shell, continue anyways
+		}
 	}
 
 	/**
@@ -151,6 +157,9 @@ public class CreaterepoImportRPMsPageTest {
 	 */
 	@Test
 	public void testCreaterepo() throws CoreException {
+		// assume that there is creatrepo version of >= 0.9.8
+		IStatus validVersion = Createrepo.isCorrectVersion(CreaterepoUtils.findConsole("test").newMessageStream()); //$NON-NLS-1$
+		Assume.assumeTrue(validVersion.isOK());
 		importPageBot.button(Messages.ImportRPMsPage_buttonCreateRepo).click();
 		// make the bot wait until the download job shell closes before proceeding the tests
 		importPageBot.waitUntil(Conditions.shellCloses(bot.shell(Messages.Createrepo_jobName)));
@@ -161,47 +170,6 @@ public class CreaterepoImportRPMsPageTest {
 		// assert that the repomd.xml file was created (successful createrepo execution)
 		IFolder repodata = (IFolder) project.getContentFolder().findMember(ICreaterepoTestConstants.REPODATA_FOLDER);
 		assertTrue(repodata.findMember(ICreaterepoTestConstants.REPO_MD_NAME).exists());
-	}
-
-	/**
-	 * Test if deleting/adding an RPM into content folder updates the RPM list.
-	 *
-	 * @throws CoreException
-	 * @throws IOException
-	 */
-	@Test
-	public void testResourceChangeListener() throws CoreException, IOException {
-		// delete the contents of the content folder
-		for (IResource resource : project.getContentFolder().members()) {
-			resource.delete(true, monitor);
-		}
-		// run in UI thread because accessing the tree in the import RPMs page
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
-				assertNotNull(tree);
-				// check items in tree are gone
-				assertEquals(0, tree.getItemCount());
-			}
-		});
-		// import a file again into the content folder
-		URL rpmURL = FileLocator.find(FrameworkUtil
-				.getBundle(CreaterepoProjectTest.class), new Path(TEST_RPM_LOC1), null);
-		final File rpmFile = new File(FileLocator.toFileURL(rpmURL).getPath());
-		assertTrue(rpmFile.exists());
-		project.importRPM(rpmFile);
-		// run in UI thread because accessing the tree in the import RPMs page
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
-				assertNotNull(tree);
-				// check if items are in tree
-				assertEquals(1, tree.getItemCount());
-				assertEquals(rpmFile.getName(), tree.getItem(0).getText());
-			}
-		});
 	}
 
 	/**
