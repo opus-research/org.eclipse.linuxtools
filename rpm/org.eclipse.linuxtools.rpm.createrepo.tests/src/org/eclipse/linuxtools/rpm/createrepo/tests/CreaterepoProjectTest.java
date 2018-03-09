@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.rpm.createrepo.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +31,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.rpm.core.utils.BufferedProcessInputStream;
-import org.eclipse.linuxtools.rpm.core.utils.Utils;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProjectCreator;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoUtils;
@@ -197,53 +194,22 @@ public class CreaterepoProjectTest {
 		assertEquals(2, rpms.size());
 	}
 
-	public void checkForCommand() throws IOException, InterruptedException {
-		BufferedProcessInputStream bpis = Utils.runCommandToInputStream("which", "createrepo");
-		if (bpis.getExitValue() == 1) {
-			fail("Failed due to system not having the 'createrepo' command, or it cannot be found.");
-		}
-	}
-
 	/**
 	 * Simple test execution of createrepo. This checks to see if the "content" folder
 	 * was created while executing and that the execution is successful if repomd.xml was created
 	 * under the repodata folder.
 	 *
 	 * @throws CoreException
-	 * @throws InterruptedException 
-	 * @throws IOException 
 	 */
 	@Test
-	public void testSimpleExecute() throws CoreException, IOException, InterruptedException {
-		checkForCommand();
+	public void testSimpleExecute() throws CoreException {
 		CreaterepoProject createrepoProject = new CreaterepoProject(project);
 		assertTrue(!createrepoProject.getContentFolder().exists());
 		IStatus status = createrepoProject.createrepo(CreaterepoUtils.findConsole("test").newMessageStream()); //$NON-NLS-1$
+
 		// check if  executing has an OK status and that content folder is created with the repodata contents
-		//assertEquals(Status.OK_STATUS, status);
-		if (!createrepoProject.getContentFolder().exists()) {
-			createrepoProject.getContentFolder().create(true, true, monitor);
-		}
-		String[] commands = {
-				"createrepo",
-				"--verbose",
-				"--profile",
-				"--unique-md-filenames",
-				"--database --checksum",
-				"sha256",
-				"--compress-type",
-				"compat",
-				"--workers",
-				"0",
-				"--changelog-limit",
-				"0",
-				createrepoProject.getContentFolder().getLocation().toOSString()
-		};
-		// next test:
-		// String[] commands2 = {"createrepo", createrepoProject.getContentFolder().getLocation().toOSString() };
-		Utils.runCommand(CreaterepoUtils.findConsole("test").newMessageStream(), createrepoProject.getProject(), commands);
+		assertEquals(Status.OK_STATUS, status);
 		assertTrue(createrepoProject.getContentFolder().exists());
-		createrepoProject.getContentFolder().refreshLocal(IResource.DEPTH_INFINITE, monitor);
 		assertTrue(createrepoProject.getContentFolder().members().length > 0);
 
 		// check if the repodata folder exists and repomd.xml exists within it
