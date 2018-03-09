@@ -45,12 +45,7 @@ public class CreaterepoCommandCreator {
 		CreaterepoPreferenceConstants.PREF_REVISION,
 		CreaterepoPreferenceConstants.PREF_DISTRO_TAG,
 		CreaterepoPreferenceConstants.PREF_CONTENT_TAG,
-		CreaterepoPreferenceConstants.PREF_REPO_TAG,
-	};
-
-	private static final String[] STRING_DELTA_COMMANDS = {
-		// deltas
-		CreaterepoPreferenceConstants.PREF_OLD_PACKAGE_DIRS,
+		CreaterepoPreferenceConstants.PREF_REPO_TAG
 	};
 
 	// commands that determine used state by int passed with it
@@ -155,18 +150,6 @@ public class CreaterepoCommandCreator {
 				}
 			}
 		}
-		if (delta) {
-			for (String arg : STRING_DELTA_COMMANDS) {
-				String value = projectPreferences.get(arg, preferenceStore.getDefaultString(arg));
-				arg = ICreaterepoConstants.DASH.concat(arg);
-				for (String dirs : value.split(ICreaterepoConstants.DELIMITER)) {
-					if (!dirs.isEmpty()) {
-						commands.add(arg);
-						commands.add(dirs);
-					}
-				}
-			}
-		}
 		return commands;
 	}
 
@@ -181,14 +164,10 @@ public class CreaterepoCommandCreator {
 		List<String> commands = new ArrayList<String>();
 		if (delta) {
 			for (String arg : INT_DELTA_COMMANDS) {
-				long value = projectPreferences.getInt(arg, preferenceStore.getDefaultInt(arg));
-				if (arg.equals(CreaterepoPreferenceConstants.PREF_MAX_DELTA_SIZE)) {
-					// 1048576 = bytes in a megabyte
-					value *= 1048576;
-				}
+				int value = projectPreferences.getInt(arg, preferenceStore.getDefaultInt(arg));
 				arg = ICreaterepoConstants.DASH.concat(arg);
 				commands.add(arg);
-				commands.add(Long.toString(value));
+				commands.add(Integer.toString(value));
 			}
 		} else {
 			for (String arg : INT_COMMANDS) {
