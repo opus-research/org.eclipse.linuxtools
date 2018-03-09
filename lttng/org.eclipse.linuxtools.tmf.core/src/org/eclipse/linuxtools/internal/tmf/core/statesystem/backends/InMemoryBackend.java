@@ -23,6 +23,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
@@ -135,6 +136,26 @@ public class InMemoryBackend implements IStateHistoryBackend {
                 /* Add this interval to the returned values */
                 currentStateInfo.set(entry.getAttribute(), entry);
                 modCount++;
+            }
+        }
+    }
+
+    @Override
+    public void doQuery(ITmfStateIntervalListener listener, long t) throws TimeRangeException, StateSystemDisposedException {
+        if (!checkValidTime(t)) {
+            throw new TimeRangeException();
+        }
+
+        /*
+         * The intervals are sorted by end time, so we can binary search to get
+         * the first possible interval, then only compare their start times.
+         */
+
+        Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
+        while (iter.hasNext()) {
+            ITmfStateInterval entry = iter.next();
+            if (entry.intersects(t)) {
+                listener.addInterval(entry);
             }
         }
     }

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.ITmfStateIntervalListener;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
@@ -262,7 +263,7 @@ abstract class HTNode {
     void closeThisNode(long endtime) {
         assert (endtime >= this.nodeStart);
 
-        if (intervals.size() > 0) {
+        if (!intervals.isEmpty()) {
             /*
              * Sort the intervals by ascending order of their end time. This
              * speeds up lookups a bit
@@ -279,7 +280,6 @@ abstract class HTNode {
 
         this.isDone = true;
         this.nodeEnd = endtime;
-        return;
     }
 
     /**
@@ -297,14 +297,8 @@ abstract class HTNode {
     void writeInfoFromNode(List<ITmfStateInterval> stateInfo, long t)
             throws TimeRangeException {
         assert (this.isDone); // not sure this will always be the case...
-        int startIndex;
 
-        if (intervals.size() == 0) {
-            return;
-        }
-        startIndex = getStartIndexFor(t);
-
-        for (int i = startIndex; i < intervals.size(); i++) {
+        for (int i = getStartIndexFor(t); i < intervals.size(); i++) {
             /*
              * Now we only have to compare the Start times, since we now the End
              * times necessarily fit
@@ -313,7 +307,29 @@ abstract class HTNode {
                 stateInfo.set(intervals.get(i).getAttribute(), intervals.get(i));
             }
         }
-        return;
+    }
+
+    /**
+     * Enumerates the intervals intersecting a given timestamp stored
+     * in this node through an intervals listener.
+     *
+     * @param listener
+     *            The link between the intervals observer
+     * @param t
+     *            The timestamp for which the query is for. Only return
+     *            intervals that intersect t.
+     * @throws TimeRangeException
+     */
+    void writeInfoFromNode(ITmfStateIntervalListener listener, long t)
+            throws TimeRangeException {
+        assert (this.isDone); // not sure this will always be the case...
+
+        for (int i = getStartIndexFor(t); i < intervals.size(); i++) {
+            HTInterval interval = intervals.get(i);
+            if (interval.intersects(t)) {
+                listener.addInterval(interval);
+            }
+        }
     }
 
     /**
@@ -328,23 +344,15 @@ abstract class HTNode {
      */
     HTInterval getRelevantInterval(int key, long t) throws TimeRangeException {
         assert (this.isDone);
-        int startIndex;
-        HTInterval curInterval;
 
-        if (intervals.size() == 0) {
-            return null;
-        }
-
-        startIndex = getStartIndexFor(t);
-
-        for (int i = startIndex; i < intervals.size(); i++) {
-            curInterval = intervals.get(i);
+        for (int i = getStartIndexFor(t); i < intervals.size(); i++) {
+            HTInterval curInterval = intervals.get(i);
             if (curInterval.getAttribute() == key
-                    && curInterval.getStartTime() <= t
-                    && curInterval.getEndTime() >= t) {
+                    && curInterval.intersects(t)) {
                 return curInterval;
             }
         }
+
         /* We didn't find the relevant information in this node */
         return null;
     }
@@ -352,6 +360,10 @@ abstract class HTNode {
     private int getStartIndexFor(long t) throws TimeRangeException {
         HTInterval dummy;
         int index;
+
+        if (intervals.isEmpty()) {
+            return 0;
+        }
 
         /*
          * Since the intervals are sorted by end time, we can skip all the ones

@@ -14,12 +14,14 @@ package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.partial;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.ITmfStateIntervalListener;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
@@ -249,6 +251,18 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         partialSS.releaseQueryLock();
     }
 
+    @Override
+    public void doQuery(ITmfStateIntervalListener listener, long t) throws TimeRangeException, StateSystemDisposedException {
+        // TODO: The doQuery(array, t) implementation should be re-implemented here.
+        //       This solution is a temporary patch to keep the same semantic before
+        //       deprecating the previous doQuery method.
+        List<ITmfStateInterval> currentStateInfo = new ArrayList<ITmfStateInterval>();
+        doQuery(currentStateInfo, t);
+        for (ITmfStateInterval interval : currentStateInfo) {
+            listener.addInterval(interval);
+        }
+    }
+
     /**
      * Single queries are not supported in partial histories. To get the same
      * result you can do a full query, then call fullState.get(attribute).
@@ -359,4 +373,5 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         }
 
     }
+
 }
