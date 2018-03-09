@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.rpm.createrepo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +21,16 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
+import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.osgi.framework.FrameworkUtil;
 
@@ -34,6 +39,8 @@ import org.osgi.framework.FrameworkUtil;
  * createrepo command.
  */
 public class CreaterepoProject {
+
+	private IEclipsePreferences projectPreferences;
 
 	private IProject project;
 	private IFolder content;
@@ -61,6 +68,7 @@ public class CreaterepoProject {
 		this.project = project;
 		this.repoFile = repoFile;
 		monitor = new NullProgressMonitor();
+		projectPreferences = new ProjectScope(project.getProject()).getNode(Activator.PLUGIN_ID);
 		intitialize();
 		// if something is deleted from the project while outside of eclipse,
 		// the tree/preferences will be updated accordingly after refreshing
@@ -74,7 +82,7 @@ public class CreaterepoProject {
 	 * @throws CoreException Thrown when unable to create the folders.
 	 */
 	private void intitialize() throws CoreException {
-		createContentFolder();
+		content = getProject().getFolder(ICreaterepoConstants.CONTENT_FOLDER);
 		if (repoFile == null) {
 			for (IResource child : getProject().members()) {
 				String extension = child.getFileExtension();
@@ -107,7 +115,7 @@ public class CreaterepoProject {
 	 */
 	public void importRPM(File externalFile) throws CoreException {
 		// must put imported RPMs into the content folder; create if missing
-		if (content == null) {
+		if (!getContentFolder().exists()) {
 			createContentFolder();
 		}
 		IFile file = getContentFolder().getFile(new Path(externalFile.getName()));
@@ -123,6 +131,23 @@ public class CreaterepoProject {
 			}
 			getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
 		}
+	}
+
+	/**
+	 * Execute the createrepo command.
+	 *
+	 * @param os Direct execution stream to this.
+	 * @return The status of the execution.
+	 * @throws CoreException Thrown when failure to execute command.
+	 */
+	public IStatus createrepo(OutputStream os) throws CoreException {
+		if (!getContentFolder().exists()) {
+			createContentFolder();
+		}
+		Createrepo createrepo = new Createrepo();
+		IStatus result = createrepo.execute(os, this, getCommandArguments());
+		getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+		return result;
 	}
 
 	/**
@@ -160,6 +185,9 @@ public class CreaterepoProject {
 	 */
 	public List<IResource> getRPMs() throws CoreException {
 		List<IResource> rpms = new ArrayList<IResource>();
+		if (!getContentFolder().exists()) {
+			return rpms;
+		}
 		if (getProject().members().length > 0) {
 			for (IResource child : getContentFolder().members()) {
 				String extension = child.getFileExtension();
@@ -169,6 +197,27 @@ public class CreaterepoProject {
 			}
 		}
 		return rpms;
+	}
+
+	/**
+	 * Get the eclipse preferences of this project.
+	 *
+	 * @return The eclipse preferences for the project.
+	 */
+	public IEclipsePreferences getEclipsePreferences() {
+		return projectPreferences;
+	}
+
+	/**
+	 * Get the command arguments to pass to the createrepo command. The
+	 * arguments come from the stored preferences from the preference page
+	 * and the project preferences.
+	 *
+	 * @return The command arguments.
+	 */
+	private static List<String> getCommandArguments() {
+		List<String> commands = new ArrayList<String>();
+		return commands;
 	}
 
 }
