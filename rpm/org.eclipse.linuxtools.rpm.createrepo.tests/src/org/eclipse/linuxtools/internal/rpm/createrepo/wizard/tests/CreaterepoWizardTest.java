@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.eclipse.core.resources.IFile;
@@ -22,6 +23,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProjectNature;
@@ -29,6 +31,7 @@ import org.eclipse.linuxtools.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.linuxtools.rpm.createrepo.IRepoFileConstants;
 import org.eclipse.linuxtools.rpm.createrepo.tests.ICreaterepoTestConstants;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.After;
@@ -57,22 +60,42 @@ public class CreaterepoWizardTest {
 	private static NullProgressMonitor monitor;
 	private IProject project;
 
+	/**
+	 * Setup the bot, monitor and workspace root.
+	 */
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	public static void setUpBeforeClass() {
 		bot = new SWTWorkbenchBot();
 		root = ResourcesPlugin.getWorkspace().getRoot();
 		monitor = new NullProgressMonitor();
+		try {
+			bot.shell(ICreaterepoTestConstants.MAIN_SHELL).activate();
+		} catch (WidgetNotFoundException e) {
+			// cannot activate main shell, continue anyways
+		}
 	}
 
+	/**
+	 * Delete the project and its contents for each test itereation.
+	 *
+	 * @throws CoreException
+	 */
 	@After
-	public void tearDown() throws Exception {
+	public void tearDown() throws CoreException {
 		if (project != null && project.exists()) {
 			project.delete(true, monitor);
 		}
 	}
 
+	/**
+	 * Go through the project creation wizard process of creating a new
+	 * createrepo project.
+	 *
+	 * @throws CoreException
+	 * @throws IOException
+	 */
 	@Test
-	public void testCreaterepoWizardProjectCreation() throws Exception {
+	public void testCreaterepoWizardProjectCreation() throws CoreException, IOException {
 		// go through the process of creating a new createrepo project
 		bot.menu(ICreaterepoTestConstants.FILE).menu(ICreaterepoTestConstants.NEW).menu(ICreaterepoTestConstants.OTHER).click();
 		SWTBotShell shell = bot.shell(ICreaterepoTestConstants.NEW);

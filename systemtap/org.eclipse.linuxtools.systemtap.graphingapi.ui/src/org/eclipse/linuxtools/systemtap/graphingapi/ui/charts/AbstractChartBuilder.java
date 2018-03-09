@@ -169,7 +169,10 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 		handleUpdateEvent();
 	}
 
-	protected Double getDoubleValue(Object o) {
+	/**
+	 * @since 3.0
+	 */
+	protected Double getDoubleOrNullValue(Object o) {
 		if (o == null) {
 			return null;
 		}

@@ -1,8 +1,11 @@
 package org.eclipse.linuxtools.internal.gcov.test;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.junit.AfterClass;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotCheckBox;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,45 +13,67 @@ import org.junit.runner.RunWith;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class GcovTestC {
 
-	private static final String CLASS_NAME = GcovTestC.class.getName();
 
-	private static SWTWorkbenchBot bot;
+		private static SWTWorkbenchBot	bot;
 
-	private static final String PROJECT_NAME = "Gcov_C_test";
-	private static final String PROJECT_TYPE = "C Project";
+		private static final String PROJECT_NAME = "Gcov_C_test";
+		private static final String PROJECT_TYPE = "C Project";
+		
 
-	@BeforeClass
-	public static void beforeClass() throws Exception {
-		System.out.print("Test: " + "init " + CLASS_NAME);
-		bot = GcovTest.init(PROJECT_NAME, PROJECT_TYPE);
-		System.out.println(" passed");
-	}
+		@BeforeClass
+		public static void beforeClass() throws Exception {
+			bot = new SWTWorkbenchBot();
+			bot.captureScreenshot(PROJECT_NAME + ".beforeClass.1.jpg");
+			try {
+				bot.viewByTitle("Welcome").close();
+				// hide Subclipse Usage stats popup if present/installed
+				bot.shell("Subclipse Usage").activate();
+				bot.button("Cancel").click();
+			} catch (WidgetNotFoundException e) {
+				//ignore
+			}
 
-	@AfterClass
-	public static void afterClass() {
-		System.out.print("Test: cleanup " + CLASS_NAME);
-		GcovTest.cleanup(bot);
-		System.out.println(" passed");
-	}
+			bot.perspectiveByLabel("C/C++").activate();
+			bot.sleep(500);
+			for (SWTBotShell sh : bot.shells()) {
+				if (sh.getText().startsWith("C/C++")) {
+					sh.activate();
+					bot.sleep(500);
+					break;
+				}
+			}
+			bot.captureScreenshot(PROJECT_NAME + ".beforeClass.2.jpg");
+			// Turn off automatic building by default
+			SWTBotMenu windowsMenu = bot.menu("Window");
+			windowsMenu.menu("Preferences").click();
+			SWTBotShell shell = bot.shell("Preferences");
+			shell.activate();
+			bot.tree().expandNode("General").select("Workspace");
+			SWTBotCheckBox buildAuto = bot.checkBox("Build automatically");
+			if (buildAuto != null && buildAuto.isChecked())
+				buildAuto.click();
+			bot.sleep(1000);
+			bot.button("Apply").click();
+			bot.button("OK").click();
 
-	@Test
-	public void openGcovFileDetails() throws Exception {
-		System.out.print("Test: " + "openGcovFileDetails " + CLASS_NAME);
-		GcovTest.openGcovFileDetails(bot, PROJECT_NAME);
-		System.out.println(" passed");
-	}
+			System.out.println("Test: " + GcovTestC.class.getName());
+			GcovTest.createProject(bot, PROJECT_NAME, PROJECT_TYPE);
+			GcovTest.populateProject(bot, PROJECT_NAME);
+			GcovTest.compileProject(bot, PROJECT_NAME);
+		}
 
-	@Test
-	public void openGcovSummary() throws Exception {
-		System.out.print("Test: " + "openGcovSummary " + CLASS_NAME);
-		GcovTest.openGcovSummary(bot, PROJECT_NAME, true);
-		System.out.println(" passed");
-	}
-
-	@Test
-	public void testGcovSummaryByLaunch() throws Exception {
-		System.out.print("Test: " + "testGcovSummaryByLaunch " + CLASS_NAME);
-		GcovTest.openGcovSummaryByLaunch(bot, PROJECT_NAME);
-		System.out.println(" passed");
-	}
+			@Test
+			public void openGcovFileDetails() throws Exception {
+				GcovTest.openGcovFileDetails(bot, PROJECT_NAME);
+			}
+		
+			@Test
+			public void openGcovSummary() throws Exception {
+				GcovTest.openGcovSummary(bot, PROJECT_NAME, true);
+			}
+			
+			@Test
+			public void testGcovSummaryByLaunch() throws Exception {
+				GcovTest.openGcovSummaryByLaunch(bot, PROJECT_NAME);
+			}
 }
