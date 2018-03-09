@@ -43,12 +43,12 @@ public class ExportTracePackageHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (window == null) {
-            return Boolean.FALSE;
+            return false;
         }
 
         ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
         IStructuredSelection sec = StructuredSelection.EMPTY;
-        List<TmfTraceElement> selectedTraces = new ArrayList<>();
+        List<TmfTraceElement> selectedTraces = new ArrayList<TmfTraceElement>();
         if (currentSelection instanceof IStructuredSelection) {
             sec = (IStructuredSelection) currentSelection;
             Object[] selectedElements = sec.toArray();

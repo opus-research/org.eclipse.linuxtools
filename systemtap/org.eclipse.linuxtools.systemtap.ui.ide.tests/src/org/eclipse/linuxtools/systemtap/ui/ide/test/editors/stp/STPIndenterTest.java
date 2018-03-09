@@ -100,9 +100,7 @@ public class STPIndenterTest extends TestCase {
 				if (bundle != null) {
 					in = FileLocator.openStream(bundle, filePath, false);
 				} else {
-					try (InputStream inTry = clazz.getResourceAsStream('/' + classFile)) {
-						in = inTry;
-					}
+					in = clazz.getResourceAsStream('/' + classFile);
 				}
 			} catch (IOException e) {
 				if (superclass == null || !superclass.getPackage().equals(clazz.getPackage())) {
@@ -112,9 +110,10 @@ public class STPIndenterTest extends TestCase {
 				continue;
 			}
 
-		    try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+		    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		    try {
 		    	// Read the java file collecting comments until we encounter the test method.
-			    List<StringBuilder> contents = new ArrayList<>();
+			    List<StringBuilder> contents = new ArrayList<StringBuilder>();
 			    StringBuilder content = new StringBuilder();
 			    for (String line = br.readLine(); line != null; line = br.readLine()) {
 			    	line = line.replaceFirst("^\\s*", ""); // Replace leading whitespace, preserve trailing
@@ -138,6 +137,8 @@ public class STPIndenterTest extends TestCase {
 			    		}
 			    	}
 			    }
+		    } finally {
+		    	br.close();
 		    }
 
 			if (superclass == null || !superclass.getPackage().equals(clazz.getPackage())) {

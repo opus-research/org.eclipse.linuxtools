@@ -38,31 +38,25 @@ public class MassifTreeViewer {
 		viewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
 		
 		contentProvider = new ITreeContentProvider() {
-			@Override
 			public Object[] getChildren(Object parentElement) {
 				return ((MassifHeapTreeNode) parentElement).getChildren();
 			}
 
-			@Override
 			public Object getParent(Object element) {
 				return ((MassifHeapTreeNode) element).getParent();
 			}
 
-			@Override
 			public boolean hasChildren(Object element) {
 				MassifHeapTreeNode[] children = ((MassifHeapTreeNode) element).getChildren();
 				return children != null && children.length > 0;
 			}
 
-			@Override
 			public Object[] getElements(Object inputElement) {
 				return (Object[]) inputElement;
 			}
 
-			@Override
 			public void dispose() {}
 
-			@Override
 			public void inputChanged(Viewer viewer, Object oldInput,
 					Object newInput) {}
 
@@ -72,7 +66,6 @@ public class MassifTreeViewer {
 		viewer.setLabelProvider(new MassifTreeLabelProvider());
 
 		doubleClickListener = new IDoubleClickListener() {
-			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				MassifHeapTreeNode element = (MassifHeapTreeNode) ((TreeSelection) event.getSelection()).getFirstElement();
 				if (element.hasSourceFile()) {
@@ -90,7 +83,6 @@ public class MassifTreeViewer {
 		
 		MenuManager manager = new MenuManager();
 		manager.addMenuListener(new IMenuListener() {
-			@Override
 			public void menuAboutToShow(IMenuManager manager) {
 				ITreeSelection selection = (ITreeSelection) viewer.getSelection();
 				MassifHeapTreeNode element = (MassifHeapTreeNode) selection.getFirstElement();

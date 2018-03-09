@@ -23,7 +23,7 @@
   <artifactId>linuxtools-profiling-parent</artifactId>
   <packaging>pom</packaging>
 
-  <name>Linux Tools Profiling Framework Parent</name>
+  <name>Eclipse Linux Tools Profiling Framework Parent</name>
 
   <licenses>
     <license>

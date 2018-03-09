@@ -27,21 +27,18 @@ import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.BarChartBuilder;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.LineChartBuilder;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.PieChartBuilder;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.ScatterChartBuilder;
+import org.eclipse.linuxtools.systemtap.graphingapi.ui.graphs.PieChart;
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.GraphComposite;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.GraphContinuousXControl;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.GraphContinuousYControl;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.GraphDiscreteXControl;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
 
 
 public final class GraphFactory {
 	private static final String[] graphNames = new String[] {
-		Localization.getString("GraphFactory.ScatterGraph"), //$NON-NLS-1$
-		Localization.getString("GraphFactory.LineGraph"), //$NON-NLS-1$
-		Localization.getString("GraphFactory.BarGraph"), //$NON-NLS-1$
-		Localization.getString("GraphFactory.AreaGraph"), //$NON-NLS-1$
-		Localization.getString("GraphFactory.PieChart"), //$NON-NLS-1$
+			Localization.getString("GraphFactory.ScatterGraph"), //$NON-NLS-1$
+			Localization.getString("GraphFactory.LineGraph"), //$NON-NLS-1$
+			Localization.getString("GraphFactory.BarGraph"), //$NON-NLS-1$
+			Localization.getString("GraphFactory.AreaGraph"), //$NON-NLS-1$
+			Localization.getString("GraphFactory.PieChart"), //$NON-NLS-1$
 	};
 
 	private static final String[] graphDescriptions = new String[] {
@@ -69,7 +66,7 @@ public final class GraphFactory {
 	};
 
 	public static String[] getAvailableGraphs(IDataSet data) {
-		LinkedList<String> ids = new LinkedList<>();
+		LinkedList<String> ids = new LinkedList<String>();
 		if(data instanceof IHistoricalDataSet) {
 			ids.add(ScatterChartBuilder.ID);
 			ids.add(LineChartBuilder.ID);
@@ -113,95 +110,66 @@ public final class GraphFactory {
 	}
 
 	public static boolean isMultiGraph(String id) {
+		if(id.equals(PieChart.ID)) {
+			return false;
+		}
 		return true;
 	}
 
 	public static boolean isKeyRequired(String graphID, IDataSet data) {
 		switch(getIndex(graphID)) {
-		case 0:
-		case 1:
-			if(data instanceof IBlockDataSet) {
-				return true;
-			}
-		default:
-			return false;
+			case 0:
+			case 1:
+				if(data instanceof IBlockDataSet) {
+					return true;
+				}
+			default:
+				return false;
 		}
 	}
 
 	public static boolean isKeyOptional(String graphID, IDataSet data) {
 		switch(getIndex(graphID)) {
-		case 2:
-			if(data instanceof IBlockDataSet) {
-				return true;
-			}
-		default:
-			return false;
+			case 2:
+				if(data instanceof IBlockDataSet) {
+					return true;
+				}
+			default:
+				return false;
 		}
 	}
 
-	public static final AbstractChartBuilder createGraph(GraphComposite comp,
-			int style, GraphData gd, IDataSet data) {
+	public static final AbstractChartBuilder createGraph(GraphComposite comp, int style, GraphData gd, IDataSet data) {
 		AbstractChartBuilder builder = null;
 
-		switch (getIndex(gd.graphID)) {
-		case 0:
-			builder = new ScatterChartBuilder(comp, style, gd.title,
-					new ScrollAdapter((IHistoricalDataSet) data, gd.xSeries,
-							gd.ySeries, gd.key));
-			break;
-		case 1:
-			builder = new LineChartBuilder(comp, style, gd.title,
-					new ScrollAdapter((IHistoricalDataSet) data, gd.xSeries,
-							gd.ySeries, gd.key));
-			break;
-		case 2:
-			if (!(data instanceof IBlockDataSet) || (null != gd.key)) {
-				builder = new BarChartBuilder(comp, style, gd.title,
-						new ScrollAdapter((IHistoricalDataSet) data,
-								gd.xSeries, gd.ySeries, gd.key));
+		switch(getIndex(gd.graphID)) {
+			case 0:
+				builder = new ScatterChartBuilder(comp, style, gd.title, new ScrollAdapter((IHistoricalDataSet)data, gd.xSeries, gd.ySeries, gd.key));
+				break;
+			case 1:
+				builder = new LineChartBuilder(comp, style, gd.title, new ScrollAdapter((IHistoricalDataSet)data, gd.xSeries, gd.ySeries, gd.key));
+				break;
+			case 2:
+			if(!(data instanceof IBlockDataSet) || (null != gd.key))
+				{
+					builder = new BarChartBuilder(comp, style, gd.title, new ScrollAdapter((IHistoricalDataSet)data, gd.xSeries, gd.ySeries, gd.key));
 
-			} else {
-				builder = new BarChartBuilder(comp, style, gd.title,
-						new BlockAdapter((IBlockDataSet) data, gd.xSeries,
-								gd.ySeries));
+				}
+				else
+				{
+				builder = new BarChartBuilder(comp, style, gd.title, new BlockAdapter((IBlockDataSet)data, gd.xSeries, gd.ySeries));
 
-			}
-			break;
-		case 3:
-			builder = new AreaChartBuilder(comp, style, gd.title,
-					new ScrollAdapter((IHistoricalDataSet) data, gd.xSeries,
-							gd.ySeries, gd.key));
-			break;
-		case 4:
-			builder = new PieChartBuilder(comp, style, gd.title,
-					new ScrollAdapter((IHistoricalDataSet) data, gd.xSeries,
-							gd.ySeries, gd.key));
+				}
+				break;
+			case 3:
+						builder = new AreaChartBuilder(comp, style, gd.title, new ScrollAdapter((IHistoricalDataSet)data, gd.xSeries, gd.ySeries, gd.key));
+						break;
+			case 4:
+				builder = new PieChartBuilder(comp, style, gd.title, new ScrollAdapter((IHistoricalDataSet)data, gd.xSeries, gd.ySeries, gd.key));
 
-			break;
+				break;
 		}
 		return builder;
-	}
-
-	/**
-	 * @since 3.0
-	 */
-	public static final Composite createGraphXControl(GraphComposite comp, int style) {
-		AbstractChartBuilder builder = comp.getCanvas();
-		if (builder instanceof BarChartBuilder || builder instanceof PieChartBuilder) {
-			return new GraphDiscreteXControl(comp, style);
-		}
-		return new GraphContinuousXControl(comp, style);
-	}
-
-	/**
-	 * @since 3.0
-	 */
-	public static final Composite createGraphYControl(GraphComposite comp, int style) {
-		AbstractChartBuilder builder = comp.getCanvas();
-		if (builder instanceof PieChartBuilder) {
-			return null;
-		}
-		return new GraphContinuousYControl(comp, style);
 	}
 
 	private static int getIndex(String id) {

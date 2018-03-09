@@ -12,15 +12,9 @@
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource2;
@@ -92,57 +86,9 @@ public class TmfExperimentFolder extends TmfProjectModelElement implements IProp
     }
 
     @Override
-    void refreshChildren() {
-        IFolder folder = getResource();
-
-        // Get the children from the model
-        Map<String, ITmfProjectModelElement> childrenMap = new HashMap<>();
-        for (ITmfProjectModelElement element : getChildren()) {
-            childrenMap.put(element.getResource().getName(), element);
-        }
-
-        try {
-            IResource[] members = folder.members();
-            for (IResource resource : members) {
-                if (resource instanceof IFolder) {
-                    IFolder expFolder = (IFolder) resource;
-                    String name = resource.getName();
-                    ITmfProjectModelElement element = childrenMap.get(name);
-                    if (element instanceof TmfExperimentElement) {
-                        childrenMap.remove(name);
-                    } else {
-                        element = new TmfExperimentElement(name, expFolder, this);
-                    }
-                    ((TmfExperimentElement) element).refreshChildren();
-                }
-            }
-        } catch (CoreException e) {
-        }
-
-        // Cleanup dangling children from the model
-        for (ITmfProjectModelElement danglingChild : childrenMap.values()) {
-            removeChild(danglingChild);
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // Operations
-    // ------------------------------------------------------------------------
-
-    /**
-     * Returns a list of experiment model elements under the experiments folder.
-     * @return list of experiment model elements
-     * @since 3.0
-     */
-    public List<TmfExperimentElement> getExperiments() {
-        List<ITmfProjectModelElement> children = getChildren();
-        List<TmfExperimentElement> traces = new ArrayList<>();
-        for (ITmfProjectModelElement child : children) {
-            if (child instanceof TmfExperimentElement) {
-                traces.add((TmfExperimentElement) child);
-            }
-        }
-        return traces;
+    public void refresh() {
+        TmfProjectElement project = (TmfProjectElement) getParent();
+        project.refresh();
     }
 
     // ------------------------------------------------------------------------

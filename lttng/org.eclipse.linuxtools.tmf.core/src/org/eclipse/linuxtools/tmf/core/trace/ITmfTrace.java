@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,15 +15,19 @@
 
 package org.eclipse.linuxtools.tmf.core.trace;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemAnalysisModule;
+import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -154,18 +158,14 @@ public interface ITmfTrace extends ITmfEventProvider {
     void initTrace(IResource resource, String path, Class<? extends ITmfEvent> type) throws TmfTraceException;
 
     /**
-     * Validate that the trace is of the correct type. The implementation should
-     * return a TraceValidationStatus to indicate success with a certain level
-     * of confidence.
+     * Validate that the trace is of the correct type.
      *
      * @param project
      *            the eclipse project
      * @param path
      *            the trace path
-     *
      * @return an IStatus object with validation result. Use severity OK to
      *         indicate success.
-     * @see {@link TraceValidationStatus}
      * @since 2.0
      */
     IStatus validate(IProject project, String path);
@@ -195,6 +195,46 @@ public interface ITmfTrace extends ITmfEventProvider {
     int getCacheSize();
 
     /**
+     * @return The statistics provider for this trace
+     * @since 2.0
+     */
+    ITmfStatistics getStatistics();
+
+    /**
+     * Return the map of state systems associated with this trace.
+     *
+     * This view should be read-only (implementations should use
+     * {@link Collections#unmodifiableMap}).
+     *
+     * @return The map of state systems
+     * @since 2.0
+     * @deprecated State systems now should be provided by analysis and use
+     *             {@link ITmfStateSystemAnalysisModule} and retrieve the modules
+     *             with {@link TmfTrace#getAnalysisModules(Class)} with Class
+     *             being TmfStateSystemAnalysisModule.class
+     */
+    @Deprecated
+    Map<String, ITmfStateSystem> getStateSystems();
+
+    /**
+     * If a state system is not build by the trace itself, it's possible to
+     * register it if it comes from another source. It will then be accessible
+     * with {@link #getStateSystems} normally.
+     *
+     * @param id
+     *            The unique ID to assign to this state system. In case of
+     *            conflicting ID's, the new one will overwrite the previous one
+     *            (default Map behavior).
+     * @param ss
+     *            The already-built state system
+     * @since 2.0
+     * @deprecated State systems now should be provided by analysis and use
+     *             {@link ITmfStateSystemAnalysisModule}
+     */
+    @Deprecated
+    void registerStateSystem(String id, ITmfStateSystem ss);
+
+    /**
      * Index the trace. Depending on the trace type, this could be done at the
      * constructor or initTrace phase too, so this could be implemented as a
      * no-op.
@@ -205,57 +245,38 @@ public interface ITmfTrace extends ITmfEventProvider {
      */
     void indexTrace(boolean waitForCompletion);
 
-    // ------------------------------------------------------------------------
-    // Analysis getters
-    // ------------------------------------------------------------------------
-
     /**
-     * Returns an analysis module with the given ID.
+     * Returns an analysis module with the given id
      *
-     * @param id
-     *            The analysis module ID
-     * @return The {@link IAnalysisModule} object, or null if an analysis with
-     *         the given ID does no exist.
+     * @param analysisId
+     *            The analysis module id
+     * @return The {@link IAnalysisModule} object
      * @since 3.0
      */
-    @Nullable
-    IAnalysisModule getAnalysisModule(String id);
+    IAnalysisModule getAnalysisModule(String analysisId);
 
     /**
-     * Get a list of all analysis modules currently available for this trace.
+     * Return a map of analysis modules that are of a given class. Module are
+     * already casted to the requested class
      *
-     * @return An iterable view of the analysis modules
+     * @param moduleclass
+     *            Class returned module must extend
+     * @return List of modules of class moduleclass
      * @since 3.0
      */
-    @NonNull
-    Iterable<IAnalysisModule> getAnalysisModules();
+    <T> Map<String, T> getAnalysisModules(Class<T> moduleclass);
 
     /**
-     * Get an analysis module belonging to this trace, with the specified ID and
-     * class.
+     * Returns a map of analysis modules applicable to this trace. The key is
+     * the analysis id.
      *
-     * @param moduleClass
-     *            Returned modules must extend this class
-     * @param id
-     *            The ID of the analysis module
-     * @return The analysis module with specified class and ID, or null if no
-     *         such module exists.
+     * This view should be read-only (implementations should use
+     * {@link Collections#unmodifiableMap}).
+     *
+     * @return The map of analysis modules
      * @since 3.0
      */
-    @Nullable
-    <T extends IAnalysisModule> T getAnalysisModuleOfClass(Class<T> moduleClass, String id);
-
-    /**
-     * Return the analysis modules that are of a given class. Module are already
-     * casted to the requested class.
-     *
-     * @param moduleClass
-     *            Returned modules must extend this class
-     * @return List of modules of class moduleClass
-     * @since 3.0
-     */
-    @NonNull
-    <T> Iterable<T> getAnalysisModulesOfClass(Class<T> moduleClass);
+    Map<String, IAnalysisModule> getAnalysisModules();
 
     // ------------------------------------------------------------------------
     // Trace characteristics getters

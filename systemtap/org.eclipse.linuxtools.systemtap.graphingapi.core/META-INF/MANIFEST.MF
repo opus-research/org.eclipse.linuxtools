@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundleName
 Bundle-SymbolicName: org.eclipse.linuxtools.systemtap.graphingapi.core;singleton:=true
-Bundle-Version: 2.0.0.qualifier
+Bundle-Version: 1.1.0.qualifier
 Bundle-Localization: plugin
 Bundle-Vendor: %bundleProvider
 Export-Package: org.eclipse.linuxtools.systemtap.graphingapi.core,
@@ -17,4 +17,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.linuxtools.systemtap.structures,
  org.eclipse.swt
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

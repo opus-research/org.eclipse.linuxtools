@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
@@ -36,7 +37,6 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TraceValidationStatus;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfPersistentlyIndexable;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.TmfBTreeTraceIndexer;
@@ -65,7 +65,6 @@ public class CtfTmfTrace extends TmfTrace
      * The Ctf clock unique identifier field
      */
     private static final String CLOCK_HOST_PROPERTY = "uuid"; //$NON-NLS-1$
-    private static final int CONFIDENCE = 10;
 
     // -------------------------------------------
     // Fields
@@ -137,14 +136,19 @@ public class CtfTmfTrace extends TmfTrace
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * The default implementation sets the confidence to 10 if the trace is a
-     * valid CTF trace.
+     * Method validate.
+     *
+     * @param project
+     *            IProject
+     * @param path
+     *            String
+     * @return IStatus IStatus.error or Status.OK_STATUS
+     * @see org.eclipse.linuxtools.tmf.core.trace.ITmfTrace#validate(IProject, String)
+     * @since 2.0
      */
     @Override
     public IStatus validate(final IProject project, final String path) {
-        IStatus validTrace = new TraceValidationStatus(CONFIDENCE, Activator.PLUGIN_ID);
+        IStatus validTrace = Status.OK_STATUS;
         try {
             final CTFTrace temp = new CTFTrace(path);
             if (!temp.majorIsSet()) {
@@ -323,7 +327,7 @@ public class CtfTmfTrace extends TmfTrace
      */
     @Override
     public Map<String, String> getTraceProperties() {
-        return fTrace.getEnvironment();
+        return Collections.unmodifiableMap(fTrace.getEnvironment());
     }
 
     // -------------------------------------------

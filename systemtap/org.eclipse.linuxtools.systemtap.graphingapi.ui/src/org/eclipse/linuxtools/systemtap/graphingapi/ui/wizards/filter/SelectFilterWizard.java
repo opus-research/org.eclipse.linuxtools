@@ -21,6 +21,8 @@ import org.eclipse.linuxtools.systemtap.graphingapi.core.filters.IDataSetFilter;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
+
+
 public class SelectFilterWizard extends Wizard implements INewWizard {
 	public SelectFilterWizard(String[] series) {
 		filter = null;
@@ -46,17 +48,20 @@ public class SelectFilterWizard extends Wizard implements INewWizard {
 
 	@Override
 	public boolean canFinish() {
-		return getCurrentFilter() != null;
+		IWizardPage page = this.getContainer().getCurrentPage();
+		if((null != filter) && (page instanceof FilterWizardPage)) {
+			return true;
+		}
+		return false;
 	}
 
-	private IDataSetFilter getCurrentFilter() {
-		IWizardPage page = this.getContainer().getCurrentPage();
-		return page instanceof FilterWizardPage ? ((FilterWizardPage) page).getFilter() : null;
+	@Override
+	public boolean performCancel() {
+		return true;
 	}
 
 	@Override
 	public boolean performFinish() {
-		filter = getCurrentFilter();
 		return true;
 	}
 

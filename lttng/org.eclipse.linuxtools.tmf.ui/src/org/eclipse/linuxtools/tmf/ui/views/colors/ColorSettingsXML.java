@@ -163,7 +163,7 @@ public class ColorSettingsXML {
     // Helper class
     private static class ColorSettingsContentHandler extends DefaultHandler {
 
-        private List<ColorSetting> colorSettings = new ArrayList<>(0);
+        private List<ColorSetting> colorSettings = new ArrayList<ColorSetting>(0);
         private RGB fg = new RGB(0, 0, 0);
         private RGB bg = new RGB(255, 255, 255);
         private RGB tickColor = new RGB(0, 0, 0);
@@ -174,25 +174,25 @@ public class ColorSettingsXML {
         public void startElement(String uri, String localName, String qName, Attributes attributes)
                 throws SAXException {
             if (localName.equals(COLOR_SETTINGS_TAG)) {
-                colorSettings = new ArrayList<>();
+                colorSettings = new ArrayList<ColorSetting>();
             } else if (localName.equals(COLOR_SETTING_TAG)) {
                 fg = null;
                 bg = null;
                 filter = null;
             } else if (localName.equals(FG_TAG)) {
-                int r = Integer.parseInt(attributes.getValue(R_ATTR));
-                int g = Integer.parseInt(attributes.getValue(G_ATTR));
-                int b = Integer.parseInt(attributes.getValue(B_ATTR));
+                int r = Integer.valueOf(attributes.getValue(R_ATTR));
+                int g = Integer.valueOf(attributes.getValue(G_ATTR));
+                int b = Integer.valueOf(attributes.getValue(B_ATTR));
                 fg = new RGB(r, g, b);
             } else if (localName.equals(BG_TAG)) {
-                int r = Integer.parseInt(attributes.getValue(R_ATTR));
-                int g = Integer.parseInt(attributes.getValue(G_ATTR));
-                int b = Integer.parseInt(attributes.getValue(B_ATTR));
+                int r = Integer.valueOf(attributes.getValue(R_ATTR));
+                int g = Integer.valueOf(attributes.getValue(G_ATTR));
+                int b = Integer.valueOf(attributes.getValue(B_ATTR));
                 bg = new RGB(r, g, b);
             } else if (localName.equals(TICK_TAG)) {
-                int r = Integer.parseInt(attributes.getValue(R_ATTR));
-                int g = Integer.parseInt(attributes.getValue(G_ATTR));
-                int b = Integer.parseInt(attributes.getValue(B_ATTR));
+                int r = Integer.valueOf(attributes.getValue(R_ATTR));
+                int g = Integer.valueOf(attributes.getValue(G_ATTR));
+                int b = Integer.valueOf(attributes.getValue(B_ATTR));
                 tickColor = new RGB(r, g, b);
             } else if (localName.equals(FILTER_TAG)) {
                 filterContentHandler = new TmfFilterContentHandler();

@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.systemtap.graphingapi.ui.wizards.filter;
 
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.filters.IDataSetFilter;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -37,9 +36,6 @@ public abstract class FilterWizardPage extends WizardPage {
 	}
 
 	abstract void createFilter();
-	IDataSetFilter getFilter() {
-		return filter;
-	}
 
 	@Override
 	public void dispose() {
@@ -50,25 +46,18 @@ public abstract class FilterWizardPage extends WizardPage {
 	protected final SelectionListener selectionListener = new SelectionAdapter() {
 		@Override
 		public void widgetSelected(SelectionEvent e) {
-			update();
+			createFilter();
+			wizard.getContainer().updateButtons();
 		}
 	};
 
 	protected final ModifyListener modifyListener = new ModifyListener() {
 		@Override
 		public void modifyText(ModifyEvent e) {
-			update();
+			createFilter();
+			wizard.getContainer().updateButtons();
 		}
 	};
 
-	private void update() {
-		createFilter();
-		wizard.getContainer().updateButtons();
-	}
-
-	/**
-	 * @since 3.0
-	 */
-	protected IDataSetFilter filter;
 	protected SelectFilterWizard wizard;
 }

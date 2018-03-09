@@ -161,7 +161,7 @@ public class TmfTreeContentProviderTest {
      */
     @Test
     public void testHasChildren() {
-        boolean hasChildren = treeProvider.hasChildren(fStatsData.getRootNode());
+        Boolean hasChildren = treeProvider.hasChildren(fStatsData.getRootNode());
         assertTrue("hasChildren", hasChildren);
 
         hasChildren = treeProvider.hasChildren(fStatsData.getOrCreateNode(fTestName));

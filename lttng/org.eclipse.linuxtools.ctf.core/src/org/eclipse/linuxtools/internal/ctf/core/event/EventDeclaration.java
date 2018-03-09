@@ -45,35 +45,35 @@ public class EventDeclaration implements IEventDeclaration {
     /**
      * Name of the event
      */
-    private String fName;
+    private String name;
 
     /**
      * Event context structure declaration
      */
-    private StructDeclaration fContext = null;
+    private StructDeclaration context = null;
 
     /**
      * Event fields structure declaration
      */
-    private StructDeclaration fFields = null;
+    private StructDeclaration fields = null;
 
     /**
      * Event id (can be null if only event in the stream).
      */
-    private Long fId = UNSET_EVENT_ID;
+    private Long id = UNSET_EVENT_ID;
 
     /**
      * Stream to which belongs this event.
      */
-    private Stream fStream = null;
+    private Stream stream = null;
 
     /**
      * Loglevel of an event
      */
-    private long fLogLevel;
+    private long logLevel;
 
     /** Map of this event type's custom CTF attributes */
-    private final Map<String, String> fCustomAttributes = new HashMap<>();
+    private final Map<String, String> customAttributes = new HashMap<String, String>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -90,12 +90,12 @@ public class EventDeclaration implements IEventDeclaration {
     public EventDefinition createDefinition(StreamInputReader streamInputReader) {
         EventDefinition event = new EventDefinition(this, streamInputReader);
 
-        if (fContext != null) {
-            event.setContext(fContext.createDefinition(event, "context")); //$NON-NLS-1$
+        if (context != null) {
+            event.setContext(context.createDefinition(event, "context")); //$NON-NLS-1$
         }
 
-        if (fFields != null) {
-            event.setFields(fFields.createDefinition(event, "fields")); //$NON-NLS-1$
+        if (this.fields != null) {
+            event.setFields(this.fields.createDefinition(event, "fields")); //$NON-NLS-1$
         }
 
         return event;
@@ -112,11 +112,11 @@ public class EventDeclaration implements IEventDeclaration {
         IntegerDeclaration lostEventsDeclaration = new IntegerDeclaration(32, false, 10, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
         IntegerDeclaration timestampDeclaration = new IntegerDeclaration(64, false, 10, ByteOrder.BIG_ENDIAN, Encoding.ASCII, null, 8);
 
-        lostEvent.fFields = new StructDeclaration(1);
-        lostEvent.fFields.addField(CTFStrings.LOST_EVENTS_FIELD, lostEventsDeclaration);
-        lostEvent.fFields.addField(CTFStrings.LOST_EVENTS_DURATION, timestampDeclaration);
-        lostEvent.fId = LOST_EVENT_ID;
-        lostEvent.fName = CTFStrings.LOST_EVENT_NAME;
+        lostEvent.fields = new StructDeclaration(1);
+        lostEvent.fields.addField(CTFStrings.LOST_EVENTS_FIELD, lostEventsDeclaration);
+        lostEvent.fields.addField(CTFStrings.LOST_EVENTS_DURATION, timestampDeclaration);
+        lostEvent.id = LOST_EVENT_ID;
+        lostEvent.name = CTFStrings.LOST_EVENT_NAME;
 
         return lostEvent;
     }
@@ -132,12 +132,12 @@ public class EventDeclaration implements IEventDeclaration {
      *            the name
      */
     public void setName(String name) {
-        fName = name;
+        this.name = name;
     }
 
     @Override
     public String getName() {
-        return fName;
+        return name;
     }
 
     /**
@@ -147,7 +147,7 @@ public class EventDeclaration implements IEventDeclaration {
      *            the context in structdeclaration format
      */
     public void setContext(StructDeclaration context) {
-        fContext = context;
+        this.context = context;
     }
 
     /**
@@ -157,17 +157,17 @@ public class EventDeclaration implements IEventDeclaration {
      *            the fields in structdeclaration format
      */
     public void setFields(StructDeclaration fields) {
-        fFields = fields;
+        this.fields = fields;
     }
 
     @Override
     public StructDeclaration getFields() {
-        return fFields;
+        return fields;
     }
 
     @Override
     public StructDeclaration getContext() {
-        return fContext;
+        return context;
     }
 
     /**
@@ -177,12 +177,12 @@ public class EventDeclaration implements IEventDeclaration {
      *            the id
      */
     public void setId(long id) {
-        fId = id;
+        this.id = id;
     }
 
     @Override
     public Long getId() {
-        return fId;
+        return id;
     }
 
     /**
@@ -193,12 +193,12 @@ public class EventDeclaration implements IEventDeclaration {
      * @since 2.0
      */
     public void setStream(Stream stream) {
-        fStream = stream;
+        this.stream = stream;
     }
 
     @Override
     public Stream getStream() {
-        return fStream;
+        return stream;
     }
 
     /**
@@ -207,7 +207,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the name set?
      */
     public boolean nameIsSet() {
-        return fName != null;
+        return name != null;
     }
 
     /**
@@ -216,7 +216,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the context set
      */
     public boolean contextIsSet() {
-        return fContext != null;
+        return context != null;
     }
 
     /**
@@ -225,7 +225,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return Is the field set?
      */
     public boolean fieldsIsSet() {
-        return fFields != null;
+        return fields != null;
     }
 
     /**
@@ -234,7 +234,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the id set?
      */
     public boolean idIsSet() {
-        return (fId != null && fId != UNSET_EVENT_ID);
+        return (id != null && id != UNSET_EVENT_ID);
     }
 
     /**
@@ -243,12 +243,12 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the stream set?
      */
     public boolean streamIsSet() {
-        return fStream != null;
+        return stream != null;
     }
 
     @Override
     public long getLogLevel() {
-        return fLogLevel;
+        return logLevel;
     }
 
     /**
@@ -258,17 +258,17 @@ public class EventDeclaration implements IEventDeclaration {
      *            the log level
      */
     public void setLogLevel(long level) {
-        fLogLevel = level;
+        logLevel = level;
     }
 
     @Override
     public Set<String> getCustomAttributes() {
-        return fCustomAttributes.keySet();
+        return customAttributes.keySet();
     }
 
     @Override
     public String getCustomAttribute(String key) {
-        return fCustomAttributes.get(key);
+        return customAttributes.get(key);
     }
 
     /**
@@ -281,7 +281,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @since 2.0
      */
     public void setCustomAttribute(String key, String value) {
-        fCustomAttributes.put(key, value);
+        customAttributes.put(key, value);
     }
 
     // ------------------------------------------------------------------------
@@ -300,42 +300,42 @@ public class EventDeclaration implements IEventDeclaration {
             return false;
         }
         EventDeclaration other = (EventDeclaration) obj;
-        if (fContext == null) {
-            if (other.fContext != null) {
+        if (context == null) {
+            if (other.context != null) {
                 return false;
             }
-        } else if (!fContext.equals(other.fContext)) {
+        } else if (!context.equals(other.context)) {
             return false;
         }
-        if (fFields == null) {
-            if (other.fFields != null) {
+        if (fields == null) {
+            if (other.fields != null) {
                 return false;
             }
-        } else if (!fFields.equals(other.fFields)) {
+        } else if (!fields.equals(other.fields)) {
             return false;
         }
-        if (fId == null) {
-            if (other.fId != null) {
+        if (id == null) {
+            if (other.id != null) {
                 return false;
             }
-        } else if (!fId.equals(other.fId)) {
+        } else if (!id.equals(other.id)) {
             return false;
         }
-        if (fName == null) {
-            if (other.fName != null) {
+        if (name == null) {
+            if (other.name != null) {
                 return false;
             }
-        } else if (!fName.equals(other.fName)) {
+        } else if (!name.equals(other.name)) {
             return false;
         }
-        if (fStream == null) {
-            if (other.fStream != null) {
+        if (stream == null) {
+            if (other.stream != null) {
                 return false;
             }
-        } else if (!fStream.equals(other.fStream)) {
+        } else if (!stream.equals(other.stream)) {
             return false;
         }
-        if (!fCustomAttributes.equals(other.fCustomAttributes)) {
+        if (!customAttributes.equals(other.customAttributes)) {
             return false;
         }
         return true;
@@ -346,12 +346,12 @@ public class EventDeclaration implements IEventDeclaration {
         final int prime = 31;
         int result = 1;
         result = (prime * result)
-                + ((fContext == null) ? 0 : fContext.hashCode());
-        result = (prime * result) + ((fFields == null) ? 0 : fFields.hashCode());
-        result = (prime * result) + ((fId == null) ? 0 : fId.hashCode());
-        result = (prime * result) + ((fName == null) ? 0 : fName.hashCode());
-        result = (prime * result) + ((fStream == null) ? 0 : fStream.hashCode());
-        result = (prime * result) + fCustomAttributes.hashCode();
+                + ((context == null) ? 0 : context.hashCode());
+        result = (prime * result) + ((fields == null) ? 0 : fields.hashCode());
+        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
+        result = (prime * result) + ((name == null) ? 0 : name.hashCode());
+        result = (prime * result) + ((stream == null) ? 0 : stream.hashCode());
+        result = (prime * result) + customAttributes.hashCode();
         return result;
     }
 

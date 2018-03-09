@@ -19,11 +19,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
@@ -52,8 +50,6 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  */
 public class StateSystem implements ITmfStateSystemBuilder {
 
-    private final String ssid;
-
     /* References to the inner structures */
     private final AttributeTree attributeTree;
     private final TransientState transState;
@@ -69,13 +65,10 @@ public class StateSystem implements ITmfStateSystemBuilder {
      * New-file constructor. For when you build a state system with a new file,
      * or if the back-end does not require a file on disk.
      *
-     * @param ssid
-     *            The ID of this statesystem. It should be unique.
      * @param backend
      *            Back-end plugin to use
      */
-    public StateSystem(@NonNull String ssid, @NonNull IStateHistoryBackend backend) {
-        this.ssid = ssid;
+    public StateSystem(IStateHistoryBackend backend) {
         this.backend = backend;
         this.transState = new TransientState(backend);
         this.attributeTree = new AttributeTree(this);
@@ -84,8 +77,6 @@ public class StateSystem implements ITmfStateSystemBuilder {
     /**
      * General constructor
      *
-     * @param ssid
-     *            The ID of this statesystem. It should be unique.
      * @param backend
      *            The "state history storage" back-end to use.
      * @param newFile
@@ -94,9 +85,8 @@ public class StateSystem implements ITmfStateSystemBuilder {
      * @throws IOException
      *             If there was a problem creating the new history file
      */
-    public StateSystem(@NonNull String ssid, @NonNull IStateHistoryBackend backend, boolean newFile)
+    public StateSystem(IStateHistoryBackend backend, boolean newFile)
             throws IOException {
-        this.ssid = ssid;
         this.backend = backend;
         this.transState = new TransientState(backend);
 
@@ -111,33 +101,13 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public String getSSID() {
-        return ssid;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return buildCancelled;
-    }
-
-    @Override
-    public void waitUntilBuilt() {
+    public boolean waitUntilBuilt() {
         try {
             finishedLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean waitUntilBuilt(long timeout) {
-        boolean ret = false;
-        try {
-            ret = finishedLatch.await(timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return ret;
+        return !buildCancelled;
     }
 
     @Override
@@ -265,9 +235,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public List<Integer> getQuarks(String... pattern) {
-        List<Integer> quarks = new LinkedList<>();
-        List<String> prefix = new LinkedList<>();
-        List<String> suffix = new LinkedList<>();
+        List<Integer> quarks = new LinkedList<Integer>();
+        List<String> prefix = new LinkedList<String>();
+        List<String> suffix = new LinkedList<String>();
         boolean split = false;
         String[] prefixStr;
         String[] suffixStr;
@@ -376,7 +346,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     public void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException {
-        int stackDepth;
+        Integer stackDepth;
         int subAttributeQuark;
         ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
@@ -404,7 +374,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         stackDepth++;
-        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark, String.valueOf(stackDepth));
+        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark, stackDepth.toString());
 
         modifyAttribute(t, TmfStateValue.newValueInt(stackDepth), attributeQuark);
         modifyAttribute(t, value, subAttributeQuark);
@@ -434,7 +404,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateValueTypeException();
         }
 
-        int stackDepth = previousSV.unboxInt();
+        Integer stackDepth = previousSV.unboxInt();
 
         if (stackDepth <= 0) {
             /* This on the other hand should not happen... */
@@ -444,7 +414,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         /* The attribute should already exist at this point */
-        int subAttributeQuark = getQuarkRelative(attributeQuark, String.valueOf(stackDepth));
+        int subAttributeQuark = getQuarkRelative(attributeQuark, stackDepth.toString());
         ITmfStateValue poppedValue = queryOngoingState(subAttributeQuark);
 
         /* Update the state value of the stack-attribute */
@@ -474,7 +444,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          * handle the recursion ourselves.
          */
         childAttributes = getSubAttributes(attributeQuark, false);
-        for (int childNodeQuark : childAttributes) {
+        for (Integer childNodeQuark : childAttributes) {
             assert (attributeQuark != childNodeQuark);
             removeAttribute(t, childNodeQuark);
         }
@@ -536,7 +506,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateSystemDisposedException();
         }
 
-        List<ITmfStateInterval> stateInfo = new ArrayList<>(getNbAttributes());
+        List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(getNbAttributes());
 
         /* Bring the size of the array to the current number of attributes */
         for (int i = 0; i < getNbAttributes(); i++) {
@@ -575,12 +545,10 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateSystemDisposedException();
         }
 
-        ITmfStateInterval ret = transState.getIntervalAt(t, attributeQuark);
-        if (ret == null) {
-            /*
-             * The transient state did not have the information, let's look into
-             * the backend next.
-             */
+        ITmfStateInterval ret;
+        if (transState.hasInfoAboutStateOf(t, attributeQuark)) {
+            ret = transState.getOngoingInterval(attributeQuark);
+        } else {
             ret = backend.doSingularQuery(t, attributeQuark);
         }
 
@@ -605,7 +573,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             /* There is nothing stored in this stack at this moment */
             return null;
         }
-        int curStackDepth = curStackStateValue.unboxInt();
+        Integer curStackDepth = curStackStateValue.unboxInt();
         if (curStackDepth <= 0) {
             /*
              * This attribute is an integer attribute, but it doesn't seem like
@@ -614,7 +582,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateValueTypeException();
         }
 
-        int subAttribQuark = getQuarkRelative(stackAttributeQuark, String.valueOf(curStackDepth));
+        int subAttribQuark = getQuarkRelative(stackAttributeQuark, curStackDepth.toString());
         return querySingleState(t, subAttribQuark);
     }
 
@@ -631,7 +599,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         long ts, tEnd;
 
         /* Make sure the time range makes sense */
-        if (t2 < t1) {
+        if (t2 <= t1) {
             throw new TimeRangeException();
         }
 
@@ -643,7 +611,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         /* Get the initial state at time T1 */
-        intervals = new ArrayList<>();
+        intervals = new ArrayList<ITmfStateInterval>();
         currentInterval = querySingleState(t1, attributeQuark);
         intervals.add(currentInterval);
 
@@ -689,7 +657,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         /* Get the initial state at time T1 */
-        intervals = new ArrayList<>();
+        intervals = new ArrayList<ITmfStateInterval>();
         currentInterval = querySingleState(t1, attributeQuark);
         intervals.add(currentInterval);
 

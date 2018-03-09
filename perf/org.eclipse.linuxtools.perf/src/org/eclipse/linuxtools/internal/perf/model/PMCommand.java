@@ -24,9 +24,8 @@ public class PMCommand extends TreeParent {
 	@Override
 	public String toString() {
 		String prefix = "";
-		if (getPercent() != -1) {
+		if (getPercent() != -1)
 			prefix = getPercent() + "%  (" + getFormattedSamples() + " samples) in ";
-		}
 		return prefix + getName();
 	}	
 

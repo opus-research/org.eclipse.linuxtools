@@ -51,7 +51,7 @@ public class TmfEventParserStub implements ITmfEventParser {
         fEventStream = eventStream;
         fTypes = new TmfEventType[NB_TYPES];
         for (int i = 0; i < NB_TYPES; i++) {
-            final Vector<String> fields = new Vector<>();
+            final Vector<String> fields = new Vector<String>();
             for (int j = 1; j <= i; j++) {
                 final String field = "Fmt-" + i + "-Fld-" + j;
                 fields.add(field);
@@ -94,7 +94,7 @@ public class TmfEventParserStub implements ITmfEventParser {
                 final long ts        = stream.readLong();
                 final String source  = stream.readUTF();
                 final String type    = stream.readUTF();
-                final int reference  = stream.readInt();
+                final Integer reference  = stream.readInt();
                 final int typeIndex  = Integer.parseInt(type.substring(typePrefix.length()));
                 final String[] fields = new String[typeIndex];
                 for (int i = 0; i < typeIndex; i++) {
@@ -113,7 +113,7 @@ public class TmfEventParserStub implements ITmfEventParser {
                 final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString(), null);
                 final ITmfEvent event = new TmfEvent(fEventStream,
                         new TmfTimestamp(ts, -3, 0),     // millisecs
-                        source, fTypes[typeIndex], root, String.valueOf(reference));
+                        source, fTypes[typeIndex], root, reference.toString());
                 return event;
             } catch (final EOFException e) {
             } catch (final IOException e) {

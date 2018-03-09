@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -14,7 +14,7 @@
 package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -32,8 +32,6 @@ import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputReaderTimestamp
  */
 public class CTFTraceReader {
 
-    private static final int MIN_PRIO_SIZE = 16;
-
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -41,32 +39,32 @@ public class CTFTraceReader {
     /**
      * The trace to read from.
      */
-    private final CTFTrace fTrace;
+    private final CTFTrace trace;
 
     /**
      * Vector of all the trace file readers.
      */
-    private final List<StreamInputReader> fStreamInputReaders = new ArrayList<>();
+    private final List<StreamInputReader> streamInputReaders = new ArrayList<StreamInputReader>();
 
     /**
      * Priority queue to order the trace file readers by timestamp.
      */
-    private PriorityQueue<StreamInputReader> fPrio;
+    private PriorityQueue<StreamInputReader> prio;
 
     /**
      * Array to count the number of event per trace file.
      */
-    private long[] fEventCountPerTraceFile;
+    private long[] eventCountPerTraceFile;
 
     /**
      * Timestamp of the first event in the trace
      */
-    private long fStartTime;
+    private long startTime;
 
     /**
      * Timestamp of the last event read so far
      */
-    private long fEndTime;
+    private long endTime;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -81,8 +79,8 @@ public class CTFTraceReader {
      *             if an error occurs
      */
     public CTFTraceReader(CTFTrace trace) throws CTFReaderException {
-        fTrace = trace;
-        fStreamInputReaders.clear();
+        this.trace = trace;
+        streamInputReaders.clear();
 
         /**
          * Create the trace file readers.
@@ -98,10 +96,10 @@ public class CTFTraceReader {
          * Get the start Time of this trace bear in mind that the trace could be
          * empty.
          */
-        fStartTime = 0;
+        this.startTime = 0;
         if (hasMoreEvents()) {
-            fStartTime = fPrio.peek().getCurrentEvent().getTimestamp();
-            setEndTime(fStartTime);
+            this.startTime = prio.peek().getCurrentEvent().getTimestamp();
+            this.setEndTime(this.startTime);
         }
     }
 
@@ -109,15 +107,14 @@ public class CTFTraceReader {
      * Copy constructor
      *
      * @return The new CTFTraceReader
-     * @throws CTFReaderException
-     *             if an error occurs
+     * @throws CTFReaderException if an error occurs
      */
     public CTFTraceReader copyFrom() throws CTFReaderException {
         CTFTraceReader newReader = null;
 
-        newReader = new CTFTraceReader(fTrace);
-        newReader.fStartTime = fStartTime;
-        newReader.setEndTime(fEndTime);
+        newReader = new CTFTraceReader(this.trace);
+        newReader.startTime = this.startTime;
+        newReader.setEndTime(this.endTime);
         return newReader;
     }
 
@@ -127,12 +124,12 @@ public class CTFTraceReader {
      * @since 2.0
      */
     public void dispose() {
-        for (StreamInputReader reader : fStreamInputReaders) {
+        for (StreamInputReader reader : streamInputReaders) {
             if (reader != null) {
                 reader.dispose();
             }
         }
-        fStreamInputReaders.clear();
+        streamInputReaders.clear();
     }
 
     // ------------------------------------------------------------------------
@@ -145,7 +142,7 @@ public class CTFTraceReader {
      * @return the trace start time
      */
     public long getStartTime() {
-        return fStartTime;
+        return this.startTime;
     }
 
     /**
@@ -155,7 +152,7 @@ public class CTFTraceReader {
      *            The end time to use
      */
     protected final void setEndTime(long endTime) {
-        fEndTime = endTime;
+        this.endTime = endTime;
     }
 
     /**
@@ -165,7 +162,7 @@ public class CTFTraceReader {
      * @since 2.0
      */
     protected PriorityQueue<StreamInputReader> getPrio() {
-        return fPrio;
+        return prio;
     }
 
     // ------------------------------------------------------------------------
@@ -179,10 +176,12 @@ public class CTFTraceReader {
      *             if an error occurs
      */
     private void createStreamInputReaders() throws CTFReaderException {
+        Collection<Stream> streams = this.trace.getStreams().values();
+
         /*
          * For each stream.
          */
-        for (Stream stream : fTrace.getStreams()) {
+        for (Stream stream : streams) {
             Set<StreamInput> streamInputs = stream.getStreamInputs();
 
             /*
@@ -198,53 +197,14 @@ public class CTFTraceReader {
                 /*
                  * Add it to the group.
                  */
-                fStreamInputReaders.add(streamInputReader);
+                this.streamInputReaders.add(streamInputReader);
             }
         }
 
         /*
          * Create the array to count the number of event per trace file.
          */
-        fEventCountPerTraceFile = new long[fStreamInputReaders.size()];
-    }
-
-    /**
-     * Update the priority queue to make it match the parent trace
-     *
-     * @throws CTFReaderException
-     *             An error occured
-     *
-     * @since 3.0
-     */
-    public void update() throws CTFReaderException {
-        Set<StreamInputReader> readers = new HashSet<>();
-        for (Stream stream : fTrace.getStreams()) {
-            Set<StreamInput> streamInputs = stream.getStreamInputs();
-            for (StreamInput streamInput : streamInputs) {
-                /*
-                 * Create a reader.
-                 */
-                StreamInputReader streamInputReader = new StreamInputReader(
-                        streamInput);
-
-                /*
-                 * Add it to the group.
-                 */
-                if (!fStreamInputReaders.contains(streamInputReader)) {
-                    streamInputReader.readNextEvent();
-                    fStreamInputReaders.add(streamInputReader);
-                    readers.add(streamInputReader);
-                }
-            }
-        }
-        long[] temp = fEventCountPerTraceFile;
-        fEventCountPerTraceFile = new long[readers.size() + temp.length];
-        for (StreamInputReader reader : readers) {
-            fPrio.add(reader);
-        }
-        for (int i = 0; i < temp.length; i++) {
-            fEventCountPerTraceFile[i] = temp[i];
-        }
+        this.eventCountPerTraceFile = new long[this.streamInputReaders.size()];
     }
 
     /**
@@ -255,9 +215,8 @@ public class CTFTraceReader {
      *             if an error occurs
      */
     private void populateStreamInputReaderHeap() throws CTFReaderException {
-        if (fStreamInputReaders.isEmpty()) {
-            fPrio = new PriorityQueue<>(MIN_PRIO_SIZE,
-                    new StreamInputReaderTimestampComparator());
+        if (this.streamInputReaders.isEmpty()) {
+            this.prio = new PriorityQueue<StreamInputReader>();
             return;
         }
 
@@ -265,23 +224,22 @@ public class CTFTraceReader {
          * Create the priority queue with a size twice as bigger as the number
          * of reader in order to avoid constant resizing.
          */
-        fPrio = new PriorityQueue<>(
-                Math.max(fStreamInputReaders.size() * 2, MIN_PRIO_SIZE),
+        this.prio = new PriorityQueue<StreamInputReader>(
+                this.streamInputReaders.size() * 2,
                 new StreamInputReaderTimestampComparator());
 
         int pos = 0;
 
-        for (StreamInputReader reader : fStreamInputReaders) {
+        for (StreamInputReader reader : this.streamInputReaders) {
             /*
              * Add each trace file reader in the priority queue, if we are able
              * to read an event from it.
              */
             reader.setParent(this);
-            CTFResponse readNextEvent = reader.readNextEvent();
-            if (readNextEvent == CTFResponse.OK || readNextEvent == CTFResponse.WAIT) {
-                fPrio.add(reader);
+            if (reader.readNextEvent()) {
+                this.prio.add(reader);
 
-                fEventCountPerTraceFile[pos] = 0;
+                this.eventCountPerTraceFile[pos] = 0;
                 reader.setName(pos);
 
                 pos++;
@@ -313,7 +271,7 @@ public class CTFTraceReader {
         /*
          * Remove the reader from the top of the priority queue.
          */
-        StreamInputReader top = fPrio.poll();
+        StreamInputReader top = this.prio.poll();
 
         /*
          * If the queue was empty.
@@ -324,31 +282,19 @@ public class CTFTraceReader {
         /*
          * Read the next event of this reader.
          */
-        switch (top.readNextEvent()) {
-        case OK: {
+        if (top.readNextEvent()) {
             /*
              * Add it back in the queue.
              */
-            fPrio.add(top);
-            final long topEnd = fTrace.timestampCyclesToNanos(top.getCurrentEvent().getTimestamp());
-            setEndTime(Math.max(topEnd, getEndTime()));
-            fEventCountPerTraceFile[top.getName()]++;
+            this.prio.add(top);
+            final long topEnd = this.trace.timestampCyclesToNanos(top.getCurrentEvent().getTimestamp());
+            this.setEndTime(Math.max(topEnd, this.getEndTime()));
+            this.eventCountPerTraceFile[top.getName()]++;
 
             if (top.getCurrentEvent() != null) {
-                fEndTime = Math.max(top.getCurrentEvent().getTimestamp(),
-                        fEndTime);
+                this.endTime = Math.max(top.getCurrentEvent().getTimestamp(),
+                        this.endTime);
             }
-            break;
-        }
-        case WAIT: {
-            fPrio.add(top);
-            break;
-        }
-        case FINISH:
-            break;
-        case ERROR:
-        default:
-            // something bad happend
         }
         /*
          * If there is no reader in the queue, it means the trace reader reached
@@ -364,9 +310,9 @@ public class CTFTraceReader {
      *             if an error occurs
      */
     public void goToLastEvent() throws CTFReaderException {
-        seek(getEndTime());
-        while (fPrio.size() > 1) {
-            advance();
+        seek(this.getEndTime());
+        while (this.prio.size() > 1) {
+            this.advance();
         }
     }
 
@@ -379,8 +325,8 @@ public class CTFTraceReader {
      *
      * @param timestamp
      *            the timestamp to seek to
-     * @return true if there are events above or equal the seek timestamp, false
-     *         if seek at the end of the trace (no valid event).
+     * @return true if there are events above or equal the seek timestamp,
+     *         false if seek at the end of the trace (no valid event).
      * @throws CTFReaderException
      *             if an error occurs
      */
@@ -388,8 +334,8 @@ public class CTFTraceReader {
         /*
          * Remove all the trace readers from the priority queue
          */
-        fPrio.clear();
-        for (StreamInputReader streamInputReader : fStreamInputReaders) {
+        this.prio.clear();
+        for (StreamInputReader streamInputReader : this.streamInputReaders) {
             /*
              * Seek the trace reader.
              */
@@ -399,7 +345,7 @@ public class CTFTraceReader {
              * Add it to the priority queue if there is a current event.
              */
             if (streamInputReader.getCurrentEvent() != null) {
-                fPrio.add(streamInputReader);
+                this.prio.add(streamInputReader);
             }
         }
         return hasMoreEvents();
@@ -411,7 +357,7 @@ public class CTFTraceReader {
      * @return the stream with the oldest event
      */
     public StreamInputReader getTopStream() {
-        return fPrio.peek();
+        return this.prio.peek();
     }
 
     /**
@@ -420,7 +366,7 @@ public class CTFTraceReader {
      * @return true if yes.
      */
     public final boolean hasMoreEvents() {
-        return fPrio.size() > 0;
+        return this.prio.size() > 0;
     }
 
     /**
@@ -442,14 +388,14 @@ public class CTFTraceReader {
             return;
         }
 
-        for (long i : fEventCountPerTraceFile) {
+        for (long i : this.eventCountPerTraceFile) {
             numEvents += i;
         }
 
-        for (int j = 0; j < fEventCountPerTraceFile.length; j++) {
-            StreamInputReader se = fStreamInputReaders.get(j);
+        for (int j = 0; j < this.eventCountPerTraceFile.length; j++) {
+            StreamInputReader se = this.streamInputReaders.get(j);
 
-            long len = (width * fEventCountPerTraceFile[se.getName()])
+            long len = (width * this.eventCountPerTraceFile[se.getName()])
                     / numEvents;
 
             StringBuilder sb = new StringBuilder(se.getFilename());
@@ -463,7 +409,7 @@ public class CTFTraceReader {
                 sb.append(' ');
             }
 
-            sb.append("]\t" + fEventCountPerTraceFile[se.getName()] + " Events"); //$NON-NLS-1$//$NON-NLS-2$
+            sb.append("]\t" + this.eventCountPerTraceFile[se.getName()] + " Events"); //$NON-NLS-1$//$NON-NLS-2$
             Activator.log(sb.toString());
         }
     }
@@ -475,40 +421,16 @@ public class CTFTraceReader {
      * @return the last event
      */
     public long getEndTime() {
-        return fEndTime;
-    }
-
-    /**
-     * Sets a trace to be live or not
-     *
-     * @param live
-     *            whether the trace is live
-     * @since 3.0
-     */
-    public void setLive(boolean live) {
-        for (StreamInputReader s : fPrio) {
-            s.setLive(live);
-        }
-    }
-
-    /**
-     * Get if the trace is to read live or not
-     *
-     * @return whether the trace is live or not
-     * @since 3.0
-     *
-     */
-    public boolean isLive() {
-        return fPrio.peek().isLive();
+        return this.endTime;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + (int) (fStartTime ^ (fStartTime >>> 32));
-        result = (prime * result) + fStreamInputReaders.hashCode();
-        result = (prime * result) + ((fTrace == null) ? 0 : fTrace.hashCode());
+        result = (prime * result) + (int) (startTime ^ (startTime >>> 32));
+        result = (prime * result) + streamInputReaders.hashCode();
+        result = (prime * result) + ((trace == null) ? 0 : trace.hashCode());
         return result;
     }
 
@@ -524,14 +446,14 @@ public class CTFTraceReader {
             return false;
         }
         CTFTraceReader other = (CTFTraceReader) obj;
-        if (!fStreamInputReaders.equals(other.fStreamInputReaders)) {
+        if (!streamInputReaders.equals(other.streamInputReaders)) {
             return false;
         }
-        if (fTrace == null) {
-            if (other.fTrace != null) {
+        if (trace == null) {
+            if (other.trace != null) {
                 return false;
             }
-        } else if (!fTrace.equals(other.fTrace)) {
+        } else if (!trace.equals(other.trace)) {
             return false;
         }
         return true;
@@ -540,7 +462,7 @@ public class CTFTraceReader {
     @Override
     public String toString() {
         /* Only for debugging, shouldn't be externalized */
-        return "CTFTraceReader [trace=" + fTrace + ']'; //$NON-NLS-1$
+        return "CTFTraceReader [trace=" + trace + ']'; //$NON-NLS-1$
     }
 
     /**
@@ -549,6 +471,6 @@ public class CTFTraceReader {
      * @return the parent trace
      */
     public CTFTrace getTrace() {
-        return fTrace;
+        return trace;
     }
 }

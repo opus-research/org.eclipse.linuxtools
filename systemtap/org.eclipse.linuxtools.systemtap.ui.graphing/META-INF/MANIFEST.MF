@@ -11,6 +11,7 @@ Export-Package: org.eclipse.linuxtools.systemtap.ui.graphing,
 Require-Bundle: org.eclipse.linuxtools.systemtap.graphingapi.ui,
  org.eclipse.linuxtools.systemtap.structures,
  org.eclipse.ui,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.eclipse.linuxtools.systemtap.ui.systemtapgui
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

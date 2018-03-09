@@ -14,6 +14,7 @@
 
 package org.eclipse.linuxtools.lttng2.ust.core.trace;
 
+import java.io.File;
 import java.nio.BufferOverflowException;
 
 import org.eclipse.core.resources.IProject;
@@ -22,8 +23,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.lttng2.ust.core.Activator;
+import org.eclipse.linuxtools.internal.lttng2.ust.core.trace.callstack.LttngUstCallStackProvider;
+import org.eclipse.linuxtools.tmf.core.callstack.CallStackStateProvider;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TraceValidationStatus;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 
 /**
  * Class to contain LTTng-UST traces
@@ -33,7 +40,8 @@ import org.eclipse.linuxtools.tmf.core.trace.TraceValidationStatus;
  */
 public class LttngUstTrace extends CtfTmfTrace {
 
-    private static final int CONFIDENCE = 100;
+    /** Name of the history file for the callstack state system */
+    private static final String CALLSTACK_FILENAME = "ust-callstack.ht"; //$NON-NLS-1$
 
     /**
      * Default constructor
@@ -42,12 +50,6 @@ public class LttngUstTrace extends CtfTmfTrace {
         super();
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * This implementation sets the confidence to 100 if the trace is a valid
-     * CTF trace in the "ust" domain.
-     */
     @Override
     public IStatus validate(final IProject project, final String path)  {
         CTFTrace temp;
@@ -70,9 +72,31 @@ public class LttngUstTrace extends CtfTmfTrace {
         String dom = temp.getEnvironment().get("domain"); //$NON-NLS-1$
         temp.dispose();
         if (dom != null && dom.equals("\"ust\"")) { //$NON-NLS-1$
-            return new TraceValidationStatus(CONFIDENCE, Activator.PLUGIN_ID);
+            return Status.OK_STATUS;
         }
         status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.LttngUstTrace_DomainError);
         return status;
+    }
+
+    @Override
+    public IStatus buildStateSystem() {
+        super.buildStateSystem();
+
+        /*
+         * Build the state system for the UST Callstack (will be empty if the
+         * required events are not present).
+         */
+        String directory = TmfTraceManager.getSupplementaryFileDir(this);
+        final File htFile = new File(directory + CALLSTACK_FILENAME);
+        ITmfStateProvider csInput = new LttngUstCallStackProvider(this);
+
+        try {
+            ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(htFile, csInput, false);
+            registerStateSystem(CallStackStateProvider.ID, ss);
+        }  catch (TmfTraceException e) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
+        }
+
+        return Status.OK_STATUS;
     }
 }

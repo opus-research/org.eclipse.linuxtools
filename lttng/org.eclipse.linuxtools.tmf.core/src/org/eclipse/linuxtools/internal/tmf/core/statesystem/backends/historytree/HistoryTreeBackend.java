@@ -180,7 +180,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         /* We start by reading the information in the root node */
         // FIXME using CoreNode for now, we'll have to redo this part to handle
         // different node types
-        CoreNode currentNode = sht.getRootNode();
+        CoreNode currentNode = sht.getLatestBranch().get(0);
         currentNode.writeInfoFromNode(stateInfo, t);
 
         /* Then we follow the branch down in the relevant children */
@@ -227,7 +227,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         // FIXME using CoreNode for now, we'll have to redo this part to handle
         // different node types
-        CoreNode currentNode = sht.getRootNode();
+        CoreNode currentNode = sht.getLatestBranch().get(0);
         HTInterval interval = currentNode.getRelevantInterval(key, t);
 
         try {
@@ -256,6 +256,15 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     }
 
     /**
+     * Return the current depth of the tree, ie the number of node levels.
+     *
+     * @return The tree depth
+     */
+    public int getTreeDepth() {
+        return sht.getLatestBranch().size();
+    }
+
+    /**
      * Return the average node usage as a percentage (between 0 and 100)
      *
      * @return Average node usage %
@@ -268,7 +277,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         try {
             for (int seq = 0; seq < sht.getNodeCount(); seq++) {
                 node = sht.readNode(seq);
-                total += node.getNodeUsagePercent();
+                total += node.getNodeUsagePRC();
             }
         } catch (ClosedChannelException e) {
             e.printStackTrace();

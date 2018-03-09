@@ -54,7 +54,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
 
     public SDView v;
     public int page;
-    private List<GraphNode> findResults = new ArrayList<>();
+    private List<GraphNode> findResults = new ArrayList<GraphNode>();
     private Criteria findCriteria;
     private int currentFindIndex = 0;
 
@@ -233,7 +233,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             return false;
         }
         if (findResults == null || findCriteria == null || !findCriteria.compareTo(toSearch)) {
-            findResults = new ArrayList<>();
+            findResults = new ArrayList<GraphNode>();
             findCriteria = toSearch;
             if (findCriteria.isLifeLineSelected()) {
                 for (int i = 0; i < frame.lifeLinesCount(); i++) {
@@ -243,7 +243,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
                 }
 
             }
-            ArrayList<GraphNode> msgs = new ArrayList<>();
+            ArrayList<GraphNode> msgs = new ArrayList<GraphNode>();
             if (findCriteria.isSyncMessageSelected()) {
                 for (int i = 0; i < frame.syncMessageCount(); i++) {
                     if (findCriteria.matches(frame.getSyncMessage(i).getName())) {
@@ -264,7 +264,7 @@ public class TestLoaders implements IUml2SDLoader, ISDFindProvider, ISDFilterPro
             // findResults.addAll(Arrays.asList(temp));
             // }
 
-            msgs = new ArrayList<>();
+            msgs = new ArrayList<GraphNode>();
             if (findCriteria.isAsyncMessageSelected()) {
                 for (int i = 0; i < frame.asyncMessageCount(); i++) {
                     if (findCriteria.matches(frame.getAsyncMessage(i).getName())) {

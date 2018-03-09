@@ -19,8 +19,8 @@ import java.util.Map;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
 
 /**
  * Trace type content provider, a helper for showing trace types
@@ -30,8 +30,8 @@ import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
  */
 public class TraceTypeContentProvider implements ITreeContentProvider {
 
-    private final List<String> fTraceCategory = new ArrayList<>();
-    private final Map<String, List<TraceTypeHelper>> fTraceType = new HashMap<>();
+    private final List<String> fTraceCategory = new ArrayList<String>();
+    private final Map<String, List<TraceTypeHelper>> fTraceType = new HashMap<String, List<TraceTypeHelper>>();
 
     /**
      * Default Constructor

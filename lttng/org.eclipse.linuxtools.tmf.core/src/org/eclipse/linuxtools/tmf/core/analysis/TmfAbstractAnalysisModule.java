@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.tmf.core.analysis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +46,10 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     private String fName, fId;
     private boolean fAutomatic = false, fStarted = false;
     private ITmfTrace fTrace;
-    private final Map<String, Object> fParameters = new HashMap<>();
-    private final List<String> fParameterNames = new ArrayList<>();
-    private final List<IAnalysisOutput> fOutputs = new ArrayList<>();
-    private List<IAnalysisParameterProvider> fParameterProviders = new ArrayList<>();
+    private final Map<String, Object> fParameters = new HashMap<String, Object>();
+    private final List<String> fParameterNames = new ArrayList<String>();
+    private final List<IAnalysisOutput> fOutputs = new ArrayList<IAnalysisOutput>();
+    private List<IAnalysisParameterProvider> fParameterProviders = new ArrayList<IAnalysisParameterProvider>();
     private Job fJob = null;
 
     private final Object syncObj = new Object();
@@ -180,7 +181,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
      * Set the countdown latch back to 1 so the analysis can be executed again
      */
     protected void resetAnalysis() {
-        fFinishedLatch.countDown();
         fFinishedLatch = new CountDownLatch(1);
     }
 
@@ -275,8 +275,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
                 if (!fAnalysisCancelled) {
                     return Status.OK_STATUS;
                 }
-                // Reset analysis so that it can be executed again.
-                resetAnalysis();
                 return Status.CANCEL_STATUS;
             }
 
@@ -300,8 +298,8 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     }
 
     @Override
-    public Iterable<IAnalysisOutput> getOutputs() {
-        return fOutputs;
+    public List<IAnalysisOutput> getOutputs() {
+        return Collections.unmodifiableList(fOutputs);
     }
 
     @Override
@@ -312,20 +310,10 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     }
 
     @Override
-    public boolean waitForCompletion() {
-        try {
-            fFinishedLatch.await();
-        } catch (InterruptedException e) {
-            Activator.logError("Error while waiting for module completion", e); //$NON-NLS-1$
-        }
-        return !fAnalysisCancelled;
-    }
-
-    @Override
     public boolean waitForCompletion(IProgressMonitor monitor) {
         try {
-            while (!fFinishedLatch.await(500, TimeUnit.MILLISECONDS)) {
-                if (fAnalysisCancelled || monitor.isCanceled()) {
+            while (!fFinishedLatch.await(1, TimeUnit.MILLISECONDS)) {
+                if (monitor.isCanceled()) {
                     fAnalysisCancelled = true;
                     return false;
                 }

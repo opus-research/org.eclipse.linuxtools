@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.row;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class RowDataSet implements IHistoricalDataSet {
 		if (titles != null){
 			this.titles = Arrays.copyOf(titles, titles.length);
 		}
-		data = new ArrayList<>();
+		data = new ArrayList<IDataEntry>();
 	}
 
 	@Override
@@ -79,16 +80,17 @@ public class RowDataSet implements IHistoricalDataSet {
 
 	@Override
 	public int getColCount() {
-		if(null == titles) {
+		if(null == titles)
 			return -1;
-		}
 		return titles.length;
 	}
 
 	@Override
 	public boolean readFromFile(File file) {
-		try (FileReader fr = new FileReader(file);
-			BufferedReader br = new BufferedReader(fr)){
+		try {
+			FileReader fr = new FileReader(file);
+			BufferedReader br = new BufferedReader(fr);
+
 			br.readLine();	//Skip the ID
 			br.readLine();	//Skip the Titles
 			String line;
@@ -98,9 +100,11 @@ public class RowDataSet implements IHistoricalDataSet {
 				entry.putRow(0, line.split(", ")); //$NON-NLS-1$
 				append(entry);
 			}
+			br.close();
 			return true;
-		} catch(IOException|ArrayIndexOutOfBoundsException e) {
-		}
+		} catch(FileNotFoundException fnfe) {
+		} catch(IOException ioe) {
+		} catch(ArrayIndexOutOfBoundsException aioobe) {}
 		return false;
 	}
 
@@ -108,33 +112,33 @@ public class RowDataSet implements IHistoricalDataSet {
 	public boolean writeToFile(File file) {
 		try {
 			file.createNewFile();
-			try (FileOutputStream fos = new FileOutputStream(file);
-					PrintStream ps = new PrintStream(fos)) {
+			FileOutputStream fos = new FileOutputStream(file);
+			PrintStream ps = new PrintStream(fos);
 
-				String line = ""; //$NON-NLS-1$
-				Object[] dataRow;
+			String line = ""; //$NON-NLS-1$
+			Object[] dataRow;
 
-				// ID
-				ps.print(ID + "\n"); //$NON-NLS-1$
+			//ID
+			ps.print(ID + "\n"); //$NON-NLS-1$
 
-				// Labels
-				int i, j;
-				for (i = 0; i < titles.length; i++)
-					line += titles[i] + ", "; //$NON-NLS-1$
+			//Labels
+			int i, j;
+			for(i=0; i<titles.length; i++)
+				line += titles[i] + ", "; //$NON-NLS-1$
+			ps.print(line + "\n"); //$NON-NLS-1$
+
+			//Data
+			for(i=0; i<getRowCount(); i++) {
+				dataRow = getRow(i);
+				line = ""; //$NON-NLS-1$
+				for(j=0; j<dataRow.length; j++)
+					line += dataRow[j].toString() + ", "; //$NON-NLS-1$
 				ps.print(line + "\n"); //$NON-NLS-1$
-
-				// Data
-				for (i = 0; i < getRowCount(); i++) {
-					dataRow = getRow(i);
-					line = ""; //$NON-NLS-1$
-					for (j = 0; j < dataRow.length; j++)
-						line += dataRow[j].toString() + ", "; //$NON-NLS-1$
-					ps.print(line + "\n"); //$NON-NLS-1$
-				}
 			}
+			ps.close();
 			return true;
-		} catch (IOException e) {
-		}
+		} catch(FileNotFoundException e) {
+		} catch(IOException e) {}
 		return false;
 	}
 
@@ -152,23 +156,20 @@ public class RowDataSet implements IHistoricalDataSet {
 
 	@Override
 	public Object[] getHistoricalData(String key, int col, int start, int end) {
-		if(start > end || start < 0 || end > getRowCount() || col < COL_ROW_NUM || col >= this.getColCount()) {
+		if(start > end || start < 0 || end > getRowCount() || col < COL_ROW_NUM || col >= this.getColCount())
 			return null;
-		}
 
 		if(COL_ROW_NUM == col) {
 			Integer[] rows = new Integer[Math.min(end-start, data.size())];
-			for(int i=0;i<rows.length; i++) {
+			for(int i=0;i<rows.length; i++)
 				rows[i] = Integer.valueOf(start+i+1);
-			}
 			return rows;
 		}
 
 		Object[] d = new Object[Math.min(end-start, data.size())];
 
-		for(int i=0; i<d.length; i++) {
+		for(int i=0; i<d.length; i++)
 			d[i] = data.get(start+i).getColumn(col)[0];
-		}
 		return d;
 	}
 
@@ -184,19 +185,17 @@ public class RowDataSet implements IHistoricalDataSet {
 
 	@Override
 	public boolean remove(int entry) {
-		if(entry < 0 || entry >= data.size()) {
+		if(entry < 0 || entry >= data.size())
 			return false;
-		}
 		return (null != data.remove(entry));
 	}
 
 	@Override
 	public IDataEntry getEntry(int entry) {
-		if(entry < 0 || entry >= getEntryCount()) {
+		if(entry < 0 || entry >= getEntryCount())
 			return null;
-		} else {
+		else
 			return data.get(entry);
-		}
 	}
 	//End IHistoricalDataSet Methods
 

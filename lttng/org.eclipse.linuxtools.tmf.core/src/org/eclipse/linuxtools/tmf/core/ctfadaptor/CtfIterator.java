@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2014 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
- *   Florian Wininger - Performance improvements
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -38,9 +37,6 @@ public class CtfIterator extends CTFTraceReader
 
     private CtfLocation fCurLocation;
     private long fCurRank;
-
-    private CtfLocation fPreviousLocation;
-    private CtfTmfEvent fPreviousEvent;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -121,15 +117,11 @@ public class CtfIterator extends CTFTraceReader
      *
      * @return CtfTmfEvent The current event
      */
-    public synchronized CtfTmfEvent getCurrentEvent() {
+    public CtfTmfEvent getCurrentEvent() {
         final StreamInputReader top = super.getPrio().peek();
         if (top != null) {
-            if (!fCurLocation.equals(fPreviousLocation)) {
-                fPreviousLocation = fCurLocation;
-                fPreviousEvent = CtfTmfEventFactory.createEvent(top.getCurrentEvent(),
-                        top.getFilename(), fTrace);
-            }
-            return fPreviousEvent;
+            return CtfTmfEventFactory.createEvent(top.getCurrentEvent(),
+                    top.getFilename(), fTrace);
         }
         return null;
     }

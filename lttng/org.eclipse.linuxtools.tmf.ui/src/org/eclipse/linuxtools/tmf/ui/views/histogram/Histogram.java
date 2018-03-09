@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2014 Ericsson
+ * Copyright (c) 2011, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -417,9 +417,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      */
     public void clear() {
         fDataModel.clear();
-        if (fDragState == DRAG_SELECTION) {
-            updateSelectionTime();
-        }
         fDragState = DRAG_NONE;
         fDragButton = 0;
         synchronized (fDataModel) {
@@ -435,6 +432,19 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      */
     public void countEvent(final long eventCount, final long timestamp) {
         fDataModel.countEvent(eventCount, timestamp);
+    }
+
+    /**
+     * Sets the current event time and refresh the display
+     *
+     * @param timestamp The time of the current event
+     * @deprecated As of 2.1, use {@link #setSelection(long, long)}
+     */
+    @Deprecated
+    public void setCurrentEvent(final long timestamp) {
+        fSelectionBegin = (timestamp > 0) ? timestamp : 0;
+        fSelectionEnd = (timestamp > 0) ? timestamp : 0;
+        fDataModel.setSelectionNotifyListeners(timestamp, timestamp);
     }
 
     /**
@@ -677,6 +687,10 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
             final int width = image.getBounds().width;
             final int height = image.getBounds().height;
 
+            // Turn off anti-aliasing
+            int aliasing = imageGC.getAntialias();
+            imageGC.setAntialias(SWT.OFF);
+
             // Clear the drawing area
             imageGC.setBackground(fBackgroundColor);
             imageGC.fillRectangle(0, 0, image.getBounds().width + 1, image.getBounds().height + 1);
@@ -734,6 +748,9 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
             // Fill the area to the right of delimiter with background color
             imageGC.setBackground(fFillColor);
             imageGC.fillRectangle(delimiterIndex + 1, 0, width - (delimiterIndex + 1), height);
+
+            // Restore anti-aliasing
+            imageGC.setAntialias(aliasing);
 
         } catch (final Exception e) {
             // Do nothing

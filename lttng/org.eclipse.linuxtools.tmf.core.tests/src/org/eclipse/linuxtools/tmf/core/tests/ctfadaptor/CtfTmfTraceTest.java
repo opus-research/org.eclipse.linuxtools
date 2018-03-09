@@ -90,6 +90,7 @@ public class CtfTmfTraceTest {
         assertEquals(0L, result.getNbEvents());
         assertEquals(0L, result.getStreamingInterval());
         assertNull(result.getResource());
+        assertEquals(1000, result.getQueueSize());
         assertNull(result.getType());
     }
 

@@ -21,7 +21,6 @@ import static org.junit.Assert.fail;
 import java.util.List;
 import java.util.Random;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.InMemoryBackend;
@@ -42,8 +41,6 @@ import org.junit.Test;
  *
  */
 public class TmfMipmapStateProviderTest {
-
-    @NonNull private static final String SSID = "mimap-test";
     private static final String TEST_ATTRIBUTE_NAME = TmfMipmapStateProviderStub.TEST_ATTRIBUTE_NAME;
     private static final int NB_LEVELS = 4;
     private static final long START_TIME = 1000L;
@@ -62,7 +59,7 @@ public class TmfMipmapStateProviderTest {
     public static void init() {
         TmfMipmapStateProviderStub mmp = new TmfMipmapStateProviderStub(RESOLUTION, Type.LONG);
         IStateHistoryBackend be = new InMemoryBackend(0);
-        ssq = new StateSystem(SSID, be);
+        ssq = new StateSystem(be);
         mmp.assignTargetStateSystem(ssq);
 
         for (long time = START_TIME; time <= END_TIME; time += INTERVAL) {

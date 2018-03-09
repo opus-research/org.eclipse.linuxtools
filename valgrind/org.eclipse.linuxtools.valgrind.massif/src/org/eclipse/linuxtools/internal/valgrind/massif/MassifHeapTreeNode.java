@@ -49,7 +49,7 @@ public class MassifHeapTreeNode {
 		this.filename = filename;
 		this.line = line;
 		this.text = nodeText.toString();
-		children = new ArrayList<>();
+		children = new ArrayList<MassifHeapTreeNode>();
 	}
 
 	public MassifHeapTreeNode(MassifHeapTreeNode parent, double percent, long bytes, String text) {
@@ -65,7 +65,7 @@ public class MassifHeapTreeNode {
 		this.filename = null;
 		this.line = 0;
 		this.text = nodeText.toString();
-		children = new ArrayList<>();
+		children = new ArrayList<MassifHeapTreeNode>();
 	}
 
 	private void formatBytes(double percent, long bytes, StringBuffer buffer) {

@@ -69,7 +69,8 @@ public class SSHProxyManager implements IRemoteEnvProxyManager {
 					os = os + new String(bytes, 0, len);
 				os = os.substring(0, os.indexOf("\n")); //$NON-NLS-1$
 			}
-		} catch (InterruptedException|IOException e) {
+		} catch (InterruptedException e) {
+		} catch (IOException e2) {
 		}
 		return os;
 	}
@@ -85,9 +86,10 @@ public class SSHProxyManager implements IRemoteEnvProxyManager {
 		Map<String, String> env = Collections.emptyMap();
 		SSHCommandLauncher cmdLauncher = new SSHCommandLauncher(uri);
 		Process p = cmdLauncher.execute(new Path("/bin/env"), new String[] {}, new String[] {}, null, null); //$NON-NLS-1$
-		
+		BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		String errorLine;
-		try (BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()))){
+		try {
 			if((errorLine = error.readLine()) != null){
 				throw new IOException(errorLine);
 			}
@@ -113,23 +115,19 @@ public class SSHProxyManager implements IRemoteEnvProxyManager {
 		 */
 		Pattern variablePattern = Pattern.compile("^(.+)=([^\\(\\)\\s{].*|)$"); //$NON-NLS-1$
 		Matcher m;
-		
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-				p.getInputStream()))) {
+		try {
 			String readLine = reader.readLine();
 			while (readLine != null) {
 				m = variablePattern.matcher(readLine);
-				if (m.matches()) {
-					env.put(m.group(1), m.group(2));
+					if(m.matches())
+						env.put(m.group(1), m.group(2));
+					readLine = reader.readLine();
 				}
-				readLine = reader.readLine();
+			} catch (IOException e) {
+				Status status = new Status(IStatus.ERROR, e.getMessage(), Activator.PLUGIN_ID);
+				Activator.getDefault().getLog().log(status);
+				return Collections.emptyMap();
 			}
-		} catch (IOException e) {
-			Status status = new Status(IStatus.ERROR, e.getMessage(),
-					Activator.PLUGIN_ID);
-			Activator.getDefault().getLog().log(status);
-			return Collections.emptyMap();
-		}
 		return env;
 	}
 

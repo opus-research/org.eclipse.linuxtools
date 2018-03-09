@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfTraceImportException;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.AbstractTracePackageOperation;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageBookmarkElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageElement;
@@ -40,14 +41,12 @@ import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePack
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFileElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceImportException;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
-import org.eclipse.linuxtools.tmf.core.util.Pair;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceTypeUIUtils;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.wizards.datatransfer.TarException;
@@ -221,7 +220,7 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                 } else {
                     try {
                         progressMonitor.subTask(MessageFormat.format(Messages.TracePackageImportOperation_DetectingTraceType, traceName));
-                        traceType = TmfTraceTypeUIUtils.selectTraceType(traceRes.getLocation().toOSString(), null, null);
+                        traceType = TmfTraceType.getInstance().selectTraceType(traceRes.getLocation().toOSString(), null, null);
                     } catch (TmfTraceImportException e) {
                         // Could not figure out the type
                     }
@@ -229,7 +228,7 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
 
                 if (traceType != null) {
                     try {
-                        TmfTraceTypeUIUtils.setTraceType(traceRes, traceType);
+                        TmfTraceType.setTraceType(traceRes.getFullPath(), traceType);
                     } catch (CoreException e) {
                         setStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, MessageFormat.format(Messages.ImportTracePackageWizardPage_ErrorSettingTraceType, traceElement.getTraceType(), traceName), e));
                     }
@@ -336,27 +335,31 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
         monitor.worked(1);
     }
 
+    private static boolean fileNameMatches(String fileName, String entryName) {
+        boolean fileMatch = entryName.equalsIgnoreCase(fileName);
+        boolean folderMatch = entryName.startsWith(fileName + "/"); //$NON-NLS-1$
+        return fileMatch || folderMatch;
+    }
+
     private IStatus importTraceFiles(TracePackageFilesElement traceFilesElement, IProgressMonitor monitor) {
-        List<Pair<String, String>> fileNameAndLabelPairs = new ArrayList<>();
-
-        String sourceName = traceFilesElement.getFileName();
-        String destinationName = traceFilesElement.getParent().getText();
-
-        fileNameAndLabelPairs.add(new Pair<>(sourceName, destinationName));
-
+        List<String> fileNames = new ArrayList<String>();
+        fileNames.add(traceFilesElement.getFileName());
         IPath containerPath = fTmfTraceFolder.getPath();
-        IStatus status = importFiles(getSpecifiedArchiveFile(), fileNameAndLabelPairs, containerPath, monitor);
+        IStatus status = importFiles(getSpecifiedArchiveFile(), fileNames, containerPath, monitor);
+        if (status.isOK()) {
+            new TmfNavigatorContentProvider().getChildren(fTmfTraceFolder);
+        }
         return status;
     }
 
     private IStatus importSupplFiles(TracePackageSupplFilesElement suppFilesElement, TracePackageTraceElement traceElement, IProgressMonitor monitor) {
-        List<Pair<String, String>> fileNameAndLabelPairs = new ArrayList<>();
+        List<String> fileNames = new ArrayList<String>();
         for (TracePackageElement child : suppFilesElement.getChildren()) {
             TracePackageSupplFileElement supplFile = (TracePackageSupplFileElement) child;
-            fileNameAndLabelPairs.add(new Pair<>(supplFile.getText(), new Path(supplFile.getText()).lastSegment()));
+            fileNames.add(supplFile.getText());
         }
 
-        if (!fileNameAndLabelPairs.isEmpty()) {
+        if (!fileNames.isEmpty()) {
             List<TmfTraceElement> traces = fTmfTraceFolder.getTraces();
             TmfTraceElement tmfTraceElement = null;
             for (TmfTraceElement t : traces) {
@@ -372,15 +375,15 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                 String traceName = tmfTraceElement.getResource().getName();
                 // Project/.tracing/tracename
                 IPath destinationContainerPath = tmfTraceElement.getTraceSupplementaryFolder(traceName).getFullPath();
-                return importFiles(archiveFile, fileNameAndLabelPairs, destinationContainerPath, monitor);
+                return importFiles(archiveFile, fileNames, destinationContainerPath, monitor);
             }
         }
 
         return Status.OK_STATUS;
     }
 
-    private IStatus importFiles(ArchiveFile archiveFile, List<Pair<String, String>> fileNameAndLabelPairs, IPath destinationContainerPath, IProgressMonitor monitor) {
-        List<ArchiveProviderElement> objects = new ArrayList<>();
+    private IStatus importFiles(ArchiveFile archiveFile, List<String> fileNames, IPath destinationContainerPath, IProgressMonitor monitor) {
+        List<ArchiveProviderElement> objects = new ArrayList<ArchiveProviderElement>();
         Enumeration<?> entries = archiveFile.entries();
         while (entries.hasMoreElements()) {
             ArchiveEntry entry = (ArchiveEntry) entries.nextElement();
@@ -391,28 +394,21 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                 continue;
             }
 
-            for (Pair<String, String> fileNameAndLabel : fileNameAndLabelPairs) {
+            for (String fileName : fileNames) {
 
                 // Examples: Traces/kernel/     .tracing/testtexttrace.txt/statistics.ht
-                IPath searchedArchivePath = new Path(fileNameAndLabel.getFirst());
+                IPath searchedArchivePath = new Path(fileName);
 
                 // Check if this archive entry matches the searched file name at this archive location
-                boolean fileMatch = entryName.equalsIgnoreCase(searchedArchivePath.toString());
-                // For example Traces/kernel/metadata matches Traces/kernel/
-                boolean folderMatch = entryName.startsWith(searchedArchivePath + "/"); //$NON-NLS-1$
-
-                if (fileMatch || folderMatch) {
+                if (fileNameMatches(searchedArchivePath.toString(), entryName)) {
                     // Traces/     .tracing/testtexttrace.txt/
                     IPath searchedArchivePathContainer = searchedArchivePath.removeLastSegments(1);
 
                     // Traces/kernel/metadata -> kernel/metadata   .tracing/testtexttrace.txt/statistics.ht -> statistics.ht
                     // Note: The ImportOperation will take care of creating the kernel folder
                     IPath destinationPath = fullArchivePath.makeRelativeTo(searchedArchivePathContainer);
-
                     // metadata    statistics.ht
-                    // We don't use the label when the entry is a folder match because the labels for individual files
-                    // under the folder are not specified in the manifest so just use the last segment.
-                    String resourceLabel = folderMatch ? fullArchivePath.lastSegment() : fileNameAndLabel.getSecond();
+                    String resourceLabel = fullArchivePath.lastSegment();
 
                     ArchiveProviderElement pe = new ArchiveProviderElement(destinationPath.toString(), resourceLabel, archiveFile, entry);
                     objects.add(pe);
@@ -430,7 +426,7 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
         operation.setOverwriteResources(true);
 
         try {
-            operation.run(new SubProgressMonitor(monitor, fileNameAndLabelPairs.size(), SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
+            operation.run(new SubProgressMonitor(monitor, fileNames.size(), SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
             archiveFile.close();
         } catch (InvocationTargetException e) {
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.Messages.TracePackage_ErrorOperation, e);

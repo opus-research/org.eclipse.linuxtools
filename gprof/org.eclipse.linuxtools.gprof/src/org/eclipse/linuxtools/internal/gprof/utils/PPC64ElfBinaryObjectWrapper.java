@@ -68,7 +68,7 @@ public class PPC64ElfBinaryObjectWrapper extends ElfBinaryObject {
 		if (dataSection == null)
 			return symbols;
 
-		LinkedList<ISymbol> list = new LinkedList<>();
+		LinkedList<ISymbol> list = new LinkedList<ISymbol>();
 		for (ISymbol s : symbols)
 			if (s.getType() == ISymbol.FUNCTION && s instanceof Symbol){
 				IAddress addr = fixAddr(s.getAddress());

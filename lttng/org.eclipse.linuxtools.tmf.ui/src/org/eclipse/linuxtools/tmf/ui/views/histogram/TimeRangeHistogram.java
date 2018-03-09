@@ -70,7 +70,6 @@ public class TimeRangeHistogram extends Histogram {
         fRangeDuration = 0L;
         fFullRangeStartTime = 0L;
         fFullRangeEndTime = 0L;
-        setOffset(0);
         if (fZoom != null) {
             fZoom.setFullRange(0L, 0L);
             fZoom.setNewRange(0L, 0L);
@@ -120,10 +119,8 @@ public class TimeRangeHistogram extends Histogram {
                 fDragState = DRAG_RANGE;
                 fDragButton = event.button;
                 fStartPosition = event.x;
-                long maxOffset = (fRangeStartTime - fFullRangeStartTime) / fScaledData.fBucketDuration;
-                long minOffset = (fRangeStartTime + fRangeDuration - fFullRangeEndTime) / fScaledData.fBucketDuration;
-                fMaxOffset = (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, maxOffset));
-                fMinOffset = (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, minOffset));
+                fMaxOffset = (int) ((fRangeStartTime - fFullRangeStartTime) / fScaledData.fBucketDuration);
+                fMinOffset = (int) ((fRangeStartTime + fRangeDuration - fFullRangeEndTime) / fScaledData.fBucketDuration);
                 return;
             } else if (event.button == 3) {
                 fDragState = DRAG_ZOOM;

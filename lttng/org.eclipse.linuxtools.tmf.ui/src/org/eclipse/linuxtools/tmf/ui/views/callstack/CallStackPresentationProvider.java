@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.tmf.core.callstack.CallStackStateProvider;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
@@ -104,10 +105,7 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
     public String getEventName(ITimeEvent event) {
         if (event instanceof CallStackEvent) {
             CallStackEntry entry = (CallStackEntry) event.getEntry();
-            ITmfStateSystem ss = CallStackView.getCallStackStateSystem(entry.getTrace());
-            if (ss == null) {
-                return null;
-            }
+            ITmfStateSystem ss = entry.getTrace().getStateSystems().get(CallStackStateProvider.ID);
             try {
                 ITmfStateValue value = ss.querySingleState(event.getTime(), entry.getQuark()).getStateValue();
                 if (!value.isNull()) {
@@ -135,10 +133,7 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
             return;
         }
         CallStackEntry entry = (CallStackEntry) event.getEntry();
-        ITmfStateSystem ss = CallStackView.getCallStackStateSystem(entry.getTrace());
-        if (ss == null) {
-            return;
-        }
+        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(CallStackStateProvider.ID);
         try {
             ITmfStateValue value = ss.querySingleState(event.getTime(), entry.getQuark()).getStateValue();
             if (!value.isNull()) {

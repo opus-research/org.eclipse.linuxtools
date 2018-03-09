@@ -199,11 +199,7 @@ public class LttngKernelTraceGenerator {
      * @return the path
      */
     public static String getPath() {
-        CtfCoreTestPlugin plugin = CtfCoreTestPlugin.getDefault();
-        if (plugin == null) {
-            return null;
-        }
-        URL location = FileLocator.find(plugin.getBundle(), new Path(TRACES_DIRECTORY), null);
+        URL location = FileLocator.find(CtfCoreTestPlugin.getDefault().getBundle(), new Path(TRACES_DIRECTORY), null);
         File file = null;
         try {
             IPath path = new Path(FileLocator.toFileURL(location).getPath()).append(TRACE_NAME);

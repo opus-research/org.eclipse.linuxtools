@@ -52,14 +52,13 @@
     <mirror-repo-name>updates-nightly</mirror-repo-name>
     <tycho-version>0.19.0</tycho-version>
     <tycho-extras-version>0.19.0</tycho-extras-version>
-    <platform-version-name>luna</platform-version-name>
+    <platform-version-name>kepler</platform-version-name>
     <eclipse-site>http://download.eclipse.org/releases/${platform-version-name}</eclipse-site>
     <swtbot-site>http://download.eclipse.org/technology/swtbot/snapshots</swtbot-site>
-    <orbit-site>http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository</orbit-site>
+    <orbit-site>http://download.eclipse.org/tools/orbit/downloads/drops/R20130118183705/repository</orbit-site>
     <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.jacoco.reportPath>${project.basedir}/../../target/jacoco.exec</sonar.jacoco.reportPath>
-    <sonar.java.source>1.7</sonar.java.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <pluginRepositories>
@@ -80,12 +79,12 @@
       <url>${orbit-site}</url>
     </repository>
   </repositories>
-
+  
   <profiles>
     <profile>
       <id>platform-kepler</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <activeByDefault>true</activeByDefault>
         <property>
           <name>platform-version-name</name>
           <value>kepler</value>
@@ -105,12 +104,12 @@
       </repositories>
     </profile>
     <profile>
-      <id>platform-luna</id>
+      <id>platform-kepler-staging</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
         <property>
           <name>platform-version-name</name>
-          <value>luna</value>
+          <value>kepler-staging</value>
         </property>
       </activation>
       <properties>
@@ -120,7 +119,7 @@
       </properties>
       <repositories>
         <repository>
-          <id>luna</id>
+          <id>kepler-staging</id>
           <layout>p2</layout>
           <url>${eclipse-site}</url>
         </repository>
@@ -299,7 +298,7 @@
        <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.6.4.201312101107</version>
+        <version>0.6.3.201306030806</version>
         <executions>
           <execution>
            <id>pre-test</id>
@@ -308,7 +307,7 @@
            </goals>
 	   <configuration>
               <!-- Where to put jacoco coverage report -->
-              <destFile>${sonar.jacoco.reportPath}</destFile>
+              <destFile>${sonar.jacoco.reportPath}</destFile> 
               <includes>
                 <include>org.eclipse.linuxtools.*</include>
               </includes>
@@ -353,7 +352,7 @@
                </dependency>
             </dependencies>
             <product>org.eclipse.platform.ide</product>
- 	    <argLine>${tycho.testArgLine} -Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m</argLine>
+ 	    <argLine>${tycho.testArgLine} -Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m</argLine> 
 	  </configuration>
 	</plugin>
         <plugin>

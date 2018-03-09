@@ -233,7 +233,7 @@ public class OprofileCounter {
 	 * @return the event for this counter
 	 */
 	public OpEvent [] getEvents() {
-		List<OpEvent> res = new ArrayList<> ();
+		List<OpEvent> res = new ArrayList<OpEvent> ();
 		for (OprofileDaemonEvent de : daemonEvent) {
 			res.add(de.getEvent());
 		}

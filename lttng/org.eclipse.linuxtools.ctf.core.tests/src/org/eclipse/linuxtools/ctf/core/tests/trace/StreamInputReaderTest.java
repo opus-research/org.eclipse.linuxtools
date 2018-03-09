@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
@@ -23,7 +24,6 @@ import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.eclipse.linuxtools.ctf.core.trace.CTFResponse;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.core.trace.StreamInput;
@@ -156,7 +156,7 @@ public class StreamInputReaderTest {
     @Test
     public void testGoToLastEvent2() throws CTFReaderException {
         long timestamp = -1;
-        while(fixture.readNextEvent().equals(CTFResponse.OK)) {
+        while(fixture.readNextEvent()) {
             timestamp = fixture.getCurrentEvent().getTimestamp();
         }
         long endTimestamp = goToEnd();
@@ -174,7 +174,8 @@ public class StreamInputReaderTest {
      */
     @Test
     public void testReadNextEvent() throws CTFReaderException {
-        assertEquals(CTFResponse.OK, fixture.readNextEvent());
+        boolean result = fixture.readNextEvent();
+        assertTrue(result);
     }
 
     /**

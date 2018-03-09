@@ -15,9 +15,11 @@ import java.util.ArrayList;
 
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataEntry;
 
+
+
 public class TableEntry implements IDataEntry {
 	public TableEntry() {
-		bodyContent = new ArrayList<>();
+		bodyContent = new ArrayList<Object[]>();
 	}
 
 	@Override

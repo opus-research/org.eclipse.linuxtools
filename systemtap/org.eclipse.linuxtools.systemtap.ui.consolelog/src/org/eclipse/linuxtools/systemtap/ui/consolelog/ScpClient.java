@@ -58,17 +58,18 @@ public class ScpClient {
       session.connect();
     }
 
-	public void transfer(String fromFile, String toFile) throws IOException,
-			JSchException {
+    public void transfer(String fromFile, String toFile) throws IOException, JSchException{
+    	FileInputStream fis=null;
 		String rfile = toFile;
 		String lfile = fromFile;
 		String command = "scp -t " + rfile; //$NON-NLS-1$
-		Channel channel = session.openChannel("exec"); //$NON-NLS-1$
-		((ChannelExec) channel).setCommand(command);
+		try {
+			Channel channel = session.openChannel("exec"); //$NON-NLS-1$
+			((ChannelExec) channel).setCommand(command);
 
-		// get I/O streams for remote scp
-		try (OutputStream out = channel.getOutputStream();
-				InputStream in = channel.getInputStream()) {
+			// get I/O streams for remote scp
+			OutputStream out = channel.getOutputStream();
+			InputStream in = channel.getInputStream();
 
 			channel.connect();
 
@@ -94,16 +95,17 @@ public class ScpClient {
 			}
 
 			// send a content of lfile
+			fis = new FileInputStream(lfile);
 			byte[] buf = new byte[1024];
-			try (FileInputStream fis = new FileInputStream(lfile)) {
-				while (true) {
-					int len = fis.read(buf, 0, buf.length);
-					if (len <= 0)
-						break;
-					out.write(buf, 0, len);
+			while (true) {
+				int len = fis.read(buf, 0, buf.length);
+				if (len <= 0)
+					break;
+				out.write(buf, 0, len);
 
-				}
 			}
+			fis.close();
+			fis = null;
 			// send '\0'
 			buf[0] = 0;
 			out.write(buf, 0, 1);
@@ -111,12 +113,17 @@ public class ScpClient {
 			if (checkAck(in) != 0) {
 				System.out.println("err"); //$NON-NLS-1$
 			}
+			out.close();
+
+			channel.disconnect();
+			session.disconnect();
+
+		} catch (IOException e) {
+			if (fis != null)
+				fis.close();
+			throw e;
 		}
-
-		channel.disconnect();
-		session.disconnect();
-
-	}
+  }
 
 	static int checkAck(InputStream in) throws IOException {
 		int b = in.read();

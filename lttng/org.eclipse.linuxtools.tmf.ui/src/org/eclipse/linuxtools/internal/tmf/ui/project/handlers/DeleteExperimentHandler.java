@@ -66,7 +66,7 @@ public class DeleteExperimentHandler extends AbstractHandler {
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
         if (part == null) {
-            return Boolean.FALSE;
+            return false;
         }
         ISelection selection = part.getSite().getSelectionProvider().getSelection();
 
@@ -91,6 +91,9 @@ public class DeleteExperimentHandler extends AbstractHandler {
 
                         // Finally, delete the experiment
                         resource.delete(true, null);
+
+                        // Refresh the project
+                        experiment.getProject().refresh();
 
                     } catch (final CoreException e) {
                         Display.getDefault().asyncExec(new Runnable() {

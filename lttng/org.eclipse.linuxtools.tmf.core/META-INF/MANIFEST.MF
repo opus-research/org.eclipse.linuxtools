@@ -7,7 +7,7 @@ Bundle-Localization: plugin
 Bundle-SymbolicName: org.eclipse.linuxtools.tmf.core;singleton:=true
 Bundle-Activator: org.eclipse.linuxtools.internal.tmf.core.Activator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.linuxtools.ctf.core;bundle-version="3.0.0"
@@ -36,8 +36,6 @@ Export-Package: org.eclipse.linuxtools.internal.tmf.core;x-friends:="org.eclipse
  org.eclipse.linuxtools.tmf.core.filter.xml,
  org.eclipse.linuxtools.tmf.core.interval,
  org.eclipse.linuxtools.tmf.core.io,
- org.eclipse.linuxtools.tmf.core.parsers.custom,
- org.eclipse.linuxtools.tmf.core.project.model,
  org.eclipse.linuxtools.tmf.core.request,
  org.eclipse.linuxtools.tmf.core.signal,
  org.eclipse.linuxtools.tmf.core.statesystem,
@@ -49,6 +47,5 @@ Export-Package: org.eclipse.linuxtools.internal.tmf.core;x-friends:="org.eclipse
  org.eclipse.linuxtools.tmf.core.trace.indexer,
  org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint,
  org.eclipse.linuxtools.tmf.core.trace.location,
- org.eclipse.linuxtools.tmf.core.trace.text,
  org.eclipse.linuxtools.tmf.core.uml2sd,
  org.eclipse.linuxtools.tmf.core.util

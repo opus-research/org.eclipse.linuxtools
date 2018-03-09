@@ -12,8 +12,8 @@
 package org.eclipse.linuxtools.systemtap.ui.editor;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 
 import org.eclipse.core.runtime.IPath;
@@ -25,7 +25,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.linuxtools.internal.systemtap.ui.editor.Localization;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IEditorInput;
@@ -70,7 +69,6 @@ public class SimpleEditor extends TextEditor {
 			int offset = reg.getOffset();
 			line = doc.getLineOfOffset(offset);
 		} catch(BadLocationException ble) {
-			// Pass
 		} catch(NullPointerException npe) {
 			line = -1;
 		}
@@ -89,9 +87,7 @@ public class SimpleEditor extends TextEditor {
 		try {
 			int offset = doc.getLineOffset(line-1) + character;
 			this.getSelectionProvider().setSelection(new TextSelection(doc, offset, 0));
-		} catch(BadLocationException boe) {
-			// Pass
-		}
+		} catch(BadLocationException boe) {}
 	}
 
 	/**
@@ -103,9 +99,7 @@ public class SimpleEditor extends TextEditor {
 
 		try {
 			this.getSelectionProvider().setSelection(new TextSelection(doc, doc.getLineOffset(line-1), doc.getLineLength(line-1)-1));
-		} catch(BadLocationException boe) {
-			// Pass
-		}
+		} catch(BadLocationException boe) {}
 	}
 
 	/**
@@ -123,13 +117,13 @@ public class SimpleEditor extends TextEditor {
 		IDocument doc = getSourceViewer().getDocument();
 		String s = doc.get();
 
-		try (FileOutputStream fos = new FileOutputStream(file);
-				PrintStream ps = new PrintStream(fos)){
+		try {
+			FileOutputStream fos = new FileOutputStream(file);
+			PrintStream ps = new PrintStream(fos);
+
 			ps.print(s);
 			ps.close();
-		} catch(IOException fnfe) {
-			// Pass
-		}
+		} catch(FileNotFoundException fnfe) {}
 
 		setInput(inputFile);
 		setPartName(inputFile.getName());
@@ -140,7 +134,7 @@ public class SimpleEditor extends TextEditor {
 	 * @param file the location of the file you wish to set.
 	 * @return input object created.
 	 */
-	private static IEditorInput createEditorInput(File file) {
+	private IEditorInput createEditorInput(File file) {
 		IPath location= new Path(file.getAbsolutePath());
 		PathEditorInput input= new PathEditorInput(location);
 		return input;
@@ -177,13 +171,12 @@ public class SimpleEditor extends TextEditor {
 		}
 	}
 
-	private static File queryFile() {
+	private File queryFile() {
 		FileDialog dialog= new FileDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
-		dialog.setText(Localization.getString("NewFileAction.NewFile"));  //$NON-NLS-1$
+		dialog.setText("New File"); //$NON-NLS-1$
 		String path= dialog.open();
-		if (path != null && path.length() > 0) {
+		if (path != null && path.length() > 0)
 			return new File(path);
-		}
 		return null;
 	}
 

@@ -37,8 +37,8 @@ public class ReadTrace {
         final int LOOP_COUNT = 1;
 
         // Work variables
-        long nbEvent = 0L;
-        Vector<Double> benchs = new Vector<>();
+        Long nbEvent = 0L;
+        Vector<Double> benchs = new Vector<Double>();
         CTFTrace trace = null;
         long start, stop;
         for (int loops = 0; loops < LOOP_COUNT; loops++) {

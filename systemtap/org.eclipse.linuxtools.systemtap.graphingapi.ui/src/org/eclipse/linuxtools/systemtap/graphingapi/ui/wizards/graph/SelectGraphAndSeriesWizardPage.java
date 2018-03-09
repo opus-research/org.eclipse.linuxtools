@@ -16,7 +16,6 @@ import java.text.MessageFormat;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.systemtap.graphingapi.ui.Localization;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -49,11 +48,11 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		edit = wizard.isEditing();
 
 		//Set the layout data
-		Composite comp = new Composite(parent, SWT.NONE);
+		Composite comp = new Composite(parent, SWT.NULL);
 		comp.setLayout(new GridLayout());
 
 		Group cmpGraphOptsGraph = new Group(comp, SWT.SHADOW_ETCHED_IN);
-		cmpGraphOptsGraph.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+		cmpGraphOptsGraph.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, false, false));
 		RowLayout rowLayout = new RowLayout();
 		rowLayout.type = SWT.HORIZONTAL;
 		rowLayout.spacing = 10;
@@ -74,14 +73,11 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			}
 		}
 
-		ScrolledComposite scrolledComposite = new ScrolledComposite(comp, SWT.V_SCROLL | SWT.BORDER);
-		scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		scrolledComposite.setExpandHorizontal(true);
-
-		Composite cmpGraphOptsSeries = new Composite(scrolledComposite, SWT.NONE);
-		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		cmpGraphOptsSeries.setLayout(new GridLayout(2, false));
-		scrolledComposite.setContent(cmpGraphOptsSeries);
+		Group cmpGraphOptsSeries = new Group(comp, SWT.SHADOW_ETCHED_IN);
+		cmpGraphOptsSeries.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		cmpGraphOptsSeries.setLayout(layout);
 
 		Label lblTitle = new Label(cmpGraphOptsSeries, SWT.NONE);
 		lblTitle.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -116,7 +112,7 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 		for(int i=0; i<cboYItems.length; i++) {
 			lblYItems[i] = new Label(cmpGraphOptsSeries, SWT.NONE);
 			lblYItems[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-			lblYItems[i].setText(MessageFormat.format(Localization.getString("SelectGraphAndSeriesWizardPage.YSeries"), i)); //$NON-NLS-1$
+			lblYItems[i].setText(MessageFormat.format(Localization.getString("SelectGraphAndSeriesWizardPage.YSeries"), new Integer(i))); //$NON-NLS-1$
 			cboYItems[i] = new Combo(cmpGraphOptsSeries, SWT.DROP_DOWN|SWT.READ_ONLY);
 			cboYItems[i].setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			cboYItems[i].addSelectionListener(new ComboSelectionListener());
@@ -130,9 +126,8 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 
 		for(int j,i=0; i<labels.length; i++) {
 			cboXItem.add(labels[i]);
-			for(j=0; j<lblYItems.length; j++) {
+			for(j=0; j<lblYItems.length; j++)
 				cboYItems[j].add(labels[i]);
-			}
 		}
 
 		int selected;
@@ -185,7 +180,6 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 			saveDataToModelGraph(wizard.model.getGraphID());
 		}
 
-		cmpGraphOptsSeries.pack();
 		setControl(comp);
 		checkErrors();
 	}
@@ -224,6 +218,12 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 	private boolean saveDataToModelSeries() {
 		if(getErrorMessage() == null) {
 			model.setTitle(txtTitle.getText());
+
+			if(null != txtKey && txtKey.isEnabled())
+				model.setKey(txtKey.getText());
+			else
+				model.setKey(null);
+
 			model.setXSeries(cboXItem.getSelectionIndex()-1);
 
 			int i, count;
@@ -271,10 +271,10 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 				for(j=i+1; j<cboYItems.length; j++) {
 					try {
 						if(!deleted[j+1] && cboYItems[j].isVisible()
-								&& cboYItems[i].getSelectionIndex() + offset == cboYItems[j].getSelectionIndex()) {
-							markAsDuplicate(cboYItems[i], true);
-							markAsDuplicate(cboYItems[j], true);
-							foundDuplicate = true;
+									&& cboYItems[i].getSelectionIndex() + offset == cboYItems[j].getSelectionIndex()) {
+								markAsDuplicate(cboYItems[i], true);
+								markAsDuplicate(cboYItems[j], true);
+								foundDuplicate = true;
 						}
 					} catch (Exception e) {
 						// If a cboYItem has no item selected, don't mark any duplicates. Ignore.
@@ -315,31 +315,35 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 	@Override
 	public void dispose() {
 		super.dispose();
-		if(null != btnGraphs) {
-			for(int i=0; i<btnGraphs.length; i++) {
+		if(null != btnGraphs)
+			for(int i=0; i<btnGraphs.length; i++)
 				btnGraphs[i].dispose();
-			}
-		}
 		btnGraphs = null;
 
-		if(null != txtTitle) {
+		if(null != txtTitle)
 			txtTitle.dispose();
-		}
 		txtTitle = null;
 
-		if(null != cboXItem) {
+		if(null != txtKey)
+			txtKey.dispose();
+		txtKey = null;
+		if(null != btnKey)
+			btnKey.dispose();
+		btnKey = null;
+		if(null != lblKey)
+			lblKey.dispose();
+		lblKey = null;
+
+		if(null != cboXItem)
 			cboXItem.dispose();
-		}
 		cboXItem = null;
 		if(null != cboYItems) {
 			for(int i=0; i<cboYItems.length; i++) {
-				if(null != cboYItems[i]) {
+				if(null != cboYItems[i])
 					cboYItems[i].dispose();
-				}
 				cboYItems[i] = null;
-				if(null != lblYItems[i]) {
+				if(null != lblYItems[i])
 					lblYItems[i].dispose();
-				}
 				lblYItems[i] = null;
 			}
 		}
@@ -384,11 +388,10 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 							deleted[i+1] = false;
 							cboYItems[i].select(0);
 						}
-						if(deleted[i+1] || (cboYItems[i].getSelectionIndex() > 0 && cboYItems[i].isVisible())) {
+						if(deleted[i+1] || (cboYItems[i].getSelectionIndex() > 0 && cboYItems[i].isVisible()))
 							setVisible = true;
-						} else {
+						else
 							setVisible = false;
-						}
 					}
 				}
 			}
@@ -417,6 +420,9 @@ public class SelectGraphAndSeriesWizardPage extends WizardPage implements Listen
 	private SelectGraphAndSeriesWizard wizard;
 
 	private Text txtTitle;		//TODO: Move this to another page once graphs get more detail
+	private Text txtKey;
+	private Button btnKey;
+	private Label lblKey;
 	private Combo cboXItem;
 	private Combo[] cboYItems;
 	private Label[] lblYItems;

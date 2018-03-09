@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2014 Intel Corporation, Ericsson, others
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson, others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,7 +31,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs.TimeGraphLegend;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITimeDataProvider;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITimeDataProvider2;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphColorScheme;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphScale;
@@ -64,7 +64,7 @@ import org.eclipse.swt.widgets.Slider;
  * @version 1.0
  * @author Patrick Tasse, and others
  */
-public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
+public class TimeGraphViewer implements ITimeDataProvider2, SelectionListener {
 
     private static final int DEFAULT_NAME_WIDTH = 200;
     private static final int MIN_NAME_WIDTH = 6;
@@ -95,13 +95,11 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     private TimeGraphScale fTimeScaleCtrl;
     private Slider fVerticalScrollBar;
     private TimeGraphColorScheme fColorScheme;
-    private Object fInputElement;
-    private ITimeGraphContentProvider fTimeGraphContentProvider;
     private ITimeGraphPresentationProvider fTimeGraphProvider;
 
-    private List<ITimeGraphSelectionListener> fSelectionListeners = new ArrayList<>();
-    private List<ITimeGraphTimeListener> fTimeListeners = new ArrayList<>();
-    private List<ITimeGraphRangeListener> fRangeListeners = new ArrayList<>();
+    private List<ITimeGraphSelectionListener> fSelectionListeners = new ArrayList<ITimeGraphSelectionListener>();
+    private List<ITimeGraphTimeListener> fTimeListeners = new ArrayList<ITimeGraphTimeListener>();
+    private List<ITimeGraphRangeListener> fRangeListeners = new ArrayList<ITimeGraphRangeListener>();
 
     // Time format, using Epoch reference, Relative time format(default) or
     // Number
@@ -122,9 +120,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     private Action fFollowArrowBwdAction;
 
     /**
-     * Standard constructor.
-     * <p>
-     * The default timegraph content provider accepts an ITimeGraphEntry[] as input element.
+     * Standard constructor
      *
      * @param parent
      *            The parent UI composite object
@@ -133,42 +129,10 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      */
     public TimeGraphViewer(Composite parent, int style) {
         createDataViewer(parent, style);
-        fTimeGraphContentProvider = new ITimeGraphContentProvider() {
-            @Override
-            public ITimeGraphEntry[] getElements(Object inputElement) {
-                if (inputElement instanceof ITimeGraphEntry[]) {
-                    return (ITimeGraphEntry[]) inputElement;
-                }
-                return new ITimeGraphEntry[0];
-            }
-        };
     }
 
     /**
-     * Sets the timegraph content provider used by this timegraph viewer.
-     *
-     * @param timeGraphContentProvider
-     *            the timegraph content provider
-     *
-     * @since 3.0
-     */
-    public void setTimeGraphContentProvider(ITimeGraphContentProvider timeGraphContentProvider) {
-        fTimeGraphContentProvider = timeGraphContentProvider;
-    }
-
-    /**
-     * Gets the timegraph content provider used by this timegraph viewer.
-     *
-     * @return the timegraph content provider
-     *
-     * @since 3.0
-     */
-    public ITimeGraphContentProvider getTimeGraphContentProvider() {
-        return fTimeGraphContentProvider;
-    }
-
-    /**
-     * Sets the timegraph presentation provider used by this timegraph viewer.
+     * Sets the timegraph provider used by this timegraph viewer.
      *
      * @param timeGraphProvider
      *            the timegraph provider
@@ -181,38 +145,28 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     }
 
     /**
-     * Sets or clears the input for this time graph viewer.
+     * Sets or clears the input for this time graph viewer. The input array
+     * should only contain top-level elements.
      *
-     * @param inputElement
+     * @param input
      *            The input of this time graph viewer, or <code>null</code> if
      *            none
-     *
-     * @since 3.0
      */
-    public void setInput(Object inputElement) {
-        fInputElement = inputElement;
-        ITimeGraphEntry[] input = fTimeGraphContentProvider.getElements(inputElement);
+    public void setInput(ITimeGraphEntry[] input) {
+        ITimeGraphEntry[] realInput = input;
 
         if (fTimeGraphCtrl != null) {
-            setTimeRange(input);
+            if (realInput == null) {
+                realInput = new ITimeGraphEntry[0];
+            }
+            setTimeRange(realInput);
             fVerticalScrollBar.setEnabled(true);
             setTopIndex(0);
             fSelectionBegin = 0;
             fSelectionEnd = 0;
             fSelectedEntry = null;
-            refreshAllData(input);
+            refreshAllData(realInput);
         }
-    }
-
-    /**
-     * Gets the input for this time graph viewer.
-     *
-     * @return The input of this time graph viewer, or <code>null</code> if none
-     *
-     * @since 3.0
-     */
-    public Object getInput() {
-        return fInputElement;
     }
 
     /**
@@ -232,10 +186,9 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      * Refresh the view
      */
     public void refresh() {
-        ITimeGraphEntry[] input = fTimeGraphContentProvider.getElements(fInputElement);
-        setTimeRange(input);
+        setTimeRange(fTimeGraphCtrl.getTraces());
         fVerticalScrollBar.setEnabled(true);
-        refreshAllData(input);
+        refreshAllData(fTimeGraphCtrl.getTraces());
     }
 
     /**
@@ -599,6 +552,13 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     public int getTimeSpace() {
         int w = fTimeGraphCtrl.getClientArea().width;
         return w - fNameWidth;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    @Override
+    public long getSelectedTime() {
+        return fSelectionBegin;
     }
 
     @Override

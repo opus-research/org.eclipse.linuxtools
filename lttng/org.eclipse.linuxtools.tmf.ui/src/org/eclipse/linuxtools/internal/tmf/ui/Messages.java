@@ -34,6 +34,35 @@ public class Messages extends NLS {
     public static String ManageCustomParsersDialog_TextButtonLabel;
     public static String ManageCustomParsersDialog_TraceSelection;
 
+    public static String CustomTraceDefinition_messageTag;
+    public static String CustomTraceDefinition_otherTag;
+    public static String CustomTraceDefinition_timestampTag;
+    public static String CustomTxtTraceDefinition_action;
+    public static String CustomTxtTraceDefinition_cardinality;
+    public static String CustomTxtTraceDefinition_definition;
+    public static String CustomTxtTraceDefinition_definitionRootElement;
+    public static String CustomTxtTraceDefinition_format;
+    public static String CustomTxtTraceDefinition_inputData;
+    public static String CustomTxtTraceDefinition_inputLine;
+    public static String CustomTxtTraceDefinition_max;
+    public static String CustomTxtTraceDefinition_min;
+    public static String CustomTxtTraceDefinition_name;
+    public static String CustomTxtTraceDefinition_outputColumn;
+    public static String CustomTxtTraceDefinition_regEx;
+    public static String CustomTxtTraceDefinition_timestampOutputFormat;
+    public static String CustomXmlTraceDefinition_action;
+    public static String CustomXmlTraceDefinition_attribute;
+    public static String CustomXmlTraceDefinition_definition;
+    public static String CustomXmlTraceDefinition_definitionRootElement;
+    public static String CustomXmlTraceDefinition_format;
+    public static String CustomXmlTraceDefinition_ignoreTag;
+    public static String CustomXmlTraceDefinition_inputData;
+    public static String CustomXmlTraceDefinition_inputElement;
+    public static String CustomXmlTraceDefinition_logEntry;
+    public static String CustomXmlTraceDefinition_name;
+    public static String CustomXmlTraceDefinition_outputColumn;
+    public static String CustomXmlTraceDefinition_timestampOutputFormat;
+
     public static String TmfEventsTable_AddBookmarkActionText;
     public static String TmfEventsTable_AddBookmarkDialogMessage;
     public static String TmfEventsTable_AddBookmarkDialogTitle;
@@ -138,6 +167,7 @@ public class Messages extends NLS {
     public static String CustomTxtParserInputWizardPage_appendWith;
     public static String CustomTxtParserInputWizardPage_capturedGroup;
     public static String CustomTxtParserInputWizardPage_cardinality;
+    public static String CustomTxtParserInputWizardPage_dateFormatHelp;
     public static String CustomTxtParserInputWizardPage_desccriptionEdit;
     public static String CustomTxtParserInputWizardPage_descriptionNew;
     public static String CustomTxtParserInputWizardPage_format;
@@ -169,7 +199,6 @@ public class Messages extends NLS {
     public static String CustomTxtParserInputWizardPage_removeLine;
     public static String CustomTxtParserInputWizardPage_set;
     public static String CustomTxtParserInputWizardPage_timestampFormat;
-    public static String CustomTxtParserInputWizardPage_timestampFormatHelp;
     public static String CustomTxtParserInputWizardPage_uncapturedText;
     public static String CustomTxtParserInputWizardPage_unidentifiedCaptureGroup;
     public static String CustomTxtParserInputWizardPage_windowTitleEdit;
@@ -205,6 +234,7 @@ public class Messages extends NLS {
     public static String CustomXmlParserInputWizardPage_append;
     public static String CustomXmlParserInputWizardPage_appendWith;
     public static String CustomXmlParserInputWizardPage_attibute;
+    public static String CustomXmlParserInputWizardPage_dateFormatHelp;
     public static String CustomXmlParserInputWizardPage_descriptionEdit;
     public static String CustomXmlParserInputWizardPage_descriptionNew;
     public static String CustomXmlParserInputWizardPage_elementName;
@@ -226,7 +256,6 @@ public class Messages extends NLS {
     public static String CustomXmlParserInputWizardPage_set;
     public static String CustomXmlParserInputWizardPage_tagName;
     public static String CustomXmlParserInputWizardPage_timestampFormat;
-    public static String CustomXmlParserInputWizardPage_timestampFormatHelp;
     public static String CustomXmlParserInputWizardPage_titleEdit;
     public static String CustomXmlParserInputWizardPage_titleNew;
     public static String CustomXmlParserOutputWizardPage_description;
