@@ -8,12 +8,12 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Refactor resource change listener
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
@@ -119,10 +119,17 @@ public class TmfProjectElement extends TmfProjectModelElement {
                     IViewPart viewPart = viewReference.getView(false);
                     if (viewPart instanceof CommonNavigator) {
                         CommonViewer commonViewer = ((CommonNavigator) viewPart).getCommonViewer();
-                        commonViewer.refresh(getResource());
+                        commonViewer.refresh();
                     }
                 }
             }});
+    }
+
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+            refresh();
+        }
     }
 
     @Override
