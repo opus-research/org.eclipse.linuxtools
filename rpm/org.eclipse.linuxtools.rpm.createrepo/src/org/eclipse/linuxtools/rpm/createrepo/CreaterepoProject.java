@@ -104,7 +104,7 @@ public class CreaterepoProject {
 	private void createContentFolder() throws CoreException {
 		content = getProject().getFolder(ICreaterepoConstants.CONTENT_FOLDER);
 		if (!content.exists()) {
-			content.create(false, true, monitor);
+			content.create(true, true, monitor);
 		}
 	}
 
@@ -115,6 +115,10 @@ public class CreaterepoProject {
 	 * @throws CoreException Thrown when failure to create a workspace file.
 	 */
 	public void importRPM(File externalFile) throws CoreException {
+		// must first check if external file exists
+		if (!externalFile.exists()) {
+			return;
+		}
 		// must put imported RPMs into the content folder; create if missing
 		if (!getContentFolder().exists()) {
 			createContentFolder();
@@ -208,7 +212,7 @@ public class CreaterepoProject {
 	 * @throws CoreException Thrown when unable to look into the project.
 	 */
 	public List<IResource> getRPMs() throws CoreException {
-		List<IResource> rpms = new ArrayList<IResource>();
+		List<IResource> rpms = new ArrayList<>();
 		if (!getContentFolder().exists()) {
 			return rpms;
 		}
@@ -240,7 +244,7 @@ public class CreaterepoProject {
 	 * @return The command arguments.
 	 */
 	private List<String> getCommandArguments() {
-		List<String> commands = new ArrayList<String>();
+		List<String> commands = new ArrayList<>();
 		CreaterepoCommandCreator creator = new CreaterepoCommandCreator(projectPreferences);
 		commands.addAll(creator.getCommands());
 		return commands;
