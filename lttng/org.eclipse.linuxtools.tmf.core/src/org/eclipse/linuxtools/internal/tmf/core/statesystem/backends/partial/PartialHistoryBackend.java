@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.tmf.core.interval.ITmfStateIntervalList;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
@@ -247,6 +248,15 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         }
 
         partialSS.releaseQueryLock();
+    }
+
+    /**
+     * 2D Queries are not supported in partial histories currently. A full query
+     * must be used instead.
+     */
+    @Override
+    public void do2DQuery(ITmfStateIntervalList stateInfo, long t) {
+        throw new UnsupportedOperationException();
     }
 
     /**
