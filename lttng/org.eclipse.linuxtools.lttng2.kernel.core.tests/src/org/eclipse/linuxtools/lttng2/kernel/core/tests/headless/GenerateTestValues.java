@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *   Bernd Hufmann - Updated to new history builder interface
  ******************************************************************************/
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.headless;
@@ -20,7 +19,6 @@ import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfHistoryBuilder;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
@@ -64,10 +62,7 @@ public class GenerateTestValues {
 
         /* Build and query the state system */
         ITmfStateProvider input = new LttngKernelStateProvider(testTrace.getTrace());
-        ITmfHistoryBuilder builder = TmfStateSystemFactory.newFullHistory(stateFile, input);
-        builder.build();
-        ITmfStateSystem ssq = builder.getStateSystem();
-
+        ITmfStateSystem ssq = TmfStateSystemFactory.newFullHistory(stateFile, input, true);
         List<ITmfStateInterval> fullState = ssq.queryFullState(targetTimestamp);
 
         /* Start printing the java file's contents */
