@@ -70,13 +70,13 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 
 		try {
 
-			Process p = RuntimeProcessFactory.getFactory().exec(cmdArray,
-					project);
+			Process p = RuntimeProcessFactory.getFactory().exec(cmdArray, project);
 
-			try (BufferedReader stdout = new BufferedReader(
-					new InputStreamReader(p.getInputStream()))) {
-				return stdout.readLine();
-			}
+			BufferedReader stdout = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String commandOutput = stdout.readLine();
+			stdout.close();
+
+			return commandOutput;
 		} catch (IOException e) {
 			return null;
 		}
@@ -317,9 +317,9 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 		String location;
 
 		if(host == null){
-			location = "remote host"; //$NON-NLS-1$
+			location = "remote host";
 		} else {
-			location = projectURI.getScheme() + "://" + host; //$NON-NLS-1$
+			location = projectURI.getScheme() + "://" + host;
 		}
 
 		return config.getName()

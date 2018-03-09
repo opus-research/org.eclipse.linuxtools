@@ -39,7 +39,7 @@ public class CtfLexerTest {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final List<Token> tokens = new LinkedList<>();
+    private final List<Token> tokens = new LinkedList<Token>();
 
     // ------------------------------------------------------------------------
     // Operations

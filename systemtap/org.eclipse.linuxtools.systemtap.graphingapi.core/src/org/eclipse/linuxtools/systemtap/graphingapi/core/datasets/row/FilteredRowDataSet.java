@@ -23,7 +23,7 @@ public class FilteredRowDataSet extends RowDataSet implements IFilteredDataSet {
 		super(data.getTitles());
 		original = data;
 		this.data = data.data;
-		filters = new ArrayList<>();
+		filters = new ArrayList<IDataSetFilter>();
 
 		filtersChanged = false;
 		topData = null;
@@ -126,32 +126,29 @@ public class FilteredRowDataSet extends RowDataSet implements IFilteredDataSet {
 
 	private ArrayList<Object>[] getFilterData() {
 		ArrayList<Object>[] data = GraphingAPINonUIPlugin.createArrayList(original.getColCount(), new Object());
-		for(int i=0; i<data.length; i++) {
-			data[i] = new ArrayList<>();
-		}
+		for(int i=0; i<data.length; i++)
+			data[i] = new ArrayList<Object>();
 
 		Object[] row;
 		for(int j,i=0; i<original.getRowCount(); i++) {
 			row = original.getRow(i);
-			for(j=0; j<data.length; j++) {
+			for(j=0; j<data.length; j++)
 				data[j].add(row[j]);
-			}
 		}
 
 		return data;
 	}
 
 	private void setFilteredData(ArrayList<?>[] data) {
-		this.data = new ArrayList<>();
+		this.data = new ArrayList<IDataEntry>();
 
 		RowEntry entry;
 		Object[] row;
 		for(int j,i=0; i<data[0].size(); i++) {
 			row = new Object[data.length];
 			entry = new RowEntry();
-			for(j=0; j<data.length; j++) {
+			for(j=0; j<data.length; j++)
 				row[j] = data[j].get(i);
-			}
 			entry.putRow(0, row);
 			this.data.add(entry);
 		}

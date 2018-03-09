@@ -36,7 +36,7 @@ public class EnumDeclaration implements IDeclaration {
 
     private final EnumTable fTable = new EnumTable();
     private final IntegerDeclaration fContainerType;
-    private final Set<String> fLabels = new HashSet<>();
+    private final Set<String> fLabels = new HashSet<String>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -129,7 +129,7 @@ public class EnumDeclaration implements IDeclaration {
      */
     private class EnumTable {
 
-        private final List<LabelAndRange> ranges = new LinkedList<>();
+        private final List<LabelAndRange> ranges = new LinkedList<LabelAndRange>();
 
         public EnumTable() {
         }

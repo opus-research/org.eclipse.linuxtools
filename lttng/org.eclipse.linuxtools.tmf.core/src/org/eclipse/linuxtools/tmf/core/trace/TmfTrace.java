@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,6 +18,7 @@ package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -132,12 +133,12 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      */
     protected final Map<String, ITmfStateSystem> fStateSystems =
-            new LinkedHashMap<>();
+            new LinkedHashMap<String, ITmfStateSystem>();
 
     private ITmfTimestampTransform fTsTransform;
 
     private final Map<String, IAnalysisModule> fAnalysisModules =
-            new LinkedHashMap<>();
+            new LinkedHashMap<String, IAnalysisModule>();
 
     private static final String SYNCHRONIZATION_FORMULA_FILE = "sync_formula"; //$NON-NLS-1$
 
@@ -357,7 +358,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     @Override
     public <T> Map<String, T> getAnalysisModules(Class<T> moduleclass) {
-        Map<String, T> modules = new HashMap<>();
+        Map<String, T> modules = new HashMap<String, T>();
         for (Entry<String, IAnalysisModule> entry : fAnalysisModules.entrySet()) {
             if (moduleclass.isAssignableFrom(entry.getValue().getClass())) {
                 modules.put(entry.getKey(), moduleclass.cast(entry.getValue()));
@@ -453,6 +454,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      * @deprecated See {@link ITmfTrace}
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     @Override
     public final Map<String, ITmfStateSystem> getStateSystems() {
@@ -463,6 +465,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      * @deprecated See {@link ITmfTrace}
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     @Override
     public final void registerStateSystem(String id, ITmfStateSystem ss) {
@@ -785,7 +788,12 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             final TmfTraceRangeUpdatedSignal rangeUpdatedsignal = new TmfTraceRangeUpdatedSignal(this, this, timeRange);
 
             // Broadcast in separate thread to prevent deadlock
-            broadcastAsync(rangeUpdatedsignal);
+            new Thread() {
+                @Override
+                public void run() {
+                    broadcast(rangeUpdatedsignal);
+                }
+            }.start();
             return;
         }
     }
@@ -874,12 +882,18 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             File sync_file = getSyncFormulaFile();
             if (sync_file != null && sync_file.exists()) {
 
-                try (FileInputStream fis = new FileInputStream(sync_file);
-                        ObjectInputStream ois = new ObjectInputStream(fis);) {
-
+                try {
+                    FileInputStream fis = new FileInputStream(sync_file);
+                    ObjectInputStream ois = new ObjectInputStream(fis);
                     fTsTransform = (ITmfTimestampTransform) ois.readObject();
 
-                } catch (ClassNotFoundException | IOException e) {
+                    ois.close();
+                    fis.close();
+                } catch (ClassNotFoundException e1) {
+                    fTsTransform = TmfTimestampTransform.IDENTITY;
+                } catch (FileNotFoundException e1) {
+                    fTsTransform = TmfTimestampTransform.IDENTITY;
+                } catch (IOException e1) {
                     fTsTransform = TmfTimestampTransform.IDENTITY;
                 }
             } else {

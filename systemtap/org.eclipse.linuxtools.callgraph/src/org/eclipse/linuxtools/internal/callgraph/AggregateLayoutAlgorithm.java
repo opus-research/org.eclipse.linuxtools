@@ -40,7 +40,7 @@ public class AggregateLayoutAlgorithm extends GridLayoutAlgorithm{
 	public AggregateLayoutAlgorithm(int styles, TreeSet<Entry<String, Long>> entries, Long time, int width){
 		super(styles);
 
-		list = new ArrayList<>();
+		list = new ArrayList<Long>();
 		for (Entry<String, Long> ent : entries) {
 			list.add(ent.getValue());
 		}

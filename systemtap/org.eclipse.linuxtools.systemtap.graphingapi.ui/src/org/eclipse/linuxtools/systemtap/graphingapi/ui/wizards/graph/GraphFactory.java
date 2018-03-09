@@ -66,7 +66,7 @@ public final class GraphFactory {
 	};
 
 	public static String[] getAvailableGraphs(IDataSet data) {
-		LinkedList<String> ids = new LinkedList<>();
+		LinkedList<String> ids = new LinkedList<String>();
 		if(data instanceof IHistoricalDataSet) {
 			ids.add(ScatterChartBuilder.ID);
 			ids.add(LineChartBuilder.ID);

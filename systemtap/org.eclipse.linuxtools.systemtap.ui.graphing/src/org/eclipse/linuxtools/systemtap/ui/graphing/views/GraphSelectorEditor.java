@@ -25,8 +25,6 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FormAttachment;
@@ -56,8 +54,8 @@ public class GraphSelectorEditor extends EditorPart {
 
 	public GraphSelectorEditor() {
 		super();
-		displaySets = new ArrayList<>();
-		tabListeners = new ArrayList<>();
+		displaySets = new ArrayList<GraphDisplaySet>();
+		tabListeners = new ArrayList<ITabListener>();
 	}
 
 	/**
@@ -75,16 +73,9 @@ public class GraphSelectorEditor extends EditorPart {
 			item = new CTabItem(scriptFolder, SWT.CLOSE);
 			item.setText(titles.get(i));
 			Composite parent = new Composite(scriptFolder, SWT.NONE);
-			final GraphDisplaySet gds = new GraphDisplaySet(parent, dataSets.get(i));
+			GraphDisplaySet gds = new GraphDisplaySet(parent, dataSets.get(i));
 			displaySets.add(gds);
 			item.setControl(parent);
-			item.addDisposeListener(new DisposeListener() {
-
-				@Override
-				public void widgetDisposed(DisposeEvent e) {
-					gds.dispose();
-				}
-			});
 		}
 
 		scriptFolder.setSelection(item); // Choose the last created item.
@@ -153,14 +144,6 @@ public class GraphSelectorEditor extends EditorPart {
 	}
 
 	/**
-	 * @return The title of the tab containing the active graph.
-	 * @since 3.0
-	 */
-	public String getActiveTitle() {
-		return scriptFolder.getSelection().getText();
-	}
-
-	/**
 	 * Finds and returns the component of the provided index.
 	 * @param index The index of the GraphDisplaySet to return
 	 * @return The <code>GraphDisplaySet</code> of the provided
@@ -216,18 +199,14 @@ public class GraphSelectorEditor extends EditorPart {
 	 */
 	@Override
 	public void dispose() {
-		for (GraphDisplaySet displaySet : displaySets) {
-			displaySet.dispose();
-		}
-
 		super.dispose();
 
-		if(null != scriptFolder && !scriptFolder.isDisposed()) {
+		if(null != scriptFolder) {
 			scriptFolder.dispose();
 		}
 		scriptFolder = null;
 		if(null != tabListeners) {
-			tabListeners.clear();
+			tabListeners.removeAll(tabListeners);
 		}
 		tabListeners = null;
 	}

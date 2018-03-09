@@ -63,8 +63,8 @@ public class GraphDisplaySet {
 		updater = new UpdateManager(delay);
 		createPartControl(parent);
 
-		builders = new ArrayList<>();
-		tabListeners = new ArrayList<>();
+		builders = new ArrayList<AbstractChartBuilder>();
+		tabListeners = new ArrayList<ITabListener>();
 	}
 
 	/**
@@ -162,20 +162,18 @@ public class GraphDisplaySet {
 	 * to anything in this class after calling the dispose method.
 	 */
 	public void dispose() {
-		if(null != updater && updater.isRunning()) {
+		if(null != updater) {
 			updater.dispose();
 		}
 		updater = null;
 
 		dataSet = null;
-		if(null != folder && !folder.isDisposed()) {
+		if(null != folder) {
 			folder.removeSelectionListener(listener);
 			folder.dispose();
 			folder = null;
 		}
 		listener = null;
-
-		builders.clear();
 	}
 
 	/**

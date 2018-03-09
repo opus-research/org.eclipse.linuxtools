@@ -8,16 +8,21 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Refactor resource change listener
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.navigator.CommonNavigator;
+import org.eclipse.ui.navigator.CommonViewer;
 
 /**
  * The implementation of TMF project model element.
@@ -92,50 +97,38 @@ public class TmfProjectElement extends TmfProjectModelElement {
     }
 
     // ------------------------------------------------------------------------
-    // TmfProjectModelElement
+    // TmfProjectElement
     // ------------------------------------------------------------------------
 
     @Override
-    void refreshChildren() {
-        IProject project = getResource();
+    public void refresh() {
+        Display.getDefault().asyncExec(new Runnable(){
+            @Override
+            public void run() {
+                IWorkbench wb = PlatformUI.getWorkbench();
+                IWorkbenchWindow wbWindow = wb.getActiveWorkbenchWindow();
+                if (wbWindow == null) {
+                    return;
+                }
+                IWorkbenchPage activePage = wbWindow.getActivePage();
+                if (activePage == null) {
+                    return;
+                }
 
-        // Get the children from the model
-        Map<String, ITmfProjectModelElement> childrenMap = new HashMap<>();
-        for (ITmfProjectModelElement element : getChildren()) {
-            childrenMap.put(element.getResource().getName(), element);
-        }
+                for (IViewReference viewReference : activePage.getViewReferences()) {
+                    IViewPart viewPart = viewReference.getView(false);
+                    if (viewPart instanceof CommonNavigator) {
+                        CommonViewer commonViewer = ((CommonNavigator) viewPart).getCommonViewer();
+                        commonViewer.refresh();
+                    }
+                }
+            }});
+    }
 
-        // Add the model folder if the corresponding resource exists and is not
-        // accounted for
-        IFolder folder = project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
-        if (folder != null && folder.exists()) {
-            String name = folder.getName();
-            ITmfProjectModelElement element = childrenMap.get(name);
-            if (element instanceof TmfTraceFolder) {
-                childrenMap.remove(name);
-            } else {
-                element = new TmfTraceFolder(TmfTraceFolder.TRACE_FOLDER_NAME, folder, this);
-            }
-            ((TmfTraceFolder) element).refreshChildren();
-        }
-
-        // Add the model folder if the corresponding resource exists and is not
-        // accounted for
-        folder = project.getFolder(TmfExperimentFolder.EXPER_FOLDER_NAME);
-        if (folder != null && folder.exists()) {
-            String name = folder.getName();
-            ITmfProjectModelElement element = childrenMap.get(name);
-            if (element instanceof TmfExperimentFolder) {
-                childrenMap.remove(name);
-            } else {
-                element = new TmfExperimentFolder(TmfExperimentFolder.EXPER_FOLDER_NAME, folder, this);
-            }
-            ((TmfExperimentFolder) element).refreshChildren();
-        }
-
-        // Cleanup dangling children from the model
-        for (ITmfProjectModelElement danglingChild : childrenMap.values()) {
-            removeChild(danglingChild);
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+            refresh();
         }
     }
 

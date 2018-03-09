@@ -33,7 +33,9 @@ public class JarArchive {
 	 * @param pathFilter The path filter to apply.
 	 */
 	public static void unjarFiles(String jarFileName, String destination, String pathFilter) {
-		try (JarFile jf = new JarFile(jarFileName)){
+		try {
+			JarFile jf = new JarFile(jarFileName);
+
 			for (Enumeration<?> entries = jf.entries(); entries.hasMoreElements();) {
 				JarEntry jarEntry = (JarEntry)entries.nextElement();
 				String jarEntryName = jarEntry.getName();
@@ -46,13 +48,13 @@ public class JarArchive {
 					}
 
 					if (!jarEntryName.endsWith("/")) { //$NON-NLS-1$
-						try (OutputStream out = new FileOutputStream(
-								destination + jarEntryName);
-								InputStream in = jf.getInputStream(jarEntry)) {
+						OutputStream out = new FileOutputStream(destination + jarEntryName);
+						InputStream in = jf.getInputStream(jarEntry);
 
-							transferData(in, out);
-						}
+						transferData(in, out);
 
+						out.close();
+						in.close();
 					}
 				}
 			}
