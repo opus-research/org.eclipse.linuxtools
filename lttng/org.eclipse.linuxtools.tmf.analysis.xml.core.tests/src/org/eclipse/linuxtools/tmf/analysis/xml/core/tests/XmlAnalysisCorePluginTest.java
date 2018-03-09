@@ -18,7 +18,7 @@ import org.eclipse.linuxtools.internal.tmf.analysis.xml.core.Activator;
 import org.junit.Test;
 
 /**
- * Test the XML Analysis Core plug-in activator
+ * Test the Xml Analysis Core plug-in activator
  */
 public class XmlAnalysisCorePluginTest {
     // ------------------------------------------------------------------------

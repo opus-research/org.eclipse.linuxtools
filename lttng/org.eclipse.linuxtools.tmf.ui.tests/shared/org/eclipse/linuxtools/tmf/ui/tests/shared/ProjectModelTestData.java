@@ -46,7 +46,7 @@ public class ProjectModelTestData {
     /* Maximum number of thread delays the main thread will do before timing out */
     private static final int DELAY_COUNTER = 10;
     /* Default delay time when having the main thread sleep. */
-    private static final int DEFAULT_DELAY = 500;
+    private static final long DEFAULT_DELAY = 500;
 
     /** Default test project name */
     public static final String PROJECT_NAME = "Test_Project";
@@ -82,6 +82,8 @@ public class ProjectModelTestData {
         TmfTraceElement traceElement = projectElement.getTracesFolder().getTraces().get(0);
         traceElement.refreshTraceType();
 
+        projectElement.refresh();
+
         return projectElement;
     }
 
@@ -105,7 +107,8 @@ public class ProjectModelTestData {
      */
     public static void deleteProject(TmfProjectElement project) {
         /* Delete experiments */
-        for (ITmfProjectModelElement element : project.getExperimentsFolder().getChildren()) {
+        ITmfProjectModelElement[] experiments = project.getExperimentsFolder().getChildren().toArray(new ITmfProjectModelElement[0]);
+        for (ITmfProjectModelElement element : experiments) {
             if (element instanceof TmfExperimentElement) {
                 TmfExperimentElement experiment = (TmfExperimentElement) element;
                 IResource resource = experiment.getResource();
@@ -129,7 +132,8 @@ public class ProjectModelTestData {
         }
 
         /* Delete traces */
-        for (ITmfProjectModelElement element : project.getTracesFolder().getChildren()) {
+        ITmfProjectModelElement[] traces = project.getTracesFolder().getChildren().toArray(new ITmfProjectModelElement[0]);
+        for (ITmfProjectModelElement element : traces) {
             if (element instanceof TmfTraceElement) {
                 TmfTraceElement trace = (TmfTraceElement) element;
                 IResource resource = trace.getResource();
@@ -210,7 +214,7 @@ public class ProjectModelTestData {
     public static void delayUntilTraceOpened(final ITmfProjectModelElement projectElement) throws TimeoutException {
         if (projectElement instanceof TmfTraceElement) {
             TmfTraceElement traceElement = (TmfTraceElement) projectElement;
-            final long deadline = System.nanoTime() + (DELAY_COUNTER * DEFAULT_DELAY * 1000000);
+            final long deadline = System.nanoTime() + (DELAY_COUNTER * DEFAULT_DELAY * 1000000L);
             do {
                 delayThread(DEFAULT_DELAY);
                 if (traceElement.getTrace() != null) {
