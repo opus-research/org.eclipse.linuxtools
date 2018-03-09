@@ -345,17 +345,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return status;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public final IAnalysisModule getAnalysisModule(String analysisId) {
         return fAnalysisModules.get(analysisId);
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public <T> Map<String, T> getAnalysisModules(Class<T> moduleclass) {
         Map<String, T> modules = new HashMap<String, T>();
@@ -367,9 +361,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return modules;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public Map<String, IAnalysisModule> getAnalysisModules() {
         return Collections.unmodifiableMap(fAnalysisModules);
@@ -801,7 +792,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     /**
      * Refresh the supplementary files resources, so it can pick up new files
      * that got created.
-     * @since 3.0
      */
     public void refreshSupplementaryFiles() {
         if (fResource != null) {
@@ -834,7 +824,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Signal handler for the TmfTraceUpdatedSignal signal
      *
      * @param signal The incoming signal
-     * @since 3.0
+     * @since 2.0
      */
     @TmfSignalHandler
     public void traceUpdated(final TmfTraceUpdatedSignal signal) {
