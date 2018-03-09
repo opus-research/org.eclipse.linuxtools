@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +23,6 @@ import java.util.regex.Pattern;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.IHandlerListener;
-import org.eclipse.core.filesystem.URIUtil;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -82,8 +77,7 @@ public class RunScriptHandler extends AbstractHandler {
 	private String tmpfileName = null;
 	private String serverfileName = null;
 	private IPath path;
-	private IProject project;
-	private final List<String> cmdList;
+	private List<String> cmdList;
 
 
 	public RunScriptHandler(){
@@ -95,17 +89,6 @@ public class RunScriptHandler extends AbstractHandler {
 	 */
 	public void setPath(IPath path){
 		this.path = path;
-		URI uri = URIUtil.toURI(path);
-		IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uri);
-		if (files.length > 0)
-			this.project = files[0].getProject();
-	}
-	
-	/**
-	 * @since 2.1
-	 */
-	public IProject getProject() {
-		return project;
 	}
 
 	/**
@@ -132,7 +115,7 @@ public class RunScriptHandler extends AbstractHandler {
 			}
 			for (IEditorReference ref : window.getActivePage().getEditorReferences()) {
 				try {
-					if (matchesEditor(ref.getEditorInput(), ref.getEditor(false), window.getShell())) {
+					if (matchesEditor(ref.getEditorInput(), SynchronousActions.getRestoredEditor(ref), window.getShell())) {
 						return;
 					}
 				} catch (PartInitException e) {
@@ -195,7 +178,7 @@ public class RunScriptHandler extends AbstractHandler {
             				console.run(script, envVars, new StapErrorParser());
             			} else {
             				console = ScriptConsole.getInstance(fileName);
-            				console.runLocally(script, envVars, new StapErrorParser(), getProject());
+            				console.runLocally(script, envVars, new StapErrorParser());
             			}
                         scriptConsoleInitialized(console);
             		}

@@ -88,7 +88,7 @@ public class RpmProposalsPreferencePage extends FieldEditorPreferencePage
 	}
 
 	private FieldEditor rpmtoolsRadioGroupFieldEditor() {
-		ArrayList<String[]> list = new ArrayList<>();
+		ArrayList<String[]> list = new ArrayList<String[]>();
 		list.add(new String[] { Messages.RpmProposalsPreferencePage_3,
 								PreferenceConstants.DP_RPMTOOLS_RPM });
 		/*

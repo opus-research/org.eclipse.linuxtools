@@ -75,7 +75,7 @@ public class PerlMakefileParser {
 	 */
 	private static final Map<Character, Character> SURROUNDING_CHARACTER;
 	static {
-		Map<Character, Character> aMap = new HashMap<>();
+		Map<Character, Character> aMap = new HashMap<Character, Character>();
 		aMap.put('[', ']');
 		aMap.put('{', '}');
 		aMap.put('(', ')');
@@ -107,8 +107,8 @@ public class PerlMakefileParser {
 	 *             Throws IOException.
 	 */
 	public PerlMakefileParser(IFile file) throws IOException, CoreException {
-		mVariableDefinitions = new HashMap<>();
-		mMakefileDefinitions = new HashMap<>();
+		mVariableDefinitions = new HashMap<String, String>();
+		mMakefileDefinitions = new HashMap<String, String>();
 		if (file.getContents().available() <= 0) {
 			return;
 		}
@@ -123,7 +123,8 @@ public class PerlMakefileParser {
 	public void parse() {
 		String content = "";
 		String line = "";
-		try (Scanner variableScanner = new Scanner(file.getContents())) {
+		try {
+			Scanner variableScanner = new Scanner(file.getContents());
 			grabSimpleDefinitions(cleanUpContent(variableScanner));
 			cleanupVariables(mVariableDefinitions);
 			resolveVariables(mVariableDefinitions);
@@ -134,31 +135,33 @@ public class PerlMakefileParser {
 			if (!mVariableDefinitions.containsKey(MAKEFILE_FUNCTION_NAME)) {
 				return;
 			}
-			try (Scanner makefileScanner = new Scanner(
-					mVariableDefinitions.get(MAKEFILE_FUNCTION_NAME))) {
-				makefileScanner.useDelimiter("(?<=,)");
-				ArrayList<String> makefileList = new ArrayList<>();
+			Scanner makefileScanner = new Scanner(
+					mVariableDefinitions.get(MAKEFILE_FUNCTION_NAME));
+			makefileScanner.useDelimiter("(?<=,)");
+			ArrayList<String> makefileList = new ArrayList<String>();
 
-				while (makefileScanner.hasNext()) {
-					line = makefileScanner.next();
-					if (matchesAssociativeAssignment(line)) {
-						makefileList.add(line);
-					} else if (!makefileList.isEmpty()) {
-						makefileList.set(makefileList.size() - 1, makefileList
-								.get(makefileList.size() - 1).concat(line));
-					}
+			while (makefileScanner.hasNext()) {
+				line = makefileScanner.next();
+				if (matchesAssociativeAssignment(line)) {
+					makefileList.add(line);
+				} else if (!makefileList.isEmpty()) {
+					makefileList.set(
+							makefileList.size() - 1,
+							makefileList.get(makefileList.size() - 1).concat(
+									line));
 				}
-
-				for (String str : makefileList) {
-					content = content.concat(str + '\n');
-				}
-				grabAssociativeDefinitions(content);
-				cleanupVariables(mMakefileDefinitions);
-				resolveVariables(mMakefileDefinitions);
-
 			}
+
+			for (String str : makefileList) {
+				content = content.concat(str + '\n');
+			}
+			grabAssociativeDefinitions(content);
+			cleanupVariables(mMakefileDefinitions);
+			resolveVariables(mMakefileDefinitions);
+
+			makefileScanner.close();
 			variableScanner.close();
-		} catch (CoreException e) {
+		} catch (Exception e) {
 			StubbyLog.logError(e);
 		}
 	}
@@ -184,7 +187,7 @@ public class PerlMakefileParser {
 	 * @return The list of values from the variable.
 	 */
 	public List<String> getValueList(String key) {
-		List<String> rc = new ArrayList<>();
+		List<String> rc = new ArrayList<String>();
 		String var = "";
 		String[] tmp = {};
 		if (mMakefileDefinitions.containsKey(key)) {
@@ -205,51 +208,50 @@ public class PerlMakefileParser {
 	 *            The content to grab the key->value pairs from.
 	 */
 	private void grabSimpleDefinitions(String content) {
-		try (Scanner scanner = new Scanner(content)) {
-			Stack<Character> brackets = new Stack<>();
-			String key = "";
-			String value = "";
-			String tempVar = "";
-			String line = "";
-			String[] tmp;
-			int flags = 0;
+		Scanner scanner = new Scanner(content);
+		Stack<Character> brackets = new Stack<Character>();
+		String key = "";
+		String value = "";
+		String tempVar = "";
+		String line = "";
+		String[] tmp;
+		int flags = 0;
 
-			while (scanner.hasNext()) {
-				line = scanner.nextLine();
-				if (matchesSimpleAssignment(line)) {
-					tmp = line.split("=");
-					key = removeVariableSigils(tmp[0]).toLowerCase()
-							.replaceAll("\\W", "");
-					value = tmp[1];
-					if (containsOpener(value)) {
-						flags |= IN_BRACKETS;
+		while (scanner.hasNext()) {
+			line = scanner.nextLine();
+			if (matchesSimpleAssignment(line)) {
+				tmp = line.split("=");
+				key = removeVariableSigils(tmp[0]).toLowerCase().replaceAll(
+						"\\W", "");
+				value = tmp[1];
+				if (containsOpener(value)) {
+					flags |= IN_BRACKETS;
+				} else {
+					mVariableDefinitions.put(key, value);
+				}
+			} else if (containsMakefileFunction(line)) {
+				flags |= MAKE_FUNCTION;
+				flags |= IN_BRACKETS;
+			}
+			if ((flags & IN_BRACKETS) == IN_BRACKETS) {
+				checkBrackets(brackets, line);
+				tempVar = tempVar.concat(line.trim());
+				if (brackets.isEmpty()) {
+					if ((flags & MAKE_FUNCTION) == MAKE_FUNCTION) {
+						mVariableDefinitions.putAll(extractFunction(tempVar));
 					} else {
+						tmp = tempVar.split("=[^>]");
+						key = removeVariableSigils(tmp[0]).toLowerCase()
+								.replaceAll("\\W", "");
+						value = tmp[1];
 						mVariableDefinitions.put(key, value);
 					}
-				} else if (containsMakefileFunction(line)) {
-					flags |= MAKE_FUNCTION;
-					flags |= IN_BRACKETS;
-				}
-				if ((flags & IN_BRACKETS) == IN_BRACKETS) {
-					checkBrackets(brackets, line);
-					tempVar = tempVar.concat(line.trim());
-					if (brackets.isEmpty()) {
-						if ((flags & MAKE_FUNCTION) == MAKE_FUNCTION) {
-							mVariableDefinitions
-									.putAll(extractFunction(tempVar));
-						} else {
-							tmp = tempVar.split("=[^>]");
-							key = removeVariableSigils(tmp[0]).toLowerCase()
-									.replaceAll("\\W", "");
-							value = tmp[1];
-							mVariableDefinitions.put(key, value);
-						}
-						tempVar = "";
-						flags &= 0;
-					}
+					tempVar = "";
+					flags &= 0;
 				}
 			}
 		}
+		scanner.close();
 	}
 
 	/**
@@ -259,45 +261,45 @@ public class PerlMakefileParser {
 	 *            The content to grab the key=>value pairs from.
 	 */
 	private void grabAssociativeDefinitions(String content) {
-		try (Scanner scanner = new Scanner(content)) {
-			Stack<Character> brackets = new Stack<>();
-			String key = "";
-			String value = "";
-			String tempVar = "";
-			String line = "";
-			String[] tmp;
-			int flags = 0;
+		Scanner scanner = new Scanner(content);
+		Stack<Character> brackets = new Stack<Character>();
+		String key = "";
+		String value = "";
+		String tempVar = "";
+		String line = "";
+		String[] tmp;
+		int flags = 0;
 
-			while (scanner.hasNext()) {
-				line = scanner.nextLine();
-				if (matchesAssociativeAssignment(line)
-						&& (flags & IN_BRACKETS) != IN_BRACKETS) {
-					tmp = line.split("=>");
-					key = removeVariableSigils(tmp[0].toLowerCase().replaceAll(
-							"\\W", ""));
-					value = tmp[1];
-					if (containsOpener(value)) {
-						flags |= IN_BRACKETS;
-					} else {
-						mMakefileDefinitions.put(key, value);
-					}
+		while (scanner.hasNext()) {
+			line = scanner.nextLine();
+			if (matchesAssociativeAssignment(line)
+					&& (flags & IN_BRACKETS) != IN_BRACKETS) {
+				tmp = line.split("=>");
+				key = removeVariableSigils(tmp[0].toLowerCase().replaceAll(
+						"\\W", ""));
+				value = tmp[1];
+				if (containsOpener(value)) {
+					flags |= IN_BRACKETS;
+				} else {
+					mMakefileDefinitions.put(key, value);
 				}
-				if ((flags & IN_BRACKETS) == IN_BRACKETS) {
-					checkBrackets(brackets, line);
-					tempVar = tempVar.concat(line.trim());
-					if (brackets.isEmpty()) {
-						key = removeVariableSigils(tempVar
-								.substring(0, tempVar.indexOf("=>"))
-								.toLowerCase().replaceAll("\\W", ""));
-						value = tempVar.substring(tempVar.indexOf("=>") + 2,
-								tempVar.length());
-						mMakefileDefinitions.put(key, value);
-						tempVar = "";
-						flags &= 0;
-					}
+			}
+			if ((flags & IN_BRACKETS) == IN_BRACKETS) {
+				checkBrackets(brackets, line);
+				tempVar = tempVar.concat(line.trim());
+				if (brackets.isEmpty()) {
+					key = removeVariableSigils(tempVar
+							.substring(0, tempVar.indexOf("=>")).toLowerCase()
+							.replaceAll("\\W", ""));
+					value = tempVar.substring(tempVar.indexOf("=>") + 2,
+							tempVar.length());
+					mMakefileDefinitions.put(key, value);
+					tempVar = "";
+					flags &= 0;
 				}
 			}
 		}
+		scanner.close();
 	}
 
 	/**
@@ -350,7 +352,7 @@ public class PerlMakefileParser {
 	 * @return The key->value pairing of function and parameter(s).
 	 */
 	public static Map<String, String> extractFunction(String line) {
-		Map<String, String> rc = new HashMap<>();
+		Map<String, String> rc = new HashMap<String, String>();
 		Pattern pattern = Pattern.compile(FUNCTION, Pattern.CASE_INSENSITIVE);
 		Matcher variableMatcher = pattern.matcher(line);
 		if (variableMatcher.find()) {
@@ -367,7 +369,7 @@ public class PerlMakefileParser {
 	 * @return The key->value pairing of function and parameter(s).
 	 */
 	public static Map<String, String> extractKeyValueAssociation(String line) {
-		Map<String, String> rc = new HashMap<>();
+		Map<String, String> rc = new HashMap<String, String>();
 		String[] keyValue = {};
 		String key = "";
 		String value = "";

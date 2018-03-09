@@ -46,9 +46,10 @@ public class MassifParser {
 	protected MassifSnapshot[] snapshots;
 
 	public MassifParser(File inputFile) throws IOException {
-		ArrayList<MassifSnapshot> list = new ArrayList<>();
-		try (BufferedReader br = new BufferedReader(new FileReader(inputFile))){
-			;
+		ArrayList<MassifSnapshot> list = new ArrayList<MassifSnapshot>();
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(inputFile));
 			String line;
 			MassifSnapshot snapshot = null;
 			String cmd = null;
@@ -106,6 +107,10 @@ public class MassifParser {
 				list.add(snapshot);
 			}
 			snapshots = list.toArray(new MassifSnapshot[list.size()]);
+		} finally {
+			if (br != null) {
+				br.close();
+			}
 		}
 	}
 

@@ -90,31 +90,37 @@ public class SynchronizationBackend {
             return;
         }
 
-        try (FileInputStream fis = new FileInputStream(syncFile);
-                FileChannel fc = fis.getChannel();) {
-            ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE);
-            buffer.clear();
-            fc.read(buffer);
-            buffer.flip();
+        FileInputStream fis = new FileInputStream(syncFile);
+        ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE);
+        FileChannel fc = fis.getChannel();
+        buffer.clear();
+        fc.read(buffer);
+        buffer.flip();
 
-            /*
-             * Check the magic number,to make sure we're opening the right type
-             * of file
-             */
-            res = buffer.getInt();
-            if (res != SYNC_FILE_MAGIC_NUMBER) {
-                throw new IOException("Selected file does not" + //$NON-NLS-1$
-                        "look like a synchronization file"); //$NON-NLS-1$
-            }
-
-            res = buffer.getInt(); /* Major version number */
-            if (res != FILE_VERSION) {
-                throw new IOException("Select synchronization file is of an older " //$NON-NLS-1$
-                        + "format. Synchronization will have to be computed again."); //$NON-NLS-1$
-            }
-
-            res = buffer.getInt(); /* Minor version number */
+        /*
+         * Check the magic number,to make sure we're opening the right type of
+         * file
+         */
+        res = buffer.getInt();
+        if (res != SYNC_FILE_MAGIC_NUMBER) {
+            fc.close();
+            fis.close();
+            throw new IOException("Selected file does not" + //$NON-NLS-1$
+                    "look like a synchronization file"); //$NON-NLS-1$
         }
+
+        res = buffer.getInt(); /* Major version number */
+        if (res != FILE_VERSION) {
+            fc.close();
+            fis.close();
+            throw new IOException("Select synchronization file is of an older " //$NON-NLS-1$
+                    + "format. Synchronization will have to be computed again."); //$NON-NLS-1$
+        }
+
+        res = buffer.getInt(); /* Minor version number */
+
+        fc.close();
+        fis.close();
     }
 
     /**
@@ -130,18 +136,24 @@ public class SynchronizationBackend {
             return null;
         }
 
-        try (/* Set the position after the header */
-                FileInputStream fis = new FileInputStream(fSyncFile);
-                FileChannel fc = fis.getChannel().position(HEADER_SIZE);
-                /* Read the input stream */
-                ObjectInputStream ois = new ObjectInputStream(fis);) {
+        /* Set the position after the header */
+        FileInputStream fis = new FileInputStream(fSyncFile);
+        FileChannel fc = fis.getChannel().position(HEADER_SIZE);
 
-            return (SynchronizationAlgorithm) ois.readObject();
+        /* Read the input stream */
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        SyncAlgorithmFullyIncremental syncAlgo = null;
+        try {
+            syncAlgo = (SyncAlgorithmFullyIncremental) ois.readObject();
         } catch (ClassNotFoundException e) {
-            return null;
+
         }
+        ois.close();
+        fc.close();
 
+        fis.close();
 
+        return syncAlgo;
     }
 
     /**
@@ -158,13 +170,20 @@ public class SynchronizationBackend {
             return;
         }
 
+        FileChannel fc;
+        FileOutputStream fos;
+        ObjectOutputStream oos;
+        ByteBuffer buffer;
+        int res;
+
+        fos = new FileOutputStream(fSyncFile, false);
+        fc = fos.getChannel();
+
+        buffer = ByteBuffer.allocate(HEADER_SIZE);
+        buffer.clear();
+
         /* Save the header of the file */
-        try (FileOutputStream fos = new FileOutputStream(fSyncFile, false);
-                FileChannel fc = fos.getChannel();) {
-
-            ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE);
-            buffer.clear();
-
+        try {
             fc.position(0);
 
             buffer.putInt(SYNC_FILE_MAGIC_NUMBER);
@@ -172,22 +191,26 @@ public class SynchronizationBackend {
             buffer.putInt(FILE_VERSION);
 
             buffer.flip();
-            int res = fc.write(buffer);
+            res = fc.write(buffer);
             assert (res <= HEADER_SIZE);
             /* done writing the file header */
 
             fc.position(HEADER_SIZE);
 
-            try (ObjectOutputStream oos = new ObjectOutputStream(fos);) {
-                oos.writeObject(syncAlgo);
-            }
+            oos = new ObjectOutputStream(fos);
+            oos.writeObject(syncAlgo);
+            oos.close();
 
-        } catch (FileNotFoundException e) {
-            /* Send this upwards */
-            throw e;
         } catch (IOException e) {
-            /* Handle other cases of IOException's */
+            /* We should not have any problems at this point... */
             Activator.logError("Error saving trace synchronization data", e); //$NON-NLS-1$
+        } finally {
+            try {
+                fc.close();
+                fos.close();
+            } catch (IOException e) {
+                Activator.logError("Error closing synchronization file", e); //$NON-NLS-1$
+            }
         }
         return;
 

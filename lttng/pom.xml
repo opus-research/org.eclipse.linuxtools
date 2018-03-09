@@ -43,11 +43,7 @@
       </comments>
     </license>
   </licenses>
-
-<properties>
-  <base.test.vmargs>-Xms256m -Xmx1024m -XX:MaxPermSize=256m</base.test.vmargs>
-</properties>
-
+  
 <profiles>
   <profile>
     <id>tracingRcp</id>
@@ -63,29 +59,8 @@
       <modules>
         <module>org.eclipse.linuxtools.lttng.releng-site</module>
       </modules>
-  </profile>
-  <profile>
-    <id>macosx</id>
-    <activation>
-      <os>
-        <family>mac</family>
-      </os>
-    </activation>
-    <properties>
-      <base.ui.test.vmargs>${base.test.vmargs} -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</base.ui.test.vmargs>
-    </properties>
-  </profile>
-  <profile>
-    <id>not-macosx</id>
-    <activation>
-      <os>
-        <family>!mac</family>
-      </os>
-    </activation>
-    <properties>
-      <base.ui.test.vmargs>${base.test.vmargs}</base.ui.test.vmargs>
-    </properties>
-  </profile>
+  </profile> 
+
 </profiles>
 
   <modules>
@@ -100,7 +75,6 @@
     <module>org.eclipse.linuxtools.tmf.core.tests</module>
     <module>org.eclipse.linuxtools.tmf.ui</module>
     <module>org.eclipse.linuxtools.tmf.ui.tests</module>
-    <module>org.eclipse.linuxtools.tmf.ui.swtbot.tests</module>
     <module>org.eclipse.linuxtools.tmf.help</module>
 
     <module>org.eclipse.linuxtools.tmf.analysis.xml.core</module>
@@ -140,7 +114,6 @@
     <module>org.eclipse.linuxtools.tracing.rcp.help</module>
     <module>org.eclipse.linuxtools.tracing.rcp.ui</module>
 
-    <module>org.eclipse.linuxtools.tracing.examples</module>
   </modules>
 
     <build>
