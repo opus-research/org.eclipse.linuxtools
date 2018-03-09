@@ -36,4 +36,19 @@ public interface ITmfHistoryBuilder {
      * Cancels the building of the state system history.
      */
     void cancel();
+    /**
+     * Sets flag indicating that the event provider needs to be
+     * notified about pending requests (decrement) or not
+     * @param isNeeded
+     *          true for if notify is needed else false
+     */
+    void setNotifyRequestPendingNeeded(boolean isNeeded);
+    /**
+     * Returns flag indicating that the event provider needs to be
+     * notified about pending requests (decrement) or not
+     * @return
+     *      true for if notify is needed else false
+     */
+    public boolean isNotifyPendingRequestNeeded();
+
 }

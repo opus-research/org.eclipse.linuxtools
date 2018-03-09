@@ -19,9 +19,12 @@ import static org.junit.Assert.fail;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.junit.After;
 import org.junit.Before;
@@ -69,6 +72,9 @@ public class StateSystemAnalysisModuleTest {
     public void testSsModule() {
         TmfSignalManager.deregister(fTrace);
         fTrace.traceOpened(new TmfTraceOpenedSignal(this, fTrace, null));
+        // Simulate TmfTraceRangeUpdatedSignal begin received by trace which triggers the state system analysis
+        final TmfTimeRange range = new TmfTimeRange(fTrace.getStartTime(), TmfTimestamp.BIG_CRUNCH);
+        fTrace.traceRangeUpdated(new TmfTraceRangeUpdatedSignal(this, fTrace, range));
 
         TmfStateSystemAnalysisModule module = (TmfStateSystemAnalysisModule) fTrace.getAnalysisModule(MODULE_SS);
         ITmfStateSystem ss = null;

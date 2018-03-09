@@ -39,6 +39,7 @@ public abstract class AbstractHistoryBuilder implements ITmfHistoryBuilder {
     protected IStateHistoryBackend fHtBackend;
 
     private ITmfEventRequest fRequest;
+    private boolean fNotifyRequestPendingNeeded;
 
     /**
      * Default constructor
@@ -77,6 +78,10 @@ public abstract class AbstractHistoryBuilder implements ITmfHistoryBuilder {
 
         fRequest = new StateSystemEventRequest(this, fStateProvider);
         fStateProvider.getTrace().sendRequest(fRequest);
+        if (isNotifyPendingRequestNeeded()) {
+            fStateProvider.getTrace().notifyPendingRequest(false);
+            setNotifyRequestPendingNeeded(false);
+        }
 
         try {
              fRequest.waitForCompletion();
@@ -90,6 +95,16 @@ public abstract class AbstractHistoryBuilder implements ITmfHistoryBuilder {
         if ((fRequest != null) && (!fRequest.isCompleted())) {
             fRequest.cancel();
         }
+    }
+
+    @Override
+    public void setNotifyRequestPendingNeeded(boolean isNeeded) {
+        fNotifyRequestPendingNeeded = isNeeded;
+    }
+
+    @Override
+    public boolean isNotifyPendingRequestNeeded() {
+        return fNotifyRequestPendingNeeded;
     }
 
     class StateSystemEventRequest extends TmfEventRequest {
