@@ -101,9 +101,6 @@ public class GenerateTestValues {
             case LONG:
                 writer.println("TmfStateValue.newValueLong(" + val.unboxLong() +"),");
                 break;
-            case DOUBLE:
-                writer.println("TmfStateValue.newValueDouble(" + val.unboxDouble() +"),");
-                break;
             case STRING:
                 writer.println("TmfStateValue.newValueString(\"" + val.unboxStr() + "\"),");
                 break;
