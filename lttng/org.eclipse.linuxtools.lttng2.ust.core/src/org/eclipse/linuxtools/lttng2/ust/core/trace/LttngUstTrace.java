@@ -99,5 +99,4 @@ public class LttngUstTrace extends CtfTmfTrace {
 
         return Status.OK_STATUS;
     }
-
 }
