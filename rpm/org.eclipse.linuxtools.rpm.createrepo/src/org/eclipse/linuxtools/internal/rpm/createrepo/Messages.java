@@ -92,6 +92,8 @@ public final class Messages {
 	public static String ImportRPMsPage_buttonCreateRepo;
 	/****/
 	public static String ImportRPMsPage_errorRefreshingTree;
+	/****/
+	public static String ImportRPMsPage_errorResourceChanged;
 
 	// ImportRPMsPage$ImportButtonListener
 	/****/
@@ -161,25 +163,17 @@ public final class Messages {
 	/****/
 	public static String CreaterepoPreferencePage_compressionGroupLabel;
 
-	// CreaterepoGeneralPropertyPage
+	// CreaterepoDeltaPreferencePage
 	/****/
-	public static String CreaterepoGeneralPropertyPage_projectSettings;
+	public static String CreaterepoDeltaPreferencePage_description;
 	/****/
-	public static String CreaterepoGeneralPropertyPage_workspaceSettings;
-
-	// CreaterepoDeltaPropertyPage
+	public static String CreaterepoDeltaPreferencePage_groupLabel;
 	/****/
-	public static String CreaterepoDeltaPropertyPage_description;
+	public static String CreaterepoDeltaPreferencePage_booleanEnableLabel;
 	/****/
-	public static String CreaterepoDeltaPropertyPage_groupLabel;
+	public static String CreaterepoDeltaPreferencePage_maxNumberOfDeltas;
 	/****/
-	public static String CreaterepoDeltaPropertyPage_booleanEnableLabel;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_maxNumberOfDeltas;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_maxDeltaSize;
-	/****/
-	public static String CreaterepoDeltaPropertyPage_errorInvalidText;
+	public static String CreaterepoDeltaPreferencePage_maxDeltaSize;
 
 	static {
 		// initialize resource bundle

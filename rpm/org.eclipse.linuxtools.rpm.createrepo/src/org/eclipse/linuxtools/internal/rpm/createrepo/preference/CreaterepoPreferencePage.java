@@ -40,8 +40,6 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 public class CreaterepoPreferencePage extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage {
 
-	private Composite parent;
-
 	private Group generalGroup;
 	private BooleanFieldEditor bfeIncludeChecksum;
 	private BooleanFieldEditor bfeSQLDB;
@@ -74,15 +72,6 @@ public class CreaterepoPreferencePage extends FieldEditorPreferencePage implemen
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.eclipse.jface.preference.FieldEditorPreferencePage#checkState()
-	 */
-	@Override
-	public void checkState() {
-		super.checkState();
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
 	 */
 	@Override
@@ -98,7 +87,7 @@ public class CreaterepoPreferencePage extends FieldEditorPreferencePage implemen
 	 */
 	@Override
 	protected void createFieldEditors() {
-		parent = getFieldEditorParent();
+		Composite parent = getFieldEditorParent();
 		GridData data = new GridData();
 		// general group
 		generalGroup = new Group(parent, SWT.SHADOW_ETCHED_IN);
@@ -173,7 +162,6 @@ public class CreaterepoPreferencePage extends FieldEditorPreferencePage implemen
 		// don't generate repo metadata, if their timestamps are newer than its rpms
 		ifeChangelogLimit = new IntegerFieldEditor(CreaterepoPreferenceConstants.PREF_CHANGELOG_LIMIT,
 				Messages.CreaterepoPreferencePage_numChangelogLimit, changelogGroup);
-		ifeChangelogLimit.setValidRange(0, Integer.MAX_VALUE);
 		ifeChangelogLimit.load();
 		ifeChangelogLimit.setPropertyChangeListener(this);
 		addField(ifeChangelogLimit);

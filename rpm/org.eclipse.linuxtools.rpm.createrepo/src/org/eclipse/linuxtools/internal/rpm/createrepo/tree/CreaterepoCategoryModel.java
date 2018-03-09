@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.rpm.createrepo.tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -68,7 +69,7 @@ public class CreaterepoCategoryModel {
 				return Arrays.asList(tagPref.split(ICreaterepoConstants.DELIMITER));
 			}
 		}
-		return ICreaterepoConstants.EMPTY_LIST;
+		return Collections.EMPTY_LIST;
 	}
 
 	/**
@@ -84,7 +85,7 @@ public class CreaterepoCategoryModel {
 				return Arrays.asList(tagPref.split(ICreaterepoConstants.DELIMITER));
 			}
 		}
-		return ICreaterepoConstants.EMPTY_LIST;
+		return Collections.EMPTY_LIST;
 	}
 
 	/**
@@ -100,6 +101,7 @@ public class CreaterepoCategoryModel {
 				return Arrays.asList(tagPref.split(ICreaterepoConstants.DELIMITER));
 			}
 		}
-		return ICreaterepoConstants.EMPTY_LIST;
+		return Collections.EMPTY_LIST;
 	}
+
 }
