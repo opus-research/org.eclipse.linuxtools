@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.ui.tests.shared;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -41,6 +42,11 @@ import org.eclipse.swt.widgets.Display;
  * @author Geneviève Bastien
  */
 public class ProjectModelTestData {
+
+    /* Maximum number of thread delays the main thread will do before timing out */
+    private static final int DELAY_COUNTER = 10;
+    /* Default delay time when having the main thread sleep. */
+    private static final int DEFAULT_DELAY = 500;
 
     /** Default test project name */
     public static final String PROJECT_NAME = "Test_Project";
@@ -99,8 +105,7 @@ public class ProjectModelTestData {
      */
     public static void deleteProject(TmfProjectElement project) {
         /* Delete experiments */
-        ITmfProjectModelElement[] experiments = project.getExperimentsFolder().getChildren().toArray(new ITmfProjectModelElement[0]);
-        for (ITmfProjectModelElement element : experiments) {
+        for (ITmfProjectModelElement element : project.getExperimentsFolder().getChildren()) {
             if (element instanceof TmfExperimentElement) {
                 TmfExperimentElement experiment = (TmfExperimentElement) element;
                 IResource resource = experiment.getResource();
@@ -124,8 +129,7 @@ public class ProjectModelTestData {
         }
 
         /* Delete traces */
-        ITmfProjectModelElement[] traces = project.getTracesFolder().getChildren().toArray(new ITmfProjectModelElement[0]);
-        for (ITmfProjectModelElement element : traces) {
+        for (ITmfProjectModelElement element : project.getTracesFolder().getChildren()) {
             if (element instanceof TmfTraceElement) {
                 TmfTraceElement trace = (TmfTraceElement) element;
                 IResource resource = trace.getResource();
@@ -180,6 +184,42 @@ public class ProjectModelTestData {
                 // Ignored
             }
         }
+    }
+
+    /**
+     * Makes the main display thread sleep to give a chance to other threads to
+     * execute. It sleeps until the a trace element's corresponding trace is
+     * available (opened) or returns after a timeout. It allows to set short
+     * delays, while still not failing tests when it randomly takes a bit more
+     * time for the trace to open.
+     *
+     * If the project model element sent in parameter is not a trace element,
+     * then the thread is delayed only once by the default delay time. For
+     * longer delays in those cases, it is preferable to use the
+     * {@link ProjectModelTestData#delayThread(long)} instead.
+     *
+     * Timeout is DELAY_COUNTER * DEFAULT_DELAY ms
+     *
+     * @param projectElement
+     *            The trace element we are waiting for. If the element if not of
+     *            type TmfTraceElement, the thread is delayed only once.
+     * @throws TimeoutException
+     *             If after the maximum number of delays the trace is still
+     *             null, we throw a timeout exception, the trace has not opened.
+     */
+    public static void delayUntilTraceOpened(final ITmfProjectModelElement projectElement) throws TimeoutException {
+        if (projectElement instanceof TmfTraceElement) {
+            TmfTraceElement traceElement = (TmfTraceElement) projectElement;
+            final long deadline = System.nanoTime() + (DELAY_COUNTER * DEFAULT_DELAY * 1000000);
+            do {
+                delayThread(DEFAULT_DELAY);
+                if (traceElement.getTrace() != null) {
+                    return;
+                }
+            } while (System.nanoTime() < deadline);
+            throw new TimeoutException("Timeout while waiting for " + traceElement);
+        }
+        delayThread(DEFAULT_DELAY);
     }
 
 }
