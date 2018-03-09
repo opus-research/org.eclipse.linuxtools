@@ -94,6 +94,9 @@ public class CreaterepoCommandCreator {
 	 */
 	public List<String> prepareBooleanCommands() {
 		List<String> commands = new ArrayList<String>();
+		if (delta) {
+			commands.add(ICreaterepoConstants.DASH.concat(CreaterepoPreferenceConstants.PREF_DELTA_ENABLE));
+		}
 		for (String arg : BOOLEAN_COMMANDS) {
 			// if project preferences are enabled, use the preferences from there
 			boolean value = project ? projectPreferences.getBoolean(arg, preferenceStore.getDefaultBoolean(arg))
