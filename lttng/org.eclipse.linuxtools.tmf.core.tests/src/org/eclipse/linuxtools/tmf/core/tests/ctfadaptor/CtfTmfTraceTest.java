@@ -30,8 +30,8 @@ import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -110,7 +110,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testBroadcast() {
-        TmfSignal signal = new TmfTimeSynchSignal(this, new TmfTimestamp(1));
+        TmfSignal signal = new TmfEndSynchSignal(1);
         fixture.broadcast(signal);
     }
 

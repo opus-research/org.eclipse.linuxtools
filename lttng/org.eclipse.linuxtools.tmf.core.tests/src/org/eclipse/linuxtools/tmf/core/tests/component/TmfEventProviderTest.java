@@ -26,6 +26,8 @@ import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfStartSynchSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.tests.stubs.component.TmfEventProviderStub;
@@ -169,6 +171,12 @@ public class TmfEventProviderTest {
             }
         };
 
+        // Synchronize requests
+        ((TmfEventProviderStub) provider).startSynch(new TmfStartSynchSignal(0));
+
+        // Additionally, notify provider for up-coming requests
+        provider.notifyPendingRequest(true);
+
         // Call sendRequest, which will create a coalescing request, but it
         // doesn't send request1 yet
         provider.sendRequest(request1);
@@ -199,9 +207,15 @@ public class TmfEventProviderTest {
         assertFalse("isRunning", request1.isRunning());
         assertFalse("isRunning", request2.isRunning());
 
+        // Send end synch signal, however requests won't be sent
+        ((TmfEventProviderStub) provider).endSynch(new TmfEndSynchSignal(0));
+
         // Check if request1/2 is not running yet.
         assertFalse("isRunning", request1.isRunning());
         assertFalse("isRunning", request2.isRunning());
+
+        // Finally, trigger sending of requests
+        provider.notifyPendingRequest(false);
 
         try {
 
