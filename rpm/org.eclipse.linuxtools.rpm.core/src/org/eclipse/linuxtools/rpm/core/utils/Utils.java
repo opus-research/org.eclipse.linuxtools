@@ -11,11 +11,13 @@
 package org.eclipse.linuxtools.rpm.core.utils;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.SequenceInputStream;
 import java.nio.channels.FileChannel;
@@ -94,6 +96,7 @@ public class Utils {
 					int i;
 					while ((i = in.read()) != -1) {
 						outStream.write(i);
+						System.out.print((char)i);
 					}
 					outStream.flush();
 					outStream.close();
@@ -116,11 +119,27 @@ public class Utils {
 		}
 		IStatus result;
 		if (child.exitValue() != 0){
+			BufferedReader error = new BufferedReader(
+					new InputStreamReader(child.getErrorStream()));
+			String err;
+			err = error.readLine();
+			while (err != null) {
+				System.out.println(err);
+				err = error.readLine();
+			}
+			error.close();
+			BufferedReader reader = new BufferedReader(
+					new InputStreamReader(child.getInputStream()));
+			String readLine = reader.readLine();
+			while (readLine != null) {
+				System.out.println(readLine);
+				readLine = reader.readLine();
+			}
+			reader.close();
 			result = new Status(
 					IStatus.ERROR,
 					FrameworkUtil.getBundle(Utils.class).getSymbolicName(),
-					NLS.bind(
-							Messages.Utils_NON_ZERO_RETURN_CODE, child.exitValue()), null); 
+					NLS.bind(Messages.Utils_NON_ZERO_RETURN_CODE, child.exitValue()), null);
 		} else{
 			result = Status.OK_STATUS;
 		}
