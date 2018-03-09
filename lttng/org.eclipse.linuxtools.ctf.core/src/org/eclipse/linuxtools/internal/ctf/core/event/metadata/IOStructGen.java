@@ -1153,12 +1153,12 @@ public class IOStructGen {
         return declaration;
     }
 
-    private boolean isSignedIntegerField(String lengthName) throws ParseException {
+    private boolean isSignedIntegerField(String lengthName) {
         IDeclaration decl = getCurrentScope().lookupIdentifierRecursive(lengthName);
         if (decl instanceof IntegerDeclaration) {
             return ((IntegerDeclaration) decl).isSigned();
         }
-        throw new ParseException("Is not an integer: " + lengthName); //$NON-NLS-1$
+        return false;
 
     }
 
