@@ -12,10 +12,19 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
+import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.junit.BeforeClass;
 
 /**
@@ -31,7 +40,43 @@ public class StateSystemInMemoryTest extends StateSystemTest {
     @BeforeClass
     public static void initialize() {
         assumeTrue(testTrace.exists());
-        input = new LttngKernelStateProvider(testTrace.getTrace());
-        ssq = TmfStateSystemFactory.newInMemHistory(input, true);
+
+        TestLttngKernelAnalysisModule module = new TestLttngKernelAnalysisModule();
+        try {
+            module.setTrace(testTrace.getTrace());
+        } catch (TmfAnalysisException e) {
+            fail();
+        }
+        module.schedule();
+        assertTrue(module.waitForCompletion(new NullProgressMonitor()));
+        ssq = module.getStateSystem();
+        assertNotNull(ssq);
     }
+
+    private static class TestLttngKernelAnalysisModule extends TmfStateSystemAnalysisModule {
+
+        /**
+         * Constructor adding the views to the analysis
+         */
+        public TestLttngKernelAnalysisModule() {
+            super();
+        }
+
+        @Override
+        protected @NonNull ITmfStateProvider createStateProvider() {
+            ITmfTrace trace = getTrace();
+            if (!(trace instanceof CtfTmfTrace)) {
+                throw new IllegalStateException("TestLttngKernelAnalysisModule: trace should be of type CtfTmfTrace"); //$NON-NLS-1$
+            }
+            return new LttngKernelStateProvider((CtfTmfTrace) trace);
+        }
+
+        @Override
+        protected StateSystemBackendType getBackendType() {
+            return StateSystemBackendType.FULL;
+        }
+
+    }
+
+
 }
