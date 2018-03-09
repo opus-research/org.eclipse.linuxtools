@@ -28,13 +28,18 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 
 	@Override
 	protected void createChart() {
-		this.chart = new PieChart(this, getStyle(), adapter.getLabels());
+		String[] allNames = adapter.getLabels();
+		String[] ySeriesNames = new String[allNames.length - 1];
+		for (int i = 0; i < ySeriesNames.length; i++) {
+			ySeriesNames[i] = allNames[i+1];
+		}
+		this.chart = new PieChart(this, getStyle(), ySeriesNames);
 	}
 
 	@Override
 	protected void buildXSeries() {
 		Object data[][] = adapter.getData();
-		if (data == null || data.length == 0)
+		if (data == null || data.length == 0 || data[0].length == 0)
 			return;
 
 		int start = 0, len = Math.min(this.maxItems, data.length), leny = data[0].length-1;
@@ -46,15 +51,18 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 		String[] all_labels = new String[len];
 
 		for (int i = 0; i < all_labels.length; i++) {
+			if (data[i].length < 2)
+				return;
 			Object label = data[start + i][0];
 			if (label != null) {
-				all_labels[i] = label.toString();
+				all_labels[i] = data[start + i][0].toString();
 				for (int j = 1; j < data[start + i].length; j++) {
 					Double val = getDoubleValue(data[start + i][j]);
 					if (val != null) {
 						all_values[i][j-1] = val;
 					} else {
-						all_values[i][j-1] = 0.0;
+						all_labels[i] = null;
+						break;
 					}
 				}
 			}
@@ -81,7 +89,6 @@ public class PieChartBuilder extends AbstractChartWithoutAxisBuilder {
 			}
 		}
 
-		giveUniqueNames(labels_trim, len_trim);
 		((PieChart)this.chart).addPieChartSeries(labels_trim, values_trim);
 		chart.redraw();
 	}
