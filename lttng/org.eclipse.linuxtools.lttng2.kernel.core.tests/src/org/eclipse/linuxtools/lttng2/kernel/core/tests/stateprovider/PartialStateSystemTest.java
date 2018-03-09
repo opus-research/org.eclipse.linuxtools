@@ -7,6 +7,7 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
+ *   Bernd Hufmann - Updated to new history builder interface
  ******************************************************************************/
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfHistoryBuilder;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -44,7 +46,9 @@ public class PartialStateSystemTest extends StateSystemTest {
             stateFile = File.createTempFile("test-partial", ".ht");
 
             input = new LttngKernelStateProvider(testTrace.getTrace());
-            ssq = TmfStateSystemFactory.newPartialHistory(stateFile, input, true);
+            ITmfHistoryBuilder builder = TmfStateSystemFactory.newPartialHistory(stateFile, input);
+            builder.build();
+            ssq = builder.getStateSystem();
         } catch (IOException e) {
             fail();
         } catch (TmfTraceException e) {

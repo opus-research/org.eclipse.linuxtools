@@ -8,23 +8,22 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
+ *   Bernd Hufmann - Updated to new ITmfHistoryBuilder interface
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.statesystem;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.HistoryBuilder;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.HistoryTreeBackend;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfHistoryBuilder;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
 
 /**
  * Small program to ensure a history file does not contain any "holes".
@@ -40,19 +39,20 @@ public class VerifyHistoryFile {
     public static final String pathToHistoryFile = "";
 
     private static File htFile;
-    private static IStateHistoryBackend htBackend;
     private static ITmfStateSystem ss;
 
     private static long startTime;
     private static long endTime;
     private static int nbErrors;
 
-    public static void main(String[] args) throws IOException,
+    public static void main(String[] args) throws TmfTraceException,
             TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException {
         htFile = new File(pathToHistoryFile);
-        htBackend = new HistoryTreeBackend(htFile, ITmfStateProvider.IGNORE_PROVIDER_VERSION);
-        ss = HistoryBuilder.openExistingHistory(htBackend);
+
+        ITmfHistoryBuilder builder = TmfStateSystemFactory.newFullHistory(htFile, null);
+        builder.build();
+        ss = builder.getStateSystem();
 
         startTime = ss.getStartTime();
         endTime = ss.getCurrentEndTime();

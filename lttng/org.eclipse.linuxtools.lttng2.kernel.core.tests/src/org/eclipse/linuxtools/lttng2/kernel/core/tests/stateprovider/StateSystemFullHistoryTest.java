@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
+ *   Bernd Hufmann - Updated to new history builder interface
  ******************************************************************************/
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
@@ -22,6 +23,7 @@ import java.io.IOException;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfHistoryBuilder;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
@@ -51,7 +53,9 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
             stateFileBenchmark = File.createTempFile("test", ".ht.benchmark");
 
             input = new LttngKernelStateProvider(testTrace.getTrace());
-            ssq = TmfStateSystemFactory.newFullHistory(stateFile, input, true);
+            ITmfHistoryBuilder builder = TmfStateSystemFactory.newFullHistory(stateFile, input);
+            builder.build();
+            ssq = builder.getStateSystem();
         } catch (IOException e) {
             fail();
         } catch (TmfTraceException e) {
@@ -80,7 +84,9 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     public void testBuild() {
         try {
             ITmfStateProvider input2 = new LttngKernelStateProvider(testTrace.getTrace());
-            ITmfStateSystem ssb2 = TmfStateSystemFactory.newFullHistory(stateFileBenchmark, input2, true);
+            ITmfHistoryBuilder builder = TmfStateSystemFactory.newFullHistory(stateFile, input2);
+            builder.build();
+            ITmfStateSystem ssb2 = builder.getStateSystem();
 
             assertEquals(startTime, ssb2.getStartTime());
             assertEquals(endTime, ssb2.getCurrentEndTime());
@@ -97,7 +103,9 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     public void testOpenExistingStateFile() {
         try {
             /* 'newStateFile' should have already been created */
-            ITmfStateSystem ssb2 = TmfStateSystemFactory.newFullHistory(stateFile, null, true);
+            ITmfHistoryBuilder builder = TmfStateSystemFactory.newFullHistory(stateFile, null);
+            builder.build();
+            ITmfStateSystem ssb2 = builder.getStateSystem();
 
             assertNotNull(ssb2);
             assertEquals(startTime, ssb2.getStartTime());

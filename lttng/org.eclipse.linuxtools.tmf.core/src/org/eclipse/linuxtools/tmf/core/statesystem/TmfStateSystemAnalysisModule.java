@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Geneviève Bastien - Initial API and implementation
+ *   Bernd Hufmann - Updated for new ITmfHistoryBuilder interface
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statesystem;
@@ -38,6 +39,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         implements ITmfStateSystemAnalysisModule {
 
     private ITmfStateSystem fStateSystem = null;
+    private ITmfHistoryBuilder fBuilder = null;
     private static final String EXTENSION = ".ht"; //$NON-NLS-1$
 
     /**
@@ -100,41 +102,45 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             /* Get the state system according to backend */
             StateSystemBackendType backend = getBackendType();
             String directory;
+            File htFile;
+            ITmfHistoryBuilder builder = null;
             switch (backend) {
             case FULL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
-                final File htFile = new File(directory + getSsFileName());
-                fStateSystem = TmfStateSystemFactory.newFullHistory(htFile, htInput, true);
+                htFile = new File(directory + getSsFileName());
+                builder = TmfStateSystemFactory.newFullHistory(htFile, htInput);
                 break;
             case PARTIAL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
-                final File htPartialFile = new File(directory + getSsFileName());
-                fStateSystem = TmfStateSystemFactory.newPartialHistory(htPartialFile, htInput, true);
+                htFile = new File(directory + getSsFileName());
+                builder = TmfStateSystemFactory.newPartialHistory(htFile, htInput);
                 break;
             case INMEM:
-                fStateSystem = TmfStateSystemFactory.newInMemHistory(htInput, true);
+                builder = TmfStateSystemFactory.newInMemHistory(htInput);
                 break;
             case NULL:
-                fStateSystem = TmfStateSystemFactory.newNullHistory(htInput);
+                builder = TmfStateSystemFactory.newNullHistory(htInput);
                 break;
             default:
                 break;
             }
+            if (builder != null) {
+                synchronized (TmfStateSystemAnalysisModule.this) {
+                    fBuilder = builder;
+                }
+                builder.build();
+                fStateSystem = builder.getStateSystem();
+            }
         } catch (TmfTraceException e) {
             return false;
         }
-        return true;
+        return !monitor.isCanceled();
     }
 
     @Override
-    protected void canceling() {
-        /*
-         * FIXME: Actually, fStateSystem will [almost?] always be null while it
-         * is being built, so it is preferable to just tell the state system
-         * factory and she will handle how to cancel its work.
-         */
-        if (fStateSystem != null) {
-            fStateSystem.dispose();
+    protected synchronized void canceling() {
+        if (fBuilder != null) {
+            fBuilder.cancel();
         }
     }
 
@@ -144,4 +150,5 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         map.put(getId(), fStateSystem);
         return map;
     }
+
 }
