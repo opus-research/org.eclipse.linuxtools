@@ -11,9 +11,6 @@
 package org.eclipse.linuxtools.internal.rpm.createrepo.form.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
@@ -24,6 +21,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotMultiPageEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
@@ -43,15 +41,19 @@ public class CreaterepoRepoFormEditorTest {
 	private static SWTWorkbenchBot bot;
 
 	/**
-	 * Initialize the test project.
+	 * Initialize the test project. Will close the welcome view.
 	 *
 	 * @throws CoreException
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws CoreException {
 		testProject = new TestCreaterepoProject();
-		assertTrue(testProject.getProject().exists());
 		bot = new SWTWorkbenchBot();
+		try {
+			bot.shell(ICreaterepoTestConstants.MAIN_SHELL).activate();
+		} catch (WidgetNotFoundException e) {
+			// cannot activate main shell, continue anyways
+		}
 	}
 
 	/**
@@ -62,7 +64,6 @@ public class CreaterepoRepoFormEditorTest {
 	@AfterClass
 	public static void tearDownAfterClass() throws CoreException {
 		testProject.dispose();
-		assertFalse(testProject.getProject().exists());
 	}
 
 	/**
@@ -76,26 +77,24 @@ public class CreaterepoRepoFormEditorTest {
 		bot.menu(ICreaterepoTestConstants.WINDOW).menu(ICreaterepoTestConstants.SHOW_VIEW).menu(ICreaterepoTestConstants.OTHER).click();
 		SWTBotShell shell = bot.shell(ICreaterepoTestConstants.SHOW_VIEW);
 		shell.activate();
-		bot.tree().expandNode(ICreaterepoTestConstants.GENERAL_NODE).select(ICreaterepoTestConstants.NAVIGATOR);
+		bot.tree().expandNode(ICreaterepoTestConstants.JAVA_NODE).select(ICreaterepoTestConstants.PACKAGE_EXPLORER);
 		bot.button(ICreaterepoTestConstants.OK_BUTTON).click();
-		SWTBotView view = bot.viewByTitle(ICreaterepoTestConstants.NAVIGATOR);
+		SWTBotView view = bot.viewByTitle(ICreaterepoTestConstants.PACKAGE_EXPLORER);
 		view.show();
 		// select the repo file from the package explorer and open it
 		Composite packageExplorer = (Composite)view.getWidget();
-		assertNotNull(packageExplorer);
 		Tree swtTree = bot.widget(WidgetMatcherFactory.widgetOfType(Tree.class), packageExplorer);
-		assertNotNull(swtTree);
 		SWTBotTree botTree = new SWTBotTree(swtTree);
-		botTree.expandNode(ICreaterepoTestConstants.PROJECT_NAME).getNode(ICreaterepoTestConstants.REPO_NAME)
-			.contextMenu(ICreaterepoTestConstants.OPEN).click();
+		botTree.expandNode(TestCreaterepoProject.PROJECT_NAME).select(TestCreaterepoProject.REPO_NAME);
+		bot.menu(ICreaterepoTestConstants.OPEN).click();
 		// get a handle on the multipage editor that was opened
-		SWTBotMultiPageEditor editor = bot.multipageEditorByTitle(ICreaterepoTestConstants.REPO_NAME);
+		SWTBotMultiPageEditor editor = bot.multipageEditorByTitle(TestCreaterepoProject.REPO_NAME);
 		editor.show();
 		// 3 = repository form page, metadata form page, repo file
 		assertEquals(3, editor.getPageCount());
 		// activate the pages to make sure they exist and work
 		editor.activatePage(Messages.MetadataPage_title);
-		editor.activatePage(ICreaterepoTestConstants.REPO_NAME);
+		editor.activatePage(TestCreaterepoProject.REPO_NAME);
 		editor.activatePage(Messages.ImportRPMsPage_title);
 	}
 

@@ -11,8 +11,6 @@
 package org.eclipse.linuxtools.internal.rpm.createrepo.tree.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -58,7 +56,7 @@ public class CreaterepoTreeTest {
 	private static final String[] REPO_TAGS = {"tag1"}; //$NON-NLS-1$
 
 	/*
-	 * Categories and how many tags per categories to test with.
+	 * Categories being used to test with.
 	 */
 	private static final Map<String, Integer> CORRECT_CATEGORIES;
 	static {
@@ -82,7 +80,6 @@ public class CreaterepoTreeTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws CoreException {
 		testProject = new TestCreaterepoProject();
-		assertTrue(testProject.getProject().exists());
 	}
 
 	/**
@@ -93,7 +90,6 @@ public class CreaterepoTreeTest {
 	@AfterClass
 	public static void tearDownAfterClass() throws CoreException {
 		testProject.dispose();
-		assertFalse(testProject.getProject().exists());
 	}
 
 	/**
@@ -104,7 +100,6 @@ public class CreaterepoTreeTest {
 	@Before
 	public void setUp() throws CoreException {
 		project = testProject.getCreaterepoProject();
-		assertNotNull(project);
 	}
 
 	/**
@@ -117,7 +112,6 @@ public class CreaterepoTreeTest {
 		IEclipsePreferences pref = project.getEclipsePreferences();
 		pref.clear();
 		pref.flush();
-		assertEquals(0, pref.keys().length);
 	}
 
 	/**
