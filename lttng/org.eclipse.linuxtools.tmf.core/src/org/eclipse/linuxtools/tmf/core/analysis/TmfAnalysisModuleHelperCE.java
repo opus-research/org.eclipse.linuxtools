@@ -64,11 +64,7 @@ public class TmfAnalysisModuleHelperCE implements IAnalysisModuleHelper {
 
     @Override
     public String getHelpText() {
-        /*
-         * FIXME: No need to externalize this. A better solution will be found
-         * soon and this string is just temporary
-         */
-        return new String("The trace must be opened to get the help message");
+        return new String();
     }
 
     @Override
