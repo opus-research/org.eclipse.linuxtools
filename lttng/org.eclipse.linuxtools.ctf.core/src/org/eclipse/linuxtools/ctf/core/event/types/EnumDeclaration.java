@@ -12,14 +12,15 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * A CTF enum declaration.
  *
- * The definition of a enum point basic data type. It will take the data
- * from a trace and store it (and make it fit) as an integer and a string.
+ * The definition of a enum point basic data type. It will take the data from a
+ * trace and store it (and make it fit) as an integer and a string.
  *
  * @version 1.0
  * @author Matthew Khouzam
@@ -79,10 +80,17 @@ public class EnumDeclaration implements IDeclaration {
     }
 
     /**
-     * Add a value. Do not overlap, this is <i><u><b>not</i></u></b> an interval tree.
-     * @param low lowest value that this int can be to have label as a return string
-     * @param high highest value that this int can be to have label as a return string
-     * @param label the name of the value.
+     * Add a value. Do not overlap, this is <i><u><b>not</i></u></b> an interval
+     * tree.
+     *
+     * @param low
+     *            lowest value that this int can be to have label as a return
+     *            string
+     * @param high
+     *            highest value that this int can be to have label as a return
+     *            string
+     * @param label
+     *            the name of the value.
      * @return was the value be added? true == success
      */
     public boolean add(long low, long high, String label) {
@@ -90,12 +98,26 @@ public class EnumDeclaration implements IDeclaration {
     }
 
     /**
-     * Check if the label for a value (enum a{day=0,night=1} would return "day" for query(0)
-     * @param value the value to lookup
+     * Check if the label for a value (enum a{day=0,night=1} would return "day"
+     * for query(0)
+     *
+     * @param value
+     *            the value to lookup
      * @return the label of that value, can be null
      */
     public String query(long value) {
         return table.query(value);
+    }
+
+    /**
+     * @return gets a list of values that are garantied to be in each enum
+     */
+    public List<Long> getAValuePerEnum() {
+        List<Long> retVal = new ArrayList<Long>();
+        for (Range r : table.getRanges()) {
+            retVal.add(r.low);
+        }
+        return retVal;
     }
 
     /*
@@ -107,6 +129,10 @@ public class EnumDeclaration implements IDeclaration {
         private List<Range> ranges = new LinkedList<Range>();
 
         public EnumTable() {
+        }
+
+        public List<Range> getRanges() {
+            return ranges;
         }
 
         public boolean add(long low, long high, String label) {
@@ -125,7 +151,9 @@ public class EnumDeclaration implements IDeclaration {
 
         /**
          * Return the first label that matches a value
-         * @param value the value to query
+         *
+         * @param value
+         *            the value to query
          * @return the label corresponding to that value
          */
         public String query(long value) {
@@ -137,25 +165,26 @@ public class EnumDeclaration implements IDeclaration {
             return null;
         }
 
-        private static class Range {
+    }
 
-            private long low, high;
-            private String str;
+    private static class Range {
 
-            public Range(long low, long high, String str) {
-                this.low = low;
-                this.high = high;
-                this.str = str;
-            }
+        private long low, high;
+        private String str;
 
-            public boolean intersects(long i) {
-                return (i >= this.low) && (i <= this.high);
-            }
+        public Range(long low, long high, String str) {
+            this.low = low;
+            this.high = high;
+            this.str = str;
+        }
 
-            public boolean intersects(Range other) {
-                return this.intersects(other.low)
-                        || this.intersects(other.high);
-            }
+        public boolean intersects(long i) {
+            return (i >= this.low) && (i <= this.high);
+        }
+
+        public boolean intersects(Range other) {
+            return this.intersects(other.low)
+                    || this.intersects(other.high);
         }
     }
 
