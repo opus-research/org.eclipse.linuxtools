@@ -18,6 +18,8 @@ public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.ctf.core.event.metadata.messages"; //$NON-NLS-1$
 
+    public static String IdentifierAlreadyDefined;
+
     public static String IOStructGen_UnknownTraceAttributeWarning;
     public static String IOStructGen_UnknownStreamAttributeWarning;
     public static String IOStructGen_UnknownIntegerAttributeWarning;
