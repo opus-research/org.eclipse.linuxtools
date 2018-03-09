@@ -107,7 +107,7 @@ public class TmfStatisticsModule extends TmfAbstractAnalysisModule
             throw new IllegalStateException();
         }
 
-        fStatistics = new TmfStateStatistics(totalsSS, eventTypesSS);
+        fStatistics = new TmfStateStatistics(trace, totalsSS, eventTypesSS);
         return true;
     }
 

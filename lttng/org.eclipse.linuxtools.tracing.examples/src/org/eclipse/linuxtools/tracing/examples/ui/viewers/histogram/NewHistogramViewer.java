@@ -76,7 +76,7 @@ public class NewHistogramViewer extends TmfBarChartViewer {
                     for (ITmfTrace trace : TmfTraceManager.getTraceSet(getTrace())) {
                         /* Retrieve the statistics object */
                         final TmfStatisticsModule statsMod =
-                               trace.getAnalysisModules(TmfStatisticsModule.class).get(TmfStatisticsModule.ID);
+                               trace.getAnalysisModuleOfClass(TmfStatisticsModule.class, TmfStatisticsModule.ID);
                         if (statsMod == null) {
                             /* No statistics module available for this trace */
                             continue;
