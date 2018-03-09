@@ -16,7 +16,6 @@ package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
@@ -326,8 +325,13 @@ public class CtfTmfTrace extends TmfTrace
      * @since 2.0
      */
     @Override
-    public Map<String, String> getTraceProperties() {
-        return Collections.unmodifiableMap(fTrace.getEnvironment());
+    public String getTraceProperty(String key) {
+        return fTrace.lookupEnvironment(key);
+    }
+
+    @Override
+    public int getTracePropertiesSize() {
+        return fTrace.getEnvironment().size();
     }
 
     // -------------------------------------------
