@@ -185,6 +185,19 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     }
 
     /**
+     * Prepare analysis for execution.
+     *
+     * This method can be used, for example, to notify the trace instance about
+     * pending requests that are going to be sent in this analysis module. This
+     * notification allows the trace to coalesce these pending requests with
+     * other requests so that a trace is read only once for same range of data.
+     *
+     */
+    protected void prepareAnalysis() {
+        // do nothing by default
+    }
+
+    /**
      * Actually executes the analysis itself
      *
      * @param monitor
@@ -253,6 +266,8 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
             }
             fStarted = true;
         }
+
+        prepareAnalysis();
 
         /*
          * Actual analysis will be run on a separate thread
