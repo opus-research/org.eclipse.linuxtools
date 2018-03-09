@@ -8,33 +8,18 @@
  *
  * Contributors:
  *   Geneviève Bastien - Initial API and implementation
- *   Bernd Hufmann - Integrated history builder functionality
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statesystem;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.InMemoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.NullBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.HistoryTreeBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.ThreadedHistoryTreeBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.partial.PartialHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.partial.PartialStateSystem;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAbstractAnalysisModule;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 
 /**
@@ -52,14 +37,8 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisModule
         implements ITmfStateSystemAnalysisModule {
 
-    private StateSystem fStateSystem = null;
-    private ITmfStateProvider fStateProvider;
-    private IStateHistoryBackend fHtBackend;
-    private ITmfEventRequest fRequest;
+    private ITmfStateSystem fStateSystem = null;
     private static final String EXTENSION = ".ht"; //$NON-NLS-1$
-
-    /** Size of the blocking queue to use when building a state history */
-    protected static final int QUEUE_SIZE = 10000;
 
     /**
      * State system backend types
@@ -114,30 +93,29 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
     @Override
     protected boolean executeAnalysis(final IProgressMonitor monitor) {
 
-        fStateProvider = createStateProvider();
+        final ITmfStateProvider htInput = createStateProvider();
 
         /* FIXME: State systems should make use of the monitor, to be cancelled */
         try {
             /* Get the state system according to backend */
             StateSystemBackendType backend = getBackendType();
             String directory;
-            File htFile;
             switch (backend) {
             case FULL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
-                htFile = new File(directory + getSsFileName());
-                createFullHistory(htFile);
+                final File htFile = new File(directory + getSsFileName());
+                fStateSystem = TmfStateSystemFactory.newFullHistory(htFile, htInput, true);
                 break;
             case PARTIAL:
                 directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
-                htFile = new File(directory + getSsFileName());
-                createPartialHistory(htFile);
+                final File htPartialFile = new File(directory + getSsFileName());
+                fStateSystem = TmfStateSystemFactory.newPartialHistory(htPartialFile, htInput, true);
                 break;
             case INMEM:
-                createInMemoryHistory();
+                fStateSystem = TmfStateSystemFactory.newInMemHistory(htInput, true);
                 break;
             case NULL:
-                createNullHistory();
+                fStateSystem = TmfStateSystemFactory.newNullHistory(htInput);
                 break;
             default:
                 break;
@@ -145,123 +123,18 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         } catch (TmfTraceException e) {
             return false;
         }
-        return !monitor.isCanceled();
-    }
-
-    private void createFullHistory(File htFile) throws TmfTraceException {
-
-        /* If the target file already exists, do not rebuild it uselessly */
-        // TODO for now we assume it's complete. Might be a good idea to check
-        // at least if its range matches the trace's range.
-
-        if (htFile.exists()) {
-           /* Load an existing history */
-            final int version = fStateProvider.getVersion();
-            try {
-                fHtBackend = new HistoryTreeBackend(htFile, version);
-                fStateSystem = new StateSystem(fHtBackend, false);
-                return;
-            } catch (IOException e) {
-                /*
-                 * There was an error opening the existing file. Perhaps it was
-                 * corrupted, perhaps it's an old version? We'll just
-                 * fall-through and try to build a new one from scratch instead.
-                 */
-            }
-        }
-
-        try {
-            fHtBackend = new ThreadedHistoryTreeBackend(htFile,
-                    fStateProvider.getStartTime(), fStateProvider.getVersion(), QUEUE_SIZE);
-            fStateSystem = new StateSystem(fHtBackend);
-            fStateProvider.assignTargetStateSystem(fStateSystem);
-            build();
-        } catch (IOException e) {
-            /*
-             * If it fails here however, it means there was a problem writing to
-             * the disk, so throw a real exception this time.
-             */
-            throw new TmfTraceException(e.toString(), e);
-        }
-    }
-
-    private void createPartialHistory(File htPartialFile) throws TmfTraceException {
-        /*
-         * The order of initializations is very tricky (but very important!)
-         * here. We need to follow this pattern:
-         * (1 is done before the call to this method)
-         *
-         * 1- Instantiate realStateProvider
-         * 2- Instantiate realBackend
-         * 3- Instantiate partialBackend, with prereqs:
-         *  3a- Instantiate partialProvider, via realProvider.getNew()
-         *  3b- Instantiate nullBackend (partialSS's backend)
-         *  3c- Instantiate partialSS
-         *  3d- partialProvider.assignSS(partialSS)
-         * 4- Instantiate realSS
-         * 5- partialSS.assignUpstream(realSS)
-         * 6- realProvider.assignSS(realSS)
-         * 7- Call HistoryBuilder(realProvider, realSS, partialBackend) to build the thing.
-         */
-
-        final long granularity = 50000;
-
-        /* 2 */
-        IStateHistoryBackend realBackend = null;
-        try {
-            realBackend = new ThreadedHistoryTreeBackend(htPartialFile,
-                    fStateProvider.getStartTime(), fStateProvider.getVersion(), QUEUE_SIZE);
-        } catch (IOException e) {
-            throw new TmfTraceException(e.toString(), e);
-        }
-
-        /* 3a */
-        ITmfStateProvider partialProvider = fStateProvider.getNewInstance();
-
-        /* 3b-3c, constructor automatically uses a NullBackend */
-        PartialStateSystem pss = new PartialStateSystem();
-
-        /* 3d */
-        partialProvider.assignTargetStateSystem(pss);
-
-        /* 3 */
-        IStateHistoryBackend partialBackend =
-                new PartialHistoryBackend(partialProvider, pss, realBackend, granularity);
-
-        /* 4 */
-        StateSystem realSS = new StateSystem(partialBackend);
-
-        /* 5 */
-        pss.assignUpstream(realSS);
-
-        /* 6 */
-        fStateProvider.assignTargetStateSystem(realSS);
-
-        /* 7 */
-        fHtBackend = partialBackend;
-        fStateSystem = realSS;
-
-        build();
-    }
-
-    private void createNullHistory() {
-        fHtBackend = new NullBackend();
-        fStateSystem = new StateSystem(fHtBackend);
-        fStateProvider.assignTargetStateSystem(fStateSystem);
-        build();
-    }
-
-    private void createInMemoryHistory() {
-        fHtBackend = new InMemoryBackend(fStateProvider.getStartTime());
-        fStateSystem = new StateSystem(fHtBackend);
-        fStateProvider.assignTargetStateSystem(fStateSystem);
-        build();
+        return true;
     }
 
     @Override
-    protected synchronized void canceling() {
-        if ((fRequest != null) && (!fRequest.isCompleted())) {
-            fRequest.cancel();
+    protected void canceling() {
+        /*
+         * FIXME: Actually, fStateSystem will [almost?] always be null while it
+         * is being built, so it is preferable to just tell the state system
+         * factory and she will handle how to cancel its work.
+         */
+        if (fStateSystem != null) {
+            fStateSystem.dispose();
         }
     }
 
@@ -271,74 +144,4 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         map.put(getId(), fStateSystem);
         return map;
     }
-
-    private void dispose(boolean deleteFiles) {
-        if (fStateProvider != null) {
-            fStateProvider.dispose();
-        }
-        if (deleteFiles && (fHtBackend != null)) {
-            fHtBackend.removeFiles();
-        }
-    }
-
-    private void build() {
-        if ((fStateProvider == null) || (fStateSystem == null) || (fHtBackend == null)) {
-            throw new IllegalArgumentException();
-        }
-
-        if ((fRequest != null) && (!fRequest.isCompleted())) {
-            fRequest.cancel();
-        }
-
-        fRequest = new StateSystemEventRequest(fStateProvider);
-        fStateProvider.getTrace().sendRequest(fRequest);
-
-        try {
-             fRequest.waitForCompletion();
-        } catch (InterruptedException e) {
-             e.printStackTrace();
-        }
-    }
-
-    class StateSystemEventRequest extends TmfEventRequest {
-        private final ITmfStateProvider sci;
-        private final ITmfTrace trace;
-
-        StateSystemEventRequest(ITmfStateProvider sp) {
-            super(sp.getExpectedEventType(),
-                    TmfTimeRange.ETERNITY,
-                    0,
-                    ITmfEventRequest.ALL_DATA,
-                    ITmfEventRequest.ExecutionType.BACKGROUND);
-            this.sci = sp;
-            this.trace = sci.getTrace();
-        }
-
-        @Override
-        public void handleData(final ITmfEvent event) {
-            super.handleData(event);
-            if (event != null && event.getTrace() == trace) {
-                sci.processEvent(event);
-            }
-        }
-
-        @Override
-        public void handleSuccess() {
-            super.handleSuccess();
-            dispose(false);
-        }
-
-        @Override
-        public void handleCancel() {
-            super.handleCancel();
-            dispose(true);
-        }
-
-        @Override
-        public void handleFailure() {
-            super.handleFailure();
-            dispose(true);
-        }
-    }
-
 }
