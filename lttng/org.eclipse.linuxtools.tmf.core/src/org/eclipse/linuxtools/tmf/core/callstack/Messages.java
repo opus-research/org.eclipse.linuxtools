@@ -17,7 +17,7 @@ import org.eclipse.osgi.util.NLS;
 /**
  * Message bundle for the call stack state provider.
  *
- * @since 3.0
+ * @since 2.1
  */
 public class Messages extends NLS {
 
