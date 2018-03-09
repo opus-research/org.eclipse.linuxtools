@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2012, 2013 Ericsson
- * Copyright (c) 2010, 2013 École Polytechnique de Montréal
+ * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
  * All rights reserved. This program and the accompanying materials are
@@ -8,9 +8,6 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *   Alexandre Montplaisir - Initial API and implementation
- *   Florian Wininger - Add 2D Query
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree;
@@ -26,7 +23,6 @@ import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHisto
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.interval.ITmfStateIntervalList;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
@@ -34,7 +30,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
  * History Tree backend for storing a state history. This is the basic version
  * that runs in the same thread as the class creating it.
  *
- * @author Alexandre Montplaisir
+ * @author alexmont
  *
  */
 public class HistoryTreeBackend implements IStateHistoryBackend {
@@ -186,12 +182,13 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
             throw new TimeRangeException();
         }
 
-        /* Read the information in the root node. */
-        // FIXME this part will have to be redone to handle different node types
+        /* We start by reading the information in the root node */
+        // FIXME using CoreNode for now, we'll have to redo this part to handle
+        // different node types
         CoreNode currentNode = sht.getLatestBranch().get(0);
         currentNode.writeInfoFromNode(stateInfo, t);
 
-        /* Follow the branch down in the relevant children. */
+        /* Then we follow the branch down in the relevant children */
         try {
             while (currentNode.getNbChildren() > 0) {
                 currentNode = (CoreNode) sht.selectNextChild(currentNode, t);
@@ -200,32 +197,12 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         } catch (ClosedChannelException e) {
             throw new StateSystemDisposedException(e);
         }
-    }
 
-    @Override
-    public void do2DQuery(ITmfStateIntervalList stateInfo, long t)
-            throws TimeRangeException, StateSystemDisposedException {
-        if (!checkValidTime(t)) {
-            throw new TimeRangeException();
-        }
-
-        /* Reset the input StateIntervalList */
-        stateInfo.clear();
-
-        /* Read the information in the root node. */
-        // FIXME this part will have to be redone to handle different node types
-        CoreNode currentNode = sht.getLatestBranch().get(0);
-        currentNode.populateInfoFromNode(stateInfo);
-
-        /* Follow the branch down in the relevant children. */
-        try {
-            while (currentNode.getNbChildren() > 0) {
-                currentNode = (CoreNode) sht.selectNextChild(currentNode, t);
-                currentNode.populateInfoFromNode(stateInfo);
-            }
-        } catch (ClosedChannelException e) {
-            throw new StateSystemDisposedException(e);
-        }
+        /*
+         * The stateInfo should now be filled with everything needed, we pass
+         * the control back to the State System.
+         */
+        return;
     }
 
     @Override
@@ -344,5 +321,4 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         sht.debugPrintFullTree(writer, printIntervals);
     }
-
 }
