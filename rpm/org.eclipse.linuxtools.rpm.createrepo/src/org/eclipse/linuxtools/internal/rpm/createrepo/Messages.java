@@ -80,10 +80,6 @@ public final class Messages {
 	public static String Createrepo_errorTryingToFindCommand;
 	/****/
 	public static String Createrepo_errorCommandNotFound;
-	/****/
-	public static String Createrepo_errorWrongVersion;
-	/****/
-	public static String Createrepo_errorCannotGetVersion;
 
 	// RepoFormEditor
 	/****/
