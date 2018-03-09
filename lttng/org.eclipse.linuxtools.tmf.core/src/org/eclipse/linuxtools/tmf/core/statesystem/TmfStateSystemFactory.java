@@ -8,6 +8,9 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
+ * Contributors:
+ *  Alexandre Montplaisir - Initial API and implementation
+ *  Bernd Hufmann - Refactored for new builder class
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statesystem;
@@ -18,12 +21,12 @@ import java.io.IOException;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.HistoryBuilder;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.InMemoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.NullBackend;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.HistoryTreeBackend;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree.ThreadedHistoryTreeBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.partial.PartialHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.partial.PartialStateSystem;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.builder.FullHistoryBuilder;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.builder.FullHistoryOpener;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.builder.InMemoryHistoryBuilder;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.builder.NullHistoryBuilder;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 
@@ -36,11 +39,12 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
  */
 public final class TmfStateSystemFactory extends TmfComponent {
 
+    /** Size of the blocking queue to use when building a state history */
+    private static final int QUEUE_SIZE = 10000;
+
     /** "static" class */
     private TmfStateSystemFactory() {}
 
-    /** Size of the blocking queue to use when building a state history */
-    private static final int QUEUE_SIZE = 10000;
 
     /**
      * Load the history file matching the target trace. If the file already
@@ -67,6 +71,7 @@ public final class TmfStateSystemFactory extends TmfComponent {
      *             See the contents of this exception for more info.
      * @since 2.0
      */
+    @Deprecated
     public static ITmfStateSystem newFullHistory(File htFile,
             ITmfStateProvider stateProvider, boolean buildManually)
             throws TmfTraceException {
@@ -76,7 +81,7 @@ public final class TmfStateSystemFactory extends TmfComponent {
         // TODO for now we assume it's complete. Might be a good idea to check
         // at least if its range matches the trace's range.
         if (htFile.exists()) {
-            /* Load an existing history */
+           /* Load an existing history */
             final int version = (stateProvider == null) ?
                     ITmfStateProvider.IGNORE_PROVIDER_VERSION :
                     stateProvider.getVersion();
@@ -98,6 +103,7 @@ public final class TmfStateSystemFactory extends TmfComponent {
         if (stateProvider == null) {
             return null;
         }
+
         try {
             htBackend = new ThreadedHistoryTreeBackend(htFile,
                     stateProvider.getStartTime(), stateProvider.getVersion(), QUEUE_SIZE);
@@ -105,6 +111,7 @@ public final class TmfStateSystemFactory extends TmfComponent {
             stateProvider.assignTargetStateSystem(ss);
             builder = new HistoryBuilder(stateProvider, ss, htBackend, buildManually);
         } catch (IOException e) {
+
             /*
              * If it fails here however, it means there was a problem writing to
              * the disk, so throw a real exception this time.
@@ -112,6 +119,70 @@ public final class TmfStateSystemFactory extends TmfComponent {
             throw new TmfTraceException(e.toString(), e);
         }
         return builder.getStateSystemQuerier();
+    }
+
+    /**
+     * Load the history file matching the target trace. If the file already
+     * exists, it will be opened directly. If not, it will be created from
+     * scratch. In the case the history has to be built, it's possible to block
+     * the calling thread until construction is complete.
+     *
+     * @param htFile
+     *            The target history file we want to use. If it
+     *            exists it will be opened. If it doesn't, a new file will be
+     *            created with this name/path.
+     * @param stateProvider
+     *            The {@link ITmfStateProvider} to use for building the history
+     *            file. It may be required even if we are opening an
+     *            already-existing history (ie, for partial histories).
+     * @return A IStateSystemBuilder handler to the state system, with which you
+     *         can then run queries on the history.
+     * @throws TmfTraceException
+     *             If there was a problem reading or writing one of the files.
+     *             See the contents of this exception for more info.
+     * @since 3.0
+     */
+    public static ITmfHistoryBuilder newFullHistory(File htFile,
+            ITmfStateProvider stateProvider)
+            throws TmfTraceException {
+
+        ITmfHistoryBuilder builder = null;
+
+        /* If the target file already exists, do not rebuild it uselessly */
+        // TODO for now we assume it's complete. Might be a good idea to check
+        // at least if its range matches the trace's range.
+        if (htFile.exists()) {
+           /* Load an existing history */
+            final int version = (stateProvider == null) ?
+                    ITmfStateProvider.IGNORE_PROVIDER_VERSION :
+                    stateProvider.getVersion();
+            try {
+                builder = new FullHistoryOpener(htFile, version);
+                return builder;
+            } catch (IOException e) {
+                /*
+                 * There was an error opening the existing file. Perhaps it was
+                 * corrupted, perhaps it's an old version? We'll just
+                 * fall-through and try to build a new one from scratch instead.
+                 */
+            }
+        }
+
+        /* Create a new state history from scratch */
+        if (stateProvider == null) {
+            return null;
+        }
+
+        try {
+            builder = new FullHistoryBuilder(stateProvider, htFile);
+        } catch (IOException e) {
+            /*
+             * If it fails here however, it means there was a problem writing to
+             * the disk, so throw a real exception this time.
+             */
+            throw new TmfTraceException(e.toString(), e);
+        }
+        return builder;
     }
 
     /**
@@ -127,13 +198,8 @@ public final class TmfStateSystemFactory extends TmfComponent {
      * @return Reference to the history-less state system that got built
      * @since 2.0
      */
-    public static ITmfStateSystem newNullHistory(ITmfStateProvider stateProvider) {
-        IStateHistoryBackend backend = new NullBackend();
-        StateSystem ss = new StateSystem(backend);
-        stateProvider.assignTargetStateSystem(ss);
-
-        HistoryBuilder builder = new HistoryBuilder(stateProvider, ss, backend, true);
-        return builder.getStateSystemQuerier();
+    public static ITmfHistoryBuilder newNullHistory(ITmfStateProvider stateProvider) {
+        return new NullHistoryBuilder(stateProvider);
     }
 
     /**
@@ -145,21 +211,11 @@ public final class TmfStateSystemFactory extends TmfComponent {
      *
      * @param stateProvider
      *            The sstateProvider to use
-     * @param buildManually
-     *            Set to true to block the caller and build without using TMF
-     *            signals (for test programs most of the time). Use false if you
-     *            are using the TMF facilities (experiments, etc.)
      * @return Reference to the state system that just got built
      * @since 2.0
      */
-    public static ITmfStateSystem newInMemHistory(ITmfStateProvider stateProvider,
-            boolean buildManually) {
-        IStateHistoryBackend backend = new InMemoryBackend(stateProvider.getStartTime());
-        StateSystem ss = new StateSystem(backend);
-        stateProvider.assignTargetStateSystem(ss);
-
-        HistoryBuilder builder = new HistoryBuilder(stateProvider, ss, backend, buildManually);
-        return builder.getStateSystemQuerier();
+    public static ITmfHistoryBuilder newInMemHistory(ITmfStateProvider stateProvider) {
+        return new InMemoryHistoryBuilder(stateProvider);
     }
 
     /**
@@ -172,77 +228,21 @@ public final class TmfStateSystemFactory extends TmfComponent {
      * underneath, (which are much slower), so this might not be a good fit for
      * a use case where you have to do lots of single queries.
      *
-     * @param htFile
+     * @param htPartialFile
      *            The target file of the history. Since they are usually quick
      *            to build, it will overwrite any existing file, without trying
      *            to re-open it.
      * @param realStateProvider
      *            The state provider to use to build this history.
-     * @param buildManually
-     *            Indicates if you want to build the state system in-band
-     *            ('true', for unit tests for example), or to not block the
-     *            caller and start the build once the RangeUpdated signal.
      * @return Reference to the newly constructed state system
      * @throws TmfTraceException
      *             If the history file could not be created
      * @since 2.0
      */
-    public static ITmfStateSystem newPartialHistory(File htFile,
-            ITmfStateProvider realStateProvider, boolean buildManually)
+    public static ITmfHistoryBuilder newPartialHistory(File htPartialFile,
+            ITmfStateProvider realStateProvider)
                     throws TmfTraceException {
-        /*
-         * The order of initializations is very tricky (but very important!)
-         * here. We need to follow this pattern:
-         * (1 is done before the call to this method)
-         *
-         * 1- Instantiate realStateProvider
-         * 2- Instantiate realBackend
-         * 3- Instantiate partialBackend, whith prereqs:
-         *  3a- Instantiate partialProvider, via realProvider.getNew()
-         *  3b- Instantiate nullBackend (partialSS's backend)
-         *  3c- Instantiate partialSS
-         *  3d- partialProvider.assignSS(partialSS)
-         * 4- Instantiate realSS
-         * 5- partialSS.assignUpstream(realSS)
-         * 6- realProvider.assignSS(realSS)
-         * 7- Call HistoryBuilder(realProvider, realSS, partialBackend) to build the thing.
-         */
 
-        final long granularity = 50000;
-
-        /* 2 */
-        IStateHistoryBackend realBackend = null;
-        try {
-            realBackend = new ThreadedHistoryTreeBackend(htFile,
-                    realStateProvider.getStartTime(), realStateProvider.getVersion(), QUEUE_SIZE);
-        } catch (IOException e) {
-            throw new TmfTraceException(e.toString(), e);
-        }
-
-        /* 3a */
-        ITmfStateProvider partialProvider = realStateProvider.getNewInstance();
-
-        /* 3b-3c, constructor automatically uses a NullBackend */
-        PartialStateSystem pss = new PartialStateSystem();
-
-        /* 3d */
-        partialProvider.assignTargetStateSystem(pss);
-
-        /* 3 */
-        IStateHistoryBackend partialBackend =
-                new PartialHistoryBackend(partialProvider, pss, realBackend, granularity);
-
-        /* 4 */
-        StateSystem realSS = new StateSystem(partialBackend);
-
-        /* 5 */
-        pss.assignUpstream(realSS);
-
-        /* 6 */
-        realStateProvider.assignTargetStateSystem(realSS);
-
-        /* 7 */
-        HistoryBuilder builder = new HistoryBuilder(realStateProvider, realSS, partialBackend, buildManually);
-        return builder.getStateSystemQuerier();
+        return new PartialStateSystemBuilder(realStateProvider, htPartialFile);
     }
 }
