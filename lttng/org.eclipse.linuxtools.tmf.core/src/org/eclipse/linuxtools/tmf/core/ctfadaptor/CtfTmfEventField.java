@@ -12,7 +12,6 @@
  *  Bernd Hufmann - Add Enum field handling
  *  Geneviève Bastien - Add Struct and Variant field handling
  *  Jean-Christian Kouame - Correct handling of unsigned integer fields
- *  François Doray - Add generic array field type
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.ctfadaptor;
@@ -22,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.eclipse.linuxtools.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
@@ -105,25 +105,25 @@ public abstract class CtfTmfEventField extends TmfEventField {
 
         } else if (fieldDef instanceof ArrayDefinition) {
             ArrayDefinition arrayDef = (ArrayDefinition) fieldDef;
+            ArrayDeclaration arrayDecl = arrayDef.getDeclaration();
 
             if (arrayDef.isString()) {
                 /* This is an array of UTF-8 bytes, a.k.a. a String! */
                 field = new CTFStringField(fieldName, fieldDef.toString());
 
-            } else {
-                /* Arrays of elements of any other type */
-                Definition[] definitions = arrayDef.getDefinitions();
-                CtfTmfEventField[] elements = new CtfTmfEventField[definitions.length];
-
-                /* Parse the elements of the array. */
-                for (int i = 0; i < definitions.length; i++) {
-                    CtfTmfEventField curField = CtfTmfEventField.parseField(
-                            definitions[i], fieldName + '[' + i + ']');
-                    elements[i] = curField;
+            } else if (arrayDecl.getElementType() instanceof IntegerDeclaration) {
+                /* This is a an array of CTF Integers */
+                List<Long> values = new ArrayList<Long>(arrayDecl.getLength());
+                for (int i = 0; i < arrayDecl.getLength(); i++) {
+                    values.add(((IntegerDefinition) arrayDef.getElem(i)).getValue());
                 }
-
-                field = new CTFArrayField(fieldName, elements);
+                long[] valuesArray = convertListToArray(values);
+                field = new CTFIntegerArrayField(fieldName, valuesArray,
+                        ((IntegerDeclaration) arrayDecl.getElementType()).getBase(),
+                        ((IntegerDeclaration) arrayDecl.getElementType()).isSigned());
             }
+            /* Add other types of arrays here */
+
         } else if (fieldDef instanceof SequenceDefinition) {
             SequenceDefinition seqDef = (SequenceDefinition) fieldDef;
             SequenceDeclaration seqDecl = seqDef.getDeclaration();
@@ -136,14 +136,14 @@ public abstract class CtfTmfEventField extends TmfEventField {
                 field = new CTFStringField(fieldName, seqDef.toString());
             } else if (seqDecl.getElementType() instanceof IntegerDeclaration) {
                 /* Sequence of integers => CTFIntegerArrayField */
-                long[] values = new long[seqDef.getLength()];
+                List<Long> values = new ArrayList<Long>(seqDef.getLength());
                 for (int i = 0; i < seqDef.getLength(); i++) {
-                    values[i] = ((IntegerDefinition) seqDef.getElem(i)).getValue();
+                    values.add(((IntegerDefinition) seqDef.getElem(i)).getValue());
                 }
-                field = new CTFIntegerArrayField(fieldName, values,
+                long[] valuesArray = convertListToArray(values);
+                field = new CTFIntegerArrayField(fieldName, valuesArray,
                         ((IntegerDeclaration) seqDecl.getElementType()).getBase(),
                         ((IntegerDeclaration) seqDecl.getElementType()).isSigned());
-
             }
             /* Add other Sequence types here */
 
@@ -189,6 +189,17 @@ public abstract class CtfTmfEventField extends TmfEventField {
     @Override
     public String toString() {
         return getName() + '=' + getFormattedValue();
+    }
+
+    /**
+     * We cannot use List.toArray(T[]) for primitives types, so do it manually.
+     */
+    private static long[] convertListToArray(List<Long> list) {
+        long[] array = new long[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
     }
 
 }
@@ -291,7 +302,7 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
     }
 
     @Override
-    public synchronized String getFormattedValue() {
+    public String getFormattedValue() {
         if (formattedValue == null) {
             List<String> strings = new ArrayList<String>();
             for (long value : getValue()) {
@@ -302,45 +313,6 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
         return formattedValue;
     }
 
-}
-
-/**
- * CTF field implementation for arrays of arbitrary types.
- *
- * @author fdoray
- */
-final class CTFArrayField extends CtfTmfEventField {
-
-    private String formattedValue = null;
-
-    /**
-     * Constructor for CTFArrayField.
-     *
-     * @param name
-     *            The name of this field
-     * @param elements
-     *            The array elements of this field
-     */
-    CTFArrayField(String name, CtfTmfEventField[] elements) {
-        super(name, elements, elements);
-    }
-
-    @Override
-    public CtfTmfEventField[] getValue() {
-        return (CtfTmfEventField[]) super.getValue();
-    }
-
-    @Override
-    public synchronized String getFormattedValue() {
-        if (formattedValue == null) {
-            List<String> strings = new ArrayList<String>();
-            for (CtfTmfEventField element : getValue()) {
-                strings.add(element.getFormattedValue());
-            }
-            formattedValue = strings.toString();
-        }
-        return formattedValue;
-    }
 }
 
 /**

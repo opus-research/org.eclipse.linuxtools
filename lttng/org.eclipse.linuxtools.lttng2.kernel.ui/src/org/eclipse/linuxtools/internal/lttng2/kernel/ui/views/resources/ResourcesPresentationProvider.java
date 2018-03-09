@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesEntry.Type;
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.ui.analysis.LttngKernelAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -172,7 +172,8 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
 
                     if (status == StateValues.CPU_STATUS_IRQ) {
                         // In IRQ state get the IRQ that caused the interruption
-                        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+                        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
+                        ITmfStateSystem ss = module.getStateSystem();
                         int cpu = entry.getId();
 
                         try {
@@ -200,7 +201,8 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                         }
                     } else if (status == StateValues.CPU_STATUS_SOFTIRQ) {
                         // In SOFT_IRQ state get the SOFT_IRQ that caused the interruption
-                        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+                        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
+                        ITmfStateSystem ss = module.getStateSystem();
                         int cpu = entry.getId();
 
                         try {
@@ -228,7 +230,8 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                         }
                     } else if (status == StateValues.CPU_STATUS_RUN_USERMODE || status == StateValues.CPU_STATUS_RUN_SYSCALL) {
                         // In running state get the current tid
-                        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+                        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
+                        ITmfStateSystem ssq = module.getStateSystem();
 
                         try {
                             retMap.put(Messages.ResourcesView_attributeHoverTime, Utils.formatTime(hoverTime, TimeFormat.CALENDAR, Resolution.NANOSEC));
@@ -296,7 +299,8 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
             return;
         }
 
-        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
+        ITmfStateSystem ss = module.getStateSystem();
         long time = event.getTime();
         try {
             while (time < event.getTime() + event.getDuration()) {

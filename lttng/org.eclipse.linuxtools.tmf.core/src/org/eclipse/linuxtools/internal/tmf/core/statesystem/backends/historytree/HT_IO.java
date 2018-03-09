@@ -40,9 +40,6 @@ class HT_IO {
     private final FileChannel fcIn;
     private final FileChannel fcOut;
 
-    private final int CACHE_SIZE = 256;
-    private final HTNode fNodeCache[] = new HTNode[CACHE_SIZE];
-
     /**
      * Standard constructor
      *
@@ -81,14 +78,31 @@ class HT_IO {
         this.fcOut = fos.getChannel();
     }
 
-    // TODO: Deprecate this
-    synchronized HTNode readNodeFromDisk(int seqNumber) throws ClosedChannelException {
-        return readNode(seqNumber);
+    /**
+     * Generic "read node" method, which checks if the node is in memory first,
+     * and if it's not it goes to disk to retrieve it.
+     *
+     * @param seqNumber
+     *            Sequence number of the node we want
+     * @return The wanted node in object form
+     * @throws ClosedChannelException
+     *             If the channel was closed before we could read
+     */
+    HTNode readNode(int seqNumber) throws ClosedChannelException {
+        HTNode node = readNodeFromMemory(seqNumber);
+        if (node == null) {
+            return readNodeFromDisk(seqNumber);
+        }
+        return node;
     }
 
-    // TODO: Deprecate this
-    synchronized HTNode readNodeFromMemory(int seqNumber) throws ClosedChannelException {
-        return readNode(seqNumber);
+    private HTNode readNodeFromMemory(int seqNumber) {
+        for (HTNode node : tree.getLatestBranch()) {
+            if (node.getSequenceNumber() == seqNumber) {
+                return node;
+            }
+        }
+        return null;
     }
 
     /**
@@ -101,22 +115,12 @@ class HT_IO {
      *             reading. Instead of using a big reader-writer lock, we'll
      *             just catch this exception.
      */
-    synchronized HTNode readNode(int seqNumber) throws ClosedChannelException {
-        /* Do a cache lookup */
-        int offset = seqNumber & (CACHE_SIZE - 1);
-        HTNode node = fNodeCache[offset];
-        if (node != null && node.getSequenceNumber() == seqNumber) {
-          return node;
-        }
-
-        /* Lookup on disk */
+    synchronized HTNode readNodeFromDisk(int seqNumber) throws ClosedChannelException {
+        HTNode readNode;
         try {
             seekFCToNodePos(fcIn, seqNumber);
-            node = HTNode.readNode(tree, fcIn);
-
-            /* Put the node in the cache. */
-            fNodeCache[offset] = node;
-            return node;
+            readNode = HTNode.readNode(tree, fcIn);
+            return readNode;
         } catch (ClosedChannelException e) {
             throw e;
         } catch (IOException e) {
@@ -128,13 +132,8 @@ class HT_IO {
 
     void writeNode(HTNode node) {
         try {
-            /* Insert the node into the cache. */
-            int seqNumber = node.getSequenceNumber();
-            int offset = seqNumber & (CACHE_SIZE - 1);
-            fNodeCache[offset] = node;
-
             /* Position ourselves at the start of the node and write it */
-            seekFCToNodePos(fcOut, seqNumber);
+            seekFCToNodePos(fcOut, node.getSequenceNumber());
             node.writeSelf(fcOut);
         } catch (IOException e) {
             /* If we were able to open the file, we should be fine now... */
@@ -180,7 +179,7 @@ class HT_IO {
     synchronized void deleteFile() {
         closeFile();
 
-        if (!historyTreeFile.delete()) {
+        if(!historyTreeFile.delete()) {
             /* We didn't succeed in deleting the file */
             //TODO log it?
         }

@@ -358,5 +358,6 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
             super.handleCompleted();
         }
 
+
     }
 }

@@ -129,11 +129,13 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
     @Override
     protected void canceling() {
         /*
-         * FIXME: I guess that will do to cancel the state system building, but
-         * it may be preferable to just tell the state system and he will handle
-         * himself how to cancel its work
+         * FIXME: Actually, fStateSystem will [almost?] always be null while it
+         * is being built, so it is preferable to just tell the state system
+         * factory and she will handle how to cancel its work.
          */
-        fStateSystem.dispose();
+        if (fStateSystem != null) {
+            fStateSystem.dispose();
+        }
     }
 
     @Override
