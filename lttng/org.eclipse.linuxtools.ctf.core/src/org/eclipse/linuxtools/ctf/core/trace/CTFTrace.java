@@ -460,12 +460,12 @@ public class CTFTrace implements IDefinitionScope {
     }
 
     /**
-     * Method getStreams get all the streams in a map format.
+     * Get all the streams as an iterable.
      *
-     * @return Map<Long,Stream> a map of all the streams.
+     * @return Iterable<Stream> an iterable over streams.
      */
-    public Map<Long, Stream> getStreams() {
-        return streams;
+    public Iterable<Stream> getStreams() {
+      return streams.values();
     }
 
     /**
