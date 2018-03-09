@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
-import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoCommandCreator;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.osgi.framework.FrameworkUtil;
 
@@ -216,10 +215,8 @@ public class CreaterepoProject {
 	 *
 	 * @return The command arguments.
 	 */
-	private List<String> getCommandArguments() {
+	private static List<String> getCommandArguments() {
 		List<String> commands = new ArrayList<String>();
-		CreaterepoCommandCreator creator = new CreaterepoCommandCreator(projectPreferences);
-		commands.addAll(creator.getCommands());
 		return commands;
 	}
 
