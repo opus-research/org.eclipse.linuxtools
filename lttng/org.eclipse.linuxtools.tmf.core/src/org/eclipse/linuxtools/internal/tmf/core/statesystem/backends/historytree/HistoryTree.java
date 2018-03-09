@@ -65,7 +65,7 @@ class HistoryTree {
     /** Latest timestamp found in the tree (at any given moment) */
     private long treeEnd;
 
-    /** The total number of nodes that exists in this tree */
+    /** How many nodes exist in this tree, total */
     private int nodeCount;
 
     /** "Cache" to keep the active nodes in memory */
@@ -94,7 +94,7 @@ class HistoryTree {
         latestBranch = new ArrayList<CoreNode>();
 
         /* Prepare the IO object */
-        treeIO = new HT_IO(config, true);
+        treeIO = new HT_IO(this, true);
 
         /* Add the first node to the tree */
         CoreNode firstNode = initNewCoreNode(-1, conf.getTreeStart());
@@ -137,7 +137,7 @@ class HistoryTree {
         buffer.flip();
 
         /*
-         * Check the magic number to make sure we're opening the right type of
+         * Check the magic number,to make sure we're opening the right type of
          * file
          */
         res = buffer.getInt();
@@ -158,11 +158,9 @@ class HistoryTree {
         if (res != expProviderVersion &&
                 expProviderVersion != ITmfStateProvider.IGNORE_PROVIDER_VERSION) {
             /*
-             * The existing history was built using an event handler that doesn't
-             * match the current one in the framework.
-             *
-             * Information could be all wrong. Instead of keeping an incorrect
-             * history file, a rebuild is done.
+             * The existing history was built using a event handler that doesn't
+             * match the current one in the framework. Information could be all
+             * wrong, so we'll force a rebuild of the history file instead.
              */
             fc.close();
             fis.close();
@@ -184,7 +182,7 @@ class HistoryTree {
          * file, not extremely elegant. But how to pass the information here to
          * the SHT otherwise?
          */
-        this.treeIO = new HT_IO(config, false);
+        this.treeIO = new HT_IO(this, false);
 
         rebuildLatestBranch(rootNodeSeqNb);
         this.treeEnd = latestBranch.get(0).getNodeEnd();
@@ -208,6 +206,7 @@ class HistoryTree {
      * file.
      *
      * @param requestedEndTime
+     *            The greatest timestamp present in the history tree
      */
     void closeTree(long requestedEndTime) {
         FileChannel fc;
@@ -290,49 +289,12 @@ class HistoryTree {
         return nodeCount;
     }
 
+    HT_IO getTreeIO() {
+        return treeIO;
+    }
+
     List<CoreNode> getLatestBranch() {
         return Collections.unmodifiableList(latestBranch);
-    }
-
-    // ------------------------------------------------------------------------
-    // HT_IO interface
-    // ------------------------------------------------------------------------
-
-    File supplyATWriterFile() {
-        return config.getStateFile();
-    }
-
-    FileInputStream supplyATReader() {
-        return treeIO.supplyATReader(getNodeCount());
-    }
-
-    long supplyATWriterFilePos() {
-        return HistoryTree.TREE_HEADER_SIZE
-                + ((long) getNodeCount() * config.getBlockSize());
-    }
-
-    HTNode readNode(int seqNumber) throws ClosedChannelException {
-        /* Try to read the node from memory */
-        for (HTNode node : getLatestBranch()) {
-            if (node.getSequenceNumber() == seqNumber) {
-                return node;
-            }
-        }
-
-        /* Read the node from disk */
-        return treeIO.readNode(seqNumber);
-    }
-
-    void writeNode(HTNode node) {
-        treeIO.writeNode(node);
-    }
-
-    void closeFile() {
-        treeIO.closeFile();
-    }
-
-    void deleteFile() {
-        treeIO.deleteFile();
     }
 
     // ------------------------------------------------------------------------
@@ -354,10 +316,10 @@ class HistoryTree {
 
         this.latestBranch = new ArrayList<CoreNode>();
 
-        nextChildNode = treeIO.readNode(rootNodeSeqNb);
+        nextChildNode = treeIO.readNodeFromDisk(rootNodeSeqNb);
         latestBranch.add((CoreNode) nextChildNode);
         while (latestBranch.get(latestBranch.size() - 1).getNbChildren() > 0) {
-            nextChildNode = treeIO.readNode(latestBranch.get(latestBranch.size() - 1).getLatestChild());
+            nextChildNode = treeIO.readNodeFromDisk(latestBranch.get(latestBranch.size() - 1).getLatestChild());
             latestBranch.add((CoreNode) nextChildNode);
         }
     }
@@ -366,6 +328,7 @@ class HistoryTree {
      * Insert an interval in the tree
      *
      * @param interval
+     *            The interval to be inserted
      */
     void insertInterval(HTInterval interval) throws TimeRangeException {
         if (interval.getStartTime() < config.getTreeStart()) {
@@ -415,7 +378,6 @@ class HistoryTree {
         if (interval.getEndTime() > this.treeEnd) {
             this.treeEnd = interval.getEndTime();
         }
-        return;
     }
 
     /**
@@ -457,7 +419,6 @@ class HistoryTree {
 
             latestBranch.set(i, newNode);
         }
-        return;
     }
 
     /**
@@ -524,7 +485,9 @@ class HistoryTree {
      * branch.
      *
      * @param currentNode
+     *            The node on which the request is made
      * @param t
+     *            The timestamp to choose which child is the next one
      * @return The child node intersecting t
      * @throws ClosedChannelException
      *             If the file channel was closed while we were reading the tree
@@ -540,6 +503,7 @@ class HistoryTree {
                 break;
             }
         }
+
         /*
          * Once we exit this loop, we should have found a children to follow. If
          * we didn't, there's a problem.
@@ -552,7 +516,7 @@ class HistoryTree {
          * node has to be on disk
          */
         if (currentNode.isDone()) {
-            return treeIO.readNode(potentialNextSeqNb);
+            return treeIO.readNodeFromDisk(potentialNextSeqNb);
         }
         return treeIO.readNode(potentialNextSeqNb);
     }
@@ -660,41 +624,35 @@ class HistoryTree {
                 + latestBranch.get(latestBranch.size() - 1).getSequenceNumber();
     }
 
-    private int curDepth;
-
     /**
      * Start at currentNode and print the contents of all its children, in
      * pre-order. Give the root node in parameter to visit the whole tree, and
      * have a nice overview.
      */
+    /* Only used for debugging, shouldn't be externalized */
     @SuppressWarnings("nls")
     private void preOrderPrint(PrintWriter writer, boolean printIntervals,
-            CoreNode currentNode) {
-        /* Only used for debugging, shouldn't be externalized */
-        int i, j;
-        HTNode nextNode;
+            CoreNode currentNode, int curDepth) {
 
         writer.println(currentNode.toString());
         if (printIntervals) {
             currentNode.debugPrintIntervals(writer);
         }
-        curDepth++;
 
         try {
-            for (i = 0; i < currentNode.getNbChildren(); i++) {
-                nextNode = treeIO.readNode(currentNode.getChild(i));
+            for (int i = 0; i < currentNode.getNbChildren(); i++) {
+                HTNode nextNode = treeIO.readNode(currentNode.getChild(i));
                 assert (nextNode instanceof CoreNode); // TODO temporary
-                for (j = 0; j < curDepth - 1; j++) {
+                for (int j = 0; j < curDepth; j++) {
                     writer.print("  ");
                 }
                 writer.print("+-");
-                preOrderPrint(writer, printIntervals, (CoreNode) nextNode);
+                preOrderPrint(writer, printIntervals, (CoreNode) nextNode,
+                              curDepth + 1);
             }
         } catch (ClosedChannelException e) {
             e.printStackTrace();
         }
-        curDepth--;
-        return;
     }
 
     /**
@@ -703,17 +661,16 @@ class HistoryTree {
      * @param writer
      *            PrintWriter in which to write the output
      * @param printIntervals
-     *            Says if you want to output the full interval information
+     *            Flag to enable full output of the interval information
      */
     void debugPrintFullTree(PrintWriter writer, boolean printIntervals) {
         /* Only used for debugging, shouldn't be externalized */
-        curDepth = 0;
-        this.preOrderPrint(writer, false, latestBranch.get(0));
+
+        this.preOrderPrint(writer, false, latestBranch.get(0), 0);
 
         if (printIntervals) {
             writer.println("\nDetails of intervals:"); //$NON-NLS-1$
-            curDepth = 0;
-            this.preOrderPrint(writer, true, latestBranch.get(0));
+            this.preOrderPrint(writer, true, latestBranch.get(0), 0);
         }
         writer.println('\n');
     }
