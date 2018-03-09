@@ -8,14 +8,13 @@
  *
  * Contributors:
  *   Geneviève Bastien - Initial API and implementation
+ *   Alexandre Montplaisir - Reduced to one single state system per module
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.statesystem;
 
-import java.util.Map;
-
 /**
- * Interface for analysis modules providing state systems
+ * Interface for analysis modules providing a state system
  *
  * @author Geneviève Bastien
  * @since 3.0
@@ -23,11 +22,17 @@ import java.util.Map;
 public interface ITmfStateSystemAnalysisModule {
 
     /**
-     * Return a map of all state systems this analysis is owner of. The key is
-     * the ID of the state system and the value is the state system itself.
+     * Return the state system provided by this analysis module
      *
-     * @return A map of state sytems
+     * @return The state system
      */
-    Map<String, ITmfStateSystem> getStateSystems();
+    ITmfStateSystem getStateSystem();
+
+    /**
+     * Return the ID given to this state system
+     *
+     * @return The state system ID
+     */
+    String getStateSystemId();
 
 }
