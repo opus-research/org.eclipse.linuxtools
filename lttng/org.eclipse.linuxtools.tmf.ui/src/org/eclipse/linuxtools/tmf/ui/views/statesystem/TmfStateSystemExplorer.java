@@ -173,9 +173,9 @@ public class TmfStateSystemExplorer extends TmfView {
              * sub-tree in the UI thread.
              */
             Map<String, ITmfStateSystemAnalysisModule> modules = currentTrace.getAnalysisModules(ITmfStateSystemAnalysisModule.class);
-            final Map<String, ITmfStateSystem> sss = new HashMap<String, ITmfStateSystem>();
+            final Map<String, ITmfStateSystem> sss = new HashMap<>();
             final Map<String, List<ITmfStateInterval>> fullStates =
-                    new LinkedHashMap<String, List<ITmfStateInterval>>();
+                    new LinkedHashMap<>();
             for (Entry<String, ITmfStateSystemAnalysisModule> entry : modules.entrySet()) {
                 /*
                  * FIXME: For now, this view is a way to execute and display
@@ -189,23 +189,21 @@ public class TmfStateSystemExplorer extends TmfView {
                     mod.schedule();
                     mod.waitForCompletion(new NullProgressMonitor());
                 }
-                for (Entry<String, ITmfStateSystem> ssEntry : module.getStateSystems().entrySet()) {
-                    String ssName = ssEntry.getKey();
-                    ITmfStateSystem ss = ssEntry.getValue();
-                    sss.put(ssName, ss);
-                    if (ss != null) {
-                        if (ts == -1 || ts < ss.getStartTime() || ts > ss.getCurrentEndTime()) {
-                            ts = ss.getStartTime();
-                        }
-                        try {
-                            fullStates.put(ssName, ss.queryFullState(ts));
-                        } catch (TimeRangeException e) {
-                            /* We already checked the limits ourselves */
-                            throw new IllegalStateException();
-                        } catch (StateSystemDisposedException e) {
-                            /* Probably shutting down, cancel and return */
-                            return;
-                        }
+                String ssName = module.getStateSystemId();
+                ITmfStateSystem ss = module.getStateSystem();
+                sss.put(ssName, ss);
+                if (ss != null) {
+                    if (ts == -1 || ts < ss.getStartTime() || ts > ss.getCurrentEndTime()) {
+                        ts = ss.getStartTime();
+                    }
+                    try {
+                        fullStates.put(ssName, ss.queryFullState(ts));
+                    } catch (TimeRangeException e) {
+                        /* We already checked the limits ourselves */
+                        throw new IllegalStateException();
+                    } catch (StateSystemDisposedException e) {
+                        /* Probably shutting down, cancel and return */
+                        return;
                     }
                 }
             }
@@ -295,56 +293,53 @@ public class TmfStateSystemExplorer extends TmfView {
             /* For each state system associated with this trace... */
             int ssNb = 0;
             for (Entry<String, ITmfStateSystemAnalysisModule> module : modules.entrySet()) {
-
                 /*
                  * Even though we only use the value, it just feels safer to
                  * iterate the same way as before to keep the order the same.
                  */
-                for (Entry<String, ITmfStateSystem> ssEntry : module.getValue().getStateSystems().entrySet()) {
-                    final ITmfStateSystem ss = ssEntry.getValue();
-                    final int traceNb1 = traceNb;
-                    final int ssNb1 = ssNb;
-                    if (ss != null) {
-                        ts = (ts == -1 ? ss.getStartTime() : ts);
-                        try {
-                            final List<ITmfStateInterval> fullState = ss.queryFullState(ts);
-                            fTree.getDisplay().asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    /*
-                                     * Get the tree item of the relevant state
-                                     * system
-                                     */
-                                    TreeItem traceItem = fTree.getItem(traceNb1);
-                                    TreeItem item = traceItem.getItem(ssNb1);
-                                    /* Update it, then its children, recursively */
-                                    item.setText(VALUE_COL, emptyString);
-                                    updateChildren(ss, fullState, -1, item);
-                                }
-                            });
+                final ITmfStateSystem ss = module.getValue().getStateSystem();
+                final int traceNb1 = traceNb;
+                final int ssNb1 = ssNb;
+                if (ss != null) {
+                    ts = (ts == -1 ? ss.getStartTime() : ts);
+                    try {
+                        final List<ITmfStateInterval> fullState = ss.queryFullState(ts);
+                        fTree.getDisplay().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                /*
+                                 * Get the tree item of the relevant state
+                                 * system
+                                 */
+                                TreeItem traceItem = fTree.getItem(traceNb1);
+                                TreeItem item = traceItem.getItem(ssNb1);
+                                /* Update it, then its children, recursively */
+                                item.setText(VALUE_COL, emptyString);
+                                updateChildren(ss, fullState, -1, item);
+                            }
+                        });
 
-                        } catch (TimeRangeException e) {
-                            /*
-                             * This can happen in an experiment, if the user
-                             * selects a range valid in the experiment, but this
-                             * specific does not exist. Print "out-of-range"
-                             * into all the values.
-                             */
-                            fTree.getDisplay().asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    TreeItem traceItem = fTree.getItem(traceNb1);
-                                    TreeItem item = traceItem.getItem(ssNb1);
-                                    markOutOfRange(item);
-                                }
-                            });
-                        } catch (StateSystemDisposedException e) {
-                            return;
-                        }
+                    } catch (TimeRangeException e) {
+                        /*
+                         * This can happen in an experiment, if the user selects
+                         * a range valid in the experiment, but this specific
+                         * does not exist. Print "out-of-range" into all the
+                         * values.
+                         */
+                        fTree.getDisplay().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                TreeItem traceItem = fTree.getItem(traceNb1);
+                                TreeItem item = traceItem.getItem(ssNb1);
+                                markOutOfRange(item);
+                            }
+                        });
+                    } catch (StateSystemDisposedException e) {
+                        return;
                     }
-
-                    ssNb++;
                 }
+
+                ssNb++;
             }
         }
     }
