@@ -20,73 +20,19 @@ package org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider;
 @SuppressWarnings({ "javadoc", "nls" })
 public interface TmfXmlStrings {
 
-    /* XML generic Element attribute names */
+    /* XML Node Name */
+    static final String STATE_PROVIDER = "stateProvider";
     static final String VALUE = "value";
+    static final String LABEL = "label";
+
+    /* XML Node Attribute */
     static final String ANALYSIS_ID = "analysisId";
     static final String NAME = "name";
     static final String VERSION = "version";
-    static final String TYPE = "type";
 
-    /* XML header element */
+    /* XML head element */
     static final String HEAD = "head";
-    static final String TRACETYPE = "traceType";
+    static final String TRACETYPE = "tracetype";
     static final String ID = "id";
-    static final String LABEL = "label";
-
-    /* XML String */
-    static final String NULL = "";
-    static final String WILDCARD = "*";
-    static final String VARIABLE_PREFIX = "$";
-
-    /* XML Element Name */
-    static final String STATE_PROVIDER = "stateProvider";
-    static final String DEFINED_VALUE = "definedValue";
-    static final String LOCATION = "location";
-    static final String LOCATION_NAME = "location";
-    static final String EVENT_HANDLER = "eventHandler";
-    static final String STATE_ATTRIBUTE = "stateAttribute";
-    static final String STATE_VALUE = "stateValue";
-    static final String EVENT_FIELD = "eventField";
-    static final String STATE_CHANGE = "stateChange";
-
-    /* XML Condition strings */
-    static final String IF = "if";
-    static final String CONDITION = "condition";
-    static final String THEN = "then";
-    static final String ELSE = "else";
-    static final String ELEMENT_FIELD = "field";
-
-    /* XML event handler strings */
-    static final String HANDLER_EVENT_NAME = "eventName";
-
-    /* XML Filter */
-    static final String FILTER = "filter";
-    static final String TRANSITION = "transition";
-    static final String DATA = "data";
-    static final String START = "start";
-    static final String END = "end";
-
-    /* XML constant for Type of Attribute and Value */
-    static final String CONSTANT = "constant";
-    static final String TYPE_QUERY = "query";
-    static final String TYPE_STRING = "string";
-    static final String TYPE_INT = "int";
-    static final String TYPE_LONG = "long";
-    static final String TYPE_NULL = "null";
-    static final String TYPE_EVENT_NAME = "eventName";
-    static final String TYPE_DELETE = "delete";
-    static final String INCREMENT = "increment";
-    static final String FORCED_TYPE = "forcedType";
-    static final String CPU = "cpu";
-
-    static final String STACK = "stack";
-    static final String POP = "pop";
-    static final String PUSH = "push";
-    static final String PEEK = "peek";
-
-    /* Operator type */
-    static final String NOT = "not";
-    static final String AND = "and";
-    static final String OR = "or";
 
 }
