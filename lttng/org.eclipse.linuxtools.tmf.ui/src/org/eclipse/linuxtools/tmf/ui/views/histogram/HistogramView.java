@@ -556,6 +556,12 @@ public class HistogramView extends TmfView {
 
         TmfTimeRange fullRange = signal.getRange();
 
+        fTraceStartTime = fullRange.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        fTraceEndTime = fullRange.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+
+        fFullTraceHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
+        fTimeRangeHistogram.setFullRange(fTraceStartTime, fTraceEndTime);
+
         sendFullRangeRequest(fullRange);
     }
 
