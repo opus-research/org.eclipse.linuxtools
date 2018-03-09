@@ -20,7 +20,7 @@ import java.util.Map;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.StateValues;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
-import org.eclipse.linuxtools.lttng2.kernel.ui.analysis.LttngKernelAnalysisModule;
+import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -126,8 +126,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             return retMap;
         }
         ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-        ITmfStateSystem ssq = module.getStateSystem();
+        ITmfStateSystem ssq = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
         int tid = entry.getThreadId();
 
         try {
@@ -187,8 +186,7 @@ public class ControlFlowPresentationProvider extends TimeGraphPresentationProvid
             return;
         }
         ControlFlowEntry entry = (ControlFlowEntry) event.getEntry();
-        LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-        ITmfStateSystem ss = module.getStateSystem();
+        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
         int status = ((TimeEvent) event).getValue();
 
         if (status != StateValues.PROCESS_STATUS_RUN_SYSCALL) {
