@@ -127,11 +127,9 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             if (builder != null) {
                 synchronized (TmfStateSystemAnalysisModule.this) {
                     fBuilder = builder;
-                    builder.setNotifyRequestPendingNeeded(true);
                 }
                 builder.build();
                 fStateSystem = builder.getStateSystem();
-                setNotifyPendingReqNeeded(builder.isNotifyPendingRequestNeeded());
             }
         } catch (TmfTraceException e) {
             return false;
