@@ -119,10 +119,6 @@ public class CreaterepoProject {
 			createContentFolder();
 		}
 		IFile file = getContentFolder().getFile(new Path(externalFile.getName()));
-		// do not import non-RPMs
-		if (!file.getFileExtension().equals(ICreaterepoConstants.RPM_FILE_EXTENSION)) {
-			return;
-		}
 		if (!file.exists()) {
 			try {
 				file.create(new FileInputStream(externalFile), false, monitor);
