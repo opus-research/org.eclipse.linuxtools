@@ -58,10 +58,10 @@ public class CovManager implements Serializable {
     // input
     private final String binaryPath;
     // results
-    private final ArrayList<Folder> allFolders = new ArrayList<Folder>();
-    private final ArrayList<SourceFile> allSrcs = new ArrayList<SourceFile>();
-    private final ArrayList<GcnoFunction> allFnctns = new ArrayList<GcnoFunction>();
-    private final HashMap<String, SourceFile> sourceMap = new HashMap<String, SourceFile>();
+    private final ArrayList<Folder> allFolders = new ArrayList<>();
+    private final ArrayList<SourceFile> allSrcs = new ArrayList<>();
+    private final ArrayList<GcnoFunction> allFnctns = new ArrayList<>();
+    private final HashMap<String, SourceFile> sourceMap = new HashMap<>();
     private long nbrPgmRuns = 0;
     // for view
     private CovRootTreeElement rootNode;
@@ -98,7 +98,7 @@ public class CovManager implements Serializable {
         GcdaRecordsParser daRcrd = null;
         DataInput traceFile;
 
-        Map<File, File> sourcePath = new HashMap<File, File>();
+        Map<File, File> sourcePath = new HashMap<>();
 
         if (initialGcda != null) {
             File initialGcdaFile = new File(initialGcda).getAbsoluteFile();
@@ -258,9 +258,11 @@ public class CovManager implements Serializable {
             String postfix = ""; //$NON-NLS-1$
             File dir = null;
             do {
-                if ("".equals(postfix))postfix = f.getName(); //$NON-NLS-1$
-                else
-                    postfix = f.getName() + File.separator + postfix;
+                if (postfix.isEmpty()) {
+                	postfix = f.getName();
+                } else {
+                	postfix = f.getName() + File.separator + postfix;
+                }
                 f = f.getParentFile();
                 if (f != null) {
                     dir = sourcePath.get(f);
@@ -281,9 +283,9 @@ public class CovManager implements Serializable {
             fg.setFileName(filename);
             fg.setText(NLS.bind(Messages.CovManager_No_FilePath_Error, new Object[] { filePath, filename }));
             String s = fg.open();
-            if (s == null)
-                return null;
-            else {
+            if (s == null) {
+            	return null;
+            } else {
                 f = new File(s).getAbsoluteFile();
                 addSourceLookup(sourcePath, f, new File(filePath).getAbsoluteFile());
                 if (f.isFile() && f.canRead()) {
@@ -328,7 +330,7 @@ public class CovManager implements Serializable {
     public List<String> getGCDALocations() throws InterruptedException {
         IBinaryObject binaryObject = STSymbolManager.sharedInstance.getBinaryObject(new Path(binaryPath));
         String binaryPath = binaryObject.getPath().toOSString();
-        List<String> l = new LinkedList<String>();
+        List<String> l = new LinkedList<>();
         Process p;
         p = getStringsProcess(Messages.CovManager_Strings, binaryPath);
         if (p == null) {

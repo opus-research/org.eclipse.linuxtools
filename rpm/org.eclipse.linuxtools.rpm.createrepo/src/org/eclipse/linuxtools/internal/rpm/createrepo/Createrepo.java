@@ -75,11 +75,9 @@ public class Createrepo {
 		/* Display what the execution looks like */
 		String commandString = ICreaterepoConstants.EMPTY_STRING;
 		for (String arg : commandSwitches) {
-			System.out.println("\t"+arg);
 			commandString = commandString.concat(arg + " "); //$NON-NLS-1$
 		}
 		commandString = commandString.concat("\n"); //$NON-NLS-1$
-		System.out.println(commandString);
 		try {
 			os.write(commandString.getBytes());
 			return Utils.runCommand(os, project.getProject(), commandSwitches.toArray(new String[commandSwitches.size()]));
