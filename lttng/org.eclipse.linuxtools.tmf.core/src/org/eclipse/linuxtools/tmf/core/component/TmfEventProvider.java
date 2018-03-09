@@ -197,7 +197,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     @Override
     public void sendRequest(final ITmfEventRequest request) {
         synchronized (fLock) {
-            if ((fSignalDepth > 0) || (fRequestPendingCounter > 0)) {
+            if (fSignalDepth > 0) {
                 coalesceEventRequest(request);
             } else {
                 dispatchRequest(request);
@@ -233,7 +233,9 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     public void notifyPendingRequest(boolean isIncrement) {
         synchronized (fLock) {
             if (isIncrement) {
-                fRequestPendingCounter++;
+                if (fSignalDepth > 0) {
+                    fRequestPendingCounter++;
+                }
             } else {
                 if (fRequestPendingCounter > 0) {
                     fRequestPendingCounter--;

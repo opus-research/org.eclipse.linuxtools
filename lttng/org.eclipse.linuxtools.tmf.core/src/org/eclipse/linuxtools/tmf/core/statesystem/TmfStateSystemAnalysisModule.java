@@ -118,14 +118,6 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
     // ------------------------------------------------------------------------
 
     @Override
-    protected void prepareAnalysis() {
-        ITmfTrace trace = getTrace();
-        if (trace != null) {
-            trace.notifyPendingRequest(true);
-        }
-    }
-
-    @Override
     protected boolean executeAnalysis(@Nullable final  IProgressMonitor monitor) {
         IProgressMonitor mon = (monitor == null ? new NullProgressMonitor() : monitor);
         final ITmfStateProvider provider = createStateProvider();
@@ -191,9 +183,6 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             try {
                 fHtBackend = new HistoryTreeBackend(htFile, version);
                 fStateSystem = new StateSystem(fHtBackend, false);
-                // no request is sent. Notify trace here.
-                ITmfTrace trace = getTrace();
-                trace.notifyPendingRequest(false);
                 return;
             } catch (IOException e) {
                 /*
@@ -340,10 +329,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         }
 
         request = new StateSystemEventRequest(provider);
-
-        ITmfTrace trace = getTrace();
-        trace.sendRequest(request);
-        trace.notifyPendingRequest(false);
+        provider.getTrace().sendRequest(request);
 
         /*
          * Only now that we've actually started the build, we'll update the
