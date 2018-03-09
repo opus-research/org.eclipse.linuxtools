@@ -146,7 +146,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
         HistogramQueryRequest req = new HistogramQueryRequest(borders, end);
         sendAndWait(req);
 
-        List<Long> results = new LinkedList<>(req.getResults());
+        List<Long> results = new LinkedList<Long>(req.getResults());
         return results;
 
     }
@@ -253,7 +253,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
         public StatsPerTypeRequest(ITmfTrace trace, TmfTimeRange range) {
             super(trace.getEventType(), range, 0, ITmfEventRequest.ALL_DATA,
                     ITmfEventRequest.ExecutionType.BACKGROUND);
-            this.stats = new HashMap<>();
+            this.stats = new HashMap<String, Long>();
         }
 
         public Map<String, Long> getResults() {
@@ -320,7 +320,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
                     ITmfEventRequest.ExecutionType.BACKGROUND);
 
             /* Prepare the results map, with all counts at 0 */
-            results = new TreeMap<>();
+            results = new TreeMap<Long, Long>();
             for (long border : borders) {
                 results.put(border, 0L);
             }

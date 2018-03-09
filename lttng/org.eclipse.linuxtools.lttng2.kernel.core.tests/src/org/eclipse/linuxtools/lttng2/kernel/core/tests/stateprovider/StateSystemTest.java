@@ -24,6 +24,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
@@ -50,6 +51,7 @@ public abstract class StateSystemTest {
     /** Number of nanoseconds in one second */
     private static final long NANOSECS_PER_SEC = 1000000000L;
 
+    protected static ITmfStateProvider input;
     protected static ITmfStateSystem ssq;
 
     /* Offset in the trace + start time of the trace */

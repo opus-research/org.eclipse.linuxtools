@@ -49,11 +49,11 @@ public class KeyBindingsManager {
     /**
      * The list of view names.
      */
-    private Set<String> fViews = new HashSet<>();
+    private Set<String> fViews = new HashSet<String>();
     /**
      * The list of activations Activations to store
      */
-    private List<IHandlerActivation> fHandlerActivations = new ArrayList<>();
+    private List<IHandlerActivation> fHandlerActivations = new ArrayList<IHandlerActivation>();
     /**
      * The action reference for moving to a message in view.
      */

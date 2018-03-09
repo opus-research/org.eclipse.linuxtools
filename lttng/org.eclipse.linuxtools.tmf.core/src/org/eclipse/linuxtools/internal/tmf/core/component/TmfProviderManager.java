@@ -40,7 +40,7 @@ public class TmfProviderManager {
     // ------------------------------------------------------------------------
 
     private static Map<Class<? extends ITmfEvent>, List<TmfEventProvider>> fProviders =
-            new HashMap<>();
+            new HashMap<Class<? extends ITmfEvent>, List<TmfEventProvider>>();
 
     /**
      * Registers [provider] as a provider of [eventType]
@@ -85,7 +85,7 @@ public class TmfProviderManager {
     public static TmfEventProvider[] getProviders(Class<? extends ITmfEvent> eventType) {
         List<TmfEventProvider> list = fProviders.get(eventType);
         if (list == null) {
-            list = new ArrayList<>();
+            list = new ArrayList<TmfEventProvider>();
         }
         TmfEventProvider[] result = new TmfEventProvider[list.size()];
         return list.toArray(result);
@@ -107,7 +107,7 @@ public class TmfProviderManager {
             return getProviders(eventType);
         }
         TmfEventProvider[] list = getProviders(eventType);
-        List<TmfEventProvider> result = new ArrayList<>();
+        List<TmfEventProvider> result = new ArrayList<TmfEventProvider>();
         if (list != null) {
             for (TmfEventProvider provider : list) {
                 if (provider.getClass() == providerType) {

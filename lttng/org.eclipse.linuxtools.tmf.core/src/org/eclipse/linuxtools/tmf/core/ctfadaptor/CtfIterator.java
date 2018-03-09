@@ -246,9 +246,6 @@ public class CtfIterator extends CTFTraceReader
         return (getRank() >= 0);
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void setLocation(ITmfLocation location) {
         // FIXME alex: isn't there a cleaner way than a cast here?

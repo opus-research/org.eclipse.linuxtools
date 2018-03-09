@@ -169,6 +169,17 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 		handleUpdateEvent();
 	}
 
+	@Deprecated
+	protected double getDoubleValue(Object o) {
+		if (o instanceof Integer) {
+			return ((Integer)o).intValue();
+		}
+		if (o instanceof Double) {
+			return ((Double)o).doubleValue();
+		}
+		return new Double(o.toString()).doubleValue();
+	}
+
 	/**
 	 * @since 3.0
 	 */
@@ -197,12 +208,10 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	}
 
 	protected void repaint() {
-		getDisplay().asyncExec(new Runnable() {
+		getDisplay().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				if (!chart.isDisposed()) {
-					updateDataSet();
-				}
+				updateDataSet();
             }
 		});
 	}
