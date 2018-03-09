@@ -24,6 +24,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -134,9 +135,6 @@ public class CTFTrace implements IDefinitionScope {
     /** Handlers for the metadata files */
     private static final FileFilter METADATA_FILE_FILTER = new MetadataFileFilter();
     private static final Comparator<File> METADATA_COMPARATOR = new MetadataComparator();
-
-    /** map of all the event types */
-    private final Map<Long, HashMap<Long, IEventDeclaration>> eventDecs = new HashMap<Long, HashMap<Long, IEventDeclaration>>();
 
     /** Callsite helpers */
     private CTFCallsiteComparator ctfCallsiteComparator = new CTFCallsiteComparator();
@@ -257,7 +255,7 @@ public class CTFTrace implements IDefinitionScope {
      * @since 2.0
      */
     public Map<Long, IEventDeclaration> getEvents(Long streamId) {
-        return eventDecs.get(streamId);
+        return streams.get(streamId).getEvents();
     }
 
     /**
@@ -630,30 +628,19 @@ public class CTFTrace implements IDefinitionScope {
             throw new ParseException("Stream id already exists"); //$NON-NLS-1$
         }
 
-        /* It should be ok now. */
+        /* This stream is valid and has a unique id. */
         streams.put(stream.getId(), stream);
-        eventDecs.put(stream.getId(), new HashMap<Long, IEventDeclaration>());
     }
 
     /**
-     * gets the Environment variables from the trace metadata (See CTF spec)
+     * Gets the Environment variables from the trace metadata (See CTF spec)
      *
-     * @return the environment variables in a map form (key value)
+     * @return The environment variables in the form of an unmodifiable map
+     *         (key, value)
      * @since 2.0
      */
     public Map<String, String> getEnvironment() {
-        return environment;
-    }
-
-    /**
-     * Look up a specific environment variable
-     *
-     * @param key
-     *            the key to look for
-     * @return the value of the variable, can be null.
-     */
-    public String lookupEnvironment(String key) {
-        return environment.get(key);
+        return Collections.unmodifiableMap(environment);
     }
 
     /**
@@ -789,34 +776,6 @@ public class CTFTrace implements IDefinitionScope {
             retVal = nanos;
         }
         return retVal - getOffset();
-    }
-
-    /**
-     * Does a given stream contain any events?
-     *
-     * @param id
-     *            the stream ID
-     * @return true if the stream has events.
-     */
-    public boolean hasEvents(Long id) {
-        return eventDecs.containsKey(id);
-    }
-
-    /**
-     * Add an event declaration map to the events map.
-     *
-     * @param id
-     *            the id of a stream
-     * @return the hashmap containing events.
-     * @since 2.0
-     */
-    public Map<Long, IEventDeclaration> createEvents(Long id) {
-        HashMap<Long, IEventDeclaration> value = eventDecs.get(id);
-        if (value == null) {
-            value = new HashMap<Long, IEventDeclaration>();
-            eventDecs.put(id, value);
-        }
-        return value;
     }
 
     /**
