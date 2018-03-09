@@ -62,9 +62,11 @@ public class CreaterepoProjectTest {
 
 	/**
 	 * Initialize workspace root and progress monitor.
+	 *
+	 * @throws Exception
 	 */
 	@BeforeClass
-	public static void setUpBeforeClass() {
+	public static void setUpBeforeClass() throws Exception {
 		root = ResourcesPlugin.getWorkspace().getRoot();
 		monitor = new NullProgressMonitor();
 	}
@@ -72,10 +74,10 @@ public class CreaterepoProjectTest {
 	/**
 	 * Create the project using CreaterepoProjectCreator.
 	 *
-	 * @throws CoreException
+	 * @throws Exception
 	 */
 	@Before
-	public void setUp() throws CoreException {
+	public void setUp() throws Exception {
 		if (project == null || !project.exists()) {
 			project = CreaterepoProjectCreator.create(PROJECT_NAME, root.getLocation(), REPO_NAME, monitor);
 		}
@@ -84,10 +86,10 @@ public class CreaterepoProjectTest {
 	/**
 	 * Forcefully delete the project if it exists.
 	 *
-	 * @throws CoreException
+	 * @throws Exception
 	 */
 	@After
-	public void tearDown() throws CoreException{
+	public void tearDown() throws Exception {
 		if (project != null && project.exists()) {
 			project.delete(true, monitor);
 		}
