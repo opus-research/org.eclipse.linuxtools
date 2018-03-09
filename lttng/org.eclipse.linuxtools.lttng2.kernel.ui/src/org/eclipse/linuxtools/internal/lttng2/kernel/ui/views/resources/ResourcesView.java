@@ -100,6 +100,9 @@ public class ResourcesView extends AbstractTimeGraphView {
             if (aTrace instanceof LttngKernelTrace) {
                 LttngKernelTrace lttngKernelTrace = (LttngKernelTrace) aTrace;
                 LttngKernelAnalysisModule module = lttngKernelTrace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
+                if (module == null) {
+                    return;
+                }
                 module.schedule();
                 if (!module.waitForCompletion(new NullProgressMonitor())) {
                     return;
