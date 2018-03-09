@@ -35,7 +35,7 @@ public class XmlHeadInfo {
      * Constructor
      *
      * @param item
-     *            The Xml node corresponding to this header
+     *            The XML node corresponding to this header
      */
     public XmlHeadInfo(Node item) {
         fHeadInfo = item;
@@ -49,7 +49,7 @@ public class XmlHeadInfo {
      * @return List of child elements
      */
     public List<Element> getElements(String nodeName) {
-        List<Element> list = new ArrayList<Element>();
+        List<Element> list = new ArrayList<>();
         NodeList nodes = fHeadInfo.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);

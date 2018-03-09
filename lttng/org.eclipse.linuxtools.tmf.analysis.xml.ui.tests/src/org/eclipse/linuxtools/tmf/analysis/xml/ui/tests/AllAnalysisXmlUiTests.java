@@ -20,7 +20,8 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        XmlAnalysisUiPluginTest.class
+        XmlAnalysisUiPluginTest.class,
+        org.eclipse.linuxtools.tmf.analysis.xml.ui.tests.module.AllTests.class
 })
 public class AllAnalysisXmlUiTests {
 

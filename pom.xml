@@ -52,13 +52,14 @@
     <mirror-repo-name>updates-nightly</mirror-repo-name>
     <tycho-version>0.19.0</tycho-version>
     <tycho-extras-version>0.19.0</tycho-extras-version>
-    <platform-version-name>kepler</platform-version-name>
+    <platform-version-name>luna</platform-version-name>
     <eclipse-site>http://download.eclipse.org/releases/${platform-version-name}</eclipse-site>
     <swtbot-site>http://download.eclipse.org/technology/swtbot/snapshots</swtbot-site>
     <orbit-site>http://download.eclipse.org/tools/orbit/downloads/drops/R20130118183705/repository</orbit-site>
     <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.jacoco.reportPath>${project.basedir}/../../target/jacoco.exec</sonar.jacoco.reportPath>
+    <sonar.java.source>1.7</sonar.java.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <pluginRepositories>
@@ -84,7 +85,7 @@
     <profile>
       <id>platform-kepler</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
         <property>
           <name>platform-version-name</name>
           <value>kepler</value>
@@ -104,12 +105,12 @@
       </repositories>
     </profile>
     <profile>
-      <id>platform-kepler-staging</id>
+      <id>platform-luna</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <activeByDefault>true</activeByDefault>
         <property>
           <name>platform-version-name</name>
-          <value>kepler-staging</value>
+          <value>luna</value>
         </property>
       </activation>
       <properties>
@@ -119,7 +120,7 @@
       </properties>
       <repositories>
         <repository>
-          <id>kepler-staging</id>
+          <id>luna</id>
           <layout>p2</layout>
           <url>${eclipse-site}</url>
         </repository>
@@ -298,7 +299,7 @@
        <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.6.3.201306030806</version>
+        <version>0.6.4.201312101107</version>
         <executions>
           <execution>
            <id>pre-test</id>

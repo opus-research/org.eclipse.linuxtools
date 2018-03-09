@@ -21,8 +21,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         XmlAnalysisCorePluginTest.class,
-        org.eclipse.linuxtools.tmf.analysis.xml.core.tests.module.AllTests.class,
-        org.eclipse.linuxtools.tmf.analysis.xml.core.tests.stateprovider.AllTests.class
+        org.eclipse.linuxtools.tmf.analysis.xml.core.tests.module.AllTests.class
 })
 public class AllAnalysisXmlCoreTests {
 

@@ -107,35 +107,27 @@ public class XmlUtils {
         File toFile = getXmlFilesPath().addTrailingSeparator()
                 .append(fromFile.getName()).toFile();
 
-        FileChannel source = null;
-        FileChannel destination = null;
-        boolean success = true;
-
         try {
             if (!toFile.exists()) {
                 toFile.createNewFile();
             }
-            source = new FileInputStream(fromFile).getChannel();
-            destination = new FileOutputStream(toFile).getChannel();
-            destination.transferFrom(source, 0, source.size());
-
         } catch (IOException e) {
             fLastError = Messages.XmlUtils_ErrorCopyingFile;
             Activator.logError(fLastError, e);
-            success = false;
-        } finally {
-            try {
-                if (source != null) {
-                    source.close();
-                }
-                if (destination != null) {
-                    destination.close();
-                }
-            } catch (IOException e) {
-                Activator.logError("Error closing file", e); //$NON-NLS-1$
-            }
+            return false;
         }
-        return success;
+
+        try (FileInputStream fis = new FileInputStream(fromFile);
+                FileOutputStream fos = new FileOutputStream(toFile);
+                FileChannel source = fis.getChannel();
+                FileChannel destination = fos.getChannel();) {
+            destination.transferFrom(source, 0, source.size());
+        } catch (IOException e) {
+            fLastError = Messages.XmlUtils_ErrorCopyingFile;
+            Activator.logError(fLastError, e);
+            return false;
+        }
+        return true;
     }
 
     /**
