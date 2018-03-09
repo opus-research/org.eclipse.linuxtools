@@ -40,17 +40,6 @@ public interface ITmfEventProvider extends ITmfComponent {
     void fireRequest();
 
     /**
-     * Increments/decrements the pending requests counters and fires the request
-     * if necessary (counter == 0). Used for coalescing requests across multiple
-     * TmfDataProvider's.
-     *
-     * @param isIncrement
-     *            Should we increment (true) or decrement (false) the pending
-     *            counter
-     */
-    void notifyPendingRequest(boolean isIncrement);
-
-    /**
      * Return the next event based on the context supplied. The context
      * will be updated for the subsequent read.
      *

@@ -132,10 +132,8 @@ public class TmfSignalManager {
      */
     public static synchronized void dispatchSignal(TmfSignal signal) {
         int signalId = fSignalId++;
-        sendSignal(new TmfStartSynchSignal(signalId));
         signal.setReference(signalId);
         sendSignal(signal);
-        sendSignal(new TmfEndSynchSignal(signalId));
     }
 
     private static void sendSignal(TmfSignal signal) {

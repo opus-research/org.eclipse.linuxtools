@@ -13,10 +13,8 @@
 package org.eclipse.linuxtools.tmf.ui.tests.views.uml2sd.loader;
 
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
-import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfStartSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -31,7 +29,7 @@ public class Uml2SDSignalValidator extends TmfComponent implements IUml2SdSignal
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-    private int fSignalDepth = 0;
+
     private boolean fIsSignalReceived = false;
     private boolean fIsSignalError = false;
     private boolean fIsSourceError = false;
@@ -80,29 +78,6 @@ public class Uml2SDSignalValidator extends TmfComponent implements IUml2SdSignal
         if (getCurrentRange() != null) {
             setRangeError(!getCurrentRange().equals(signal.getCurrentRange()));
         }
-    }
-
-    /**
-     * Signal handler for handling start synch signal.
-     * @param signal the signal to handle.
-     */
-    @TmfSignalHandler
-    public void startSynch(TmfStartSynchSignal signal) {
-        fSignalDepth++;
-        // make sure that the signal which is send by the loader class is not handled by the loader class
-        // after receiving it. i.e. it must not trigger a another signal
-
-        // Set results so that it can be validated in the test case
-        setSignalError(fSignalDepth > 1);
-    }
-
-    /**
-     * Signal handler for handling end synch signal.
-     * @param signal the signal to handle.
-     */
-    @TmfSignalHandler
-    public void endSynch(TmfEndSynchSignal signal) {
-        fSignalDepth = fSignalDepth > 0 ? fSignalDepth - 1 : 0;
     }
 
     @Override
