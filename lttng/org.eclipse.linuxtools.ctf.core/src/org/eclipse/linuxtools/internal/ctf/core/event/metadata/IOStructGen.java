@@ -112,7 +112,8 @@ public class IOStructGen {
         java.io.OutputStreamWriter out = null;
         if (DEBUG) {
             try {
-                fos = new java.io.FileOutputStream("/tmp/astInfo.txt"); //$NON-NLS-1$
+                String tmpFolder = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
+                fos = new java.io.FileOutputStream(tmpFolder + "/astInfo.txt"); //$NON-NLS-1$
                 out = new java.io.OutputStreamWriter(fos, "UTF-8"); //$NON-NLS-1$
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
