@@ -18,7 +18,6 @@ import java.io.PrintWriter;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.interval.TmfStateIntervalSnapshot;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 
 /**
@@ -95,15 +94,6 @@ public class NullBackend implements IStateHistoryBackend {
     }
 
     /**
-     * Null back-ends cannot run queries. Nothing will be put in
-     * currentStateInfo.
-     */
-    @Override
-    public void do2DQuery(TmfStateIntervalSnapshot currentStateInfo, long t) {
-        /* Cannot do past queries */
-    }
-
-    /**
      * Null back-ends cannot run queries. 'null' will be returned.
      *
      * @return Always returns null.
@@ -129,5 +119,4 @@ public class NullBackend implements IStateHistoryBackend {
     public void debugPrint(PrintWriter writer) {
         writer.println("Null history backend"); //$NON-NLS-1$
     }
-
 }
