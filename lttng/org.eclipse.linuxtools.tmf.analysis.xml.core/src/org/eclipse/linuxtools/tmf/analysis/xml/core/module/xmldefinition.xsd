@@ -58,7 +58,8 @@
 
 	<xs:complexType name="location">
 		<xs:sequence>
-			<xs:group maxOccurs="unbounded" minOccurs="1" ref="stateAttribute" />
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="stateAttribute"
+				type="stateAttribute" />
 		</xs:sequence>
 		<xs:attribute name="id" type="xs:string" use="required" />
 		<xs:anyAttribute />
@@ -76,7 +77,7 @@
 	<xs:complexType name="stateChange">
 		<xs:choice maxOccurs="1" minOccurs="1">
 			<xs:sequence maxOccurs="1" minOccurs="1">
-				<xs:group maxOccurs="unbounded" minOccurs="1" ref="stateAttribute" />
+				<xs:element maxOccurs="unbounded" minOccurs="1" name="stateAttribute" type="stateAttribute" />
 				<xs:element maxOccurs="1" minOccurs="1" name="stateValue"
 					type="stateValue" />
 			</xs:sequence>
@@ -91,23 +92,13 @@
 		</xs:choice>
 	</xs:complexType>
 
-	<xs:complexType name="stateAssignation">
-		<xs:sequence maxOccurs="1" minOccurs="1">
-			<xs:group maxOccurs="unbounded" minOccurs="1" ref="stateAttribute" />
-			<xs:element maxOccurs="1" minOccurs="1" name="stateValue" type="stateValue" />
-		</xs:sequence>
-		<xs:anyAttribute />
-	</xs:complexType>
-
 	<xs:complexType name="condition">
 		<xs:sequence maxOccurs="1" minOccurs="1">
 			<xs:choice maxOccurs="1" minOccurs="1">
-				<xs:group maxOccurs="unbounded" minOccurs="0" ref="stateAttribute" />
-				<xs:element maxOccurs="1" minOccurs="0" name="field" type="eventField" />
+				<xs:element maxOccurs="unbounded" minOccurs="1" name="stateAttribute" type="stateAttribute" />
+				<xs:element maxOccurs="1" minOccurs="1" name="field" type="eventField" />
 			</xs:choice>
-			<xs:choice maxOccurs="1" minOccurs="1">
-				<xs:element maxOccurs="1" minOccurs="1" name="stateValue" type="stateValue" />
-			</xs:choice>
+			<xs:element maxOccurs="1" minOccurs="1" name="stateValue" type="stateValue" />
 		</xs:sequence>
 		<xs:anyAttribute />
 	</xs:complexType>
@@ -135,48 +126,46 @@
 		</xs:sequence>
 		<xs:anyAttribute />
 	</xs:complexType>
-
-	<xs:group name="stateAttribute">	
-		<xs:choice>
-		    <xs:element name="constant">
-		    	<xs:complexType>
-					<xs:attribute name="value" type="xs:string" use="required" />
-				</xs:complexType>
-			</xs:element>
-		    <xs:element name="eventField" type="eventField" />
-		    <xs:element name="locationName">
-		    	<xs:complexType>
-					<xs:attribute name="value" type="xs:string" use="required" />
-				</xs:complexType>
-			</xs:element>
-		    <xs:element name="query">
-				<xs:complexType>
-					<xs:sequence>
-						<xs:group maxOccurs="unbounded" minOccurs="1" ref="stateAttribute" />
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-	    </xs:choice>
-	</xs:group>
-
-	<xs:complexType name="stateValue">
+	
+	<xs:complexType name="stateAttribute">
 		<xs:sequence>
-			<xs:group maxOccurs="unbounded" minOccurs="0" ref="stateAttribute" />
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="stateAttribute"
+				type="stateAttribute" />
 		</xs:sequence>
-		<xs:attribute name="int" type="xs:string" />
-		<xs:attribute name="long" type="xs:string" />
-		<xs:attribute name="eventField" type="xs:string" />
-		<xs:attribute name="type">
+		<xs:attribute name="type" use="required">
 			<xs:simpleType>
 				<xs:restriction base="xs:string">
 					<xs:enumeration value="null" />
+					<xs:enumeration value="constant" />
+					<xs:enumeration value="eventField" />
+					<xs:enumeration value="location" />
 					<xs:enumeration value="query" />
-					<xs:enumeration value="delete" />
-					<xs:enumeration value="eventName" />
-					<xs:enumeration value="increment" />
 				</xs:restriction>
 			</xs:simpleType>
 		</xs:attribute>
+		<xs:attribute name="value" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="stateValue">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="stateAttribute"
+							type="stateAttribute" />
+		</xs:sequence>
+		<xs:attribute name="type" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="int" />
+					<xs:enumeration value="long" />
+					<xs:enumeration value="string" />
+					<xs:enumeration value="null" />				
+					<xs:enumeration value="eventField" />
+					<xs:enumeration value="eventName" />
+					<xs:enumeration value="delete" />
+					<xs:enumeration value="query" />					
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="increment" type="xs:boolean" />
 		<xs:attribute name="stack">
 			<xs:simpleType>
 				<xs:restriction base="xs:string">
@@ -195,7 +184,7 @@
 				</xs:restriction>
 			</xs:simpleType>
 		</xs:attribute>
-		<xs:attribute name="string" type="xs:string" />
+		<xs:attribute name="value" type="xs:string" />
 	</xs:complexType>
 
 	<xs:complexType name="eventField">

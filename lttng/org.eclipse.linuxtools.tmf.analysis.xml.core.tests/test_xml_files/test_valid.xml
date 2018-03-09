@@ -36,235 +36,235 @@
 
 		<!-- Shortcut Variables -->
 		<location id="CurrentThread">
-			<constant value="Threads" />
-			<query>
-				<constant value="CPUs" />
-				<eventField name="cpu" />
-				<constant value="Current_thread" />
-			</query>
+			<stateAttribute type="constant" value="Threads" />
+			<stateAttribute type="query">
+				<stateAttribute type="constant" value="CPUs" />
+				<stateAttribute type="eventField" value="cpu" />
+				<stateAttribute type="constant" value="Current_thread" />
+			</stateAttribute>
 		</location>
 		<location id="CurrentCPU">
-			<constant value="CPUs" />
-			<eventField name="cpu" />
+			<stateAttribute type="constant" value="CPUs" />
+			<stateAttribute type="eventField" value="cpu" />
 		</location>
 		<location id="CurrentIRQ">
-			<constant value="Resources"/>
-			<constant value="IRQs"/>
-			<eventField name="irq"/>
+			<stateAttribute type="constant" value="Resources"/>
+			<stateAttribute type="constant" value="IRQs"/>
+			<stateAttribute type="eventField" value="irq"/>
 		</location>
 		<location id="CurrentSoftIRQ">
-			<constant value="Resources" />
-			<constant value="Soft_IRQs" />
-			<eventField name="vec" />
+			<stateAttribute type="constant" value="Resources" />
+			<stateAttribute type="constant" value="Soft_IRQs" />
+			<stateAttribute type="eventField" value="vec" />
 		</location>
 		<location id="newCurrentThread">
-			<constant value="Threads" />
-			<eventField name="next_tid" />
+			<stateAttribute type="constant" value="Threads" />
+			<stateAttribute type="eventField" value="next_tid" />
 		</location>
 
 		<!-- case 1 : exit_syscall : Fields: int64 ret -->
 		<eventHandler eventName="exit_syscall">
 			<stateChange>
-				<locationName value="CurrentThread" />
-				<constant value="System_call" />
+				<stateAttribute type="location" value="CurrentThread" />
+				<stateAttribute type="constant" value="System_call" />
 				<stateValue type="null" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentThread" />
-				<constant value="Status" />
-				<stateValue int="$PROCESS_STATUS_RUN_USERMODE" />
+				<stateAttribute type="location" value="CurrentThread" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$PROCESS_STATUS_RUN_USERMODE" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentCPU" />
-				<constant value="Status" />
-				<stateValue int="$CPU_STATUS_RUN_USERMODE" />
+				<stateAttribute type="location" value="CurrentCPU" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$CPU_STATUS_RUN_USERMODE" />
 			</stateChange>
 		</eventHandler>
 		<!-- case 2 : irq_handler_entry : Fields: int32 irq, string name -->
 		<eventHandler eventName="irq_handler_entry">
 			<stateChange>
-				<locationName value="CurrentIRQ" />
-				<stateValue eventField="cpu" />
+				<stateAttribute type="location" value="CurrentIRQ" />
+				<stateValue type="eventField" value="cpu" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentThread" />
-				<constant value="Status" />
-				<stateValue int="$PROCESS_STATUS_INTERRUPTED" />
+				<stateAttribute type="location" value="CurrentThread" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$PROCESS_STATUS_INTERRUPTED" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentCPU" />
-				<constant value="Status" />
-				<stateValue int="$CPU_STATUS_IRQ" />
+				<stateAttribute type="location" value="CurrentCPU" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$CPU_STATUS_IRQ" />
 			</stateChange>
 		</eventHandler>
 		<!-- case 3 : irq_handler_exit : Fields: int32 irq, int32 ret -->
 		<eventHandler eventName="irq_handler_exit">
 			<stateChange>
-				<locationName value="CurrentIRQ" />
+				<stateAttribute type="location" value="CurrentIRQ" />
 				<stateValue type="null" />
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<locationName value="CurrentThread" />
-						<constant value="System_call" />
+						<stateAttribute type="location" value="CurrentThread" />
+						<stateAttribute type="constant" value="System_call" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="CurrentThread" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_RUN_USERMODE" />
+					<stateAttribute type="location" value="CurrentThread" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_RUN_USERMODE" />
 				</then>
 				<else>
-					<locationName value="CurrentThread" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_RUN_SYSCALL" />
+					<stateAttribute type="location" value="CurrentThread" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_RUN_SYSCALL" />
 				</else>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<locationName value="CurrentThread" />
-						<constant value="System_call" />
+						<stateAttribute type="location" value="CurrentThread" />
+						<stateAttribute type="constant" value="System_call" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="CurrentCPU" />
-					<constant value="Status" />
-					<stateValue int="$CPU_STATUS_RUN_USERMODE" />
+					<stateAttribute type="location" value="CurrentCPU" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$CPU_STATUS_RUN_USERMODE" />
 				</then>
 				<else>
-					<locationName value="CurrentCPU" />
-					<constant value="Status" />
-					<stateValue int="$CPU_STATUS_RUN_SYSCALL" />
+					<stateAttribute type="location" value="CurrentCPU" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$CPU_STATUS_RUN_SYSCALL" />
 				</else>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<locationName value="CurrentCPU" />
-						<constant value="Current_thread" />
+						<stateAttribute type="location" value="CurrentCPU" />
+						<stateAttribute type="constant" value="Current_thread" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="CurrentCPU" />
-					<constant value="Status" />
-					<stateValue int="$CPU_STATUS_IDLE" />
+					<stateAttribute type="location" value="CurrentCPU" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$CPU_STATUS_IDLE" />
 				</then>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<locationName value="CurrentCPU" />
-						<constant value="Current_thread" />
-						<stateValue int="0" />
+						<stateAttribute type="location" value="CurrentCPU" />
+						<stateAttribute type="constant" value="Current_thread" />
+						<stateValue type="int" value="0" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="CurrentCPU" />
-					<constant value="Status" />
-					<stateValue int="$CPU_STATUS_IDLE" />
+					<stateAttribute type="location" value="CurrentCPU" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$CPU_STATUS_IDLE" />
 				</then>
 			</stateChange>
 		</eventHandler>
 		<!-- case 4 : softirq_entry : Fields: int32 vec -->
 		<eventHandler eventName="softirq_entry">
 			<stateChange>
-				<locationName value="CurrentSoftIRQ" />
-				<stateValue eventField="cpu" />
+				<stateAttribute type="location" value="CurrentSoftIRQ" />
+				<stateValue type="eventField" value="cpu" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentThread" />
-				<constant value="Status" />
-				<stateValue int="$PROCESS_STATUS_INTERRUPTED" />
+				<stateAttribute type="location" value="CurrentThread" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$PROCESS_STATUS_INTERRUPTED" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentCPU" />
-				<constant value="Status" />
-				<stateValue int="$CPU_STATUS_SOFTIRQ" />
+				<stateAttribute type="location" value="CurrentCPU" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$CPU_STATUS_SOFTIRQ" />
 			</stateChange>
 		</eventHandler>
 		<!-- case 5 : softirq_exit : Fields: int32 vec -->
 		<eventHandler eventName="softirq_exit">
 			<stateChange>
-				<locationName value="CurrentSoftIRQ" />
+				<stateAttribute type="location" value="CurrentSoftIRQ" />
 				<stateValue type="null" />
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<locationName value="CurrentThread" />
-						<constant value="System_call" />
+						<stateAttribute type="location" value="CurrentThread" />
+						<stateAttribute type="constant" value="System_call" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="CurrentThread" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_RUN_USERMODE" />
+					<stateAttribute type="location" value="CurrentThread" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_RUN_USERMODE" />
 				</then>
 				<else>
-					<locationName value="CurrentThread" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_RUN_SYSCALL" />
+					<stateAttribute type="location" value="CurrentThread" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_RUN_SYSCALL" />
 				</else>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<locationName value="CurrentThread" />
-						<constant value="System_call" />
+						<stateAttribute type="location" value="CurrentThread" />
+						<stateAttribute type="constant" value="System_call" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="CurrentCPU" />
-					<constant value="Status" />
-					<stateValue int="$CPU_STATUS_RUN_USERMODE" />
+					<stateAttribute type="location" value="CurrentCPU" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$CPU_STATUS_RUN_USERMODE" />
 				</then>
 				<else>
-					<locationName value="CurrentCPU" />
-					<constant value="Status" />
-					<stateValue int="$CPU_STATUS_RUN_SYSCALL" />
+					<stateAttribute type="location" value="CurrentCPU" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$CPU_STATUS_RUN_SYSCALL" />
 				</else>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<locationName value="CurrentCPU" />
-						<constant value="Current_thread" />
+						<stateAttribute type="location" value="CurrentCPU" />
+						<stateAttribute type="constant" value="Current_thread" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="CurrentCPU" />
-					<constant value="Status" />
-					<stateValue int="$CPU_STATUS_IDLE" />
+					<stateAttribute type="location" value="CurrentCPU" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$CPU_STATUS_IDLE" />
 				</then>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<locationName value="CurrentCPU" />
-						<constant value="Current_thread" />
-						<stateValue int="0" />
+						<stateAttribute type="location" value="CurrentCPU" />
+						<stateAttribute type="constant" value="Current_thread" />
+						<stateValue type="int" value="0" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="CurrentCPU" />
-					<constant value="Status" />
-					<stateValue int="$CPU_STATUS_IDLE" />
+					<stateAttribute type="location" value="CurrentCPU" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$CPU_STATUS_IDLE" />
 				</then>
 			</stateChange>
 		</eventHandler>
 		<!-- case 6 : softirq_raise : Fields: int32 vec -->
 		<eventHandler eventName="softirq_raise">
 			<stateChange>
-				<locationName value="CurrentSoftIRQ" />
-				<stateValue int="$SOFT_IRQ_RAISED" />
+				<stateAttribute type="location" value="CurrentSoftIRQ" />
+				<stateValue type="int" value="$SOFT_IRQ_RAISED" />
 			</stateChange>
 		</eventHandler>
 		<!-- case 7 : sched_switch : Fields: string prev_comm, int32 prev_tid,
@@ -275,77 +275,77 @@
 				<if>
 					<condition>
 						<field name="prev_state" />
-						<stateValue long="0" />
+						<stateValue type="long" value="0" />
 					</condition>
 				</if>
 				<then>
-					<constant value="Threads" />
-					<eventField name="prev_tid" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_WAIT_FOR_CPU" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="prev_tid" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_WAIT_FOR_CPU" />
 				</then>
 				<else>
-					<constant value="Threads" />
-					<eventField name="prev_tid" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_WAIT_BLOCKED" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="prev_tid" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_WAIT_BLOCKED" />
 				</else>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<locationName value="newCurrentThread" />
-						<constant value="System_call" />
+						<stateAttribute type="location" value="newCurrentThread" />
+						<stateAttribute type="constant" value="System_call" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="newCurrentThread" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_RUN_USERMODE" />
+					<stateAttribute type="location" value="newCurrentThread" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_RUN_USERMODE" />
 				</then>
 				<else>
-					<locationName value="newCurrentThread" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_RUN_SYSCALL" />
+					<stateAttribute type="location" value="newCurrentThread" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_RUN_SYSCALL" />
 				</else>
 			</stateChange>
 			<stateChange>
-				<locationName value="newCurrentThread" />
-				<constant value="Exec_name" />
-				<stateValue eventField="next_comm" />
+				<stateAttribute type="location" value="newCurrentThread" />
+				<stateAttribute type="constant" value="Exec_name" />
+				<stateValue type="eventField" value="next_comm" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentCPU" />
-				<constant value="Current_thread" />
-				<stateValue eventField="next_tid" forcedType="int" />
+				<stateAttribute type="location" value="CurrentCPU" />
+				<stateAttribute type="constant" value="Current_thread" />
+				<stateValue type="eventField" value="next_tid" forcedType="int" />
 			</stateChange>
 			<stateChange>
 				<if>
 					<not>
 						<condition>
 							<field name="next_tid" />
-							<stateValue long="0" />
+							<stateValue type="long" value="0" />
 						</condition>
 					</not>
 				</if>
 				<then>
 					<if>
 						<condition>
-							<locationName value="newCurrentThread" />
-							<constant value="System_call" />
+							<stateAttribute type="location" value="newCurrentThread" />
+							<stateAttribute type="constant" value="System_call" />
 							<stateValue type="null" />
 						</condition>
 					</if>
 					<then>
-						<locationName value="CurrentCPU" />
-						<constant value="Status" />
-						<stateValue int="$CPU_STATUS_RUN_USERMODE" />
+						<stateAttribute type="location" value="CurrentCPU" />
+						<stateAttribute type="constant" value="Status" />
+						<stateValue type="int" value="$CPU_STATUS_RUN_USERMODE" />
 					</then>
 					<else>
-						<locationName value="CurrentCPU" />
-						<constant value="Status" />
-						<stateValue int="$CPU_STATUS_RUN_SYSCALL" />
+						<stateAttribute type="location" value="CurrentCPU" />
+						<stateAttribute type="constant" value="Status" />
+						<stateValue type="int" value="$CPU_STATUS_RUN_SYSCALL" />
 					</else>
 				</then>
 			</stateChange>
@@ -353,13 +353,13 @@
 				<if>
 					<condition>
 						<field name="next_tid" />
-						<stateValue long="0" />
+						<stateValue type="long" value="0" />
 					</condition>
 				</if>
 				<then>
-					<locationName value="CurrentCPU" />
-					<constant value="Status" />
-					<stateValue int="$CPU_STATUS_IDLE" />
+					<stateAttribute type="location" value="CurrentCPU" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$CPU_STATUS_IDLE" />
 				</then>
 			</stateChange>
 		</eventHandler>
@@ -367,47 +367,47 @@
 			string child_comm, int32 child_tid -->
 		<eventHandler eventName="sched_process_fork">
 			<stateChange>
-				<constant value="Threads" />
-				<eventField name="child_tid" />
-				<constant value="PPID" />
-				<stateValue eventField="parent_tid" forcedType="int" />
+				<stateAttribute type="constant" value="Threads" />
+				<stateAttribute type="eventField" value="child_tid" />
+				<stateAttribute type="constant" value="PPID" />
+				<stateValue type="eventField" value="parent_tid" forcedType="int" />
 			</stateChange>
 			<stateChange>
-				<constant value="Threads" />
-				<eventField name="child_tid" />
-				<constant value="Exec_name" />
-				<stateValue eventField="child_comm" />
+				<stateAttribute type="constant" value="Threads" />
+				<stateAttribute type="eventField" value="child_tid" />
+				<stateAttribute type="constant" value="Exec_name" />
+				<stateValue type="eventField" value="child_comm" />
 			</stateChange>
 			<stateChange>
-				<constant value="Threads" />
-				<eventField name="child_tid" />
-				<constant value="Status" />
-				<stateValue int="$PROCESS_STATUS_WAIT_FOR_CPU" />
+				<stateAttribute type="constant" value="Threads" />
+				<stateAttribute type="eventField" value="child_tid" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$PROCESS_STATUS_WAIT_FOR_CPU" />
 			</stateChange>
 			<stateChange>
-				<constant value="Threads" />
-				<eventField name="child_tid" />
-				<constant value="System_call" />
+				<stateAttribute type="constant" value="Threads" />
+				<stateAttribute type="eventField" value="child_tid" />
+				<stateAttribute type="constant" value="System_call" />
 				<stateValue type="query">
-					<constant value="Threads" />
-					<eventField name="parent_tid" />
-					<constant value="System_call" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="parent_tid" />
+					<stateAttribute type="constant" value="System_call" />
 				</stateValue>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<constant value="Threads" />
-						<eventField name="child_tid" />
-						<constant value="System_call" />
+						<stateAttribute type="constant" value="Threads" />
+						<stateAttribute type="eventField" value="child_tid" />
+						<stateAttribute type="constant" value="System_call" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<constant value="Threads" />
-					<eventField name="child_tid" />
-					<constant value="System_call" />
-					<stateValue string="sys_clone" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="child_tid" />
+					<stateAttribute type="constant" value="System_call" />
+					<stateValue type="string" value="sys_clone" />
 				</then>
 			</stateChange>
 		</eventHandler>
@@ -415,8 +415,8 @@
 			string child_comm, int32 child_tid -->
 		<eventHandler eventName="sched_process_free">
 			<stateChange>
-				<constant value="Threads" />
-				<eventField name="tid" />
+				<stateAttribute type="constant" value="Threads" />
+				<stateAttribute type="eventField" value="tid" />
 				<stateValue type="delete" />
 			</stateChange>
 		</eventHandler>
@@ -427,93 +427,93 @@
 			<stateChange>
 				<if>
 					<condition>
-						<constant value="Threads" />
-						<eventField name="tid" />
-						<constant value="Exec_name" />
+						<stateAttribute type="constant" value="Threads" />
+						<stateAttribute type="eventField" value="tid" />
+						<stateAttribute type="constant" value="Exec_name" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<constant value="Threads" />
-					<eventField name="tid" />
-					<constant value="Exec_name" />
-					<stateValue eventField="name" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="tid" />
+					<stateAttribute type="constant" value="Exec_name" />
+					<stateValue type="eventField" value="name" />
 				</then>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<constant value="Threads" />
-						<eventField name="tid" />
-						<constant value="PPID" />
+						<stateAttribute type="constant" value="Threads" />
+						<stateAttribute type="eventField" value="tid" />
+						<stateAttribute type="constant" value="PPID" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<constant value="Threads" />
-					<eventField name="tid" />
-					<constant value="PPID" />
-					<stateValue eventField="ppid" forcedType="int" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="tid" />
+					<stateAttribute type="constant" value="PPID" />
+					<stateValue type="eventField" value="ppid" forcedType="int" />
 				</then>
 			</stateChange>
 			<stateChange>
 				<if>
 					<and>
 						<condition>
-							<constant value="Threads" />
-							<eventField name="tid" />
-							<constant value="Status" />
+							<stateAttribute type="constant" value="Threads" />
+							<stateAttribute type="eventField" value="tid" />
+							<stateAttribute type="constant" value="Status" />
 							<stateValue type="null" />
 						</condition>
 						<condition>
 							<field name="status" />
-							<stateValue long="2" />
+							<stateValue type="long" value="2" />
 						</condition>
 					</and>
 				</if>
 				<then>
-					<constant value="Threads" />
-					<eventField name="tid" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_WAIT_FOR_CPU" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="tid" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_WAIT_FOR_CPU" />
 				</then>
 			</stateChange>
 			<stateChange>
 				<if>
 					<and>
 						<condition>
-							<constant value="Threads" />
-							<eventField name="tid" />
-							<constant value="Status" />
+							<stateAttribute type="constant" value="Threads" />
+							<stateAttribute type="eventField" value="tid" />
+							<stateAttribute type="constant" value="Status" />
 							<stateValue type="null" />
 						</condition>
 						<condition>
 							<field name="status" />
-							<stateValue long="5" />
+							<stateValue type="long" value="5" />
 						</condition>
 					</and>
 				</if>
 				<then>
-					<constant value="Threads" />
-					<eventField name="tid" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_WAIT_BLOCKED" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="tid" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_WAIT_BLOCKED" />
 				</then>
 			</stateChange>
 			<stateChange>
 				<if>
 					<condition>
-						<constant value="Threads" />
-						<eventField name="tid" />
-						<constant value="Status" />
+						<stateAttribute type="constant" value="Threads" />
+						<stateAttribute type="eventField" value="tid" />
+						<stateAttribute type="constant" value="Status" />
 						<stateValue type="null" />
 					</condition>
 				</if>
 				<then>
-					<constant value="Threads" />
-					<eventField name="tid" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_UNKNOWN" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="tid" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_UNKNOWN" />
 				</then>
 			</stateChange>
 		</eventHandler>
@@ -526,64 +526,64 @@
 					<and>
 						<not>
 							<condition>
-								<constant value="Threads" />
-								<eventField name="tid" />
-								<constant value="Status" />
-								<stateValue int="$PROCESS_STATUS_RUN_USERMODE" />
+								<stateAttribute type="constant" value="Threads" />
+								<stateAttribute type="eventField" value="tid" />
+								<stateAttribute type="constant" value="Status" />
+								<stateValue type="int" value="$PROCESS_STATUS_RUN_USERMODE" />
 							</condition>
 						</not>
 						<not>
 							<condition>
-								<constant value="Threads" />
-								<eventField name="tid" />
-								<constant value="Status" />
-								<stateValue int="$PROCESS_STATUS_RUN_SYSCALL" />
+								<stateAttribute type="constant" value="Threads" />
+								<stateAttribute type="eventField" value="tid" />
+								<stateAttribute type="constant" value="Status" />
+								<stateValue type="int" value="$PROCESS_STATUS_RUN_SYSCALL" />
 							</condition>
 						</not>
 					</and>
 				</if>
 				<then>
-					<constant value="Threads" />
-					<eventField name="tid" />
-					<constant value="Status" />
-					<stateValue int="$PROCESS_STATUS_WAIT_FOR_CPU" />
+					<stateAttribute type="constant" value="Threads" />
+					<stateAttribute type="eventField" value="tid" />
+					<stateAttribute type="constant" value="Status" />
+					<stateValue type="int" value="$PROCESS_STATUS_WAIT_FOR_CPU" />
 				</then>
 			</stateChange>
 		</eventHandler>
 		<!-- delfault : syscall -->
 		<eventHandler eventName="sys_*">
 			<stateChange>
-				<locationName value="CurrentThread" />
-				<constant value="System_call" />
+				<stateAttribute type="location" value="CurrentThread" />
+				<stateAttribute type="constant" value="System_call" />
 				<stateValue type="eventName" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentThread" />
-				<constant value="Status" />
-				<stateValue int="$PROCESS_STATUS_RUN_SYSCALL" />
+				<stateAttribute type="location" value="CurrentThread" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$PROCESS_STATUS_RUN_SYSCALL" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentCPU" />
-				<constant value="Status" />
-				<stateValue int="$CPU_STATUS_RUN_SYSCALL" />
+				<stateAttribute type="location" value="CurrentCPU" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$CPU_STATUS_RUN_SYSCALL" />
 			</stateChange>
 		</eventHandler>
 		<!-- delfault : compat_syscall -->
 		<eventHandler eventName="compat_sys_*">
 			<stateChange>
-				<locationName value="CurrentThread" />
-				<constant value="System_call" />
+				<stateAttribute type="location" value="CurrentThread" />
+				<stateAttribute type="constant" value="System_call" />
 				<stateValue type="eventName" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentThread" />
-				<constant value="Status" />
-				<stateValue int="$PROCESS_STATUS_RUN_SYSCALL" />
+				<stateAttribute type="location" value="CurrentThread" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$PROCESS_STATUS_RUN_SYSCALL" />
 			</stateChange>
 			<stateChange>
-				<locationName value="CurrentCPU" />
-				<constant value="Status" />
-				<stateValue int="$CPU_STATUS_RUN_SYSCALL" />
+				<stateAttribute type="location" value="CurrentCPU" />
+				<stateAttribute type="constant" value="Status" />
+				<stateValue type="int" value="$CPU_STATUS_RUN_SYSCALL" />
 			</stateChange>
 		</eventHandler>
 	</stateProvider>

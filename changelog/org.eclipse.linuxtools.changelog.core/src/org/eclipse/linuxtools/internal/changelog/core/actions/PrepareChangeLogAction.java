@@ -35,7 +35,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
@@ -57,7 +56,6 @@ import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfo;
 import org.eclipse.team.core.synchronize.SyncInfoSet;
 import org.eclipse.team.ui.synchronize.ISynchronizeModelElement;
-import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -137,7 +135,7 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 	}
 
 	/**
-	 * @see IActionDelegate#run(IAction)
+	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
 	 */
 	protected void doRun() {
 		IRunnableWithProgress code = new IRunnableWithProgress() {
@@ -273,9 +271,9 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 		Object element = selected.getFirstElement();
 
 		IResource resource = null;
-		Vector<PatchFile> newList = new Vector<PatchFile>();
-		Vector<PatchFile> removeList = new Vector<PatchFile>();
-		Vector<PatchFile> changeList = new Vector<PatchFile>();
+		Vector<PatchFile> newList = new Vector<>();
+		Vector<PatchFile> removeList = new Vector<>();
+		Vector<PatchFile> changeList = new Vector<>();
 		int totalChanges = 0;
 
 		if (element instanceof IResource) {
@@ -563,8 +561,8 @@ public class PrepareChangeLogAction extends ChangeLogAction {
 			IDocument doc = mdp.createDocument(fei);
 			IDocument olddoc = msdp.createDocument(sei);
 
-			HashMap<String, String> functionNamesMap = new HashMap<String, String>();
-			ArrayList<String> nameList = new ArrayList<String>();
+			HashMap<String, String> functionNamesMap = new HashMap<>();
+			ArrayList<String> nameList = new ArrayList<>();
 
 			// for all the ranges
 			for (PatchRangeElement tpre: patchFileInfo.getRanges()) {
