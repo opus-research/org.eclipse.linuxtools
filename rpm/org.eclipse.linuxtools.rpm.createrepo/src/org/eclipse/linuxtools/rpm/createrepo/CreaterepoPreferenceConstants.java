@@ -11,8 +11,7 @@
 package org.eclipse.linuxtools.rpm.createrepo;
 
 /**
- * Constants used for createrepo preferences, as well as the command
- * arguments of the execution.
+ * Constants used for createrepo preferences.
  */
 public final class CreaterepoPreferenceConstants {
 
@@ -42,10 +41,6 @@ public final class CreaterepoPreferenceConstants {
 	/****/ public static final String PREF_DELTA_ENABLE		= "deltas"; 	//$NON-NLS-1$
 	/****/ public static final String PREF_NUM_DELTAS		= "num-deltas"; //$NON-NLS-1$
 	/****/ public static final String PREF_MAX_DELTA_SIZE	= "max-delta-rpm-size"; //$NON-NLS-1$
-
-	// Defaults
-	/****/ public static final String PREF_VERBOSE			= "verbose"; //$NON-NLS-1$
-	/****/ public static final String PREF_PROFILE			= "profile"; //$NON-NLS-1$
 
 	/*
 	 * Preference Values.
