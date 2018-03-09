@@ -72,7 +72,7 @@ public class IOStructGen {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructor
+     * Constuctor
      *
      * @param tree
      *            the tree (ANTLR generated) with the parsed TSDL data.
@@ -112,8 +112,7 @@ public class IOStructGen {
         java.io.OutputStreamWriter out = null;
         if (DEBUG) {
             try {
-                String tmpFolder = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
-                fos = new java.io.FileOutputStream(tmpFolder + "/astInfo.txt"); //$NON-NLS-1$
+                fos = new java.io.FileOutputStream("/tmp/astInfo.txt"); //$NON-NLS-1$
                 out = new java.io.OutputStreamWriter(fos, "UTF-8"); //$NON-NLS-1$
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -257,7 +256,7 @@ public class IOStructGen {
 
         for (CommonTree child : children) {
             String left;
-            /* this is a regex to find the leading and trailing quotes */
+            /* this is a regex to find the leading and trailing quotes*/
             final String regex = "^\"|\"$"; //$NON-NLS-1$
             /* this is to replace the previous quotes with nothing... effectively deleting them */
             final String nullString = ""; //$NON-NLS-1$
@@ -381,7 +380,7 @@ public class IOStructGen {
         String left = concatenateUnaryStrings(leftStrings);
 
         if (left.equals(MetadataStrings.MAJOR)) {
-            if (trace.majorIsSet()) {
+            if (trace.majortIsSet()) {
                 throw new ParseException("major is already set"); //$NON-NLS-1$
             }
 
