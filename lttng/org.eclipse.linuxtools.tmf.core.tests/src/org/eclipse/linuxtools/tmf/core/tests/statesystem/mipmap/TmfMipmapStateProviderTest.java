@@ -63,7 +63,7 @@ public class TmfMipmapStateProviderTest {
         mmp.assignTargetStateSystem(ssq);
 
         for (long time = START_TIME; time <= END_TIME; time += INTERVAL) {
-            long value = time / INTERVAL;
+            Long value = Long.valueOf(time / INTERVAL);
             ITmfEvent event = mmp.createEvent(time, value);
             mmp.processEvent(event);
         }

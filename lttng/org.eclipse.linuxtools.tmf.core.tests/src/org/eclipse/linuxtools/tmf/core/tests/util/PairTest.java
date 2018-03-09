@@ -31,8 +31,8 @@ public class PairTest {
     // Field(s)
     // ------------------------------------------------------------------------
 
-    Pair<String, Long> fPair1 = new Pair<String, Long>("String 1", 1L);
-    Pair<String, Long> fPair2 = new Pair<String, Long>("String 2", 2L);
+    Pair<String, Long> fPair1 = new Pair<String, Long>("String 1", Long.valueOf(1L));
+    Pair<String, Long> fPair2 = new Pair<String, Long>("String 2", Long.valueOf(2L));
 
     // ------------------------------------------------------------------------
     // to String
@@ -50,14 +50,14 @@ public class PairTest {
 
     @Test
     public void testAccessors() {
-        Pair<String, Long> myPair = new Pair<String, Long>("String 1", 1L);
+        Pair<String, Long> myPair = new Pair<String, Long>("String 1", Long.valueOf(1L));
         assertEquals("String 1", myPair.getFirst());
         assertEquals(Long.valueOf(1L), myPair.getSecond());
 
         myPair.setFirst("Hello");
         assertEquals("Hello", myPair.getFirst());
 
-        myPair.setSecond(123L);
+        myPair.setSecond(Long.valueOf(123L));
         assertEquals(Long.valueOf(123L), myPair.getSecond());
     }
 
@@ -76,8 +76,8 @@ public class PairTest {
 
     @Test
     public void testEqualsSymmetry() {
-        Pair<String, Long> info1 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond().longValue());
-        Pair<String, Long> info2 = new Pair<String, Long>(fPair2.getFirst(), fPair2.getSecond().longValue());
+        Pair<String, Long> info1 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond());
+        Pair<String, Long> info2 = new Pair<String, Long>(fPair2.getFirst(), fPair2.getSecond());
 
         assertTrue("equals", info1.equals(fPair1));
         assertTrue("equals", fPair1.equals(info1));
@@ -88,9 +88,9 @@ public class PairTest {
 
     @Test
     public void testEqualsTransivity() {
-        Pair<String, Long> info1 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond().longValue());
-        Pair<String, Long> info2 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond().longValue());
-        Pair<String, Long> info3 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond().longValue());
+        Pair<String, Long> info1 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond());
+        Pair<String, Long> info2 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond());
+        Pair<String, Long> info3 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond());
 
         assertTrue("equals", info1.equals(info2));
         assertTrue("equals", info2.equals(info3));
@@ -105,7 +105,7 @@ public class PairTest {
 
     @Test
     public void testEqualsDifferentObj() {
-        Pair<Long, String> info = new Pair<Long, String>(1L, "String1");
+        Pair<Long, String> info = new Pair<Long, String>(Long.valueOf(1L), "String1");
         assertTrue("equals", !fPair1.equals(info));
     }
 
@@ -115,8 +115,8 @@ public class PairTest {
 
     @Test
     public void testHashCode() {
-        Pair<String, Long> info1 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond().longValue());
-        Pair<String, Long> info2 = new Pair<String, Long>(fPair2.getFirst(), fPair2.getSecond().longValue());
+        Pair<String, Long> info1 = new Pair<String, Long>(fPair1.getFirst(), fPair1.getSecond());
+        Pair<String, Long> info2 = new Pair<String, Long>(fPair2.getFirst(), fPair2.getSecond());
 
         assertTrue("hashCode", fPair1.hashCode() == info1.hashCode());
         assertTrue("hashCode", fPair2.hashCode() == info2.hashCode());

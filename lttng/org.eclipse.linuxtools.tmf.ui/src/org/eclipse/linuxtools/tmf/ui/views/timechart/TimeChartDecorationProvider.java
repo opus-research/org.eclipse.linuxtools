@@ -64,7 +64,7 @@ public class TimeChartDecorationProvider {
      * @return If there is a bookmark there
      */
     public boolean isBookmark(long rank) {
-        return fBookmarksSet.contains(rank);
+        return fBookmarksSet.contains(Long.valueOf(rank));
     }
 
     /**
@@ -80,7 +80,7 @@ public class TimeChartDecorationProvider {
                     IMarker.BOOKMARK, false, IResource.DEPTH_ZERO)) {
                 int location = bookmark.getAttribute(IMarker.LOCATION, -1);
                 if (location != -1) {
-                    Long rank = (long) location;
+                    Long rank = Long.valueOf(location);
                     fBookmarksSet.add(rank);
                 }
             }

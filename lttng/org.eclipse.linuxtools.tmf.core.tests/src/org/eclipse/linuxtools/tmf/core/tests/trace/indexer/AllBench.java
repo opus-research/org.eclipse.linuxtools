@@ -65,12 +65,12 @@ public class AllBench {
             for (int i = 0; i < checkpointsNums; i++) {
                 Random rand = new Random();
                 int nextInt = rand.nextInt(checkpointsNums);
-                list.add(nextInt);
+                list.add(Integer.valueOf(nextInt));
                 f.writeInt(nextInt);
             }
         } else {
             for (int i = 0; i < checkpointsNums; i++) {
-                list.add(f.readInt());
+                list.add(Integer.valueOf(f.readInt()));
             }
         }
         f.close();
@@ -115,7 +115,7 @@ public class AllBench {
 
         ArrayList<Integer> list = new ArrayList<Integer>();
         for (int i = 0; i < checkpointsNum; i++) {
-            list.add(i);
+            list.add(Integer.valueOf(i));
         }
 
         readCheckpoints(checkpointsNum, list, false);
@@ -133,7 +133,7 @@ public class AllBench {
 
         ArrayList<Integer> list = new ArrayList<Integer>();
         for (int i = 0; i < checkpointsNum; i++) {
-            list.add(i);
+            list.add(Integer.valueOf(i));
         }
 
         readCheckpointsArray(checkpointsNum, list, false);
@@ -207,7 +207,8 @@ public class AllBench {
             bTree = new BTree(BTREE_DEGREE, file, fTrace);
             for (int i = 0; i < checkpointsNum; i++) {
                 Integer randomCheckpoint = list.get(i);
-                TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(12345 + randomCheckpoint), new TmfLongLocation(123456L + randomCheckpoint), 0);
+                TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(12345 + randomCheckpoint.intValue()),
+                        new TmfLongLocation(123456L + randomCheckpoint.intValue()), 0);
                 BTreeCheckpointVisitor treeVisitor = new BTreeCheckpointVisitor(checkpoint);
                 bTree.accept(treeVisitor);
                 assertEquals(randomCheckpoint.intValue(), treeVisitor.getCheckpoint().getCheckpointRank());
@@ -233,7 +234,8 @@ public class AllBench {
             array = new FlatArray(file, fTrace);
             for (int i = 0; i < checkpointsNum; i++) {
                 Integer randomCheckpoint = list.get(i);
-                TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(12345 + randomCheckpoint), new TmfLongLocation(123456L + randomCheckpoint), 0);
+                TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(12345 + randomCheckpoint.intValue()),
+                        new TmfLongLocation(123456L + randomCheckpoint.intValue()), 0);
                 long found = array.binarySearch(checkpoint);
                 assertEquals(randomCheckpoint.intValue(), found);
             }

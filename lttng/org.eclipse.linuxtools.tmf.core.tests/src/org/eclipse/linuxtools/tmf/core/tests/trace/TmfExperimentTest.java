@@ -194,7 +194,7 @@ public class TmfExperimentTest {
 
     @Test
     public void testSeekBadLocation() {
-        ITmfContext context = fExperiment.seekEvent(new TmfLongLocation(0L));
+        ITmfContext context = fExperiment.seekEvent(new TmfLongLocation(Long.valueOf(0L)));
         assertNull("seekEvent", context);
     }
 

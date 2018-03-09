@@ -68,27 +68,27 @@ public class TmfMipmapStateProviderWeightedTest {
             long time = i * 10 * INTERVAL;
             /* update for INTEGER test */
             mmpi.processEvent(mmpi.createEvent(time, null));
-            mmpi.processEvent(mmpi.createEvent(time + 1000, 10L));
+            mmpi.processEvent(mmpi.createEvent(time + 1000, Long.valueOf(10L)));
             mmpi.processEvent(mmpi.createEvent(time + 2000, null));
-            mmpi.processEvent(mmpi.createEvent(time + 3000, 20L));
+            mmpi.processEvent(mmpi.createEvent(time + 3000, Long.valueOf(20L)));
             mmpi.processEvent(mmpi.createEvent(time + 5000, null));
-            mmpi.processEvent(mmpi.createEvent(time + 6000, 30L));
+            mmpi.processEvent(mmpi.createEvent(time + 6000, Long.valueOf(30L)));
             mmpi.processEvent(mmpi.createEvent(time + 9000, null));
             /* update for DOUBLE test */
             mmpd.processEvent(mmpd.createEvent(time, null));
-            mmpd.processEvent(mmpd.createEvent(time + 1000, 10L));
+            mmpd.processEvent(mmpd.createEvent(time + 1000, Long.valueOf(10L)));
             mmpd.processEvent(mmpd.createEvent(time + 2000, null));
-            mmpd.processEvent(mmpd.createEvent(time + 3000, 20L));
+            mmpd.processEvent(mmpd.createEvent(time + 3000, Long.valueOf(20L)));
             mmpd.processEvent(mmpd.createEvent(time + 5000, null));
-            mmpd.processEvent(mmpd.createEvent(time + 6000, 30L));
+            mmpd.processEvent(mmpd.createEvent(time + 6000, Long.valueOf(30L)));
             mmpd.processEvent(mmpd.createEvent(time + 9000, null));
         }
         /* cleanup for INTEGER test */
-        mmpi.processEvent(mmpi.createEvent(END_TIME, 0L));
+        mmpi.processEvent(mmpi.createEvent(END_TIME, Long.valueOf(0L)));
         mmpi.dispose();
         ssqi.waitUntilBuilt();
         /* cleanup for DOUBLE test */
-        mmpd.processEvent(mmpd.createEvent(END_TIME, 0L));
+        mmpd.processEvent(mmpd.createEvent(END_TIME, Long.valueOf(0L)));
         mmpd.dispose();
         ssqd.waitUntilBuilt();
     }

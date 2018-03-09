@@ -68,14 +68,14 @@ public class AnalysisParameterProviderTest {
             fail(e.getMessage());
             return;
         }
-        assertEquals(10, module.getParameter(TestAnalysis.PARAM_TEST));
+        assertEquals(Integer.valueOf(10), module.getParameter(TestAnalysis.PARAM_TEST));
 
         /* Change the value of the parameter in the provider */
         List<IAnalysisParameterProvider> providers = TmfAnalysisManager.getParameterProviders(module, trace);
         assertEquals(1, providers.size());
         TestAnalysisParameterProvider provider = (TestAnalysisParameterProvider) providers.get(0);
         provider.setValue(5);
-        assertEquals(5, module.getParameter(TestAnalysis.PARAM_TEST));
+        assertEquals(Integer.valueOf(5), module.getParameter(TestAnalysis.PARAM_TEST));
     }
 
 }

@@ -99,13 +99,13 @@ public class EventContextTest {
     @Test
     public void testContextStart() {
         CtfTmfEvent firstEvent = getEventAt(startTime);
-        long perfPageFault = (Long) firstEvent.getContent().getField("context._perf_page_fault").getValue();
+        Long perfPageFault = (Long) firstEvent.getContent().getField("context._perf_page_fault").getValue();
         String procname = (String) firstEvent.getContent().getField("context._procname").getValue();
-        long tid = (Long) firstEvent.getContent().getField("context._tid").getValue();
+        Long tid = (Long) firstEvent.getContent().getField("context._tid").getValue();
 
-        assertEquals(613, perfPageFault);
+        assertEquals(613, perfPageFault.longValue());
         assertEquals("lttng-sessiond", procname);
-        assertEquals(1230, tid);
+        assertEquals(1230, tid.longValue());
     }
 
     /**
@@ -115,13 +115,13 @@ public class EventContextTest {
     public void testContext1() {
         long time = startTime + 5000000000L; // 1363700745.559739078
         CtfTmfEvent event = getEventAt(time);
-        long perfPageFault = (Long) event.getContent().getField("context._perf_page_fault").getValue();
+        Long perfPageFault = (Long) event.getContent().getField("context._perf_page_fault").getValue();
         String procname = (String) event.getContent().getField("context._procname").getValue();
-        long tid = (Long) event.getContent().getField("context._tid").getValue();
+        Long tid = (Long) event.getContent().getField("context._tid").getValue();
 
-        assertEquals(6048, perfPageFault);
+        assertEquals(6048, perfPageFault.longValue());
         assertEquals("swapper/0", procname);
-        assertEquals(0, tid);
+        assertEquals(0, tid.longValue());
     }
 
     /**
@@ -131,13 +131,13 @@ public class EventContextTest {
     public void testContext2() {
         long time = startTime + 2 * 5000000000L; // 1363700750.559707062
         CtfTmfEvent event = getEventAt(time);
-        long perfPageFault = (Long) event.getContent().getField("context._perf_page_fault").getValue();
+        Long perfPageFault = (Long) event.getContent().getField("context._perf_page_fault").getValue();
         String procname = (String) event.getContent().getField("context._procname").getValue();
-        long tid = (Long) event.getContent().getField("context._tid").getValue();
+        Long tid = (Long) event.getContent().getField("context._tid").getValue();
 
-        assertEquals(13258, perfPageFault);
+        assertEquals(13258, perfPageFault.longValue());
         assertEquals("swapper/0", procname);
-        assertEquals(0, tid);
+        assertEquals(0, tid.longValue());
     }
 
     /**
@@ -148,13 +148,13 @@ public class EventContextTest {
     public void testContextMiddle() {
         long midTime = startTime + (endTime - startTime) / 2L; // 1363700755.555723128
         CtfTmfEvent midEvent = getEventAt(midTime);
-        long perfPageFault = (Long) midEvent.getContent().getField("context._perf_page_fault").getValue();
+        Long perfPageFault = (Long) midEvent.getContent().getField("context._perf_page_fault").getValue();
         String procname = (String) midEvent.getContent().getField("context._procname").getValue();
-        long tid = (Long) midEvent.getContent().getField("context._tid").getValue();
+        Long tid = (Long) midEvent.getContent().getField("context._tid").getValue();
 
-        assertEquals(19438, perfPageFault);
+        assertEquals(19438, perfPageFault.longValue());
         assertEquals("swapper/0", procname);
-        assertEquals(0, tid);
+        assertEquals(0, tid.longValue());
     }
 
     /**
@@ -164,13 +164,13 @@ public class EventContextTest {
     public void testContext3() {
         long time = startTime + 4 * 5000000000L; // 1363700760.559719724
         CtfTmfEvent event = getEventAt(time);
-        long perfPageFault = (Long) event.getContent().getField("context._perf_page_fault").getValue();
+        Long perfPageFault = (Long) event.getContent().getField("context._perf_page_fault").getValue();
         String procname = (String) event.getContent().getField("context._procname").getValue();
-        long tid = (Long) event.getContent().getField("context._tid").getValue();
+        Long tid = (Long) event.getContent().getField("context._tid").getValue();
 
-        assertEquals(21507, perfPageFault);
+        assertEquals(21507, perfPageFault.longValue());
         assertEquals("swapper/0", procname);
-        assertEquals(0, tid);
+        assertEquals(0, tid.longValue());
     }
 
     /**
@@ -180,13 +180,13 @@ public class EventContextTest {
     public void testContext4() {
         long time = startTime + 5 * 5000000000L; // 1363700765.559714634
         CtfTmfEvent event = getEventAt(time);
-        long perfPageFault = (Long) event.getContent().getField("context._perf_page_fault").getValue();
+        Long perfPageFault = (Long) event.getContent().getField("context._perf_page_fault").getValue();
         String procname = (String) event.getContent().getField("context._procname").getValue();
-        long tid = (Long) event.getContent().getField("context._tid").getValue();
+        Long tid = (Long) event.getContent().getField("context._tid").getValue();
 
-        assertEquals(21507, perfPageFault);
+        assertEquals(21507, perfPageFault.longValue());
         assertEquals("swapper/0", procname);
-        assertEquals(0, tid);
+        assertEquals(0, tid.longValue());
     }
 
     /**
@@ -195,13 +195,13 @@ public class EventContextTest {
     @Test
     public void testContextEnd() {
         CtfTmfEvent lastEvent = getEventAt(endTime);
-        long perfPageFault = (Long) lastEvent.getContent().getField("context._perf_page_fault").getValue();
+        Long perfPageFault = (Long) lastEvent.getContent().getField("context._perf_page_fault").getValue();
         String procname = (String) lastEvent.getContent().getField("context._procname").getValue();
-        long tid = (Long) lastEvent.getContent().getField("context._tid").getValue();
+        Long tid = (Long) lastEvent.getContent().getField("context._tid").getValue();
 
-        assertEquals(22117, perfPageFault);
+        assertEquals(22117, perfPageFault.longValue());
         assertEquals("lttng-sessiond", procname);
-        assertEquals(1230, tid);
+        assertEquals(1230, tid.longValue());
     }
 
     // ------------------------------------------------------------------------

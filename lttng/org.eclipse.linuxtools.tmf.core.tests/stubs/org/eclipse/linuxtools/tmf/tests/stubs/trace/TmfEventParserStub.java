@@ -85,16 +85,15 @@ public class TmfEventParserStub implements ITmfEventParser {
 
         // no need to use synchronized since it's already cover by the calling method
 
-        long location = 0;
         if (context != null && context.getLocation() != null) {
-            location = (Long) context.getLocation().getLocationInfo();
+            long location = ((Long) context.getLocation().getLocationInfo()).longValue();
             try {
                 stream.seek(location);
 
                 final long ts        = stream.readLong();
                 final String source  = stream.readUTF();
                 final String type    = stream.readUTF();
-                final Integer reference  = stream.readInt();
+                final int reference  = stream.readInt();
                 final int typeIndex  = Integer.parseInt(type.substring(typePrefix.length()));
                 final String[] fields = new String[typeIndex];
                 for (int i = 0; i < typeIndex; i++) {
@@ -113,7 +112,7 @@ public class TmfEventParserStub implements ITmfEventParser {
                 final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString(), null);
                 final ITmfEvent event = new TmfEvent(fEventStream,
                         new TmfTimestamp(ts, -3, 0),     // millisecs
-                        source, fTypes[typeIndex], root, reference.toString());
+                        source, fTypes[typeIndex], root, String.valueOf(reference));
                 return event;
             } catch (final EOFException e) {
             } catch (final IOException e) {

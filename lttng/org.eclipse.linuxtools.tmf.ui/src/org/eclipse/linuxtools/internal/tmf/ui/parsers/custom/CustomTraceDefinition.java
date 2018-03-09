@@ -89,7 +89,7 @@ public abstract class CustomTraceDefinition {
      */
     public String formatTimeStamp(TmfTimestamp timestamp) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(timeStampOutputFormat);
-        return simpleDateFormat.format(timestamp.getValue());
+        return simpleDateFormat.format(Long.valueOf(timestamp.getValue()));
     }
 
     /**

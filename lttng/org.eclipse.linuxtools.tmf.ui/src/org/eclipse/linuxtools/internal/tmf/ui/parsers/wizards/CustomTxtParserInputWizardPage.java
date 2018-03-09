@@ -681,7 +681,7 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
                     InputLine currentInput = null;
                     if (rootInputLine.childrenInputs != null && rootInputLine.childrenInputs.size() > 0) {
                         currentInput = rootInputLine.childrenInputs.get(0);
-                        countMap.put(currentInput, 0);
+                        countMap.put(currentInput, Integer.valueOf(0));
                     }
                     rawPos += length + 1; // +1 for \n
                     while (scanner.hasNext()) {
@@ -696,7 +696,7 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
                                 }
                             }
                         } else {
-                            if (countMap.get(currentInput) >= currentInput.getMinCount()) {
+                            if (countMap.get(currentInput).intValue() >= currentInput.getMinCount()) {
                                 List<InputLine> nextInputs = currentInput.getNextInputs(countMap);
                                 if (nextInputs.size() == 0 || nextInputs.get(nextInputs.size() - 1).getMinCount() == 0) {
                                     for (InputLine input : definition.inputs) {
@@ -714,9 +714,9 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
                                         currentInput = input;
                                         updatePreviewLine(currentInput, matcher, data, rawPos, rootLineMatches);
                                         if (countMap.get(currentInput) == null) {
-                                            countMap.put(currentInput, 1);
+                                            countMap.put(currentInput, Integer.valueOf(1));
                                         } else {
-                                            countMap.put(currentInput, countMap.get(currentInput) + 1);
+                                            countMap.put(currentInput, Integer.valueOf(countMap.get(currentInput).intValue() + 1));
                                         }
                                         Iterator<InputLine> iter = countMap.keySet().iterator();
                                         while (iter.hasNext()) {
@@ -727,13 +727,13 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
                                         }
                                         if (currentInput.childrenInputs != null && currentInput.childrenInputs.size() > 0) {
                                             currentInput = currentInput.childrenInputs.get(0);
-                                            countMap.put(currentInput, 0);
+                                            countMap.put(currentInput, Integer.valueOf(0));
                                         } else {
-                                            if (countMap.get(currentInput) >= currentInput.getMaxCount()) {
+                                            if (countMap.get(currentInput).intValue() >= currentInput.getMaxCount()) {
                                                 if (currentInput.getNextInputs(countMap).size() > 0) {
                                                     currentInput = currentInput.getNextInputs(countMap).get(0);
                                                     if (countMap.get(currentInput) == null) {
-                                                        countMap.put(currentInput, 0);
+                                                        countMap.put(currentInput, Integer.valueOf(0));
                                                     }
                                                     iter = countMap.keySet().iterator();
                                                     while (iter.hasNext()) {
@@ -758,16 +758,16 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
                                     inputText.setStyleRange(new StyleRange(rawPos, length,
                                             COLOR_BLACK, COLOR_LIGHT_YELLOW, SWT.ITALIC));
                                     updatePreviewLine(currentInput, matcher, data, rawPos, rootLineMatches);
-                                    countMap.put(currentInput, countMap.get(currentInput) + 1);
+                                    countMap.put(currentInput, Integer.valueOf(countMap.get(currentInput).intValue() + 1));
                                     if (currentInput.childrenInputs != null && currentInput.childrenInputs.size() > 0) {
                                         currentInput = currentInput.childrenInputs.get(0);
-                                        countMap.put(currentInput, 0);
+                                        countMap.put(currentInput, Integer.valueOf(0));
                                     } else {
-                                        if (countMap.get(currentInput) >= currentInput.getMaxCount()) {
+                                        if (countMap.get(currentInput).intValue() >= currentInput.getMaxCount()) {
                                             if (currentInput.getNextInputs(countMap).size() > 0) {
                                                 currentInput = currentInput.getNextInputs(countMap).get(0);
                                                 if (countMap.get(currentInput) == null) {
-                                                    countMap.put(currentInput, 0);
+                                                    countMap.put(currentInput, Integer.valueOf(0));
                                                 }
                                                 Iterator<InputLine> iter = countMap.keySet().iterator();
                                                 while (iter.hasNext()) {

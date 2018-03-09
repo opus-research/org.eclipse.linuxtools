@@ -172,7 +172,8 @@ public class TmfSignalManager {
                     method.invoke(entry.getKey(), new Object[] { signal });
                     if (TmfCoreTracer.isSignalTraced()) {
                         Object key = entry.getKey();
-                        String hash = String.format("%1$08X", entry.getKey().hashCode()); //$NON-NLS-1$
+                        Integer value = Integer.valueOf(key.hashCode());
+                        String hash = String.format("%1$08X", value); //$NON-NLS-1$
                         String target = "[" + hash + "] " + key.getClass().getSimpleName() + ":" + method.getName();   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
                         TmfCoreTracer.traceSignal(signal, target);
                     }

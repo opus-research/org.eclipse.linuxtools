@@ -53,7 +53,7 @@ final class LongStateValue extends TmfStateValue {
 
     @Override
     public @Nullable String toString() {
-        return String.format("%3d", value); //$NON-NLS-1$
+        return String.format("%3d", Long.valueOf(value)); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------

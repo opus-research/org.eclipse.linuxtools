@@ -52,7 +52,7 @@ public class RefreshHandler extends AbstractHandler {
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
         if (part == null) {
-            return false;
+            return Boolean.FALSE;
         }
         ISelection selection = part.getSite().getSelectionProvider().getSelection();
         if (selection instanceof TreeSelection) {

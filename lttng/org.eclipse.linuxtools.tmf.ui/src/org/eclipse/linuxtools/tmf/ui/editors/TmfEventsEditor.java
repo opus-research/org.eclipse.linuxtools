@@ -337,7 +337,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                     final Class<?> c = bundle.loadClass(eventsTableType);
                     final Class<?>[] constructorArgs = new Class[] { Composite.class, int.class };
                     final Constructor<?> constructor = c.getConstructor(constructorArgs);
-                    final Object[] args = new Object[] { parent, cacheSize };
+                    final Object[] args = new Object[] { parent, Integer.valueOf(cacheSize) };
                     eventsTable = (TmfEventsTable) constructor.newInstance(args);
                     break;
                 }
@@ -416,7 +416,7 @@ public class TmfEventsEditor extends TmfEditor implements ITmfTraceEditor, IReus
                     final Class<?> c = bundle.loadClass(eventsTableType);
                     final Class<?>[] constructorArgs = new Class[] { Composite.class, int.class };
                     final Constructor<?> constructor = c.getConstructor(constructorArgs);
-                    final Object[] args = new Object[] { parent, cacheSize };
+                    final Object[] args = new Object[] { parent, Integer.valueOf(cacheSize) };
                     eventsTable = (TmfEventsTable) constructor.newInstance(args);
                     break;
                 }

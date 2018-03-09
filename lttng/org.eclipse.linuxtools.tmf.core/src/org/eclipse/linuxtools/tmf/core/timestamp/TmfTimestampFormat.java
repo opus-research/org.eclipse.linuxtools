@@ -378,7 +378,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
         }
 
         // Let the base class fill the stuff it knows about
-        StringBuffer result = new StringBuffer(super.format(date));
+        StringBuffer result = new StringBuffer(super.format(Long.valueOf(date)));
 
         // In the case where there is no separation between 2 supplementary
         // fields, the pattern will have the form "..'[pat-1]''[pat-2]'.." and
@@ -491,7 +491,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
                 case 'S':
                     matcher = MILLISEC_PAT.matcher(string.substring(dot));
                     if (matcher.find()) {
-                        millisec = new Long(matcher.group(1));
+                        millisec = Long.parseLong(matcher.group(1));
                         for (int l = matcher.group(1).length(); l < 3; l++) {
                             millisec *= 10;
                         }
@@ -501,7 +501,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
                 case 'C':
                     matcher = MICROSEC_PAT.matcher(string.substring(dot));
                     if (matcher.find()) {
-                        microsec = new Long(matcher.group(2));
+                        microsec = Long.parseLong(matcher.group(2));
                         for (int l = matcher.group(2).length(); l < 3; l++) {
                             microsec *= 10;
                         }
@@ -511,7 +511,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
                 case 'N':
                     matcher = NANOSEC_PAT.matcher(string.substring(dot));
                     if (matcher.find()) {
-                        nanosec = new Long(matcher.group(3));
+                        nanosec = Long.parseLong(matcher.group(3));
                         for (int l = matcher.group(3).length(); l < 3; l++) {
                             nanosec *= 10;
                         }

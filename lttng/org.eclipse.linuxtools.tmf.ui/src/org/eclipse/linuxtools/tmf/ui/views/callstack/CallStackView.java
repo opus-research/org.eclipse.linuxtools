@@ -805,7 +805,7 @@ public class CallStackView extends TmfView {
                 if (monitor.isCanceled()) {
                     return;
                 }
-                int threadQuark = threadQuarks.get(i);
+                int threadQuark = threadQuarks.get(i).intValue();
                 String thread = ss.getAttributeName(threadQuark);
                 String threadEntryName = thread + ' ' + '(' + aTrace.getName() + ')';
                 ThreadEntry threadEntry = new ThreadEntry(aTrace, threadEntryName, threadQuark, startTime, endTime);

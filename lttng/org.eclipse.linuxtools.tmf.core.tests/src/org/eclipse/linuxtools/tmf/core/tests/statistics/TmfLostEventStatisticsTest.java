@@ -119,7 +119,7 @@ public class TmfLostEventStatisticsTest {
     @Test
     public void testLostEventsTypesInRange() {
         Map<String, Long> eventsInRange = backend.getEventTypesInRange(rangeStart, rangeEnd);
-        long lostEventsInRange = eventsInRange.get(CTFStrings.LOST_EVENT_NAME);
-        assertEquals(363494L, lostEventsInRange);
+        Long lostEventsInRange = eventsInRange.get(CTFStrings.LOST_EVENT_NAME);
+        assertEquals(363494L, lostEventsInRange.longValue());
     }
 }

@@ -100,7 +100,7 @@ public class RequestBenchmark extends TmfEventRequest {
 
         nbEvent = 0;
         prev = next;
-        benchs.add(val);
+        benchs.add(Double.valueOf(val));
         if (benchs.size() == NB_OF_PASS) {
             try {
                 System.out.println("Nb events : " + nbEvent2);

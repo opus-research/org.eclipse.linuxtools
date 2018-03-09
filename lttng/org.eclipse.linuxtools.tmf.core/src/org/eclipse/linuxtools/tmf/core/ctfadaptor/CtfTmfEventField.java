@@ -215,7 +215,7 @@ final class CTFIntegerField extends CtfTmfEventField {
      *            Is the value signed or not
      */
     CTFIntegerField(String name, long longValue, int base, boolean signed) {
-        super(name, longValue, null);
+        super(name, Long.valueOf(longValue), null);
         this.signed = signed;
         this.base = base;
     }
@@ -227,7 +227,7 @@ final class CTFIntegerField extends CtfTmfEventField {
 
     @Override
     public String getFormattedValue() {
-        return IntegerDefinition.formatNumber(getValue(), base, signed);
+        return IntegerDefinition.formatNumber(getValue().longValue(), base, signed);
     }
 
 }
@@ -359,7 +359,7 @@ final class CTFFloatField extends CtfTmfEventField {
      *            The name of this field
      */
     protected CTFFloatField(String name, double value) {
-        super(name, value, null);
+        super(name, Double.valueOf(value), null);
     }
 
     @Override
@@ -386,7 +386,7 @@ final class CTFEnumField extends CtfTmfEventField {
      */
     CTFEnumField(String name, CtfEnumPair enumValue) {
         super(name, new CtfEnumPair(enumValue.getFirst(),
-                enumValue.getSecond().longValue()), null);
+                enumValue.getSecond()), null);
     }
 
     @Override

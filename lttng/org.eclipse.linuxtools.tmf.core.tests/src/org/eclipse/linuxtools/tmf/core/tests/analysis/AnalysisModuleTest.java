@@ -71,14 +71,14 @@ public class AnalysisModuleTest {
         assertTrue(module.isAutomatic());
         module.addParameter(TestAnalysis.PARAM_TEST);
         assertNull(module.getParameter(TestAnalysis.PARAM_TEST));
-        module.setParameter(TestAnalysis.PARAM_TEST, 1);
-        assertEquals(1, module.getParameter(TestAnalysis.PARAM_TEST));
+        module.setParameter(TestAnalysis.PARAM_TEST, Integer.valueOf(1));
+        assertEquals(Integer.valueOf(1), module.getParameter(TestAnalysis.PARAM_TEST));
 
         /* Try to set and get wrong parameter */
         String wrongParam = "abc";
         Exception exception = null;
         try {
-            module.setParameter(wrongParam, 1);
+            module.setParameter(wrongParam, Integer.valueOf(1));
         } catch (RuntimeException e) {
             exception = e;
             assertEquals(NLS.bind(Messages.TmfAbstractAnalysisModule_InvalidParameter, wrongParam, module.getName()), e.getMessage());
@@ -118,7 +118,7 @@ public class AnalysisModuleTest {
         }
 
         /* Default execution, with output 1 */
-        module.setParameter(TestAnalysis.PARAM_TEST, 1);
+        module.setParameter(TestAnalysis.PARAM_TEST, Integer.valueOf(1));
         status = module.schedule();
         assertEquals(Status.OK_STATUS, status);
         boolean completed = module.waitForCompletion(new NullProgressMonitor());
@@ -142,7 +142,7 @@ public class AnalysisModuleTest {
             fail(e.getMessage());
         }
 
-        module.setParameter(TestAnalysis.PARAM_TEST, 0);
+        module.setParameter(TestAnalysis.PARAM_TEST, Integer.valueOf(0));
         IStatus status = module.schedule();
         assertEquals(Status.OK_STATUS, status);
         boolean completed = module.waitForCompletion(new NullProgressMonitor());
@@ -181,7 +181,7 @@ public class AnalysisModuleTest {
     public void testCancel() {
         TestAnalysis module = setUpAnalysis();
 
-        module.setParameter(TestAnalysis.PARAM_TEST, 999);
+        module.setParameter(TestAnalysis.PARAM_TEST, Integer.valueOf(999));
         try {
             module.setTrace(TmfTestTrace.A_TEST_10K.getTrace());
         } catch (TmfAnalysisException e) {

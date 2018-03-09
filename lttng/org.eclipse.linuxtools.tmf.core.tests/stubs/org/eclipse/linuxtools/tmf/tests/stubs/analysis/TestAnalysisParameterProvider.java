@@ -35,7 +35,7 @@ public class TestAnalysisParameterProvider extends TmfAbstractAnalysisParamProvi
     @Override
     public Object getParameter(String name) {
         if (name.equals(TestAnalysis.PARAM_TEST)) {
-            return fValue;
+            return Integer.valueOf(fValue);
         }
         return null;
     }

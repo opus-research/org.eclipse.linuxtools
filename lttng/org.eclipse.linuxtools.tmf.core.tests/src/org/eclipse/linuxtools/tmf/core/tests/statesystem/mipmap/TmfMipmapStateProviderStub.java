@@ -100,7 +100,7 @@ class TmfMipmapStateProviderStub extends AbstractTmfMipmapStateProvider {
         if (longVal == null) {
             value = TmfStateValue.nullValue();
         } else if (type == Type.LONG) {
-            value = TmfStateValue.newValueLong(longVal);
+            value = TmfStateValue.newValueLong(longVal.longValue());
         } else if (type == Type.INTEGER) {
             value = TmfStateValue.newValueInt(longVal.intValue());
         } else if (type == Type.DOUBLE) {

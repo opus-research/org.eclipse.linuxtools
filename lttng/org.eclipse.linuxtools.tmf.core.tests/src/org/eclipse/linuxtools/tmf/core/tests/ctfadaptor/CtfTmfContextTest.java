@@ -103,7 +103,8 @@ public class CtfTmfContextTest {
                     trace.getNext(lwc);
                     synchronized(trace){
                         if (lwc.getCurrentEvent() != null) {
-                            vals.add(lwc.getCurrentEvent().getTimestamp().getValue());
+                            Long ts = Long.valueOf(lwc.getCurrentEvent().getTimestamp().getValue());
+                            vals.add(ts);
                         }
                         tooManyContexts.add(lwc);
                     }
@@ -114,11 +115,11 @@ public class CtfTmfContextTest {
             thread.start();
         }
 
-        for( Thread t: threads){
+        for (Thread t : threads) {
             t.join();
         }
 
-        for( Long val : vals){
+        for (long val : vals) {
             assertTrue(val >= begin);
             assertTrue(val <= end);
         }

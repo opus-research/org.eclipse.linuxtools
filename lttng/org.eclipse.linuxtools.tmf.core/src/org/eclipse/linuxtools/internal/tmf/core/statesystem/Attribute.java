@@ -210,7 +210,7 @@ final class AlphaNumAttribute extends Attribute {
         /* This should catch buggy state changing statements */
         assert (!newSubAttribute.getName().equals(this.getName()));
 
-        subAttributesMap.put(newSubAttribute.getName(), subAttributes.size());
+        subAttributesMap.put(newSubAttribute.getName(), Integer.valueOf(subAttributes.size()));
         subAttributes.add(newSubAttribute);
     }
 
@@ -226,10 +226,10 @@ final class AlphaNumAttribute extends Attribute {
         }
         if (index == path.length - 1) {
             /* It's our job to process this request */
-            return subAttributes.get(indexOfNextNode);
+            return subAttributes.get(indexOfNextNode.intValue());
         }
 
-        nextNode = subAttributes.get(indexOfNextNode);
+        nextNode = subAttributes.get(indexOfNextNode.intValue());
         return nextNode.getSubAttributeNode(path, index + 1);
     }
 }

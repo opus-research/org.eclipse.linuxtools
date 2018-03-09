@@ -41,7 +41,7 @@ public class TmfLocationTest {
     // Variables
     // ------------------------------------------------------------------------
 
-    private Long aLong = 12345L;
+    private Long aLong = Long.valueOf(12345L);
     private TmfTimestamp aTimestamp = new TmfTimestamp();
     private TmfLocationArray aLocationArray;
 

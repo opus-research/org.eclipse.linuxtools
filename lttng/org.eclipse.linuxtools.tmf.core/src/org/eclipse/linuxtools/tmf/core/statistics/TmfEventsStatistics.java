@@ -282,10 +282,10 @@ public class TmfEventsStatistics implements ITmfStatistics {
 
         private void incrementStats(String key, long count) {
             if (stats.containsKey(key)) {
-                long curValue = stats.get(key);
-                stats.put(key, curValue + count);
+                long curValue = stats.get(key).longValue();
+                stats.put(key, Long.valueOf(curValue + count));
             } else {
-                stats.put(key, count);
+                stats.put(key, Long.valueOf(count));
             }
         }
     }
@@ -322,7 +322,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
             /* Prepare the results map, with all counts at 0 */
             results = new TreeMap<Long, Long>();
             for (long border : borders) {
-                results.put(border, 0L);
+                results.put(Long.valueOf(border), Long.valueOf(0L));
             }
         }
 
@@ -335,7 +335,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
             super.handleData(event);
             if ((event != null)  && (event.getTrace() == trace)) {
                 long ts = event.getTimestamp().normalize(0, SCALE).getValue();
-                Long key = results.floorKey(ts);
+                Long key = results.floorKey(Long.valueOf(ts));
                 if (key != null) {
                     incrementValue(key);
                 }
@@ -343,9 +343,9 @@ public class TmfEventsStatistics implements ITmfStatistics {
         }
 
         private void incrementValue(Long key) {
-            long value = results.get(key);
+            long value = results.get(key).longValue();
             value++;
-            results.put(key, value);
+            results.put(key, Long.valueOf(value));
         }
     }
 
