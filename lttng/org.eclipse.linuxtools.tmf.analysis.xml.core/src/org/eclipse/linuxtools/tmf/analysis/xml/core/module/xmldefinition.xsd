@@ -16,47 +16,10 @@
 	<xs:element name="tmfxml">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element maxOccurs="unbounded" minOccurs="0" name="view" type="view" />
 				<xs:element maxOccurs="unbounded" minOccurs="0" name="stateprovider" type="stateProvider" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
-
-	<xs:complexType name="view">
-		<xs:sequence>
-			<xs:element maxOccurs="1" minOccurs="0" name="head" type="headview" />
-			<xs:element maxOccurs="unbounded" minOccurs="0" name="stateValue"
-				type="stateValue" />
-			<xs:element maxOccurs="unbounded" minOccurs="0" name="line"
-				type="line" />
-		</xs:sequence>
-		<xs:attribute name="id" type="xs:string" />
-	</xs:complexType>
-
-	<xs:complexType name="headview">
-		<xs:sequence>
-			<xs:element maxOccurs="unbounded" minOccurs="0" name="analysis">
-				<xs:complexType>
-					<xs:attribute name="id" />
-				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-
-	<xs:complexType name="line">
-		<xs:sequence>
-			<xs:element maxOccurs="unbounded" minOccurs="0" name="option">
-				<xs:complexType>
-					<xs:attribute name="name" type="xs:string" use="required" />
-					<xs:attribute name="path" type="xs:string" use="required" />
-				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-		<xs:attribute name="id" type="xs:string" use="required" />
-		<xs:attribute name="display" type="xs:string" use="required" />
-		<xs:attribute name="name" type="xs:string" use="optional" />
-		<xs:attribute name="parent" type="xs:string" use="optional" />
-	</xs:complexType>
 
 	<xs:complexType name="stateProvider">
 		<xs:sequence maxOccurs="1" minOccurs="1">
@@ -82,11 +45,6 @@
 			<xs:element maxOccurs="1" minOccurs="0" name="name">
 				<xs:complexType>
 					<xs:attribute name="value" />
-				</xs:complexType>
-			</xs:element>
-			<xs:element maxOccurs="unbounded" minOccurs="0" name="view">
-				<xs:complexType>
-					<xs:attribute name="id" />
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
