@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
@@ -271,7 +270,7 @@ class DeclarationScope {
     }
 
     /**
-     * Looks up an enum declaration.
+     * Looks up a enum declaration.
      *
      * @param name
      *            The name of the enum to search for.
@@ -335,7 +334,7 @@ class DeclarationScope {
     }
 
     /**
-     * Lookup query for an identifier in this scope.
+     * Looks through the list of identifiers of a scope to find if it exists.
      *
      * @param identifier
      *            the name of the identifier to search for. In the case of int
@@ -347,8 +346,8 @@ class DeclarationScope {
     }
 
     /**
-     * Lookup query for an identifier through this scope and its ancestors.
-     * An ancestor scope is a scope in which this scope is nested.
+     * Recursively looks through the list of identifiers of a scope to find if
+     * it exists.
      *
      * @param identifier
      *            the name of the identifier to search for. In the case of int
@@ -370,8 +369,9 @@ class DeclarationScope {
      *
      * @return The type names
      */
-    public Set<String> getTypeNames() {
-        return types.keySet();
+    public String[] getTypeNames() {
+        String[] keys = new String[types.keySet().size()];
+        return types.keySet().toArray(keys);
     }
 
     /**

@@ -621,9 +621,6 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
         }
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public synchronized int getCheckpointSize() {
         int totalCheckpointSize = 0;
@@ -650,9 +647,6 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
         return totalCheckpointSize;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
         ITmfLocation[] locations = new ITmfLocation[fTraces.length];
