@@ -417,6 +417,8 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      */
     public void clear() {
         fDataModel.clear();
+        fDragState = DRAG_NONE;
+        fDragButton = 0;
         synchronized (fDataModel) {
             fScaledData = null;
         }
@@ -629,7 +631,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      * Update the range text controls
      */
     private void updateRangeTextControls() {
-        if (fDataModel != null && fDataModel.getStartTime() < fDataModel.getEndTime()) {
+        if (fDataModel.getStartTime() < fDataModel.getEndTime()) {
             fTimeRangeStartText.setText(TmfTimestampFormat.getDefaulTimeFormat().format(fDataModel.getStartTime()));
             fTimeRangeEndText.setText(TmfTimestampFormat.getDefaulTimeFormat().format(fDataModel.getEndTime()));
         } else {
@@ -838,7 +840,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
 
     @Override
     public void mouseDown(final MouseEvent event) {
-        if (fScaledData != null && event.button == 1 && fDragState == DRAG_NONE && fDataModel.getNbEvents() != 0) {
+        if (fScaledData != null && event.button == 1 && fDragState == DRAG_NONE && fDataModel.getStartTime() < fDataModel.getEndTime()) {
             fDragState = DRAG_SELECTION;
             fDragButton = event.button;
             if ((event.stateMask & SWT.MODIFIER_MASK) == SWT.SHIFT) {
@@ -876,7 +878,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      */
     @Override
     public void mouseMove(MouseEvent event) {
-        if (fDragState == DRAG_SELECTION && fDataModel.getNbEvents() > 0) {
+        if (fDragState == DRAG_SELECTION && fDataModel.getStartTime() < fDataModel.getEndTime()) {
             fSelectionEnd = Math.max(getStartTime(), Math.min(getEndTime(), getTimestamp(event.x)));
             fScaledData.fSelectionEndBucket = (int) ((fSelectionEnd - fScaledData.fFirstBucketTime) / fScaledData.fBucketDuration);
             fCanvas.redraw();
@@ -897,7 +899,7 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
 
     @Override
     public void mouseHover(final MouseEvent event) {
-        if (fDataModel.getNbEvents() > 0 && fScaledData != null) {
+        if (fDataModel.getStartTime() < fDataModel.getEndTime() && fScaledData != null) {
             int delimiterIndex = (int) ((fDataModel.getEndTime() - fScaledData.getFirstBucketTime()) / fScaledData.fBucketDuration) + 1;
             if (event.x < delimiterIndex) {
                 final String tooltip = formatToolTipLabel(event.x - fOffset);
@@ -965,10 +967,6 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
      */
     @TmfSignalHandler
     public void timestampFormatUpdated(TmfTimestampFormatUpdateSignal signal) {
-        if (fDataModel.getNbEvents() == 0) {
-            return;
-        }
-
         updateRangeTextControls();
 
         fComposite.layout();
