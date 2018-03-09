@@ -24,6 +24,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -659,7 +660,7 @@ public class CTFTrace implements IDefinitionScope {
      * @since 2.0
      */
     public Map<String, String> getEnvironment() {
-        return environment;
+        return Collections.unmodifiableMap(environment);
     }
 
     /**
