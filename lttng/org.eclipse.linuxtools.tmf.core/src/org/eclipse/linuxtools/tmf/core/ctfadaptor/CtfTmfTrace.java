@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.tmf.core.ctfadaptor;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
@@ -326,7 +327,7 @@ public class CtfTmfTrace extends TmfTrace
      */
     @Override
     public Map<String, String> getTraceProperties() {
-        return fTrace.getEnvironment();
+        return Collections.unmodifiableMap(fTrace.getEnvironment());
     }
 
     // -------------------------------------------
@@ -460,9 +461,6 @@ public class CtfTmfTrace extends TmfTrace
 
     private static int fCheckpointSize = -1;
 
-    /**
-     * @since 3.0
-     */
     @Override
     public synchronized int getCheckpointSize() {
         if (fCheckpointSize == -1) {
@@ -481,9 +479,6 @@ public class CtfTmfTrace extends TmfTrace
         return new TmfBTreeTraceIndexer(this, interval);
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
         return new CtfLocation(bufferIn);
