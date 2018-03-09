@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.Map;
 
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.tests.shared.TmfXmlTestFiles;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.tests.common.TmfXmlTestFiles;
 import org.eclipse.linuxtools.tmf.analysis.xml.ui.module.XmlAnalysisModuleSource;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
@@ -85,7 +85,6 @@ public class XmlAnalysisModuleSourceTest {
         modules = module.getAnalysisModules();
 
         assertTrue(modules.iterator().hasNext());
-
         assertTrue(findStateSystemModule(modules));
     }
 
@@ -103,6 +102,12 @@ public class XmlAnalysisModuleSourceTest {
      */
     @Test
     public void testPopulateModulesWithAnalysisManager() {
+
+        /*
+         * Make sure module sources are initialized. When run as unit test, the
+         * XML module source is sometimes missing
+         */
+        TmfAnalysisManager.initializeModuleSources();
 
         Map<String, IAnalysisModuleHelper> modules = TmfAnalysisManager.getAnalysisModules();
         assertFalse(findStateSystemModule(modules.values()));

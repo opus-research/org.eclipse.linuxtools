@@ -16,8 +16,8 @@ import java.io.File;
 
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.TmfXmlStrings;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.XmlStateSystemModule;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlStrings;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;

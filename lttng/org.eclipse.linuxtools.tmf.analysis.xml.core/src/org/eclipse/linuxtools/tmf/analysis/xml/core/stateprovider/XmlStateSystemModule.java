@@ -14,9 +14,8 @@ package org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.module.IXmlModule;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.module.IXmlModuleMetadata;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlHeadInfo;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 
@@ -27,7 +26,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
  * @since 3.0
  */
 public class XmlStateSystemModule extends TmfStateSystemAnalysisModule
-    implements IXmlModule {
+        implements IXmlModuleMetadata {
 
     private IPath fXmlFile;
     private XmlHeadInfo fHeadInfo = null;
@@ -38,12 +37,9 @@ public class XmlStateSystemModule extends TmfStateSystemAnalysisModule
     }
 
     @Override
-    protected @NonNull
-    ITmfStateProvider createStateProvider() {
-        if (!(getTrace() instanceof CtfTmfTrace)) {
-            throw new IllegalStateException("XmlStateSystemModule: trace should be of type CtfTmfTrace"); //$NON-NLS-1$
-        }
-        return new XmlStateProvider((CtfTmfTrace) getTrace(), getId(), fXmlFile);
+    @NonNull
+    protected ITmfStateProvider createStateProvider() {
+        return new XmlStateProvider(getTrace(), getId(), fXmlFile);
     }
 
     @Override

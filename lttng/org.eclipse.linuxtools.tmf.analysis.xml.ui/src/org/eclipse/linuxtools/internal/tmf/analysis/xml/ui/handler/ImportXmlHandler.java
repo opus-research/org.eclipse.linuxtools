@@ -17,6 +17,7 @@ import java.io.File;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.TreeSelection;
@@ -50,8 +51,10 @@ public class ImportXmlHandler extends AbstractHandler {
         String fn = dlg.open();
         if (fn != null) {
             File file = new File(fn);
-            if (XmlUtils.xmlValidate(file)) {
-                if (XmlUtils.addXmlFile(file)) {
+            IStatus status = XmlUtils.xmlValidate(file);
+            if (status.isOK()) {
+                status = XmlUtils.addXmlFile(file);
+                if (status.isOK()) {
                     XmlAnalysisModuleSource.notifyModuleChange();
                     /*
                      * FIXME: It refreshes the list of analysis under a trace,
@@ -61,10 +64,10 @@ public class ImportXmlHandler extends AbstractHandler {
                      */
                     refreshProject();
                 } else {
-                    TraceUtils.displayErrorMsg(Messages.ImportXmlHandler_ImportXmlFile, XmlUtils.getLastError());
+                    TraceUtils.displayErrorMsg(Messages.ImportXmlHandler_ImportXmlFile, status.getMessage());
                 }
             } else {
-                TraceUtils.displayErrorMsg(Messages.ImportXmlHandler_ImportXmlFile, XmlUtils.getLastError());
+                TraceUtils.displayErrorMsg(Messages.ImportXmlHandler_ImportXmlFile, status.getMessage());
             }
         }
 

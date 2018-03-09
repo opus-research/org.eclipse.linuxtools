@@ -20,7 +20,8 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        XmlAnalysisModuleSourceTest.class })
+        XmlAnalysisModuleSourceTest.class
+})
 public class AllTests {
 
 }

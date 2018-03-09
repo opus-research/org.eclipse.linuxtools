@@ -1,33 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tmfxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="stateprovider.xsd">
-	<view id="polymtl.kernel.view">
-		<head>
-			<analysis id="polymtl.kernel.sp" />
-		</head>
-		<!-- StateValues -->
-		<stateVal name="PROCESS_STATUS_UNKNOWN" value="0" color="#EEEEEE" />
-		<stateVal name="PROCESS_STATUS_WAIT_BLOCKED" value="1"
-			color="#CCCCCC" />
-		<stateVal name="PROCESS_STATUS_RUN_USERMODE" value="2"
-			color="#118811" />
-		<stateVal name="PROCESS_STATUS_RUN_SYSCALL" value="3"
-			color="#0000EE" />
-		<stateVal name="PROCESS_STATUS_INTERRUPTED" value="4"
-			color="#DDDD00" />
-		<stateVal name="PROCESS_STATUS_WAIT_FOR_CPU" value="5"
-			color="#AA0000" />
 
-		<!-- Control Flow View -->
-		<line id="CPUs/*" display="Status" name="Exec_name" parent="PPID">
-			<!-- Options -->
-			<option name="PPID" path="PPID" />
-			<option name="TID" path="" />
-		</line>
-		<line id="Threads/*" display="Status" name="Exec_name" parent="PPID">
-			<!-- Options -->
-			<option name="PPID" path="PPID" />
-			<option name="TID" path="" />
-		</line>
-	</view>
+	<!-- This element does not belong to the schema -->
+	<element id="fail"></element>
 </tmfxml>

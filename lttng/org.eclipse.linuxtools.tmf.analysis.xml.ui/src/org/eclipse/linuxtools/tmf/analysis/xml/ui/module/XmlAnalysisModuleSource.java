@@ -24,7 +24,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlStrings;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.TmfXmlStrings;
 import org.eclipse.linuxtools.tmf.analysis.xml.ui.module.TmfAnalysisModuleHelperXml.XmlAnalysisModuleType;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleSource;
@@ -46,7 +46,7 @@ public class XmlAnalysisModuleSource implements IAnalysisModuleSource {
     private static List<IAnalysisModuleHelper> fModules = null;
 
     @Override
-    public Iterable<IAnalysisModuleHelper> getAnalysisModules() {
+    public synchronized Iterable<IAnalysisModuleHelper> getAnalysisModules() {
         if (fModules == null) {
             populateAnalysisModules();
         }
@@ -61,32 +61,26 @@ public class XmlAnalysisModuleSource implements IAnalysisModuleSource {
             return;
         }
         for (File xmlFile : fFolder.listFiles()) {
-            if (!XmlUtils.xmlValidate(xmlFile)) {
+            if (!XmlUtils.xmlValidate(xmlFile).isOK()) {
                 continue;
             }
 
             try {
                 /* Load the XML File */
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-                        .newInstance();
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
                 Document doc = dBuilder.parse(xmlFile);
                 doc.getDocumentElement().normalize();
 
                 /* get State Providers modules */
-                NodeList stateproviderNodes = doc
-                        .getElementsByTagName(TmfXmlStrings.STATE_PROVIDER);
+                NodeList stateproviderNodes = doc.getElementsByTagName(TmfXmlStrings.STATE_PROVIDER);
                 for (int i = 0; i < stateproviderNodes.getLength(); i++) {
                     Element node = (Element) stateproviderNodes.item(i);
 
                     IAnalysisModuleHelper helper = new TmfAnalysisModuleHelperXml(xmlFile, node, XmlAnalysisModuleType.STATE_SYSTEM);
                     fModules.add(helper);
                 }
-            } catch (ParserConfigurationException e) {
-                Activator.logError("Error opening XML file", e); //$NON-NLS-1$
-            } catch (SAXException e) {
-                Activator.logError("Error opening XML file", e); //$NON-NLS-1$
-            } catch (IOException e) {
+            } catch (ParserConfigurationException | SAXException | IOException e) {
                 Activator.logError("Error opening XML file", e); //$NON-NLS-1$
             }
         }

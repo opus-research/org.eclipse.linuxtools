@@ -23,7 +23,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.tests.shared.TmfXmlTestFiles;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.tests.common.TmfXmlTestFiles;
 import org.junit.After;
 import org.junit.Test;
 
@@ -75,15 +75,13 @@ public class XmlUtilsTest {
         if ((testXmlFile == null) || !testXmlFile.exists()) {
             fail("XML test file does not exist");
         }
-        assertTrue(XmlUtils.xmlValidate(testXmlFile));
-        assertTrue(XmlUtils.getLastError().length() == 0);
+        assertTrue(XmlUtils.xmlValidate(testXmlFile).isOK());
 
         testXmlFile = TmfXmlTestFiles.INVALID_FILE.getFile();
         if ((testXmlFile == null) || !testXmlFile.exists()) {
             fail("XML test file does not exist");
         }
-        assertFalse(XmlUtils.xmlValidate(testXmlFile));
-        assertTrue(XmlUtils.getLastError().length() > 0);
+        assertFalse(XmlUtils.xmlValidate(testXmlFile).isOK());
     }
 
     /**
@@ -92,8 +90,7 @@ public class XmlUtilsTest {
     @Test
     public void testXmlAddFile() {
         /* Check the file does not exist */
-        IPath xmlPath = XmlUtils.getXmlFilesPath()
-                .addTrailingSeparator().append("test_valid.xml");
+        IPath xmlPath = XmlUtils.getXmlFilesPath().addTrailingSeparator().append("test_valid.xml");
         File destFile = xmlPath.toFile();
         assertFalse(destFile.exists());
 

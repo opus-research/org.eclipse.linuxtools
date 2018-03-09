@@ -27,6 +27,8 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.core.Activator;
 import org.eclipse.osgi.util.NLS;
 import org.xml.sax.SAXException;
@@ -46,18 +48,9 @@ public class XmlUtils {
     /** Name of the XSD schema file */
     private static final String XSD = "xmldefinition.xsd"; //$NON-NLS-1$
 
-    /** Empty string to reset error messages to */
-    private static final String EMPTY_STRING = ""; //$NON-NLS-1$
-
-    private static String fLastError = EMPTY_STRING;
-
     /** Make this class non-instantiable */
     private XmlUtils() {
 
-    }
-
-    private static void resetLastError() {
-        fLastError = EMPTY_STRING;
     }
 
     /**
@@ -72,7 +65,7 @@ public class XmlUtils {
 
         /* Check if directory exists, otherwise create it */
         File dir = path.toFile();
-        if (!dir.exists()) {
+        if (!dir.exists() || !dir.isDirectory()) {
             dir.mkdirs();
         }
 
@@ -86,8 +79,7 @@ public class XmlUtils {
      *            XML file to validate
      * @return True if the XML validates
      */
-    public static boolean xmlValidate(File xmlFile) {
-        resetLastError();
+    public static IStatus xmlValidate(File xmlFile) {
         URL url = XmlUtils.class.getResource(XSD);
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         Source xmlSource = new StreamSource(xmlFile);
@@ -96,19 +88,19 @@ public class XmlUtils {
             Validator validator = schema.newValidator();
             validator.validate(xmlSource);
         } catch (SAXParseException e) {
-            fLastError = NLS.bind(Messages.XmlUtils_XmlParseError, e.getLineNumber(), e.getLocalizedMessage());
-            Activator.logError(fLastError);
-            return false;
+            String error = NLS.bind(Messages.XmlUtils_XmlParseError, e.getLineNumber(), e.getLocalizedMessage());
+            Activator.logError(error);
+            return new Status(IStatus.ERROR,  Activator.PLUGIN_ID, error, e);
         } catch (SAXException e) {
-            fLastError = NLS.bind(Messages.XmlUtils_XmlValidationError, e.getLocalizedMessage());
-            Activator.logError(fLastError);
-            return false;
+            String error = NLS.bind(Messages.XmlUtils_XmlValidationError, e.getLocalizedMessage());
+            Activator.logError(error);
+            return new Status(IStatus.ERROR,  Activator.PLUGIN_ID, error, e);
         } catch (IOException e) {
-            fLastError = Messages.XmlUtils_XmlValidateError;
+            String error = Messages.XmlUtils_XmlValidateError;
             Activator.logError("IO exception occurred", e); //$NON-NLS-1$
-            return false;
+            return new Status(IStatus.ERROR,  Activator.PLUGIN_ID, error, e);
         }
-        return true;
+        return Status.OK_STATUS;
     }
 
     /**
@@ -120,21 +112,19 @@ public class XmlUtils {
      *            The XML file to add
      * @return Whether the file was successfully added
      */
-    public static boolean addXmlFile(File fromFile) {
-        resetLastError();
+    public static IStatus addXmlFile(File fromFile) {
 
         /* Copy file to path */
-        File toFile = getXmlFilesPath().addTrailingSeparator()
-                .append(fromFile.getName()).toFile();
+        File toFile = getXmlFilesPath().addTrailingSeparator().append(fromFile.getName()).toFile();
 
         try {
             if (!toFile.exists()) {
                 toFile.createNewFile();
             }
         } catch (IOException e) {
-            fLastError = Messages.XmlUtils_ErrorCopyingFile;
-            Activator.logError(fLastError, e);
-            return false;
+            String error = Messages.XmlUtils_ErrorCopyingFile;
+            Activator.logError(error, e);
+            return new Status(IStatus.ERROR,  Activator.PLUGIN_ID, error, e);
         }
 
         try (FileInputStream fis = new FileInputStream(fromFile);
@@ -143,23 +133,11 @@ public class XmlUtils {
                 FileChannel destination = fos.getChannel();) {
             destination.transferFrom(source, 0, source.size());
         } catch (IOException e) {
-            fLastError = Messages.XmlUtils_ErrorCopyingFile;
-            Activator.logError(fLastError, e);
-            return false;
+            String error = Messages.XmlUtils_ErrorCopyingFile;
+            Activator.logError(error, e);
+            return new Status(IStatus.ERROR,  Activator.PLUGIN_ID, error, e);
         }
-        return true;
+        return Status.OK_STATUS;
     }
 
-    /**
-     * Return the last error message that was obtained either when validating an
-     * XML file or manipulating the files. Typically, one of the boolean
-     * functions of this class would have returned false and the error message
-     * will have been updated. It can either be logged or displayed to the user
-     * by the caller.
-     *
-     * @return The last error message
-     */
-    public static String getLastError() {
-        return fLastError;
-    }
 }
