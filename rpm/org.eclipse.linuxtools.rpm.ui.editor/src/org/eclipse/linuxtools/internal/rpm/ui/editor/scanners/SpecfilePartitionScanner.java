@@ -74,7 +74,7 @@ public class SpecfilePartitionScanner extends RuleBasedPartitionScanner {
 		IToken specPackages = new Token(SPEC_PACKAGES);
 		IToken specGroup = new Token(SPEC_GROUP);
 
-		List<IRule> rules = new ArrayList<>();
+		List<IRule> rules = new ArrayList<IRule>();
 
 		// RPM packages
 		for (String packageTag : SpecfilePackagesScanner.PACKAGES_TAGS) {

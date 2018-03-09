@@ -117,7 +117,7 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
      */
     public List<TmfTraceElement> getTraces() {
         List<ITmfProjectModelElement> children = getChildren();
-        List<TmfTraceElement> traces = new ArrayList<>();
+        List<TmfTraceElement> traces = new ArrayList<TmfTraceElement>();
         for (ITmfProjectModelElement child : children) {
             if (child instanceof TmfTraceElement) {
                 traces.add((TmfTraceElement) child);
@@ -320,7 +320,7 @@ public class TmfExperimentElement extends TmfWithFolderElement implements IPrope
      * @since 3.0
      */
     public List<TmfAnalysisElement> getAvailableAnalysis() {
-        List<TmfAnalysisElement> list = new ArrayList<>();
+        List<TmfAnalysisElement> list = new ArrayList<TmfAnalysisElement>();
 
         /**
          * TODO : implement this cleanly and test it when experiment types are

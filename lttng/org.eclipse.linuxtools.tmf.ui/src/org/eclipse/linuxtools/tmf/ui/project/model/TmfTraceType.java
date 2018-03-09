@@ -137,9 +137,9 @@ public final class TmfTraceType {
 
     // The mapping of available trace type IDs to their corresponding
     // configuration element
-    private final Map<String, IConfigurationElement> fTraceTypeAttributes = new HashMap<>();
-    private final Map<String, IConfigurationElement> fTraceCategories = new HashMap<>();
-    private final Map<String, TraceTypeHelper> fTraceTypes = new LinkedHashMap<>();
+    private final Map<String, IConfigurationElement> fTraceTypeAttributes = new HashMap<String, IConfigurationElement>();
+    private final Map<String, IConfigurationElement> fTraceCategories = new HashMap<String, IConfigurationElement>();
+    private final Map<String, TraceTypeHelper> fTraceTypes = new LinkedHashMap<String, TraceTypeHelper>();
 
     private static TmfTraceType fInstance = null;
 
@@ -211,7 +211,7 @@ public final class TmfTraceType {
     public static IConfigurationElement[] getTypeElements() {
         IConfigurationElement[] elements = Platform.getExtensionRegistry()
                 .getConfigurationElementsFor(TMF_TRACE_TYPE_ID);
-        List<IConfigurationElement> typeElements = new LinkedList<>();
+        List<IConfigurationElement> typeElements = new LinkedList<IConfigurationElement>();
         for (IConfigurationElement element : elements) {
             if (element.getName().equals(TYPE_ELEM)) {
                 typeElements.add(element);
@@ -250,7 +250,7 @@ public final class TmfTraceType {
     public String[] getAvailableTraceTypes() {
 
         // Generate the list of Category:TraceType to populate the ComboBox
-        List<String> traceTypes = new ArrayList<>();
+        List<String> traceTypes = new ArrayList<String>();
 
         // re-populate custom trace types
         getCustomTraceTypes();
@@ -272,7 +272,7 @@ public final class TmfTraceType {
      * @since 2.0
      */
     public static List<String> getCustomTraceTypes(String type) {
-        List<String> traceTypes = new ArrayList<>();
+        List<String> traceTypes = new ArrayList<String>();
         if (type.equals(CUSTOM_TXT_CATEGORY)) {
             for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
                 String traceTypeName = def.definitionName;
@@ -295,7 +295,7 @@ public final class TmfTraceType {
      * @since 2.0
      */
     public List<String> getCustomTraceTypes() {
-        List<String> traceTypes = new ArrayList<>();
+        List<String> traceTypes = new ArrayList<String>();
         // remove the customTraceTypes
         final String[] keySet = fTraceTypes.keySet().toArray(new String[0]);
         for (String key : keySet) {
@@ -391,7 +391,7 @@ public final class TmfTraceType {
      * @since 2.0
      */
     public List<String> getTraceCategories() {
-        List<String> categoryNames = new ArrayList<>();
+        List<String> categoryNames = new ArrayList<String>();
         for (String key : fTraceTypes.keySet()) {
             final String categoryName = fTraceTypes.get(key).getCategoryName();
             if (!categoryNames.contains(categoryName)) {
@@ -412,7 +412,7 @@ public final class TmfTraceType {
 
     public List<TraceTypeHelper> getTraceTypes(String categoryName) {
         init();
-        List<TraceTypeHelper> traceNames = new ArrayList<>();
+        List<TraceTypeHelper> traceNames = new ArrayList<TraceTypeHelper>();
         for (String key : fTraceTypes.keySet()) {
             final String storedCategoryName = fTraceTypes.get(key).getCategoryName();
             if (storedCategoryName.equals(categoryName)) {
@@ -430,19 +430,19 @@ public final class TmfTraceType {
 
     private static List<File> isolateTraces(List<FileSystemElement> selectedResources) {
 
-        List<File> traces = new ArrayList<>();
+        List<File> traces = new ArrayList<File>();
 
         // Get the selection
         Iterator<FileSystemElement> resources = selectedResources.iterator();
 
         // Get the sorted list of unique entries
-        Map<String, File> fileSystemObjects = new HashMap<>();
+        Map<String, File> fileSystemObjects = new HashMap<String, File>();
         while (resources.hasNext()) {
             File resource = (File) resources.next().getFileSystemObject();
             String key = resource.getAbsolutePath();
             fileSystemObjects.put(key, resource);
         }
-        List<String> files = new ArrayList<>(fileSystemObjects.keySet());
+        List<String> files = new ArrayList<String>(fileSystemObjects.keySet());
         Collections.sort(files);
 
         // After sorting, traces correspond to the unique prefixes
@@ -637,7 +637,7 @@ public final class TmfTraceType {
      * @since 2.2
      */
     public TraceTypeHelper selectTraceType(String path, Shell shell, String traceTypeHint) throws TmfTraceImportException {
-        List<TraceTypeHelper> validCandidates = new ArrayList<>();
+        List<TraceTypeHelper> validCandidates = new ArrayList<TraceTypeHelper>();
         getCustomTraceTypes();
         final Set<String> traceTypes = fTraceTypes.keySet();
         for (String traceType : traceTypes) {
@@ -676,7 +676,7 @@ public final class TmfTraceType {
     }
 
     private static List<TraceTypeHelper> reduce(List<TraceTypeHelper> candidates) {
-        List<TraceTypeHelper> retVal = new ArrayList<>();
+        List<TraceTypeHelper> retVal = new ArrayList<TraceTypeHelper>();
 
         // get all the tracetypes that are unique in that stage
         for (TraceTypeHelper trace : candidates) {
@@ -708,7 +708,7 @@ public final class TmfTraceType {
     }
 
     private TraceTypeHelper getTraceTypeToSet(List<TraceTypeHelper> candidates, Shell shell) {
-        final Map<String, String> names = new HashMap<>();
+        final Map<String, String> names = new HashMap<String, String>();
         Shell shellToShow = new Shell(shell);
         shellToShow.setText(Messages.TmfTraceType_SelectTraceType);
         final String candidatesToSet[] = new String[1];

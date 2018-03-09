@@ -78,7 +78,7 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
         fPath = resource.getFullPath();
         fLocation = resource.getLocationURI();
         fParent = parent;
-        fChildren = new ArrayList<>();
+        fChildren = new ArrayList<ITmfProjectModelElement>();
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
