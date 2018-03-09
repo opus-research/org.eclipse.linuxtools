@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Activator;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
-import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoCommandCreator;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.osgi.framework.FrameworkUtil;
 
@@ -115,19 +114,11 @@ public class CreaterepoProject {
 	 * @throws CoreException Thrown when failure to create a workspace file.
 	 */
 	public void importRPM(File externalFile) throws CoreException {
-		// must first check if external file exists
-		if (!externalFile.exists()) {
-			return;
-		}
 		// must put imported RPMs into the content folder; create if missing
 		if (!getContentFolder().exists()) {
 			createContentFolder();
 		}
 		IFile file = getContentFolder().getFile(new Path(externalFile.getName()));
-		// do not import non-RPMs
-		if (!file.getFileExtension().equals(ICreaterepoConstants.RPM_FILE_EXTENSION)) {
-			return;
-		}
 		if (!file.exists()) {
 			try {
 				file.create(new FileInputStream(externalFile), false, monitor);
@@ -155,25 +146,6 @@ public class CreaterepoProject {
 		}
 		Createrepo createrepo = new Createrepo();
 		IStatus result = createrepo.execute(os, this, getCommandArguments());
-		getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-		return result;
-	}
-
-	/**
-	 * Execute the createrepo command with a call to update.
-	 *
-	 * @param os Direct execution stream to this.
-	 * @return The status of the execution.
-	 * @throws CoreException Thrown when failure to execute command.
-	 */
-	public IStatus update(OutputStream os) throws CoreException {
-		if (!getContentFolder().exists()) {
-			createContentFolder();
-		}
-		Createrepo createrepo = new Createrepo();
-		List<String> commands = getCommandArguments();
-		commands.add(ICreaterepoConstants.DASH.concat(CreaterepoPreferenceConstants.PREF_UPDATE));
-		IStatus result = createrepo.execute(os, this, commands);
 		getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
 		return result;
 	}
@@ -243,10 +215,8 @@ public class CreaterepoProject {
 	 *
 	 * @return The command arguments.
 	 */
-	private List<String> getCommandArguments() {
+	private static List<String> getCommandArguments() {
 		List<String> commands = new ArrayList<String>();
-		CreaterepoCommandCreator creator = new CreaterepoCommandCreator(projectPreferences);
-		commands.addAll(creator.getCommands());
 		return commands;
 	}
 

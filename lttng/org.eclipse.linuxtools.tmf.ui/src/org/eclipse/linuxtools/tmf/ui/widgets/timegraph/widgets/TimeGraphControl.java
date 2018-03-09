@@ -2410,9 +2410,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
         fFilters.remove(filter);
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public void colorSettingsChanged(StateItem[] stateItems) {
         /* Destroy previous colors from the resource manager */

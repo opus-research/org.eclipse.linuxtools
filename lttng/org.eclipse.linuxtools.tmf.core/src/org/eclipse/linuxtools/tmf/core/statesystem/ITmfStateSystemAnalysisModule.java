@@ -18,7 +18,6 @@ import java.util.Map;
  * Interface for analysis modules providing state systems
  *
  * @author Geneviève Bastien
- * @since 3.0
  */
 public interface ITmfStateSystemAnalysisModule {
 
