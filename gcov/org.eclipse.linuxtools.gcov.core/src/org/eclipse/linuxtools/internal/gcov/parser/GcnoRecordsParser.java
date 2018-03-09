@@ -45,11 +45,11 @@ public class GcnoRecordsParser {
         this.currentAllSrcs = AllSrcs;
     }
 
-    private SourceFile findOrAdd(String fileName) {
+    private SourceFile findOrAdd(String fileName, ArrayList<SourceFile> srcs) {
         SourceFile newsrc = sourceMap.get(fileName);
         if (newsrc == null) {
-            newsrc = new SourceFile(fileName, currentAllSrcs.size() + 1);
-            currentAllSrcs.add(newsrc);
+            newsrc = new SourceFile(fileName, srcs.size() + 1);
+            srcs.add(newsrc);
             sourceMap.put(fileName, newsrc);
         }
         return newsrc; // return the new added element
@@ -123,7 +123,7 @@ public class GcnoRecordsParser {
                     long fnctnFrstLnNmbr = (stream.readInt() & MasksGenerator.UNSIGNED_INT_MASK);
 
                     fnctn = new GcnoFunction(fnctnIdent, fnctnChksm, fnctnName, fnctnSrcFle, fnctnFrstLnNmbr);
-                    SourceFile srcFle2 = findOrAdd(fnctn.getSrcFile());
+                    SourceFile srcFle2 = findOrAdd(fnctn.getSrcFile(), currentAllSrcs);
                     if (fnctn.getFirstLineNmbr() >= srcFle2.getNumLines()) {
                         srcFle2.setNumLines((int) fnctn.getFirstLineNmbr() + 1);
                     }
@@ -212,7 +212,7 @@ public class GcnoRecordsParser {
                                 break;
                             }
 
-                            source = findOrAdd(fileName);
+                            source = findOrAdd(fileName, currentAllSrcs);
                             lineNos[ix++] = 0;
                             lineNos[ix++] = source.getIndex();
                         }
@@ -233,5 +233,9 @@ public class GcnoRecordsParser {
     /* Getters */
     public ArrayList<GcnoFunction> getFnctns() {
         return fnctns;
+    }
+
+    public ArrayList<SourceFile> getcurrentAllSrcs() {
+        return currentAllSrcs;
     }
 }
