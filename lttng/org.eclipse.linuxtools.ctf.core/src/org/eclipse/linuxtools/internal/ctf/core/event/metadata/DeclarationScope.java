@@ -39,6 +39,7 @@ public class DeclarationScope {
     private final Map<String, EnumDeclaration> enums = new HashMap<String, EnumDeclaration>();
     private final Map<String, VariantDeclaration> variants = new HashMap<String, VariantDeclaration>();
     private final Map<String, IDeclaration> types = new HashMap<String, IDeclaration>();
+    private final Map<String, IDeclaration> identifiers = new HashMap<String, IDeclaration>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -96,6 +97,16 @@ public class DeclarationScope {
 
         /* Add it to the register. */
         types.put(name, declaration);
+    }
+
+    public void registerIdentifier( String name, IDeclaration declaration) throws ParseException{
+        /* Check if the type has been defined in the current scope */
+        if (identifiers.containsKey(name)) {
+            throw new ParseException(Messages.IdentifierAlreadyDefined + ':' + name);
+        }
+
+        /* Add it to the register. */
+        identifiers.put(name, declaration);
     }
 
     /**
@@ -305,6 +316,35 @@ public class DeclarationScope {
         }
     }
 
+    /**
+     * Looks through the list of structs and variants of a scope to
+     * find if a field exists.
+     *
+     * @param identifier
+     *            the field name
+     * @return the declaration of the type associated to that identifier
+     */
+    public IDeclaration lookupIdentifier(String identifier) {
+        return identifiers.get(identifier);
+    }
+
+    /**
+     * Recursively looks through the list of structs and variants of a scope to
+     * find if a field exists.
+     *
+     * @param identifier
+     *            the field name
+     * @return the declaration of the type associated to that identifier
+     */
+    public IDeclaration rLookupIdentifier(String identifier) {
+        IDeclaration declaration = lookupIdentifier(identifier);
+        if (declaration != null) {
+            return declaration;
+        } else if (parentScope != null) {
+            return parentScope.rLookupIdentifier(identifier);
+        }
+        return null;
+    }
 
     /**
      * Get all the type names of this scope.
@@ -326,7 +366,7 @@ public class DeclarationScope {
      * @throws ParseException
      *             If the type does not exist.
      */
-    public void replaceType(String name, IDeclaration newType) throws ParseException{
+    public void replaceType(String name, IDeclaration newType) throws ParseException {
         if (types.containsKey(name)) {
             types.put(name, newType);
         } else {

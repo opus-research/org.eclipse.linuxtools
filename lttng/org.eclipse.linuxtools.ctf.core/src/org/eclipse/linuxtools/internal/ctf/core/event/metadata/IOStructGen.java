@@ -1145,6 +1145,10 @@ public class IOStructGen {
                     /* Sequence */
                     String lengthName = concatenateUnaryStrings(lengthChildren);
 
+                    /* check that lengthName was declared */
+                    if (!isIsUnsignedIntegerField(lengthName)) {
+                        throw new ParseException("Sequnce declared with length that is not an unsigned integer"); //$NON-NLS-1$
+                    }
                     /* Create the sequence declaration. */
                     declaration = new SequenceDeclaration(lengthName,
                             declaration);
@@ -1159,6 +1163,15 @@ public class IOStructGen {
         }
 
         return declaration;
+    }
+
+    private boolean isIsUnsignedIntegerField(String lengthName) {
+        IDeclaration decl = getCurrentScope().rLookupIdentifier(lengthName);
+        if (decl instanceof IntegerDeclaration) {
+            return !((IntegerDeclaration) decl).isSigned();
+        }
+        return false;
+
     }
 
     /**
@@ -1675,6 +1688,7 @@ public class IOStructGen {
             IDeclaration decl = parseTypeDeclarator(typeDeclaratorNode,
                     typeSpecifierListNode, identifierSB);
             String fieldName = identifierSB.toString();
+            getCurrentScope().registerIdentifier(fieldName, decl);
 
             if (struct.hasField(fieldName)) {
                 throw new ParseException("struct: duplicate field " //$NON-NLS-1$
@@ -2090,12 +2104,16 @@ public class IOStructGen {
             IDeclaration decl = parseTypeDeclarator(typeDeclaratorNode,
                     typeSpecifierListNode, identifierSB);
 
-            if (variant.hasField(identifierSB.toString())) {
+            String name = identifierSB.toString();
+
+            if (variant.hasField(name)) {
                 throw new ParseException("variant: duplicate field " //$NON-NLS-1$
-                        + identifierSB.toString());
+                        + name);
             }
 
-            variant.addField(identifierSB.toString(), decl);
+            getCurrentScope().registerIdentifier(name, decl);
+
+            variant.addField(name, decl);
         }
     }
 
