@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfTraceImportException;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.AbstractTracePackageOperation;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageBookmarkElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageElement;
@@ -40,13 +41,12 @@ import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePack
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFileElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageSupplFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceImportException;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceTypeUIUtils;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.wizards.datatransfer.TarException;
@@ -220,7 +220,7 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                 } else {
                     try {
                         progressMonitor.subTask(MessageFormat.format(Messages.TracePackageImportOperation_DetectingTraceType, traceName));
-                        traceType = TmfTraceTypeUIUtils.selectTraceType(traceRes.getLocation().toOSString(), null, null);
+                        traceType = TmfTraceType.getInstance().selectTraceType(traceRes.getLocation().toOSString(), null, null);
                     } catch (TmfTraceImportException e) {
                         // Could not figure out the type
                     }
@@ -228,7 +228,7 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
 
                 if (traceType != null) {
                     try {
-                        TmfTraceTypeUIUtils.setTraceType(traceRes.getFullPath(), traceType);
+                        TmfTraceType.setTraceType(traceRes.getFullPath(), traceType);
                     } catch (CoreException e) {
                         setStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, MessageFormat.format(Messages.ImportTracePackageWizardPage_ErrorSettingTraceType, traceElement.getTraceType(), traceName), e));
                     }
@@ -342,15 +342,18 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
     }
 
     private IStatus importTraceFiles(TracePackageFilesElement traceFilesElement, IProgressMonitor monitor) {
-        List<String> fileNames = new ArrayList<>();
+        List<String> fileNames = new ArrayList<String>();
         fileNames.add(traceFilesElement.getFileName());
         IPath containerPath = fTmfTraceFolder.getPath();
         IStatus status = importFiles(getSpecifiedArchiveFile(), fileNames, containerPath, monitor);
+        if (status.isOK()) {
+            new TmfNavigatorContentProvider().getChildren(fTmfTraceFolder);
+        }
         return status;
     }
 
     private IStatus importSupplFiles(TracePackageSupplFilesElement suppFilesElement, TracePackageTraceElement traceElement, IProgressMonitor monitor) {
-        List<String> fileNames = new ArrayList<>();
+        List<String> fileNames = new ArrayList<String>();
         for (TracePackageElement child : suppFilesElement.getChildren()) {
             TracePackageSupplFileElement supplFile = (TracePackageSupplFileElement) child;
             fileNames.add(supplFile.getText());
@@ -380,7 +383,7 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
     }
 
     private IStatus importFiles(ArchiveFile archiveFile, List<String> fileNames, IPath destinationContainerPath, IProgressMonitor monitor) {
-        List<ArchiveProviderElement> objects = new ArrayList<>();
+        List<ArchiveProviderElement> objects = new ArrayList<ArchiveProviderElement>();
         Enumeration<?> entries = archiveFile.entries();
         while (entries.hasMoreElements()) {
             ArchiveEntry entry = (ArchiveEntry) entries.nextElement();

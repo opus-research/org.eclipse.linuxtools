@@ -39,8 +39,8 @@ import org.eclipse.jface.viewers.TreeViewerEditor;
 import org.eclipse.jface.viewers.TreeViewerFocusCellManager;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.ITmfImageConstants;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceValidationHelper;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceValidationHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -67,7 +67,7 @@ public class ImportTraceWizardScanPage extends AbstractImportTraceWizardPage {
     private CheckboxTreeViewer traceTypeViewer;
 
     final ScanRunnable fRunnable = new ScanRunnable("Scan job"); //$NON-NLS-1$
-    final private BlockingQueue<TraceValidationHelper> fTracesToScan = new ArrayBlockingQueue<>(MAX_TRACES);
+    final private BlockingQueue<TraceValidationHelper> fTracesToScan = new ArrayBlockingQueue<TraceValidationHelper>(MAX_TRACES);
     private volatile boolean fCanRun = true;
 
     // --------------------------------------------------------------------------------

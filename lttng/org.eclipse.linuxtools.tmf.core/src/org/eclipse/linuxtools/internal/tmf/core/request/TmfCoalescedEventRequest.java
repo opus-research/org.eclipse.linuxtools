@@ -36,7 +36,7 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
     // ------------------------------------------------------------------------
 
     /** The list of coalesced requests */
-    private final List<ITmfEventRequest> fRequests = new ArrayList<>();
+    private final List<ITmfEventRequest> fRequests = new ArrayList<ITmfEventRequest>();
 
     /**
      * We do not use super.fRange, because in the case of coalesced requests,
@@ -195,7 +195,8 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
                 request.handleData(null);
             } else {
                 long start = request.getIndex();
-                if (!request.isCompleted() && index >= start && request.getNbRead() < request.getNbRequested()) {
+                long end = start + request.getNbRequested();
+                if (!request.isCompleted() && index >= start && index < end) {
                     ITmfTimestamp ts = data.getTimestamp();
                     if (request.getRange().contains(ts)) {
                         if (request.getDataType().isInstance(data)) {

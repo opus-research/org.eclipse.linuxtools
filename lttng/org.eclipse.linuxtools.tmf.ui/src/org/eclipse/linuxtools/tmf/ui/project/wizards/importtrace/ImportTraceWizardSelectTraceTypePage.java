@@ -21,7 +21,7 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -126,7 +126,7 @@ public class ImportTraceWizardSelectTraceTypePage extends AbstractImportTraceWiz
 
     @Override
     public boolean canFlipToNextPage() {
-        List<String> tracesToScan = new ArrayList<>();
+        List<String> tracesToScan = new ArrayList<String>();
         String elements[] = (String[]) fProvider.getElements(null);
         for (String traceFamily : elements) {
             final TraceTypeHelper[] children = (TraceTypeHelper[]) fProvider.getChildren(traceFamily);

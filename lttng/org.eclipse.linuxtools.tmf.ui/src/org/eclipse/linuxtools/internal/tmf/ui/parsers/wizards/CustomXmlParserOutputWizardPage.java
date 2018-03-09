@@ -23,11 +23,11 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomEventsTable;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTrace;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -52,7 +52,7 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
     private static final Image DOWN_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/down_button.gif"); //$NON-NLS-1$
     private final CustomXmlParserWizard wizard;
     private CustomXmlTraceDefinition definition;
-    private List<Output> outputs = new ArrayList<>();
+    private List<Output> outputs = new ArrayList<Output>();
     private Composite container;
     private SashForm sash;
     private ScrolledComposite outputsScrolledComposite;
@@ -214,15 +214,13 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
     private void updatePreviewTable() {
         final int CACHE_SIZE = 50;
         definition.outputs = extractOutputs();
-        tmpFile = Activator.getDefault().getStateLocation().addTrailingSeparator().append("customwizard.tmp").toFile(); //$NON-NLS-1$
-
-        try (final FileWriter writer = new FileWriter(tmpFile);) {
-            writer.write(wizard.inputPage.getInputText());
-        } catch (final IOException e) {
-            Activator.getDefault().logError("Error creating CustomXmlTrace. File:" + tmpFile.getAbsolutePath(), e); //$NON-NLS-1$
-        }
 
         try {
+            tmpFile = Activator.getDefault().getStateLocation().addTrailingSeparator().append("customwizard.tmp").toFile(); //$NON-NLS-1$
+            final FileWriter writer = new FileWriter(tmpFile);
+            writer.write(wizard.inputPage.getInputText());
+            writer.close();
+
             final CustomXmlTrace trace = new CustomXmlTrace(null, definition, tmpFile.getAbsolutePath(), CACHE_SIZE);
             trace.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, false);
             previewTable.dispose();
@@ -230,6 +228,8 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
             previewTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
             previewTable.setTrace(trace, true);
         } catch (final TmfTraceException e) {
+            Activator.getDefault().logError("Error creating CustomXmlTrace. File:" + tmpFile.getAbsolutePath(), e); //$NON-NLS-1$
+        } catch (final IOException e) {
             Activator.getDefault().logError("Error creating CustomXmlTrace. File:" + tmpFile.getAbsolutePath(), e); //$NON-NLS-1$
         }
 
@@ -249,7 +249,7 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
                 numColumns++;
             }
         }
-        final List<OutputColumn> outputColumns = new ArrayList<>(numColumns);
+        final List<OutputColumn> outputColumns = new ArrayList<OutputColumn>(numColumns);
         numColumns = 0;
         for (int i = 0; i < outputs.size(); i++) {
             final Output output = outputs.get(i);

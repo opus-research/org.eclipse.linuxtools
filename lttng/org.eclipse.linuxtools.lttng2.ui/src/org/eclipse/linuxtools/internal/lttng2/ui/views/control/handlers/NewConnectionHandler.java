@@ -147,8 +147,8 @@ public class NewConnectionHandler extends BaseControlViewHandler {
 
     private static IHost[] getSuitableHosts() {
         // need shells and files
-        ArrayList<IHost> result = new ArrayList<>();
-        ArrayList<IHost> shellConnections = new ArrayList<>(
+        ArrayList<IHost> result = new ArrayList<IHost>();
+        ArrayList<IHost> shellConnections = new ArrayList<IHost>(
                 Arrays.asList(RSECorePlugin.getTheSystemRegistry()
                         .getHostsBySubSystemConfigurationCategory("shells"))); //$NON-NLS-1$
 

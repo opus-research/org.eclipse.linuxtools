@@ -75,7 +75,7 @@ public class SRPMImportOperation implements IRunnableWithProgress {
 		// Total number of work steps needed
 		int totalWork = 3;
 
-		rpmErrorTable = new ArrayList<>();
+		rpmErrorTable = new ArrayList<CoreException>();
 
 		progressMonitor.beginTask(Messages.getString("SRPMImportOperation.Starting"), //$NON-NLS-1$
 		totalWork);

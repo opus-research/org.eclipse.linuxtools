@@ -37,18 +37,16 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtEvent;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTrace;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlEvent;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtEvent;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTrace;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlEvent;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTrace;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
@@ -134,8 +132,8 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
 
     // The mapping of available trace type IDs to their corresponding
     // configuration element
-    private static final Map<String, IConfigurationElement> sfTraceTypeAttributes = new HashMap<>();
-    private static final Map<String, IConfigurationElement> sfTraceCategories = new HashMap<>();
+    private static final Map<String, IConfigurationElement> sfTraceTypeAttributes = new HashMap<String, IConfigurationElement>();
+    private static final Map<String, IConfigurationElement> sfTraceCategories = new HashMap<String, IConfigurationElement>();
 
     /**
      * Initialize statically at startup by getting extensions from the platform
@@ -194,75 +192,6 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     }
 
     // ------------------------------------------------------------------------
-    // TmfProjectModelElement
-    // ------------------------------------------------------------------------
-
-    @Override
-    void refreshChildren() {
-
-        /* Refreshes the analysis under this trace */
-        Map<String, TmfAnalysisElement> childrenMap = new HashMap<>();
-        for (TmfAnalysisElement analysis : getAvailableAnalysis()) {
-            childrenMap.put(analysis.getAnalysisId(), analysis);
-        }
-
-        TraceTypeHelper helper = TmfTraceType.getInstance().getTraceType(getTraceType());
-
-        Class<? extends ITmfTrace> traceClass = null;
-
-        if (helper == null && fTraceTypeId != null) {
-            if (fTraceTypeId.startsWith(CustomTxtTrace.class.getCanonicalName())) {
-                for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                    if (fTraceTypeId.equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
-                        traceClass = CustomTxtTrace.class;
-                    }
-                }
-            }
-            if (fTraceTypeId.startsWith(CustomXmlTrace.class.getCanonicalName())) {
-                for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                    if (fTraceTypeId.equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
-                        traceClass = CustomTxtTrace.class;
-                    }
-                }
-            }
-        } else if (helper != null) {
-            traceClass = helper.getTraceClass();
-        }
-
-        /* Remove all analysis and return */
-        if (traceClass == null) {
-            for (TmfAnalysisElement analysis : childrenMap.values()) {
-                removeChild(analysis);
-            }
-            return;
-        }
-
-        /** Get the base path to put the resource to */
-        IPath path = fResource.getFullPath();
-
-        /* Add all new analysis modules or refresh outputs of existing ones */
-        for (IAnalysisModuleHelper module : TmfAnalysisManager.getAnalysisModules(traceClass).values()) {
-
-            /* If the analysis is not a child of the trace, create it */
-            TmfAnalysisElement analysis = childrenMap.remove(module.getId());
-            if (analysis == null) {
-                /**
-                 * No need for the resource to exist, nothing will be done with
-                 * it
-                 */
-                IFolder newresource = ResourcesPlugin.getWorkspace().getRoot().getFolder(path.append(module.getId()));
-                analysis = new TmfAnalysisElement(module.getName(), newresource, this, module.getId());
-            }
-            analysis.refreshChildren();
-        }
-
-        /* Remove analysis that are not children of this trace anymore */
-        for (TmfAnalysisElement analysis : childrenMap.values()) {
-            removeChild(analysis);
-        }
-    }
-
-    // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
     /**
@@ -281,6 +210,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
     public void refreshTraceType() {
         try {
             fTraceTypeId = getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE);
+            refreshAnalysis();
         } catch (CoreException e) {
             Activator.getDefault().logError("Error refreshing trace type pesistent property for trace " + getName(), e); //$NON-NLS-1$
         }
@@ -514,7 +444,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
                 }
             }
         }
-        return new HashMap<>();
+        return new HashMap<String, String>();
     }
 
     @Override
@@ -681,7 +611,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
 
             // Propagate the removal to traces
             for (ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
-                List<ITmfProjectModelElement> toRemove = new LinkedList<>();
+                List<ITmfProjectModelElement> toRemove = new LinkedList<ITmfProjectModelElement>();
                 for (ITmfProjectModelElement child : experiment.getChildren()) {
                     if (child.getName().equals(getName())) {
                         toRemove.add(child);
@@ -715,21 +645,68 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
         return null;
     }
 
+    private void refreshAnalysis() {
+        List<TmfAnalysisElement> list = getAvailableAnalysis();
+
+        /* Remove children */
+        getChildren().clear();
+
+        /* Add the children again */
+        for (TmfAnalysisElement module : list) {
+            addChild(module);
+        }
+
+    }
+
     /**
-     * Get the list of analysis model elements under this trace
+     * Get the list of analysis elements
      *
      * @return Array of analysis elements
      * @since 3.0
      */
     public List<TmfAnalysisElement> getAvailableAnalysis() {
-        List<ITmfProjectModelElement> children = getChildren();
-        List<TmfAnalysisElement> analysis = new ArrayList<>();
-        for (ITmfProjectModelElement child : children) {
-            if (child instanceof TmfAnalysisElement) {
-                analysis.add((TmfAnalysisElement) child);
+        List<TmfAnalysisElement> list = new ArrayList<TmfAnalysisElement>();
+
+        TraceTypeHelper helper = TmfTraceType.getInstance().getTraceType(getTraceType());
+
+        Class<? extends ITmfTrace> traceClass = null;
+
+        if (helper == null && fTraceTypeId != null) {
+            if (fTraceTypeId.startsWith(CustomTxtTrace.class.getCanonicalName())) {
+                for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
+                    if (fTraceTypeId.equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
+                        traceClass = CustomTxtTrace.class;
+                    }
+                }
             }
+            if (fTraceTypeId.startsWith(CustomXmlTrace.class.getCanonicalName())) {
+                for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
+                    if (fTraceTypeId.equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
+                        traceClass = CustomTxtTrace.class;
+                    }
+                }
+            }
+        } else if (helper != null) {
+            traceClass = helper.getTraceClass();
         }
-        return analysis;
+
+        if (traceClass == null) {
+            return list;
+        }
+
+        /** Get the base path to put the resource to */
+        IPath path = fResource.getFullPath();
+
+        for (IAnalysisModuleHelper module : TmfAnalysisManager.getAnalysisModules(traceClass).values()) {
+
+            /** No need for the resource to exist, nothing will be done with it */
+            IFolder newresource = ResourcesPlugin.getWorkspace().getRoot().getFolder(path.append(module.getId()));
+
+            TmfAnalysisElement analysis = new TmfAnalysisElement(module.getName(), newresource, this, module.getId());
+            list.add(analysis);
+        }
+
+        return list;
     }
 
     /**
@@ -746,6 +723,7 @@ public class TmfTraceElement extends TmfWithFolderElement implements IActionFilt
             return;
         }
 
+        refreshAnalysis();
         getParent().refresh();
     }
 }

@@ -16,10 +16,6 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 
-/**
- * Project nature determining whether rpmlint builder should be enabled for the given project.
- *
- */
 public class RpmlintNature implements IProjectNature {
 
 	/**

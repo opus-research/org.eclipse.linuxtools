@@ -22,8 +22,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpInfo;
+import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelImage;
-import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelSession;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.checkevent.CheckEventsProcessor;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
@@ -221,19 +221,18 @@ public class Oprofile
 	}
 
 	/**
-	 * Returns a list of all the session collected on the system, as well as
-	 * the event under each of them.
-	 * @since 3.0
+	 * Returns a list of all the events collected on the system, as well as
+	 * the sessions under each of them.
 	 * @returns a list of all collected events
 	 */
-	public static OpModelSession[] getSessions() {
-		OpModelSession[] events = null;
+	public static OpModelEvent[] getEvents() {
+		OpModelEvent[] events = null;
 
-		ArrayList<OpModelSession> sessionList = new ArrayList<OpModelSession>();
+		ArrayList<OpModelEvent> sessionList = new ArrayList<OpModelEvent>();
 		try {
 			IRunnableWithProgress opxml = OprofileCorePlugin.getDefault().getOpxmlProvider().sessions(sessionList);
 			opxml.run(null);
-			events = new OpModelSession[sessionList.size()];
+			events = new OpModelEvent[sessionList.size()];
 			sessionList.toArray(events);
 		} catch (InvocationTargetException e) {
 		} catch (InterruptedException e) {
@@ -280,7 +279,6 @@ public class Oprofile
 		public final static String OPERF_BINARY = "operf"; //$NON-NLS-1$
 		public final static String OPCONTROL_BINARY = "opcontrol"; //$NON-NLS-1$
 		private static String binary = OPCONTROL_BINARY;
-		public final static String OPERF_DATA = "oprofile_data";
 
 
 		/**

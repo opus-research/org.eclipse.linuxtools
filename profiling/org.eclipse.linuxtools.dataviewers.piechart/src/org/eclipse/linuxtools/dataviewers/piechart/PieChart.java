@@ -17,27 +17,44 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.swtchart.Chart;
-import org.swtchart.IAxis;
 import org.swtchart.IBarSeries;
 import org.swtchart.ISeries;
 
 public class PieChart extends Chart {
 
-	protected List<RGB> colorList = new ArrayList<>();
-	private Color[] customColors = null;
+	protected List<RGB> colorList = new ArrayList<RGB>();
 
+	/**
+	 * A PieChart with no titles given to its pies.
+	 * @param parent
+	 * @param style
+	 */
     public PieChart(Composite parent, int style) {
+        this(parent, style, new String[0]);
+    }
+
+    /**
+     * A PieChart with titles given to each pie it draws.
+     * @param parent The parent composite.
+     * @param style The style of the parent composite.
+     * @param labels The title of each pie chart that is to be drawn.
+     * A null / not present title indicates no title.
+     * @since 1.1
+     */
+    public PieChart(Composite parent, int style, String labels[]) {
         super(parent, style);
-        // Hide all original axes and plot area
-        for (IAxis axis : getAxisSet().getAxes()) {
-        	axis.getTitle().setVisible(false);
+        Control plotArea = null;
+        for (Control child : getChildren()) {
+            if (child.getClass().getName().equals("org.swtchart.internal.axis.AxisTitle")) { //$NON-NLS-1$
+				child.setVisible(false); // Don't show original Plot Area and axis
+			} else if (child.getClass().getName().equals("org.swtchart.internal.PlotArea")) { //$NON-NLS-1$
+                child.setVisible(false); // Don't show original Plot Area and axis
+                plotArea = child;
+            }
         }
-        getPlotArea().setVisible(false);
-        addPaintListener(new PieChartPaintListener(this));
-        IAxis xAxis = getAxisSet().getXAxis(0);
-        xAxis.enableCategory(true);
-        xAxis.setCategorySeries(new String[]{""}); //$NON-NLS-1$
+        this.addPaintListener(new PieChartPaintListener(this, plotArea, labels));
     }
 
     @Override
@@ -45,10 +62,6 @@ public class PieChart extends Chart {
         if (!listener.getClass().getName().startsWith("org.swtchart.internal.axis")) { //$NON-NLS-1$
 			super.addPaintListener(listener);
 		}
-    }
-
-    public void setCustomColors(Color[] customColors) {
-    	this.customColors = customColors;
     }
 
     /**
@@ -59,7 +72,6 @@ public class PieChart extends Chart {
      * @param labels The titles of each series. (These are not the same as titles given to pies.)
      */
     public void addPieChartSeries(String labels[], double val[][]) {
-        setSeriesNames(val[0].length);
         for (ISeries s : this.getSeriesSet().getSeries()) {
 			this.getSeriesSet().deleteSeries(s.getId());
 		}
@@ -72,32 +84,8 @@ public class PieChart extends Chart {
 				d[j] = val[i][j];
 			}
             s.setXSeries(d);
-            if (customColors != null) {
-            	s.setBarColor(customColors[i % customColors.length]);
-            } else {
-            	s.setBarColor(new Color(this.getDisplay(), sliceColor(i)));
-            }
+            s.setBarColor(new Color(this.getDisplay(), sliceColor(i)));
         }
-    }
-
-    /**
-     * Sets this chart's category names such that the number of names
-     * is equal to the number of pies. This method will only make changes
-     * to category series if they are not already properly set.
-     * @param numExpected The number of pies / the expected number of category names.
-     */
-    private void setSeriesNames(int numExpected) {
-    	IAxis xAxis = getAxisSet().getXAxis(0);
-    	if (xAxis.getCategorySeries().length != numExpected) {
-    		String[] seriesNames = new String[numExpected];
-    		for (int i = 0, n = Math.min(xAxis.getCategorySeries().length, numExpected); i < n; i++) {
-    			seriesNames[i] = xAxis.getCategorySeries()[i];
-    		}
-    		for (int i = xAxis.getCategorySeries().length; i < numExpected; i++) {
-    			seriesNames[i] = ""; //$NON-NLS-1$
-    		}
-    		xAxis.setCategorySeries(seriesNames);
-    	}
     }
 
     protected RGB sliceColor(int i) {
@@ -105,7 +93,23 @@ public class PieChart extends Chart {
     		return colorList.get(i);
     	}
 
-    	RGB next = IColorsConstants.COLORS[i % IColorsConstants.COLORS.length];
+    	RGB next;
+
+    	if (colorList.size() < IColorsConstants.COLORS.length) {
+    		next = IColorsConstants.COLORS[i];
+    	}
+    	else {
+    		RGB prev = colorList.get(colorList.size()-1);
+    		int mod = 192;
+    		int red = (int) (mod * Math.random());
+    		int green = (int) ((mod - red) * Math.random());
+    		int blue = mod - red - green;
+    		next = new RGB(0, 0, 0);
+    		next.red = (prev.red + red) % 256;
+    		next.green = (prev.green + green) % 256;
+    		next.blue = (prev.blue + blue) % 256;
+    	}
+
     	colorList.add(next);
     	return next;
     }

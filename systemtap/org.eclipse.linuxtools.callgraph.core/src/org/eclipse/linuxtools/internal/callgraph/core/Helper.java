@@ -58,8 +58,12 @@ public class Helper {
 	 * @param content : the text to be written
 	 */
 	public static void writeToFile(String absoluteFilePath, String content){
-		try (FileWriter fstream = new FileWriter(absoluteFilePath); BufferedWriter out = new BufferedWriter(fstream)) {
+		try {
+			FileWriter fstream;
+			fstream = new FileWriter(absoluteFilePath);
+			BufferedWriter out = new BufferedWriter(fstream);
 			out.write(content);
+			out.close();
 		} catch (IOException e) {
 			SystemTapUIErrorMessages err = new SystemTapUIErrorMessages
 					(Messages.getString("SystemTapView.FileIOErr"), //$NON-NLS-1$
@@ -76,8 +80,12 @@ public class Helper {
 	 * @param content : The contents to append.
 	 */
 	public static void appendToFile(String absoluteFilePath, String content) {
-		try (FileWriter fstream = new FileWriter(absoluteFilePath); BufferedWriter out = new BufferedWriter(fstream)) {
+		try {
+			FileWriter fstream;
+			fstream = new FileWriter(absoluteFilePath, true);
+			BufferedWriter out = new BufferedWriter(fstream);
 			out.append(content);
+			out.close();
 		} catch (IOException e) {
 			SystemTapUIErrorMessages err = new SystemTapUIErrorMessages
 					(Messages.getString("SystemTapView.FileIOErr"), //$NON-NLS-1$
@@ -95,9 +103,10 @@ public class Helper {
 	 */
 	public static String readFile(String absoluteFilePath) {
 
-		try (BufferedReader bw = new BufferedReader(new FileReader(new File(absoluteFilePath)))) {
+		try {
 			String output = ""; //$NON-NLS-1$
 			String tmp = ""; //$NON-NLS-1$
+			BufferedReader bw = new BufferedReader(new FileReader(new File(absoluteFilePath)));
 			while ((tmp = bw.readLine()) != null) {
 				output+=tmp + "\n"; //$NON-NLS-1$
 			}

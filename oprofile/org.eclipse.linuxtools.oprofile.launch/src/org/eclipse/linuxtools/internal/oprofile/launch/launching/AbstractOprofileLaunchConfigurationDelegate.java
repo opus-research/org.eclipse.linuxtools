@@ -39,7 +39,6 @@ import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonOptions;
-import org.eclipse.linuxtools.internal.oprofile.core.linux.LinuxOpcontrolProvider;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchMessages;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.LaunchOptions;
@@ -72,7 +71,7 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 
 		//if daemonEvents null or zero size, the default event will be used
 		OprofileDaemonEvent[] daemonEvents = null;
-		ArrayList<OprofileDaemonEvent> events = new ArrayList<>();
+		ArrayList<OprofileDaemonEvent> events = new ArrayList<OprofileDaemonEvent>();
 		if (!config.getAttribute(OprofileLaunchPlugin.ATTR_USE_DEFAULT_EVENT, false)) {
 			//get the events to profile from the counters
 			OprofileCounter[] counters = oprofileCounters(config);
@@ -116,30 +115,12 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Profil
 		// outputing the profiling data to the project dir/OPROFILE_DATA
 		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
 
-			String eventsString=null;
-
-			// Event spec: "EVENT:count:mask:profileKernel:profileUser"
-			StringBuilder spec = new StringBuilder();
-			spec.append(EVENTS);
-			boolean isCommaAllowed = false;
+			String eventsString=EVENTS;
 			for (int i=0;i<events.size();i++) {
-				OprofileDaemonEvent event = events.get(i);
-				if(isCommaAllowed)
-					spec.append(",");
-				spec.append(event.getEvent().getText());
-				spec.append(LinuxOpcontrolProvider.OPD_SETUP_EVENT_SEPARATOR);
-				spec.append(event.getResetCount());
-				spec.append(LinuxOpcontrolProvider.OPD_SETUP_EVENT_SEPARATOR);
-				spec.append(event.getEvent().getUnitMask().getMaskValue());
-				spec.append(LinuxOpcontrolProvider.OPD_SETUP_EVENT_SEPARATOR);
-				spec.append((event.getProfileKernel() ? LinuxOpcontrolProvider.OPD_SETUP_EVENT_TRUE : LinuxOpcontrolProvider.OPD_SETUP_EVENT_FALSE));
-				spec.append(LinuxOpcontrolProvider.OPD_SETUP_EVENT_SEPARATOR);
-				spec.append((event.getProfileUser() ? LinuxOpcontrolProvider.OPD_SETUP_EVENT_TRUE : LinuxOpcontrolProvider.OPD_SETUP_EVENT_FALSE));
-				isCommaAllowed = true;
+				eventsString+=events.get(i).getEvent().getText() + ":" + events.get(i).getEvent().getMinCount() + ","; //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			eventsString = spec.toString();
 
-			ArrayList<String> argArray = new ArrayList<>(Arrays.asList(getProgramArgumentsArray( config )));
+			ArrayList<String> argArray = new ArrayList<String>(Arrays.asList(getProgramArgumentsArray( config )));
 			IFolder dataFolder = Oprofile.OprofileProject.getProject().getFolder(OPROFILE_DATA);
 			if(!dataFolder.exists()) {
 				dataFolder.create(false, true, null);

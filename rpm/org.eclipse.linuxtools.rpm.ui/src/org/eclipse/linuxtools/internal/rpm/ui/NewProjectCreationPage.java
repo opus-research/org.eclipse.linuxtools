@@ -151,7 +151,7 @@ public class NewProjectCreationPage extends WizardNewProjectCreationPage {
 			return EMPTY_WORKING_SET_ARRAY;
 		}
 
-		ArrayList<IWorkingSet> result = new ArrayList<>();
+		ArrayList<IWorkingSet> result = new ArrayList<IWorkingSet>();
 		for (Object element : elements) {
 			if (element instanceof IWorkingSet && !((IWorkingSet) element).isAggregateWorkingSet()) {
 				result.add((IWorkingSet)element);

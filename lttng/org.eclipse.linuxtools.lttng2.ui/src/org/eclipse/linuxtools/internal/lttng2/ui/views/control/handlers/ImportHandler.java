@@ -40,12 +40,12 @@ import org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.ImportFil
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.dialogs.TraceControlDialogFactory;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.ui.views.control.model.impl.TraceSessionComponent;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
+import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceTypeUIUtils;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.ui.project.wizards.importtrace.BatchImportTraceWizard;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.services.files.IFileService;
@@ -102,16 +102,18 @@ public class ImportHandler extends BaseControlViewHandler {
 
             // create default project
             IProject project = TmfProjectRegistry.createProject(DEFAULT_REMOTE_PROJECT_NAME, null, null);
+            TmfImportHelper.forceFolderRefresh(project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME));
 
             if (param.getSession().isStreamedTrace()) {
                 // Streamed trace
-                TmfProjectElement projectElement = TmfProjectRegistry.getProject(project, true);
+                TmfProjectElement projectElement = TmfProjectRegistry.getProject(project);
                 TmfTraceFolder traceFolder = projectElement.getTracesFolder();
 
                 BatchImportTraceWizard wizard = new BatchImportTraceWizard();
                 wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(traceFolder));
                 WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
                 dialog.open();
+                traceFolder.refresh();
                 return null;
             }
 
@@ -139,8 +141,9 @@ public class ImportHandler extends BaseControlViewHandler {
 
                             // Set trace type
                             IFolder traceFolder = selectedProject.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
+                            TmfImportHelper.forceFolderRefresh(traceFolder);
 
-                            if (monitor.isCanceled()) {
+                            if(monitor.isCanceled()) {
                                 status.add(Status.CANCEL_STATUS);
                                 break;
                             }
@@ -156,7 +159,7 @@ public class ImportHandler extends BaseControlViewHandler {
                             }
 
                             if (helper != null) {
-                                status.add(TmfTraceTypeUIUtils.setTraceType(file.getFullPath(), helper));
+                                status.add(TmfTraceType.setTraceType(file.getFullPath(), helper));
                             }
                         } catch (ExecutionException e) {
                             status.add(new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TraceControl_ImportFailure, e));

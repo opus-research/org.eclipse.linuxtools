@@ -156,12 +156,12 @@ public abstract class TmfStateValue implements ITmfStateValue {
     }
 
     @Override
-    public int unboxInt() {
+    public int unboxInt() throws StateValueTypeException {
         throw new StateValueTypeException(unboxErrMsg("Int")); //$NON-NLS-1$
     }
 
     @Override
-    public long unboxLong() {
+    public long unboxLong() throws StateValueTypeException {
         throw new StateValueTypeException(unboxErrMsg("Long")); //$NON-NLS-1$
     }
 
@@ -169,12 +169,12 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @since 3.0
      */
     @Override
-    public double unboxDouble() {
+    public double unboxDouble() throws StateValueTypeException {
         throw new StateValueTypeException(unboxErrMsg("Double")); //$NON-NLS-1$
     }
 
     @Override
-    public String unboxStr() {
+    public String unboxStr() throws StateValueTypeException {
         throw new StateValueTypeException(unboxErrMsg("String")); //$NON-NLS-1$
     }
 }

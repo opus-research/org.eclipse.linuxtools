@@ -27,12 +27,12 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTrace;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTrace;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTrace;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -61,7 +61,7 @@ public class SelectTraceTypeContributionItem extends CompoundContributionItem {
     @Override
     protected IContributionItem[] getContributionItems() {
 
-        Set<String> selectedTraceTypes = new HashSet<>();
+        Set<String> selectedTraceTypes = new HashSet<String>();
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         IWorkbenchPage page = window.getActivePage();
         ISelection selection = page.getSelection();
@@ -74,9 +74,9 @@ public class SelectTraceTypeContributionItem extends CompoundContributionItem {
             }
         }
 
-        List<IContributionItem> list = new LinkedList<>();
+        List<IContributionItem> list = new LinkedList<IContributionItem>();
 
-        Map<String, MenuManager> categoriesMap = new HashMap<>();
+        Map<String, MenuManager> categoriesMap = new HashMap<String, MenuManager>();
         IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(
                 TmfTraceType.TMF_TRACE_TYPE_ID);
         for (IConfigurationElement ce : config) {
@@ -147,7 +147,7 @@ public class SelectTraceTypeContributionItem extends CompoundContributionItem {
             MenuManager subMenu) {
         Map<String, String> params;
 
-        params = new HashMap<>();
+        params = new HashMap<String, String>();
         params.put(BUNDLE_PARAMETER, traceBundle);
         params.put(TYPE_PARAMETER, traceTypeId);
         params.put(ICON_PARAMETER, traceIcon);

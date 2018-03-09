@@ -40,7 +40,7 @@ public class Benchmark {
 
         // Work variables
         Long nbEvent = 0L;
-        final Vector<Double> benchs = new Vector<>();
+        final Vector<Double> benchs = new Vector<Double>();
         CtfTmfTrace trace = null;
         long start, stop;
         for (int loops = 0; loops < NUM_LOOPS; loops++) {
@@ -64,7 +64,7 @@ public class Benchmark {
                     if (USE_TEXT) {
 
                         System.out.println("Event " + nbEvent + " Time "
-                                + current.getTimestamp().toString() + " type " + current.getType().getName()
+                                + current.getTimestamp().toString() + " type " + current.getEventName()
                                 + " on CPU " + current.getSource() + " " + current.getContent().toString());
                     }
                     // advance the trace to the next event.

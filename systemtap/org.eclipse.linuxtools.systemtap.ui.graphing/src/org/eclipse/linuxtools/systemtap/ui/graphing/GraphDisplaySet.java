@@ -40,7 +40,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
@@ -64,8 +63,8 @@ public class GraphDisplaySet {
 		updater = new UpdateManager(delay);
 		createPartControl(parent);
 
-		builders = new ArrayList<>();
-		tabListeners = new ArrayList<>();
+		builders = new ArrayList<AbstractChartBuilder>();
+		tabListeners = new ArrayList<ITabListener>();
 	}
 
 	/**
@@ -163,20 +162,18 @@ public class GraphDisplaySet {
 	 * to anything in this class after calling the dispose method.
 	 */
 	public void dispose() {
-		if(null != updater && updater.isRunning()) {
+		if(null != updater) {
 			updater.dispose();
 		}
 		updater = null;
 
 		dataSet = null;
-		if(null != folder && !folder.isDisposed()) {
+		if(null != folder) {
 			folder.removeSelectionListener(listener);
 			folder.dispose();
 			folder = null;
 		}
 		listener = null;
-
-		builders.clear();
 	}
 
 	/**
@@ -236,14 +233,8 @@ public class GraphDisplaySet {
 	public void addGraph(GraphData gd) {
 		CTabItem item = new CTabItem(folder, SWT.CLOSE);
 		item.setText(GraphFactory.getGraphName(gd.graphID));
-		final GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
+		GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
 		gc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		gc.addCheckOption("Legend", new SelectionAdapter() { //$NON-NLS-1$
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				gc.setLegendVisible(((Button)e.getSource()).getSelection());
-			}
-		});
 		folder.setSelection(item);
 
 		AbstractChartBuilder g = gc.getCanvas();

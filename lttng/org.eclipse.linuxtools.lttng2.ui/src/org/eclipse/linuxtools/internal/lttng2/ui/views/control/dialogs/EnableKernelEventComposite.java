@@ -182,7 +182,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
 
     @Override
     public List<String> getEventNames() {
-        return new ArrayList<>(fSelectedEvents);
+        return new ArrayList<String>(fSelectedEvents);
     }
 
     @Override
@@ -252,7 +252,7 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
 
         // initialize tracepoint fields
         fIsAllTracepoints = false;
-        fSelectedEvents = new ArrayList<>();
+        fSelectedEvents = new ArrayList<String>();
 
         if (fIsTracepoints) {
             List<ITraceControlComponent> comps = fProviderGroup.getChildren(KernelProviderComponent.class);

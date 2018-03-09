@@ -147,16 +147,16 @@ public class CallStackView extends TmfView {
     private ITmfTrace fTrace;
 
     // The selected thread map
-    private final Map<ITmfTrace, String> fSelectedThreadMap = new HashMap<>();
+    private final Map<ITmfTrace, String> fSelectedThreadMap = new HashMap<ITmfTrace, String>();
 
     // The time graph entry list
     private List<ThreadEntry> fEntryList;
 
     // The trace to entry list hash map
-    private final Map<ITmfTrace, ArrayList<ThreadEntry>> fEntryListMap = new HashMap<>();
+    private final Map<ITmfTrace, ArrayList<ThreadEntry>> fEntryListMap = new HashMap<ITmfTrace, ArrayList<ThreadEntry>>();
 
     // The trace to build thread hash map
-    private final Map<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<>();
+    private final Map<ITmfTrace, BuildThread> fBuildThreadMap = new HashMap<ITmfTrace, BuildThread>();
 
     /** The map to map function addresses to function names */
     private Map<String, String> fNameMapping;
@@ -220,7 +220,7 @@ public class CallStackView extends TmfView {
 
         public ThreadEntry(ITmfTrace trace, String name, int threadQuark, long startTime, long endTime) {
             fThreadTrace = trace;
-            fChildren = new ArrayList<>();
+            fChildren = new ArrayList<CallStackEntry>();
             fName = name;
             fTraceStartTime = startTime;
             fTraceEndTime = endTime;
@@ -443,11 +443,7 @@ public class CallStackView extends TmfView {
             long resolution = Math.max(1, (fZoomEndTime - fZoomStartTime) / fDisplayWidth);
             for (ThreadEntry threadEntry : fZoomEntryList) {
                 ITmfStateSystem ss = threadEntry.fThreadTrace.getStateSystems().get(CallStackStateProvider.ID);
-                if (ss == null) {
-                    continue;
-                }
-                ss.waitUntilBuilt();
-                if (ss.isCancelled()) {
+                if (ss == null || !ss.waitUntilBuilt()) {
                     continue;
                 }
                 for (ITimeGraphEntry child : threadEntry.getChildren()) {
@@ -788,19 +784,16 @@ public class CallStackView extends TmfView {
         } else {
             traces = new ITmfTrace[] { trace };
         }
-        ArrayList<ThreadEntry> entryList = new ArrayList<>();
+        ArrayList<ThreadEntry> entryList = new ArrayList<ThreadEntry>();
         for (ITmfTrace aTrace : traces) {
             if (monitor.isCanceled()) {
                 return;
             }
             ITmfStateSystem ss = aTrace.getStateSystems().get(CallStackStateProvider.ID);
-            if (ss == null) {
-                addUnavailableEntry(aTrace, entryList);
-                continue;
-            }
-            ss.waitUntilBuilt();
-            if (ss.isCancelled()) {
-                addUnavailableEntry(aTrace, entryList);
+            if (ss == null || !ss.waitUntilBuilt()) {
+                String threadName = Messages.CallStackView_StackInfoNotAvailable + ' ' + '(' + aTrace.getName() + ')';
+                ThreadEntry threadEntry = new ThreadEntry(aTrace, threadName, -1, 0, 0);
+                entryList.add(threadEntry);
                 continue;
             }
             long startTime = ss.getStartTime();
@@ -831,7 +824,7 @@ public class CallStackView extends TmfView {
             }
         }
         synchronized (fEntryListMap) {
-            fEntryListMap.put(trace, new ArrayList<>(entryList));
+            fEntryListMap.put(trace, new ArrayList<ThreadEntry>(entryList));
         }
         if (trace == fTrace) {
             refresh();
@@ -844,12 +837,6 @@ public class CallStackView extends TmfView {
                 buildStatusEvents(trace, callStackEntry, monitor);
             }
         }
-    }
-
-    private void addUnavailableEntry(ITmfTrace trace, List<ThreadEntry> list) {
-        String threadName = Messages.CallStackView_StackInfoNotAvailable + ' ' + '(' + trace.getName() + ')';
-        ThreadEntry threadEntry = new ThreadEntry(trace, threadName, -1, 0, 0);
-        list.add(threadEntry);
     }
 
     private void buildStatusEvents(ITmfTrace trace, CallStackEntry entry, IProgressMonitor monitor) {
@@ -879,7 +866,7 @@ public class CallStackView extends TmfView {
         List<ITimeEvent> eventList = null;
         try {
             List<ITmfStateInterval> stackIntervals = ss.queryHistoryRange(entry.getQuark(), start, end - 1, resolution, monitor);
-            eventList = new ArrayList<>(stackIntervals.size());
+            eventList = new ArrayList<ITimeEvent>(stackIntervals.size());
             long lastEndTime = -1;
             boolean lastIsNull = true;
             for (ITmfStateInterval statusInterval : stackIntervals) {
@@ -927,11 +914,7 @@ public class CallStackView extends TmfView {
         }
         for (ThreadEntry threadEntry : fEntryList) {
             ITmfStateSystem ss = threadEntry.fThreadTrace.getStateSystems().get(CallStackStateProvider.ID);
-            if (ss == null) {
-                continue;
-            }
-            ss.waitUntilBuilt();
-            if (ss.isCancelled()) {
+            if (ss == null || !ss.waitUntilBuilt()) {
                 continue;
             }
             long queryTime = Math.max(ss.getStartTime(), Math.min(ss.getCurrentEndTime(), time));
@@ -979,7 +962,7 @@ public class CallStackView extends TmfView {
                 synchronized (fEntryListMap) {
                     fEntryList = fEntryListMap.get(fTrace);
                     if (fEntryList == null) {
-                        fEntryList = new ArrayList<>();
+                        fEntryList = new ArrayList<ThreadEntry>();
                     }
                     entries = fEntryList.toArray(new ITimeGraphEntry[0]);
                 }

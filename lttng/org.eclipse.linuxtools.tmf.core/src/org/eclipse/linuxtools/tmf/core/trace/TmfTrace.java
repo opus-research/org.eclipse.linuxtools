@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -18,16 +18,16 @@ package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -53,6 +53,8 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
+import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
+import org.eclipse.linuxtools.tmf.core.statistics.TmfStateStatistics;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -120,6 +122,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     // The trace parser
     private ITmfEventParser fParser;
 
+    // The trace's statistics
+    private ITmfStatistics fStatistics;
 
     /**
      * The collection of state systems that are registered with this trace. Each
@@ -128,13 +132,13 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      *
      * @since 2.0
      */
-    @Deprecated
-    protected final Map<String, ITmfStateSystem> fStateSystems = new LinkedHashMap<>();
+    protected final Map<String, ITmfStateSystem> fStateSystems =
+            new LinkedHashMap<String, ITmfStateSystem>();
 
     private ITmfTimestampTransform fTsTransform;
 
     private final Map<String, IAnalysisModule> fAnalysisModules =
-            Collections.synchronizedMap(new LinkedHashMap<String, IAnalysisModule>());
+            new LinkedHashMap<String, IAnalysisModule>();
 
     private static final String SYNCHRONIZATION_FORMULA_FILE = "sync_formula"; //$NON-NLS-1$
 
@@ -280,6 +284,27 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     }
 
     /**
+     * The default implementation of TmfTrace uses a TmfStatistics back-end.
+     * Override this if you want to specify another type (or none at all).
+     *
+     * @return An IStatus indicating if the statistics could be built
+     *         successfully or not.
+     * @since 3.0
+     */
+    protected IStatus buildStatistics() {
+        /*
+         * Initialize the statistics provider, but only if a Resource has been
+         * set (so we don't build it for experiments, for unit tests, etc.)
+         */
+        try {
+            fStatistics = (fResource == null ? null : new TmfStateStatistics(this) );
+        } catch (TmfTraceException e) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
+        }
+        return Status.OK_STATUS;
+    }
+
+    /**
      * Build the state system(s) associated with this trace type.
      *
      * @return An IStatus indicating if the state system could be build
@@ -324,50 +349,30 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 3.0
      */
     @Override
-    public IAnalysisModule getAnalysisModule(String analysisId) {
+    public final IAnalysisModule getAnalysisModule(String analysisId) {
         return fAnalysisModules.get(analysisId);
     }
 
-
     /**
      * @since 3.0
      */
     @Override
-    public Iterable<IAnalysisModule> getAnalysisModules() {
-        synchronized (fAnalysisModules) {
-            Set<IAnalysisModule> modules = new HashSet<>(fAnalysisModules.values());
-            return modules;
-        }
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public <T extends IAnalysisModule> T getAnalysisModuleOfClass(Class<T> moduleClass, String id) {
-        Iterable<T> modules = getAnalysisModulesOfClass(moduleClass);
-        for (T module : modules) {
-            if (id.equals(module.getId())) {
-                return module;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public <T> Iterable<T> getAnalysisModulesOfClass(Class<T> moduleClass) {
-        Set<T> modules = new HashSet<>();
-        synchronized (fAnalysisModules) {
-            for (Entry<String, IAnalysisModule> entry : fAnalysisModules.entrySet()) {
-                if (moduleClass.isAssignableFrom(entry.getValue().getClass())) {
-                    modules.add(moduleClass.cast(entry.getValue()));
-                }
+    public <T> Map<String, T> getAnalysisModules(Class<T> moduleclass) {
+        Map<String, T> modules = new HashMap<String, T>();
+        for (Entry<String, IAnalysisModule> entry : fAnalysisModules.entrySet()) {
+            if (moduleclass.isAssignableFrom(entry.getValue().getClass())) {
+                modules.put(entry.getKey(), moduleclass.cast(entry.getValue()));
             }
         }
         return modules;
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public Map<String, IAnalysisModule> getAnalysisModules() {
+        return Collections.unmodifiableMap(fAnalysisModules);
     }
 
     /**
@@ -380,16 +385,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             getIndexer().dispose();
         }
 
+        /* Clean up the statistics */
+        if (fStatistics != null) {
+            fStatistics.dispose();
+        }
+
         /* Clean up the state systems */
         for (ITmfStateSystem ss : fStateSystems.values()) {
             ss.dispose();
-        }
-
-        /* Clean up the analysis modules */
-        synchronized (fAnalysisModules) {
-            for (IAnalysisModule module : fAnalysisModules.values()) {
-                module.dispose();
-            }
         }
 
         super.dispose();
@@ -441,8 +444,17 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     /**
      * @since 2.0
+     */
+    @Override
+    public ITmfStatistics getStatistics() {
+        return fStatistics;
+    }
+
+    /**
+     * @since 2.0
      * @deprecated See {@link ITmfTrace}
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     @Override
     public final Map<String, ITmfStateSystem> getStateSystems() {
@@ -453,6 +465,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      * @deprecated See {@link ITmfTrace}
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     @Override
     public final void registerStateSystem(String id, ITmfStateSystem ss) {
@@ -749,6 +762,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
          * this trace.
          */
         MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, null, null);
+        status.add(buildStatistics());
         status.add(buildStateSystem());
         status.add(executeAnalysis());
         if (!status.isOK()) {
@@ -774,7 +788,12 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             final TmfTraceRangeUpdatedSignal rangeUpdatedsignal = new TmfTraceRangeUpdatedSignal(this, this, timeRange);
 
             // Broadcast in separate thread to prevent deadlock
-            broadcastAsync(rangeUpdatedsignal);
+            new Thread() {
+                @Override
+                public void run() {
+                    broadcast(rangeUpdatedsignal);
+                }
+            }.start();
             return;
         }
     }
@@ -863,12 +882,18 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             File sync_file = getSyncFormulaFile();
             if (sync_file != null && sync_file.exists()) {
 
-                try (FileInputStream fis = new FileInputStream(sync_file);
-                        ObjectInputStream ois = new ObjectInputStream(fis);) {
-
+                try {
+                    FileInputStream fis = new FileInputStream(sync_file);
+                    ObjectInputStream ois = new ObjectInputStream(fis);
                     fTsTransform = (ITmfTimestampTransform) ois.readObject();
 
-                } catch (ClassNotFoundException | IOException e) {
+                    ois.close();
+                    fis.close();
+                } catch (ClassNotFoundException e1) {
+                    fTsTransform = TmfTimestampTransform.IDENTITY;
+                } catch (FileNotFoundException e1) {
+                    fTsTransform = TmfTimestampTransform.IDENTITY;
+                } catch (IOException e1) {
                     fTsTransform = TmfTimestampTransform.IDENTITY;
                 }
             } else {

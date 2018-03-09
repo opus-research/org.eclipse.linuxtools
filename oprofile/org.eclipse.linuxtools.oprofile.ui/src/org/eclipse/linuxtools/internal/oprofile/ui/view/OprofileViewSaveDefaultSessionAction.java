@@ -6,9 +6,9 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
- *    Keith Seitz <keiths@redhat.com> - SaveSessionValidator code
- *******************************************************************************/
+ *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
+ *    Keith Seitz <keiths@redhat.com> - SaveSessionValidator code 
+ *******************************************************************************/ 
 package org.eclipse.linuxtools.internal.oprofile.ui.view;
 
 import java.text.MessageFormat;
@@ -23,7 +23,6 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
-import org.eclipse.linuxtools.internal.oprofile.core.opxml.sessions.SessionManager;
 import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiMessages;
 import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiPlugin;
 import org.eclipse.linuxtools.oprofile.ui.model.IUiModelElement;
@@ -35,7 +34,7 @@ import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 
 /**
  * Menu item to save the default session. Moved from a double-click in the view
- * on the default session for consistency (since non-default sessions can't be saved).
+ * on the default session for consistency (since non-default sessions can't be saved). 
  */
 public class OprofileViewSaveDefaultSessionAction extends Action {
 	private IRemoteFileProxy proxy;
@@ -43,34 +42,30 @@ public class OprofileViewSaveDefaultSessionAction extends Action {
 	public OprofileViewSaveDefaultSessionAction() {
 		super(OprofileUiMessages.getString("view.actions.savedefaultsession.label")); //$NON-NLS-1$
 	}
-
+	
 	@Override
 	public void run() {
 		boolean defaultSessionExists = false;
-		String defaultSessionName = null;
 		UiModelRoot modelRoot = UiModelRoot.getDefault();
-		IUiModelElement[] modelEvents = null;
-
+		
 		if (modelRoot.hasChildren()) {
-			IUiModelElement[] sessions = modelRoot.getChildren();
-			for (IUiModelElement e : sessions) {
+			IUiModelElement[] events = modelRoot.getChildren();
+			for (IUiModelElement e : events) {
 				if (e instanceof UiModelError)
 					break;
-
-				if(e instanceof UiModelSession ){
-
-					if (((UiModelSession)e).isDefaultSession()) {
+				
+				IUiModelElement[] sessions = e.getChildren();
+				for (IUiModelElement s : sessions) {
+					if (((UiModelSession)s).isDefaultSession()) {
 						defaultSessionExists = true;
-						defaultSessionName = e.getLabelText();
-						modelEvents = ((UiModelSession)e).getChildren();
 						break;
 					}
-
+				}
 				if (defaultSessionExists)
 					break;
 			}
 		}
-
+		
 		if (defaultSessionExists) {
 			//the following code was originially written by Keith Seitz
 			InputDialog dialog = new InputDialog(OprofileUiPlugin.getActiveWorkbenchShell(),
@@ -78,36 +73,11 @@ public class OprofileViewSaveDefaultSessionAction extends Action {
 					OprofileUiMessages.getString("savedialog.message"),    //$NON-NLS-1$
 					OprofileUiMessages.getString("savedialog.initial"),   //$NON-NLS-1$
 					new SaveSessionValidator());
-
+			
 			int result = dialog.open();
 			if (result == Window.OK) {
 				try {
 					OprofileCorePlugin.getDefault().getOpcontrolProvider().saveSession(dialog.getValue());
-					// remove the default session
-					for (int i = 0; i < modelEvents.length; i++) {
-						OprofileCorePlugin
-								.getDefault()
-								.getOpcontrolProvider()
-								.deleteSession(defaultSessionName,
-										modelEvents[i].getLabelText());
-					}
-					// clear out collected data by this session
-					// if opcontol is used
-					if (!Oprofile.OprofileProject.OPERF_BINARY
-							.equals(Oprofile.OprofileProject
-									.getProfilingBinary())) {
-						OprofileCorePlugin.getDefault().getOpcontrolProvider()
-								.reset();
-					}
-					else
-					{
-						// remove oprofile_data so current event no longer be there
-						OprofileViewDeleteSessionAction
-								.deleteOperfDataFolder(Oprofile.OprofileProject
-										.getProject()
-										.getFolder(
-												Oprofile.OprofileProject.OPERF_DATA));
-					}
 					OprofileUiPlugin.getDefault().getOprofileView().refreshView();
 				} catch (OpcontrolException oe) {
 					OprofileCorePlugin.showErrorDialog("opcontrolProvider", oe); //$NON-NLS-1$
@@ -119,50 +89,34 @@ public class OprofileViewSaveDefaultSessionAction extends Action {
 					OprofileUiMessages.getString("defaultsessiondialog.nodefaultsession.message")); //$NON-NLS-1$
 		}
 	}
-	}
-
+	
 	//Original author: Keith Seitz <keiths@redhat.com>
 	private class SaveSessionValidator implements IInputValidator {
-
-		private SessionManager session = null;
-		public SaveSessionValidator()
-		{
-			session = new SessionManager(SessionManager.SESSION_LOCATION);
-		}
-
-		@Override
 		public String isValid(String newText) {
 			// Sanity check
 			if (newText.length() == 0) {
 				return ""; //$NON-NLS-1$
 			}
-
+			
 			// Cannot contain invalid characters
 			int index = newText.indexOf('/');
 			if (index == -1) {
 				index = newText.indexOf('\\');
 			}
-
+			
 			if (index != -1) {
 				String format = OprofileUiMessages.getString("savedialog.validator.invalidChar"); //$NON-NLS-1$
 				Object[] fmtArgs = new Object[] { newText.substring(index, index + 1), newText };
 				return MessageFormat.format(format, fmtArgs);
 			}
-
+				
 			// Cannot contain whitespace
 			if (newText.contains(" ") || newText.contains("\t")) { //$NON-NLS-1$ //$NON-NLS-2$
 				String format = OprofileUiMessages.getString("savedialog.validator.containsWhitespace"); //$NON-NLS-1$
 				Object[] fmtArgs = new Object[] { newText };
 				return MessageFormat.format(format, fmtArgs);
 			}
-
-			if(session.existsSession(newText))
-			{
-				String format = OprofileUiMessages.getString("savedialog.validator.exists"); //$NON-NLS-1$
-				Object[] fmtArgs = new Object[] { newText };
-				return MessageFormat.format(format, fmtArgs);
-			}
-
+			
 			// Must not already exist (opcontrol doesn't allow it)
 
 			try {
@@ -182,7 +136,4 @@ public class OprofileViewSaveDefaultSessionAction extends Action {
 			return null;
 		}
 	};
-
-	}
-
-
+}

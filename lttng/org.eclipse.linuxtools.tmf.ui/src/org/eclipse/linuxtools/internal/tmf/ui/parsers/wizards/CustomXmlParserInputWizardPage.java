@@ -42,11 +42,11 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTrace;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition.InputAttribute;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition.InputElement;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTrace;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputAttribute;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition.InputElement;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.TitleEvent;
@@ -640,7 +640,7 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
      * @return The input names for this element
      */
     public List<String> getInputNames(InputElement inputElement) {
-        List<String> inputs = new ArrayList<>();
+        List<String> inputs = new ArrayList<String>();
         if (inputElement.inputName != null && !inputElement.inputName.equals(CustomXmlTraceDefinition.TAG_IGNORE)) {
             String inputName = inputElement.inputName;
             if (!inputs.contains(inputName)) {
@@ -690,13 +690,16 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
             }
         }
         if (inputStream != null) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));) {
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new InputStreamReader(inputStream));
                 StringBuilder sb = new StringBuilder();
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     sb.append(line + "\n"); //$NON-NLS-1$
                 }
                 parseXmlInput(sb.toString());
+                reader.close();
                 return sb.toString();
             } catch (IOException e) {
                 return ""; //$NON-NLS-1$
@@ -842,8 +845,8 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
     private class ElementNode {
         private final InputElement inputElement;
         private final Group group;
-        private List<Attribute> attributes = new ArrayList<>();
-        private List<ElementNode> childElements = new ArrayList<>();
+        private List<Attribute> attributes = new ArrayList<Attribute>();
+        private List<ElementNode> childElements = new ArrayList<ElementNode>();
         private Text elementNameText;
         private Composite tagComposite;
         private Combo tagCombo;
@@ -1176,7 +1179,7 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
                 }
                 inputElement.inputAction = actionCombo.getSelectionIndex();
             }
-            inputElement.attributes = new ArrayList<>(attributes.size());
+            inputElement.attributes = new ArrayList<InputAttribute>(attributes.size());
             for (int i = 0; i < attributes.size(); i++) {
                 Attribute attribute = attributes.get(i);
                 InputAttribute inputAttribute = new InputAttribute();
@@ -1373,7 +1376,7 @@ public class CustomXmlParserInputWizardPage extends WizardPage {
             if (!documentElement.getNodeName().equals(definition.rootInputElement.elementName)) {
                 return null;
             }
-            ArrayList<String> elementNames = new ArrayList<>();
+            ArrayList<String> elementNames = new ArrayList<String>();
             while (currentElement != null) {
                 elementNames.add(currentElement.elementName);
                 currentElement = currentElement.parentElement;
