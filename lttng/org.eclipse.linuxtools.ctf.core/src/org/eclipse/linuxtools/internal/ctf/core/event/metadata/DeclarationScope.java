@@ -21,17 +21,19 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 
-/*
- * TODO: The notion of "symbols" and the notion of "scope" are misused in this parser, which lead to inefficient tree management. It should be cleaned up.
- */
-
 /**
  * <b><u>DeclarationScope</u></b>
  * <p>
  * A DeclarationScope keeps track of the various CTF declarations for a given
  * scope.
+ *
+ * TODO: The notion of "symbols" and the notion of "scope" are misused in this
+ * parser, which leads to inefficient tree management. It should be cleaned up.
+ *
+ * @author Matthew Khouzam
+ * @author Simon Marchi
  */
- class DeclarationScope {
+class DeclarationScope {
 
     // ------------------------------------------------------------------------
     // Attributes
