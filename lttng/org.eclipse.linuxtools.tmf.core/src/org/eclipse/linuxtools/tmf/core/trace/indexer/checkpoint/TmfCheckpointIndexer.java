@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Bernd Hufmann - Update way of broadcasting of TmfTraceUpdatedSignal
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint;
@@ -153,7 +154,13 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
         // No need to build the index, it has been restored
         if (!fTraceIndex.isCreatedFromScratch()) {
             // Set some trace attributes that depends on indexing
-            fTrace.broadcast(new TmfTraceUpdatedSignal(this, fTrace, new TmfTimeRange(fTraceIndex.getTimeRange().getStartTime(), fTraceIndex.getTimeRange().getEndTime()), fTraceIndex.getNbEvents()));
+            TmfTraceUpdatedSignal signal = new TmfTraceUpdatedSignal(this, fTrace, new TmfTimeRange(fTraceIndex.getTimeRange().getStartTime(), fTraceIndex.getTimeRange().getEndTime()), fTraceIndex.getNbEvents());
+            if (waitForCompletion) {
+                fTrace.broadcast(signal);
+            } else {
+                fTrace.broadcastAsync(signal);
+            }
+            fIsIndexing = false;
             return;
         }
 
@@ -339,5 +346,4 @@ public class TmfCheckpointIndexer implements ITmfTraceIndexer {
     protected ITmfCheckpointIndex getTraceIndex() {
         return fTraceIndex;
     }
-
 }

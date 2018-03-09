@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -105,7 +105,7 @@ public class TraceChannelComponent extends TraceControlComponent {
     public void setChannelInfo(IChannelInfo channelInfo) {
         fChannelInfo = channelInfo;
         IEventInfo[] events = fChannelInfo.getEvents();
-        List<ITraceControlComponent> eventComponents = new ArrayList<ITraceControlComponent>();
+        List<ITraceControlComponent> eventComponents = new ArrayList<>();
         for (int i = 0; i < events.length; i++) {
             TraceEventComponent event = null;
             if (events[i].getClass() == ProbeEventInfo.class) {

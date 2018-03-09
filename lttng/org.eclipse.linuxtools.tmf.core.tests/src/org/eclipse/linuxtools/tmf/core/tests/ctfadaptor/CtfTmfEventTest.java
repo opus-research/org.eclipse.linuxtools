@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -92,7 +92,7 @@ public class CtfTmfEventTest {
      */
     @Test
     public void testGetEventName() {
-        String result = nullEvent.getEventName();
+        String result = nullEvent.getType().getName();
         assertEquals("Empty CTF event", result);
     }
 
@@ -214,7 +214,7 @@ public class CtfTmfEventTest {
         assertSame(nullEvent2, nullEvent);
         assertNotNull(nullEvent);
         assertEquals(-1, nullEvent.getCPU());
-        assertEquals("Empty CTF event", nullEvent.getEventName());
+        assertEquals("Empty CTF event", nullEvent.getType().getName());
         assertEquals("No stream", nullEvent.getReference());
         assertArrayEquals(new ITmfEventField[0], nullEvent.getContent().getFields());
         assertEquals(-1L, nullEvent.getID());

@@ -13,9 +13,11 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.views;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.ProbeAliasAction;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
@@ -32,7 +34,6 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 public class ProbeAliasBrowserView extends BrowserView {
 	public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView"; //$NON-NLS-1$
 	private ProbeAliasAction doubleClickAction;
-	private Menu menu;
 
 	/**
 	 * Creates the UI on the given <code>Composite</code>
@@ -44,6 +45,27 @@ public class ProbeAliasBrowserView extends BrowserView {
 		TapsetLibrary.addProbeListener(new ViewUpdater());
 		refresh();
 		makeActions();
+	}
+
+	@Override
+	protected Image getEntryImage(TreeNode treeObj) {
+		String item = treeObj.getData().toString();
+		if(item.startsWith("probe")) {//$NON-NLS-1$
+			return IDEPlugin.getImageDescriptor("icons/misc/probe_obj.gif").createImage(); //$NON-NLS-1$
+		}
+
+		//Probe variables
+		if(item.endsWith(":long")) {//$NON-NLS-1$
+			return IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
+		}
+		if(item.endsWith(":string")) {//$NON-NLS-1$
+			return IDEPlugin.getImageDescriptor("icons/vars/var_str.gif").createImage(); //$NON-NLS-1$
+		}
+		if(item.endsWith(":unknown")) {//$NON-NLS-1$
+			return IDEPlugin.getImageDescriptor("icons/vars/var_unk.gif").createImage(); //$NON-NLS-1$
+		}
+
+		return IDEPlugin.getImageDescriptor("icons/vars/var_long.gif").createImage(); //$NON-NLS-1$
 	}
 
 	/**
@@ -82,9 +104,5 @@ public class ProbeAliasBrowserView extends BrowserView {
 			doubleClickAction.dispose();
 		}
 		doubleClickAction = null;
-		if(null != menu) {
-			menu.dispose();
-		}
-		menu = null;
 	}
 }

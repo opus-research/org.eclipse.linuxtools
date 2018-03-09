@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -90,9 +90,9 @@ public class CtfTmfContextTest {
     public void testTooManyContexts() throws InterruptedException {
         final int lwcCount = 101;
         double increment = (end - begin) / lwcCount;
-        final ArrayList<Long> vals = new ArrayList<Long>();
-        final ArrayList<Thread> threads = new ArrayList<Thread>();
-        final ArrayList<CtfTmfContext> tooManyContexts = new ArrayList<CtfTmfContext>();
+        final ArrayList<Long> vals = new ArrayList<>();
+        final ArrayList<Thread> threads = new ArrayList<>();
+        final ArrayList<CtfTmfContext> tooManyContexts = new ArrayList<>();
 
         for (double i = begin; i < end; i += increment) {
             SeekerThread thread = new SeekerThread() {
@@ -114,11 +114,11 @@ public class CtfTmfContextTest {
             thread.start();
         }
 
-        for( Thread t: threads){
+        for (Thread t: threads){
             t.join();
         }
 
-        for( Long val : vals){
+        for (long val : vals){
             assertTrue(val >= begin);
             assertTrue(val <= end);
         }

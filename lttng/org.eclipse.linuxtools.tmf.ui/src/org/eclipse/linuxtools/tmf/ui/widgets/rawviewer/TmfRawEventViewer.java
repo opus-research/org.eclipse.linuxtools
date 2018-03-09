@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2012 Ericsson
+ * Copyright (c) 2010, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -80,7 +80,7 @@ public class TmfRawEventViewer extends Composite implements ControlListener, Sel
     private Font fFixedFont;
 	private Slider fSlider;
 
-	private final List<LineData> fLines = new ArrayList<LineData>();
+	private final List<LineData> fLines = new ArrayList<>();
 	private boolean fActualRanks = false;
 	private int fTopLineIndex;
 	private int fLastTopLineIndex;

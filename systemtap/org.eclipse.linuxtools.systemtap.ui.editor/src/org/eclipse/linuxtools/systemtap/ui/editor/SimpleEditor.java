@@ -12,8 +12,8 @@
 package org.eclipse.linuxtools.systemtap.ui.editor;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 
 import org.eclipse.core.runtime.IPath;
@@ -25,6 +25,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.linuxtools.internal.systemtap.ui.editor.Localization;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IEditorInput;
@@ -54,10 +55,24 @@ public class SimpleEditor extends TextEditor {
 	/**
 	 * Searches the IDocument for the specified string.
 	 *
-	 * @param search string to find
+	 * @param search string to find, case-sensitive
 	 * @return the integer line number of the string
 	 */
 	public int find(String search) {
+		return findWithOptions(search, false);
+	}
+
+	/**
+	 * Searches the IDocument for the specified regex.
+	 * @param regex string regex to find
+	 * @return the integer line number of the string
+	 * @since 3.0
+	 */
+	public int findRegex(String regex) {
+		return findWithOptions(regex, true);
+	}
+
+	private int findWithOptions(String search, boolean regExSearch) {
 		IDocument doc = getSourceViewer().getDocument();
 		FindReplaceDocumentAdapter finder = new FindReplaceDocumentAdapter(doc);
 
@@ -65,10 +80,11 @@ public class SimpleEditor extends TextEditor {
 
 		jumpToLocation(0, 0);
 		try {
-			IRegion reg = finder.find(0, search, true, false, false, false);
+			IRegion reg = finder.find(0, search, true, !regExSearch, false, regExSearch);
 			int offset = reg.getOffset();
 			line = doc.getLineOfOffset(offset);
 		} catch(BadLocationException ble) {
+			// Pass
 		} catch(NullPointerException npe) {
 			line = -1;
 		}
@@ -87,7 +103,9 @@ public class SimpleEditor extends TextEditor {
 		try {
 			int offset = doc.getLineOffset(line-1) + character;
 			this.getSelectionProvider().setSelection(new TextSelection(doc, offset, 0));
-		} catch(BadLocationException boe) {}
+		} catch(BadLocationException boe) {
+			// Pass
+		}
 	}
 
 	/**
@@ -99,7 +117,9 @@ public class SimpleEditor extends TextEditor {
 
 		try {
 			this.getSelectionProvider().setSelection(new TextSelection(doc, doc.getLineOffset(line-1), doc.getLineLength(line-1)-1));
-		} catch(BadLocationException boe) {}
+		} catch(BadLocationException boe) {
+			// Pass
+		}
 	}
 
 	/**
@@ -117,13 +137,13 @@ public class SimpleEditor extends TextEditor {
 		IDocument doc = getSourceViewer().getDocument();
 		String s = doc.get();
 
-		try {
-			FileOutputStream fos = new FileOutputStream(file);
-			PrintStream ps = new PrintStream(fos);
-
+		try (FileOutputStream fos = new FileOutputStream(file);
+				PrintStream ps = new PrintStream(fos)){
 			ps.print(s);
 			ps.close();
-		} catch(FileNotFoundException fnfe) {}
+		} catch(IOException fnfe) {
+			// Pass
+		}
 
 		setInput(inputFile);
 		setPartName(inputFile.getName());
@@ -134,7 +154,7 @@ public class SimpleEditor extends TextEditor {
 	 * @param file the location of the file you wish to set.
 	 * @return input object created.
 	 */
-	private IEditorInput createEditorInput(File file) {
+	private static IEditorInput createEditorInput(File file) {
 		IPath location= new Path(file.getAbsolutePath());
 		PathEditorInput input= new PathEditorInput(location);
 		return input;
@@ -171,12 +191,13 @@ public class SimpleEditor extends TextEditor {
 		}
 	}
 
-	private File queryFile() {
+	private static File queryFile() {
 		FileDialog dialog= new FileDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
-		dialog.setText("New File"); //$NON-NLS-1$
+		dialog.setText(Localization.getString("NewFileAction.NewFile"));  //$NON-NLS-1$
 		String path= dialog.open();
-		if (path != null && path.length() > 0)
+		if (path != null && path.length() > 0) {
 			return new File(path);
+		}
 		return null;
 	}
 

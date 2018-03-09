@@ -24,10 +24,10 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.PreferenceConstants;
 import org.eclipse.linuxtools.man.parser.ManPage;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
-import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.PreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 
 
@@ -55,7 +55,7 @@ public final class TapsetLibrary {
 		return functionTree;
 	}
 
-	private static HashMap<String, String> pages = new HashMap<String, String>();
+	private static HashMap<String, String> pages = new HashMap<>();
 
 	/**
 	 * Returns the documentation for the given probe, function, or tapset.

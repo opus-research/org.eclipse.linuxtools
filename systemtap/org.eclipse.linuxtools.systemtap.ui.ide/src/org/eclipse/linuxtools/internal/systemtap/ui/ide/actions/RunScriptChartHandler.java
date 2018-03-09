@@ -15,14 +15,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPerspective;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSetParser;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.ChartStreamDaemon;
-import org.eclipse.linuxtools.systemtap.graphingapi.core.structures.GraphData;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphing.core.datasets.IDataSet;
+import org.eclipse.linuxtools.systemtap.graphing.core.datasets.IDataSetParser;
+import org.eclipse.linuxtools.systemtap.graphing.core.structures.ChartStreamDaemon;
+import org.eclipse.linuxtools.systemtap.graphing.core.structures.GraphData;
+import org.eclipse.linuxtools.systemtap.graphing.ui.views.GraphSelectorEditor;
+import org.eclipse.linuxtools.systemtap.graphing.ui.views.GraphSelectorEditorInput;
+import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditor;
-import org.eclipse.linuxtools.systemtap.ui.graphing.views.GraphSelectorEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
@@ -71,6 +71,7 @@ public class RunScriptChartHandler extends RunScriptHandler {
 		} catch(WorkbenchException we) {
 			ExceptionErrorDialog.openError(Messages.RunScriptChartAction_couldNotSwitchToGraphicPerspective, we);
 		}
+		super.scriptConsoleInitialized(console);
 	}
 
 }

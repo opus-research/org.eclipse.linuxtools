@@ -17,7 +17,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
@@ -288,7 +287,7 @@ public abstract class AbstractSTDataView extends ViewPart {
     }
 
     /**
-     * Shortcut for getViewer().setInput(input) See {@link TreeViewer#setInput(Object)}
+     * Shortcut for getViewer().setInput(input) See {@link org.eclipse.jface.viewers.TreeViewer#setInput(Object)}
      *
      * @param input
      */
@@ -303,8 +302,9 @@ public abstract class AbstractSTDataView extends ViewPart {
      * </p>
      *
      * @param manager
+     * @since 3.0
      */
-    private void fillContextMenu(IMenuManager manager) {
+    protected void fillContextMenu(IMenuManager manager) {
     	Control control = stViewer.getViewer().getControl();
         if (control instanceof Tree) {
             Tree tree = (Tree) control;

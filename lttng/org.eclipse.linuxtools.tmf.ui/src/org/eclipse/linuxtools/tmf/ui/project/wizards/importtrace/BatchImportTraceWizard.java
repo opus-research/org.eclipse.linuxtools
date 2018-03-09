@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -45,19 +45,18 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceValidationHelper;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceValidationHelper;
-import org.eclipse.ui.IImportWizard;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceTypeUIUtils;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
@@ -69,7 +68,7 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
  * @author Matthew Khouzam
  * @since 2.0
  */
-public class BatchImportTraceWizard extends Wizard implements IImportWizard {
+public class BatchImportTraceWizard extends ImportTraceWizard {
 
     private static final int WIN_HEIGHT = 400;
     private static final int WIN_WIDTH = 800;
@@ -91,19 +90,19 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
     private IWizardPage fSelectTypePage;
     private IWizardPage fOptions;
 
-    private final List<String> fTraceTypesToScan = new ArrayList<String>();
-    private final Set<String> fParentFilesToScan = new HashSet<String>();
+    private final List<String> fTraceTypesToScan = new ArrayList<>();
+    private final Set<String> fParentFilesToScan = new HashSet<>();
 
     private ImportTraceContentProvider fScannedTraces = new ImportTraceContentProvider(fTraceTypesToScan, fParentFilesToScan);
 
-    private final Map<TraceValidationHelper, Boolean> fResults = new HashMap<TraceValidationHelper, Boolean>();
+    private final Map<TraceValidationHelper, Boolean> fResults = new HashMap<>();
     private boolean fOverwrite = true;
     private boolean fLinked = true;
 
     private BlockingQueue<TraceValidationHelper> fTracesToScan;
-    private final Set<FileAndName> fTraces = new TreeSet<FileAndName>();
+    private final Set<FileAndName> fTraces = new TreeSet<>();
 
-    private Map<String, Set<String>> fParentFiles = new HashMap<String, Set<String>>();
+    private Map<String, Set<String>> fParentFiles = new HashMap<>();
 
     // Target import directory ('Traces' folder)
     private IFolder fTargetFolder;
@@ -261,7 +260,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
                     }
                 }
                 else {
-                    List<File> subList = new ArrayList<File>();
+                    List<File> subList = new ArrayList<>();
                     IPath path = fTargetFolder.getFullPath();
                     File parentFile = traceToImport.getFile();
                     final boolean isFile = parentFile.isFile();
@@ -270,12 +269,12 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
                         if (fOverwrite || !resource.exists()) {
                             subList.add(parentFile);
                             parentFile = parentFile.getParentFile();
-                            final FileInputStream source = new FileInputStream(traceToImport.getFile());
-                            if (resource.exists()) {
-                                resource.delete(IResource.FORCE, new NullProgressMonitor());
+                            try (final FileInputStream source = new FileInputStream(traceToImport.getFile());) {
+                                if (resource.exists()) {
+                                    resource.delete(IResource.FORCE, new NullProgressMonitor());
+                                }
+                                resource.create(source, true, new NullProgressMonitor());
                             }
-                            resource.create(source, true, new NullProgressMonitor());
-                            source.close();
                             setTraceType(traceToImport);
                             success = true;
                         }
@@ -317,22 +316,20 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
 
     private IStatus setTraceType(FileAndName traceToImport) {
         IStatus validate = Status.OK_STATUS;
-        IPath path = fTargetFolder.getFullPath().append(traceToImport.getName());
-        IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+        IResource resource = fTargetFolder.findMember(traceToImport.getName());
         if (resource != null) {
             try {
                 // Set the trace type for this resource
                 String traceTypeId = traceToImport.getTraceTypeId();
                 TraceTypeHelper traceType = TmfTraceType.getInstance().getTraceType(traceTypeId);
                 if (traceType != null) {
-                    TmfTraceType.setTraceType(path, traceType);
+                    TmfTraceTypeUIUtils.setTraceType(resource, traceType);
                 }
 
                 TmfProjectElement tmfProject =
                         TmfProjectRegistry.getProject(resource.getProject());
                 if (tmfProject != null) {
                     final TmfTraceFolder tracesFolder = tmfProject.getTracesFolder();
-                    tracesFolder.refresh();
 
                     List<TmfTraceElement> traces = tracesFolder.getTraces();
                     boolean found = false;
@@ -408,7 +405,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
     public void setTraceTypesToScan(List<String> tracesToScan) {
         // intersection to know if there's a diff.
         // if there's a diff, we need to re-enque everything
-        List<String> added = new ArrayList<String>();
+        List<String> added = new ArrayList<>();
         for (String traceLoc : tracesToScan) {
             if (!fTraceTypesToScan.contains(traceLoc)) {
                 added.add(traceLoc);
@@ -540,6 +537,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
      * @param traceToScan
      *            The trace to scan
      * @return if the trace has been scanned yet or not
+     * @since 3.0
      */
     public boolean hasScanned(TraceValidationHelper traceToScan) {
         return fResults.containsKey(traceToScan);
@@ -552,6 +550,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
      *            The trace that has been scanned
      * @param validate
      *            if the trace is valid
+     * @since 3.0
      */
     public void addResult(TraceValidationHelper traceToScan, boolean validate) {
         fResults.put(traceToScan, validate);
@@ -563,8 +562,9 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
      * @param traceToScan
      *            the scanned trace
      * @return whether it passes or not
+     * @since 3.0
      */
-    public Boolean getResult(TraceValidationHelper traceToScan) {
+    public boolean getResult(TraceValidationHelper traceToScan) {
         return fResults.get(traceToScan);
     }
 
@@ -580,7 +580,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
     private void updateTracesToScan(final List<String> added) {
         // Treeset is used instead of a hashset since the traces should be read
         // in the order they were added.
-        final Set<String> filesToScan = new TreeSet<String>();
+        final Set<String> filesToScan = new TreeSet<>();
         for (String name : fParentFiles.keySet()) {
             filesToScan.addAll(fParentFiles.get(name));
         }
@@ -596,7 +596,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
      * I am a job. Make me work
      */
     private synchronized IStatus updateFiles(IProgressMonitor monitor, String traceToScanAbsPath) {
-        final Set<String> filesToScan = new TreeSet<String>();
+        final Set<String> filesToScan = new TreeSet<>();
 
         int workToDo = 1;
         for (String name : fParentFiles.keySet()) {

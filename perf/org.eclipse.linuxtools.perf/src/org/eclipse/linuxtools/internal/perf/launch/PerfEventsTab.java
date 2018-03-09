@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.swt.SWT;
@@ -67,7 +66,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 
 
 	/**
-	 * @see ILaunchConfigurationTab#getImage()
+	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getImage()
 	 */
 	@Override
 	public Image getImage() {
@@ -87,7 +86,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 		HashMap<String,ArrayList<String>> events = PerfCore.getEventList(config);
 
 		// the special counters should be last
-		ArrayList<String> tmpTabNames = new ArrayList<String>(events.keySet());
+		ArrayList<String> tmpTabNames = new ArrayList<>(events.keySet());
 		final List<String> SPECIAL_EVENTS = Arrays.asList(new String[] {
 				PerfPlugin.STRINGS_HWBREAKPOINTS,
 				PerfPlugin.STRINGS_RAWHWEvents });
@@ -306,7 +305,6 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 			}
 			previousProject = project;
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	}
@@ -317,7 +315,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 		wconfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, chkDefaultEvent.getSelection());
 
 		//Store which events are selected
-		ArrayList<String> selectedEvents = new ArrayList<String>();
+		ArrayList<String> selectedEvents = new ArrayList<>();
 		for (int i = 0; i < eventTable.length; i++) {
 			for(TableItem x : eventTable[i].getItems()) {
 				if (x.getChecked())
@@ -343,7 +341,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 		}
 
 		//Store any custom HW BreakPoints they added (even if unchecked).
-		ArrayList<String> hwbps = new ArrayList<String>();
+		ArrayList<String> hwbps = new ArrayList<>();
 		for (int i = 0; i < eventTable.length; i++) {
 			if (eventTabItems[i].getText().equals(PerfPlugin.STRINGS_HWBREAKPOINTS)) {
 				for(TableItem x : eventTable[i].getItems()) {
@@ -351,11 +349,13 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 				}
 			}
 		}
-		if (hwbps.size() == 0) { hwbps = null; } //to match with default value.
+		if (hwbps.size() == 0) {
+			hwbps = null; // to match with default value.
+		}
 		wconfig.setAttribute(PerfPlugin.ATTR_HwBreakpointEvents, hwbps);
 
 		//Store any custom Raw HW Events they added (even if unchecked).
-		ArrayList<String> rawhwe = new ArrayList<String>();
+		ArrayList<String> rawhwe = new ArrayList<>();
 		for (int i = 0; i < eventTable.length; i++) {
 			if (eventTabItems[i].getText().equals(PerfPlugin.STRINGS_RAWHWEvents)) {
 				for(TableItem x : eventTable[i].getItems()) {
@@ -363,7 +363,9 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
 				}
 			}
 		}
-		if (rawhwe.size() == 0) { rawhwe = null; } //to match with default value.
+		if (rawhwe.size() == 0) { 
+			rawhwe = null; //to match with default value.
+		} 
 		wconfig.setAttribute(PerfPlugin.ATTR_RawHwEvents, rawhwe);
 	}
 

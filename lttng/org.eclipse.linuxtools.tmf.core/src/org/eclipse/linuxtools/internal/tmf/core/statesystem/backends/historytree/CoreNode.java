@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A Core node is a first-level node of a History Tree which is not a leaf node.
@@ -22,7 +23,7 @@ import java.nio.ByteBuffer;
  * @author Alexandre Montplaisir
  *
  */
-class CoreNode extends HTNode {
+public class CoreNode extends HTNode {
 
     /** Number of bytes in a int */
     private static final int SIZE_INT = 4;
@@ -40,7 +41,13 @@ class CoreNode extends HTNode {
     private long[] childStart;
 
     /** Seq number of this node's extension. -1 if none */
-    private int extension;
+    private volatile int extension = -1;
+
+    /**
+     * Lock used to gate the accesses to the children arrays. Meant to be a
+     * different lock from the one in {@link HTNode}.
+     */
+    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock(false);
 
     /**
      * Initial constructor. Use this to initialize a new EMPTY node.
@@ -54,7 +61,7 @@ class CoreNode extends HTNode {
      * @param start
      *            The earliest timestamp stored in this node
      */
-    CoreNode(HTConfig config, int seqNumber, int parentSeqNumber,
+    protected CoreNode(HTConfig config, int seqNumber, int parentSeqNumber,
             long start) {
         super(config, seqNumber, parentSeqNumber, start);
         this.nbChildren = 0;
@@ -118,27 +125,84 @@ class CoreNode extends HTNode {
         }
     }
 
-    int getNbChildren() {
-        return nbChildren;
+    /**
+     * Return the number of child nodes this node has.
+     *
+     * @return The number of child nodes
+     */
+    public int getNbChildren() {
+        rwl.readLock().lock();
+        int ret = nbChildren;
+        rwl.readLock().unlock();
+        return ret;
     }
 
-    int getChild(int index) {
-        return children[index];
+    /**
+     * Get the child node corresponding to the specified index
+     *
+     * @param index The index of the child to lookup
+     * @return The child node
+     */
+    public int getChild(int index) {
+        rwl.readLock().lock();
+        try {
+            return children[index];
+        } finally {
+            rwl.readLock().unlock();
+        }
     }
 
-    int getLatestChild() {
-        return children[nbChildren - 1];
+    /**
+     * Get the latest (right-most) child node of this node.
+     *
+     * @return The latest child node
+     */
+    public int getLatestChild() {
+        rwl.readLock().lock();
+        try {
+            return children[nbChildren - 1];
+        } finally {
+            rwl.readLock().unlock();
+        }
     }
 
-    long getChildStart(int index) {
-        return childStart[index];
+    /**
+     * Get the start time of the specified child node.
+     *
+     * @param index
+     *            The index of the child node
+     * @return The start time of the that child node.
+     */
+    public long getChildStart(int index) {
+        rwl.readLock().lock();
+        try {
+            return childStart[index];
+        } finally {
+            rwl.readLock().unlock();
+        }
     }
 
-    long getLatestChildStart() {
-        return childStart[nbChildren - 1];
+    /**
+     * Get the start time of the latest (right-most) child node.
+     *
+     * @return The start time of the latest child
+     */
+    public long getLatestChildStart() {
+        rwl.readLock().lock();
+        try {
+            return childStart[nbChildren - 1];
+        } finally {
+            rwl.readLock().unlock();
+        }
     }
 
-    int getExtensionSequenceNumber() {
+    /**
+     * Get the sequence number of the extension to this node (if there is one).
+     *
+     * @return The sequence number of the extended node. '-1' is returned if
+     *         there is no extension node.
+     */
+    public int getExtensionSequenceNumber() {
         return extension;
     }
 
@@ -148,21 +212,27 @@ class CoreNode extends HTNode {
      * @param childNode
      *            The SHTNode object of the new child
      */
-    void linkNewChild(CoreNode childNode) {
-        assert (this.nbChildren < getConfig().getMaxChildren());
+    public void linkNewChild(CoreNode childNode) {
+        rwl.writeLock().lock();
+        try {
+            assert (nbChildren < getConfig().getMaxChildren());
 
-        this.children[nbChildren] = childNode.getSequenceNumber();
-        this.childStart[nbChildren] = childNode.getNodeStart();
-        this.nbChildren++;
+            children[nbChildren] = childNode.getSequenceNumber();
+            childStart[nbChildren] = childNode.getNodeStart();
+            nbChildren++;
+
+        } finally {
+            rwl.writeLock().unlock();
+        }
     }
 
     @Override
-    protected byte getNodeType() {
+    public byte getNodeType() {
         return 1;
     }
 
     @Override
-    protected int getTotalHeaderSize() {
+    protected int getSpecificHeaderSize() {
         int maxChildren = getConfig().getMaxChildren();
         int specificSize =
                   SIZE_INT /* 1x int (extension node) */
@@ -174,11 +244,11 @@ class CoreNode extends HTNode {
                 /* MAX_NB * Timevalue ('childStart' table) */
                 + SIZE_LONG * maxChildren;
 
-        return COMMON_HEADER_SIZE + specificSize;
+        return specificSize;
     }
 
     @Override
-    protected String toStringSpecific() {
+    public String toStringSpecific() {
         /* Only used for debugging, shouldn't be externalized */
         return "Core Node, " + nbChildren + " children, "; //$NON-NLS-1$ //$NON-NLS-2$
     }

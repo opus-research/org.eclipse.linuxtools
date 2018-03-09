@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -90,7 +90,6 @@ public class CtfTmfTraceTest {
         assertEquals(0L, result.getNbEvents());
         assertEquals(0L, result.getStreamingInterval());
         assertNull(result.getResource());
-        assertEquals(1000, result.getQueueSize());
         assertNull(result.getType());
     }
 

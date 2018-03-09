@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2009, 2014 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -100,7 +100,7 @@ public class SelectTracesWizardPage extends WizardPage {
         tableColumn.setText(Messages.SelectTracesWizardPage_TraceColumnHeader);
 
         // Get the list of traces already part of the experiment
-        fPreviousTraces = new HashMap<String, TmfTraceElement>();
+        fPreviousTraces = new HashMap<>();
         for (ITmfProjectModelElement child : fExperiment.getChildren()) {
             if (child instanceof TmfTraceElement) {
                 TmfTraceElement trace = (TmfTraceElement) child;
@@ -160,7 +160,6 @@ public class SelectTracesWizardPage extends WizardPage {
             }
             changed = true;
         }
-        fProject.refresh();
         if (changed) {
             fExperiment.deleteSupplementaryResources();
             fExperiment.closeEditors();
@@ -173,7 +172,7 @@ public class SelectTracesWizardPage extends WizardPage {
      * Get the list of selected traces
      */
     private TmfTraceElement[] getSelection() {
-        Vector<TmfTraceElement> traces = new Vector<TmfTraceElement>();
+        Vector<TmfTraceElement> traces = new Vector<>();
         Object[] selection = fCheckboxTableViewer.getCheckedElements();
         for (Object sel : selection) {
             if (sel instanceof TmfTraceElement) {

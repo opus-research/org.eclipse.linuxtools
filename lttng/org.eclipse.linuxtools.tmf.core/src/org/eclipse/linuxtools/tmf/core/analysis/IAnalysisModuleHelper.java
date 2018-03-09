@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2013, 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -97,6 +97,10 @@ public interface IAnalysisModuleHelper {
     /**
      * Creates a new instance of the {@link IAnalysisModule} represented by this
      * helper and initializes it with the trace.
+     *
+     * After the module is fully created, this method should call
+     * {@link TmfAnalysisManager#analysisModuleCreated(IAnalysisModule)} in order
+     * for the new module listeners to be executed on this module.
      *
      * @param trace
      *            The trace to be linked to the module

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -45,7 +45,7 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
     /**
      * The domains information of this session.
      */
-    private final List<IDomainInfo> fDomains = new ArrayList<IDomainInfo>();
+    private final List<IDomainInfo> fDomains = new ArrayList<>();
     /**
      * Flag to indicate whether trace is streamed over network or not.
      */

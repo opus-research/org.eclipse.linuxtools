@@ -17,7 +17,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -62,7 +62,7 @@ public class DefinitionAction extends Action implements IObjectActionDelegate, I
 		Path p = new Path(filename);
 
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		PathEditorInput input = new PathEditorInput(p, window);
+		PathEditorInput input = new PathEditorInput(p);
 		try {
 			IEditorPart editorPart = window.getActivePage().openEditor(input, STPEditor.ID);
 			STPEditor editor = (STPEditor)editorPart;
@@ -75,12 +75,12 @@ public class DefinitionAction extends Action implements IObjectActionDelegate, I
 
 			editor.jumpToLocation(++line, 0);
 		} catch (PartInitException e) {
-			ExceptionErrorDialog.openError(Messages.TempFileAction_errorDialogTitle, e);
+			ExceptionErrorDialog.openError(Messages.ScriptRunAction_errorDialogTitle, e);
 		}
 	}
 
 	/**
-	 * Tries to find the line of code that corrisponds to the provided
+	 * Tries to find the line of code that corresponds to the provided
 	 * function node within the file open in the provided editor.
 	 * @param t The tree node that we want to look up
 	 * @param editor The STPEditor with the file we are searching in
@@ -88,17 +88,14 @@ public class DefinitionAction extends Action implements IObjectActionDelegate, I
 	 */
 	private int functionFind(TreeDefinitionNode t, STPEditor editor) {
 		String func = t.toString();
-		func = func.substring(0, func.indexOf('('));
-
-		int line = editor.find("function " + func); //$NON-NLS-1$
-
+		int line = editor.findRegex("^function " + func + ".*\\(.*\\)"); //$NON-NLS-1$ //$NON-NLS-2$
 		if(line < 0)
 			line = editor.find(func);
 		return Math.max(line, 0);
 	}
 
 	/**
-	 * Tries to find the line of code that corrisponds to the provided
+	 * Tries to find the line of code that corresponds to the provided
 	 * probe node within the file open in the provided editor.
 	 * @param t The tree node that we want to look up
 	 * @param editor The STPEditor with the file we are searching in

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -37,8 +37,8 @@ public class ReadTrace {
         final int LOOP_COUNT = 1;
 
         // Work variables
-        Long nbEvent = 0L;
-        Vector<Double> benchs = new Vector<Double>();
+        long nbEvent = 0L;
+        Vector<Double> benchs = new Vector<>();
         CTFTrace trace = null;
         long start, stop;
         for (int loops = 0; loops < LOOP_COUNT; loops++) {

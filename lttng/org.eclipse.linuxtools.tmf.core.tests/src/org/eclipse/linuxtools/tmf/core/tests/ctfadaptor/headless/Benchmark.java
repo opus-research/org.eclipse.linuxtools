@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -39,8 +39,8 @@ public class Benchmark {
         final boolean USE_TEXT = true;
 
         // Work variables
-        Long nbEvent = 0L;
-        final Vector<Double> benchs = new Vector<Double>();
+        long nbEvent = 0L;
+        final Vector<Double> benchs = new Vector<>();
         CtfTmfTrace trace = null;
         long start, stop;
         for (int loops = 0; loops < NUM_LOOPS; loops++) {
@@ -64,7 +64,7 @@ public class Benchmark {
                     if (USE_TEXT) {
 
                         System.out.println("Event " + nbEvent + " Time "
-                                + current.getTimestamp().toString() + " type " + current.getEventName()
+                                + current.getTimestamp().toString() + " type " + current.getType().getName()
                                 + " on CPU " + current.getSource() + " " + current.getContent().toString());
                     }
                     // advance the trace to the next event.
@@ -82,7 +82,7 @@ public class Benchmark {
         }
         System.out.println("");
         double avg = 0;
-        for (final Double val : benchs) {
+        for (final double val : benchs) {
             avg += val;
         }
         avg /= benchs.size();

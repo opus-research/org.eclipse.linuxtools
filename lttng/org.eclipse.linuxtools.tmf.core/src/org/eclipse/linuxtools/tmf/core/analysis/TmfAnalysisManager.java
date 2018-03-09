@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2013, 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
-import org.eclipse.linuxtools.internal.tmf.core.analysis.TmfAnalysisType;
+import org.eclipse.linuxtools.internal.tmf.core.analysis.TmfAnalysisModuleSources;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -34,9 +34,57 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  */
 public class TmfAnalysisManager {
 
-    private static final Map<String, IAnalysisModuleHelper> fAnalysisModules = new HashMap<String, IAnalysisModuleHelper>();
-    private static final Map<String, List<Class<? extends IAnalysisParameterProvider>>> fParameterProviders = new HashMap<String, List<Class<? extends IAnalysisParameterProvider>>>();
-    private static final Map<Class<? extends IAnalysisParameterProvider>, IAnalysisParameterProvider> fParamProviderInstances = new HashMap<Class<? extends IAnalysisParameterProvider>, IAnalysisParameterProvider>();
+    private static final Map<String, IAnalysisModuleHelper> fAnalysisModules = new HashMap<>();
+    private static final Map<String, List<Class<? extends IAnalysisParameterProvider>>> fParameterProviders = new HashMap<>();
+    private static final Map<Class<? extends IAnalysisParameterProvider>, IAnalysisParameterProvider> fParamProviderInstances = new HashMap<>();
+    private static final List<IAnalysisModuleSource> fSources = new ArrayList<>();
+    private static final List<ITmfNewAnalysisModuleListener> fListeners = new ArrayList<>();
+
+    /**
+     * Registers a new source of modules
+     *
+     * @param source
+     *            A {@link IAnalysisModuleSource} instance
+     */
+    public static void registerModuleSource(IAnalysisModuleSource source) {
+        synchronized (fSources) {
+            fSources.add(source);
+            refreshModules();
+        }
+    }
+
+    /**
+     * Initializes sources and new module listeners from the extension point
+     */
+    public static void initialize() {
+        initializeModuleSources();
+        initializeNewModuleListeners();
+    }
+
+    /**
+     * Cleans the module sources list and initialize it from the extension point
+     */
+    private static void initializeModuleSources() {
+        synchronized (fSources) {
+            fSources.clear();
+            for (IAnalysisModuleSource source : TmfAnalysisModuleSources.getSources()) {
+                fSources.add(source);
+            }
+        }
+    }
+
+    /**
+     * Cleans the new module listeners list and initialize it from the extension
+     * point
+     */
+    private static void initializeNewModuleListeners() {
+        synchronized (fListeners) {
+            fListeners.clear();
+            for (ITmfNewAnalysisModuleListener output : TmfAnalysisModuleOutputs.getOutputListeners()) {
+                fListeners.add(output);
+            }
+        }
+    }
 
     /**
      * Gets all available analysis module helpers
@@ -48,8 +96,11 @@ public class TmfAnalysisManager {
     public static Map<String, IAnalysisModuleHelper> getAnalysisModules() {
         synchronized (fAnalysisModules) {
             if (fAnalysisModules.isEmpty()) {
-                TmfAnalysisType analysis = TmfAnalysisType.getInstance();
-                fAnalysisModules.putAll(analysis.getAnalysisModules());
+                for (IAnalysisModuleSource source : fSources) {
+                    for (IAnalysisModuleHelper helper : source.getAnalysisModules()) {
+                        fAnalysisModules.put(helper.getId(), helper);
+                    }
+                }
             }
         }
         return Collections.unmodifiableMap(fAnalysisModules);
@@ -66,7 +117,7 @@ public class TmfAnalysisManager {
      */
     public static Map<String, IAnalysisModuleHelper> getAnalysisModules(Class<? extends ITmfTrace> traceclass) {
         Map<String, IAnalysisModuleHelper> allModules = getAnalysisModules();
-        Map<String, IAnalysisModuleHelper> map = new HashMap<String, IAnalysisModuleHelper>();
+        Map<String, IAnalysisModuleHelper> map = new HashMap<>();
         for (IAnalysisModuleHelper module : allModules.values()) {
             if (module.appliesToTraceType(traceclass)) {
                 map.put(module.getId(), module);
@@ -114,7 +165,7 @@ public class TmfAnalysisManager {
      * @return A parameter provider if one applies to the trace, null otherwise
      */
     public static List<IAnalysisParameterProvider> getParameterProviders(IAnalysisModule module, ITmfTrace trace) {
-        List<IAnalysisParameterProvider> providerList = new ArrayList<IAnalysisParameterProvider>();
+        List<IAnalysisParameterProvider> providerList = new ArrayList<>();
         synchronized (fParameterProviders) {
             if (!fParameterProviders.containsKey(module.getId())) {
                 return providerList;
@@ -143,6 +194,32 @@ public class TmfAnalysisManager {
             }
         }
         return providerList;
+    }
+
+    /**
+     * Clear the list of modules so that next time, it is computed again from
+     * sources
+     */
+    public static void refreshModules() {
+        synchronized (fAnalysisModules) {
+            fAnalysisModules.clear();
+        }
+    }
+
+    /**
+     * This method should be called when new analysis modules have been created
+     * by module helpers to that the {@link ITmfNewAnalysisModuleListener} can
+     * be executed on the module instance.
+     *
+     * @param module
+     *            The newly created analysis module
+     */
+    public static void analysisModuleCreated(IAnalysisModule module) {
+        synchronized (fListeners) {
+            for (ITmfNewAnalysisModuleListener listener : fListeners) {
+                listener.moduleCreated(module);
+            }
+        }
     }
 
 }

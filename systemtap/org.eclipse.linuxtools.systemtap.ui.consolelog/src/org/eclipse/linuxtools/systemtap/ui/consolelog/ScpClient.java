@@ -27,8 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.RemoteScriptOptions;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -42,34 +41,33 @@ public class ScpClient {
 
 	private Session session;
 
-	public ScpClient() throws JSchException {
-
-	  String user=ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.SCP_USER);
-      String host=ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.HOST_NAME);
+	/**
+	 * @since 3.0
+	 */
+	public ScpClient(RemoteScriptOptions remoteOptions) throws JSchException {
 
       JSch jsch=new JSch();
 
-      session=jsch.getSession(user, host, 22);
+      session=jsch.getSession(remoteOptions.getUserName(), remoteOptions.getHostName(), 22);
 
-      session.setPassword(ConsoleLogPlugin.getDefault().getPreferenceStore().getString(ConsoleLogPreferenceConstants.SCP_PASSWORD));
+      session.setPassword(remoteOptions.getPassword());
       java.util.Properties config = new java.util.Properties();
                       config.put("StrictHostKeyChecking", "no"); //$NON-NLS-1$ //$NON-NLS-2$
                       session.setConfig(config);
       session.connect();
     }
 
-    public void transfer(String fromFile, String toFile) throws IOException, JSchException{
-    	FileInputStream fis=null;
+	public void transfer(String fromFile, String toFile) throws IOException,
+			JSchException {
 		String rfile = toFile;
 		String lfile = fromFile;
 		String command = "scp -t " + rfile; //$NON-NLS-1$
-		try {
-			Channel channel = session.openChannel("exec"); //$NON-NLS-1$
-			((ChannelExec) channel).setCommand(command);
+		Channel channel = session.openChannel("exec"); //$NON-NLS-1$
+		((ChannelExec) channel).setCommand(command);
 
-			// get I/O streams for remote scp
-			OutputStream out = channel.getOutputStream();
-			InputStream in = channel.getInputStream();
+		// get I/O streams for remote scp
+		try (OutputStream out = channel.getOutputStream();
+				InputStream in = channel.getInputStream()) {
 
 			channel.connect();
 
@@ -95,17 +93,17 @@ public class ScpClient {
 			}
 
 			// send a content of lfile
-			fis = new FileInputStream(lfile);
 			byte[] buf = new byte[1024];
-			while (true) {
-				int len = fis.read(buf, 0, buf.length);
-				if (len <= 0)
-					break;
-				out.write(buf, 0, len);
+			try (FileInputStream fis = new FileInputStream(lfile)) {
+				while (true) {
+					int len = fis.read(buf, 0, buf.length);
+					if (len <= 0) {
+						break;
+					}
+					out.write(buf, 0, len);
 
+				}
 			}
-			fis.close();
-			fis = null;
 			// send '\0'
 			buf[0] = 0;
 			out.write(buf, 0, 1);
@@ -113,17 +111,12 @@ public class ScpClient {
 			if (checkAck(in) != 0) {
 				System.out.println("err"); //$NON-NLS-1$
 			}
-			out.close();
-
-			channel.disconnect();
-			session.disconnect();
-
-		} catch (IOException e) {
-			if (fis != null)
-				fis.close();
-			throw e;
 		}
-  }
+
+		channel.disconnect();
+		session.disconnect();
+
+	}
 
 	static int checkAck(InputStream in) throws IOException {
 		int b = in.read();
@@ -131,10 +124,12 @@ public class ScpClient {
 		// 1 for error,
 		// 2 for fatal error,
 		// -1
-		if (b == 0)
+		if (b == 0) {
 			return b;
-		if (b == -1)
+		}
+		if (b == -1) {
 			return b;
+		}
 
 		if (b == 1 || b == 2) {
 			StringBuilder sb = new StringBuilder();

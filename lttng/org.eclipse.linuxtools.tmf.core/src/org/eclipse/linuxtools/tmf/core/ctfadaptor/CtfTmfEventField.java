@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2011, 2014 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -153,7 +153,7 @@ public abstract class CtfTmfEventField extends TmfEventField {
             String curFieldName = null;
             Definition curFieldDef;
             CtfTmfEventField curField;
-            List<ITmfEventField> list = new ArrayList<ITmfEventField>();
+            List<ITmfEventField> list = new ArrayList<>();
             /* Recursively parse the fields */
             for (Entry<String, Definition> entry : strDef.getDefinitions().entrySet()) {
                 curFieldName = entry.getKey();
@@ -293,7 +293,7 @@ final class CTFIntegerArrayField extends CtfTmfEventField {
     @Override
     public synchronized String getFormattedValue() {
         if (formattedValue == null) {
-            List<String> strings = new ArrayList<String>();
+            List<String> strings = new ArrayList<>();
             for (long value : getValue()) {
                 strings.add(IntegerDefinition.formatNumber(value, base, signed));
             }
@@ -333,7 +333,7 @@ final class CTFArrayField extends CtfTmfEventField {
     @Override
     public synchronized String getFormattedValue() {
         if (formattedValue == null) {
-            List<String> strings = new ArrayList<String>();
+            List<String> strings = new ArrayList<>();
             for (CtfTmfEventField element : getValue()) {
                 strings.add(element.getFormattedValue());
             }
@@ -386,7 +386,7 @@ final class CTFEnumField extends CtfTmfEventField {
      */
     CTFEnumField(String name, CtfEnumPair enumValue) {
         super(name, new CtfEnumPair(enumValue.getFirst(),
-                enumValue.getSecond().longValue()), null);
+                enumValue.getSecond()), null);
     }
 
     @Override

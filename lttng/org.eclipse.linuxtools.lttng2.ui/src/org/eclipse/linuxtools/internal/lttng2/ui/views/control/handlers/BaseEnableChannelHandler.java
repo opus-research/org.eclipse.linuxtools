@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -95,7 +95,7 @@ abstract class BaseEnableChannelHandler extends BaseControlViewHandler {
                 protected IStatus run(IProgressMonitor monitor) {
                     Exception error = null;
 
-                    List<String> channelNames = new ArrayList<String>();
+                    List<String> channelNames = new ArrayList<>();
                     channelNames.add(dialog.getChannelInfo().getName());
 
                     try {

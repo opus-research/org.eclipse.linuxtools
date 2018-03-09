@@ -12,6 +12,7 @@
  *   Patrick Tasse - Updated for removal of context clone
  *   Patrick Tasse - Updated for ranks in experiment location
  *   Geneviève Bastien - Added support of experiment synchronization
+ *                       Added the initExperiment method and default constructor
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.trace;
@@ -24,6 +25,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.trace.TmfExperimentContext;
@@ -96,6 +98,16 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
     // ------------------------------------------------------------------------
 
     /**
+     * Default constructor
+     * @since 3.0
+     */
+    public TmfExperiment() {
+        super();
+    }
+
+    /**
+     * Constructor with parameters
+     *
      * @param type
      *            the event type
      * @param id
@@ -153,23 +165,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
      *            the resource associated to the experiment
      */
     public TmfExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
-        setCacheSize(indexPageSize);
-        setStreamingInterval(0);
-        setParser(this);
-        fTraces = traces;
-        try {
-            super.initialize(resource, path, type);
-        } catch (TmfTraceException e) {
-            e.printStackTrace();
-        }
-
-        if (resource != null) {
-            try {
-                this.synchronizeTraces();
-            } catch (TmfTraceException e) {
-                Activator.logError("Error synchronizing experiment", e); //$NON-NLS-1$
-            }
-        }
+        initExperiment(type, path, traces, indexPageSize, resource);
     }
 
     @Override
@@ -206,6 +202,43 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
 
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) {
+    }
+
+    /**
+     * Initialization of an experiment, taking the type, path, traces,
+     * indexPageSize and resource
+     *
+     * @param type
+     *            the event type
+     * @param path
+     *            the experiment path
+     * @param traces
+     *            the experiment set of traces
+     * @param indexPageSize
+     *            the experiment index page size
+     * @param resource
+     *            the resource associated to the experiment
+     * @since 3.0
+     */
+    public void initExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
+        setCacheSize(indexPageSize);
+        setStreamingInterval(0);
+        setParser(this);
+        try {
+            super.initialize(resource, path, type);
+        } catch (TmfTraceException e) {
+            Activator.logError("Error initializing experiment", e); //$NON-NLS-1$
+        }
+
+        fTraces = traces;
+
+        if (resource != null) {
+            try {
+                this.synchronizeTraces();
+            } catch (TmfTraceException e) {
+                Activator.logError("Error synchronizing experiment", e); //$NON-NLS-1$
+            }
+        }
     }
 
     /**
@@ -618,6 +651,13 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
     public void traceOpened(TmfTraceOpenedSignal signal) {
         if (signal.getTrace() == this) {
             initializeStreamingMonitor();
+
+            /* Initialize the analysis */
+            MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.OK, null, null);
+            status.add(executeAnalysis());
+            if (!status.isOK()) {
+                Activator.log(status);
+            }
         }
     }
 

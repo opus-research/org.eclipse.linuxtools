@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -31,11 +31,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTraceDefinition.OutputColumn;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtEvent;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomTxtTraceDefinition;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlEvent;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.filter.model.ITmfFilterTreeNode;
@@ -50,7 +45,12 @@ import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterOrNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterRootNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterTreeNode;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtEvent;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlEvent;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition.OutputColumn;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.DND;
@@ -333,7 +333,7 @@ class FilterViewer extends Composite {
         }
 
         protected String[] getFieldsList(ITmfFilterTreeNode node) {
-            ArrayList<String> fieldsList = new ArrayList<String>();
+            ArrayList<String> fieldsList = new ArrayList<>();
             ITmfFilterTreeNode curNode = node;
             while (curNode != null) {
                 if (curNode instanceof TmfFilterEventTypeNode) {
@@ -548,7 +548,7 @@ class FilterViewer extends Composite {
         }
 
         protected Map<String, Object> getEventsTypeMap() {
-            Map<String, Object> eventsTypeMap = new LinkedHashMap<String, Object>();
+            Map<String, Object> eventsTypeMap = new LinkedHashMap<>();
             for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
                 String categoryName = TmfTraceType.getCategoryName(ce.getAttribute(TmfTraceType.CATEGORY_ATTR));
                 String text = categoryName + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR); //$NON-NLS-1$

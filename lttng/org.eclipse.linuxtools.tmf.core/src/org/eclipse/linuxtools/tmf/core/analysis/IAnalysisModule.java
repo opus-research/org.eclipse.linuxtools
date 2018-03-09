@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2013, 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,10 +12,9 @@
 
 package org.eclipse.linuxtools.tmf.core.analysis;
 
-import java.util.List;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.linuxtools.tmf.core.component.ITmfComponent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -42,7 +41,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @author Geneviève Bastien
  * @since 3.0
  */
-public interface IAnalysisModule {
+public interface IAnalysisModule extends ITmfComponent {
 
     // --------------------------------------------------------
     // Getters and setters
@@ -55,13 +54,6 @@ public interface IAnalysisModule {
      *            name of the module
      */
     void setName(String name);
-
-    /**
-     * Gets the name of the analysis module
-     *
-     * @return Name of the module
-     */
-    String getName();
 
     /**
      * Sets the id of the module
@@ -165,7 +157,7 @@ public interface IAnalysisModule {
      *
      * @return The list of {@link IAnalysisOutput}
      */
-    List<IAnalysisOutput> getOutputs();
+    Iterable<IAnalysisOutput> getOutputs();
 
     /**
      * Registers an output for this analysis
@@ -174,6 +166,15 @@ public interface IAnalysisModule {
      *            The {@link IAnalysisOutput} object
      */
     void registerOutput(IAnalysisOutput output);
+
+    /**
+     * Block the calling thread until this analysis has completed (or has been
+     * cancelled).
+     *
+     * @return True if the analysis finished successfully, false if it was
+     *         cancelled.
+     */
+    boolean waitForCompletion();
 
     /**
      * Typically the output of an analysis will be available only after it is
@@ -196,7 +197,7 @@ public interface IAnalysisModule {
     /**
      * Cancels the current analysis
      */
-    public void cancel();
+    void cancel();
 
     // -----------------------------------------------------
     // Utilities

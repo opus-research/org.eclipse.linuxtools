@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,26 +23,34 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandlerListener;
+import org.eclipse.core.filesystem.URIUtil;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptLaunch;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.StapErrorParser;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.ExceptionErrorDialog;
+import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpClient;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.RemoteScriptOptions;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
-import org.eclipse.linuxtools.systemtap.ui.systemtapgui.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -53,6 +62,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
+
 import com.jcraft.jsch.JSchException;
 
 /**
@@ -70,18 +80,19 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @since 2.0
 	 */
 	protected boolean continueRun = true;
-	private boolean runLocal = true;
+	private RemoteScriptOptions remoteOptions = null;
 	private IEditorPart ed = null;
-	private Shell shell = null;
 	private String fileName = null;
 	private String tmpfileName = null;
 	private String serverfileName = null;
 	private IPath path;
-	private List<String> cmdList;
+	private IProject project;
+	private SystemTapScriptLaunch launch;
+	private final List<String> cmdList;
 
 
 	public RunScriptHandler(){
-		this.cmdList = new ArrayList<String>();
+		this.cmdList = new ArrayList<>();
 	}
 
 	/**
@@ -89,6 +100,25 @@ public class RunScriptHandler extends AbstractHandler {
 	 */
 	public void setPath(IPath path){
 		this.path = path;
+		URI uri = URIUtil.toURI(path);
+		IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uri);
+		if (files.length > 0) {
+			this.project = files[0].getProject();
+		}
+	}
+
+	/**
+	 * @since 2.1
+	 */
+	public IProject getProject() {
+		return project;
+	}
+
+	/**
+	 * @since 2.3
+	 */
+	public void setLaunch(SystemTapScriptLaunch launch){
+		this.launch = launch;
 	}
 
 	/**
@@ -99,23 +129,21 @@ public class RunScriptHandler extends AbstractHandler {
 	 */
 	private void findTargetEditor() {
 		ed = null;
-		shell = null;
 
 		if (path == null) {
 			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 			ed = window.getActivePage().getActiveEditor();
-			shell = window.getShell();
 			return;
 		}
 
 		for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-			IEditorPart ed_test = window.getActivePage().getActiveEditor();
-			if (matchesEditor(ed_test.getEditorInput(), ed_test, window.getShell())) {
+			IEditorPart edTest = window.getActivePage().getActiveEditor();
+			if (edTest != null && matchesEditor(edTest.getEditorInput(), edTest)) {
 				return;
 			}
 			for (IEditorReference ref : window.getActivePage().getEditorReferences()) {
 				try {
-					if (matchesEditor(ref.getEditorInput(), SynchronousActions.getRestoredEditor(ref), window.getShell())) {
+					if (matchesEditor(ref.getEditorInput(), ref.getEditor(false))) {
 						return;
 					}
 				} catch (PartInitException e) {
@@ -125,13 +153,12 @@ public class RunScriptHandler extends AbstractHandler {
 		}
 	}
 
-	private boolean matchesEditor(IEditorInput input, IEditorPart editor, Shell shell) {
+	private boolean matchesEditor(IEditorInput input, IEditorPart editor) {
 		if (input instanceof IPathEditorInput && ((IPathEditorInput) (input)).getPath().equals(this.path)) {
 			// Only save the editor when working with a file without a project (PathEditorInput),
 			// otherwise the editor isn't needed at all (saving is handled elsewhere in that case).
 			if (input instanceof PathEditorInput) {
 				this.ed = editor;
-				this.shell = shell;
 			}
 			return true;
 		}
@@ -144,49 +171,90 @@ public class RunScriptHandler extends AbstractHandler {
 	 * Finally, it gets an instance of <code>ScriptConsole</code> to run the script.
 	 */
 	@Override
-	public Object execute(ExecutionEvent event){
+	public Object execute(ExecutionEvent event) throws ExecutionException {
 		findTargetEditor();
+		final boolean local = getRunLocal();
 		if(isValid()) {
-			if(getRunLocal() == false) {
-				try{
-
-					ScpClient scpclient = new ScpClient();
-					serverfileName = fileName.substring(fileName.lastIndexOf('/')+1);
-					tmpfileName="/tmp/"+ serverfileName; //$NON-NLS-1$
-					 scpclient.transfer(fileName,tmpfileName);
-			        } catch (JSchException e) {
-						ErrorDialog.openError(PlatformUI.getWorkbench()
-								.getActiveWorkbenchWindow().getShell(),
-								Localization.getString("RunScriptHandler.serverError"), Localization.getString("RunScriptHandler.serverError"), //$NON-NLS-1$ //$NON-NLS-2$
-								new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, Localization.getString("RunScriptHandler.checkCredentials"))); //$NON-NLS-1$
-						return null;
-					} catch (IOException e) {
-						ExceptionErrorDialog.openError(Localization.getString("RunScriptHandler.ioError"), e); //$NON-NLS-1$
-						return null;
-					}
+			if(!local && !prepareNonLocalScript()) {
+				return null;
 			}
 			final String[] script = buildStandardScript();
 			final String[] envVars = getEnvironmentVariables();
-            if(continueRun)
-            {
-            	Display.getDefault().asyncExec(new Runnable() {
-            		@Override
+			if (continueRun) {
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
 					public void run() {
-            			final ScriptConsole console;
-            			if(getRunLocal() == false) {
-            				console = ScriptConsole.getInstance(serverfileName);
-            				console.run(script, envVars, new StapErrorParser());
-            			} else {
-            				console = ScriptConsole.getInstance(fileName);
-            				console.runLocally(script, envVars, new StapErrorParser());
-            			}
-                        scriptConsoleInitialized(console);
-            		}
-            	});
-            }
+						String name = !local ? serverfileName : fileName;
+						if (ScriptConsole.instanceIsRunning(name)) {
+							MessageDialog dialog = new MessageDialog(
+									PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+									Messages.RunScriptAction_alreadyRunningDialogTitle, null,
+									MessageFormat.format(Messages.RunScriptAction_alreadyRunningDialogMessage, fileName),
+									MessageDialog.QUESTION, new String[]{"Yes", "No"}, 0); //$NON-NLS-1$ //$NON-NLS-2$
+							if (dialog.open() != Window.OK) {
+								if (launch != null) {
+									launch.forceRemove();
+								}
+								return;
+							}
+						}
+						final ScriptConsole console;
+						if (!local) {
+							console = ScriptConsole.getInstance(serverfileName);
+						} else {
+							console = ScriptConsole.getInstance(fileName);
+						}
+						synchronized (console) {
+							if (!local) {
+								console.run(script, envVars, remoteOptions, new StapErrorParser());
+							} else {
+								console.runLocally(script, envVars, new StapErrorParser(), getProject());
+							}
+							scriptConsoleInitialized(console);
+						}
+					}
+				});
+			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * Attempts to set up a channel for a script that runs on a non-local host or user.
+	 * @return <code>true</code> on success, <code>false</code> on failure.
+	 * @throws ExecutionException If failure occurs during a (non-simple) launch,
+	 * this will throw an exception instead of returning <code>false</code>.
+	 */
+	private boolean prepareNonLocalScript() throws ExecutionException {
+		try {
+			ScpClient scpclient = new ScpClient(remoteOptions);
+			serverfileName = fileName.substring(fileName.lastIndexOf('/')+1);
+			tmpfileName="/tmp/"+ serverfileName; //$NON-NLS-1$
+			scpclient.transfer(fileName,tmpfileName);
+		} catch (final JSchException | IOException e) {
+			final String message = e instanceof JSchException ? Localization.getString("RunScriptHandler.checkCredentials") //$NON-NLS-1$
+					: Localization.getString("RunScriptHandler.ioError"); //$NON-NLS-1$
+			if (launch == null) {
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						if (e instanceof JSchException) {
+							ErrorDialog.openError(PlatformUI.getWorkbench()
+									.getActiveWorkbenchWindow().getShell(),
+									Localization.getString("RunScriptHandler.serverError"), Localization.getString("RunScriptHandler.serverError"), //$NON-NLS-1$ //$NON-NLS-2$
+									new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, message));
+						} else {
+							ExceptionErrorDialog.openError(Localization.getString("RunScriptHandler.ioError"), e); //$NON-NLS-1$
+						}
+					}
+				});
+				return false;
+			} else {
+				throw new ExecutionException(message, e);
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -196,6 +264,9 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @since 2.0
 	 */
 	protected void scriptConsoleInitialized(ScriptConsole console){
+		if (launch != null && path != null) {
+			launch.setConsole(console);
+		}
 	}
 
 	/**
@@ -229,8 +300,13 @@ public class RunScriptHandler extends AbstractHandler {
 		// the active editor
 		if(!tryEditorSave()){
 			if (this.path == null){
-				String msg = MessageFormat.format(Localization.getString("RunScriptAction.NoScriptFile"),(Object[]) null); //$NON-NLS-1$
-				MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("RunScriptAction.Problem"), msg); //$NON-NLS-1$
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						String msg = MessageFormat.format(Localization.getString("RunScriptAction.NoScriptFile"),(Object[]) null); //$NON-NLS-1$
+						MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("RunScriptAction.Problem"), msg); //$NON-NLS-1$
+					}
+				});
 				return false;
 			}
 		}
@@ -248,7 +324,7 @@ public class RunScriptHandler extends AbstractHandler {
 			Display.getDefault().syncExec(new Runnable() {
 				@Override
 				public void run() {
-					ed.doSave(new ProgressMonitorPart(shell, new FillLayout()));
+					ed.doSave(new ProgressMonitorPart(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new FillLayout()));
 				}
 			});
 		}
@@ -272,8 +348,13 @@ public class RunScriptHandler extends AbstractHandler {
 		}
 
 		if(fileName.contains(IDESessionSettings.tapsetLocation)) {
-			String msg = MessageFormat.format(Localization.getString("RunScriptAction.TapsetDirectoryRun"),(Object []) null); //$NON-NLS-1$
-			MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("RunScriptAction.Error"), msg); //$NON-NLS-1$
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					String msg = MessageFormat.format(Localization.getString("RunScriptAction.TapsetDirectoryRun"),(Object []) null); //$NON-NLS-1$
+					MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("RunScriptAction.Error"), msg); //$NON-NLS-1$
+				}
+			});
 			return false;
 		}
 		return true;
@@ -298,8 +379,7 @@ public class RunScriptHandler extends AbstractHandler {
 	protected String[] buildStandardScript() {
 		getImportedTapsets(cmdList);
 
-		if(isGuru())
-		 {
+		if(isGuru()) {
 			cmdList.add("-g"); //$NON-NLS-1$
 		}
 
@@ -318,10 +398,10 @@ public class RunScriptHandler extends AbstractHandler {
 
 		//Get all imported tapsets
 		if(null != tapsets && tapsets.length > 0 && tapsets[0].trim().length() > 0) {
-	   		for(int i=0; i<tapsets.length; i++) {
-	   			cmdList.add("-I"); //$NON-NLS-1$
-	   			cmdList.add(tapsets[i]);
-	   		}
+			for(int i=0; i<tapsets.length; i++) {
+				cmdList.add("-I"); //$NON-NLS-1$
+				cmdList.add(tapsets[i]);
+			}
 		}
 	}
 
@@ -331,10 +411,8 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @return True if the script contains embedded C code.
 	 */
 	private boolean isGuru() {
-		try {
-			File f = new File(fileName);
-			FileReader fr = new FileReader(f);
-
+		File f = new File(fileName);
+		try (FileReader fr = new FileReader(f)){
 			int curr = 0;
 			int prev = 0;
 			boolean front = false;
@@ -443,14 +521,18 @@ public class RunScriptHandler extends AbstractHandler {
 	}
 
 	/**
-	 * @since 2.0
+	 * Set the options for running the script remotely. If the script is to be run locally,
+	 * pass <code>null</code> as the only parameter.
+	 * @param remoteOptions The remote options of the script run, or <code>null</code> if the script
+	 * is to be run locally.
+	 * @since 3.0
 	 */
-	public void setLocalScript(boolean enabled) {
-		runLocal = enabled;
+	public void setRemoteScriptOptions(RemoteScriptOptions remoteOptions) {
+		this.remoteOptions = remoteOptions;
 	}
 
 	private boolean getRunLocal() {
-		return runLocal;
+		return remoteOptions == null;
 	}
 
 	@Override
