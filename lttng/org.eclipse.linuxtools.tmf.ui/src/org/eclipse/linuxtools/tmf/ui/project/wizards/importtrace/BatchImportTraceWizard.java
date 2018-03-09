@@ -332,6 +332,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
                         TmfProjectRegistry.getProject(resource.getProject());
                 if (tmfProject != null) {
                     final TmfTraceFolder tracesFolder = tmfProject.getTracesFolder();
+                    tracesFolder.refresh();
 
                     List<TmfTraceElement> traces = tracesFolder.getTraces();
                     boolean found = false;
