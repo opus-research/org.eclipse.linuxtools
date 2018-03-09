@@ -180,7 +180,7 @@ public class CtfTmfTraceTest {
     @Test
     public void testGetEnvValue() {
         String key = "tracer_name";
-        String result = fixture.getTraceProperties().get(key);
+        String result = fixture.getTraceProperty(key);
         assertEquals("\"lttng-modules\"",result);
     }
 
@@ -219,7 +219,7 @@ public class CtfTmfTraceTest {
      */
     @Test
     public void testGetNbEnvVars() {
-        int result = fixture.getTraceProperties().size();
+        int result = fixture.getTracePropertiesSize();
         assertEquals(8, result);
     }
 
