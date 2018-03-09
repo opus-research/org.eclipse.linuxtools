@@ -180,6 +180,7 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
      * Set the countdown latch back to 1 so the analysis can be executed again
      */
     protected void resetAnalysis() {
+        fFinishedLatch.countDown();
         fFinishedLatch = new CountDownLatch(1);
     }
 
@@ -311,10 +312,20 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     }
 
     @Override
+    public boolean waitForCompletion() {
+        try {
+            fFinishedLatch.await();
+        } catch (InterruptedException e) {
+            Activator.logError("Error while waiting for module completion", e); //$NON-NLS-1$
+        }
+        return !fAnalysisCancelled;
+    }
+
+    @Override
     public boolean waitForCompletion(IProgressMonitor monitor) {
         try {
-            while (!fFinishedLatch.await(1, TimeUnit.MILLISECONDS)) {
-                if (monitor.isCanceled()) {
+            while (!fFinishedLatch.await(500, TimeUnit.MILLISECONDS)) {
+                if (fAnalysisCancelled || monitor.isCanceled()) {
                     fAnalysisCancelled = true;
                     return false;
                 }

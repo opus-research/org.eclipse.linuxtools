@@ -10,9 +10,11 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.actions;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -49,15 +51,15 @@ public class ImportDataSetHandler extends AbstractHandler {
 		}
 
 		IDataSet dataset = null;
-		BufferedReader br = null;
-		try {
-			File file = new File(path);
-			FileReader fr = new FileReader(file);
-			br = new BufferedReader(fr);
+		File file = new File(path);
+		try (InputStreamReader fr = new InputStreamReader(new FileInputStream(file), Charset.defaultCharset());
+				BufferedReader br = new BufferedReader(fr)) {
 			String id = br.readLine();
-
 			String[] titles = br.readLine().split(", "); //$NON-NLS-1$
-			if (id.equals(RowDataSet.ID)) {
+
+			if (id == null && titles == null) {
+				throw new IOException();
+			} else if (id.equals(RowDataSet.ID)) {
 				dataset = new RowDataSet(titles);
 			} else if (id.equals(TableDataSet.ID)) {
 				dataset = new TableDataSet(titles);
@@ -76,22 +78,14 @@ public class ImportDataSetHandler extends AbstractHandler {
 			ExceptionErrorDialog.openError(Messages.ImportDataSetAction_FileInvalid, ioe);
 		} catch (WorkbenchException we) {
 			ExceptionErrorDialog.openError(Messages.RunScriptChartAction_couldNotSwitchToGraphicPerspective, we);
-		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 
 		return null;
 	}
 
-	/*@Override
+	@Override
 	public boolean isEnabled() {
-		return (PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor() instanceof GraphSelectorEditor);
-	}*/
-
+		return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
+				getPerspective().getId().equals(IDEPerspective.ID);
+	}
 }

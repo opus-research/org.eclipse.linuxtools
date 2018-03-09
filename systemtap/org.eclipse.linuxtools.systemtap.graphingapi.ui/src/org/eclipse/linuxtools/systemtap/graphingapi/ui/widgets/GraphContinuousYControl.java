@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets;
 
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.AbstractChartBuilder;
@@ -18,10 +29,12 @@ import org.eclipse.swt.widgets.Slider;
  */
 public class GraphContinuousYControl extends Composite {
 
+	private static final int CLICK_INCREMENT = 10;
+	private static final double TOLERANCE = 0.01;
+
 	private AbstractChartBuilder builder;
 	private Scale zoomScale;
 	private Slider scrollBar;
-	private static final int CLICK_INCREMENT = 10;
 
 	public GraphContinuousYControl(GraphComposite comp, int style) {
 		super(comp, style);
@@ -37,7 +50,7 @@ public class GraphContinuousYControl extends Composite {
 
 		Button zoomOutButton = new Button(this, SWT.CENTER);
 		zoomOutButton.setText(Messages.GraphContinuousControl_ZoomOutLabel);
-		zoomOutButton.setToolTipText(Messages.GraphContinuousControl_ZoomOutTooltip);
+		zoomOutButton.setToolTipText(Messages.GraphContinuousYControl_ZoomOutTooltip);
 		zoomOutButton.setFont(font);
 		FormData data = new FormData();
 		data.bottom = new FormAttachment(100, 0);
@@ -53,7 +66,7 @@ public class GraphContinuousYControl extends Composite {
 
 		Button zoomInButton = new Button(this, SWT.CENTER);
 		zoomInButton.setText(Messages.GraphContinuousControl_ZoomInLabel);
-		zoomInButton.setToolTipText(Messages.GraphContinuousControl_ZoomInTooltip);
+		zoomInButton.setToolTipText(Messages.GraphContinuousYControl_ZoomInTooltip);
 		zoomInButton.setFont(font);
 		data = new FormData();
 		data.top = new FormAttachment(0, 0);
@@ -113,7 +126,7 @@ public class GraphContinuousYControl extends Composite {
 
 	private void updateScaleY() {
 		double newscale = zoomScale.getSelection() / 100.0;
-		if(builder.getScaleY() != newscale) {
+		if (Math.abs(builder.getScaleY() - newscale) >= TOLERANCE) {
 			builder.setScaleY(newscale);
 			scrollBar.setThumb((int) (newscale * 100));
 			scrollBar.setSelection((int) ((1 - builder.getScrollY()) * (101 - scrollBar.getThumb())));
@@ -122,7 +135,7 @@ public class GraphContinuousYControl extends Composite {
 
 	private void updateScrollY() {
 		double newscroll = 1.0 - scrollBar.getSelection() / (101.0 - scrollBar.getThumb());
-		if (builder.getScrollY() != newscroll) {
+		if (Math.abs(builder.getScrollY() - newscroll) >= TOLERANCE) {
 			builder.setScrollY(newscroll);
 		}
 	}

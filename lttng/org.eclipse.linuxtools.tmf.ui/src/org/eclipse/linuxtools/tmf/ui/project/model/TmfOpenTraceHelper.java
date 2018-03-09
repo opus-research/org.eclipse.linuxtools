@@ -30,9 +30,10 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
-import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfTraceImportException;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceImportException;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEditorInput;
@@ -103,18 +104,14 @@ public class TmfOpenTraceHelper {
      * @since 2.2
      */
     public IStatus openTraceFromPath(String projectRoot, String path, Shell shell, String tracetypeHint) throws CoreException {
-        TmfTraceType tt = TmfTraceType.getInstance();
         TraceTypeHelper traceTypeToSet = null;
         try {
-            traceTypeToSet = tt.selectTraceType(path, shell, tracetypeHint);
+            traceTypeToSet = TmfTraceTypeUIUtils.selectTraceType(path, null, tracetypeHint);
         } catch (TmfTraceImportException e) {
             MessageBox mb = new MessageBox(shell);
             mb.setMessage(e.getMessage());
             mb.open();
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage());
-        }
-        if (traceTypeToSet == null) {
-            return Status.CANCEL_STATUS;
         }
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectRoot);
         IFolder folder = project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
@@ -125,15 +122,22 @@ public class TmfOpenTraceHelper {
         final IPath tracePath = folder.getFullPath().append(traceName);
         final IPath pathString = Path.fromOSString(path);
         IResource linkedTrace = TmfImportHelper.createLink(folder, pathString, traceName);
-        if (linkedTrace != null && linkedTrace.exists()) {
-            IStatus ret = TmfTraceType.setTraceType(tracePath, traceTypeToSet);
-            if (ret.isOK()) {
-                ret = openTraceFromProject(projectRoot, traceName);
-            }
-            return ret;
+
+        if (linkedTrace == null || !linkedTrace.exists()) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                    Messages.TmfOpenTraceHelper_LinkFailed);
         }
-        return new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                Messages.TmfOpenTraceHelper_LinkFailed);
+
+        // No trace type was determined.
+        if (traceTypeToSet == null) {
+            return Status.OK_STATUS;
+        }
+
+        IStatus ret = TmfTraceTypeUIUtils.setTraceType(tracePath, traceTypeToSet);
+        if (ret.isOK()) {
+            ret = openTraceFromProject(projectRoot, traceName);
+        }
+        return ret;
     }
 
     private static boolean traceExists(String file, IFolder folder) {

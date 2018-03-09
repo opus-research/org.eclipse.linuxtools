@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - Andrew Ferrazzutti
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets;
 
 import org.eclipse.osgi.util.NLS;
@@ -8,9 +19,11 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets.messages"; //$NON-NLS-1$
 	public static String GraphContinuousControl_ZoomInLabel;
-	public static String GraphContinuousControl_ZoomInTooltip;
+	public static String GraphContinuousXControl_ZoomInTooltip;
+	public static String GraphContinuousYControl_ZoomInTooltip;
 	public static String GraphContinuousControl_ZoomOutLabel;
-	public static String GraphContinuousControl_ZoomOutTooltip;
+	public static String GraphContinuousXControl_ZoomOutTooltip;
+	public static String GraphContinuousYControl_ZoomOutTooltip;
 	public static String GraphContinuousXControl_ScaleMessage;
 	public static String GraphContinuousXControl_ScrollMessage;
 	public static String GraphContinuousYControl_ScaleMessage;

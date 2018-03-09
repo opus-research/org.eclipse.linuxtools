@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets;
 
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.AbstractChartBuilder;
@@ -18,10 +29,12 @@ import org.eclipse.swt.widgets.Slider;
  */
 public class GraphContinuousXControl extends Composite {
 
+	private static final int CLICK_INCREMENT = 10;
+	private static final double TOLERANCE = 0.01;
+
 	private AbstractChartBuilder builder;
 	private Scale zoomScale;
 	private Slider scrollBar;
-	private static final int CLICK_INCREMENT = 10;
 
 	public GraphContinuousXControl(GraphComposite comp, int style) {
 		super(comp, style);
@@ -37,7 +50,7 @@ public class GraphContinuousXControl extends Composite {
 
 		Button zoomOutButton = new Button(this, SWT.CENTER);
 		zoomOutButton.setText(Messages.GraphContinuousControl_ZoomOutLabel);
-		zoomOutButton.setToolTipText(Messages.GraphContinuousControl_ZoomOutTooltip);
+		zoomOutButton.setToolTipText(Messages.GraphContinuousXControl_ZoomOutTooltip);
 		zoomOutButton.setFont(font);
 		FormData data = new FormData();
 		data.left = new FormAttachment(0, 0);
@@ -53,7 +66,7 @@ public class GraphContinuousXControl extends Composite {
 
 		Button zoomInButton = new Button(this, SWT.CENTER);
 		zoomInButton.setText(Messages.GraphContinuousControl_ZoomInLabel);
-		zoomInButton.setToolTipText(Messages.GraphContinuousControl_ZoomInTooltip);
+		zoomInButton.setToolTipText(Messages.GraphContinuousXControl_ZoomInTooltip);
 		zoomInButton.setFont(font);
 		data = new FormData();
 		data.right = new FormAttachment(100, 0);
@@ -113,7 +126,7 @@ public class GraphContinuousXControl extends Composite {
 
 	private void updateScale() {
 		double newscale = 1.0 - zoomScale.getSelection() / 100.0;
-		if (builder.getScale() != newscale) {
+		if (Math.abs(builder.getScale() - newscale) >= TOLERANCE) {
 			builder.setScale(newscale);
 			scrollBar.setThumb((int) (newscale * 100));
 			scrollBar.setSelection((int) (builder.getScroll() * (101 - scrollBar.getThumb())));
@@ -122,7 +135,7 @@ public class GraphContinuousXControl extends Composite {
 
 	private void updateScroll() {
 		double newscroll = scrollBar.getSelection() / (101.0 - scrollBar.getThumb());
-		if (builder.getScroll() != newscroll) {
+		if (Math.abs(builder.getScroll() - newscroll) >= TOLERANCE) {
 			builder.setScroll(newscroll);
 		}
 	}

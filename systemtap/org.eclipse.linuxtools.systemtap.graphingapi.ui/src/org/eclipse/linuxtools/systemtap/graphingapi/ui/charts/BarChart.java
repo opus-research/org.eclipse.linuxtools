@@ -10,12 +10,27 @@ import org.swtchart.Range;
  */
 class BarChart extends Chart {
 
-	private final int MIN_LABEL_SIZE = Messages.BarChartBuilder_LabelTrimTag.length();
+	private final static int MIN_LABEL_SIZE = Messages.BarChartBuilder_LabelTrimTag.length();
 	private final int fontSize;
 
-	public boolean suspendUpdate = false;
 	private String[] fullLabels = null;
 	private IAxis xAxis = null;
+
+	private boolean updateSuspended = false;
+	public void suspendUpdate(boolean suspend) {
+		if (updateSuspended == suspend) {
+			return;
+		}
+		updateSuspended = suspend;
+
+		// make sure that chart is updated
+		if (!suspend) {
+			updateLayout();
+		}
+	}
+	public boolean isUpdateSuspended() {
+		return updateSuspended;
+	}
 
 	public BarChart(Composite parent, int style) {
 		super(parent, style);
@@ -30,15 +45,33 @@ class BarChart extends Chart {
 	 * cut off if there isn't enough room to display them fully. Use this
 	 * instead of accessing the chart's x-axis and setting its category
 	 * series directly.
-	 * @param labels
+	 * @param series
 	 */
-	public void setCategorySeries(String[] labels) {
-		xAxis.setCategorySeries(fullLabels = labels);
+	public void setCategorySeries(String[] series) {
+		xAxis.setCategorySeries(series);
+		fullLabels = xAxis.getCategorySeries();
+	}
+
+	/**
+	 * Returns a list of the full (non-trimmed) label names of each bar.
+	 * Use this instead of accessing the x-axis' category series, which
+	 * may contain trimmed label names.
+	 */
+	public String[] getCategorySeries() {
+		String[] copiedCategorySeries = null;
+
+		if (fullLabels != null) {
+			copiedCategorySeries = new String[fullLabels.length];
+			System.arraycopy(fullLabels, 0, copiedCategorySeries, 0,
+					fullLabels.length);
+		}
+
+		return copiedCategorySeries;
 	}
 
 	@Override
 	public void updateLayout() {
-		if (suspendUpdate) {
+		if (isUpdateSuspended()) {
 			return;
 		}
 
@@ -56,10 +89,12 @@ class BarChart extends Chart {
 						break;
 					}
 				}
-				// setCategorySeries triggers an unnecessary call to updateLayout, so prevent it.
-				suspendUpdate = true;
-				xAxis.setCategorySeries(labels);
-				suspendUpdate = false;
+				if (labels == trimmedLabels) {
+					// setCategorySeries triggers an unnecessary call to updateLayout, so prevent it.
+					updateSuspended = true;
+					xAxis.setCategorySeries(labels);
+					updateSuspended = false;
+				}
 			}
 		}
 		super.updateLayout();

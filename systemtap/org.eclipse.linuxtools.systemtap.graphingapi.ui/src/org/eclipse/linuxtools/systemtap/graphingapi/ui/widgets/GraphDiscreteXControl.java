@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - initial API and implementation
+ *******************************************************************************/
+
 package org.eclipse.linuxtools.systemtap.graphingapi.ui.widgets;
 
 import org.eclipse.linuxtools.systemtap.graphingapi.ui.charts.AbstractChartBuilder;
@@ -20,6 +31,8 @@ import org.swtchart.Range;
  */
 public class GraphDiscreteXControl extends Composite implements IUpdateListener {
 
+	private final static double ZOOM_AMOUNT = 2.0;
+
 	private AbstractChartBuilder builder;
 	private Button zoomInButton;
 	private Button zoomOutButton;
@@ -28,8 +41,6 @@ public class GraphDiscreteXControl extends Composite implements IUpdateListener 
 	private Button rightButton;
 	private Button firstButton;
 	private Button lastButton;
-
-	private final double ZOOM_AMOUNT = 2.0;
 
 	public GraphDiscreteXControl(GraphComposite comp, int style) {
 		super(comp, style);

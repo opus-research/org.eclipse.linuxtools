@@ -22,8 +22,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OpInfo;
-import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelEvent;
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelImage;
+import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelSession;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.checkevent.CheckEventsProcessor;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
@@ -63,8 +63,9 @@ public class Oprofile
 	 */
 	static private void initializeOprofileModule() {
 		// Check if kernel module is loaded, if not, try to load it
-		if (!isKernelModuleLoaded())
+		if (!isKernelModuleLoaded()) {
 			initializeOprofile();
+		}
 
 		if (isKernelModuleLoaded()) {
 			initializeOprofileCore();
@@ -89,8 +90,9 @@ public class Oprofile
 
 		for (int i = 0; i < OPROFILE_CPU_TYPE_FILES.length; ++i) {
 			IFileStore f = proxy.getResource(OPROFILE_CPU_TYPE_FILES[i]);
-			if (f.fetchInfo().exists())
+			if (f.fetchInfo().exists()) {
 				return true;
+			}
 		}
 		return false;
 	}
@@ -213,29 +215,28 @@ public class Oprofile
 		try {
 			IRunnableWithProgress opxml = OprofileCorePlugin.getDefault().getOpxmlProvider().checkEvents(ctr, event, um, validResult);
 			opxml.run(null);
-		} catch (InvocationTargetException e) {
-		} catch (InterruptedException e) {
+		} catch (InvocationTargetException|InterruptedException e) {
 		}
 
 		return (validResult[0] == CheckEventsProcessor.EVENT_OK);
 	}
 
 	/**
-	 * Returns a list of all the events collected on the system, as well as
-	 * the sessions under each of them.
+	 * Returns a list of all the session collected on the system, as well as
+	 * the event under each of them.
+	 * @since 3.0
 	 * @returns a list of all collected events
 	 */
-	public static OpModelEvent[] getEvents() {
-		OpModelEvent[] events = null;
+	public static OpModelSession[] getSessions() {
+		OpModelSession[] events = null;
 
-		ArrayList<OpModelEvent> sessionList = new ArrayList<>();
+		ArrayList<OpModelSession> sessionList = new ArrayList<>();
 		try {
 			IRunnableWithProgress opxml = OprofileCorePlugin.getDefault().getOpxmlProvider().sessions(sessionList);
 			opxml.run(null);
-			events = new OpModelEvent[sessionList.size()];
+			events = new OpModelSession[sessionList.size()];
 			sessionList.toArray(events);
-		} catch (InvocationTargetException e) {
-		} catch (InterruptedException e) {
+		} catch (InvocationTargetException|InterruptedException e) {
 		}
 		return events;
 	}
@@ -252,8 +253,7 @@ public class Oprofile
 		try {
 			opxml = OprofileCorePlugin.getDefault().getOpxmlProvider().modelData(eventName, sessionName, image);
 			opxml.run(null);
-		} catch (InvocationTargetException e) {
-		} catch (InterruptedException e) {
+		} catch (InvocationTargetException|InterruptedException e) {
 		}
 
 		return image;

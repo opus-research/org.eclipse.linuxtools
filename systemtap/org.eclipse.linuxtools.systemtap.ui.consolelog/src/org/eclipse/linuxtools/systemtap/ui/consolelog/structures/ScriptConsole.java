@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.systemtap.ui.consolelog.structures;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -84,8 +85,30 @@ public class ScriptConsole extends IOConsole {
 		public void runningStateChanged(boolean running);
 	}
 
-	private final LinkedList<ScriptConsoleObserver> activeConsoleObservers = new LinkedList<>();
-	private LinkedList<ScriptConsoleObserver> inactiveConsoleObservers = new LinkedList<>();
+	private final List<ScriptConsoleObserver> activeConsoleObservers = new LinkedList<>();
+	private List<ScriptConsoleObserver> inactiveConsoleObservers = new LinkedList<>();
+
+	/**
+	 * Returns whether or not a ScriptConsole of the specified name exists and is running.
+	 * @param name The name of the console (likely a script name) to check.
+	 * @return <code>true</code> if a ScriptConsole of the given name both exists and is running,
+	 * or <code>false</code> otherwise.
+	 * @since 3.0
+	 */
+	public static boolean instanceIsRunning(String name) {
+		IConsole ic[] = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		if (null != ic) {
+			for (IConsole consoleIterator: ic) {
+				if (consoleIterator instanceof ScriptConsole){
+					ScriptConsole activeConsole = (ScriptConsole) consoleIterator;
+					if(activeConsole.getName().endsWith(name) && activeConsole.isRunning()) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * This method is used to create a reference to a new <code>ScriptConsole</code>.  If there
@@ -258,7 +281,7 @@ public class ScriptConsole extends IOConsole {
 	public void runLocally(String[] command, String[] envVars, IErrorParser errorParser) {
 		runLocally(command, envVars, errorParser, null);
 	}
-	
+
 	/**
 	 * Runs the provided command in this ScriptConsole instance on the current
 	 * host.

@@ -16,9 +16,9 @@ import java.util.List;
 
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlHeadInfo;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.TmfXmlStrings;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -56,7 +56,7 @@ public class XmlHeadInfoUi extends XmlHeadInfo {
         for (Element element : elements) {
             String traceTypeId = element.getAttribute(TmfXmlStrings.ID);
             TraceTypeHelper helper = TmfTraceType.getInstance().getTraceType(traceTypeId);
-            if (helper != null && helper.getTrace().getClass().isAssignableFrom(traceClass)) {
+            if ((helper != null) && helper.getTrace().getClass().isAssignableFrom(traceClass)) {
                 return true;
             }
         }

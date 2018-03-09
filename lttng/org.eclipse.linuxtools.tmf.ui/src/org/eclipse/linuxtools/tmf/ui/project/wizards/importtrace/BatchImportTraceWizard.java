@@ -45,19 +45,18 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceValidationHelper;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
-import org.eclipse.linuxtools.tmf.ui.project.model.TraceValidationHelper;
-import org.eclipse.ui.IImportWizard;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceTypeUIUtils;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
@@ -69,7 +68,7 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
  * @author Matthew Khouzam
  * @since 2.0
  */
-public class BatchImportTraceWizard extends Wizard implements IImportWizard {
+public class BatchImportTraceWizard extends ImportTraceWizard {
 
     private static final int WIN_HEIGHT = 400;
     private static final int WIN_WIDTH = 800;
@@ -325,7 +324,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
                 String traceTypeId = traceToImport.getTraceTypeId();
                 TraceTypeHelper traceType = TmfTraceType.getInstance().getTraceType(traceTypeId);
                 if (traceType != null) {
-                    TmfTraceType.setTraceType(path, traceType);
+                    TmfTraceTypeUIUtils.setTraceType(path, traceType);
                 }
 
                 TmfProjectElement tmfProject =
@@ -539,6 +538,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
      * @param traceToScan
      *            The trace to scan
      * @return if the trace has been scanned yet or not
+     * @since 3.0
      */
     public boolean hasScanned(TraceValidationHelper traceToScan) {
         return fResults.containsKey(traceToScan);
@@ -551,6 +551,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
      *            The trace that has been scanned
      * @param validate
      *            if the trace is valid
+     * @since 3.0
      */
     public void addResult(TraceValidationHelper traceToScan, boolean validate) {
         fResults.put(traceToScan, validate);
@@ -562,6 +563,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
      * @param traceToScan
      *            the scanned trace
      * @return whether it passes or not
+     * @since 3.0
      */
     public Boolean getResult(TraceValidationHelper traceToScan) {
         return fResults.get(traceToScan);

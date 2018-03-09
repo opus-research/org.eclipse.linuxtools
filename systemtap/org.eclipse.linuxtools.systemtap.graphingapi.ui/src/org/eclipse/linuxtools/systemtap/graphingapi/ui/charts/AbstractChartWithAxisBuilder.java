@@ -13,8 +13,8 @@ package org.eclipse.linuxtools.systemtap.graphingapi.ui.charts;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.graphingapi.ui.GraphingAPIUIPlugin;
+import org.eclipse.linuxtools.internal.systemtap.graphingapi.ui.preferences.GraphingAPIPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.adapters.IAdapter;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.preferences.GraphingAPIPreferenceConstants;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Point;
@@ -72,29 +72,29 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 	 */
 	protected abstract ISeries createChartISeries(int i);
 
-    /**
-     * Constructor.
-     */
-
-    public AbstractChartWithAxisBuilder(IAdapter adapter, Composite parent, int style, String title) {
-    	 super(adapter, parent, style, title);
+	/**
+	 * Constructor.
+	*/
+	public AbstractChartWithAxisBuilder(IAdapter adapter, Composite parent, int style, String title) {
+		super(adapter, parent, style, title);
 		IPreferenceStore store = GraphingAPIUIPlugin.getDefault().getPreferenceStore();
 		xLineGrid = store.getBoolean(GraphingAPIPreferenceConstants.P_SHOW_X_GRID_LINES);
 		yLineGrid = store.getBoolean(GraphingAPIPreferenceConstants.P_SHOW_Y_GRID_LINES);
 	}
 
-    @Override
-    protected void createChart() {
-    	super.createChart();
-    	applyTitleBoundsListener();
-    }
+	@Override
+	protected void createChart() {
+		super.createChart();
+		applyTitleBoundsListener();
+		chartMouseMoveListener = new ChartWithAxisMouseMoveListener(chart, chart.getPlotArea());
+	}
 
     /**
      * After this method is called, the chart's title will (from then on) be centred with the plot area.
 	 * @since 3.0
 	 */
     protected void applyTitleBoundsListener() {
-    	chart.addPaintListener(titleBoundsPaintListener = new PaintListener() {
+    	titleBoundsPaintListener = new PaintListener() {
 
 			@Override
 			public void paintControl(PaintEvent e) {
@@ -103,7 +103,8 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 		        Rectangle titleBounds = title.getBounds();
 		        title.setLocation(new Point(bounds.x + (bounds.width - titleBounds.width) / 2, title.getLocation().y));
 			}
-		});
+		};
+		chart.addPaintListener(titleBoundsPaintListener);
     }
 
     /**
@@ -173,10 +174,11 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 
 		Double[] all_valx = new Double[len];
 		Double[][] all_valy = new Double[leny][len];
-		double maxX, maxY, minX, minY;
 		// Will want to centre view around points, so be as accurate with max/min as possible.
-		maxX = maxY = Double.NEGATIVE_INFINITY;
-		minX = minY = Double.POSITIVE_INFINITY;
+		double maxX = Double.NEGATIVE_INFINITY;
+		double maxY = maxX;
+		double minX = Double.POSITIVE_INFINITY;
+		double minY = minX;
 
 		// Read in from the data array all x/y points to plot.
 		// In the case of an empty (null) value in either axis, ignore both x & y axis data for that point.
@@ -203,8 +205,8 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 		// and plot those values to the chart.
 
 		ISeries allSeries[] = chart.getSeriesSet().getSeries();
+		ISeries series = null;
 		for (int i = 0; i < leny; i++) {
-			ISeries series;
 			if (i >= allSeries.length) {
 				series = createChartISeries(i);
 			} else {
@@ -231,8 +233,10 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 			series.setYSeries(valy_trim);
 		}
 
-		applyRangeX(minX, maxX);
-		applyRangeY(minY, maxY);
+		if (series != null && series.getXSeries().length > 0) {
+			applyRangeX(minX, maxX);
+			applyRangeY(minY, maxY);
+		}
 		chart.redraw();
 	}
 
@@ -263,5 +267,11 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 
 		double lower = (actualRange - scaledRange) * scrollY + min;
 		axis.setRange(new Range(lower - marginL, lower + scaledRange + marginU));
+	}
+
+	@Override
+	public void updateDataSet() {
+		buildXSeries();
+		chartMouseMoveListener.update();
 	}
 }

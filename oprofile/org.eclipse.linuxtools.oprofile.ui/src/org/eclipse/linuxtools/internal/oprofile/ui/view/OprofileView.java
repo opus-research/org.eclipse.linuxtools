@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -90,6 +91,16 @@ public class OprofileView extends ViewPart implements ISelectionChangedListener 
 		manager.add(saveDefaultSessionAction);
 		deleteSessionAction = new OprofileViewDeleteSessionAction(getTreeViewer());
 		manager.add(deleteSessionAction);
+
+		MenuManager sortMenu = new MenuManager(
+				OprofileUiMessages.getString("view.menu.sortby.label")); //$NON-NLS-1$
+
+		for (UiModelRoot.SORT_TYPE s : UiModelRoot.SORT_TYPE.values()) {
+			sortMenu.add(new OprofileViewSortAction(s,
+					OprofileViewSortAction.sortTypeMap.get(s)));
+		}
+		manager.add(sortMenu);
+
 	}
 
 	private TreeViewer getTreeViewer() {
@@ -127,7 +138,6 @@ public class OprofileView extends ViewPart implements ISelectionChangedListener 
 					}
 				});
 				monitor.worked(1);
-
 				monitor.done();
 			}
 		};
@@ -135,9 +145,7 @@ public class OprofileView extends ViewPart implements ISelectionChangedListener 
 		ProgressMonitorDialog dialog = new ProgressMonitorDialog(null);
 		try {
 			dialog.run(true, false, refreshRunner);
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
+		} catch (InvocationTargetException|InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -154,9 +162,7 @@ public class OprofileView extends ViewPart implements ISelectionChangedListener 
 				if (!saveDefaultSessionAction.isEnabled()) {
 					saveDefaultSessionAction.setEnabled(true);
 				}
-
 			}
-
 		} else {
 			deleteSessionAction.setEnabled(false);
 			saveDefaultSessionAction.setEnabled(false);
@@ -175,5 +181,4 @@ public class OprofileView extends ViewPart implements ISelectionChangedListener 
 		super.dispose();
 		viewer.removeSelectionChangedListener(this);
 	}
-
 }

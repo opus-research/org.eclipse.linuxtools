@@ -18,8 +18,8 @@ import java.util.Set;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.systemtap.graphingapi.ui.GraphingAPIUIPlugin;
+import org.eclipse.linuxtools.internal.systemtap.graphingapi.ui.preferences.GraphingAPIPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.adapters.IAdapter;
-import org.eclipse.linuxtools.systemtap.graphingapi.ui.preferences.GraphingAPIPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -88,7 +88,14 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	 */
 	protected String title = null;
 
-	private ArrayList<IUpdateListener> listeners = new ArrayList<IUpdateListener>();
+	private ArrayList<IUpdateListener> listeners = new ArrayList<>();
+
+	/**
+	 * The mouse listener that watches for MouseMove events over a specified region.
+	 * It is null by default.
+	 * @since 3.0
+	 */
+	protected ChartMouseMoveListener chartMouseMoveListener = null;
 
 	public abstract void updateDataSet();
 
@@ -329,14 +336,14 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	 * @since 3.0
 	 */
 	protected String[] getUniqueNames(String[] labels) {
-		Set<String> labels_unique = new LinkedHashSet<String>();
+		Set<String> labelsUnique = new LinkedHashSet<>();
 		for (String label : labels) {
 			int count = 1;
-			while (!labels_unique.add(makeCountedLabel(label, count))) {
+			while (!labelsUnique.add(makeCountedLabel(label, count))) {
 				count++;
 			}
 		}
-		return labels_unique.toArray(new String[labels.length]);
+		return labelsUnique.toArray(new String[labels.length]);
 	}
 
 	private String makeCountedLabel(String original, int count) {
