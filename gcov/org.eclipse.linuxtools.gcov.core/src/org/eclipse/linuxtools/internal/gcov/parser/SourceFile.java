@@ -42,9 +42,8 @@ public class SourceFile implements Serializable {
 		for (Line line : lines) {
 			if (line.exists()) {
 				cvrge.incLinesInstrumented();
-				if (line.getCount() != 0) {
+				if (line.getCount() != 0)
 					cvrge.incLinesExecuted();
-				}
 			}
 		}
 	}
@@ -52,9 +51,8 @@ public class SourceFile implements Serializable {
 	public long getmaxLineCount() {
 		if (maxCount < 0) {
 			for (Line line : lines) {
-				if (line.getCount() > maxCount) {
+				if (line.getCount() > maxCount)
 					maxCount = line.getCount();
-				}
 			}
 		}
 		return maxCount;
@@ -103,7 +101,7 @@ public class SourceFile implements Serializable {
 	public void createLines() {
 		int n = getNumLines();
 		lines.ensureCapacity(n);
-		for (int j = 0; j < n; j++) {
+		for (int j = 0; j<n ; j++) {
 			lines.add(new Line());
 		}
 	}
