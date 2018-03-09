@@ -25,8 +25,8 @@ import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfAnalysisModuleWithStateSystems;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -202,7 +202,7 @@ public interface ITmfTrace extends ITmfEventProvider {
      * @return The map of state systems
      * @since 2.0
      * @deprecated State systems now should be provided by analysis and use
-     *             {@link ITmfStateSystemAnalysisModule} and retrieve the modules
+     *             {@link ITmfAnalysisModuleWithStateSystems} and retrieve the modules
      *             with {@link TmfTrace#getAnalysisModules(Class)} with Class
      *             being TmfStateSystemAnalysisModule.class
      */
@@ -222,7 +222,7 @@ public interface ITmfTrace extends ITmfEventProvider {
      *            The already-built state system
      * @since 2.0
      * @deprecated State systems now should be provided by analysis and use
-     *             {@link ITmfStateSystemAnalysisModule}
+     *             {@link ITmfAnalysisModuleWithStateSystems}
      */
     @Deprecated
     void registerStateSystem(String id, ITmfStateSystem ss);
@@ -244,6 +244,7 @@ public interface ITmfTrace extends ITmfEventProvider {
      * @param analysisId
      *            The analysis module id
      * @return The {@link IAnalysisModule} object
+     * @since 3.0
      */
     IAnalysisModule getAnalysisModule(String analysisId);
 
@@ -254,6 +255,7 @@ public interface ITmfTrace extends ITmfEventProvider {
      * @param moduleclass
      *            Class returned module must extend
      * @return List of modules of class moduleclass
+     * @since 3.0
      */
     <T> Map<String, T> getAnalysisModules(Class<T> moduleclass);
 
@@ -265,6 +267,7 @@ public interface ITmfTrace extends ITmfEventProvider {
      * {@link Collections#unmodifiableMap}).
      *
      * @return The map of analysis modules
+     * @since 3.0
      */
     Map<String, IAnalysisModule> getAnalysisModules();
 

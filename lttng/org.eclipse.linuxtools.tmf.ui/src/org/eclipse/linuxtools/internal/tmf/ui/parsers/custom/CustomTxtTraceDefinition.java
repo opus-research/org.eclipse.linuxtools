@@ -37,6 +37,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -191,7 +192,7 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
          */
         public void addChild(InputLine input) {
             if (childrenInputs == null) {
-                childrenInputs = new ArrayList<InputLine>(1);
+                childrenInputs = new ArrayList<>(1);
             } else if (childrenInputs.size() > 0) {
                 InputLine last = childrenInputs.get(childrenInputs.size() - 1);
                 last.nextInput = input;
@@ -255,7 +256,7 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
          */
         public void addColumn(InputData column) {
             if (columns == null) {
-                columns = new ArrayList<InputData>(1);
+                columns = new ArrayList<>(1);
             }
             columns.add(column);
         }
@@ -268,7 +269,7 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
          * @return The next list of lines.
          */
         public List<InputLine> getNextInputs(Map<InputLine, Integer> countMap) {
-            List<InputLine> nextInputs = new ArrayList<InputLine>();
+            List<InputLine> nextInputs = new ArrayList<>();
             InputLine next = nextInput;
             while (next != null) {
                 nextInputs.add(next);
@@ -515,9 +516,12 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
             transformer.transform(source, result);
             String xmlString = result.getWriter().toString();
 
-            FileWriter writer = new FileWriter(file);
-            writer.write(xmlString);
-            writer.close();
+            try (FileWriter writer = new FileWriter(file);) {
+                writer.write(xmlString);
+            }
+
+            TmfTraceType.getInstance().addCustomTraceType(TmfTraceType.CUSTOM_TXT_CATEGORY, definitionName);
+
         } catch (ParserConfigurationException e) {
             Activator.getDefault().logError("Error saving CustomTxtTraceDefinition: path=" + path, e); //$NON-NLS-1$
         } catch (TransformerConfigurationException e) {
@@ -623,7 +627,7 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
                 return new CustomTxtTraceDefinition[0];
             }
 
-            ArrayList<CustomTxtTraceDefinition> defList = new ArrayList<CustomTxtTraceDefinition>();
+            ArrayList<CustomTxtTraceDefinition> defList = new ArrayList<>();
             NodeList nodeList = root.getChildNodes();
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
@@ -845,9 +849,12 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
             transformer.transform(source, result);
             String xmlString = result.getWriter().toString();
 
-            FileWriter writer = new FileWriter(file);
-            writer.write(xmlString);
-            writer.close();
+            try (FileWriter writer = new FileWriter(file);) {
+                writer.write(xmlString);
+            }
+
+            TmfTraceType.getInstance().removeCustomTraceType(TmfTraceType.CUSTOM_TXT_CATEGORY, definitionName);
+
         } catch (ParserConfigurationException e) {
             Activator.getDefault().logError("Error deleting CustomTxtTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
         } catch (SAXException e) {

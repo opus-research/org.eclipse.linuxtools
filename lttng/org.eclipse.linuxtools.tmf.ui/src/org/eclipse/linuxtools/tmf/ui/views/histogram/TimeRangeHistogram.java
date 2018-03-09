@@ -70,6 +70,7 @@ public class TimeRangeHistogram extends Histogram {
         fRangeDuration = 0L;
         fFullRangeStartTime = 0L;
         fFullRangeEndTime = 0L;
+        setOffset(0);
         if (fZoom != null) {
             fZoom.setFullRange(0L, 0L);
             fZoom.setNewRange(0L, 0L);
@@ -100,8 +101,8 @@ public class TimeRangeHistogram extends Histogram {
     public void setFullRange(long startTime, long endTime) {
         fFullRangeStartTime = startTime;
         fFullRangeEndTime = endTime;
-        long currentFirstEvent = getStartTime();
-        fZoom.setFullRange((currentFirstEvent == 0) ? startTime : currentFirstEvent, endTime);
+        fZoom.setFullRange(startTime, endTime);
+        fZoom.setNewRange(fRangeStartTime, fRangeDuration);
     }
 
     // ------------------------------------------------------------------------
@@ -114,13 +115,15 @@ public class TimeRangeHistogram extends Histogram {
 
     @Override
     public void mouseDown(MouseEvent event) {
-        if (fScaledData != null && fDragState == DRAG_NONE && fDataModel.getNbEvents() != 0) {
+        if (fScaledData != null && fDragState == DRAG_NONE && fDataModel.getStartTime() < fDataModel.getEndTime()) {
             if (event.button == 2 || (event.button == 1 && (event.stateMask & SWT.MODIFIER_MASK) == SWT.CTRL)) {
                 fDragState = DRAG_RANGE;
                 fDragButton = event.button;
                 fStartPosition = event.x;
-                fMaxOffset = (int) ((fRangeStartTime - fFullRangeStartTime) / fScaledData.fBucketDuration);
-                fMinOffset = (int) ((fRangeStartTime + fRangeDuration - fFullRangeEndTime) / fScaledData.fBucketDuration);
+                long maxOffset = (fRangeStartTime - fFullRangeStartTime) / fScaledData.fBucketDuration;
+                long minOffset = (fRangeStartTime + fRangeDuration - fFullRangeEndTime) / fScaledData.fBucketDuration;
+                fMaxOffset = (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, maxOffset));
+                fMinOffset = (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, minOffset));
                 return;
             } else if (event.button == 3) {
                 fDragState = DRAG_ZOOM;
