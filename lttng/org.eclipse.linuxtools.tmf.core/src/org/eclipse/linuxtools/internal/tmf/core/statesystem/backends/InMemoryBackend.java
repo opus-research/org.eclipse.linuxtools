@@ -25,6 +25,7 @@ import java.util.TreeSet;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.tmf.core.interval.ITmfStateIntervalList;
 import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 
@@ -137,6 +138,17 @@ public class InMemoryBackend implements IStateHistoryBackend {
                 modCount++;
             }
         }
+    }
+
+    /**
+     * 2D Queries are not supported in InMemoryBackend currently. A full query
+     * must be used instead.
+     *
+     * TODO : this method must be implemented for this backend.
+     */
+    @Override
+    public void do2DQuery(ITmfStateIntervalList stateInfo, long t) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

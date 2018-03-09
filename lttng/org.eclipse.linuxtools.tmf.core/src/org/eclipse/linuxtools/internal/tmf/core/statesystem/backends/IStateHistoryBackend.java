@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2012, 2013 Ericsson
- * Copyright (c) 2010, 2011 École Polytechnique de Montréal
+ * Copyright (c) 2010, 2013 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
  * All rights reserved. This program and the accompanying materials are
@@ -8,6 +8,9 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
+ * Contributors:
+ *   Alexandre Montplaisir - Initial API and implementation
+ *   Florian Wininger - Add 2D Query
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends;
@@ -21,6 +24,7 @@ import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.tmf.core.interval.ITmfStateIntervalList;
 import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 
 /**
@@ -34,7 +38,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
  * depending on what's asked by the user), implement one wrapper HistoryBackend
  * which can then contain your 2-3 other backends underneath.
  *
- * @author alexmont
+ * @author Alexandre Montplaisir
  *
  */
 public interface IStateHistoryBackend {
@@ -152,6 +156,28 @@ public interface IStateHistoryBackend {
      *             If the state system is disposed while a request is ongoing.
      */
     void doQuery(List<ITmfStateInterval> currentStateInfo, long t)
+            throws TimeRangeException, StateSystemDisposedException;
+
+    /**
+     * Return a list of intervals that contains all intervals between the
+     * startTime and the endTime that intersect t.
+     *
+     * 'currentStateInfo' is an "out" parameter, that is, write to it the needed
+     * information and return. DO NOT instantiate currentStateInfo, it will be
+     * lost and nothing will be returned! The result depends of the backend but
+     * the target timestamp is always included between the startTime and the
+     * endTime.
+     *
+     * @param currentStateInfo
+     *            List of StateInterval to fill up
+     * @param t
+     *            Target timestamp of the query
+     * @throws TimeRangeException
+     *             If the timestamp is outside of the history/trace
+     * @throws StateSystemDisposedException
+     *             If the state system is disposed while a request is ongoing.
+     */
+    void do2DQuery(ITmfStateIntervalList currentStateInfo, long t)
             throws TimeRangeException, StateSystemDisposedException;
 
     /**
