@@ -11,6 +11,8 @@
 package org.eclipse.linuxtools.internal.oprofile.core.opxml.info;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,8 +28,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
+import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.AbstractDataAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.EventIdCache;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
@@ -129,6 +131,19 @@ public class InfoAdapter extends AbstractDataAdapter{
 	}
 
 	/**
+	 * Use {@link InfoAdapter(IFileStore)}
+	 */
+	@Deprecated
+	public InfoAdapter(File resourceFile) {
+		try {
+			FileInputStream fileInpStr = new FileInputStream(resourceFile);
+			createDOM(fileInpStr);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * Set up the DOM for later manipulation
 	 * @param is the InpuStream resulting from running the ophelp command.
 	 * This will be passed in as null for timer mode.
@@ -213,7 +228,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 	}
 
 	/**
-	 * @since 3.0
+	 * @since 2.1
 	 */
 	public static void setOprofileDir (String dir) {
 		DEV_OPROFILE = dir;
@@ -455,7 +470,7 @@ public class InfoAdapter extends AbstractDataAdapter{
 	}
 
 	/**
-	 * @since 3.0
+	 * @since 2.1
 	 */
 	public void setEventIdCacheDoc (Element elem) {
 		EventIdCache.getInstance().setCacheDoc(elem);
