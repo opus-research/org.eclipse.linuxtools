@@ -9,6 +9,7 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Added supplementary files/folder handling
+ *   Patrick Tasse - Refactor resource change listener
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -20,9 +21,6 @@ import java.util.List;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -36,7 +34,7 @@ import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
  * @version 1.0
  * @author Francois Chouinard
  */
-public abstract class TmfProjectModelElement implements ITmfProjectModelElement, IResourceChangeListener {
+public abstract class TmfProjectModelElement implements ITmfProjectModelElement {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -79,11 +77,6 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
         fLocation = resource.getLocationURI();
         fParent = parent;
         fChildren = new ArrayList<ITmfProjectModelElement>();
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-    }
-
-    private void dispose() {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
     }
 
     // ------------------------------------------------------------------------
@@ -133,24 +126,11 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
     @Override
     public void removeChild(ITmfProjectModelElement child) {
         fChildren.remove(child);
-        if (child instanceof TmfProjectModelElement) {
-            ((TmfProjectModelElement) child).dispose();
-        }
         refresh();
     }
 
     @Override
     public void refresh() {
-        // Do nothing by default: sub-classes override this on an "as-needed"
-        // basis.
-    }
-
-    // ------------------------------------------------------------------------
-    // IResourceChangeListener
-    // ------------------------------------------------------------------------
-
-    @Override
-    public void resourceChanged(IResourceChangeEvent event) {
         // Do nothing by default: sub-classes override this on an "as-needed"
         // basis.
     }
