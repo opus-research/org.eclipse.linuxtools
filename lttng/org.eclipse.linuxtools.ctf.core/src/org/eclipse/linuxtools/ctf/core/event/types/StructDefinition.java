@@ -18,7 +18,6 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF structure definition (similar to a C structure).
@@ -91,7 +90,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     // ------------------------------------------------------------------------
 
     @Override
-    public void read(BitBuffer input) throws CTFReaderException {
+    public void read(BitBuffer input) {
         alignRead(input, this.declaration);
         final List<String> fieldList = declaration.getFieldsList();
         for (String fName : fieldList) {
@@ -116,7 +115,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup an array in a struct. If the name returns a non-array (like an
+     * Lookup an array in a struct. if the name returns a non-array (like an
      * int) than the method returns null
      *
      * @param name
@@ -129,7 +128,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup an enum in a struct. If the name returns a non-enum (like an int)
+     * Lookup an enum in a struct. if the name returns a non-enum (like an int)
      * than the method returns null
      *
      * @param name
@@ -142,7 +141,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup an integer in a struct. If the name returns a non-integer (like an
+     * Lookup an integer in a struct. if the name returns a non-integer (like an
      * float) than the method returns null
      *
      * @param name
@@ -156,7 +155,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a sequence in a struct. If the name returns a non-sequence (like
+     * Lookup a sequence in a struct. if the name returns a non-sequence (like
      * an int) than the method returns null
      *
      * @param name
@@ -170,7 +169,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a string in a struct. If the name returns a non-string (like
+     * Lookup a string in a struct. if the name returns a non-string (like
      * an int) than the method returns null
      *
      * @param name
@@ -184,7 +183,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a struct in a struct. If the name returns a non-struct (like
+     * Lookup a struct in a struct. if the name returns a non-struct (like
      * an int) than the method returns null
      *
      * @param name
@@ -198,7 +197,7 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a variant in a struct. If the name returns a non-variant (like
+     * Lookup a variant in a struct. if the name returns a non-variant (like
      * an int) than the method returns null
      *
      * @param name
