@@ -40,9 +40,6 @@ class HT_IO {
     private final FileChannel fcIn;
     private final FileChannel fcOut;
 
-    private final int CACHE_SIZE = 256;
-    private final HTNode fNodeCache[] = new HTNode[CACHE_SIZE];
-
     /**
      * Standard constructor
      *
@@ -119,20 +116,10 @@ class HT_IO {
      *             just catch this exception.
      */
     synchronized HTNode readNodeFromDisk(int seqNumber) throws ClosedChannelException {
-        /* Do a cache lookup */
-        int offset = seqNumber & (CACHE_SIZE - 1);
-        HTNode readNode = fNodeCache[offset];
-        if (readNode != null && readNode.getSequenceNumber() == seqNumber) {
-          return readNode;
-        }
-
-        /* Lookup on disk */
+        HTNode readNode;
         try {
             seekFCToNodePos(fcIn, seqNumber);
             readNode = HTNode.readNode(tree, fcIn);
-
-            /* Put the node in the cache. */
-            fNodeCache[offset] = readNode;
             return readNode;
         } catch (ClosedChannelException e) {
             throw e;
@@ -145,13 +132,8 @@ class HT_IO {
 
     void writeNode(HTNode node) {
         try {
-            /* Insert the node into the cache. */
-            int seqNumber = node.getSequenceNumber();
-            int offset = seqNumber & (CACHE_SIZE - 1);
-            fNodeCache[offset] = node;
-
             /* Position ourselves at the start of the node and write it */
-            seekFCToNodePos(fcOut, seqNumber);
+            seekFCToNodePos(fcOut, node.getSequenceNumber());
             node.writeSelf(fcOut);
         } catch (IOException e) {
             /* If we were able to open the file, we should be fine now... */
@@ -197,7 +179,7 @@ class HT_IO {
     synchronized void deleteFile() {
         closeFile();
 
-        if (!historyTreeFile.delete()) {
+        if(!historyTreeFile.delete()) {
             /* We didn't succeed in deleting the file */
             //TODO log it?
         }
