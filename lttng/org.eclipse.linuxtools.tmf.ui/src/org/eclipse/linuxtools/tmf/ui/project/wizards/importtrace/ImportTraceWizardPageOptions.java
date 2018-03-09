@@ -77,14 +77,28 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
         fProjects.getSelection();
         fProjects.addSelectionListener(new SelectionListener() {
 
+            private static final String TRACE = "Traces"; //$NON-NLS-1$
+
             @Override
             public void widgetSelected(SelectionEvent e) {
-                updateWithSelection();
+                handleSelected();
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                updateWithSelection();
+                handleSelected();
+            }
+
+            private void handleSelected() {
+                String[] selection = fProjects.getSelection();
+                if (selection.length > 0) {
+                    final String listItem = selection[0];
+                    IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
+                    getBatchWizard().setTraceFolder(folder);
+                    ImportTraceWizardPageOptions.this.setErrorMessage(null);
+                } else {
+                    ImportTraceWizardPageOptions.this.setErrorMessage(Messages.SharedSelectProject);
+                }
             }
         });
         if (proj != null) {
@@ -92,21 +106,7 @@ public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage 
         } else if (fProjects.getItemCount() > 0) {
             fProjects.setSelection(0);
         }
-        updateWithSelection();
         setMessage(Messages.SharedSelectProject);
         this.setTitle(Messages.ImportTraceWizardPageOptionsTitle);
-    }
-
-    private void updateWithSelection() {
-        final String TRACE = "Traces"; //$NON-NLS-1$
-        String[] selection = fProjects.getSelection();
-        if (selection.length > 0) {
-            final String listItem = selection[0];
-            IFolder folder = fProjectsMap.get(listItem).getFolder(TRACE);
-            getBatchWizard().setTraceFolder(folder);
-            ImportTraceWizardPageOptions.this.setErrorMessage(null);
-        } else {
-            ImportTraceWizardPageOptions.this.setErrorMessage(Messages.SharedSelectProject);
-        }
     }
 }
