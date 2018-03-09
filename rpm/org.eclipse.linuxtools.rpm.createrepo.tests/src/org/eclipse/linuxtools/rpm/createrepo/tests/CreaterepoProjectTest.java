@@ -208,7 +208,7 @@ public class CreaterepoProjectTest {
 		IStatus status = createrepoProject.createrepo(CreaterepoUtils.findConsole("test").newMessageStream()); //$NON-NLS-1$
 
 		// check if  executing has an OK status and that content folder is created with the repodata contents
-		//assertEquals(Status.OK_STATUS, status);
+		assertEquals(Status.OK_STATUS, status);
 		assertTrue(createrepoProject.getContentFolder().exists());
 		assertTrue(createrepoProject.getContentFolder().members().length > 0);
 
