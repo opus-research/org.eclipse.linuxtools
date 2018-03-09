@@ -93,13 +93,13 @@
 	<extension
 		point="org.eclipse.ui.editors">
 		<editor
-        class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
-        contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
-        default="true"
-        extensions="stp"
-        icon="icons/views/page_obj.gif"
-        id="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
-        name="%editor.stp.name"/>
+	        class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
+	        contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+	        default="true"
+	        extensions="stp"
+	        icon="icons/views/page_obj.gif"
+	        id="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
+	        name="%editor.stp.name"/>
 		<editor
 			name="%editor.simple.name"
 			id="org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor"
@@ -361,6 +361,13 @@
           name="SystemTap"
           public="true">
     </launchConfigurationType>
+ </extension>
+ <extension
+       point="org.eclipse.debug.core.processFactories">
+   <processFactory
+           id="org.eclipse.linuxtools.systemtap.ui.ide.SystemTapRuntimeProcessFactory"
+           class="org.eclipse.linuxtools.systemtap.structures.process.SystemTapRuntimeProcessFactory">
+   </processFactory>
  </extension>
  <extension
        point="org.eclipse.debug.ui.launchConfigurationTypeImages">

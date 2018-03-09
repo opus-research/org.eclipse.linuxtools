@@ -39,7 +39,7 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
     private final String fStateTypeName;
 
     // The list of listeners for graph color changes
-    private final List<ITimeGraphColorListener> fListeners = new ArrayList<ITimeGraphColorListener>();
+    private final List<ITimeGraphColorListener> fListeners = new ArrayList<>();
 
     // ------------------------------------------------------------------------
     // Constants
@@ -158,6 +158,9 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
         return true;
     }
 
+    /**
+     * @since 3.0
+     */
     @Override
     public void addColorListener(ITimeGraphColorListener listener) {
         if (!fListeners.contains(listener)) {
@@ -165,6 +168,9 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
         }
     }
 
+    /**
+     * @since 3.0
+     */
     @Override
     public void removeColorListener(ITimeGraphColorListener listener) {
         fListeners.remove(listener);
@@ -172,6 +178,7 @@ public class TimeGraphPresentationProvider implements ITimeGraphPresentationProv
 
     /**
      * Notifies listeners of the state table change
+     * @since 3.0
      */
     protected void fireColorSettingsChanged() {
         for (ITimeGraphColorListener listener : fListeners) {

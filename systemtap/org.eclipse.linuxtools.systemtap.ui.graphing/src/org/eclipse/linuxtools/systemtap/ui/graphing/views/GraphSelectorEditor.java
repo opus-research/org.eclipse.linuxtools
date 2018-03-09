@@ -25,6 +25,8 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FormAttachment;
@@ -59,32 +61,6 @@ public class GraphSelectorEditor extends EditorPart {
 	}
 
 	/**
-	 * This method will create a new script set for the provided dataSet
-	 * The new script set will be given a new tab item at the end of
-	 * the list.
-	 * @param title The name to be shown on the new tab
-	 * @param dataSet The <code>IDataSet</code> for the new script set
-	 * @since 2.0
-	 * @deprecated See {@link GraphSelectorEditor#createScriptSets}
-	 * TODO drop in 3.0
-	 */
-	@Deprecated
-	public void createScriptSet(String title, IDataSet dataSet) {
-		CTabItem item;
-
-		item = new CTabItem(scriptFolder, SWT.CLOSE);
-		item.setText(title);
-		Composite parent = new Composite(scriptFolder, SWT.NONE);
-		GraphDisplaySet gds = new GraphDisplaySet(parent, dataSet);
-		displaySets.add(gds);
-		item.setControl(parent);
-
-		scriptFolder.setSelection(item);
-		fireTabOpenEvent();
-		this.setPartName(NLS.bind(Messages.GraphSelectorEditor_graphsEditorTitle, title));
-	}
-
-	/**
 	 * This method will create a new script set for each of the provided dataSets.
 	 * Each new script set will be given a new tab item at the end of the list.
 	 * @param scriptName The full name of the script that is being monitored.
@@ -99,9 +75,16 @@ public class GraphSelectorEditor extends EditorPart {
 			item = new CTabItem(scriptFolder, SWT.CLOSE);
 			item.setText(titles.get(i));
 			Composite parent = new Composite(scriptFolder, SWT.NONE);
-			GraphDisplaySet gds = new GraphDisplaySet(parent, dataSets.get(i));
+			final GraphDisplaySet gds = new GraphDisplaySet(parent, dataSets.get(i));
 			displaySets.add(gds);
 			item.setControl(parent);
+			item.addDisposeListener(new DisposeListener() {
+
+				@Override
+				public void widgetDisposed(DisposeEvent e) {
+					gds.dispose();
+				}
+			});
 		}
 
 		scriptFolder.setSelection(item); // Choose the last created item.
@@ -225,14 +208,18 @@ public class GraphSelectorEditor extends EditorPart {
 	 */
 	@Override
 	public void dispose() {
+		for (GraphDisplaySet displaySet : displaySets) {
+			displaySet.dispose();
+		}
+
 		super.dispose();
 
-		if(null != scriptFolder) {
+		if(null != scriptFolder && !scriptFolder.isDisposed()) {
 			scriptFolder.dispose();
 		}
 		scriptFolder = null;
 		if(null != tabListeners) {
-			tabListeners.removeAll(tabListeners);
+			tabListeners.clear();
 		}
 		tabListeners = null;
 	}

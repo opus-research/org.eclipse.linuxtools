@@ -118,7 +118,7 @@ public class GraphDisplaySet {
 		//This is a tab/button for opening new graphs
 		CTabItem newGraph = new CTabItem(folder, SWT.NONE);
 		newGraph.setImage(AbstractUIPlugin.imageDescriptorFromPlugin(GraphingPlugin.PLUGIN_ID, "icons/actions/new_wiz.gif").createImage()); //$NON-NLS-1$
-		newGraph.setToolTipText(Localization.getString("GraphDisplaySet.DataView")); //$NON-NLS-1$
+		newGraph.setToolTipText(Localization.getString("GraphDisplaySet.CreateGraph")); //$NON-NLS-1$
 
 		//Tab containing the data table
 		CTabItem item = new CTabItem(folder, SWT.NONE);
@@ -162,18 +162,20 @@ public class GraphDisplaySet {
 	 * to anything in this class after calling the dispose method.
 	 */
 	public void dispose() {
-		if(null != updater) {
+		if(null != updater && updater.isRunning()) {
 			updater.dispose();
 		}
 		updater = null;
 
 		dataSet = null;
-		if(null != folder) {
+		if(null != folder && !folder.isDisposed()) {
 			folder.removeSelectionListener(listener);
 			folder.dispose();
 			folder = null;
 		}
 		listener = null;
+
+		builders.clear();
 	}
 
 	/**
