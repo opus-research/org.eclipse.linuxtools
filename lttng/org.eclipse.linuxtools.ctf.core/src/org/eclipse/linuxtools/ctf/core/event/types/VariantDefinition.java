@@ -152,9 +152,7 @@ public class VariantDefinition extends Definition implements IDefinitionScope {
         currentField = tagDefinition.getValue();
 
         Definition field = definitions.get(currentField);
-        if (field == null) {
-            throw new CTFReaderException("Variant was not defined for: "+ currentField); //$NON-NLS-1$
-        }
+
         field.read(input);
     }
 

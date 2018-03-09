@@ -69,6 +69,15 @@ public class StreamInputTest {
     }
 
     /**
+     * Run the FileChannel getFileChannel() method test.
+     */
+    @Test
+    public void testGetFileChannel() {
+        FileChannel result = fixture.getFileChannel();
+        assertNull(result);
+    }
+
+    /**
      * Run the String getFilename() method test.
      */
     @Test
