@@ -18,7 +18,7 @@ import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
 import org.junit.Test;
 
 /**
- * Test the XML Analysis UI plug-in activator
+ * Test the Xml Analysis UI plug-in activator
  *
  * @author Geneviève Bastien
  */

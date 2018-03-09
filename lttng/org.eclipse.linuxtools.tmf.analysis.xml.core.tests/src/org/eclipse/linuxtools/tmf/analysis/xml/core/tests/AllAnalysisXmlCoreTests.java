@@ -16,12 +16,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Master test suite for TMF XML Core Analysis plug-in.
+ * Master test suite for TMF Xml Core Analysis plug-in.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        XmlAnalysisCorePluginTest.class,
-        org.eclipse.linuxtools.tmf.analysis.xml.core.tests.module.AllTests.class
+        XmlAnalysisCorePluginTest.class
 })
 public class AllAnalysisXmlCoreTests {
 

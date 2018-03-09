@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Master test suite for TMF XML Analysis UI plug-in.
+ * Master test suite for TMF Xml Analysis UI plug-in.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
