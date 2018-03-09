@@ -16,7 +16,6 @@ package org.eclipse.linuxtools.tmf.tests.stubs.trace;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IProject;
@@ -26,29 +25,24 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfPersistentlyIndexable;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
-import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
-import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
-import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 
 /**
  * <b><u>TmfTraceStub</u></b>
  * <p>
  * Dummy test trace. Use in conjunction with TmfEventParserStub.
  */
-public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable {
+@SuppressWarnings("javadoc")
+public class TmfTraceStub extends TmfTrace implements ITmfEventParser {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -69,89 +63,126 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
     // Constructors
     // ------------------------------------------------------------------------
 
-    /**
-     * Default constructor
-     */
     public TmfTraceStub() {
         super();
         setParser(new TmfEventParserStub(this));
     }
 
     /**
-     * Constructor with which you can specify a custom streaming interval. The
-     * parser and indexer won't be specified.
-     *
      * @param path
-     *            The path to the trace file
-     * @param cacheSize
-     *            The cache size
-     * @param interval
-     *            The trace streaming interval
-     * @throws TmfTraceException
-     *             If an error occurred opening the trace
+     * @throws FileNotFoundException
      */
-    public TmfTraceStub(final String path,
-            final int cacheSize,
-            final long interval) throws TmfTraceException {
-        super(null, ITmfEvent.class, path, cacheSize, interval, null);
-        setupTrace(path);
+    public TmfTraceStub(final String path) throws TmfTraceException {
+        this(path, ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, false);
+    }
+
+    /**
+     * @param path
+     * @param cacheSize
+     * @throws FileNotFoundException
+     */
+    public TmfTraceStub(final String path, final int cacheSize) throws TmfTraceException {
+        this(path, cacheSize, false);
+    }
+
+    /**
+     * @param path
+     * @param cacheSize
+     * @throws FileNotFoundException
+     */
+    public TmfTraceStub(final String path, final int cacheSize, final long interval) throws TmfTraceException {
+        super(null, ITmfEvent.class, path, cacheSize, interval, null, null);
+        try {
+            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
+        } catch (FileNotFoundException e) {
+            throw new TmfTraceException(e.getMessage());
+        }
         setParser(new TmfEventParserStub(this));
     }
 
     /**
-     * Constructor to specify the parser and indexer. The streaming interval
-     * will be 0.
-     *
      * @param path
-     *            The path to the trace file
      * @param cacheSize
-     *            The cache size
-     * @param waitForCompletion
-     *            Do we block the caller until the trace is indexed, or not.
-     * @param parser
-     *            The trace parser. If left 'null', it will use a
-     *            {@link TmfEventParserStub}.
-     * @throws TmfTraceException
-     *             If an error occurred opening the trace
+     * @throws FileNotFoundException
      */
-    public TmfTraceStub(final String path,
-            final int cacheSize,
-            final boolean waitForCompletion,
-            final ITmfEventParser parser) throws TmfTraceException {
-        super(null, ITmfEvent.class, path, cacheSize, 0, null);
-        setupTrace(path);
-        setParser((parser != null) ? parser : new TmfEventParserStub(this));
+    public TmfTraceStub(final String path, final int cacheSize, final ITmfTraceIndexer indexer) throws TmfTraceException {
+        this(path, cacheSize, false, null, indexer);
+    }
+
+    /**
+     * @param path
+     * @param waitForCompletion
+     * @throws FileNotFoundException
+     */
+    public TmfTraceStub(final String path, final boolean waitForCompletion) throws TmfTraceException {
+        this(path, ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, waitForCompletion);
+    }
+
+    /**
+     * @param path
+     * @param cacheSize
+     * @param waitForCompletion
+     * @throws FileNotFoundException
+     */
+    public TmfTraceStub(final String path, final int cacheSize, final boolean waitForCompletion) throws TmfTraceException {
+        super(null, ITmfEvent.class, path, cacheSize, 0, null, null);
+        try {
+            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
+        } catch (FileNotFoundException e) {
+            throw new TmfTraceException(e.getMessage());
+        }
+        setParser(new TmfEventParserStub(this));
         if (waitForCompletion) {
             indexTrace(true);
         }
     }
 
     /**
-     * Copy constructor
-     *
-     * @param trace
-     *            The trace to copy
-     * @throws TmfTraceException
-     *             If an error occurred opening the trace
+     * @param path
+     * @param cacheSize
+     * @param waitForCompletion
+     * @throws FileNotFoundException
      */
-    public TmfTraceStub(final TmfTraceStub trace) throws TmfTraceException {
-        super(trace);
-        setupTrace(getPath()); // fPath will be set by the super-constructor
-        setParser(new TmfEventParserStub(this));
-    }
-
-
-    private void setupTrace(String path) throws TmfTraceException {
+    public TmfTraceStub(final IResource resource,  final String path, final int cacheSize, final boolean waitForCompletion) throws TmfTraceException {
+        super(resource, ITmfEvent.class, path, cacheSize, 0, null, null);
         try {
             fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
+        setParser(new TmfEventParserStub(this));
     }
 
-    // ------------------------------------------------------------------------
-    // Initializers
-    // ------------------------------------------------------------------------
+    /**
+     * @param path
+     * @param cacheSize
+     * @param waitForCompletion
+     * @param parser
+     * @throws FileNotFoundException
+     */
+    public TmfTraceStub(final String path, final int cacheSize, final boolean waitForCompletion,
+            final ITmfEventParser parser, final ITmfTraceIndexer indexer) throws TmfTraceException {
+        super(null, ITmfEvent.class, path, cacheSize, 0, indexer, null);
+        try {
+            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
+        } catch (FileNotFoundException e) {
+            throw new TmfTraceException(e.getMessage());
+        }
+        setParser((parser != null) ? parser : new TmfEventParserStub(this));
+    }
+
+    /**
+     * Copy constructor
+     */
+    public TmfTraceStub(final TmfTraceStub trace) throws TmfTraceException {
+        super(trace);
+        try {
+            fTrace = new RandomAccessFile(getPath(), "r"); //$NON-NLS-1$
+        } catch (FileNotFoundException e) {
+            throw new TmfTraceException(e.getMessage());
+        }
+        setParser(new TmfEventParserStub(this));
+    }
 
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
@@ -173,19 +204,10 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
     // Accessors
     // ------------------------------------------------------------------------
 
-    /**
-     * @return The file stream to the trace
-     */
     public RandomAccessFile getStream() {
         return fTrace;
     }
 
-    /**
-     * Set the initial range offset.
-     *
-     * @param initOffset
-     *            The new initial range offset
-     */
     public void setInitialRangeOffset(ITmfTimestamp initOffset) {
         fInitialRangeOffset = initOffset;
     }
@@ -352,47 +374,4 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
         return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "File does not exist: " + path);
     }
 
-    private static int fCheckpointSize = -1;
-
-    @Override
-    public synchronized int getCheckpointSize() {
-        if (fCheckpointSize == -1) {
-            TmfCheckpoint c = new TmfCheckpoint(new TmfTimestamp(0L), new TmfLongLocation(0L), 0);
-            ByteBuffer b = ByteBuffer.allocate(ITmfCheckpoint.MAX_SERIALIZE_SIZE);
-            b.clear();
-            c.serialize(b);
-            fCheckpointSize = b.position();
-        }
-
-        return fCheckpointSize;
-    }
-
-    @Override
-    public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
-        return new TmfLongLocation(bufferIn);
-    }
-
-    /**
-     * Simulate trace opening, to be called by tests who need an actively opened
-     * trace
-     */
-    public void openTrace() {
-        TmfSignalManager.dispatchSignal(new TmfTraceOpenedSignal(this, this, null));
-        selectTrace();
-        updateTraceRange();
-    }
-
-    /**
-     * Simulate selecting the trace
-     */
-    public void selectTrace() {
-        TmfSignalManager.dispatchSignal(new TmfTraceSelectedSignal(this, this));
-    }
-
-    /**
-     * Simulate time range updated
-     */
-    public void updateTraceRange() {
-        TmfSignalManager.dispatchSignal(new TmfTraceRangeUpdatedSignal(this, this, new TmfTimeRange(this.getStartTime(), TmfTimestamp.BIG_CRUNCH)));
-    }
 }

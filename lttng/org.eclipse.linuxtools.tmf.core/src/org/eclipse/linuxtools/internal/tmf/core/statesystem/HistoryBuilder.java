@@ -17,7 +17,8 @@ import java.io.IOException;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
+import org.eclipse.linuxtools.tmf.core.request.ITmfDataRequest;
+import org.eclipse.linuxtools.tmf.core.request.TmfDataRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
@@ -41,7 +42,6 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
  * @author alexmont
  *
  */
-@Deprecated
 public class HistoryBuilder extends TmfComponent {
 
     private final ITmfStateProvider sp;
@@ -136,21 +136,13 @@ public class HistoryBuilder extends TmfComponent {
         /* Send the request to the trace here, since there is probably no
          * experiment. */
         sp.getTrace().sendRequest(request);
-
-        /* Make sure that pending request counter is decremented here to
-         * actually dispatch the request. Otherwise it will wait below
-         * forever due to waitForCompletion().
-         */
-        sp.getTrace().notifyPendingRequest(false);
-
-        // This should not be called here because it will block forever
-        // if it is called from a signal handler (signal depth > 0 or requestPending > 0)
         try {
             request.waitForCompletion();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
+
 
     // ------------------------------------------------------------------------
     // Signal handlers
@@ -233,6 +225,10 @@ public class HistoryBuilder extends TmfComponent {
 }
 
 class StateSystemBuildRequest extends TmfEventRequest {
+
+    /** The amount of events queried at a time through the requests */
+    private static final int CHUNK_SIZE = 50000;
+
     private final HistoryBuilder builder;
     private final ITmfStateProvider sci;
     private final ITmfTrace trace;
@@ -240,9 +236,9 @@ class StateSystemBuildRequest extends TmfEventRequest {
     StateSystemBuildRequest(HistoryBuilder builder) {
         super(builder.getStateProvider().getExpectedEventType(),
                 TmfTimeRange.ETERNITY,
-                0,
-                ITmfEventRequest.ALL_DATA,
-                ITmfEventRequest.ExecutionType.BACKGROUND);
+                TmfDataRequest.ALL_DATA,
+                CHUNK_SIZE,
+                ITmfDataRequest.ExecutionType.BACKGROUND);
         this.builder = builder;
         this.sci = builder.getStateProvider();
         this.trace = sci.getTrace();

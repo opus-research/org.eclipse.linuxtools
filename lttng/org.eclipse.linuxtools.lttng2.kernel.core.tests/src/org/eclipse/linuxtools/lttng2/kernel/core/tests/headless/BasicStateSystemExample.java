@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Mathieu Denis <mathieu.denis@polymtl.ca> - Initial API and implementation
- *   Bernd Hufmann - Updated to new history builder interface
  *******************************************************************************/
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.headless;
@@ -24,7 +23,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfHistoryBuilder;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
@@ -46,9 +44,8 @@ public class BasicStateSystemExample {
         try {
             File newStateFile = new File("/tmp/helloworldctf.ht");
             ITmfStateProvider input = new LttngKernelStateProvider(CtfTmfTestTrace.TRACE2.getTrace());
-            ITmfHistoryBuilder builder = TmfStateSystemFactory.newFullHistory(newStateFile, input);
-            builder.build();
-            ITmfStateSystem ss = builder.getStateSystem();
+            ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(newStateFile, input, true);
+
             requestExample(ss);
         } catch (TmfTraceException e) {
             e.printStackTrace();
