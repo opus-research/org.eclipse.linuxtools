@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -101,13 +102,28 @@ public class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public boolean waitUntilBuilt() {
+    public boolean isCancelled() {
+        return buildCancelled;
+    }
+
+    @Override
+    public void waitUntilBuilt() {
         try {
             finishedLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return !buildCancelled;
+    }
+
+    @Override
+    public boolean waitUntilBuilt(long timeout) {
+        boolean ret = false;
+        try {
+            ret = finishedLatch.await(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
 
     @Override
@@ -235,9 +251,9 @@ public class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public List<Integer> getQuarks(String... pattern) {
-        List<Integer> quarks = new LinkedList<Integer>();
-        List<String> prefix = new LinkedList<String>();
-        List<String> suffix = new LinkedList<String>();
+        List<Integer> quarks = new LinkedList<>();
+        List<String> prefix = new LinkedList<>();
+        List<String> suffix = new LinkedList<>();
         boolean split = false;
         String[] prefixStr;
         String[] suffixStr;
@@ -506,7 +522,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateSystemDisposedException();
         }
 
-        List<ITmfStateInterval> stateInfo = new ArrayList<ITmfStateInterval>(getNbAttributes());
+        List<ITmfStateInterval> stateInfo = new ArrayList<>(getNbAttributes());
 
         /* Bring the size of the array to the current number of attributes */
         for (int i = 0; i < getNbAttributes(); i++) {
@@ -611,7 +627,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         /* Get the initial state at time T1 */
-        intervals = new ArrayList<ITmfStateInterval>();
+        intervals = new ArrayList<>();
         currentInterval = querySingleState(t1, attributeQuark);
         intervals.add(currentInterval);
 
@@ -657,7 +673,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         /* Get the initial state at time T1 */
-        intervals = new ArrayList<ITmfStateInterval>();
+        intervals = new ArrayList<>();
         currentInterval = querySingleState(t1, attributeQuark);
         intervals.add(currentInterval);
 

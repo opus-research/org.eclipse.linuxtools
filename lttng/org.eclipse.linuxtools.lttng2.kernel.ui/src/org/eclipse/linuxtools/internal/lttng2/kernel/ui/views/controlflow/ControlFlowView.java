@@ -204,23 +204,27 @@ public class ControlFlowView extends AbstractTimeGraphView {
         setStartTime(Long.MAX_VALUE);
         setEndTime(Long.MIN_VALUE);
 
-        ArrayList<ControlFlowEntry> rootList = new ArrayList<ControlFlowEntry>();
+        ArrayList<ControlFlowEntry> rootList = new ArrayList<>();
         for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
             if (monitor.isCanceled()) {
                 return;
             }
             if (aTrace instanceof LttngKernelTrace) {
-                ArrayList<ControlFlowEntry> entryList = new ArrayList<ControlFlowEntry>();
+                ArrayList<ControlFlowEntry> entryList = new ArrayList<>();
                 LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) aTrace;
                 LttngKernelAnalysisModule module = ctfKernelTrace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
-                if (module == null) {
-                    return;
-                }
                 module.schedule();
                 if (!module.waitForCompletion(new NullProgressMonitor())) {
-                    return;
+                    continue;
                 }
                 ITmfStateSystem ssq = module.getStateSystem();
+                if (ssq == null) {
+                    continue;
+                }
+                ssq.waitUntilBuilt();
+                if (ssq.isCancelled()) {
+                    continue;
+                }
                 long start = ssq.getStartTime();
                 long end = ssq.getCurrentEndTime() + 1;
                 setStartTime(Math.min(getStartTime(), start));
@@ -332,7 +336,9 @@ public class ControlFlowView extends AbstractTimeGraphView {
     private void buildStatusEvents(ITmfTrace trace, ControlFlowEntry entry, IProgressMonitor monitor) {
         LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
         ITmfStateSystem ssq = module.getStateSystem();
-
+        if (ssq == null) {
+            return;
+        }
         long start = ssq.getStartTime();
         long end = ssq.getCurrentEndTime() + 1;
         long resolution = Math.max(1, (end - start) / getDisplayWidth());
@@ -366,10 +372,13 @@ public class ControlFlowView extends AbstractTimeGraphView {
         }
         LttngKernelAnalysisModule module = entry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
         ITmfStateSystem ssq = module.getStateSystem();
+        if (ssq == null) {
+            return null;
+        }
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
             List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
-            eventList = new ArrayList<ITimeEvent>(statusIntervals.size());
+            eventList = new ArrayList<>(statusIntervals.size());
             long lastEndTime = -1;
             for (ITmfStateInterval statusInterval : statusIntervals) {
                 if (monitor.isCanceled()) {
@@ -419,6 +428,9 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 LttngKernelTrace ctfKernelTrace = (LttngKernelTrace) trace;
                 LttngKernelAnalysisModule module = ctfKernelTrace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
                 ITmfStateSystem ssq = module.getStateSystem();
+                if (ssq == null) {
+                    continue;
+                }
                 if (time >= ssq.getStartTime() && time <= ssq.getCurrentEndTime()) {
                     List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD); //$NON-NLS-1$
                     for (int currentThreadQuark : currentThreadQuarks) {
@@ -467,7 +479,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
 
     @Override
     protected List<ILinkEvent> getLinkList(long startTime, long endTime, long resolution, IProgressMonitor monitor) {
-        List<ILinkEvent> list = new ArrayList<ILinkEvent>();
+        List<ILinkEvent> list = new ArrayList<>();
         ITmfTrace[] traces = TmfTraceManager.getTraceSet(getTrace());
         List<TimeGraphEntry> entryList = getEntryListMap().get(getTrace());
         if (traces == null || entryList == null) {
@@ -477,6 +489,9 @@ public class ControlFlowView extends AbstractTimeGraphView {
             if (trace instanceof LttngKernelTrace) {
                 LttngKernelAnalysisModule module = trace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
                 ITmfStateSystem ssq = module.getStateSystem();
+                if (ssq == null) {
+                    continue;
+                }
                 try {
                     long start = Math.max(startTime, ssq.getStartTime());
                     long end = Math.min(endTime, ssq.getCurrentEndTime());

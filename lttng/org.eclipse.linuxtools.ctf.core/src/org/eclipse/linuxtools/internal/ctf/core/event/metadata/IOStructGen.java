@@ -21,8 +21,10 @@ import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -124,12 +126,12 @@ public class IOStructGen {
         }
 
         CommonTree traceNode = null;
-        List<CommonTree> streams = new ArrayList<CommonTree>();
-        List<CommonTree> events = new ArrayList<CommonTree>();
-        List<CommonTree> declarations = new ArrayList<CommonTree>();
-        List<CommonTree> environments = new ArrayList<CommonTree>();
-        List<CommonTree> clocks = new ArrayList<CommonTree>();
-        List<CommonTree> callsites = new ArrayList<CommonTree>();
+        List<CommonTree> streams = new ArrayList<>();
+        List<CommonTree> events = new ArrayList<>();
+        List<CommonTree> declarations = new ArrayList<>();
+        List<CommonTree> environments = new ArrayList<>();
+        List<CommonTree> clocks = new ArrayList<>();
+        List<CommonTree> callsites = new ArrayList<>();
         /* Create a new declaration scope with no parent. */
         pushScope();
 
@@ -268,8 +270,7 @@ public class IOStructGen {
             } else if (left.equals("func")) { //$NON-NLS-1$
                 funcName = child.getChild(1).getChild(0).getChild(0).getText().replaceAll(regex, nullString);
             } else if (left.equals("ip")) { //$NON-NLS-1$
-                /* trim the 0x */
-                ip = Long.parseLong(child.getChild(1).getChild(0).getChild(0).getText().substring(2), 16);
+                ip = Long.decode(child.getChild(1).getChild(0).getChild(0).getText());
             } else if (left.equals("file")) { //$NON-NLS-1$
                 fileName = child.getChild(1).getChild(0).getChild(0).getText().replaceAll(regex, nullString);
             } else if (left.equals("line")) { //$NON-NLS-1$
@@ -426,9 +427,8 @@ public class IOStructGen {
             } else {
                 trace.setByteOrder(byteOrder);
                 final DeclarationScope parentScope = scope.getParentScope();
-                String types[] = parentScope.getTypeNames();
 
-                for (String type : types) {
+                for (String type : parentScope.getTypeNames()) {
                     IDeclaration d = parentScope.lookupType(type);
                     if (d instanceof IntegerDeclaration) {
                         addByteOrder(byteOrder, parentScope, type, (IntegerDeclaration) d);
@@ -965,7 +965,7 @@ public class IOStructGen {
         CommonTree typeSpecifierList = null;
         CommonTree typeDeclaratorList = null;
         CommonTree typeDeclarator = null;
-        List<CommonTree> pointers = new LinkedList<CommonTree>();
+        List<CommonTree> pointers = new LinkedList<>();
 
         for (CommonTree child : children) {
             switch (child.getType()) {
@@ -1069,8 +1069,8 @@ public class IOStructGen {
 
         IDeclaration declaration = null;
         List<CommonTree> children = null;
-        List<CommonTree> pointers = new LinkedList<CommonTree>();
-        List<CommonTree> lengths = new LinkedList<CommonTree>();
+        List<CommonTree> pointers = new LinkedList<>();
+        List<CommonTree> lengths = new LinkedList<>();
         CommonTree identifier = null;
 
         /* Separate the tokens by type */
@@ -2031,6 +2031,20 @@ public class IOStructGen {
 
         if (hasTag) {
             variantDeclaration.setTag(variantTag);
+
+            IDeclaration decl = getCurrentScope().lookupIdentifierRecursive(variantTag);
+            if (decl == null) {
+                throw new ParseException("Variant tag not found: " + variantTag); //$NON-NLS-1$
+            }
+            if (!(decl instanceof EnumDeclaration)) {
+                throw new ParseException("Variant tag must be an enum: " + variantTag); //$NON-NLS-1$
+            }
+            EnumDeclaration tagDecl = (EnumDeclaration) decl;
+            Set<String> intersection = new HashSet<>(tagDecl.getLabels());
+            intersection.retainAll(variantDeclaration.getFields().keySet());
+            if (intersection.isEmpty()) {
+                throw new ParseException("Variant contains no values of the tag, impossible to use: " + variantName); //$NON-NLS-1$
+            }
         }
 
         return variantDeclaration;
@@ -2307,7 +2321,7 @@ public class IOStructGen {
      * @param unaryInteger
      *            An unary integer node.
      * @return The integer value.
-     * @throws CTFReaderException
+     * @throws ParseException on an invalid integer format ("bob" for example)
      */
     private static long parseUnaryInteger(CommonTree unaryInteger) throws ParseException {
 

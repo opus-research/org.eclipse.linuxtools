@@ -46,10 +46,10 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     private String fName, fId;
     private boolean fAutomatic = false, fStarted = false;
     private ITmfTrace fTrace;
-    private final Map<String, Object> fParameters = new HashMap<String, Object>();
-    private final List<String> fParameterNames = new ArrayList<String>();
-    private final List<IAnalysisOutput> fOutputs = new ArrayList<IAnalysisOutput>();
-    private List<IAnalysisParameterProvider> fParameterProviders = new ArrayList<IAnalysisParameterProvider>();
+    private final Map<String, Object> fParameters = new HashMap<>();
+    private final List<String> fParameterNames = new ArrayList<>();
+    private final List<IAnalysisOutput> fOutputs = new ArrayList<>();
+    private List<IAnalysisParameterProvider> fParameterProviders = new ArrayList<>();
     private Job fJob = null;
 
     private final Object syncObj = new Object();
@@ -58,8 +58,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     private CountDownLatch fFinishedLatch = new CountDownLatch(0);
 
     private boolean fAnalysisCancelled = false;
-
-    private boolean fIsNotifyPendingReqNeeded = false;
 
     @Override
     public boolean isAutomatic() {
@@ -256,13 +254,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
             fStarted = true;
         }
 
-        // Tell the trace that a request is pending (done the in Job below)
-        if (fTrace != null) {
-            // Assume that there are pending requests
-            fTrace.notifyPendingRequest(true);
-            setNotifyPendingReqNeeded(true);
-        }
-
         /*
          * Actual analysis will be run on a separate thread
          */
@@ -273,12 +264,6 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
                     monitor.beginTask("", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
                     broadcast(new TmfStartAnalysisSignal(TmfAbstractAnalysisModule.this, TmfAbstractAnalysisModule.this));
                     fAnalysisCancelled = !executeAnalysis(monitor);
-
-                    // Notify pending request if needed
-                    if ((fTrace != null) && isNotifyPendingReqNeeded()) {
-                        fTrace.notifyPendingRequest(false);
-                        setNotifyPendingReqNeeded(false);
-                    }
                 } catch (TmfAnalysisException e) {
                     Activator.logError("Error executing analysis with trace " + getTrace().getName(), e); //$NON-NLS-1$
                 } finally {
@@ -290,6 +275,8 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
                 if (!fAnalysisCancelled) {
                     return Status.OK_STATUS;
                 }
+                // Reset analysis so that it can be executed again.
+                resetAnalysis();
                 return Status.CANCEL_STATUS;
             }
 
@@ -404,20 +391,4 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
         return text;
     }
 
-    /**
-     * Flag to used to indicate that notify pending request is needed.
-     * @return true if request notify is needed else false
-     */
-    protected boolean isNotifyPendingReqNeeded() {
-        return fIsNotifyPendingReqNeeded;
-    }
-
-    /**
-     * Sets flag about pending requests.
-     * @param notify true if notify request needed else false
-     *
-     */
-    protected void setNotifyPendingReqNeeded(boolean notify) {
-         fIsNotifyPendingReqNeeded = notify;
-    }
 }

@@ -18,6 +18,7 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow.ControlFlowView;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesView;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -27,16 +28,18 @@ import org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput;
  * State System Module for lttng kernel traces
  *
  * @author Geneviève Bastien
+ * @since 3.0
  */
 public class LttngKernelAnalysisModule extends TmfStateSystemAnalysisModule {
 
     /**
      * The file name of the History Tree
      */
-    public final static String HISTORY_TREE_FILE_NAME = "stateHistory.ht"; //$NON-NLS-1$
+    @NonNull
+    public static final String HISTORY_TREE_FILE_NAME = "stateHistory.ht"; //$NON-NLS-1$
 
     /** The ID of this analysis module */
-    public final static String ID = "org.eclipse.linuxtools.lttng2.kernel.analysis"; //$NON-NLS-1$
+    public static final String ID = "org.eclipse.linuxtools.lttng2.kernel.analysis"; //$NON-NLS-1$
 
     /**
      * Constructor adding the views to the analysis
@@ -48,20 +51,33 @@ public class LttngKernelAnalysisModule extends TmfStateSystemAnalysisModule {
     }
 
     @Override
-    protected @NonNull ITmfStateProvider createStateProvider() {
-        ITmfTrace trace = getTrace();
+    public void setTrace(ITmfTrace trace) throws TmfAnalysisException {
         if (!(trace instanceof LttngKernelTrace)) {
-            throw new IllegalStateException("LttngKernelStateSystemModule: trace should be of type LttngKernelTrace"); //$NON-NLS-1$
+            throw new IllegalArgumentException("LttngKernelStateSystemModule: trace should be of type LttngKernelTrace"); //$NON-NLS-1$
         }
-        return new LttngKernelStateProvider((LttngKernelTrace) trace);
+        super.setTrace(trace);
     }
 
     @Override
+    protected LttngKernelTrace getTrace() {
+        /* Cast should be safe because we check the type at the setTrace() */
+        return (LttngKernelTrace) super.getTrace();
+    }
+
+    @Override
+    @NonNull
+    protected ITmfStateProvider createStateProvider() {
+        return new LttngKernelStateProvider(getTrace());
+    }
+
+    @Override
+    @NonNull
     protected StateSystemBackendType getBackendType() {
         return StateSystemBackendType.FULL;
     }
 
     @Override
+    @NonNull
     protected String getSsFileName() {
         return HISTORY_TREE_FILE_NAME;
     }

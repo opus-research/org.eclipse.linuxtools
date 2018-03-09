@@ -26,6 +26,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
@@ -40,6 +41,8 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
  *
  * @author alexmont
  *
+ * @deprecated Building state systems should now be done via
+ *             {@link TmfStateSystemAnalysisModule}
  */
 @Deprecated
 public class HistoryBuilder extends TmfComponent {
@@ -136,21 +139,13 @@ public class HistoryBuilder extends TmfComponent {
         /* Send the request to the trace here, since there is probably no
          * experiment. */
         sp.getTrace().sendRequest(request);
-
-        /* Make sure that pending request counter is decremented here to
-         * actually dispatch the request. Otherwise it will wait below
-         * forever due to waitForCompletion().
-         */
-        sp.getTrace().notifyPendingRequest(false);
-
-        // This should not be called here because it will block forever
-        // if it is called from a signal handler (signal depth > 0 or requestPending > 0)
         try {
             request.waitForCompletion();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
+
 
     // ------------------------------------------------------------------------
     // Signal handlers

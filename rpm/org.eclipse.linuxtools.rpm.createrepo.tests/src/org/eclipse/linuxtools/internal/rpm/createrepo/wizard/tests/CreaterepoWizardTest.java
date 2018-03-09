@@ -11,10 +11,12 @@
 package org.eclipse.linuxtools.internal.rpm.createrepo.wizard.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.eclipse.core.resources.IFile;
@@ -22,6 +24,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProjectNature;
@@ -29,6 +32,7 @@ import org.eclipse.linuxtools.rpm.createrepo.ICreaterepoConstants;
 import org.eclipse.linuxtools.rpm.createrepo.IRepoFileConstants;
 import org.eclipse.linuxtools.rpm.createrepo.tests.ICreaterepoTestConstants;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.After;
@@ -42,7 +46,6 @@ import org.junit.runner.RunWith;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class CreaterepoWizardTest {
 
-	private static final String PROJECT_NAME = "createrepo-test-project"; //$NON-NLS-1$
 	private static final String REPO_ID = "createrepo-test-repo"; //$NON-NLS-1$
 	private static final String REPO_FILE = REPO_ID.concat(".repo"); //$NON-NLS-1$
 
@@ -57,29 +60,50 @@ public class CreaterepoWizardTest {
 	private static NullProgressMonitor monitor;
 	private IProject project;
 
+	/**
+	 * Setup the bot, monitor and workspace root.
+	 */
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	public static void setUpBeforeClass() {
 		bot = new SWTWorkbenchBot();
 		root = ResourcesPlugin.getWorkspace().getRoot();
 		monitor = new NullProgressMonitor();
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		if (project != null && project.exists()) {
-			project.delete(true, monitor);
+		try {
+			bot.shell(ICreaterepoTestConstants.MAIN_SHELL).activate();
+		} catch (WidgetNotFoundException e) {
+			// cannot activate main shell, continue anyways
 		}
 	}
 
+	/**
+	 * Delete the project and its contents for each test itereation.
+	 *
+	 * @throws CoreException
+	 */
+	@After
+	public void tearDown() throws CoreException {
+		if (project != null && project.exists()) {
+			project.delete(true, true, monitor);
+		}
+		assertFalse(project.exists());
+	}
+
+	/**
+	 * Go through the project creation wizard process of creating a new
+	 * createrepo project.
+	 *
+	 * @throws CoreException
+	 * @throws IOException
+	 */
 	@Test
-	public void testCreaterepoWizardProjectCreation() throws Exception {
+	public void testCreaterepoWizardProjectCreation() throws CoreException, IOException {
 		// go through the process of creating a new createrepo project
 		bot.menu(ICreaterepoTestConstants.FILE).menu(ICreaterepoTestConstants.NEW).menu(ICreaterepoTestConstants.OTHER).click();
 		SWTBotShell shell = bot.shell(ICreaterepoTestConstants.NEW);
 		shell.activate();
 		bot.tree().expandNode(ICreaterepoTestConstants.CREATEREPO_CATEGORY).select(ICreaterepoTestConstants.CREATEREPO_PROJECT_WIZARD);
 		bot.button(ICreaterepoTestConstants.NEXT_BUTTON).click();
-		bot.textWithLabel(ICreaterepoTestConstants.PROJECT_NAME_LABEL).setText(PROJECT_NAME);
+		bot.textWithLabel(ICreaterepoTestConstants.PROJECT_NAME_LABEL).setText(ICreaterepoTestConstants.PROJECT_NAME);
 		bot.button(ICreaterepoTestConstants.NEXT_BUTTON).click();
 		bot.textWithLabel(Messages.CreaterepoNewWizardPageTwo_labelID).setText(REPO_ID);
 		bot.textWithLabel(Messages.CreaterepoNewWizardPageTwo_labelName).setText(REPO_WIZARD_NAME);
@@ -87,7 +111,7 @@ public class CreaterepoWizardTest {
 		bot.button(ICreaterepoTestConstants.FINISH_BUTTON).click();
 
 		// verify that project has been initialized properly
-		project = root.getProject(PROJECT_NAME);
+		project = root.getProject(ICreaterepoTestConstants.PROJECT_NAME);
 		assertTrue(project.exists());
 		assertTrue(project.hasNature(CreaterepoProjectNature.CREATEREPO_NATURE_ID));
 		// 3 = .project + content folder + .repo file
@@ -104,7 +128,7 @@ public class CreaterepoWizardTest {
 		// get the created .repo file contents
 		IFile repoFile = (IFile) project.findMember(REPO_FILE);
 		// repo file should not be empty
-		assertNotEquals(repoFile.getContents().available(), 0);
+		assertNotEquals(0, repoFile.getContents().available());
 		StringBuilder sb = new StringBuilder();
 		BufferedReader br = new BufferedReader(new InputStreamReader(repoFile.getContents()));
 		String line;
