@@ -82,12 +82,10 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
     /** The requested events time range */
     private final TmfTimeRange fRange;
 
-    /** The index (rank) of the requested event
-     * @since 3.0*/
+    /** The index (rank) of the requested event */
     protected long fIndex;
 
-    /** The number of requested events (ALL_DATA for all)
-     * @since 3.0*/
+    /** The number of requested events (ALL_DATA for all) */
     protected int fNbRequested;
 
     /** The number of reads so far */
@@ -202,9 +200,6 @@ public abstract class TmfEventRequest implements ITmfEventRequest {
         return fIndex;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public ExecutionType getExecType() {
         return fExecType;

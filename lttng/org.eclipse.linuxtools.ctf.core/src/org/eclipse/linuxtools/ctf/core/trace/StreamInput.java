@@ -99,7 +99,7 @@ public class StreamInput implements IDefinitionScope {
         this.stream = stream;
         this.fileChannel = fileChannel;
         this.file = file;
-        this.index = new StreamInputPacketIndex();
+        this.index = stream.getTrace().getIndex(this);
     }
 
     // ------------------------------------------------------------------------
