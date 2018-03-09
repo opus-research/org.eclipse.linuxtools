@@ -10,18 +10,14 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.rpm.createrepo;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.rpm.core.utils.BufferedProcessInputStream;
 import org.eclipse.linuxtools.rpm.core.utils.Utils;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoPreferenceConstants;
@@ -76,8 +72,6 @@ public class Createrepo {
 		}
 		commandSwitches.addAll(commands);
 		commandSwitches.add(project.getContentFolder().getLocation().toOSString());
-		ProcessBuilder pb = new ProcessBuilder(commandSwitches);
-		pb.directory(project.getContentFolder().getLocation().toFile());
 		/* Display what the execution looks like */
 		String commandString = ICreaterepoConstants.EMPTY_STRING;
 		for (String arg : commandSwitches) {
@@ -85,43 +79,8 @@ public class Createrepo {
 		}
 		commandString = commandString.concat("\n"); //$NON-NLS-1$
 		try {
-			// write the command onto the console
 			os.write(commandString.getBytes());
-			Process process = pb.start();
-			final BufferedInputStream in = new BufferedInputStream(new SequenceInputStream(process.getInputStream(),
-					process.getErrorStream()));
-			Job readinJob = new Job(ICreaterepoConstants.EMPTY_STRING) {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					try {
-						int i;
-						while ((i = in.read()) != -1) {
-							os.write(i);
-						}
-						os.flush();
-						os.close();
-						in.close();
-					} catch (IOException e) {
-						return Status.CANCEL_STATUS;
-					}
-					return Status.OK_STATUS;
-				}
-			};
-			readinJob.schedule();
-
-			try {
-				process.waitFor();
-				readinJob.join();
-			} catch (InterruptedException e) {
-				process.destroy();
-				readinJob.cancel();
-			}
-
-			IStatus result = null;
-			if (process.exitValue() == 0) {
-				result = Status.OK_STATUS;
-			}
-			return result;
+			return Utils.runCommand(os, project.getProject(), commandSwitches.toArray(new String[commandSwitches.size()]));
 		} catch (IOException e) {
 			IStatus status = new Status(
 					IStatus.ERROR,
