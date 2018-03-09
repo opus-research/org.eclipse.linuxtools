@@ -105,8 +105,7 @@ public class ProjectModelTestData {
      */
     public static void deleteProject(TmfProjectElement project) {
         /* Delete experiments */
-        ITmfProjectModelElement[] experiments = project.getExperimentsFolder().getChildren().toArray(new ITmfProjectModelElement[0]);
-        for (ITmfProjectModelElement element : experiments) {
+        for (ITmfProjectModelElement element : project.getExperimentsFolder().getChildren()) {
             if (element instanceof TmfExperimentElement) {
                 TmfExperimentElement experiment = (TmfExperimentElement) element;
                 IResource resource = experiment.getResource();
@@ -130,8 +129,7 @@ public class ProjectModelTestData {
         }
 
         /* Delete traces */
-        ITmfProjectModelElement[] traces = project.getTracesFolder().getChildren().toArray(new ITmfProjectModelElement[0]);
-        for (ITmfProjectModelElement element : traces) {
+        for (ITmfProjectModelElement element : project.getTracesFolder().getChildren()) {
             if (element instanceof TmfTraceElement) {
                 TmfTraceElement trace = (TmfTraceElement) element;
                 IResource resource = trace.getResource();
