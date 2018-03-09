@@ -54,6 +54,7 @@ public class CreaterepoWizardTest {
 			String.format("[%s]%s=%s%s=%s", REPO_ID, IRepoFileConstants.NAME,  //$NON-NLS-1$
 			REPO_WIZARD_NAME, IRepoFileConstants.BASE_URL, REPO_WIZARD_URL);
 
+	private static SWTWorkbenchBot bot;
 	private static IWorkspaceRoot root;
 	private static NullProgressMonitor monitor;
 	private IProject project;
@@ -63,6 +64,7 @@ public class CreaterepoWizardTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() {
+		bot = new SWTWorkbenchBot();
 		root = ResourcesPlugin.getWorkspace().getRoot();
 		monitor = new NullProgressMonitor();
 	}
@@ -88,7 +90,6 @@ public class CreaterepoWizardTest {
 	 */
 	@Test
 	public void testCreaterepoWizardProjectCreation() throws CoreException, IOException {
-		SWTWorkbenchBot bot = new SWTWorkbenchBot();
 		// go through the process of creating a new createrepo project
 		bot.menu(ICreaterepoTestConstants.FILE).menu(ICreaterepoTestConstants.NEW).menu(ICreaterepoTestConstants.OTHER).click();
 		SWTBotShell shell = bot.shell(ICreaterepoTestConstants.NEW);
