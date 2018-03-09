@@ -24,7 +24,7 @@ public class NewFileAction extends OpenFileAction {
 
 	@Override
 	protected String dialogName() {
-		return Localization.getString("NewFileAction.NewFile"); //$NON-NLS-1$
+		return Localization.getString("NewFileAction.NewFile");
 	}
 
 }
