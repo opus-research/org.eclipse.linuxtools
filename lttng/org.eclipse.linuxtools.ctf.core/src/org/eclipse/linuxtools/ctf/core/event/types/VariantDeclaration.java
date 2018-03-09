@@ -34,7 +34,7 @@ public class VariantDeclaration implements IDeclaration {
 
     private String tag = null;
     private static final long alignment = 1;
-    private final Map<String, IDeclaration> fields = new HashMap<>();
+    private final Map<String, IDeclaration> fields = new HashMap<String, IDeclaration>();
 
     // ------------------------------------------------------------------------
     // Constructors

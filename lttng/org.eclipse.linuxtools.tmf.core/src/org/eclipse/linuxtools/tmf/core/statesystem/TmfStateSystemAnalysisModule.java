@@ -13,7 +13,8 @@
 package org.eclipse.linuxtools.tmf.core.statesystem;
 
 import java.io.File;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.NonNull;
@@ -34,11 +35,10 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
  * @since 3.0
  */
 public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisModule
-        implements ITmfAnalysisModuleWithStateSystems {
-
-    private static final String EXTENSION = ".ht"; //$NON-NLS-1$
+        implements ITmfStateSystemAnalysisModule {
 
     private ITmfStateSystem fStateSystem = null;
+    private static final String EXTENSION = ".ht"; //$NON-NLS-1$
 
     /**
      * State system backend types
@@ -129,34 +129,19 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
     @Override
     protected void canceling() {
         /*
-         * FIXME: I guess that will do to cancel the state system building, but
-         * it may be preferable to just tell the state system and he will handle
-         * himself how to cancel its work
+         * FIXME: Actually, fStateSystem will [almost?] always be null while it
+         * is being built, so it is preferable to just tell the state system
+         * factory and she will handle how to cancel its work.
          */
-        fStateSystem.dispose();
-    }
-
-    // ------------------------------------------------------------------------
-    // ITmfAnalysisModuleWithStateSystems
-    // ------------------------------------------------------------------------
-
-    @Override
-    public ITmfStateSystem getStateSystem(@NonNull String id) {
-        if (id.equals(getId())) {
-            return fStateSystem;
+        if (fStateSystem != null) {
+            fStateSystem.dispose();
         }
-        return null;
     }
 
     @Override
-    public String getStateSystemId(@NonNull ITmfStateSystem ss) {
-        return getId();
-    }
-
-    @SuppressWarnings("null")
-    @Override
-    @NonNull
-    public Iterable<ITmfStateSystem> getStateSystems() {
-        return Collections.singleton(fStateSystem);
+    public Map<String, ITmfStateSystem> getStateSystems() {
+        Map<String, ITmfStateSystem> map = new HashMap<String, ITmfStateSystem>();
+        map.put(getId(), fStateSystem);
+        return map;
     }
 }

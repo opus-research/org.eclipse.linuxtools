@@ -18,6 +18,7 @@ package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -132,12 +133,12 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * @since 2.0
      */
     protected final Map<String, ITmfStateSystem> fStateSystems =
-            new LinkedHashMap<>();
+            new LinkedHashMap<String, ITmfStateSystem>();
 
     private ITmfTimestampTransform fTsTransform;
 
     private final Map<String, IAnalysisModule> fAnalysisModules =
-            new LinkedHashMap<>();
+            new LinkedHashMap<String, IAnalysisModule>();
 
     private static final String SYNCHRONIZATION_FORMULA_FILE = "sync_formula"; //$NON-NLS-1$
 
@@ -344,20 +345,14 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return status;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public final IAnalysisModule getAnalysisModule(String analysisId) {
         return fAnalysisModules.get(analysisId);
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public <T> Map<String, T> getAnalysisModules(Class<T> moduleclass) {
-        Map<String, T> modules = new HashMap<>();
+        Map<String, T> modules = new HashMap<String, T>();
         for (Entry<String, IAnalysisModule> entry : fAnalysisModules.entrySet()) {
             if (moduleclass.isAssignableFrom(entry.getValue().getClass())) {
                 modules.put(entry.getKey(), moduleclass.cast(entry.getValue()));
@@ -366,9 +361,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
         return modules;
     }
 
-    /**
-     * @since 3.0
-     */
     @Override
     public Map<String, IAnalysisModule> getAnalysisModules() {
         return Collections.unmodifiableMap(fAnalysisModules);
@@ -800,7 +792,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
     /**
      * Refresh the supplementary files resources, so it can pick up new files
      * that got created.
-     * @since 3.0
      */
     public void refreshSupplementaryFiles() {
         if (fResource != null) {
@@ -833,7 +824,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      * Signal handler for the TmfTraceUpdatedSignal signal
      *
      * @param signal The incoming signal
-     * @since 3.0
+     * @since 2.0
      */
     @TmfSignalHandler
     public void traceUpdated(final TmfTraceUpdatedSignal signal) {
@@ -881,12 +872,18 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
             File sync_file = getSyncFormulaFile();
             if (sync_file != null && sync_file.exists()) {
 
-                try (FileInputStream fis = new FileInputStream(sync_file);
-                        ObjectInputStream ois = new ObjectInputStream(fis);) {
-
+                try {
+                    FileInputStream fis = new FileInputStream(sync_file);
+                    ObjectInputStream ois = new ObjectInputStream(fis);
                     fTsTransform = (ITmfTimestampTransform) ois.readObject();
 
-                } catch (ClassNotFoundException | IOException e) {
+                    ois.close();
+                    fis.close();
+                } catch (ClassNotFoundException e1) {
+                    fTsTransform = TmfTimestampTransform.IDENTITY;
+                } catch (FileNotFoundException e1) {
+                    fTsTransform = TmfTimestampTransform.IDENTITY;
+                } catch (IOException e1) {
                     fTsTransform = TmfTimestampTransform.IDENTITY;
                 }
             } else {

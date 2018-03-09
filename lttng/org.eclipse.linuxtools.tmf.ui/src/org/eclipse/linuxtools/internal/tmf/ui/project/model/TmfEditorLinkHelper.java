@@ -20,6 +20,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
@@ -52,7 +53,9 @@ public class TmfEditorLinkHelper implements ILinkHelper {
                     return StructuredSelection.EMPTY;
                 }
 
-                final TmfProjectElement project = TmfProjectRegistry.getProject(file.getProject(), true);
+                final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
+                ncp.getChildren(file.getProject()); // force the model to be populated
+                final TmfProjectElement project = TmfProjectRegistry.getProject(file.getProject());
 
                 // Check for experiments, traces which are folders or traces which are files
                 if (traceTypeId.equals(TmfExperiment.class.getCanonicalName())) {

@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +23,6 @@ import java.util.regex.Pattern;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.IHandlerListener;
-import org.eclipse.core.filesystem.URIUtil;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -39,7 +34,6 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDESessionSettings;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.SystemTapScriptLaunch;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.StapErrorParser;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
@@ -83,9 +77,7 @@ public class RunScriptHandler extends AbstractHandler {
 	private String tmpfileName = null;
 	private String serverfileName = null;
 	private IPath path;
-	private IProject project;
-	private SystemTapScriptLaunch launch;
-	private final List<String> cmdList;
+	private List<String> cmdList;
 
 
 	public RunScriptHandler(){
@@ -97,24 +89,6 @@ public class RunScriptHandler extends AbstractHandler {
 	 */
 	public void setPath(IPath path){
 		this.path = path;
-		URI uri = URIUtil.toURI(path);
-		IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uri);
-		if (files.length > 0)
-			this.project = files[0].getProject();
-	}
-	
-	/**
-	 * @since 2.1
-	 */
-	public IProject getProject() {
-		return project;
-	}
-
-	/**
-	 * @since 2.3
-	 */
-	public void setLaunch(SystemTapScriptLaunch launch){
-		this.launch = launch;
 	}
 
 	/**
@@ -174,46 +148,42 @@ public class RunScriptHandler extends AbstractHandler {
 		findTargetEditor();
 		if(isValid()) {
 			if(getRunLocal() == false) {
-				try {
+				try{
+
 					ScpClient scpclient = new ScpClient();
 					serverfileName = fileName.substring(fileName.lastIndexOf('/')+1);
 					tmpfileName="/tmp/"+ serverfileName; //$NON-NLS-1$
-					scpclient.transfer(fileName,tmpfileName);
-				} catch (JSchException e) {
-					ErrorDialog.openError(PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow().getShell(),
-							Localization.getString("RunScriptHandler.serverError"), Localization.getString("RunScriptHandler.serverError"), //$NON-NLS-1$ //$NON-NLS-2$
-							new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, Localization.getString("RunScriptHandler.checkCredentials"))); //$NON-NLS-1$
-					return null;
-				} catch (IOException e) {
-					ExceptionErrorDialog.openError(Localization.getString("RunScriptHandler.ioError"), e); //$NON-NLS-1$
-					return null;
-				}
+					 scpclient.transfer(fileName,tmpfileName);
+			        } catch (JSchException e) {
+						ErrorDialog.openError(PlatformUI.getWorkbench()
+								.getActiveWorkbenchWindow().getShell(),
+								Localization.getString("RunScriptHandler.serverError"), Localization.getString("RunScriptHandler.serverError"), //$NON-NLS-1$ //$NON-NLS-2$
+								new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, Localization.getString("RunScriptHandler.checkCredentials"))); //$NON-NLS-1$
+						return null;
+					} catch (IOException e) {
+						ExceptionErrorDialog.openError(Localization.getString("RunScriptHandler.ioError"), e); //$NON-NLS-1$
+						return null;
+					}
 			}
 			final String[] script = buildStandardScript();
 			final String[] envVars = getEnvironmentVariables();
-			if(continueRun) {
-				Display.getDefault().asyncExec(new Runnable() {
-					@Override
+            if(continueRun)
+            {
+            	Display.getDefault().asyncExec(new Runnable() {
+            		@Override
 					public void run() {
-						final ScriptConsole console;
-						boolean local = getRunLocal();
-						if (!local) {
-							console = ScriptConsole.getInstance(serverfileName);
-						} else {
-							console = ScriptConsole.getInstance(fileName);
-						}
-						synchronized (console) {
-							if (!local) {
-								console.run(script, envVars, new StapErrorParser());
-							} else {
-								console.runLocally(script, envVars, new StapErrorParser(), getProject());
-							}
-							scriptConsoleInitialized(console);
-						}
-					}
-				});
-			}
+            			final ScriptConsole console;
+            			if(getRunLocal() == false) {
+            				console = ScriptConsole.getInstance(serverfileName);
+            				console.run(script, envVars, new StapErrorParser());
+            			} else {
+            				console = ScriptConsole.getInstance(fileName);
+            				console.runLocally(script, envVars, new StapErrorParser());
+            			}
+                        scriptConsoleInitialized(console);
+            		}
+            	});
+            }
 		}
 
 		return null;
@@ -226,9 +196,6 @@ public class RunScriptHandler extends AbstractHandler {
 	 * @since 2.0
 	 */
 	protected void scriptConsoleInitialized(ScriptConsole console){
-		if (launch != null && path != null) {
-			launch.setConsole(console);
-		}
 	}
 
 	/**

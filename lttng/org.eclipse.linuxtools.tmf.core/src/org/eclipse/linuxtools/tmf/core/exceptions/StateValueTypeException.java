@@ -51,7 +51,6 @@ public class StateValueTypeException extends Exception {
      *            Message to attach to this exception
      * @param e
      *            Cause of this exception
-     * @since 3.0
      */
     public StateValueTypeException(String message, Throwable e) {
         super(message, e);

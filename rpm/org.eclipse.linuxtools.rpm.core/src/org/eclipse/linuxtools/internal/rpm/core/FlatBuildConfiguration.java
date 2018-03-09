@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.rpm.core.IProjectConfiguration;
 public class FlatBuildConfiguration implements IProjectConfiguration {
 
 	private IProject project;
-	private List<String> configDefines = new ArrayList<>();
+	private List<String> configDefines = new ArrayList<String>();
 
 	/**
 	 * Creates the configuration for the given project.

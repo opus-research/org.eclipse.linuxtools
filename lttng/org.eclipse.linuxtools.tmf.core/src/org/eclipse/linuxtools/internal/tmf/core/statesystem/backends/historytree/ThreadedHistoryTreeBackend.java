@@ -66,7 +66,7 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
                     throws IOException {
         super(newStateFile, blockSize, maxChildren, providerVersion, startTime);
 
-        intervalQueue = new ArrayBlockingQueue<>(queueSize);
+        intervalQueue = new ArrayBlockingQueue<HTInterval>(queueSize);
         shtThread = new Thread(this, "History Tree Thread"); //$NON-NLS-1$
         shtThread.start();
     }
@@ -94,7 +94,7 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
             int providerVersion, int queueSize) throws IOException {
         super(newStateFile, providerVersion, startTime);
 
-        intervalQueue = new ArrayBlockingQueue<>(queueSize);
+        intervalQueue = new ArrayBlockingQueue<HTInterval>(queueSize);
         shtThread = new Thread(this, "History Tree Thread"); //$NON-NLS-1$
         shtThread.start();
     }
