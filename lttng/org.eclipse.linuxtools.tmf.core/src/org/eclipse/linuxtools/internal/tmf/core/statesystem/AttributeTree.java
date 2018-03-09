@@ -353,7 +353,7 @@ public final class AttributeTree {
     private void addSubAttributes(List<Integer> list, Attribute curAttribute,
             boolean recursive) {
         for (Attribute childNode : curAttribute.getSubAttributes()) {
-            list.add(Integer.valueOf(childNode.getQuark()));
+            list.add(childNode.getQuark());
             if (recursive) {
                 addSubAttributes(list, childNode, true);
             }

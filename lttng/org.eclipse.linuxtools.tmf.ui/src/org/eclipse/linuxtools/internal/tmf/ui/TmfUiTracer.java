@@ -23,13 +23,13 @@ public class TmfUiTracer {
 
     private static String pluginID = Activator.PLUGIN_ID;
 
-    static boolean ERROR   = false;
-    static boolean WARNING = false;
-    static boolean INFO    = false;
+    static Boolean ERROR   = Boolean.FALSE;
+    static Boolean WARNING = Boolean.FALSE;
+    static Boolean INFO    = Boolean.FALSE;
 
-    static boolean INDEX   = false;
-    static boolean DISPLAY = false;
-    static boolean SORTING = false;
+    static Boolean INDEX   = Boolean.FALSE;
+    static Boolean DISPLAY = Boolean.FALSE;
+    static Boolean SORTING = Boolean.FALSE;
 
     private static String LOGNAME = "traceUI.log";
     private static BufferedWriter fTraceLog = null;
@@ -163,7 +163,7 @@ public class TmfUiTracer {
         StringBuilder message = new StringBuilder("[");
         message.append(currentTime / 1000);
         message.append(".");
-        message.append(String.format("%1$03d", Long.valueOf(currentTime % 1000)));
+        message.append(String.format("%1$03d", currentTime % 1000));
         message.append("] ");
         message.append(msg);
 

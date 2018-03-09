@@ -257,9 +257,9 @@ public abstract class AbstractCheckpointCollectionTest {
         for (int i = 0; i < CHECKPOINTS_INSERT_NUM; i++) {
             if (random) {
                 Random rand = new Random();
-                list.add(Integer.valueOf(rand.nextInt(CHECKPOINTS_INSERT_NUM)));
+                list.add(rand.nextInt(CHECKPOINTS_INSERT_NUM));
             } else {
-                list.add(Integer.valueOf(i));
+                list.add(i);
             }
         }
         return list;
@@ -279,8 +279,7 @@ public abstract class AbstractCheckpointCollectionTest {
 
         for (int i = 0; i < CHECKPOINTS_INSERT_NUM; i++) {
             Integer randomCheckpoint = list.get(i);
-            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(12345 + randomCheckpoint.intValue()),
-                    new TmfLongLocation(123456L + randomCheckpoint.intValue()), 0);
+            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(12345 + randomCheckpoint), new TmfLongLocation(123456L + randomCheckpoint), 0);
             long found = fCheckpointCollection.binarySearch(checkpoint);
             assertEquals(randomCheckpoint.intValue(), found);
         }
@@ -307,9 +306,9 @@ public abstract class AbstractCheckpointCollectionTest {
         for (int i = 0; i < CHECKPOINTS_INSERT_NUM; i++) {
             if (random) {
                 Random rand = new Random();
-                list.add(Integer.valueOf(rand.nextInt(CHECKPOINTS_INSERT_NUM)));
+                list.add(rand.nextInt(CHECKPOINTS_INSERT_NUM));
             } else {
-                list.add(Integer.valueOf(i));
+                list.add(i);
             }
         }
 
@@ -319,8 +318,7 @@ public abstract class AbstractCheckpointCollectionTest {
 
         for (int i = 0; i < CHECKPOINTS_INSERT_NUM; i++) {
             Integer randomCheckpoint = list.get(i);
-            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(12345),
-                    new TmfLongLocation(123456L + randomCheckpoint.intValue()), 0);
+            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(12345), new TmfLongLocation(123456L + randomCheckpoint), 0);
             long found = fCheckpointCollection.binarySearch(checkpoint);
             assertEquals(randomCheckpoint.intValue(), found);
         }
@@ -355,14 +353,12 @@ public abstract class AbstractCheckpointCollectionTest {
     public void testBinarySearchInBetweenSameTimestamp() {
         int checkpointNum = 0;
         for (; checkpointNum < 100; checkpointNum++) {
-            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(0),
-                    new TmfLongLocation(checkpointNum), checkpointNum);
+            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(0), new TmfLongLocation((long) checkpointNum), checkpointNum);
             fCheckpointCollection.insert(checkpoint);
         }
 
         for (; checkpointNum < 200; checkpointNum++) {
-            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(1),
-                    new TmfLongLocation(checkpointNum), checkpointNum);
+            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(1), new TmfLongLocation((long) checkpointNum), checkpointNum);
             fCheckpointCollection.insert(checkpoint);
         }
 

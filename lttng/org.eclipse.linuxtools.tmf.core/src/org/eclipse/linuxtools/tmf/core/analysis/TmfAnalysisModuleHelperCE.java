@@ -59,7 +59,7 @@ public class TmfAnalysisModuleHelperCE implements IAnalysisModuleHelper {
 
     @Override
     public boolean isAutomatic() {
-        return Boolean.parseBoolean(fCe.getAttribute(TmfAnalysisType.AUTOMATIC_ATTR));
+        return Boolean.valueOf(fCe.getAttribute(TmfAnalysisType.AUTOMATIC_ATTR));
     }
 
     @Override
@@ -90,7 +90,7 @@ public class TmfAnalysisModuleHelperCE implements IAnalysisModuleHelper {
                 String classAppliesVal = element.getAttribute(TmfAnalysisType.APPLIES_ATTR);
                 boolean classApplies = true;
                 if (classAppliesVal != null) {
-                    classApplies = Boolean.parseBoolean(classAppliesVal);
+                    classApplies = Boolean.valueOf(classAppliesVal);
                 }
                 if (classApplies) {
                     applies = applyclass.isAssignableFrom(traceclass);

@@ -63,19 +63,15 @@ public class CriteriaTest {
 
         Criteria copy = new Criteria(criteria);
 
-        assertBoolEquals(criteria.isAsyncMessageReturnSelected(), copy.isAsyncMessageReturnSelected());
-        assertBoolEquals(criteria.isAsyncMessageSelected(), copy.isAsyncMessageSelected());
-        assertBoolEquals(criteria.isCaseSenstiveSelected(), copy.isCaseSenstiveSelected());
-        assertBoolEquals(criteria.isLifeLineSelected(), copy.isLifeLineSelected());
-        assertBoolEquals(criteria.isStopSelected(), copy.isStopSelected());
-        assertBoolEquals(criteria.isSyncMessageReturnSelected(), copy.isSyncMessageReturnSelected());
-        assertBoolEquals(criteria.isSyncMessageSelected(), copy.isSyncMessageSelected());
-        assertEquals(criteria.getExpression(), copy.getExpression());
-        assertEquals(criteria.getPattern().pattern(), copy.getPattern().pattern());
-    }
-
-    private static void assertBoolEquals(boolean a, boolean b) {
-        assertEquals(Boolean.valueOf(a), Boolean.valueOf(b));
+        assertEquals("testCriteriaCriteria", criteria.isAsyncMessageReturnSelected(), copy.isAsyncMessageReturnSelected());
+        assertEquals("testCriteriaCriteria", criteria.isAsyncMessageSelected(), copy.isAsyncMessageSelected());
+        assertEquals("testCriteriaCriteria", criteria.isCaseSenstiveSelected(), copy.isCaseSenstiveSelected());
+        assertEquals("testCriteriaCriteria", criteria.isLifeLineSelected(), copy.isLifeLineSelected());
+        assertEquals("testCriteriaCriteria", criteria.isStopSelected(), copy.isStopSelected());
+        assertEquals("testCriteriaCriteria", criteria.isSyncMessageReturnSelected(), copy.isSyncMessageReturnSelected());
+        assertEquals("testCriteriaCriteria", criteria.isSyncMessageSelected(), copy.isSyncMessageSelected());
+        assertEquals("testCriteriaCriteria", criteria.getExpression(), copy.getExpression());
+        assertEquals("testCriteriaCriteria", criteria.getPattern().pattern(), copy.getPattern().pattern());
     }
 
     /**

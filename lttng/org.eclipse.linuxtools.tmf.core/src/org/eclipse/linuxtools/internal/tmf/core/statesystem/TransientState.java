@@ -76,7 +76,7 @@ class TransientState {
 
     long getOngoingStartTime(int index) throws AttributeNotFoundException {
         checkValidAttribute(index);
-        return ongoingStateStartTimes.get(index).longValue();
+        return ongoingStateStartTimes.get(index);
     }
 
     void changeOngoingStateValue(int index, ITmfStateValue newValue)
@@ -94,8 +94,8 @@ class TransientState {
      */
     ITmfStateInterval getOngoingInterval(int quark) throws AttributeNotFoundException {
         checkValidAttribute(quark);
-        return new TmfStateInterval(ongoingStateStartTimes.get(quark).longValue(),
-                -1, quark, ongoingStateInfo.get(quark));
+        return new TmfStateInterval(ongoingStateStartTimes.get(quark), -1, quark,
+                ongoingStateInfo.get(quark));
     }
 
     private void checkValidAttribute(int quark) throws AttributeNotFoundException {
@@ -123,7 +123,7 @@ class TransientState {
 
         for (ITmfStateInterval interval : newStateIntervals) {
             ongoingStateInfo.add(interval.getStateValue());
-            ongoingStateStartTimes.add(Long.valueOf(interval.getStartTime()));
+            ongoingStateStartTimes.add(interval.getStartTime());
             stateValueTypes.add(interval.getStateValue().getType());
         }
     }
@@ -144,9 +144,9 @@ class TransientState {
         stateValueTypes.add(Type.NULL);
 
         if (backend == null) {
-            ongoingStateStartTimes.add(Long.valueOf(0L));
+            ongoingStateStartTimes.add(0L);
         } else {
-            ongoingStateStartTimes.add(Long.valueOf(backend.getStartTime()));
+            ongoingStateStartTimes.add(backend.getStartTime());
         }
     }
 
@@ -166,7 +166,7 @@ class TransientState {
      *         moment in time, false if it's not
      */
     boolean hasInfoAboutStateOf(long time, int quark) {
-        return (this.isActive() && time >= ongoingStateStartTimes.get(quark).longValue());
+        return (this.isActive() && time >= ongoingStateStartTimes.get(quark));
     }
 
     /**
@@ -223,17 +223,17 @@ class TransientState {
             return;
         }
 
-        if (backend != null && ongoingStateStartTimes.get(index).longValue() < eventTime) {
+        if (backend != null && ongoingStateStartTimes.get(index) < eventTime) {
             /*
              * These two conditions are necessary to create an interval and
              * update ongoingStateInfo.
              */
-            backend.insertPastState(ongoingStateStartTimes.get(index).longValue(),
+            backend.insertPastState(ongoingStateStartTimes.get(index),
                     eventTime - 1, /* End Time */
                     index, /* attribute quark */
                     ongoingStateInfo.get(index)); /* StateValue */
 
-            ongoingStateStartTimes.set(index, Long.valueOf(eventTime));
+            ongoingStateStartTimes.set(index, eventTime);
         }
         ongoingStateInfo.set(index, value);
         return;
@@ -262,8 +262,8 @@ class TransientState {
              * to the query.
              */
             if (this.hasInfoAboutStateOf(t, i)) {
-                interval = new TmfStateInterval(ongoingStateStartTimes.get(i).longValue(),
-                        -1, i, ongoingStateInfo.get(i));
+                interval = new TmfStateInterval(ongoingStateStartTimes.get(i), -1,
+                        i, ongoingStateInfo.get(i));
                 stateInfo.set(i, interval);
             }
         }
@@ -278,7 +278,7 @@ class TransientState {
         assert (this.isActive);
 
         for (int i = 0; i < ongoingStateInfo.size(); i++) {
-            if (ongoingStateStartTimes.get(i).longValue() > endTime) {
+            if (ongoingStateStartTimes.get(i) > endTime) {
                 /*
                  * Handle the cases where trace end > timestamp of last state
                  * change. This can happen when inserting "future" changes.
@@ -286,7 +286,7 @@ class TransientState {
                 continue;
             }
             try {
-                backend.insertPastState(ongoingStateStartTimes.get(i).longValue(),
+                backend.insertPastState(ongoingStateStartTimes.get(i),
                         endTime, /* End Time */
                         i, /* attribute quark */
                         ongoingStateInfo.get(i)); /* StateValue */
@@ -335,7 +335,7 @@ class TransientState {
         }
         writer.println("\nAttribute\tStateValue\tValid since time"); //$NON-NLS-1$
         for (int i = 0; i < ongoingStateInfo.size(); i++) {
-            writer.format("%d\t\t", Integer.valueOf(i)); //$NON-NLS-1$
+            writer.format("%d\t\t", i); //$NON-NLS-1$
             writer.print(ongoingStateInfo.get(i).toString() + "\t\t"); //$NON-NLS-1$
             writer.println(ongoingStateStartTimes.get(i).toString());
         }

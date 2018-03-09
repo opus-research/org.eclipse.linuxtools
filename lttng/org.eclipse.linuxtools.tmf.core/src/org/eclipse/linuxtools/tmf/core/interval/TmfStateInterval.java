@@ -89,7 +89,7 @@ public final class TmfStateInterval implements ITmfStateInterval {
         /* Only used for debugging */
         StringBuffer buf = new StringBuffer(start + " to "); //$NON-NLS-1$
         buf.append(end + ", "); //$NON-NLS-1$
-        buf.append(String.format("key = %4d, ", Integer.valueOf(attribute))); //$NON-NLS-1$
+        buf.append(String.format("key = %4d, ", attribute)); //$NON-NLS-1$
         buf.append("value = " + sv.toString()); //$NON-NLS-1$
         return buf.toString();
     }

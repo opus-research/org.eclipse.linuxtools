@@ -141,12 +141,11 @@ public final class TmfLocationArray implements Comparable<TmfLocationArray> {
     @Override
     public int compareTo(TmfLocationArray o) {
         for (int i = 0; i < fRanks.length; i++) {
-            long rank1 = fRanks[i];
-            long rank2 = o.fRanks[i];
-            if (rank1 < rank2) {
-                return -1;
-            } else if (rank1 > rank2) {
-                return 1;
+            Long rank1 = fRanks[i];
+            Long rank2 = o.fRanks[i];
+            int result = rank1.compareTo(rank2);
+            if (result != 0) {
+                return result;
             }
         }
         return 0;

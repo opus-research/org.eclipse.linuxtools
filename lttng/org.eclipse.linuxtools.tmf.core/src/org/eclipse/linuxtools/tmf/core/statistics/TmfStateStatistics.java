@@ -229,7 +229,7 @@ public class TmfStateStatistics implements ITmfStatistics {
         for (int i = 0; i < nb - 1; i++) {
             curTotal = getEventCountAt(curTime);
             count = curTotal - prevTotal;
-            list.add(Long.valueOf(count));
+            list.add(count);
 
             curTime += increment;
             prevTotal = curTotal;
@@ -241,7 +241,7 @@ public class TmfStateStatistics implements ITmfStatistics {
          */
         curTotal = getEventCountAt(end);
         count = curTotal - prevTotal;
-        list.add(Long.valueOf(count));
+        list.add(count);
 
         return list;
     }
@@ -293,7 +293,7 @@ public class TmfStateStatistics implements ITmfStatistics {
             for (int typeQuark : quarks) {
                 curEventName = typesStats.getAttributeName(typeQuark);
                 eventCount = endState.get(typeQuark).getStateValue().unboxInt();
-                map.put(curEventName, Long.valueOf(eventCount));
+                map.put(curEventName, eventCount);
             }
 
         } catch (TimeRangeException e) {
@@ -361,7 +361,7 @@ public class TmfStateStatistics implements ITmfStatistics {
                     if (eventCount == -1) {
                         eventCount = 0;
                     }
-                    map.put(curEventName, Long.valueOf(eventCount));
+                    map.put(curEventName, eventCount);
                 }
             } else {
                 /*
@@ -381,7 +381,7 @@ public class TmfStateStatistics implements ITmfStatistics {
                         countAtEnd = 0;
                     }
                     eventCount = countAtEnd - countAtStart;
-                    map.put(curEventName, Long.valueOf(eventCount));
+                    map.put(curEventName, eventCount);
                 }
             }
 

@@ -37,7 +37,7 @@ public class TmfContextTest {
     // Variables
     // ------------------------------------------------------------------------
 
-    private final Long aLong = Long.valueOf(12345L);
+    private final Long aLong = 12345L;
     private final TmfTimestamp aTimestamp = new TmfTimestamp();
 
     private final TmfLongLocation fLocation1 = new TmfLongLocation(aLong);

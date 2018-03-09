@@ -554,7 +554,7 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
      *            if the trace is valid
      */
     public void addResult(TraceValidationHelper traceToScan, boolean validate) {
-        fResults.put(traceToScan, Boolean.valueOf(validate));
+        fResults.put(traceToScan, validate);
     }
 
     /**
@@ -564,8 +564,8 @@ public class BatchImportTraceWizard extends Wizard implements IImportWizard {
      *            the scanned trace
      * @return whether it passes or not
      */
-    public boolean getResult(TraceValidationHelper traceToScan) {
-        return fResults.get(traceToScan).booleanValue();
+    public Boolean getResult(TraceValidationHelper traceToScan) {
+        return fResults.get(traceToScan);
     }
 
     /**

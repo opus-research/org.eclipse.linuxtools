@@ -64,7 +64,7 @@ public abstract class TmfMipmapFeature implements ITmfMipmapFeature {
         this.ss = ss;
 
         /* store the base attribute quark at level 0 */
-        this.levelQuarks.add(Integer.valueOf(baseQuark));
+        this.levelQuarks.add(baseQuark);
 
         /* create the level 0 list */
         intervals.add(new ArrayList<ITmfStateInterval>(mipmapResolution));
@@ -198,7 +198,7 @@ public abstract class TmfMipmapFeature implements ITmfMipmapFeature {
      * @return The attribute quark for this mipmap level
      */
     protected int getLevelQuark(int level) {
-        return levelQuarks.get(level).intValue();
+        return levelQuarks.get(level);
     }
 
     /**
@@ -208,7 +208,7 @@ public abstract class TmfMipmapFeature implements ITmfMipmapFeature {
      *         The attribute quark for the new mipmap level
      */
     protected void addLevelQuark(int quark) {
-        levelQuarks.add(Integer.valueOf(quark));
+        levelQuarks.add(quark);
     }
 
     /**

@@ -23,16 +23,6 @@ import java.nio.ByteBuffer;
 public final class TmfLongLocation extends TmfLocation {
 
     /**
-     * Constructor
-     *
-     * @param locationInfo
-     *            The concrete location
-     */
-    public TmfLongLocation(long locationInfo) {
-        super(Long.valueOf(locationInfo));
-    }
-
-    /**
      * The normal constructor
      *
      * @param locationInfo the concrete location
@@ -59,7 +49,7 @@ public final class TmfLongLocation extends TmfLocation {
      * @since 3.0
      */
     public TmfLongLocation(ByteBuffer bufferIn) {
-        this(bufferIn.getLong());
+        super(bufferIn.getLong());
     }
 
     @Override

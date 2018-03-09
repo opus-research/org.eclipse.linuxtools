@@ -224,7 +224,7 @@ public class TmfEventsCache {
 
             current = (start + end) / 2;
             while (current != start) {
-                if (rank < fFilterIndex.get(current).intValue()) {
+                if (rank < fFilterIndex.get(current)) {
                     end = current;
                     current = (start + end) / 2;
                 } else {
@@ -232,7 +232,7 @@ public class TmfEventsCache {
                     current = (start + end) / 2;
                 }
             }
-            startRank = fFilterIndex.size() > 0 ? fFilterIndex.get(current).intValue() : 0;
+            startRank = fFilterIndex.size() > 0 ? fFilterIndex.get(current) : 0;
         }
 
         final int index = current * fCacheSize;
@@ -330,7 +330,7 @@ public class TmfEventsCache {
                     int i = startIndex / fCacheSize;
                     if (i < fFilterIndex.size()) {
                         skipCount = startIndex - (i * fCacheSize);
-                        startIndex = fFilterIndex.get(i).intValue();
+                        startIndex = fFilterIndex.get(i);
                     }
                 }
 

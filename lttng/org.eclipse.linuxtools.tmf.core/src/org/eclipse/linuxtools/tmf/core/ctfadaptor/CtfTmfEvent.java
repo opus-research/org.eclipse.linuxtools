@@ -75,7 +75,7 @@ public class CtfTmfEvent extends TmfEvent
 
         fDeclaration = declaration;
         sourceCPU = cpu;
-        typeId = declaration.getId().longValue();
+        typeId = declaration.getId();
         eventName = declaration.getName();
 
     }
@@ -189,7 +189,7 @@ public class CtfTmfEvent extends TmfEvent
         if (getContent() != null) {
             ITmfEventField ipField = getContent().getField(CtfConstants.CONTEXT_FIELD_PREFIX + CtfConstants.IP_KEY);
             if (ipField != null && ipField.getValue() instanceof Long) {
-                long ip = ((Long) ipField.getValue()).longValue();
+                long ip = (Long) ipField.getValue();
                 callsite = getTrace().getCTFTrace().getCallsite(eventName, ip);
             }
         }

@@ -357,7 +357,7 @@ public class CtfTmfTrace extends TmfTrace
      * @since 2.1
      */
     public boolean hasEvent(final String eventName) {
-        Map<Long, IEventDeclaration> events = fTrace.getEvents(Long.valueOf(0L));
+        Map<Long, IEventDeclaration> events = fTrace.getEvents(0L);
         if (events != null) {
             for (IEventDeclaration decl : events.values()) {
                 if (decl.getName().equals(eventName)) {

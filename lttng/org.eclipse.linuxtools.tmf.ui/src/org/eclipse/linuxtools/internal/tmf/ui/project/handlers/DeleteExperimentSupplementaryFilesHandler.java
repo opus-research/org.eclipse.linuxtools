@@ -60,11 +60,11 @@ public class DeleteExperimentSupplementaryFilesHandler extends AbstractHandler {
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
         if (part == null) {
-            return Boolean.FALSE;
+            return false;
         }
         ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
         if (selectionProvider == null) {
-            return Boolean.FALSE;
+            return false;
         }
 
         ISelection selection = selectionProvider.getSelection();

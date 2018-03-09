@@ -212,7 +212,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
                     long loc  = 0;
                     long rank = 0;
                     if (location != null) {
-                        loc = ((Long) location.getLocationInfo()).longValue();
+                        loc = (Long) location.getLocationInfo();
                         rank = ITmfContext.UNKNOWN_RANK;
                     }
                     if (loc != fTrace.getFilePointer()) {
@@ -261,7 +261,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
         try {
             if (fTrace != null) {
                 if (location.getLocationInfo() instanceof Long) {
-                    return ((Long) location.getLocationInfo()).doubleValue() / fTrace.length();
+                    return (double) ((Long) location.getLocationInfo()) / fTrace.length();
                 }
             }
         } catch (final IOException e) {
@@ -277,7 +277,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
         fLock.lock();
         try {
             if (fTrace != null) {
-                return new TmfLongLocation(Long.valueOf(fTrace.getFilePointer()));
+                return new TmfLongLocation(fTrace.getFilePointer());
             }
         } catch (final IOException e) {
             e.printStackTrace();

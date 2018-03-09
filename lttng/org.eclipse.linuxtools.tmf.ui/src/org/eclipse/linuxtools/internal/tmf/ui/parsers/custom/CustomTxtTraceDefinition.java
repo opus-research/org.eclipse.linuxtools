@@ -278,7 +278,7 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
                 next = next.nextInput;
             }
             if (parentInput != null && parentInput.level > 0) {
-                int parentCount = countMap.get(parentInput).intValue();
+                int parentCount = countMap.get(parentInput);
                 if (parentCount < parentInput.getMaxCount()) {
                     nextInputs.add(parentInput);
                 }
@@ -396,7 +396,7 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
 
 		@Override
         public String toString() {
-            return "(" + (min >= 0 ? String.valueOf(min) : "?") + ',' + (max == INF ? "\u221E" : (max >= 0 ? String.valueOf(max) : "?")) + ')'; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            return "(" + (min >= 0 ? min : "?") + "," + (max == INF ? "\u221E" : (max >= 0 ? max : "?")) + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
         }
 
         @Override

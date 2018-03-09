@@ -77,7 +77,7 @@ public class TmfStatisticsViewer extends TmfViewer {
     /**
      * Refresh frequency.
      */
-    protected final long STATS_INPUT_CHANGED_REFRESH = 5000L;
+    protected final Long STATS_INPUT_CHANGED_REFRESH = 5000L;
 
     /**
      * The actual tree viewer to display
@@ -329,7 +329,7 @@ public class TmfStatisticsViewer extends TmfViewer {
 
         /* Fill in an the event counts (either cells C or D) */
         for (Map.Entry<String, Long> entry : map.entrySet()) {
-            statsData.setTypeCount(name, entry.getKey(), isGlobal, entry.getValue().longValue());
+            statsData.setTypeCount(name, entry.getKey(), isGlobal, entry.getValue());
         }
 
         /*

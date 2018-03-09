@@ -931,11 +931,11 @@ public abstract class Histogram implements ControlListener, PaintListener, KeyLi
                 new TmfTimestamp(startTime, ITmfTimestamp.NANOSECOND_SCALE).toString(),
                 new TmfTimestamp(endTime, ITmfTimestamp.NANOSECOND_SCALE).toString()));
         buffer.append(newLine);
-        buffer.append(NLS.bind(Messages.Histogram_eventCountToolTip, Integer.valueOf(nbEvents)));
+        buffer.append(NLS.bind(Messages.Histogram_eventCountToolTip, nbEvents));
         if (!HistogramScaledData.hideLostEvents) {
             final int nbLostEvents = (index >= 0) ? fScaledData.fLostEventsData[index] : 0;
             buffer.append(newLine);
-            buffer.append(NLS.bind(Messages.Histogram_lostEventCountToolTip, Integer.valueOf(nbLostEvents)));
+            buffer.append(NLS.bind(Messages.Histogram_lostEventCountToolTip, nbLostEvents));
         }
         return buffer.toString();
     }

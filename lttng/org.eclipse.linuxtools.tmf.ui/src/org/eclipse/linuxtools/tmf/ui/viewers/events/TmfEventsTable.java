@@ -371,8 +371,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 updateStatusLine(null);
                 if (fTable.getSelectionIndices().length > 0) {
                     if (e.item.getData(Key.RANK) instanceof Long) {
-                        fSelectedRank = ((Long) e.item.getData(Key.RANK)).longValue();
-                        fRawViewer.selectAndReveal(((Long) e.item.getData(Key.RANK)).longValue());
+                        fSelectedRank = (Long) e.item.getData(Key.RANK);
+                        fRawViewer.selectAndReveal((Long) e.item.getData(Key.RANK));
                     }
                     if (e.item.getData(Key.TIMESTAMP) instanceof ITmfTimestamp) {
                         final ITmfTimestamp ts = (ITmfTimestamp) e.item.getData(Key.TIMESTAMP);
@@ -432,7 +432,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
 
                 final CachedEvent cachedEvent = fCache.getEvent(index);
                 if (cachedEvent != null) {
-                    setItemData(item, cachedEvent.event, Long.valueOf(cachedEvent.rank));
+                    setItemData(item, cachedEvent.event, cachedEvent.rank);
                     return;
                 }
 
@@ -552,7 +552,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             @Override
             public void handleEvent(final Event e) {
                 if (e.data instanceof Long) {
-                    final long rank = ((Long) e.data).longValue();
+                    final long rank = (Long) e.data;
                     int index = (int) rank;
                     if (fTable.getData(Key.FILTER_OBJ) != null) {
                         index = fCache.getFilteredEventIndex(rank) + 1; // +1 for top filter status row
@@ -803,9 +803,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         };
 
         class ToggleBookmarkAction extends Action {
-            Long fRank;
+            long fRank;
 
-            public ToggleBookmarkAction(final String text, final Long rank) {
+            public ToggleBookmarkAction(final String text, final long rank) {
                 super(text);
                 fRank = rank;
             }
@@ -1006,7 +1006,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      * @param rank
      *            Which rank this event has in the trace/experiment
      */
-    protected void setItemData(final TableItem item, final ITmfEvent event, final Long rank) {
+    protected void setItemData(final TableItem item, final ITmfEvent event, final long rank) {
         final ITmfEventField[] fields = extractItemFields(event);
         final String[] content = new String[fields.length];
         for (int i = 0; i < fields.length; i++) {
@@ -1022,7 +1022,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         if (markerId != null) {
             bookmark = true;
             try {
-                final IMarker marker = fBookmarksFile.findMarker(markerId.longValue());
+                final IMarker marker = fBookmarksFile.findMarker(markerId);
                 item.setData(Key.BOOKMARK, marker.getAttribute(IMarker.MESSAGE));
             } catch (final CoreException e) {
                 displayException(e);
@@ -2114,10 +2114,10 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         final IMarker bookmark = bookmarksFile.createMarker(IMarker.BOOKMARK);
                         if (bookmark.exists()) {
                             bookmark.setAttribute(IMarker.MESSAGE, message.toString());
-                            final Long rank = (Long) tableItem.getData(Key.RANK);
-                            final int location = rank.intValue();
-                            bookmark.setAttribute(IMarker.LOCATION, Integer.valueOf(location));
-                            fBookmarksMap.put(rank, Long.valueOf(bookmark.getId()));
+                            final long rank = (Long) tableItem.getData(Key.RANK);
+                            final int location = (int) rank;
+                            bookmark.setAttribute(IMarker.LOCATION, (Integer) location);
+                            fBookmarksMap.put(rank, bookmark.getId());
                             fTable.refresh();
                         }
                     } catch (final CoreException e) {
@@ -2137,7 +2137,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      */
     public void removeBookmark(final IMarker bookmark) {
         for (final Entry<Long, Long> entry : fBookmarksMap.entrySet()) {
-            if (entry.getValue().equals(Long.valueOf(bookmark.getId()))) {
+            if (entry.getValue().equals(bookmark.getId())) {
                 fBookmarksMap.remove(entry.getKey());
                 fTable.refresh();
                 return;
@@ -2145,7 +2145,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         }
     }
 
-    private void toggleBookmark(final Long rank) {
+    private void toggleBookmark(final long rank) {
         if (fBookmarksFile == null) {
             return;
         }
@@ -2153,7 +2153,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             final Long markerId = fBookmarksMap.remove(rank);
             fTable.refresh();
             try {
-                final IMarker bookmark = fBookmarksFile.findMarker(markerId.longValue());
+                final IMarker bookmark = fBookmarksFile.findMarker(markerId);
                 if (bookmark != null) {
                     bookmark.delete();
                 }
@@ -2184,8 +2184,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             for (final IMarker bookmark : bookmarksFile.findMarkers(IMarker.BOOKMARK, false, IResource.DEPTH_ZERO)) {
                 final int location = bookmark.getAttribute(IMarker.LOCATION, -1);
                 if (location != -1) {
-                    final Long rank = Long.valueOf(location);
-                    fBookmarksMap.put(rank, Long.valueOf(bookmark.getId()));
+                    final long rank = location;
+                    fBookmarksMap.put(rank, bookmark.getId());
                 }
             }
             fTable.refresh();

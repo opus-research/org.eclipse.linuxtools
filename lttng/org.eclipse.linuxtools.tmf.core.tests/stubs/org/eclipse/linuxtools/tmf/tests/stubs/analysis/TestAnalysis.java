@@ -46,17 +46,17 @@ public class TestAnalysis extends TmfAbstractAnalysisModule {
             throw new RuntimeException("The parameter should be set");
         }
         /* If PARAM_TEST is set to 0, simulate cancellation */
-        if (((Integer) getParameter(PARAM_TEST)).intValue() == 0) {
+        if ((Integer) getParameter(PARAM_TEST) == 0) {
             output = 0;
             return false;
-        } else if (((Integer) getParameter(PARAM_TEST)).intValue() == 999) {
+        } else if ((Integer) getParameter(PARAM_TEST) == 999) {
             /* just stay in an infinite loop until cancellation */
             while (!monitor.isCanceled()) {
 
             }
             return !monitor.isCanceled();
         }
-        output = ((Integer) getParameter(PARAM_TEST)).intValue();
+        output = (Integer) getParameter(PARAM_TEST);
         return true;
     }
 
@@ -69,7 +69,7 @@ public class TestAnalysis extends TmfAbstractAnalysisModule {
     public Object getParameter(String name) {
         Object value = super.getParameter(name);
         if ((value != null) && name.equals(PARAM_TEST) && (value instanceof String)) {
-            return Integer.decode((String) value);
+            return Integer.parseInt((String) value);
         }
         return value;
     }

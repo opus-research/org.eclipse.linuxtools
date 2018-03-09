@@ -54,7 +54,7 @@ final class IntegerStateValue extends TmfStateValue {
 
     @Override
     public @Nullable String toString() {
-        return String.format("%3d", Integer.valueOf(value)); //$NON-NLS-1$
+        return String.format("%3d", value); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------

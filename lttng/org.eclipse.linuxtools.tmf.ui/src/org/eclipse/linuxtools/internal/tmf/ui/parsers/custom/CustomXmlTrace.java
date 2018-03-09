@@ -144,7 +144,7 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
             if (location == null) {
                 fFile.seek(0);
             } else if (location.getLocationInfo() instanceof Long) {
-                fFile.seek(((Long) location.getLocationInfo()).longValue());
+                fFile.seek((Long) location.getLocationInfo());
             }
             String line;
             final String recordElementStart = "<" + fRecordInputElement.elementName; //$NON-NLS-1$
@@ -197,7 +197,7 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
         }
         try {
             if (location.getLocationInfo() instanceof Long) {
-                return ((Long) location.getLocationInfo()).doubleValue() / fFile.length();
+                return (double) ((Long) location.getLocationInfo()) / fFile.length();
             }
         } catch (final IOException e) {
             Activator.getDefault().logError("Error getting location ration. File: " + getPath(), e); //$NON-NLS-1$
@@ -243,9 +243,9 @@ public class CustomXmlTrace extends TmfTrace implements ITmfEventParser, ITmfPer
 
         CustomXmlEvent event = null;
         try {
-            if (fFile.getFilePointer() != ((Long) context.getLocation().getLocationInfo()).longValue() + 1)
+            if (fFile.getFilePointer() != (Long) context.getLocation().getLocationInfo() + 1)
             {
-                fFile.seek(((Long) context.getLocation().getLocationInfo()).longValue() + 1); // +1 is for the <
+                fFile.seek((Long) context.getLocation().getLocationInfo() + 1); // +1 is for the <
             }
             final StringBuffer elementBuffer = new StringBuffer("<"); //$NON-NLS-1$
             readElement(elementBuffer, fFile);

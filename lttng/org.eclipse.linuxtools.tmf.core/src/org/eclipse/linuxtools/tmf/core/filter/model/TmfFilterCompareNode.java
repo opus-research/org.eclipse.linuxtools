@@ -137,7 +137,7 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
 		}
 		if (fType == Type.NUM) {
 			try {
-				fValueNumber = NumberFormat.getInstance().parse(value);
+				fValueNumber = NumberFormat.getInstance().parse(value).doubleValue();
 			} catch (ParseException e) {
 			}
 		} else if (fType == Type.TIMESTAMP) {
@@ -162,12 +162,13 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
         if (fType == Type.NUM) {
             if (fValueNumber != null) {
                 if (value instanceof Number) {
-                    double valueDouble = ((Number) value).doubleValue();
-                    return (Double.compare(valueDouble, fValueNumber.doubleValue()) == fResult) ^ fNot;
+                    Double valueDouble = ((Number) value).doubleValue();
+                    return (valueDouble.compareTo(fValueNumber.doubleValue()) == fResult) ^ fNot;
                 }
                 try {
-                    double valueDouble = NumberFormat.getInstance().parse(value.toString()).doubleValue();
-                    return (Double.compare(valueDouble, fValueNumber.doubleValue()) == fResult)
+                    Double valueDouble = NumberFormat.getInstance().parse(value.toString())
+                                    .doubleValue();
+                    return (valueDouble.compareTo(fValueNumber.doubleValue()) == fResult)
                                     ^ fNot;
                 } catch (ParseException e) {
                 }

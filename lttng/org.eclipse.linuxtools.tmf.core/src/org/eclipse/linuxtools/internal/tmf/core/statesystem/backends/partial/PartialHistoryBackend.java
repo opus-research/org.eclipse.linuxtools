@@ -151,7 +151,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
          * doing a map lookup every time here (just compare with the known
          * previous one).
          */
-        if (stateStartTime <= checkpoints.floorKey(Long.valueOf(stateEndTime)).longValue()) {
+        if (stateStartTime <= checkpoints.floorKey(stateEndTime)) {
             innerHistory.insertPastState(stateStartTime, stateEndTime, quark, value);
         }
     }
@@ -198,7 +198,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         }
 
         /* Reload the previous checkpoint */
-        long checkpointTime = checkpoints.floorKey(Long.valueOf(t)).longValue();
+        long checkpointTime = checkpoints.floorKey(t);
         innerHistory.doQuery(currentStateInfo, checkpointTime);
 
         /*
@@ -299,7 +299,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
             lastCheckpointAt = 0;
 
             /* Insert a checkpoint at the start of the trace */
-            checkpoints.put(Long.valueOf(input.getStartTime()), Long.valueOf(0L));
+            checkpoints.put(input.getStartTime(), 0L);
         }
 
         @Override
@@ -310,8 +310,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
 
                 /* Check if we need to register a new checkpoint */
                 if (eventCount >= lastCheckpointAt + granularity) {
-                    checkpts.put(Long.valueOf(event.getTimestamp().getValue()),
-                            Long.valueOf(eventCount));
+                    checkpts.put(event.getTimestamp().getValue(), eventCount);
                     lastCheckpointAt = eventCount;
                 }
             }

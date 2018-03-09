@@ -178,8 +178,8 @@ public class AnalysisModuleHelperTest {
         }
 
         assertNull(module.getParameter(TestAnalysis.PARAM_TEST));
-        module.setParameter(TestAnalysis.PARAM_TEST, Integer.valueOf(1));
-        assertEquals(Integer.valueOf(1), module.getParameter(TestAnalysis.PARAM_TEST));
+        module.setParameter(TestAnalysis.PARAM_TEST, 1);
+        assertEquals(1, module.getParameter(TestAnalysis.PARAM_TEST));
 
         /* This module has a parameter with default value */
         helper = TmfAnalysisManager.getAnalysisModule(AnalysisManagerTest.MODULE_PARAM_DEFAULT);
@@ -189,9 +189,9 @@ public class AnalysisModuleHelperTest {
             fail(e1.getMessage());
             return;
         }
-        assertEquals(Integer.valueOf(3), module.getParameter(TestAnalysis.PARAM_TEST));
-        module.setParameter(TestAnalysis.PARAM_TEST, Integer.valueOf(1));
-        assertEquals(Integer.valueOf(1), module.getParameter(TestAnalysis.PARAM_TEST));
+        assertEquals(3, module.getParameter(TestAnalysis.PARAM_TEST));
+        module.setParameter(TestAnalysis.PARAM_TEST, 1);
+        assertEquals(1, module.getParameter(TestAnalysis.PARAM_TEST));
 
         /*
          * This module does not have a parameter so setting it should throw an
@@ -207,7 +207,7 @@ public class AnalysisModuleHelperTest {
         assertNull(module.getParameter(TestAnalysis.PARAM_TEST));
         Exception exception = null;
         try {
-            module.setParameter(TestAnalysis.PARAM_TEST, Integer.valueOf(1));
+            module.setParameter(TestAnalysis.PARAM_TEST, 1);
         } catch (RuntimeException e) {
             exception = e;
         }

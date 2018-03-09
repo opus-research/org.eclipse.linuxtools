@@ -130,7 +130,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
             if (location == null) {
                 fFile.seek(0);
             } else if (location.getLocationInfo() instanceof Long) {
-                fFile.seek(((Long) location.getLocationInfo()).longValue());
+                fFile.seek((Long) location.getLocationInfo());
             }
             String line;
             long rawPos = fFile.getFilePointer();
@@ -190,7 +190,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
         }
         try {
             if (location.getLocationInfo() instanceof Long) {
-                return ((Long) location.getLocationInfo()).doubleValue() / fFile.length();
+                return (double) ((Long) location.getLocationInfo()) / fFile.length();
             }
         } catch (final IOException e) {
             Activator.getDefault().logError("Error seeking event. File: " + getPath(), e); //$NON-NLS-1$
@@ -240,7 +240,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
         InputLine currentInput = null;
         if (context.inputLine.childrenInputs != null && context.inputLine.childrenInputs.size() > 0) {
             currentInput = context.inputLine.childrenInputs.get(0);
-            countMap.put(currentInput, Integer.valueOf(0));
+            countMap.put(currentInput, 0);
         }
 
         try {
@@ -264,7 +264,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
                         }
                     }
                 } else {
-                    if (countMap.get(currentInput).intValue() >= currentInput.getMinCount()) {
+                    if (countMap.get(currentInput) >= currentInput.getMinCount()) {
                         final List<InputLine> nextInputs = currentInput.getNextInputs(countMap);
                         if (nextInputs.size() == 0 || nextInputs.get(nextInputs.size() - 1).getMinCount() == 0) {
                             for (final InputLine input : getFirstLines()) {
@@ -285,9 +285,9 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
                                 event.processGroups(input, matcher);
                                 currentInput = input;
                                 if (countMap.get(currentInput) == null) {
-                                    countMap.put(currentInput, Integer.valueOf(1));
+                                    countMap.put(currentInput, 1);
                                 } else {
-                                    countMap.put(currentInput, Integer.valueOf(countMap.get(currentInput).intValue() + 1));
+                                    countMap.put(currentInput, countMap.get(currentInput) + 1);
                                 }
                                 Iterator<InputLine> iter = countMap.keySet().iterator();
                                 while (iter.hasNext()) {
@@ -298,12 +298,12 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
                                 }
                                 if (currentInput.childrenInputs != null && currentInput.childrenInputs.size() > 0) {
                                     currentInput = currentInput.childrenInputs.get(0);
-                                    countMap.put(currentInput, Integer.valueOf(0));
-                                } else if (countMap.get(currentInput).intValue() >= currentInput.getMaxCount()) {
+                                    countMap.put(currentInput, 0);
+                                } else if (countMap.get(currentInput) >= currentInput.getMaxCount()) {
                                     if (currentInput.getNextInputs(countMap).size() > 0) {
                                         currentInput = currentInput.getNextInputs(countMap).get(0);
                                         if (countMap.get(currentInput) == null) {
-                                            countMap.put(currentInput, Integer.valueOf(0));
+                                            countMap.put(currentInput, 0);
                                         }
                                         iter = countMap.keySet().iterator();
                                         while (iter.hasNext()) {
@@ -325,15 +325,15 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
                         final Matcher matcher = currentInput.getPattern().matcher(line);
                         if (matcher.find()) {
                             event.processGroups(currentInput, matcher);
-                            countMap.put(currentInput, Integer.valueOf(countMap.get(currentInput).intValue() + 1));
+                            countMap.put(currentInput, countMap.get(currentInput) + 1);
                             if (currentInput.childrenInputs != null && currentInput.childrenInputs.size() > 0) {
                                 currentInput = currentInput.childrenInputs.get(0);
-                                countMap.put(currentInput, Integer.valueOf(0));
-                            } else if (countMap.get(currentInput).intValue() >= currentInput.getMaxCount()) {
+                                countMap.put(currentInput, 0);
+                            } else if (countMap.get(currentInput) >= currentInput.getMaxCount()) {
                                 if (currentInput.getNextInputs(countMap).size() > 0) {
                                     currentInput = currentInput.getNextInputs(countMap).get(0);
                                     if (countMap.get(currentInput) == null) {
-                                        countMap.put(currentInput, Integer.valueOf(0));
+                                        countMap.put(currentInput, 0);
                                     }
                                     final Iterator<InputLine> iter = countMap.keySet().iterator();
                                     while (iter.hasNext()) {
@@ -356,7 +356,7 @@ public class CustomTxtTrace extends TmfTrace implements ITmfEventParser, ITmfPer
             Activator.getDefault().logError("Error seeking event. File: " + getPath(), e); //$NON-NLS-1$
         }
         for (final Entry<InputLine, Integer> entry : countMap.entrySet()) {
-            if (entry.getValue().intValue() < entry.getKey().getMinCount()) {
+            if (entry.getValue() < entry.getKey().getMinCount()) {
                 event = null;
             }
         }

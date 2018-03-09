@@ -444,12 +444,12 @@ public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
                 fStats.put(Messages.SyncAlgorithmFullyIncremental_quality, syncQuality);
                 fStats.put(Messages.SyncAlgorithmFullyIncremental_alpha, fAlpha);
                 fStats.put(Messages.SyncAlgorithmFullyIncremental_beta, fBeta);
-                fStats.put(Messages.SyncAlgorithmFullyIncremental_ub, (fUpperBoundList.size() == 0) ? Messages.SyncAlgorithmFullyIncremental_NA : Integer.valueOf(fUpperBoundList.size()));
-                fStats.put(Messages.SyncAlgorithmFullyIncremental_lb, (fLowerBoundList.size() == 0) ? Messages.SyncAlgorithmFullyIncremental_NA : Integer.valueOf(fLowerBoundList.size()));
-                fStats.put(Messages.SyncAlgorithmFullyIncremental_accuracy, Double.valueOf(fAlphamax.subtract(fAlphamin).doubleValue())); // -
+                fStats.put(Messages.SyncAlgorithmFullyIncremental_ub, (fUpperBoundList.size() == 0) ? Messages.SyncAlgorithmFullyIncremental_NA : fUpperBoundList.size());
+                fStats.put(Messages.SyncAlgorithmFullyIncremental_lb, (fLowerBoundList.size() == 0) ? Messages.SyncAlgorithmFullyIncremental_NA : fLowerBoundList.size());
+                fStats.put(Messages.SyncAlgorithmFullyIncremental_accuracy, fAlphamax.subtract(fAlphamin).doubleValue()); // -
                                                                                                                           // fAlphamin);
-                fStats.put(Messages.SyncAlgorithmFullyIncremental_nbmatch, (fNbMatches == 0) ? Messages.SyncAlgorithmFullyIncremental_NA : Integer.valueOf(fNbMatches));
-                fStats.put(Messages.SyncAlgorithmFullyIncremental_nbacc, (fNbAccurateMatches == 0) ? Messages.SyncAlgorithmFullyIncremental_NA : Integer.valueOf(fNbAccurateMatches));
+                fStats.put(Messages.SyncAlgorithmFullyIncremental_nbmatch, (fNbMatches == 0) ? Messages.SyncAlgorithmFullyIncremental_NA : fNbMatches);
+                fStats.put(Messages.SyncAlgorithmFullyIncremental_nbacc, (fNbAccurateMatches == 0) ? Messages.SyncAlgorithmFullyIncremental_NA : fNbAccurateMatches);
                 fStats.put(Messages.SyncAlgorithmFullyIncremental_refformula, Messages.SyncAlgorithmFullyIncremental_T_ + fReferenceTrace);
                 fStats.put(Messages.SyncAlgorithmFullyIncremental_otherformula, fAlpha + Messages.SyncAlgorithmFullyIncremental_mult + Messages.SyncAlgorithmFullyIncremental_T_ + fReferenceTrace + Messages.SyncAlgorithmFullyIncremental_add + fBeta);
             }

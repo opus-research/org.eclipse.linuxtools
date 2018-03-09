@@ -66,7 +66,7 @@ public class DeleteExperimentHandler extends AbstractHandler {
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IWorkbenchPart part = page.getActivePart();
         if (part == null) {
-            return Boolean.FALSE;
+            return false;
         }
         ISelection selection = part.getSite().getSelectionProvider().getSelection();
 

@@ -280,7 +280,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
                 /* It's fine, we'll just return the empty List */
                 return quarks;
             }
-            quarks.add(Integer.valueOf(quark));
+            quarks.add(quark);
             return quarks;
         }
 
@@ -311,7 +311,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             } catch (AttributeNotFoundException e) {
                 continue;
             }
-            quarks.add(Integer.valueOf(matchingQuark));
+            quarks.add(matchingQuark);
         }
 
         return quarks;
@@ -346,7 +346,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     public void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException {
-        int stackDepth;
+        Integer stackDepth;
         int subAttributeQuark;
         ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
@@ -374,7 +374,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         stackDepth++;
-        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark, String.valueOf(stackDepth));
+        subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark, stackDepth.toString());
 
         modifyAttribute(t, TmfStateValue.newValueInt(stackDepth), attributeQuark);
         modifyAttribute(t, value, subAttributeQuark);
@@ -404,7 +404,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateValueTypeException();
         }
 
-        int stackDepth = previousSV.unboxInt();
+        Integer stackDepth = previousSV.unboxInt();
 
         if (stackDepth <= 0) {
             /* This on the other hand should not happen... */
@@ -414,7 +414,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
         }
 
         /* The attribute should already exist at this point */
-        int subAttributeQuark = getQuarkRelative(attributeQuark, String.valueOf(stackDepth));
+        int subAttributeQuark = getQuarkRelative(attributeQuark, stackDepth.toString());
         ITmfStateValue poppedValue = queryOngoingState(subAttributeQuark);
 
         /* Update the state value of the stack-attribute */
@@ -444,7 +444,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
          * handle the recursion ourselves.
          */
         childAttributes = getSubAttributes(attributeQuark, false);
-        for (int childNodeQuark : childAttributes) {
+        for (Integer childNodeQuark : childAttributes) {
             assert (attributeQuark != childNodeQuark);
             removeAttribute(t, childNodeQuark);
         }
@@ -573,7 +573,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             /* There is nothing stored in this stack at this moment */
             return null;
         }
-        int curStackDepth = curStackStateValue.unboxInt();
+        Integer curStackDepth = curStackStateValue.unboxInt();
         if (curStackDepth <= 0) {
             /*
              * This attribute is an integer attribute, but it doesn't seem like
@@ -582,7 +582,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
             throw new StateValueTypeException();
         }
 
-        int subAttribQuark = getQuarkRelative(stackAttributeQuark, String.valueOf(curStackDepth));
+        int subAttribQuark = getQuarkRelative(stackAttributeQuark, curStackDepth.toString());
         return querySingleState(t, subAttribQuark);
     }
 

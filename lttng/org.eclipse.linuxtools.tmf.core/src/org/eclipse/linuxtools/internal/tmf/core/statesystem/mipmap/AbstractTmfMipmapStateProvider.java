@@ -157,7 +157,7 @@ public abstract class AbstractTmfMipmapStateProvider extends AbstractTmfStatePro
     // ------------------------------------------------------------------------
 
     private Set<ITmfMipmapFeature> getFeatureSet(int baseQuark, long ts, ITmfStateValue value, int mipmapFeatureBits, int resolution) {
-        Set<ITmfMipmapFeature> features = featureMap.get(Integer.valueOf(baseQuark));
+        Set<ITmfMipmapFeature> features = featureMap.get(baseQuark);
         if (features != null) {
             return features;
         }
@@ -165,7 +165,7 @@ public abstract class AbstractTmfMipmapStateProvider extends AbstractTmfStatePro
         if (value.isNull()) {
             return features;
         }
-        featureMap.put(Integer.valueOf(baseQuark), features);
+        featureMap.put(baseQuark, features);
         if (resolution > 1) {
             try {
                 if ((mipmapFeatureBits & MAX) != 0) {

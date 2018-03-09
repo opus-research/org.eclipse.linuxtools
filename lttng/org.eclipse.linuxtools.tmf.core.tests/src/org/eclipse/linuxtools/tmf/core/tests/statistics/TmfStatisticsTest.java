@@ -102,7 +102,7 @@ public abstract class TmfStatisticsTest {
 
         /* Check the total number of events */
         long count = 0;
-        for (long val : results) {
+        for (Long val : results) {
             count += val;
         }
         assertEquals(totalNbEvents, count);
@@ -357,7 +357,7 @@ public abstract class TmfStatisticsTest {
 
     private static long sumOfEvents(Map<String, Long> map) {
         long count = 0;
-        for (long val : map.values()) {
+        for (Long val : map.values()) {
             count += val;
         }
         return count;

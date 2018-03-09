@@ -63,10 +63,10 @@ public class TmfCoreTracer {
     // ------------------------------------------------------------------------
 
     // Classes tracing flags
-    static boolean COMPONENT_CLASS_ENABLED = false;
-    static boolean REQUEST_CLASS_ENABLED   = false;
-    static boolean SIGNAL_CLASS_ENABLED    = false;
-    static boolean EVENT_CLASS_ENABLED     = false;
+    static Boolean COMPONENT_CLASS_ENABLED = Boolean.FALSE;
+    static Boolean REQUEST_CLASS_ENABLED   = Boolean.FALSE;
+    static Boolean SIGNAL_CLASS_ENABLED    = Boolean.FALSE;
+    static Boolean EVENT_CLASS_ENABLED     = Boolean.FALSE;
 
     // Trace log file
     private static BufferedWriter fTraceFile;
@@ -177,12 +177,12 @@ public class TmfCoreTracer {
         StringBuilder message = new StringBuilder("[");
         message.append(currentTime / 1000);
         message.append(".");
-        message.append(String.format("%1$03d", Long.valueOf(currentTime % 1000)));
+        message.append(String.format("%1$03d", currentTime % 1000));
         message.append("] ");
 
         // Set the thread id
         message.append("[TID=");
-        message.append(String.format("%1$03d", Long.valueOf(Thread.currentThread().getId())));
+        message.append(String.format("%1$03d", Thread.currentThread().getId()));
         message.append("] ");
 
         // Append the trace message

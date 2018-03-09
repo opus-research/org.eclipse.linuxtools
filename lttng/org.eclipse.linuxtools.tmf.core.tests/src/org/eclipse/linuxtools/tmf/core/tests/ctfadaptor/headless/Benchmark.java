@@ -39,7 +39,7 @@ public class Benchmark {
         final boolean USE_TEXT = true;
 
         // Work variables
-        long nbEvent = 0L;
+        Long nbEvent = 0L;
         final Vector<Double> benchs = new Vector<Double>();
         CtfTmfTrace trace = null;
         long start, stop;
@@ -77,12 +77,12 @@ public class Benchmark {
             }
             stop = System.nanoTime();
             System.out.print('.');
-            final Double time = Double.valueOf((stop - start) / (double) nbEvent);
+            final double time = (stop - start) / (double) nbEvent;
             benchs.add(time);
         }
         System.out.println("");
         double avg = 0;
-        for (final double val : benchs) {
+        for (final Double val : benchs) {
             avg += val;
         }
         avg /= benchs.size();

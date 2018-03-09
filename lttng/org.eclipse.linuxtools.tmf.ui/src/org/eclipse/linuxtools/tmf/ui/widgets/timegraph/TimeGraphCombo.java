@@ -649,11 +649,10 @@ public class TimeGraphCombo extends Composite {
                      * Bug in Linux. The method getBounds doesn't always return the correct height.
                      * Use the difference of y position between items to calculate the height.
                      */
-                    final int height = items.get(i + 1).getBounds().y - item.getBounds().y;
-                    final Integer itemHeight = Integer.valueOf(height);
+                    Integer itemHeight = items.get(i + 1).getBounds().y - item.getBounds().y;
                     if (!itemHeight.equals(item.getData(ITEM_HEIGHT))) {
                         ITimeGraphEntry entry = (ITimeGraphEntry) item.getData();
-                        if (fTimeGraphViewer.getTimeGraphControl().setItemHeight(entry, height)) {
+                        if (fTimeGraphViewer.getTimeGraphControl().setItemHeight(entry, itemHeight)) {
                             item.setData(ITEM_HEIGHT, itemHeight);
                         }
                     }
