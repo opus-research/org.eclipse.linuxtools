@@ -19,7 +19,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({CreaterepoProjectCreatorTest.class, CreaterepoUtilsTest.class,
-	CreaterepoTreeCategoryTest.class, CreaterepoTreeTest.class,
+	CreaterepoProjectTest.class, CreaterepoTreeCategoryTest.class, CreaterepoTreeTest.class,
 	CreaterepoWizardTest.class})
 public class AllTests {
 }
