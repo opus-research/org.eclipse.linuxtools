@@ -17,26 +17,27 @@ import org.eclipse.swt.widgets.Composite;
 
 /**
  * Histogram View based on TmfChartView.
- * 
+ *
  * @author Bernd Hufmann
  */
 public class NewHistogramView extends TmfChartView {
-	/**
-	 * View ID.
-	 */
-	public static final String ID = "org.eclipse.linuxtools.tracing.examples.ui.views.HistogramView"; //$NON-NLS-1$
+    /** The view ID. */
+    public static final String ID = "org.eclipse.linuxtools.tracing.examples.ui.views.NewHistogramView"; //$NON-NLS-1$
 
-	public NewHistogramView() {
-		super(ID);
-	}
+    /**
+     * Default Constructor
+     */
+    public NewHistogramView() {
+        super(ID);
+    }
 
-	@Override
-	public void createPartControl(Composite parent) {
-		setChartViewer(new NewHistogramViewer(parent));
-		super.createPartControl(parent);
-	}
+    @Override
+    public void createPartControl(Composite parent) {
+        setChartViewer(new NewHistogramViewer(parent));
+        super.createPartControl(parent);
+    }
 
-	@Override
-	public void setFocus() {
-	}
+    @Override
+    public void setFocus() {
+    }
 }

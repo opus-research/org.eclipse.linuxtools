@@ -8,17 +8,17 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *                   (inspired by HistogramZoom implementation)
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.viewers.xycharts;
 
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
+import org.swtchart.IAxis;
 
 /**
- * Class for providing zooming based on mouse wheel. It also notifies the viewer
- * about a change of range.
+ * Class for providing zooming based on mouse wheel. It centers the zoom on
+ * mouse position. It also notifies the viewer about a change of range.
  *
  * @author Bernd Hufmann
  * @since 3.0
@@ -29,40 +29,25 @@ public class TmfMouseWheelZoomProvider extends TmfBaseProvider implements MouseW
     // Constants
     // ------------------------------------------------------------------------
     private final static double ZOOM_FACTOR = 0.8;
-
-    /** Minimum window size */
-    private long fMinWindowSize = 0;
+    private final static long MIN_WINDOW_SIZE = 1;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Standard constructor.
      *
      * @param tmfChartViewer
      *            The parent histogram object
      */
-    public TmfMouseWheelZoomProvider(TmfXYChartViewer tmfChartViewer) {
+    public TmfMouseWheelZoomProvider(ITmfChartTimeProvider tmfChartViewer) {
         super(tmfChartViewer);
         register();
     }
 
     // ------------------------------------------------------------------------
-    // Accessors
+    // TmfBaseProvider
     // ------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------
-    // Operations
-    // ------------------------------------------------------------------------
-
-    @Override
-    public synchronized void dispose() {
-        if ((getChartViewer().getControl() != null) && !getChartViewer().getControl().isDisposed()) {
-            deregister();
-        }
-    }
-
     @Override
     public void register() {
         getChart().getPlotArea().addMouseWheelListener(this);
@@ -70,53 +55,80 @@ public class TmfMouseWheelZoomProvider extends TmfBaseProvider implements MouseW
 
     @Override
     public void deregister() {
-        getChart().getPlotArea().removeMouseWheelListener(this);
+        if ((getChartViewer().getControl() != null) && !getChartViewer().getControl().isDisposed()) {
+            getChart().getPlotArea().removeMouseWheelListener(this);
+        }
+    }
+
+    @Override
+    public void refresh() {
+        // nothing to do
     }
 
     // ------------------------------------------------------------------------
     // MouseWheelListener
     // ------------------------------------------------------------------------
-
     @Override
     public synchronized void mouseScrolled(MouseEvent event) {
+        ITmfChartTimeProvider viewer = getChartViewer();
 
-        long fRangeStartTime = getChartViewer().getWindowStartTime() - getChartViewer().getXOffset();
-        long fRangeDuration = getChartViewer().getWindowDuration();
+        long oldDuration = viewer.getWindowDuration();
+
+        if (oldDuration == 0) {
+            return;
+        }
 
         // Compute the new time range
-        long requestedRange = (event.count > 0) ? Math.round(ZOOM_FACTOR * fRangeDuration) : (long) Math.ceil(fRangeDuration * (1.0 / ZOOM_FACTOR));
+        long newDuration = oldDuration;
+        double ratio = 1.0;
+        if (event.count > 0) {
+            ratio = ZOOM_FACTOR;
+            newDuration = Math.round(ZOOM_FACTOR * oldDuration);
+        } else {
+            ratio = 1.0 / ZOOM_FACTOR;
+            newDuration = (long) Math.ceil(oldDuration * ratio);
+        }
+        newDuration = Math.max(MIN_WINDOW_SIZE, newDuration);
 
-        // Distribute delta and adjust for boundaries
-        long requestedStart = validateStart(fRangeStartTime + (fRangeDuration - requestedRange) / 2);
-        long requestedEnd = validateEnd(requestedStart, requestedStart + requestedRange);
-
-        getChartViewer().updateWindow(requestedStart, requestedEnd);
+        // Center the zoom on mouse position, distribute new duration and adjust for boundaries.
+        IAxis xAxis = getChart().getAxisSet().getXAxis(0);
+        long timeAtXPos = limitXDataCoordinate(xAxis.getDataCoordinate(event.x)) + viewer.getTimeOffset();
+        // Note: ratio = newDuration/oldDuration
+        long newWindowStartTime = timeAtXPos - Math.round(ratio * (timeAtXPos - viewer.getWindowStartTime()));
+        long newWindowEndTime = validateWindowEndTime(newWindowStartTime, newWindowStartTime + newDuration);
+        newWindowStartTime = validateWindowStartTime(newWindowStartTime);
+        viewer.updateWindow(newWindowStartTime, newWindowEndTime);
     }
 
-    private long validateStart(long start) {
+    // ------------------------------------------------------------------------
+    // Helper methods
+    // ------------------------------------------------------------------------
+    private long validateWindowStartTime(long start) {
+        ITmfChartTimeProvider viewer = getChartViewer();
         long realStart = start;
-        long fAbsoluteStartTime = getChartViewer().getStartTime() - getChartViewer().getXOffset();
-        long fAbsoluteEndTime = getChartViewer().getEndTime() - getChartViewer().getXOffset();
 
-        if (realStart < fAbsoluteStartTime) {
-            realStart = fAbsoluteStartTime;
+        long startTime = viewer.getStartTime();
+        long endTime = viewer.getEndTime();
+
+        if (realStart < startTime) {
+            realStart = startTime;
         }
-        if (realStart > fAbsoluteEndTime) {
-            realStart = fAbsoluteEndTime - fMinWindowSize;
+        if (realStart > endTime) {
+            realStart = endTime;
         }
         return realStart;
     }
 
-    private long validateEnd(long start, long end) {
+    private long validateWindowEndTime(long start, long end) {
+        ITmfChartTimeProvider viewer = getChartViewer();
         long realEnd = end;
+        long endTime = viewer.getEndTime();
 
-        long fAbsoluteEndTime = getChartViewer().getEndTime() - getChartViewer().getXOffset();
-
-        if (realEnd > fAbsoluteEndTime) {
-            realEnd = fAbsoluteEndTime;
+        if (realEnd > endTime) {
+            realEnd = endTime;
         }
-        if (realEnd < start + fMinWindowSize) {
-            realEnd = start + fMinWindowSize;
+        if (realEnd < start + MIN_WINDOW_SIZE) {
+            realEnd = start + MIN_WINDOW_SIZE;
         }
         return realEnd;
     }

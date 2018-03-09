@@ -11,17 +11,15 @@
  **********************************************************************/
 package org.eclipse.linuxtools.tmf.ui.viewers.xycharts;
 
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
-import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfRangeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalThrottler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimestampFormatUpdateSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
+import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
@@ -49,69 +47,43 @@ import org.swtchart.ISeriesSet;
 public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTimeProvider {
 
     // ------------------------------------------------------------------------
-    // Constants
-    // ------------------------------------------------------------------------
-    /** Constant indicating to not use any of the default providers */
-    public final static int NONE = 0;
-    /** Constant to use for default mouse wheel zoom provider */
-    public final static int DEFAULT_WHEEL_ZOOM = 1 << 1;
-    /** Constant to use for default range zoom provider */
-    public final static int DEFAULT_RANGE_ZOOM = 1 << 2;
-    /** Constant to use for default mouse selection provider */
-    public final static int DEFAULT_MOUSE_SELECTION = 1 << 3;
-    /** Constant to use for default tool tip provider */
-    public final static int DEFAULT_TOOLTIP = 1 << 4;
-
-    /** Constant to use for all default providers */
-    public final static int DEFAULT_PROVIDERS =
-            TmfXYChartViewer.DEFAULT_WHEEL_ZOOM |
-                    TmfXYChartViewer.DEFAULT_RANGE_ZOOM |
-                    TmfXYChartViewer.DEFAULT_MOUSE_SELECTION |
-                    TmfXYChartViewer.DEFAULT_TOOLTIP;
-
-    // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
     /**
      * The offset to apply to any x position. This offset ensures better
      * precision when converting long to double and back.
      */
-    protected long fXOffset;
+    private long fTimeOffset;
     /** Start time of trace */
-    protected long fStartTime;
+    private long fStartTime;
     /** End time of trace */
-    protected long fEndTime;
+    private long fEndTime;
     /** Start time of current time range */
-    protected long fWindowStartTime;
+    private long fWindowStartTime;
     /** End time of current time range */
-    protected long fWindowEndTime;
+    private long fWindowEndTime;
     /** Duration of current time range */
-    protected long fWindowDuration;
-    /** Current selected time */
-    protected long fSelectedTime;
-
-    /**
-     * The offset to apply to any y position. This offset ensures better
-     * precision when converting long to double and back.
-     */
-    protected long fYOffset;
-
-    private TmfBaseProvider fMouseWheelZoomProvider;
-    private TmfBaseProvider fMouseDragZoomProvider;
-    private TmfBaseProvider fMouseSelectionProvider;
-    private TmfBaseProvider fToolTipProvider;
-
-    /**
-     * The trace that is displayed by this viewer
-     */
-    protected ITmfTrace fTrace;
-
+    private long fWindowDuration;
+    /** Current begin time of selection range */
+    private long fSelectionBeginTime;
+    /** Current end of selection range */
+    private long fSelectionEndTime;
+    /** The trace that is displayed by this viewer */
+    private ITmfTrace fTrace;
     /** The SWT Chart reference */
-    protected Chart fSwtChart;
-
+    private Chart fSwtChart;
     /** A signal throttler for range updates */
     private final TmfSignalThrottler fTimeRangeSyncThrottle = new TmfSignalThrottler(this, 200);
+    /** The mouse selection provider */
+    private TmfBaseProvider fMouseSelectionProvider;
+    /** The mouse drag zoom provider */
+    private TmfBaseProvider fMouseDragZoomProvider;
+    /** The mouse wheel zoom provider */
+    private TmfBaseProvider fMouseWheelZoomProvider;
+    /** The tooltip provider */
+    private TmfBaseProvider fToolTipProvider;
+    /** The middle mouse drag provider */
+    private TmfBaseProvider fMouseDragProvider;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -128,10 +100,8 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
      *            The label of the xAxis
      * @param yLabel
      *            The label of the yAXIS
-     * @param flags
-     *            Bit mask to choose default providers
      */
-    public TmfXYChartViewer(Composite parent, String title, String xLabel, String yLabel, int flags) {
+    public TmfXYChartViewer(Composite parent, String title, String xLabel, String yLabel) {
         super(parent, title);
         fSwtChart = new Chart(parent, SWT.NONE);
 
@@ -155,29 +125,209 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
             yAxis.getTitle().setText(yLabel);
         }
 
-        if ((flags & DEFAULT_WHEEL_ZOOM) == DEFAULT_WHEEL_ZOOM) {
-            fMouseWheelZoomProvider = new TmfMouseWheelZoomProvider(this);
-        }
-        if ((flags & DEFAULT_RANGE_ZOOM) == DEFAULT_RANGE_ZOOM) {
-            fMouseDragZoomProvider = new TmfMouseDragZoomProvider(this);
-        }
-        if ((flags & DEFAULT_MOUSE_SELECTION) == DEFAULT_MOUSE_SELECTION) {
-            fMouseSelectionProvider = new TmfMouseSelectionProvider(this);
-        }
-        if ((flags & DEFAULT_TOOLTIP) == DEFAULT_TOOLTIP) {
-            fToolTipProvider = new TmfSimpleTooltipProvider(this);
-        }
+        fMouseSelectionProvider = new TmfMouseSelectionProvider(this);
+        fMouseDragZoomProvider = new TmfMouseDragZoomProvider(this);
+        fMouseWheelZoomProvider = new TmfMouseWheelZoomProvider(this);
+        fToolTipProvider = new TmfSimpleTooltipProvider(this);
+        fMouseDragProvider = new TmfMouseDragProvider(this);
     }
 
     // ------------------------------------------------------------------------
-    // Accessors
+    // Getter/Setters
     // ------------------------------------------------------------------------
+    /**
+     * Sets the time offset to apply.
+     * @see ITmfChartTimeProvider#getTimeOffset()
+     *
+     * @param timeOffset
+     *            The time offset to apply
+     */
+    protected void setTimeOffset(long timeOffset) {
+        fTimeOffset = timeOffset;
+    }
 
-    @Override
-    public Control getControl() {
+    /**
+     * Sets the start time of the trace
+     *
+     * @param startTime
+     *            The start time to set
+     */
+    protected void setStartTime(long startTime) {
+        fStartTime = startTime;
+    }
+
+    /**
+     * Sets the end time of the trace
+     *
+     * @param endTime
+     *            The start time to set
+     */
+    protected void setEndTime(long endTime) {
+        fEndTime = endTime;
+    }
+
+    /**
+     * Sets the start time of the current time range window
+     *
+     * @param windowStartTime
+     *            The start time to set
+     */
+    protected void setWindowStartTime(long windowStartTime) {
+        fWindowStartTime = windowStartTime;
+    }
+
+    /**
+     * Sets the end time of the current time range window
+     *
+     * @param windowEndTime
+     *            The start time to set
+     */
+    protected void setWindowEndTime(long windowEndTime) {
+        fWindowEndTime = windowEndTime;
+    }
+
+    /**
+     * Sets the start time of the current time range window
+     *
+     * @param windowDuration
+     *            The start time to set
+     */
+    protected void setWindowDuration(long windowDuration) {
+        fWindowDuration = windowDuration;
+    }
+
+    /**
+     * Sets the begin time of the selection range.
+     *
+     * @param selectionBeginTime
+     *            The begin time to set
+     */
+    protected void setSelectionBeginTime(long selectionBeginTime) {
+        fSelectionBeginTime = selectionBeginTime;
+    }
+
+    /**
+     * Sets the end time of the selection range.
+     *
+     * @param selectionEndTime
+     *            The end time to set
+     */
+    protected void setSelectionEndTime(long selectionEndTime) {
+        fSelectionEndTime = selectionEndTime;
+    }
+
+    /**
+     * Sets the trace that is displayed by this viewer.
+     *
+     * @param trace
+     *            The trace to set
+     */
+    protected void setTrace(ITmfTrace trace) {
+        fTrace = trace;
+    }
+
+    /**
+     * Gets the trace that is displayed by this viewer.
+     *
+     * @return the trace
+     */
+    protected ITmfTrace getTrace() {
+        return fTrace;
+    }
+
+    /**
+     * Sets the SWT Chart reference
+     *
+     * @param chart
+     *            The SWT chart to set.
+     */
+    protected void setSwtChart(Chart chart) {
+        fSwtChart = chart;
+    }
+
+    /**
+     * Gets the SWT Chart reference
+     *
+     * @return the SWT chart to set.
+     */
+    protected Chart getSwtChart() {
         return fSwtChart;
     }
 
+    /**
+     * Sets a mouse selection provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the mouse selection provider.
+     *
+     * @param provider
+     *            The selection provider to set
+     */
+    public void setSelectionProvider(TmfBaseProvider provider) {
+        if (fMouseSelectionProvider != null) {
+            fMouseSelectionProvider.dispose();
+        }
+        fMouseSelectionProvider = provider;
+    }
+
+    /**
+     * Sets a mouse drag zoom provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the mouse drag zoom provider.
+     *
+     * @param provider
+     *            The mouse drag zoom provider to set
+     */
+    public void setMouseDragZoomProvider(TmfBaseProvider provider) {
+        if (fMouseDragZoomProvider != null) {
+            fMouseDragZoomProvider.dispose();
+        }
+        fMouseDragZoomProvider = provider;
+    }
+
+    /**
+     * Sets a mouse wheel zoom provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the mouse wheel zoom
+     * provider.
+     *
+     * @param provider
+     *            The mouse wheel zoom provider to set
+     */
+    public void setMouseWheelZoomProvider(TmfBaseProvider provider) {
+        if (fMouseWheelZoomProvider != null) {
+            fMouseWheelZoomProvider.dispose();
+        }
+        fMouseWheelZoomProvider = provider;
+    }
+
+    /**
+     * Sets a tooltip provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the tooltip provider.
+     *
+     * @param provider
+     *            The tooltip provider to set
+     */
+    public void setTooltipProvider(TmfBaseProvider provider) {
+        if (fToolTipProvider != null) {
+            fToolTipProvider.dispose();
+        }
+        fToolTipProvider = provider;
+    }
+
+    /**
+     * Sets a mouse drag provider. An existing provider will be
+     * disposed. Use <code>null</code> to disable the mouse drag provider.
+     *
+     * @param provider
+     *            The mouse drag provider to set
+     */
+    public void setMouseDrageProvider(TmfBaseProvider provider) {
+        if (fMouseDragProvider != null) {
+            fMouseDragProvider.dispose();
+        }
+        fMouseDragProvider = provider;
+    }
+
+    // ------------------------------------------------------------------------
+    // ITmfChartTimeProvider
+    // ------------------------------------------------------------------------
     @Override
     public long getStartTime() {
         return fStartTime;
@@ -204,107 +354,57 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
     }
 
     @Override
-    public long getSelectedTime() {
-        return fSelectedTime;
+    public long getSelectionBeginTime() {
+        return fSelectionBeginTime;
     }
 
-    /**
-     * Returns the offset in x direction used for adjusting values in x
-     * direction to avoid loss of precision when converting long <-> double
-     *
-     * @return the offset in x-direction
-     */
-    public long getXOffset() {
-        return fXOffset;
+    @Override
+    public long getSelectionEndTime() {
+        return fSelectionEndTime;
     }
 
-    /**
-     * Returns the offset in y direction used for adjusting values in y
-     * direction to avoid loss of precision when converting long <-> double
-     *
-     * @return the offset in y-direction
-     */
-    public long getYOffset() {
-        return fYOffset;
+    @Override
+    public long getTimeOffset() {
+        return fTimeOffset;
     }
 
-    /**
-     * Sets a the mouse wheel zoom provider. An existing provider will be
-     * disposed.
-     *
-     * @param provider
-     *            The mouse wheel zoom provider to set
-     */
-    public void setMouseWheelZoomProvider(TmfBaseProvider provider) {
-        if (fMouseWheelZoomProvider != null) {
-            fMouseWheelZoomProvider.dispose();
+    @Override
+    public void updateSelectionRange(final long currentBeginTime, final long currentEndTime) {
+        if (fTrace != null) {
+            setSelectionBeginTime(currentBeginTime);
+            setSelectionEndTime(currentEndTime);
+
+            final ITmfTimestamp startTimestamp = new TmfTimestamp(fSelectionBeginTime, ITmfTimestamp.NANOSECOND_SCALE);
+            final ITmfTimestamp endTimestamp = new TmfTimestamp(fSelectionEndTime, ITmfTimestamp.NANOSECOND_SCALE);
+
+            TmfTimeSynchSignal signal = new TmfTimeSynchSignal(TmfXYChartViewer.this, startTimestamp, endTimestamp);
+            broadcast(signal);
         }
-        fMouseWheelZoomProvider = provider;
     }
 
-    /**
-     * Sets a the mouse drag zoom provider. An existing provider will be
-     * disposed.
-     *
-     * @param provider
-     *            The mouse drag zoom provider to set
-     */
-    public void setMouseDragZoomProvider(TmfBaseProvider provider) {
-        if (fMouseDragZoomProvider != null) {
-            fMouseDragZoomProvider.dispose();
-        }
-        fMouseDragZoomProvider = provider;
-    }
+    @Override
+    public void updateWindow(long windowStartTime, long windowEndTime) {
 
-    /**
-     * Sets a the mouse selection provider. An existing provider will be
-     * disposed.
-     *
-     * @param provider
-     *            The selection provider to set
-     */
-    public void setSelectionProvider(TmfBaseProvider provider) {
-        if (fMouseSelectionProvider != null) {
-            fMouseSelectionProvider.dispose();
-        }
-        fMouseSelectionProvider = provider;
-    }
+        setWindowStartTime(windowStartTime);
+        setWindowEndTime(windowEndTime);
+        fWindowDuration = windowEndTime - windowStartTime;
 
-    /**
-     * Sets a the tooltip provider. An existing provider will be disposed.
-     *
-     * @param provider
-     *            The tooltip provider to set
-     */
-    public void setTooltipProvider(TmfBaseProvider provider) {
-        if (fToolTipProvider != null) {
-            fToolTipProvider.dispose();
-        }
-        fToolTipProvider = provider;
+        // Build the new time range; keep the current time
+        TmfTimeRange timeRange = new TmfTimeRange(
+                new TmfTimestamp(fWindowStartTime, ITmfTimestamp.NANOSECOND_SCALE),
+                new TmfTimestamp(fWindowEndTime, ITmfTimestamp.NANOSECOND_SCALE));
+
+        // Send the  signal
+        TmfRangeSynchSignal signal = new TmfRangeSynchSignal(this, timeRange);
+        fTimeRangeSyncThrottle.queue(signal);
     }
 
     // ------------------------------------------------------------------------
-    // Operations
+    // ITmfViewer interface
     // ------------------------------------------------------------------------
-    /**
-     * A Method to initialize the viewer with a trace reference.
-     *
-     * @param trace
-     *            A trace to apply in the viewer
-     */
-    public void initialize(ITmfTrace trace) {
-        fTrace = trace;
-
-        long timestamp = TmfTraceManager.getInstance().getSelectionBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-        long startTime = TmfTraceManager.getInstance().getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-
-        fSelectedTime = timestamp;
-        fStartTime = fTrace.getStartTime().getValue();
-        fWindowStartTime = fStartTime;
-        fWindowDuration = fTrace.getInitialRangeOffset().getValue();
-        fEndTime = startTime + getWindowDuration();
-        fWindowEndTime = fEndTime;
-        clearView();
+    @Override
+    public Control getControl() {
+        return fSwtChart;
     }
 
     @Override
@@ -312,12 +412,13 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
         fSwtChart.redraw();
     }
 
+    // ------------------------------------------------------------------------
+    // TmfComponent
+    // ------------------------------------------------------------------------
     @Override
     public void dispose() {
         super.dispose();
-        if (fMouseWheelZoomProvider != null) {
-            fMouseWheelZoomProvider.dispose();
-        }
+        fSwtChart.dispose();
 
         if (fMouseSelectionProvider != null) {
             fMouseSelectionProvider.dispose();
@@ -327,83 +428,116 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
             fMouseDragZoomProvider.dispose();
         }
 
+        if (fMouseWheelZoomProvider != null) {
+            fMouseWheelZoomProvider.dispose();
+        }
+
         if (fToolTipProvider != null) {
             fToolTipProvider.dispose();
         }
 
-        fSwtChart.dispose();
-    }
-
-    /**
-     * Clears the view content.
-     */
-    public void clearView() {
-        if (!fSwtChart.isDisposed()) {
-            ISeriesSet set = fSwtChart.getSeriesSet();
-            ISeries[] series = set.getSeries();
-            for (int i = 0; i < series.length; i++) {
-                set.deleteSeries(series[i].getId());
-            }
-            fSwtChart.redraw();
+        if (fMouseDragProvider != null) {
+            fMouseDragProvider.dispose();
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Operations
+    // ------------------------------------------------------------------------
     /**
-     * Updates the time range.
+     * A Method to load a trace into the viewer.
      *
-     * @param startTime
-     *            A start time
-     * @param endTime
-     *            A end time.
+     * @param trace
+     *            A trace to apply in the viewer
      */
-    public void updateWindow(long startTime, long endTime) {
+    public void loadTrace(ITmfTrace trace) {
+        fTrace = trace;
 
-        fWindowStartTime = startTime + fXOffset;
-        fWindowEndTime = endTime + fXOffset;
-        fWindowDuration = endTime - startTime;
+        long timestamp = TmfTraceManager.getInstance().getSelectionBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        long windowStartTime = TmfTraceManager.getInstance().getCurrentRange().getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        long startTime = fTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        long endTime = fTrace.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
-        // Build the new time range; keep the current time
-        TmfTimeRange timeRange = new TmfTimeRange(
-                new TmfTimestamp(fWindowStartTime, ITmfTimestamp.NANOSECOND_SCALE),
-                new TmfTimestamp(fWindowEndTime, ITmfTimestamp.NANOSECOND_SCALE));
-
-        // Send the signal
-        TmfRangeSynchSignal signal = new TmfRangeSynchSignal(this, timeRange);
-        fTimeRangeSyncThrottle.queue(signal);
+        setSelectionBeginTime(timestamp);
+        setSelectionEndTime(timestamp);
+        setStartTime(startTime);
+        setWindowStartTime(windowStartTime);
+        setWindowDuration(fTrace.getInitialRangeOffset().getValue());
+        setEndTime(endTime);
+        setWindowEndTime(windowStartTime + getWindowDuration());
+        clearContent();
+        updateContent();
     }
 
     /**
-     * Method to notify about a change of the current selected time.
-     *
-     * @param currentTime
-     *            The current selected time
+     * Resets the content of the viewer
      */
-    public void updateCurrentTime(final long currentTime) {
-        if (fTrace != null) {
-            fSelectedTime = currentTime + fXOffset;
-            // Use a request to get the nearest exact time stamp
-            TmfTimeRange timeRange = new TmfTimeRange(new TmfTimestamp(fSelectedTime, ITmfTimestamp.NANOSECOND_SCALE), TmfTimestamp.BIG_CRUNCH);
-            TmfEventRequest request = new TmfEventRequest(ITmfEvent.class, timeRange, 0, 1, ExecutionType.FOREGROUND) {
-                @Override
-                public void handleData(ITmfEvent event) {
-                    if (event != null) {
-                        TmfTimeSynchSignal signal = new TmfTimeSynchSignal(TmfXYChartViewer.this, event.getTimestamp());
-                        TmfSignalManager.dispatchSignal(signal);
-                    }
-                }
-            };
-            fTrace.sendRequest(request);
-        }
+    public void reset() {
+        // Reset the internal data
+        setSelectionBeginTime(0);
+        setSelectionEndTime(0);
+        setStartTime(0);
+        setWindowStartTime(0);
+        setWindowDuration(0);
+        setEndTime(0);
+        setWindowEndTime(0);
+        setTrace(null);
+        clearContent();
     }
 
     /**
-     * Method to implement to create the chart content.
+     * Method to implement to update the chart content.
      */
-    abstract protected void updateContent();
+    protected abstract void updateContent();
 
     // ------------------------------------------------------------------------
     // Signal Handler
     // ------------------------------------------------------------------------
+
+    /**
+     * Signal handler for handling of the trace opened signal.
+     *
+     * @param signal
+     *            The trace opened signal {@link TmfTraceOpenedSignal}
+     */
+    @TmfSignalHandler
+    public void traceOpened(TmfTraceOpenedSignal signal) {
+        fTrace = signal.getTrace();
+        loadTrace(getTrace());
+    }
+
+    /**
+     * Signal handler for handling of the trace selected signal.
+     *
+     * @param signal
+     *            The trace selected signal {@link TmfTraceSelectedSignal}
+     */
+    @TmfSignalHandler
+    public void traceSelected(TmfTraceSelectedSignal signal) {
+        if (fTrace != signal.getTrace()) {
+            fTrace = signal.getTrace();
+            loadTrace(getTrace());
+        }
+    }
+
+    /**
+     * Signal handler for handling of the trace closed signal.
+     *
+     * @param signal
+     *            The trace closed signal {@link TmfTraceClosedSignal}
+     */
+    @TmfSignalHandler
+    public void traceClosed(TmfTraceClosedSignal signal) {
+
+        if (signal.getTrace() != fTrace) {
+            return;
+        }
+
+        // Reset the internal data
+        fTrace = null;
+        reset();
+    }
+
     /**
      * Signal handler for handling of the time synch signal.
      *
@@ -411,12 +545,14 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
      *            The time synch signal {@link TmfTimeSynchSignal}
      */
     @TmfSignalHandler
-    public void currentTimeUpdated(TmfTimeSynchSignal signal) {
+    public void selectionRangeUpdated(TmfTimeSynchSignal signal) {
         if ((signal.getSource() != this) && (fTrace != null)) {
             ITmfTimestamp selectedTime = signal.getBeginTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
-            fSelectedTime = selectedTime.getValue();
-            if (fMouseSelectionProvider instanceof TmfMouseSelectionProvider) {
-                ((TmfMouseSelectionProvider) fMouseSelectionProvider).setSelectedTime(selectedTime.getValue() - fXOffset);
+            ITmfTimestamp selectedEndTime = signal.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE);
+            setSelectionBeginTime(selectedTime.getValue());
+            setSelectionEndTime(selectedEndTime.getValue());
+            if (fMouseSelectionProvider != null) {
+                fMouseSelectionProvider.refresh();
             }
         }
     }
@@ -441,39 +577,14 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
                 // Update the time range
                 long windowStartTime = range.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 long windowEndTime = range.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
-                long windowSpan = windowEndTime - windowStartTime;
+                long windowDuration = windowEndTime - windowStartTime;
 
-                fWindowStartTime = windowStartTime;
-                fWindowEndTime = windowEndTime;
-                fWindowDuration = windowSpan;
+                setWindowStartTime(windowStartTime);
+                setWindowEndTime(windowEndTime);
+                setWindowDuration(windowDuration);
             }
         }
         updateContent();
-    }
-
-    /**
-     * Signal handler for handling of the trace closed signal.
-     *
-     * @param signal
-     *            The trace closed signal {@link TmfTraceClosedSignal}
-     */
-    @TmfSignalHandler
-    public void traceClosed(TmfTraceClosedSignal signal) {
-
-        if (signal.getTrace() != fTrace) {
-            return;
-        }
-
-        // Initialize the internal data
-        fTrace = null;
-        fStartTime = 0;
-        fEndTime = 0;
-        fWindowStartTime = 0;
-        fWindowEndTime = 0;
-        fWindowDuration = 0;
-        fSelectedTime = 0;
-
-        clearView();
     }
 
     /**
@@ -494,8 +605,8 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
         long traceStartTime = fullRange.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         long traceEndTime = fullRange.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
-        fStartTime = traceStartTime;
-        fEndTime = traceEndTime;
+        setStartTime(traceStartTime);
+        setEndTime(traceEndTime);
     }
 
     /**
@@ -513,14 +624,13 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
         long traceStartTime = fullRange.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
         long traceEndTime = fullRange.getEndTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
 
-        fStartTime = traceStartTime;
-        fEndTime = traceEndTime;
-        fWindowStartTime = getStartTime();
-        fWindowEndTime = getStartTime() + getWindowDuration();
+        setStartTime(traceStartTime);
+        setEndTime(traceEndTime);
     }
 
     /**
-     * Signal handler for handling of the trace updated signal.
+     * Signal handler for handling the signal that notifies about an updated
+     * timestamp format.
      *
      * @param signal
      *            The trace updated signal
@@ -535,6 +645,21 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
     // ------------------------------------------------------------------------
     // Helper Methods
     // ------------------------------------------------------------------------
+
+    /**
+     * Clears the view content.
+     */
+    protected void clearContent() {
+        if (!fSwtChart.isDisposed()) {
+            ISeriesSet set = fSwtChart.getSeriesSet();
+            ISeries[] series = set.getSeries();
+            for (int i = 0; i < series.length; i++) {
+                set.deleteSeries(series[i].getId());
+            }
+            fSwtChart.redraw();
+        }
+    }
+
     /**
      * Returns the current or default display.
      *
@@ -548,4 +673,5 @@ public abstract class TmfXYChartViewer extends TmfViewer implements ITmfChartTim
         }
         return display;
     }
+
 }

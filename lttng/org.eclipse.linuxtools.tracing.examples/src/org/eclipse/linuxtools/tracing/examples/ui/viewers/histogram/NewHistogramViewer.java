@@ -17,93 +17,80 @@ import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
-import org.eclipse.linuxtools.tmf.ui.viewers.xycharts.TmfBarChartViewer;
-import org.eclipse.linuxtools.tmf.ui.viewers.xycharts.TmfHistogramTooltipProvider;
-import org.eclipse.linuxtools.tmf.ui.viewers.xycharts.TmfXYChartViewer;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
+import org.eclipse.linuxtools.tmf.ui.viewers.xycharts.barcharts.TmfBarChartViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.swtchart.Chart;
 import org.swtchart.IAxis;
 import org.swtchart.ISeries;
 import org.swtchart.LineStyle;
 
 /**
  * Histogram Viewer implementation based on TmfBarChartViewer.
- * 
+ *
  * @author Alexandre Montplaisir
  * @author Bernd Hufmann
  */
+@SuppressWarnings("restriction")
 public class NewHistogramViewer extends TmfBarChartViewer {
 
-	public NewHistogramViewer(Composite parent) {
-		super(parent, null, null, null, TmfXYChartViewer.DEFAULT_PROVIDERS,
-				TmfBarChartViewer.MINIMUM_BAR_WIDTH);
-		// Replace default tool tip provider
-		setTooltipProvider(new TmfHistogramTooltipProvider(this));
+    /**
+     * Creates a Histogram Viewer instance.
+     * @param parent
+     *            The parent composite to draw in.
+     */
+    public NewHistogramViewer(Composite parent) {
+        super(parent, null, null, null, TmfBarChartViewer.MINIMUM_BAR_WIDTH);
 
-		IAxis xAxis = fSwtChart.getAxisSet().getXAxis(0);
-		IAxis yAxis = fSwtChart.getAxisSet().getYAxis(0);
+        Chart swtChart = getSwtChart();
 
-		/* Hide the grid */
-		xAxis.getGrid().setStyle(LineStyle.NONE);
-		yAxis.getGrid().setStyle(LineStyle.NONE);
+        IAxis xAxis = swtChart.getAxisSet().getXAxis(0);
+        IAxis yAxis = swtChart.getAxisSet().getYAxis(0);
 
-		/* Hide the legend */
-		fSwtChart.getLegend().setVisible(false);
+        /* Hide the grid */
+        xAxis.getGrid().setStyle(LineStyle.NONE);
+        yAxis.getGrid().setStyle(LineStyle.NONE);
 
-		addSeries("Number of events", Display.getDefault().getSystemColor( //$NON-NLS-1$
-				SWT.COLOR_BLUE).getRGB());
-	}
+        /* Hide the legend */
+        swtChart.getLegend().setVisible(false);
 
-	@Override
-	protected void readData(final ISeries series, final long start,
-			final long end, final int nb) {
-		if (fTrace != null) {
-			final double y[] = new double[nb];
+        addSeries("Number of events", Display.getDefault().getSystemColor(SWT.COLOR_BLUE).getRGB()); //$NON-NLS-1$
+    }
 
-			Thread thread = new Thread("Histogram viewer update") { //$NON-NLS-1$
-				@Override
-				public void run() {
-					double x[] = getXAxis(start, end, nb);
-					final long yLong[] = new long[nb];
-					Arrays.fill(y, 0.0);
+    @Override
+    protected void readData(final ISeries series, final long start, final long end, final int nb) {
+        if (getTrace() != null) {
+            final double y[] = new double[nb];
 
-					/* Add the values for each trace in the experiment */
-					if (fTrace instanceof TmfExperiment) {
-						final TmfExperiment exp = (TmfExperiment) fTrace;
-						for (ITmfTrace trace : exp.getTraces()) {
-							ITmfStatistics stats = trace.getStatistics();
-							List<Long> values = stats.histogramQuery(start,
-									end, nb);
+            Thread thread = new Thread("Histogram viewer update") { //$NON-NLS-1$
+                @Override
+                public void run() {
+                    double x[] = getXAxis(start, end, nb);
+                    final long yLong[] = new long[nb];
+                    Arrays.fill(y, 0.0);
 
-							for (int i = 0; i < nb; i++) {
-								yLong[i] += values.get(i);
-							}
-						}
-					} else {
-						ITmfStatistics stats = fTrace.getStatistics();
-						List<Long> values = stats
-								.histogramQuery(start, end, nb);
+                    /* Add the values for each trace */
+                    for (ITmfTrace trace : TmfTraceManager.getTraceSet(getTrace())) {
+                        ITmfStatistics stats = trace.getStatistics();
+                        List<Long> values = stats.histogramQuery(start, end, nb);
 
-						for (int i = 0; i < nb; i++) {
-							yLong[i] += values.get(i);
-						}
+                        for (int i = 0; i < nb; i++) {
+                            yLong[i] += values.get(i);
+                        }
+                    }
 
-					}
-					fYOffset = 0;
-					for (int i = 0; i < nb; i++) {
-						y[i] += yLong[i] - fYOffset; /*
-													 * casting from long to
-													 * double
-													 */
-					}
-					/* Update the viewer */
-					drawChart(series, x, y);
-				}
-			};
-			thread.start();
-		}
-		return;
-	}
+                    for (int i = 0; i < nb; i++) {
+                        y[i] += yLong[i]; /* casting from long to double */
+                    }
+
+                    /* Update the viewer */
+                    drawChart(series, x, y);
+                }
+            };
+            thread.start();
+        }
+        return;
+    }
 }

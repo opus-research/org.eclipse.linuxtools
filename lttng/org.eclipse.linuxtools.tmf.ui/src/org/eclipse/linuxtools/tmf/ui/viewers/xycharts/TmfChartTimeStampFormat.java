@@ -18,8 +18,8 @@ import java.util.Date;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 
 /**
- * SimpleDateFormat class that can be used for SWT chart time
- * display together with the TmfTimestampFormat implementation.
+ * SimpleDateFormat class for displaying time information in SWT charts
+ * using the TmfTimestampFormat class.
  *
  * @author Bernd Hufmann
  * @since 3.0
@@ -43,7 +43,7 @@ public class TmfChartTimeStampFormat extends SimpleDateFormat {
      * Standard Constructor
      *
      * @param offset
-     *        offset to apply before formating time (time = time + offset)
+     *        offset to apply before formatting time (time = time + offset)
      */
     public TmfChartTimeStampFormat(long offset) {
         fOffset = offset;

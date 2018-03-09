@@ -11,22 +11,27 @@
  **********************************************************************/
 package org.eclipse.linuxtools.tmf.ui.views;
 
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceClosedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.viewers.xycharts.TmfXYChartViewer;
 import org.eclipse.swt.widgets.Composite;
 
 /**
- * Base class to be used with chart viewer {@link TmfXYChartViewer}. It provides
- * base signal handling for trace open, trace selected and trace closed.
+ * Base class to be used with a chart viewer {@link TmfXYChartViewer}.
+ * It is responsible to instantiate the viewer class and load the trace
+ * into the viewer when the view is created.
  *
  * @author Bernd Hufmann
  * @since 3.0
  */
 abstract public class TmfChartView extends TmfView {
+
+    // ------------------------------------------------------------------------
+    // Attributes
+    // ------------------------------------------------------------------------
+    /** The TMF XY Chart reference */
+    private TmfXYChartViewer fChartViewer;
+    /** The Trace reference */
+    private ITmfTrace fTrace;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -42,12 +47,6 @@ abstract public class TmfChartView extends TmfView {
     }
 
     // ------------------------------------------------------------------------
-    // Attributes
-    // ------------------------------------------------------------------------
-    private TmfXYChartViewer fChartViewer;
-    private ITmfTrace fTrace;
-
-    // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
     /**
@@ -55,7 +54,7 @@ abstract public class TmfChartView extends TmfView {
      *
      * @return the TMF XY chart viewer {@link TmfXYChartViewer}
      */
-    public TmfXYChartViewer getChartViewer() {
+    protected TmfXYChartViewer getChartViewer() {
         return fChartViewer;
     }
 
@@ -63,7 +62,7 @@ abstract public class TmfChartView extends TmfView {
      * Sets the TMF XY chart viewer implementation.
      *
      * @param chartViewer
-     *            the TMF XY chart viewer {@link TmfXYChartViewer}
+     *            The TMF XY chart viewer {@link TmfXYChartViewer}
      */
     protected void setChartViewer(TmfXYChartViewer chartViewer) {
         fChartViewer = chartViewer;
@@ -74,20 +73,29 @@ abstract public class TmfChartView extends TmfView {
      *
      * @return the ITmfTrace implementation {@link ITmfTrace}
      */
-    public ITmfTrace getTrace() {
+    protected ITmfTrace getTrace() {
         return fTrace;
+    }
+
+    /**
+     * Sets the ITmfTrace implementation
+     *
+     * @param trace
+     *            The ITmfTrace implementation {@link ITmfTrace}
+     */
+    protected void setTrace(ITmfTrace trace) {
+        fTrace = trace;
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
-
     @Override
     public void createPartControl(Composite parent) {
         ITmfTrace trace = getActiveTrace();
         if (trace != null) {
-            fTrace = trace;
-            initializeViewer();
+            setTrace(trace);
+            loadTrace();
         }
     }
 
@@ -99,53 +107,12 @@ abstract public class TmfChartView extends TmfView {
     }
 
     /**
-     * Signal handler for handling of the trace opened signal.
-     *
-     * @param signal
-     *            The trace opened signal {@link TmfTraceOpenedSignal}
+     * Load the trace into view.
      */
-    @TmfSignalHandler
-    public void traceOpened(TmfTraceOpenedSignal signal) {
-        fTrace = signal.getTrace();
-        initializeViewer();
-    }
-
-    /**
-     * Signal handler for handling of the trace selected signal.
-     *
-     * @param signal
-     *            The trace selected signal {@link TmfTraceSelectedSignal}
-     */
-    @TmfSignalHandler
-    public void traceSelected(TmfTraceSelectedSignal signal) {
-        if (fTrace != signal.getTrace()) {
-            fTrace = signal.getTrace();
-            initializeViewer();
+    protected void loadTrace() {
+        if (fChartViewer != null) {
+            fChartViewer.loadTrace(fTrace);
         }
     }
 
-    /**
-     * Signal handler for handling of the trace closed signal.
-     *
-     * @param signal
-     *            The trace closed signal {@link TmfTraceClosedSignal}
-     */
-    @TmfSignalHandler
-    public void traceClosed(TmfTraceClosedSignal signal) {
-
-        if (signal.getTrace() != fTrace) {
-            return;
-        }
-
-        // Initialize the internal data
-        fTrace = null;
-        fChartViewer.clearView();
-    }
-
-    /**
-     * Initializes the chart viewer
-     */
-    protected void initializeViewer() {
-        fChartViewer.initialize(fTrace);
-    }
 }

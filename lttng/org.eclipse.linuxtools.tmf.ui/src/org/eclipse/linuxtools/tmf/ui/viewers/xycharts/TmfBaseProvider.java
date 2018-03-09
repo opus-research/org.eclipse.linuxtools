@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.tmf.ui.viewers.xycharts;
 
 import org.swtchart.Chart;
+import org.swtchart.IAxis;
 
 /**
  * Base class for any provider such as tool tip, zoom and selection providers.
@@ -25,7 +26,7 @@ abstract public class TmfBaseProvider {
     // Attributes
     // ------------------------------------------------------------------------
     /** Reference to the chart viewer */
-    private final TmfXYChartViewer fChartViewer;
+    private final ITmfChartTimeProvider fChartViewer;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -37,7 +38,7 @@ abstract public class TmfBaseProvider {
      * @param tmfChartViewer
      *            The parent histogram object
      */
-    public TmfBaseProvider(TmfXYChartViewer tmfChartViewer) {
+    public TmfBaseProvider(ITmfChartTimeProvider tmfChartViewer) {
         fChartViewer = tmfChartViewer;
     }
 
@@ -46,40 +47,109 @@ abstract public class TmfBaseProvider {
     // ------------------------------------------------------------------------
     /**
      * Returns the chart viewer reference.
-     *
      * @return the chart viewer reference
      */
-    public TmfXYChartViewer getChartViewer() {
+    public ITmfChartTimeProvider getChartViewer() {
         return fChartViewer;
     }
 
     /**
-     * Returns the SWT chart class
+     * Returns the SWT chart reference
      *
-     * @return SWT chart @see reference.
+     * @return SWT chart reference.
      */
     protected Chart getChart() {
         return (Chart) fChartViewer.getControl();
+    }
+
+    /**
+     * Limits x data coordinate to window start and window end range
+     *
+     * @param x
+     *          x to limit
+     * @return  x if x >= begin && x <= end
+     *          begin if x < begin
+     *          end if x > end
+     */
+    protected long limitXDataCoordinate(double x) {
+        ITmfChartTimeProvider viewer = getChartViewer();
+        long windowStartTime = viewer.getWindowStartTime() - viewer.getTimeOffset();
+        long windowEndTime = viewer.getWindowEndTime() - viewer.getTimeOffset();
+
+        if (x < windowStartTime) {
+            return windowStartTime;
+        }
+
+        if (x > windowEndTime) {
+            return windowEndTime;
+        }
+
+        return (long) x;
+    }
+
+    /**
+     * Limits x pixel coordinate to window start and window end range
+     *
+     * @param axisIndex
+     *          index of x-axis
+     * @param x
+     *          x to limit
+     * @return  x if x >= begin && x <= end
+     *          begin if x < begin
+     *          end if x > end
+     */
+    protected int limitXPixelCoordinate(int axisIndex, int x) {
+        ITmfChartTimeProvider viewer = getChartViewer();
+        long windowStartTime = viewer.getWindowStartTime() - viewer.getTimeOffset();
+        long windowEndTime = viewer.getWindowEndTime() - viewer.getTimeOffset();
+
+        IAxis xAxis = getChart().getAxisSet().getXAxis(0);
+        int startX = xAxis.getPixelCoordinate(windowStartTime);
+        if (x < startX) {
+            return startX;
+        }
+
+        int endX = xAxis.getPixelCoordinate(windowEndTime);
+        if (x > endX) {
+            return endX;
+        }
+
+        return x;
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
     /**
-     * Method deregisters provider from chart viewer. Subclasses may override
-     * this method to dispose any resources.
+     * Method deregisters provider from chart viewer. Subclasses may override this method
+     * to dispose any resources.
      */
     public void dispose() {
         deregister();
     }
 
     /**
-     * Method to register provider to chart viewer.
+     * Method to refresh the viewer. It will redraw the viewer.
      */
-    abstract public void register();
+    public void refresh() {
+        if (!TmfXYChartViewer.getDisplay().isDisposed()) {
+            TmfXYChartViewer.getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    getChart().redraw();
+                }
+            });
+        }
+    }
 
     /**
-     * Method to deregister provider from chart viewer.
+     * Method to register the provider to chart viewer.
      */
-    abstract public void deregister();
+    protected abstract void register();
+
+    /**
+     * Method to deregister the provider from chart viewer.
+     */
+    protected abstract void deregister();
+
 }

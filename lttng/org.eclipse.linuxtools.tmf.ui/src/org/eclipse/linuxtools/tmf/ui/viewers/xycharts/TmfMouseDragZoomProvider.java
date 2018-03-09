@@ -21,8 +21,8 @@ import org.swtchart.ICustomPaintListener;
 import org.swtchart.IPlotArea;
 
 /**
- * Class for providing zooming based on mouse drag with left mouse button. It
- * also notifies the viewer about a change of range.
+ * Class for providing zooming based on mouse drag with right mouse button.
+ * It also notifies the viewer about a change of range.
  *
  * @author Bernd Hufmann
  * @since 3.0
@@ -32,15 +32,10 @@ public class TmfMouseDragZoomProvider extends TmfBaseProvider implements MouseLi
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
-
-    /** Cached start position of mouse drag */
-    private int fStartX = 0;
-    /** Cached end position of mouse drag */
-    private int fEndX = 0;
     /** Cached start time */
-    private double fStartTime;
+    private long fStartTime;
     /** Cached end time */
-    private double fEndTime;
+    private long fEndTime;
     /** Flag indicating that an update is ongoing */
     private boolean fIsUpdate;
 
@@ -51,23 +46,16 @@ public class TmfMouseDragZoomProvider extends TmfBaseProvider implements MouseLi
      * Default constructor
      *
      * @param tmfChartViewer
-     *            the chart viewer reference.
+     *          the chart viewer reference.
      */
-    public TmfMouseDragZoomProvider(TmfXYChartViewer tmfChartViewer) {
+    public TmfMouseDragZoomProvider(ITmfChartTimeProvider tmfChartViewer) {
         super(tmfChartViewer);
         register();
     }
 
     // ------------------------------------------------------------------------
-    // Operations
+    // TmfBaseProvider
     // ------------------------------------------------------------------------
-    @Override
-    public synchronized void dispose() {
-        if ((getChartViewer().getControl() != null) && !getChartViewer().getControl().isDisposed()) {
-            deregister();
-        }
-    }
-
     @Override
     public void register() {
         getChart().getPlotArea().addMouseListener(this);
@@ -85,16 +73,22 @@ public class TmfMouseDragZoomProvider extends TmfBaseProvider implements MouseLi
     }
 
     @Override
+    public void refresh() {
+        // nothing to do
+    }
+
+    // ------------------------------------------------------------------------
+    // MouseListener
+    // ------------------------------------------------------------------------
+    @Override
     public void mouseDoubleClick(MouseEvent e) {
     }
 
     @Override
     public void mouseDown(MouseEvent e) {
-        if (e.button == 1) {
-            fStartX = e.x;
-            fEndX = fStartX;
+        if ((getChartViewer().getWindowDuration() != 0) && (e.button == 3)) {
             IAxis xAxis = getChart().getAxisSet().getXAxis(0);
-            fStartTime = xAxis.getDataCoordinate(fStartX);
+            fStartTime = limitXDataCoordinate(xAxis.getDataCoordinate(e.x));
             fEndTime = fStartTime;
             fIsUpdate = true;
         }
@@ -102,13 +96,14 @@ public class TmfMouseDragZoomProvider extends TmfBaseProvider implements MouseLi
 
     @Override
     public void mouseUp(MouseEvent e) {
-        if ((fIsUpdate) && (fStartX != fEndX)) {
-            if (fStartX > fEndX) {
-                double tmp = fStartTime;
+        if ((fIsUpdate) && (fStartTime != fEndTime)) {
+            if (fStartTime > fEndTime) {
+                long tmp = fStartTime;
                 fStartTime = fEndTime;
                 fEndTime = tmp;
             }
-            getChartViewer().updateWindow((long) fStartTime, (long) fEndTime);
+            ITmfChartTimeProvider viewer = getChartViewer();
+            viewer.updateWindow(fStartTime + viewer.getTimeOffset(), fEndTime + viewer.getTimeOffset());
         }
 
         if (fIsUpdate) {
@@ -117,28 +112,36 @@ public class TmfMouseDragZoomProvider extends TmfBaseProvider implements MouseLi
         fIsUpdate = false;
     }
 
+    // ------------------------------------------------------------------------
+    // MouseMoveListener
+    // ------------------------------------------------------------------------
     @Override
     public void mouseMove(MouseEvent e) {
         if (fIsUpdate) {
-            fEndX = e.x;
             IAxis xAxis = getChart().getAxisSet().getXAxis(0);
-            fEndTime = xAxis.getDataCoordinate(fEndX);
+            fEndTime = limitXDataCoordinate(xAxis.getDataCoordinate(e.x));
             getChart().redraw();
         }
     }
 
+    // ------------------------------------------------------------------------
+    // ICustomPaintListener
+    // ------------------------------------------------------------------------
     @Override
     public void paintControl(PaintEvent e) {
-        if (fIsUpdate && (fStartX != fEndX)) {
-            if (fStartX < fEndX) {
-                e.gc.setBackground(TmfXYChartViewer.getDisplay().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
-                e.gc.fillRectangle(fStartX, 0, fEndX - fStartX, e.height);
+        if (fIsUpdate && (fStartTime != fEndTime)) {
+            IAxis xAxis = getChart().getAxisSet().getXAxis(0);
+            int startX = xAxis.getPixelCoordinate(fStartTime);
+            int endX = xAxis.getPixelCoordinate(fEndTime);
+
+            e.gc.setBackground(TmfXYChartViewer.getDisplay().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
+            if (fStartTime < fEndTime) {
+                e.gc.fillRectangle(startX, 0, endX - startX, e.height);
             } else {
-                e.gc.setBackground(TmfXYChartViewer.getDisplay().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
-                e.gc.fillRectangle(fEndX, 0, fStartX - fEndX, e.height);
+                e.gc.fillRectangle(endX, 0, startX - endX, e.height);
             }
-            e.gc.drawLine(fStartX, 0, fStartX, e.height);
-            e.gc.drawLine(fEndX, 0, fEndX, e.height);
+            e.gc.drawLine(startX, 0, startX, e.height);
+            e.gc.drawLine(endX, 0, endX, e.height);
         }
     }
 
