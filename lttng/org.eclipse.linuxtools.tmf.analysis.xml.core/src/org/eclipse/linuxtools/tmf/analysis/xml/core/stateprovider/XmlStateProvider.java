@@ -14,6 +14,10 @@ package org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,9 +25,12 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.core.Activator;
+import org.eclipse.linuxtools.internal.tmf.analysis.xml.core.stateprovider.model.TmfXmlEventHandler;
+import org.eclipse.linuxtools.internal.tmf.analysis.xml.core.stateprovider.model.TmfXmlLocation;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.Messages;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.osgi.util.NLS;
 import org.w3c.dom.Document;
@@ -42,6 +49,15 @@ public class XmlStateProvider extends AbstractTmfStateProvider {
 
     private final IPath fFilePath;
     private final String fStateId;
+
+    /** List of all Event Handlers */
+    private final List<TmfXmlEventHandler> fEventHandlers = new ArrayList<>();
+
+    /** List of all Locations */
+    private final List<TmfXmlLocation> fLocations = new ArrayList<>();
+
+    /** Map for defined values */
+    private final Map<String, String> fDefinedValues = new HashMap<>();
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -62,6 +78,7 @@ public class XmlStateProvider extends AbstractTmfStateProvider {
         super(trace, ITmfEvent.class, stateid);
         fStateId = stateid;
         fFilePath = file;
+        loadXML();
     }
 
     /**
@@ -98,7 +115,14 @@ public class XmlStateProvider extends AbstractTmfStateProvider {
 
     @Override
     protected void eventHandle(ITmfEvent event) {
-        /* TODO: This method will be filled a few patches later */
+        for (TmfXmlEventHandler eventHandler : fEventHandlers) {
+            eventHandler.handleEvent(event);
+        }
+    }
+
+    @Override
+    public ITmfStateSystemBuilder getAssignedStateSystem() {
+        return ss;
     }
 
     // ------------------------------------------------------------------------
@@ -111,7 +135,7 @@ public class XmlStateProvider extends AbstractTmfStateProvider {
      *
      * @return The XML node at the root of the state provider
      */
-    protected Node loadXMLNode() {
+    private Element loadXMLNode() {
 
         try {
             File XMLFile = fFilePath.toFile();
@@ -152,13 +176,74 @@ public class XmlStateProvider extends AbstractTmfStateProvider {
     /**
      * Function to load the XML file structure
      */
-    protected void loadXML() {
-        Element doc = (Element) loadXMLNode();
+    private void loadXML() {
+        Element doc = loadXMLNode();
         if (doc == null) {
             return;
         }
+        try {
+            /* parser for defined Values */
+            NodeList definedStateNodes = doc.getElementsByTagName(TmfXmlStrings.DEFINED_VALUE);
+            for (int i = 0; i < definedStateNodes.getLength(); i++) {
+                Element element = (Element) definedStateNodes.item(i);
+                fDefinedValues.put(element.getAttribute(TmfXmlStrings.NAME), element.getAttribute(TmfXmlStrings.VALUE));
+            }
 
-        /* TODO: This method will be filled a few patches later */
+            /* parser for the locations */
+            NodeList locationNodes = doc.getElementsByTagName(TmfXmlStrings.LOCATION);
+            for (int i = 0; i < locationNodes.getLength(); i++) {
+                Element element = (Element) locationNodes.item(i);
+                TmfXmlLocation location = new TmfXmlLocation(element, this);
+                fLocations.add(location);
+            }
+
+            /* parser for the event handlers */
+            NodeList nodes = doc.getElementsByTagName(TmfXmlStrings.EVENT_HANDLER);
+            for (int i = 0; i < nodes.getLength(); i++) {
+                Element element = (Element) nodes.item(i);
+                TmfXmlEventHandler handler = new TmfXmlEventHandler(element, this);
+                fEventHandlers.add(handler);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Get the list of locations defined in this state provider
+     *
+     * @return The list of {@link TmfXmlLocation}
+     */
+    public List<TmfXmlLocation> getLocations() {
+        return fLocations;
+    }
+
+    /**
+     * Get the defined value associated with a constant
+     *
+     * @param constant
+     *            The constant defining this value
+     * @return The actual value corresponding to this constant
+     */
+    public String getDefinedValue(String constant) {
+        return fDefinedValues.get(constant);
+    }
+
+    /**
+     * Get the requested value for an attribute. If the value is a pre-defined
+     * value, we return the string corresponding in the defined values map.
+     *
+     * @param name
+     *            the string to get
+     * @return the actual string value
+     */
+    public String getAttributeValue(String name) {
+        String attribute = name;
+        if (attribute.startsWith(TmfXmlStrings.VARIABLE_PREFIX)) {
+            /* search the attribute in the map without the fist character $ */
+            attribute = getDefinedValue(attribute.substring(1));
+        }
+        return attribute;
     }
 
 }
