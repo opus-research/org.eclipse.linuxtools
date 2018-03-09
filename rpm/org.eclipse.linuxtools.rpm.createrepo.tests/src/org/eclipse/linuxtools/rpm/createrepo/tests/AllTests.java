@@ -10,13 +10,11 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.rpm.createrepo.tests;
 
-import org.eclipse.linuxtools.internal.rpm.createrepo.wizard.tests.CreaterepoWizardTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({CreaterepoProjectCreatorTest.class, CreaterepoUtilsTest.class,
-	CreaterepoWizardTest.class, CreaterepoProjectTest.class})
+@SuiteClasses({CreaterepoProjectCreatorTest.class})
 public class AllTests {
 }
