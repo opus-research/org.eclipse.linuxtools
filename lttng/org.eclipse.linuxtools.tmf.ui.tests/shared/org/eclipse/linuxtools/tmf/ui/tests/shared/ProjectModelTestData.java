@@ -10,7 +10,7 @@
  *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.ui.tests.project.model;
+package org.eclipse.linuxtools.tmf.ui.tests.shared;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -99,8 +99,7 @@ public class ProjectModelTestData {
      */
     public static void deleteProject(TmfProjectElement project) {
         /* Delete experiments */
-        ITmfProjectModelElement[] experiments = project.getExperimentsFolder().getChildren().toArray(new ITmfProjectModelElement[0]);
-        for (ITmfProjectModelElement element : experiments) {
+        for (ITmfProjectModelElement element : project.getExperimentsFolder().getChildren()) {
             if (element instanceof TmfExperimentElement) {
                 TmfExperimentElement experiment = (TmfExperimentElement) element;
                 IResource resource = experiment.getResource();
@@ -124,8 +123,7 @@ public class ProjectModelTestData {
         }
 
         /* Delete traces */
-        ITmfProjectModelElement[] traces = project.getTracesFolder().getChildren().toArray(new ITmfProjectModelElement[0]);
-        for (ITmfProjectModelElement element : traces) {
+        for (ITmfProjectModelElement element : project.getTracesFolder().getChildren()) {
             if (element instanceof TmfTraceElement) {
                 TmfTraceElement trace = (TmfTraceElement) element;
                 IResource resource = trace.getResource();
@@ -157,8 +155,8 @@ public class ProjectModelTestData {
     }
 
     /**
-     * Makes the main display thread sleep, so it gives a chance to other thread
-     * needing the main display to execute
+     * Makes the main display thread sleep, so it gives a chance to other
+     * threads needing the main display to execute
      *
      * @param waitTimeMillis
      *            time to wait in millisecond

@@ -25,8 +25,10 @@ import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisElement;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
+import org.eclipse.linuxtools.tmf.ui.tests.shared.ProjectModelTestData;
 import org.eclipse.linuxtools.tmf.ui.tests.stubs.analysis.TestAnalysisUi;
 import org.junit.After;
 import org.junit.Before;
@@ -108,6 +110,10 @@ public class ProjectModelAnalysisTest {
     @Test
     public void testPopulate() {
         TmfTraceElement trace = getTraceElement();
+
+        final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
+        // force the model to be populated
+        ncp.getChildren(fixture);
 
         /* Make sure the analysis list is not empty */
         List<ITmfProjectModelElement> analysisList = trace.getChildren();
