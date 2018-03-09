@@ -17,8 +17,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -33,7 +31,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.rpm.core.utils.Utils;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProject;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoProjectCreator;
 import org.eclipse.linuxtools.rpm.createrepo.CreaterepoUtils;
@@ -203,17 +200,16 @@ public class CreaterepoProjectTest {
 	 * under the repodata folder.
 	 *
 	 * @throws CoreException
-	 * @throws InterruptedException 
-	 * @throws IOException 
 	 */
 	@Test
-	public void testExecuteWithCreaterepo() throws CoreException, IOException, InterruptedException {
+	public void testSimpleExecute() throws CoreException {
 		CreaterepoProject createrepoProject = new CreaterepoProject(project);
+		assertTrue(!createrepoProject.getContentFolder().exists());
 		IStatus status = createrepoProject.createrepo(CreaterepoUtils.findConsole("test").newMessageStream()); //$NON-NLS-1$
-		assertEquals(Status.OK_STATUS, status);
 
+		// check if  executing has an OK status and that content folder is created with the repodata contents
+		assertEquals(Status.OK_STATUS, status);
 		assertTrue(createrepoProject.getContentFolder().exists());
-		createrepoProject.getContentFolder().refreshLocal(IResource.DEPTH_INFINITE, monitor);
 		assertTrue(createrepoProject.getContentFolder().members().length > 0);
 
 		// check if the repodata folder exists and repomd.xml exists within it
@@ -225,123 +221,6 @@ public class CreaterepoProjectTest {
 		assertTrue(repodataFolder.members().length > 1);
 		assertTrue(repodataFolder.findMember(ICreaterepoTestConstants.REPO_MD_NAME)
 				.exists());
-	}
-
-	/**
-	 * Test a direct call to execute createrepo using unfiltered commands.
-	 *
-	 * @throws CoreException
-	 * @throws IOException
-	 */
-	@Test
-	public void testSimpleExecuteDirectCallComplex() throws CoreException, IOException {
-		CreaterepoProject createrepoProject = new CreaterepoProject(project);
-		if (!createrepoProject.getContentFolder().exists()) {
-			createrepoProject.getContentFolder().create(true, true, monitor);
-		}
-		List<String> commandList = new ArrayList<String>();
-		String[] commandArray = {
-				"createrepo", //$NON-NLS-1$
-				"--verbose", //$NON-NLS-1$
-				"--profile", //$NON-NLS-1$
-				"--unique-md-filenames", //$NON-NLS-1$
-				"--database", //$NON-NLS-1$
-				"--checksum", //$NON-NLS-1$
-				"sha256", //$NON-NLS-1$
-				"--compress-type", //$NON-NLS-1$
-				"compat", //$NON-NLS-1$
-				"--workers", //$NON-NLS-1$
-				"0", //$NON-NLS-1$
-				"--changelog-limit", //$NON-NLS-1$
-				"0", //$NON-NLS-1$
-				createrepoProject.getContentFolder().getLocation().toOSString()
-		};
-		commandList.addAll(Arrays.asList(commandArray));
-		IStatus status = Utils.runCommand(CreaterepoUtils.findConsole("test").newMessageStream(), createrepoProject.getProject(), //$NON-NLS-1$
-				commandList.toArray(new String[commandList.size()]));
-		assertEquals(Status.OK_STATUS, status);
-	}
-
-	/**
-	 * Test a direct call to execute createrepo using simple commands.
-	 *
-	 * @throws CoreException
-	 * @throws IOException
-	 */
-	@Test
-	public void testSimpleExecuteDirectCallSimple() throws CoreException, IOException {
-		CreaterepoProject createrepoProject = new CreaterepoProject(project);
-		if (!createrepoProject.getContentFolder().exists()) {
-			createrepoProject.getContentFolder().create(true, true, monitor);
-		}
-		List<String> commandList = new ArrayList<String>();
-		String[] commandArray = {
-				"createrepo", //$NON-NLS-1$
-				createrepoProject.getContentFolder().getLocation().toOSString()
-		};
-		commandList.addAll(Arrays.asList(commandArray));
-		IStatus status = Utils.runCommand(CreaterepoUtils.findConsole("test").newMessageStream(), createrepoProject.getProject(), //$NON-NLS-1$
-				commandList.toArray(new String[commandList.size()]));
-		assertEquals(Status.OK_STATUS, status);
-	}
-
-	/**
-	 * Test a direct call to execute createrepo using filtered commands.
-	 * Some of the commands won't be used.
-	 *
-	 * @throws CoreException
-	 * @throws IOException
-	 */
-	@Test
-	public void testSimpleExecuteDirectCallFiltered() throws CoreException, IOException {
-		CreaterepoProject createrepoProject = new CreaterepoProject(project);
-		if (!createrepoProject.getContentFolder().exists()) {
-			createrepoProject.getContentFolder().create(true, true, monitor);
-		}
-		List<String> commandList = new ArrayList<String>();
-		String[] commandArray = {
-				"createrepo", //$NON-NLS-1$
-				"--verbose", //$NON-NLS-1$
-				"--profile", //$NON-NLS-1$
-				createrepoProject.getContentFolder().getLocation().toOSString()
-		};
-		commandList.addAll(Arrays.asList(commandArray));
-		IStatus status = Utils.runCommand(CreaterepoUtils.findConsole("test").newMessageStream(), createrepoProject.getProject(), //$NON-NLS-1$
-				commandList.toArray(new String[commandList.size()]));
-		assertEquals(Status.OK_STATUS, status);
-	}
-
-	/**
-	 * Test a direct call to execute createrepo without default command switches.
-	 *
-	 * @throws CoreException
-	 * @throws IOException
-	 */
-	@Test
-	public void testSimpleExecuteDirectCallNoDefaults() throws CoreException, IOException {
-		CreaterepoProject createrepoProject = new CreaterepoProject(project);
-		if (!createrepoProject.getContentFolder().exists()) {
-			createrepoProject.getContentFolder().create(true, true, monitor);
-		}
-		List<String> commandList = new ArrayList<String>();
-		String[] commandArray = {
-				"createrepo", //$NON-NLS-1$
-				"--unique-md-filenames", //$NON-NLS-1$
-				"--database", //$NON-NLS-1$
-				"--checksum", //$NON-NLS-1$
-				"sha256", //$NON-NLS-1$
-				"--compress-type", //$NON-NLS-1$
-				"compat", //$NON-NLS-1$
-				"--workers", //$NON-NLS-1$
-				"0", //$NON-NLS-1$
-				"--changelog-limit", //$NON-NLS-1$
-				"0", //$NON-NLS-1$
-				createrepoProject.getContentFolder().getLocation().toOSString()
-		};
-		commandList.addAll(Arrays.asList(commandArray));
-		IStatus status = Utils.runCommand(CreaterepoUtils.findConsole("test").newMessageStream(), createrepoProject.getProject(), //$NON-NLS-1$
-				commandList.toArray(new String[commandList.size()]));
-		assertEquals(Status.OK_STATUS, status);
 	}
 
 }
