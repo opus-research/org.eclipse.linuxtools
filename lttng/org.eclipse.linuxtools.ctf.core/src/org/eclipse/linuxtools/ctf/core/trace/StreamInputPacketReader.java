@@ -205,10 +205,8 @@ public class StreamInputPacketReader implements IDefinitionScope {
      *
      * @param currentPacket
      *            The index entry of the packet to switch to.
-     * @throws CTFReaderException
-     *             If we get an error reading the packet
      */
-    void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) throws CTFReaderException {
+    void setCurrentPacket(StreamInputPacketIndexEntry currentPacket) {
         StreamInputPacketIndexEntry prevPacket = null;
         this.currentPacket = currentPacket;
 
@@ -223,7 +221,11 @@ public class StreamInputPacketReader implements IDefinitionScope {
                                 this.currentPacket.getOffsetBytes(),
                                 (this.currentPacket.getPacketSizeBits() + 7) / 8);
             } catch (IOException e) {
-                throw new CTFReaderException(e.getMessage(), e);
+                /*
+                 * The streamInputReader object is already allocated, so this
+                 * shouldn't fail bar some very bad kernel or RAM errors...
+                 */
+                e.printStackTrace();
             }
 
             bitBuffer.setByteBuffer(bb);
@@ -314,7 +316,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
 
         final StructDefinition sehd = streamEventHeaderDef;
         final BitBuffer currentBitBuffer = bitBuffer;
-        final long posStart = currentBitBuffer.position();
+
         /* Read the stream event header. */
         if (sehd != null) {
             sehd.read(currentBitBuffer);
@@ -323,9 +325,7 @@ public class StreamInputPacketReader implements IDefinitionScope {
             Definition idDef = sehd.lookupDefinition("id"); //$NON-NLS-1$
             if (idDef instanceof SimpleDatatypeDefinition) {
                 eventID = ((SimpleDatatypeDefinition) idDef).getIntegerValue();
-            } else if (idDef != null) {
-                throw new CTFReaderException("Incorrect event id : " + eventID);
-            }
+            } // else, eventID remains 0
 
             /*
              * Get the timestamp from the event header (may be overridden later
@@ -389,10 +389,6 @@ public class StreamInputPacketReader implements IDefinitionScope {
          * updateTimestamp.
          */
         eventDef.setTimestamp(timestamp);
-
-        if (posStart == currentBitBuffer.position()) {
-            throw new CTFReaderException("Empty event not allowed, event: " + eventDef.getDeclaration().getName()); //$NON-NLS-1$
-        }
 
         return eventDef;
     }
