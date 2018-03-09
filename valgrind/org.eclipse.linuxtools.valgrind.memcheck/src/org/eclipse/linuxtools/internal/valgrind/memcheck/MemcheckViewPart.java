@@ -25,11 +25,9 @@ public class MemcheckViewPart extends ViewPart implements IValgrindToolView {
 	public void setFocus() {
 	}
 
-	@Override
 	public void refreshView() {
 	}
 
-	@Override
 	public IAction[] getToolbarActions() {
 		return null;
 	}

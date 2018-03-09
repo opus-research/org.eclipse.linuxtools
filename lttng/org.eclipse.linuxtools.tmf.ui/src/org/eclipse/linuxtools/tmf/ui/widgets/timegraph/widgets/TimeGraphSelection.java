@@ -29,7 +29,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
  */
 public class TimeGraphSelection implements IStructuredSelection {
 
-    private List<Object> list = new ArrayList<>();
+    private List<Object> list = new ArrayList<Object>();
 
     /**
      * Default constructor

@@ -78,7 +78,16 @@ public class ExportToTextJob extends Job {
     }
 
     private IStatus saveImpl(IProgressMonitor monitor) {
-        try (final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));) {
+        final BufferedWriter bw;
+        try {
+            bw = new BufferedWriter(new FileWriter(destination));
+        } catch (IOException ex) {
+            Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                    MessageFormat.format(Messages.ExportToTextJob_Unable_to_export_trace, destination),
+                    ex);
+            return status;
+        }
+        try {
             if (fHeader != null) {
                 bw.write(fHeader);
                 bw.append('\n');
@@ -89,6 +98,11 @@ public class ExportToTextJob extends Job {
                     MessageFormat.format(Messages.ExportToTextJob_Unable_to_export_trace, destination),
                     ex);
             return status;
+        } finally {
+            try {
+                bw.close();
+            } catch (IOException e) {
+            }
         }
     }
 

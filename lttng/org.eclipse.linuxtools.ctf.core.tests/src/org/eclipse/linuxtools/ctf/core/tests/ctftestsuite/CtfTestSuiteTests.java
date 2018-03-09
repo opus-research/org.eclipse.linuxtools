@@ -60,7 +60,7 @@ public class CtfTestSuiteTests {
      */
     @Parameters(name = "{index}: {0}")
     public static Iterable<Object[]> getTracePaths() {
-        final List<Object[]> dirs = new LinkedList<>();
+        final List<Object[]> dirs = new LinkedList<Object[]>();
 
         addDirsFrom(dirs, basePath + "fuzzing/metadata/fail", false);
         addDirsFrom(dirs, basePath + "fuzzing/metadata/pass", true);

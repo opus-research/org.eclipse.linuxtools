@@ -44,7 +44,7 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
      * Version number of this state provider. Please bump this if you modify the
      * contents of the generated state history in some way.
      */
-    private static final int VERSION = 4;
+    private static final int VERSION = 3;
 
     /* Event names HashMap. TODO: This can be discarded once we move to Java 7 */
     private final HashMap<String, Integer> knownEventNames;
@@ -361,8 +361,7 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
              * int32 type, int32 mode, int32 pid, int32 submode, int32 vpid,
              * int32 ppid, int32 tid, string name, int32 status, int32 vtid */
             {
-                int tid = ((Long) content.getField(LttngStrings.TID).getValue()).intValue();
-                int pid = ((Long) content.getField(LttngStrings.PID).getValue()).intValue();
+                Integer tid = ((Long) content.getField(LttngStrings.TID).getValue()).intValue();
                 int ppid = ((Long) content.getField(LttngStrings.PPID).getValue()).intValue();
                 int status = ((Long) content.getField(LttngStrings.STATUS).getValue()).intValue();
                 String name = (String) content.getField(LttngStrings.NAME).getValue();
@@ -371,7 +370,7 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
                  * populated with anything relevant for now.
                  */
 
-                int curThreadNode = ss.getQuarkRelativeAndAdd(getNodeThreads(), String.valueOf(tid));
+                int curThreadNode = ss.getQuarkRelativeAndAdd(getNodeThreads(), tid.toString());
 
                 /* Set the process' name */
                 quark = ss.getQuarkRelativeAndAdd(curThreadNode, Attributes.EXEC_NAME);
@@ -384,13 +383,7 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
                 /* Set the process' PPID */
                 quark = ss.getQuarkRelativeAndAdd(curThreadNode, Attributes.PPID);
                 if (ss.queryOngoingState(quark).isNull()) {
-                    if (pid == tid) {
-                        /* We have a process. Use the 'PPID' field. */
-                        value = TmfStateValue.newValueInt(ppid);
-                    } else {
-                        /* We have a thread, use the 'PID' field for the parent. */
-                        value = TmfStateValue.newValueInt(pid);
-                    }
+                    value = TmfStateValue.newValueInt(ppid);
                     ss.modifyAttribute(ts, value, quark);
                 }
 
@@ -518,7 +511,7 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
          * TODO Replace with straight strings in the switch/case once we move to
          * Java 7
          */
-        HashMap<String, Integer> map = new HashMap<>();
+        HashMap<String, Integer> map = new HashMap<String, Integer>();
 
         map.put(LttngStrings.EXIT_SYSCALL, 1);
         map.put(LttngStrings.IRQ_HANDLER_ENTRY, 2);

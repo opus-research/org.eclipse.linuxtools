@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 /**
  * The base class for all the types of nodes that go in the History Tree.
  *
- * @author Alexandre Montplaisir
+ * @author alexmont
  */
 abstract class HTNode {
 
@@ -42,8 +42,8 @@ abstract class HTNode {
      */
     protected static final int DATA_ENTRY_SIZE = 25;
 
-    /* Configuration of the History Tree to which belongs this node */
-    private final HTConfig config;
+    /* Reference to the History Tree to whom this node belongs */
+    private final HistoryTree ownerTree;
 
     /* Time range of this node */
     private final long nodeStart;
@@ -62,38 +62,38 @@ abstract class HTNode {
     /* Vector containing all the intervals contained in this node */
     private final List<HTInterval> intervals;
 
-    HTNode(HTConfig config, int seqNumber, int parentSeqNumber, long start) {
-        this.config = config;
+    HTNode(HistoryTree tree, int seqNumber, int parentSeqNumber, long start) {
+        this.ownerTree = tree;
         this.nodeStart = start;
         this.sequenceNumber = seqNumber;
         this.parentSequenceNumber = parentSeqNumber;
 
-        this.stringSectionOffset = config.getBlockSize();
+        this.stringSectionOffset = ownerTree.getConfig().getBlockSize();
         this.isDone = false;
-        this.intervals = new ArrayList<>();
+        this.intervals = new ArrayList<HTInterval>();
     }
 
     /**
      * Reader factory constructor. Build a Node object (of the right type) by
      * reading a block in the file.
      *
-     * @param config
-     *            Configuration of the History Tree
+     * @param tree
+     *            Reference to the HT which will own this node
      * @param fc
      *            FileChannel to the history file, ALREADY SEEKED at the start
      *            of the node.
      * @throws IOException
      */
-    static final HTNode readNode(HTConfig config, FileChannel fc)
+    static final HTNode readNode(HistoryTree tree, FileChannel fc)
             throws IOException {
         HTNode newNode = null;
         int res, i;
 
-        ByteBuffer buffer = ByteBuffer.allocate(config.getBlockSize());
+        ByteBuffer buffer = ByteBuffer.allocate(tree.getConfig().getBlockSize());
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.clear();
         res = fc.read(buffer);
-        assert (res == config.getBlockSize());
+        assert (res == tree.getConfig().getBlockSize());
         buffer.flip();
 
         /* Read the common header part */
@@ -110,7 +110,7 @@ abstract class HTNode {
         switch (type) {
         case 1:
             /* Core nodes */
-            newNode = new CoreNode(config, seqNb, parentSeqNb, start);
+            newNode = new CoreNode(tree, seqNb, parentSeqNb, start);
             newNode.readSpecificHeader(buffer);
             break;
 
@@ -146,7 +146,7 @@ abstract class HTNode {
     }
 
     final void writeSelf(FileChannel fc) throws IOException {
-        final int blockSize = config.getBlockSize();
+        final int blockSize = ownerTree.getConfig().getBlockSize();
         int curStringsEntryEndPos = blockSize;
 
         ByteBuffer buffer = ByteBuffer.allocate(blockSize);
@@ -201,8 +201,8 @@ abstract class HTNode {
     // Accessors
     // ------------------------------------------------------------------------
 
-    HTConfig getConfig() {
-        return config;
+    protected HistoryTree getTree() {
+        return ownerTree;
     }
 
     long getNodeStart() {
@@ -413,7 +413,7 @@ abstract class HTNode {
      * (used space / total usable space, which excludes the header)
      */
     long getNodeUsagePRC() {
-        final int blockSize = config.getBlockSize();
+        final int blockSize = ownerTree.getConfig().getBlockSize();
         float freePercent = (float) this.getNodeFreeSpace()
                 / (float) (blockSize - this.getTotalHeaderSize())
                 * 100F;

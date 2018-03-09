@@ -12,10 +12,6 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -25,16 +21,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.systemtap.graphingapi.core.datasets.IDataSet;
@@ -65,16 +56,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 public class SystemTapScriptGraphOptionsTab extends
-			AbstractLaunchConfigurationTab {
+		AbstractLaunchConfigurationTab {
 
 	/**
 	 * The maximum number of regular expressions that can be stored in a configuration.
@@ -102,78 +89,6 @@ public class SystemTapScriptGraphOptionsTab extends
 	private static final String GRAPH_Y_SERIES = "graphYSeries"; //$NON-NLS-1$
 	protected Pattern pattern;
 	protected Matcher matcher;
-
-	private Combo regularExpressionCombo;
-	private Button removeRegexButton;
-	private Button generateExpsButton;
-
-	private Text sampleOutputText;
-	private Composite textFieldsComposite;
-
-	/**
-	 * This value controls whether or not the ModifyListeners associated with
-	 * the Texts will perform when dispatched. Sometimes the listeners should
-	 * be disabled to prevent needless/unsafe operations.
-	 */
-	private boolean textListenersEnabled = true;
-
-	private ScrolledComposite regexTextScrolledComposite;
-	private Group outputParsingGroup;
-	private Button runWithChartCheckButton;
-
-	private Table graphsTable;
-	private Button addGraphButton, duplicateGraphButton, editGraphButton, removeGraphButton;
-	private TableItem selectedTableItem;
-	private Group graphsGroup;
-	private int numberOfVisibleColumns = 0;
-	private boolean graphingEnabled = true;
-
-	/**
-	 * A list of error messages, each entry corresponding to an entered regular expression.
-	 */
-	private List<String> regexErrorMessages = new ArrayList<>();
-
-	/**
-	 * The index of the selected regular expression.
-	 */
-	private int selectedRegex = -1;
-
-	/**
-	 * A list containing the user-defined sample outputs associated with the regex of every index.
-	 */
-	private List<String> outputList = new ArrayList<>();
-
-	/**
-	 * A name is given to each group captured by a regular expression. This stack contains
-	 * the names of all of a regex's groups that have been deleted, so each name may be
-	 * restored (without having to retype it) when a group is added again.
-	 */
-	private Stack<String> cachedNames;
-
-	/**
-	 * A list of cachedNames stacks, containing one entry for each regular expression stored.
-	 */
-	private List<Stack<String>> cachedNamesList = new ArrayList<>();
-
-	/**
-	 * A two-dimensional list that holds references to the names given to each regular expression's captured groups.
-	 */
-	private List<ArrayList<String>> columnNamesList = new ArrayList<>();
-
-	/**
-	 * A list holding the data of every graph for the selected regular expression.
-	 */
-	private List<GraphData> graphsData = new LinkedList<>();
-
-	/**
-	 * A list of graphsData lists. This is needed because each regular expression has its own set of graphs.
-	 */
-	private List<LinkedList<GraphData>> graphsDataList = new ArrayList<>();
-
-	/**
-	 * A list of GraphDatas that rely on series information that has been deleted from their relying regex.
-	 */
-	private List<GraphData> badGraphs = new LinkedList<>();
 
 	private ModifyListener regexListener = new ModifyListener() {
 		@Override
@@ -207,7 +122,7 @@ public class SystemTapScriptGraphOptionsTab extends
 				return;
 			}
 
-			ArrayList<String> columnNames = new ArrayList<>();
+			ArrayList<String> columnNames = new ArrayList<String>();
 			Control[] children = textFieldsComposite.getChildren();
 			for (int i = 0; i < numberOfVisibleColumns; i++) {
 				columnNames.add(((Text)children[i*2]).getText());
@@ -217,248 +132,75 @@ public class SystemTapScriptGraphOptionsTab extends
 		}
 	};
 
-	private SelectionAdapter regexGenerator = new SelectionAdapter() {
-		@Override
-		public void widgetSelected(SelectionEvent e) {
-			MessageDialog dialog;
-			IWorkbench workbench = PlatformUI.getWorkbench();
-			IPath scriptPath = null;
-			for (ILaunchConfigurationTab tab : getLaunchConfigurationDialog().getTabs()) {
-				if (tab instanceof SystemTapScriptLaunchConfigurationTab) {
-					scriptPath = ((SystemTapScriptLaunchConfigurationTab) tab).getScriptPath();
-					break;
-				}
-			}
-			if (scriptPath == null) {
-				dialog = new MessageDialog(workbench
-						.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsErrorTitle, null,
-						Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsError,
-						MessageDialog.ERROR, new String[]{"OK"}, 0); //$NON-NLS-1$
-				dialog.open();
-				return;
-			}
+	private Combo regularExpressionCombo;
+	private Button removeRegexButton;
+	private Text sampleOutputText;
+	private Composite textFieldsComposite;
 
-			dialog = new MessageDialog(workbench
-					.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsTitle, null,
-					Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsMessage,
-					MessageDialog.QUESTION, new String[]{"Yes", "Cancel"}, 0); //$NON-NLS-1$ //$NON-NLS-2$
-			int result = dialog.open();
-			if (result != 0) { // Cancel
-				return;
-			}
+	/**
+	 * This value controls whether or not the ModifyListeners associated with
+	 * the Texts will perform when dispatched. Sometimes the listeners should
+	 * be disabled to prevent needless/unsafe operations.
+	 */
+	private boolean textListenersEnabled = true;
 
-			textListenersEnabled = false;
-			// If editor of this file is open, take current file contents.
-			String contents = null;
-			IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-			IEditorPart editor = ResourceUtil.findEditor(workbench.getActiveWorkbenchWindow().getActivePage(), root.getFile(scriptPath.makeRelativeTo(root.getLocation())));
-			if (editor != null) {
-				ITextEditor t_editor = (ITextEditor) editor.getAdapter(ITextEditor.class);
-				if (t_editor != null) {
-					IDocumentProvider provider = t_editor.getDocumentProvider();
-					IDocument document = provider.getDocument(t_editor.getEditorInput());
-					contents = document.get();
-				}
-			}
+	private ScrolledComposite regexTextScrolledComposite;
+	private Group outputParsingGroup;
+	private Button runWithChartCheckButton;
 
-			// If chosen file is not being edited or is outside of the workspace, use the saved contents of the file itself.
-			if (contents == null) {
-				File scriptFile = scriptPath.toFile();
-				try (FileInputStream f = new FileInputStream(scriptFile)) {
-					byte[] data = new byte[(int)scriptFile.length()];
-					f.read(data);
-					f.close();
-					contents = new String(data, Charset.defaultCharset());
-				} catch (IOException e1) {
-					dialog = new MessageDialog(workbench
-							.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsErrorTitle, null,
-							Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsError,
-							MessageDialog.ERROR, new String[]{"OK"}, 0); //$NON-NLS-1$
-					dialog.open();
-					return;
-				}
-			}
+	private Table graphsTable;
+	private Button addGraphButton, duplicateGraphButton, editGraphButton, removeGraphButton;
+	private TableItem selectedTableItem;
+	private Group graphsGroup;
+	private int numberOfVisibleColumns = 0;
+	private boolean graphingEnabled = true;
 
-			// Delete comments from the file contents. Ignore comment markers between quotes.
-			contents = CommentRemover.exec(contents);
+	/**
+	 * A list of error messages, each entry corresponding to an entered regular expression.
+	 */
+	private List<String> regexErrorMessages = new ArrayList<String>();
 
-			// Now actually search the contents for "printf(...)" statements. (^|[\s({;])printf\("(.+?)",.+\)
-			Pattern pattern = Pattern.compile("(?<![a-zA-Z])printf\\(\"(.+?)\",.+\\)"); //$NON-NLS-1$
-			Matcher matcher = pattern.matcher(contents);
-			boolean firstfound = false;
-			while (matcher.find() && (!firstfound || getNumberOfRegexs() < MAX_NUMBER_OF_REGEXS)) {
-				String regex = null;
+	/**
+	 * The index of the selected regular expression.
+	 */
+	private int selectedRegex = -1;
 
-				// Note: allow optional "long" modifier 'l'. Not captured because it doesn't impact output format.
-				// Also, don't support variable width/precision modifiers (*).
-				// TODO: Consider %m & %M support.
-				Pattern format = Pattern.compile("%([-\\+ \\#0])?(\\d+)?(\\.\\d*)?l?([bcdiopsuxX%])"); //$NON-NLS-1$
+	/**
+	 * A list containing the user-defined sample outputs associated with the regex of every index.
+	 */
+	private List<String> outputList = new ArrayList<String>();
 
-				// Only capture until newlines to preserve the "column" format.
-				// Don't try gluing together output from multiple printfs
-				// since asynchronous prints would make things messy.
-				String[] printls = matcher.group(1).split("\\\\n"); //$NON-NLS-1$
-				for (int i = 0; i < printls.length; i++) {
-					String printl = printls[i];
-					// Ignore newlines if they are escaped ("\\n").
-					if (printl.endsWith("\\")) { //$NON-NLS-1$
-						printls[i+1] = printl.concat("\\n" + printls[i+1]); //$NON-NLS-1$
-						continue;
-					}
+	/**
+	 * A name is given to each group captured by a regular expression. This stack contains
+	 * the names of all of a regex's groups that have been deleted, so each name may be
+	 * restored (without having to retype it) when a group is added again.
+	 */
+	private Stack<String> cachedNames;
 
-					Matcher fmatch = format.matcher(printl);
-					int lastend = 0;
-					ArrayList<String> columnNames = new ArrayList<>();
-					int r = 0;
+	/**
+	 * A list of cachedNames stacks, containing one entry for each regular expression stored.
+	 */
+	private List<Stack<String>> cachedNamesList = new ArrayList<Stack<String>>();
 
-					while (fmatch.find()) {
-						char chr = fmatch.group(4) == null ? '\0' : fmatch.group(4).charAt(0);
-						if (chr == '\0') {
-							// Skip this statement if an invalid regex is found.
-							regex = null;
-							break;
-						}
-						char flag = fmatch.group(1) == null ? '\0' : fmatch.group(1).charAt(0);
-						int width = fmatch.group(2) == null ? 0 : Integer.parseInt(fmatch.group(2));
-						String precision = fmatch.group(3) == null ? null : fmatch.group(3).substring(1);
+	/**
+	 * A two-dimensional list that holds references to the names given to each regular expression's captured groups.
+	 */
+	private List<ArrayList<String>> columnNamesList = new ArrayList<ArrayList<String>>();
 
-						// First, add any non-capturing characters.
-						String pre = addRegexEscapes(printl.substring(lastend, fmatch.start()));
-						regex = lastend > 0 ? regex.concat(pre) : pre;
-						lastend = fmatch.end();
+	/**
+	 * A list holding the data of every graph for the selected regular expression.
+	 */
+	private List<GraphData> graphsData = new LinkedList<GraphData>();
 
-						// Now add what will be captured.
-						String target = "("; //$NON-NLS-1$
-						if (chr == 'u' || (flag != '#' && chr == 'o')) {
-							target = target.concat("\\d+"); //$NON-NLS-1$
-						}
-						else if (chr == 'd' || chr == 'i') {
-							if (flag == '+') {
-								target = target.concat("\\+|"); //$NON-NLS-1$
-							} else if (flag == ' ') {
-								target = target.concat(" |"); //$NON-NLS-1$
-							}
-							target = target.concat("-?\\d+"); //$NON-NLS-1$
-						}
-						else if (flag == '#' && chr == 'o') {
-							target = target.concat("0\\d+"); //$NON-NLS-1$
-						}
-						else if (chr == 'p') {
-							target = target.concat("0x[a-f0-9]+"); //$NON-NLS-1$
-						}
-						else if (chr == 'x') {
-							if (flag == '#') {
-								target = target.concat("0x"); //$NON-NLS-1$
-							}
-							target = target.concat("[a-f0-9]+"); //$NON-NLS-1$
-						}
-						else if (chr == 'X') {
-							if (flag == '#') {
-								target = target.concat("0X"); //$NON-NLS-1$
-							}
-							target = target.concat("[A-F0-9]+"); //$NON-NLS-1$
-						}
-						else if (chr == 'b') {
-							target = target.concat("."); //$NON-NLS-1$
-						}
-						else if (chr == 'c') {
-							if (flag != '#') {
-								target = target.concat("."); //$NON-NLS-1$
-							} else {
-								target = target.concat("\\([a-z]|[0-9]{3})|.|\\\\"); //$NON-NLS-1$
-							}
-						}
-						else if (chr == 's') {
-							if (precision != null) {
-								target = target.concat(".{" + precision + "}"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else {
-								target = target.concat(".+"); //$NON-NLS-1$
-							}
-						}
-						else {
-							// Invalid or unhandled format specifier. Skip this regex.
-							regex = null;
-							break;
-						}
+	/**
+	 * A list of graphsData lists. This is needed because each regular expression has its own set of graphs.
+	 */
+	private List<LinkedList<GraphData>> graphsDataList = new ArrayList<LinkedList<GraphData>>();
 
-						target = target.concat(")"); //$NON-NLS-1$
-
-						// Handle the optional width specifier.
-						// Ignore it for %b, which uses the width value in a different way.
-						if (chr != 'b' && --width > 0) {
-							if (flag == '-') {
-								target = target.concat(" {0," + width + "}"); //$NON-NLS-1$ //$NON-NLS-2$
-							} else if (flag != '0' || chr == 's' || chr == 'c'){
-								target = " {0," + width + "}".concat(target); //$NON-NLS-1$ //$NON-NLS-2$
-							}
-						}
-
-						regex = regex.concat(target);
-						columnNames.add(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_defaultColumnTitleBase, ++r));
-					}
-					if (regex != null) {
-						if (!firstfound) {
-							// Since script output has been found, reset the configuration's regexs.
-							// Only reset once/if something is found, and do it only one time.
-							regularExpressionCombo.removeAll();
-							outputList.clear();
-							regexErrorMessages.clear();
-							columnNamesList.clear();
-							cachedNamesList.clear();
-							graphsTable.removeAll();
-							graphsDataList.clear();
-							badGraphs.clear();
-							firstfound = true;
-						}
-						// Finally, add the uncaptured remainder of the print statement to the regex.
-						regex = regex.concat(addRegexEscapes(printl.substring(lastend)));
-
-						regularExpressionCombo.add(regex);
-						outputList.add(""); //$NON-NLS-1$ //For empty "sample output" entry.
-						regexErrorMessages.add(null);
-						columnNamesList.add(columnNames);
-						cachedNamesList.add(new Stack<String>());
-						graphsDataList.add(new LinkedList<GraphData>());
-					}
-				}
-			}
-			textListenersEnabled = true;
-
-			if (!firstfound) {
-				dialog = new MessageDialog(workbench
-						.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsErrorTitle, null,
-						Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsEmpty,
-						MessageDialog.ERROR, new String[]{"OK"}, 0); //$NON-NLS-1$
-				dialog.open();
-				return;
-			}
-
-			if (getNumberOfRegexs() < MAX_NUMBER_OF_REGEXS) {
-				regularExpressionCombo.add(Messages.SystemTapScriptGraphOptionsTab_regexAddNew);
-			}
-
-			removeRegexButton.setEnabled(getNumberOfRegexs() > 1);
-			regularExpressionCombo.select(0);
-			updateRegexSelection(0, true);
-			checkAllOtherErrors(); // Check for errors in case there was a problem with regex generation
-			updateLaunchConfigurationDialog();
-		}
-
-		/**
-		 * This escapes all special regex characters in a string. Escapes must be added
-		 * to the generated regexs to capture printf output that doesn't
-		 * come from format specifiers (aka literal strings).
-		 * @param s The string to add escapes to.
-		 * @return The same string, after it has been modified with escapes.
-		 */
-		private String addRegexEscapes(String s) {
-			String schars = "[^$.|?*+(){}"; //$NON-NLS-1$
-			for (int i = 0; i < schars.length(); i++) {
-				s = s.replaceAll("(\\" + schars.substring(i,i+1) + ")", "\\\\$1"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			}
-			return s;
-		}
-	};
+	/**
+	 * A list of GraphDatas that rely on series information that has been deleted from their relying regex.
+	 */
+	private List<GraphData> badGraphs = new LinkedList<GraphData>();
 
 	/**
 	 * Returns the list of the names given to reach regular expression.
@@ -468,7 +210,7 @@ public class SystemTapScriptGraphOptionsTab extends
 	public static ArrayList<String> createDatasetNames(ILaunchConfiguration configuration) {
 		try {
 			int numberOfRegexs = configuration.getAttribute(NUMBER_OF_REGEXS, 0);
-			ArrayList<String> names = new ArrayList<>(numberOfRegexs);
+			ArrayList<String> names = new ArrayList<String>(numberOfRegexs);
 			for (int r = 0; r < numberOfRegexs; r++) {
 				names.add(MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_graphSetTitleBase, r + 1));
 			}
@@ -488,7 +230,7 @@ public class SystemTapScriptGraphOptionsTab extends
 	public static ArrayList<IDataSetParser> createDatasetParsers(ILaunchConfiguration configuration) {
 		try {
 			int numberOfRegexs = configuration.getAttribute(NUMBER_OF_REGEXS, 0);
-			ArrayList<IDataSetParser> parsers = new ArrayList<>(numberOfRegexs);
+			ArrayList<IDataSetParser> parsers = new ArrayList<IDataSetParser>(numberOfRegexs);
 			for (int r = 0; r < numberOfRegexs; r++) {
 				parsers.add(new LineParser("^" + configuration.getAttribute(REGULAR_EXPRESSION + r, "") + "$")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			}
@@ -508,11 +250,11 @@ public class SystemTapScriptGraphOptionsTab extends
 	public static ArrayList<IDataSet> createDataset(ILaunchConfiguration configuration) {
 		try {
 			int numberOfRegexs = configuration.getAttribute(NUMBER_OF_REGEXS, 0);
-			ArrayList<IDataSet> datasets = new ArrayList<>(numberOfRegexs);
+			ArrayList<IDataSet> datasets = new ArrayList<IDataSet>(numberOfRegexs);
 
 			for (int r = 0; r < numberOfRegexs; r++) {
 				int numberOfColumns = configuration.getAttribute(NUMBER_OF_COLUMNS + r, 0);
-				ArrayList<String> labels = new ArrayList<>(numberOfColumns);
+				ArrayList<String> labels = new ArrayList<String>(numberOfColumns);
 
 				for (int c = 0; c < numberOfColumns; c++) {
 					labels.add(configuration.getAttribute(get2DConfigData(REGEX_BOX, r, c), "")); //$NON-NLS-1$
@@ -537,11 +279,11 @@ public class SystemTapScriptGraphOptionsTab extends
 		// Restrict number of regexs to at least one, so at least
 		// one inner list will exist in the return value.
 		int numberOfRegexs = Math.max(configuration.getAttribute(NUMBER_OF_REGEXS, 1), 1);
-		ArrayList<LinkedList<GraphData>> graphsList = new ArrayList<>(numberOfRegexs);
+		ArrayList<LinkedList<GraphData>> graphsList = new ArrayList<LinkedList<GraphData>>(numberOfRegexs);
 
 		for (int r = 0; r < numberOfRegexs; r++) {
 			int numberOfGraphs = configuration.getAttribute(NUMBER_OF_GRAPHS + r, 0);
-			LinkedList<GraphData> graphs = new LinkedList<>();
+			LinkedList<GraphData> graphs = new LinkedList<GraphData>();
 			for (int i = 0; i < numberOfGraphs; i++) {
 				GraphData graphData = new GraphData();
 				graphData.title = configuration.getAttribute(get2DConfigData(GRAPH_TITLE, r, i), (String) null);
@@ -638,24 +380,11 @@ public class SystemTapScriptGraphOptionsTab extends
 		GridLayout layout = new GridLayout();
 		parent.setLayout(layout);
 
-		GridLayout oneColumn = new GridLayout();
-		oneColumn.numColumns = 1;
-
 		GridLayout twoColumns = new GridLayout();
 		twoColumns.numColumns = 2;
 
 		GridLayout threeColumns = new GridLayout();
 		threeColumns.numColumns = 3;
-
-		Composite topLayout = new Composite(parent, SWT.NONE);
-		topLayout.setLayout(oneColumn);
-		topLayout.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-
-		generateExpsButton = new Button(topLayout, SWT.PUSH);
-		generateExpsButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		generateExpsButton.setText(Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsButton);
-		generateExpsButton.setToolTipText(Messages.SystemTapScriptGraphOptionsTab_generateFromPrintsTooltip);
-		generateExpsButton.addSelectionListener(regexGenerator);
 
 		Composite regexButtonLayout = new Composite(parent, SWT.NONE);
 		regexButtonLayout.setLayout(threeColumns);
@@ -732,7 +461,7 @@ public class SystemTapScriptGraphOptionsTab extends
 						.getActiveWorkbenchWindow().getShell(), Messages.SystemTapScriptGraphOptionsTab_removeRegexTitle, null,
 						MessageFormat.format(Messages.SystemTapScriptGraphOptionsTab_removeRegexAsk,
 								regularExpressionCombo.getItem(selectedRegex)),
-								MessageDialog.QUESTION, new String[]{"Yes", "No"}, 0); //$NON-NLS-1$ //$NON-NLS-2$
+						MessageDialog.QUESTION, new String[]{"Yes", "No"}, 0); //$NON-NLS-1$ //$NON-NLS-2$
 				int result = dialog.open();
 				if (result == 0) { //Yes
 					removeRegex(true);
@@ -1251,7 +980,7 @@ public class SystemTapScriptGraphOptionsTab extends
 
 				// Save each regex's list of group names.
 				int numberOfColumns = configuration.getAttribute(NUMBER_OF_COLUMNS + r, 0);
-				ArrayList<String> namelist = new ArrayList<>(numberOfColumns);
+				ArrayList<String> namelist = new ArrayList<String>(numberOfColumns);
 				for (int i = 0; i < numberOfColumns; i++) {
 					namelist.add(configuration.getAttribute(get2DConfigData(REGEX_BOX, r, i), (String)null));
 				}
@@ -1259,7 +988,7 @@ public class SystemTapScriptGraphOptionsTab extends
 
 				//Reclaim missing column data that was required for existing graphs at the time of the previous "apply".
 				int numberOfExtras = configuration.getAttribute(NUMBER_OF_EXTRAS + r, 0);
-				Stack<String> oldnames = new Stack<>();
+				Stack<String> oldnames = new Stack<String>();
 				for (int i = 0; i < numberOfExtras; i++) {
 					oldnames.push(configuration.getAttribute(get2DConfigData(EXTRA_BOX, r, i), (String)null));
 				}
@@ -1469,7 +1198,6 @@ public class SystemTapScriptGraphOptionsTab extends
 	 * @param launchConfig The launch configuration to check for graph validity.
 	 * @return <code>true</code> if the launch settings are valid, or <code>false</code> if
 	 * its graph settings are invalid in some way.
-	 * @since 2.2
 	 */
 	public static boolean isValidLaunch(ILaunchConfiguration launchConfig) throws CoreException {
 		// If graphic is disabled then everything is valid.
@@ -1540,7 +1268,7 @@ public class SystemTapScriptGraphOptionsTab extends
 	private void setControlEnabled(Composite composite, boolean enabled){
 		composite.setEnabled(enabled);
 		for (Control child : composite.getChildren()) {
-			child.setEnabled(enabled);
+				child.setEnabled(enabled);
 			if(child instanceof Composite){
 				setControlEnabled((Composite)child, enabled);
 			}
