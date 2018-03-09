@@ -84,7 +84,7 @@ public class STPEditor extends SimpleEditor {
 	{
 		ProjectionAnnotation annotation;
 		Annotation[] updatedAnnotations = new Annotation[updatedPositions.size()];
-		HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<>();
+		HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
 		for(int i =0;i<updatedPositions.size();i++)
 		{
 			annotation = new ProjectionAnnotation();	

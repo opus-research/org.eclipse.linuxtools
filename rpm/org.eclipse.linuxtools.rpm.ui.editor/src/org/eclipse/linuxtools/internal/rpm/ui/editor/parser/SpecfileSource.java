@@ -46,7 +46,7 @@ public class SpecfileSource extends SpecfileElement {
 		super("source"); //$NON-NLS-1$
 		this.number = number;
 		this.fileName = fileName;
-		this.linesUsed = new ArrayList<>();
+		this.linesUsed = new ArrayList<Integer>();
 	}
 
 	public String getFileName() {

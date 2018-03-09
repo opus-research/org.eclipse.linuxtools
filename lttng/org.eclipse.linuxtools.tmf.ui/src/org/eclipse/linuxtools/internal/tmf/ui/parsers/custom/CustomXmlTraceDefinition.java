@@ -34,7 +34,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -176,7 +175,7 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
          */
         public void addAttribute(InputAttribute attribute) {
             if (attributes == null) {
-                attributes = new ArrayList<>(1);
+                attributes = new ArrayList<InputAttribute>(1);
             }
             attributes.add(attribute);
         }
@@ -189,7 +188,7 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
          */
         public void addChild(InputElement input) {
             if (childElements == null) {
-                childElements = new ArrayList<>(1);
+                childElements = new ArrayList<InputElement>(1);
             } else if (childElements.size() > 0) {
                 InputElement last = childElements.get(childElements.size() - 1);
                 last.nextElement = input;
@@ -377,12 +376,9 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             transformer.transform(source, result);
             String xmlString = result.getWriter().toString();
 
-            try (FileWriter writer = new FileWriter(file);) {
-                writer.write(xmlString);
-            }
-
-            TmfTraceType.getInstance().addCustomTraceType(TmfTraceType.CUSTOM_XML_CATEGORY, definitionName);
-
+            FileWriter writer = new FileWriter(file);
+            writer.write(xmlString);
+            writer.close();
         } catch (ParserConfigurationException e) {
             Activator.getDefault().logError("Error saving CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
         } catch (TransformerConfigurationException e) {
@@ -497,7 +493,7 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
                 return new CustomXmlTraceDefinition[0];
             }
 
-            ArrayList<CustomXmlTraceDefinition> defList = new ArrayList<>();
+            ArrayList<CustomXmlTraceDefinition> defList = new ArrayList<CustomXmlTraceDefinition>();
             NodeList nodeList = root.getChildNodes();
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
@@ -727,12 +723,9 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             transformer.transform(source, result);
             String xmlString = result.getWriter().toString();
 
-            try (FileWriter writer = new FileWriter(file);) {
-                writer.write(xmlString);
-            }
-
-            TmfTraceType.getInstance().removeCustomTraceType(TmfTraceType.CUSTOM_XML_CATEGORY, definitionName);
-
+            FileWriter writer = new FileWriter(file);
+            writer.write(xmlString);
+            writer.close();
         } catch (ParserConfigurationException e) {
             Activator.getDefault().logError("Error deleteing CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
         } catch (SAXException e) {

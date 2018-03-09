@@ -64,7 +64,7 @@ public class ListEditor extends org.eclipse.jface.preference.ListEditor {
 	 @Override
 	protected String[] parseString(String stringList) {
         StringTokenizer st = new StringTokenizer(stringList, File.pathSeparator + "\n\r"); //$NON-NLS-1$
-        ArrayList<Object> v = new ArrayList<>();
+        ArrayList<Object> v = new ArrayList<Object>();
         while (st.hasMoreElements()) {
             v.add(st.nextElement());
         }

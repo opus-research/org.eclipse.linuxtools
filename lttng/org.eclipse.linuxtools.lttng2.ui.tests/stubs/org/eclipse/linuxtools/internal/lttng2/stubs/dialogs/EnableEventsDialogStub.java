@@ -46,7 +46,7 @@ public class EnableEventsDialogStub implements IEnableEventsDialog {
     private TraceLogLevel fLogLevel;
     private LogLevelType fLogLevelType;
     private String fFilter;
-    private List<String> fNames = new ArrayList<>();
+    List<String> fNames = new ArrayList<String>();
 
     // ------------------------------------------------------------------------
     // Accessors

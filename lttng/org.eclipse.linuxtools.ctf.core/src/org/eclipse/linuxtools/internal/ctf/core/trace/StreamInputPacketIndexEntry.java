@@ -70,7 +70,7 @@ public class StreamInputPacketIndexEntry {
     /**
      * Attributes of this index entry
      */
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<String, Object>();
 
 
     // ------------------------------------------------------------------------

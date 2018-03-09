@@ -321,7 +321,7 @@ public class Uml2SDTestFacility {
      */
     public void createFilterCriteria() {
         // Create Filter Criteria and save tme
-        final List<FilterCriteria> filterToSave = new ArrayList<>();
+        final List<FilterCriteria> filterToSave = new ArrayList<FilterCriteria>();
         Criteria criteria = new Criteria();
         criteria.setLifeLineSelected(true);
         criteria.setExpression(IUml2SDTestConstants.FIRST_PLAYER_NAME);
