@@ -8,16 +8,12 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
- *   Patrick Tasse - Refactor resource change listener
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
@@ -101,14 +97,11 @@ public class TmfProjectElement extends TmfProjectModelElement {
     }
 
     // ------------------------------------------------------------------------
-    // TmfProjectModelElement
+    // TmfProjectElement
     // ------------------------------------------------------------------------
 
     @Override
     public void refresh() {
-        // make sure the model is updated in the current thread
-        refreshChildren();
-
         Display.getDefault().asyncExec(new Runnable(){
             @Override
             public void run() {
@@ -126,53 +119,16 @@ public class TmfProjectElement extends TmfProjectModelElement {
                     IViewPart viewPart = viewReference.getView(false);
                     if (viewPart instanceof CommonNavigator) {
                         CommonViewer commonViewer = ((CommonNavigator) viewPart).getCommonViewer();
-                        commonViewer.refresh(getResource());
+                        commonViewer.refresh();
                     }
                 }
             }});
     }
 
     @Override
-    void refreshChildren() {
-        IProject project = getResource();
-
-        // Get the children from the model
-        Map<String, ITmfProjectModelElement> childrenMap = new HashMap<>();
-        for (ITmfProjectModelElement element : getChildren()) {
-            childrenMap.put(element.getResource().getName(), element);
-        }
-
-        // Add the model folder if the corresponding resource exists and is not
-        // accounted for
-        IFolder folder = project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
-        if (folder != null && folder.exists()) {
-            String name = folder.getName();
-            ITmfProjectModelElement element = childrenMap.get(name);
-            if (element instanceof TmfTraceFolder) {
-                childrenMap.remove(name);
-            } else {
-                element = new TmfTraceFolder(TmfTraceFolder.TRACE_FOLDER_NAME, folder, this);
-            }
-            ((TmfTraceFolder) element).refreshChildren();
-        }
-
-        // Add the model folder if the corresponding resource exists and is not
-        // accounted for
-        folder = project.getFolder(TmfExperimentFolder.EXPER_FOLDER_NAME);
-        if (folder != null && folder.exists()) {
-            String name = folder.getName();
-            ITmfProjectModelElement element = childrenMap.get(name);
-            if (element instanceof TmfExperimentFolder) {
-                childrenMap.remove(name);
-            } else {
-                element = new TmfExperimentFolder(TmfExperimentFolder.EXPER_FOLDER_NAME, folder, this);
-            }
-            ((TmfExperimentFolder) element).refreshChildren();
-        }
-
-        // Cleanup dangling children from the model
-        for (ITmfProjectModelElement danglingChild : childrenMap.values()) {
-            removeChild(danglingChild);
+    public void resourceChanged(IResourceChangeEvent event) {
+        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+            refresh();
         }
     }
 
