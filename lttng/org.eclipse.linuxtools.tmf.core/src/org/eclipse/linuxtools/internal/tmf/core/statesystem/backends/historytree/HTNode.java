@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2012, 2013 Ericsson
- * Copyright (c) 2010, 2011 École Polytechnique de Montréal
+ * Copyright (c) 2010, 2013 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
  * All rights reserved. This program and the accompanying materials are
@@ -8,6 +8,9 @@
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
+ * Contributors:
+ *   Alexandre Montplaisir - Initial API and implementation
+ *   Florian Wininger - Add 2D Query support
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.historytree;
@@ -23,6 +26,7 @@ import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.tmf.core.interval.ITmfStateIntervalList;
 import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 
 /**
@@ -312,6 +316,26 @@ abstract class HTNode {
             if (intervals.get(i).getStartTime() <= t) {
                 stateInfo.set(intervals.get(i).getAttribute(), intervals.get(i));
             }
+        }
+        return;
+    }
+
+    /**
+     * The method to fill up the stateInfo (passed on from the Current State
+     * Tree when it does a query on the SHT). We add all intervals in that
+     * list.
+     *
+     * @param stateInfo
+     *            List of StateInterval to fill up
+     * @throws TimeRangeException
+     */
+    void writeInfoFromNode(ITmfStateIntervalList stateInfo) {
+        assert (this.isDone); // not sure this will always be the case...
+        if (intervals.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < intervals.size(); i++) {
+            stateInfo.add(intervals.get(i));
         }
         return;
     }
