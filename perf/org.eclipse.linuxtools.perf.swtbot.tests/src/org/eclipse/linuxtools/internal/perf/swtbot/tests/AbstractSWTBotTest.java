@@ -42,7 +42,7 @@ import org.osgi.framework.FrameworkUtil;
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
 public abstract class AbstractSWTBotTest extends AbstractTest {
-	private static final String PROJ_NAME = "fibTest2";
+	private static final String PROJ_NAME = "fibTest";
 
 	@BeforeClass
 	public static void setUpWorkbench() throws Exception {
