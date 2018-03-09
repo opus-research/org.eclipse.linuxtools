@@ -251,7 +251,6 @@ public interface ITmfTrace extends ITmfEventProvider {
      * @param analysisId
      *            The analysis module id
      * @return The {@link IAnalysisModule} object
-     * @since 3.0
      */
     IAnalysisModule getAnalysisModule(String analysisId);
 
@@ -262,7 +261,6 @@ public interface ITmfTrace extends ITmfEventProvider {
      * @param moduleclass
      *            Class returned module must extend
      * @return List of modules of class moduleclass
-     * @since 3.0
      */
     <T> Map<String, T> getAnalysisModules(Class<T> moduleclass);
 
@@ -274,7 +272,6 @@ public interface ITmfTrace extends ITmfEventProvider {
      * {@link Collections#unmodifiableMap}).
      *
      * @return The map of analysis modules
-     * @since 3.0
      */
     Map<String, IAnalysisModule> getAnalysisModules();
 

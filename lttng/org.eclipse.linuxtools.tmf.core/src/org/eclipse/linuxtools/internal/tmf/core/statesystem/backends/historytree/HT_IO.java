@@ -33,7 +33,7 @@ import java.nio.channels.FileChannel;
  */
 class HT_IO {
     /* Configuration of the History Tree */
-    private final HTConfig fConfig;
+    HTConfig fConfig;
 
     /* Fields related to the file I/O */
     private final FileInputStream fis;
@@ -141,13 +141,13 @@ class HT_IO {
         return this.fcOut;
     }
 
-    FileInputStream supplyATReader(int nodeOffset) {
+    FileInputStream supplyATReader(int node_offset) {
         try {
             /*
              * Position ourselves at the start of the Mapping section in the
              * file (which is right after the Blocks)
              */
-            seekFCToNodePos(fcIn, nodeOffset);
+            seekFCToNodePos(fcIn, node_offset);
         } catch (IOException e) {
             e.printStackTrace();
         }

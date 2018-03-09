@@ -14,7 +14,7 @@ package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.UUID;
@@ -99,7 +99,7 @@ public class StreamInput implements IDefinitionScope {
         this.stream = stream;
         this.fileChannel = fileChannel;
         this.file = file;
-        this.index = new StreamInputPacketIndex();
+        this.index = stream.getTrace().getIndex(this);
     }
 
     // ------------------------------------------------------------------------
@@ -122,6 +122,15 @@ public class StreamInput implements IDefinitionScope {
      */
     StreamInputPacketIndex getIndex() {
         return index;
+    }
+
+    /**
+     * Gets the filechannel of the streamInput. This is a limited Java resource.
+     *
+     * @return the filechannel
+     */
+    public FileChannel getFileChannel() {
+        return fileChannel;
     }
 
     /**
@@ -290,10 +299,6 @@ public class StreamInput implements IDefinitionScope {
                 + ((packetIndex.getPacketSizeBits() + 7) / 8);
     }
 
-    ByteBuffer getByteBufferAt(long position, long size) throws IOException {
-        return fileChannel.map(MapMode.READ_ONLY, position, size);
-    }
-
     /**
      * @param fileSizeBytes
      * @param packetOffsetBytes
@@ -302,7 +307,7 @@ public class StreamInput implements IDefinitionScope {
      * @return
      * @throws CTFReaderException
      */
-    private ByteBuffer createPacketBitBuffer(long fileSizeBytes,
+    private MappedByteBuffer createPacketBitBuffer(long fileSizeBytes,
             long packetOffsetBytes, StreamInputPacketIndexEntry packetIndex,
             BitBuffer bitBuffer) throws CTFReaderException {
         /*
@@ -323,10 +328,10 @@ public class StreamInput implements IDefinitionScope {
         /*
          * Map the packet.
          */
-        ByteBuffer bb;
+        MappedByteBuffer bb;
 
         try {
-            bb = getByteBufferAt(packetOffsetBytes, mapSize);
+            bb = fileChannel.map(MapMode.READ_ONLY, packetOffsetBytes, mapSize);
         } catch (IOException e) {
             throw new CTFReaderException(e);
         }
