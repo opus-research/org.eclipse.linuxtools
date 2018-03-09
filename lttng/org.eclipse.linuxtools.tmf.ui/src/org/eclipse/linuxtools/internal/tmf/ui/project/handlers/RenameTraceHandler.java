@@ -133,7 +133,7 @@ public class RenameTraceHandler extends AbstractHandler {
             return null;
         }
 
-        List<WorkspaceModifyOperation> removeOps = new ArrayList<>();
+        List<WorkspaceModifyOperation> removeOps = new ArrayList<WorkspaceModifyOperation>();
         TmfExperimentFolder experimentFolder = newTrace.getProject().getExperimentsFolder();
         for (final ITmfProjectModelElement experiment : experimentFolder.getChildren()) {
             for (final ITmfProjectModelElement trace : experiment.getChildren()) {

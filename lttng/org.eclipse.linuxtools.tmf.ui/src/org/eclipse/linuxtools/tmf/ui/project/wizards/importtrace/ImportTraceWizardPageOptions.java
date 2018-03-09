@@ -38,7 +38,7 @@ import org.eclipse.ui.IWorkbench;
 public class ImportTraceWizardPageOptions extends AbstractImportTraceWizardPage {
 
     private List fProjects;
-    private final Map<String, IProject> fProjectsMap = new LinkedHashMap<>();
+    private final Map<String, IProject> fProjectsMap = new LinkedHashMap<String, IProject>();
 
     /**
      * Import page that tells where the trace will go

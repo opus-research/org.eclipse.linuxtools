@@ -19,7 +19,7 @@ import java.util.List;
 public class CreaterepoTreeCategory {
 
 	private String name;
-	private List<String> tags = new ArrayList<>();
+	private List<String> tags = new ArrayList<String>();
 
 	/**
 	 * Default constructor to initialize name of the

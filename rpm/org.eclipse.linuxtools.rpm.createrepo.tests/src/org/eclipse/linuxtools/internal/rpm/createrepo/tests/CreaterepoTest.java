@@ -11,9 +11,6 @@
 package org.eclipse.linuxtools.internal.rpm.createrepo.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -60,7 +57,6 @@ public class CreaterepoTest {
 			fail("Failed due to system not having the 'createrepo' command, or it cannot be found."); //$NON-NLS-1$
 		}
 		testProject = new TestCreaterepoProject();
-		assertTrue(testProject.getProject().exists());
 	}
 
 	/**
@@ -71,7 +67,6 @@ public class CreaterepoTest {
 	@AfterClass
 	public static void tearDownAfterClass() throws CoreException {
 		testProject.dispose();
-		assertFalse(testProject.getProject().exists());
 	}
 
 	/**
@@ -83,7 +78,6 @@ public class CreaterepoTest {
 	@Before
 	public void setUp() throws CoreException {
 		project = testProject.getCreaterepoProject();
-		assertNotNull(project);
 		console = new MessageConsole("testConsole", null, null, true); //$NON-NLS-1$
 	}
 
@@ -97,7 +91,6 @@ public class CreaterepoTest {
 		IEclipsePreferences pref = project.getEclipsePreferences();
 		pref.clear();
 		pref.flush();
-		assertEquals(0, pref.keys().length);
 		console.destroy();
 	}
 

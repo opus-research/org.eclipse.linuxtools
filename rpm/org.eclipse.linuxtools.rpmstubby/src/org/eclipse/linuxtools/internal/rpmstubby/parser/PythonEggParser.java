@@ -43,8 +43,8 @@ public class PythonEggParser {
 	 * @throws IOException  Throws IOException
 	 */
 	public PythonEggParser(IFile file) throws IOException, CoreException {
-		setupOptions = new HashMap<>();
-		variables = new HashMap<>();
+		setupOptions = new HashMap<String, String>();
+		variables = new HashMap<String, String>();
 		// end if file is empty or cannot get its contents
 		if (file.getContents().available() <= 0) {
 			return;
@@ -61,8 +61,8 @@ public class PythonEggParser {
 	public void parse() {
 		String line = "";
 		String setupLine = "";
-		List<String> vars = new ArrayList<>();
-		List<String> list = new ArrayList<>();
+		List<String> vars = new ArrayList<String>();
+		List<String> list = new ArrayList<String>();
 		int offset = 0;
 		try {
 			RandomAccessFile raf = new RandomAccessFile(file.getRawLocation().makeAbsolute().toFile(), "r");
@@ -173,7 +173,7 @@ public class PythonEggParser {
 	 * @return The value of the variable
 	 */
 	public List<String> getValueList(String key) {
-		List<String> rc = new ArrayList<>();
+		List<String> rc = new ArrayList<String>();
 		Pattern pattern = Pattern.compile("^\\[(.*)\\]");
 		String[] temp = {};
 
@@ -199,7 +199,7 @@ public class PythonEggParser {
 	 * @return A list of setup options
 	 */
 	private static List<String> prepareSetupOptions(String setupLine) {
-		List<String> rc = new ArrayList<>();
+		List<String> rc = new ArrayList<String>();
 		String[] tempList = {};
 		// match the setup(...) pattern
 		Pattern pattern = Pattern.compile("\\bsetup\\b(\\s+)?\\((.*)\\)");
@@ -303,7 +303,7 @@ public class PythonEggParser {
 	 * @return The map containing the key->value pair
 	 */
 	private static Map<String, String> parseLine(String line) {
-		Map<String, String> rc = new HashMap<>();
+		Map<String, String> rc = new HashMap<String, String>();
 		Pattern pattern = Pattern.compile("(\\s+)?(\\w+)(\\s+)?=(\\s+)?(.*)");
 		Matcher variableMatcher = pattern.matcher(line);
 

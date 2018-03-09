@@ -338,7 +338,7 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
 
     private boolean checkForOverwrite() {
         TracePackageElement[] traceElements = (TracePackageElement[]) getElementViewer().getInput();
-        List<TracePackageTraceElement> noImportTraces = new ArrayList<>();
+        List<TracePackageTraceElement> noImportTraces = new ArrayList<TracePackageTraceElement>();
         boolean noToAll = false;
         for (TracePackageElement packageElement : traceElements) {
             TracePackageTraceElement traceElement = (TracePackageTraceElement) packageElement;

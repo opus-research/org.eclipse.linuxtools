@@ -69,7 +69,7 @@ public class TmfSchedulerTest {
     private long fEndTime;
     private TmfTimeRange fForegroundTimeRange;
 
-    private final List<String> fOrderList = new ArrayList<>();
+    private final List<String> fOrderList = new ArrayList<String>();
     private int fForegroundId = 0;
     private int fBackgroundId = 0;
 
@@ -339,7 +339,7 @@ public class TmfSchedulerTest {
     @Ignore
     @Test
     public void executionOrder() {
-        List<String> expectedOrder = new LinkedList<>();
+        List<String> expectedOrder = new LinkedList<String>();
         expectedOrder.add("FOREGROUND1");
         expectedOrder.add("FOREGROUND2");
         expectedOrder.add("FOREGROUND3");

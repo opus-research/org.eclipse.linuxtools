@@ -117,7 +117,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
         if (window == null) {
             return null;
         }
-        List<IStatus> statuses = new ArrayList<>();
+        List<IStatus> statuses = new ArrayList<IStatus>();
         boolean ok = true;
         for (Object element : fSelection.toList()) {
             TmfTraceElement trace = (TmfTraceElement) element;
