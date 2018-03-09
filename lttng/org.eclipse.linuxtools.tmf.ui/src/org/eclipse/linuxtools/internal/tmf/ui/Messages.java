@@ -273,6 +273,7 @@ public class Messages extends NLS {
     public static String FilterViewer_EmptyTreeHintText;
     public static String FilterViewer_CommonCategory;
     public static String FilterViewer_AlphaButtonText;
+    public static String FilterViewer_DeleteActionText;
     public static String FilterViewer_FieldLabel;
     public static String FilterViewer_FilterNameHint;
     public static String FilterViewer_IgnoreCaseButtonText;
@@ -297,11 +298,6 @@ public class Messages extends NLS {
     public static String CallStackView_ExitTimeColumn;
     public static String CallStackView_DurationColumn;
     public static String CallStackView_StackInfoNotAvailable;
-
-    public static String CallStackView_ImportMappingButtonText;
-    public static String CallStackView_ImportMappingButtonTooltip;
-    public static String CallStackView_ImportMappingDialogTitle;
-    public static String CallStackView_ImportMappingJobName;
 
     public static String ExportToTextJob_Export_to;
     public static String ExportToTextJob_Export_trace_to;
