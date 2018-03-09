@@ -84,7 +84,6 @@ public class FullTraceHistogram extends Histogram {
      */
     public void setFullRange(long startTime, long endTime) {
         fZoom.setFullRange(startTime, endTime);
-        fZoom.setNewRange(fRangeStartTime, fRangeDuration);
     }
 
     /**
@@ -104,7 +103,7 @@ public class FullTraceHistogram extends Histogram {
     // MouseListener
     // ------------------------------------------------------------------------
 
-    private int fStartDelta;
+    private int fStartPosition;
     private boolean fMouseMoved;
 
     @Override
@@ -113,8 +112,7 @@ public class FullTraceHistogram extends Histogram {
             if (event.button == 2 || (event.button == 1 && (event.stateMask & SWT.MODIFIER_MASK) == SWT.CTRL)) {
                 fDragState = DRAG_RANGE;
                 fDragButton = event.button;
-                int center = (int) (((fRangeStartTime + fRangeDuration / 2) - fScaledData.fFirstBucketTime) / fScaledData.fBucketDuration);
-                fStartDelta = center - event.x;
+                fStartPosition = event.x;
                 fMouseMoved = false;
                 return;
             } else if (event.button == 3) {
@@ -174,9 +172,18 @@ public class FullTraceHistogram extends Histogram {
     @Override
     public void mouseMove(MouseEvent event) {
         if (fDragState == DRAG_RANGE) {
-            int center = event.x + fStartDelta;
-            long newStart = getTimestamp(center) - fRangeDuration / 2;
-            fRangeStartTime = Math.max(getStartTime(), Math.min(getEndTime() - fRangeDuration, newStart));
+            int nbBuckets = event.x - fStartPosition;
+            long delta = nbBuckets * fScaledData.fBucketDuration;
+            long newStart = fZoom.getStartTime() + delta;
+            if (newStart < getStartTime()) {
+                newStart = getStartTime();
+            }
+            long newEnd = newStart + fZoom.getDuration();
+            if (newEnd > getEndTime()) {
+                newEnd = getEndTime();
+                newStart = newEnd - fZoom.getDuration();
+            }
+            fRangeStartTime = newStart;
             fCanvas.redraw();
             fMouseMoved = true;
             return;
