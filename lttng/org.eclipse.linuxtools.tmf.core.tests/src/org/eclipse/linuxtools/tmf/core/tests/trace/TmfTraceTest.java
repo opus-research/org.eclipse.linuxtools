@@ -39,6 +39,7 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
+import org.eclipse.linuxtools.tmf.core.statistics.ITmfStatistics;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
@@ -438,6 +439,13 @@ public class TmfTraceTest {
     // ------------------------------------------------------------------------
     // State system, statistics and modules methods
     // ------------------------------------------------------------------------
+
+    @Test
+    public void testGetStatistics() {
+        /* Should be null in unit tests */
+        ITmfStatistics stats = fTrace.getStatistics();
+        assertNull(stats);
+    }
 
     @Test
     public void testGetModulesByClass() {
@@ -1140,7 +1148,7 @@ public class TmfTraceTest {
 
     @Test
     public void testProcessEventRequestForAllEvents() throws InterruptedException {
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -1169,7 +1177,7 @@ public class TmfTraceTest {
     @Test
     public void testProcessEventRequestForNbEvents() throws InterruptedException {
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -1199,7 +1207,7 @@ public class TmfTraceTest {
     public void testProcessEventRequestForSomeEvents() throws InterruptedException {
         final long startTime = 100;
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(startTime, SCALE), TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -1230,7 +1238,7 @@ public class TmfTraceTest {
         final int startIndex = 99;
         final long startTime = 100;
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(startTime, SCALE), TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -1260,7 +1268,7 @@ public class TmfTraceTest {
     public void testProcessDataRequestForSomeEvents() throws InterruptedException {
         final int startIndex = 100;
         final int nbEvents  = 1000;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
                 TmfTimeRange.ETERNITY,
@@ -1295,7 +1303,7 @@ public class TmfTraceTest {
     @Test
     public void testCancel() throws InterruptedException {
         final int limit = 500;
-        final Vector<ITmfEvent> requestedEvents = new Vector<ITmfEvent>();
+        final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,

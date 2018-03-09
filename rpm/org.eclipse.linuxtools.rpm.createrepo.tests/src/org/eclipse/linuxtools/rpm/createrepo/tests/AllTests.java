@@ -10,11 +10,26 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.rpm.createrepo.tests;
 
+import org.eclipse.linuxtools.internal.rpm.createrepo.form.tests.CreaterepoImportRPMsPageTest;
+import org.eclipse.linuxtools.internal.rpm.createrepo.form.tests.CreaterepoMetadataPageTest;
+import org.eclipse.linuxtools.internal.rpm.createrepo.form.tests.CreaterepoRepoFormEditorTest;
+import org.eclipse.linuxtools.internal.rpm.createrepo.listener.tests.CreaterepoResourceListenerTest;
+import org.eclipse.linuxtools.internal.rpm.createrepo.preference.tests.CreaterepoPreferenceInitializationTest;
+import org.eclipse.linuxtools.internal.rpm.createrepo.tests.CreaterepoCommandCreatorTest;
+import org.eclipse.linuxtools.internal.rpm.createrepo.tests.CreaterepoTest;
+import org.eclipse.linuxtools.internal.rpm.createrepo.tree.tests.CreaterepoTreeCategoryTest;
+import org.eclipse.linuxtools.internal.rpm.createrepo.tree.tests.CreaterepoTreeTest;
+import org.eclipse.linuxtools.internal.rpm.createrepo.wizard.tests.CreaterepoWizardTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({CreaterepoProjectCreatorTest.class})
+@SuiteClasses({CreaterepoProjectCreatorTest.class, CreaterepoUtilsTest.class,
+	CreaterepoProjectTest.class, CreaterepoTreeCategoryTest.class, CreaterepoTreeTest.class,
+	CreaterepoWizardTest.class, CreaterepoTest.class, CreaterepoPreferenceInitializationTest.class,
+	CreaterepoRepoFormEditorTest.class, CreaterepoImportRPMsPageTest.class, CreaterepoMetadataPageTest.class,
+	CreaterepoResourceListenerTest.class, CreaterepoCommandCreatorTest.class})
 public class AllTests {
+	//Nothing here as annotation is important
 }

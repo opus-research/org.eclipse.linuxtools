@@ -114,11 +114,13 @@ public class TmfStateStatistics implements ITmfStatistics {
 
         final File totalsFile = new File(directory + TOTALS_STATE_FILENAME);
         final ITmfStateProvider totalsInput = new StatsProviderTotals(trace);
-        this.totalsStats = TmfStateSystemFactory.newFullHistory(totalsFile, totalsInput, true);
+        this.totalsStats = TmfStateSystemFactory.newFullHistory(totalsFile, totalsInput, false);
 
         final File typesFile = new File(directory + TYPES_STATE_FILENAME);
         final ITmfStateProvider typesInput = new StatsProviderEventTypes(trace);
-        this.typesStats = TmfStateSystemFactory.newFullHistory(typesFile, typesInput, true);
+        this.typesStats = TmfStateSystemFactory.newFullHistory(typesFile, typesInput, false);
+
+        registerStateSystems();
     }
 
     /**
@@ -156,24 +158,15 @@ public class TmfStateStatistics implements ITmfStatistics {
         final ITmfStateProvider typesInput = new StatsProviderEventTypes(trace);
         this.totalsStats = TmfStateSystemFactory.newFullHistory(totalsHistoryFile, totalsInput, true);
         this.typesStats = TmfStateSystemFactory.newFullHistory(typesHistoryFile, typesInput, true);
+        registerStateSystems();
     }
 
     /**
-     * Return the state system containing the "totals" values
-     *
-     * @return The "totals" state system
+     * Register the state systems used here into the trace's state system map.
      */
-    public ITmfStateSystem getTotalsSS() {
-        return totalsStats;
-    }
-
-    /**
-     * Return the state system containing the "event types" values
-     *
-     * @return The "event types" state system
-     */
-    public ITmfStateSystem getEventTypesSS() {
-        return typesStats;
+    private void registerStateSystems() {
+        trace.registerStateSystem(TOTALS_STATE_ID, totalsStats);
+        trace.registerStateSystem(TYPES_STATE_ID, typesStats);
     }
 
     // ------------------------------------------------------------------------
@@ -218,10 +211,11 @@ public class TmfStateStatistics implements ITmfStatistics {
 
     @Override
     public List<Long> histogramQuery(final long start, final long end, final int nb) {
-        final List<Long> list = new LinkedList<Long>();
+        final List<Long> list = new LinkedList<>();
         final long increment = (end - start) / nb;
 
-        if (!totalsStats.waitUntilBuilt()) {
+        totalsStats.waitUntilBuilt();
+        if (totalsStats.isCancelled()) {
             return list;
         }
 
@@ -284,7 +278,7 @@ public class TmfStateStatistics implements ITmfStatistics {
         /* We need the complete state history to be built to answer this. */
         typesStats.waitUntilBuilt();
 
-        Map<String, Long> map = new HashMap<String, Long>();
+        Map<String, Long> map = new HashMap<>();
         long endTime = typesStats.getCurrentEndTime();
 
         try {
@@ -342,7 +336,7 @@ public class TmfStateStatistics implements ITmfStatistics {
         // end time, and answer as soon as possible...
         typesStats.waitUntilBuilt();
 
-        Map<String, Long> map = new HashMap<String, Long>();
+        Map<String, Long> map = new HashMap<>();
 
         /* Make sure the start/end times are within the state history, so we
          * don't get TimeRange exceptions.
@@ -457,8 +451,10 @@ public class TmfStateStatistics implements ITmfStatistics {
      * @return If both state systems were built successfully
      */
     private boolean waitUntilBuilt() {
-        boolean check1 = totalsStats.waitUntilBuilt();
-        boolean check2 = typesStats.waitUntilBuilt();
+        totalsStats.waitUntilBuilt();
+        typesStats.waitUntilBuilt();
+        boolean check1 = !totalsStats.isCancelled();
+        boolean check2 = !typesStats.isCancelled();
         return (check1 && check2);
     }
 
