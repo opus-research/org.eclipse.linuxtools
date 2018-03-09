@@ -32,20 +32,19 @@ public class CreaterepoUtilsTest {
 	private static ConsolePlugin plugin;
 	private static IConsoleManager manager;
 
-	/**
-	 * Setup the console manager.
-	 */
 	@BeforeClass
-	public static void setUpBeforeClass() {
+	public static void setUpBeforeClass() throws Exception {
 		plugin = ConsolePlugin.getDefault();
 		manager = plugin.getConsoleManager();
 	}
 
 	/**
 	 * Find any consoles and remove them.
+	 *
+	 * @throws Exception
 	 */
 	@After
-	public void tearDown() {
+	public void tearDown() throws Exception {
 		if (manager != null) {
 			manager.removeConsoles(manager.getConsoles());
 		}
