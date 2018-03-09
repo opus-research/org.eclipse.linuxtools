@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ***************************************************************************
+ * Copyright (c) 2013 École Polytechnique de Montréal
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which
+ * accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Florian Wininger - Initial API and implementation
+ *************************************************************************** -->
+<tmfxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="stateprovider.xsd">
+
+	<stateprovider analysisid="polymtl.kernel.sp">
+		<head>
+			<tracetype id="org.eclipse.linuxtools.lttng2.kernel.tracetype" />
+			<name value="Xml kernel State System" />
+		</head>
+		<!-- StateValues -->
+		<stateValue name="CPU_STATUS_IDLE" value="0" />
+		<stateValue name="CPU_STATUS_RUN_USERMODE" value="1" />
+		<stateValue name="CPU_STATUS_RUN_SYSCALL" value="2" />
+		<stateValue name="CPU_STATUS_IRQ" value="3" />
+		<stateValue name="CPU_STATUS_SOFTIRQ" value="4" />
+
+		<stateValue name="PROCESS_STATUS_UNKNOWN" value="0" />
+		<stateValue name="PROCESS_STATUS_WAIT_BLOCKED" value="1" />
+		<stateValue name="PROCESS_STATUS_RUN_USERMODE" value="2" />
+		<stateValue name="PROCESS_STATUS_RUN_SYSCALL" value="3" />
+		<stateValue name="PROCESS_STATUS_INTERRUPTED" value="4" />
+		<stateValue name="PROCESS_STATUS_WAIT_FOR_CPU" value="5" />
+
+		<stateValue name="SOFT_IRQ_RAISED" value="-2" />
+
+		<!-- Shortcut Variables -->
+		<location id="CurrentThread">
+			<attribute constant="Threads" />
+			<attribute type="query">
+				<attribute constant="CPUs" />
+				<attribute eventfield="cpu" />
+				<attribute constant="Current_thread" />
+			</attribute>
+		</location>
+		<location id="CurrentCPU">
+			<attribute constant="CPUs" />
+			<attribute eventfield="cpu" />
+		</location>
+		<location id="CurrentIRQ">
+			<attribute constant="Resources" />
+			<attribute constant="IRQs" />
+			<attribute eventfield="irq" />
+		</location>
+		<location id="CurrentSoftIRQ">
+			<attribute constant="Resources" />
+			<attribute constant="Soft_IRQs" />
+			<attribute eventfield="vec" />
+		</location>
+		<location id="newCurrentThread">
+			<attribute constant="Threads" />
+			<attribute eventfield="next_tid" />
+		</location>
+
+		<!-- case 1 : exit_syscall : Fields: int64 ret -->
+		<eventHandler eventname="exit_syscall">
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="System_call" />
+				<value type="null" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_RUN_USERMODE" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentCPU" />
+				<attribute constant="Status" />
+				<value int="$CPU_STATUS_RUN_USERMODE" />
+			</stateChange>
+		</eventHandler>
+		<!-- case 2 : irq_handler_entry : Fields: int32 irq, string name -->
+		<eventHandler eventname="irq_handler_entry">
+			<stateChange>
+				<attribute location="CurrentIRQ" />
+				<value eventfield="cpu" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_INTERRUPTED" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentCPU" />
+				<attribute constant="Status" />
+				<value int="$CPU_STATUS_IRQ" />
+			</stateChange>
+		</eventHandler>
+		<!-- case 3 : irq_handler_exit : Fields: int32 irq, int32 ret -->
+		<eventHandler eventname="irq_handler_exit">
+			<stateChange>
+				<attribute location="CurrentIRQ" />
+				<value type="null" />
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="CurrentThread" />
+						<attribute constant="System_call" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentThread" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_RUN_USERMODE" />
+				</then>
+				<else>
+					<attribute location="CurrentThread" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_RUN_SYSCALL" />
+				</else>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="CurrentThread" />
+						<attribute constant="System_call" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_RUN_USERMODE" />
+				</then>
+				<else>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_RUN_SYSCALL" />
+				</else>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="CurrentCPU" />
+						<attribute constant="Current_thread" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_IDLE" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="CurrentCPU" />
+						<attribute constant="Current_thread" />
+						<value int="0" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_IDLE" />
+				</then>
+			</stateChange>
+		</eventHandler>
+		<!-- case 4 : softirq_entry : Fields: int32 vec -->
+		<eventHandler eventname="softirq_entry">
+			<stateChange>
+				<attribute location="CurrentSoftIRQ" />
+				<value eventfield="cpu" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_INTERRUPTED" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentCPU" />
+				<attribute constant="Status" />
+				<value int="$CPU_STATUS_SOFTIRQ" />
+			</stateChange>
+		</eventHandler>
+		<!-- case 5 : softirq_exit : Fields: int32 vec -->
+		<eventHandler eventname="softirq_exit">
+			<stateChange>
+				<attribute location="CurrentSoftIRQ" />
+				<value type="null" />
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="CurrentThread" />
+						<attribute constant="System_call" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentThread" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_RUN_USERMODE" />
+				</then>
+				<else>
+					<attribute location="CurrentThread" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_RUN_SYSCALL" />
+				</else>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="CurrentThread" />
+						<attribute constant="System_call" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_RUN_USERMODE" />
+				</then>
+				<else>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_RUN_SYSCALL" />
+				</else>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="CurrentCPU" />
+						<attribute constant="Current_thread" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_IDLE" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="CurrentCPU" />
+						<attribute constant="Current_thread" />
+						<value int="0" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_IDLE" />
+				</then>
+			</stateChange>
+		</eventHandler>
+		<!-- case 6 : softirq_raise : Fields: int32 vec -->
+		<eventHandler eventname="softirq_raise">
+			<stateChange>
+				<attribute location="CurrentSoftIRQ" />
+				<value int="$SOFT_IRQ_RAISED" />
+			</stateChange>
+		</eventHandler>
+		<!-- case 7 : sched_switch : Fields: string prev_comm, int32 prev_tid, 
+			int32 prev_prio, int64 prev_state, string next_comm, int32 next_tid, int32 
+			next_prio -->
+		<eventHandler eventname="sched_switch">
+			<stateChange>
+				<if>
+					<condition>
+						<eventfield name="prev_state" />
+						<value long="0" />
+					</condition>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="prev_tid" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_WAIT_FOR_CPU" />
+				</then>
+				<else>
+					<attribute constant="Threads" />
+					<attribute eventfield="prev_tid" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+				</else>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="newCurrentThread" />
+						<attribute constant="System_call" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="newCurrentThread" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_RUN_USERMODE" />
+				</then>
+				<else>
+					<attribute location="newCurrentThread" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_RUN_SYSCALL" />
+				</else>
+			</stateChange>
+			<stateChange>
+				<attribute location="newCurrentThread" />
+				<attribute constant="Exec_name" />
+				<value eventfield="next_comm" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentCPU" />
+				<attribute constant="Current_thread" />
+				<value eventfield="next_tid" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<if>
+					<and>
+						<not>
+							<condition>
+								<eventfield name="next_tid" />
+								<value long="0" />
+							</condition>
+						</not>
+						<condition>
+							<attribute location="newCurrentThread" />
+							<attribute constant="System_call" />
+							<value type="null" />
+						</condition>
+					</and>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_RUN_USERMODE" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<and>
+						<not>
+							<condition>
+								<eventfield name="next_tid" />
+								<value long="0" />
+							</condition>
+						</not>
+						<not>
+							<condition>
+								<attribute location="newCurrentThread" />
+								<attribute constant="System_call" />
+								<value type="null" />
+							</condition>
+						</not>
+					</and>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_RUN_SYSCALL" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<eventfield name="next_tid" />
+						<value long="0" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_IDLE" />
+				</then>
+			</stateChange>
+		</eventHandler>
+		<!-- case 8 : sched_process_fork : Fields: string parent_comm, int32 parent_tid, 
+			string child_comm, int32 child_tid -->
+		<eventHandler eventname="sched_process_fork">
+			<stateChange>
+				<attribute constant="Threads" />
+				<attribute eventfield="child_tid" />
+				<attribute constant="PPID" />
+				<value eventfield="parent_tid" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<attribute constant="Threads" />
+				<attribute eventfield="child_tid" />
+				<attribute constant="Exec_name" />
+				<value eventfield="child_comm" />
+			</stateChange>
+			<stateChange>
+				<attribute constant="Threads" />
+				<attribute eventfield="child_tid" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_WAIT_FOR_CPU" />
+			</stateChange>
+			<stateChange>
+				<attribute constant="Threads" />
+				<attribute eventfield="child_tid" />
+				<attribute constant="System_call" />
+				<value type="query">
+					<attribute constant="Threads" />
+					<attribute eventfield="parent_tid" />
+					<attribute constant="System_call" />
+				</value>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute constant="Threads" />
+						<attribute eventfield="child_tid" />
+						<attribute constant="System_call" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="child_tid" />
+					<attribute constant="System_call" />
+					<value string="sys_clone" />
+				</then>
+			</stateChange>
+		</eventHandler>
+		<!-- case 10 : sched_process_free : Fields: string parent_comm, int32 parent_tid, 
+			string child_comm, int32 child_tid -->
+		<eventHandler eventname="sched_process_free">
+			<stateChange>
+				<attribute constant="Threads" />
+				<attribute eventfield="tid" />
+				<value type="delete" />
+			</stateChange>
+		</eventHandler>
+		<!-- case 11 : lttng_statedump_process_state : Fields: int32 type, int32 
+			mode, int32 pid, int32 submode, int32 vpid, int32 ppid, int32 tid, string 
+			name, int32 status, int32 vtid -->
+		<eventHandler eventname="lttng_statedump_process_state">
+			<stateChange>
+				<if>
+					<condition>
+						<attribute constant="Threads" />
+						<attribute eventfield="tid" />
+						<attribute constant="Exec_name" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="tid" />
+					<attribute constant="Exec_name" />
+					<value eventfield="name" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute constant="Threads" />
+						<attribute eventfield="tid" />
+						<attribute constant="PPID" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="tid" />
+					<attribute constant="PPID" />
+					<value eventfield="ppid" forcedtype="int" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<and>
+						<condition>
+							<attribute constant="Threads" />
+							<attribute eventfield="tid" />
+							<attribute constant="Status" />
+							<value type="null" />
+						</condition>
+						<condition>
+							<eventfield name="status" />
+							<value long="2" />
+						</condition>
+					</and>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="tid" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_WAIT_FOR_CPU" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<and>
+						<condition>
+							<attribute constant="Threads" />
+							<attribute eventfield="tid" />
+							<attribute constant="Status" />
+							<value type="null" />
+						</condition>
+						<condition>
+							<eventfield name="status" />
+							<value long="5" />
+						</condition>
+					</and>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="tid" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute constant="Threads" />
+						<attribute eventfield="tid" />
+						<attribute constant="Status" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="tid" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_UNKNOWN" />
+				</then>
+			</stateChange>
+		</eventHandler>
+		<!-- case 12 : sched_wakeup : case 13 : sched_wakeup_new : Fields (same 
+			fields for both types): string comm, int32 tid, int32 prio, int32 success, 
+			int32 target_cpu -->
+		<eventHandler eventname="sched_wakeup*">
+			<stateChange>
+				<if>
+					<and>
+						<not>
+							<condition>
+								<attribute constant="Threads" />
+								<attribute eventfield="tid" />
+								<attribute constant="Status" />
+								<value int="$PROCESS_STATUS_RUN_USERMODE" />
+							</condition>
+						</not>
+						<not>
+							<condition>
+								<attribute constant="Threads" />
+								<attribute eventfield="tid" />
+								<attribute constant="Status" />
+								<value int="$PROCESS_STATUS_RUN_SYSCALL" />
+							</condition>
+						</not>
+					</and>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="tid" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_WAIT_FOR_CPU" />
+				</then>
+			</stateChange>
+		</eventHandler>
+		<!-- delfault : syscall -->
+		<eventHandler eventname="sys_*">
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="System_call" />
+				<value type="eventname" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_RUN_SYSCALL" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentCPU" />
+				<attribute constant="Status" />
+				<value int="$CPU_STATUS_RUN_SYSCALL" />
+			</stateChange>
+		</eventHandler>
+		<!-- delfault : compat_syscall -->
+		<eventHandler eventname="compat_sys_*">
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="System_call" />
+				<value type="eventname" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_RUN_SYSCALL" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentCPU" />
+				<attribute constant="Status" />
+				<value int="$CPU_STATUS_RUN_SYSCALL" />
+			</stateChange>
+		</eventHandler>
+	</stateprovider>
+</tmfxml>

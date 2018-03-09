@@ -10,19 +10,19 @@
  *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.analysis.xml.core.tests;
+package org.eclipse.linuxtools.tmf.analysis.xml.core.tests.stateprovider;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Master test suite for TMF Xml Core Analysis plug-in.
+ * Test suite for org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider
+ * package
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        XmlAnalysisCorePluginTest.class,
-        org.eclipse.linuxtools.tmf.analysis.xml.core.tests.module.AllTests.class
-})
-public class AllAnalysisXmlCoreTests {
+        StateProviderTest.class,
+        StateProviderModuleTest.class })
+public class AllTests {
 
 }

@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ***************************************************************************
+ * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2013 Florian Wininger <florian.wininger@polymtl.ca>
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which
+ * accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Florian Wininger - Initial API and implementation
+ *************************************************************************** -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	attributeFormDefault="unqualified" elementFormDefault="qualified">
+
+	<xs:element name="tmfxml">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="view" type="view" />
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="stateprovider" type="stateProvider" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="view">
+		<xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="0" name="head" type="headview" />
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="stateValue"
+				type="stateValue" />
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="line"
+				type="line" />
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="headview">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="analysis">
+				<xs:complexType>
+					<xs:attribute name="id" />
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="line">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="option">
+				<xs:complexType>
+					<xs:attribute name="name" type="xs:string" use="required" />
+					<xs:attribute name="path" type="xs:string" use="required" />
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:string" use="required" />
+		<xs:attribute name="display" type="xs:string" use="required" />
+		<xs:attribute name="name" type="xs:string" use="optional" />
+		<xs:attribute name="parent" type="xs:string" use="optional" />
+	</xs:complexType>
+
+	<xs:complexType name="stateProvider">
+		<xs:sequence maxOccurs="1" minOccurs="1">
+			<xs:element maxOccurs="1" minOccurs="0" name="head"
+				type="headprovider" />
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="stateValue"
+				type="stateValue" />
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="location"
+				type="location" />
+			<xs:element maxOccurs="unbounded" minOccurs="1" name="eventHandler"
+				type="eventHandler" />
+		</xs:sequence>
+		<xs:attribute name="analysisid" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="headprovider">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="tracetype">
+				<xs:complexType>
+					<xs:attribute name="id" />
+				</xs:complexType>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="name">
+				<xs:complexType>
+					<xs:attribute name="value" />
+				</xs:complexType>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="view">
+				<xs:complexType>
+					<xs:attribute name="id" />
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="stateValue">
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="value" type="xs:string" use="required" />
+		<xs:attribute name="color" type="xs:string" use="optional" />
+	</xs:complexType>
+
+	<xs:complexType name="location">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="1" name="attribute"
+				type="attribute" />
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:string" use="required" />
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:complexType name="eventHandler">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="1" name="stateChange"
+				type="stateChange" />
+		</xs:sequence>
+		<xs:attribute name="eventname" type="xs:string" use="required" />
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:complexType name="stateChange">
+		<xs:choice maxOccurs="1" minOccurs="1">
+			<xs:sequence maxOccurs="1" minOccurs="1">
+				<xs:element maxOccurs="unbounded" minOccurs="1" name="attribute"
+					type="attribute" />
+				<xs:element maxOccurs="1" minOccurs="1" name="value"
+					type="value" />
+			</xs:sequence>
+			<xs:sequence maxOccurs="1" minOccurs="1">
+				<xs:element maxOccurs="1" minOccurs="1" name="if"
+					type="conditionSingle" />
+				<xs:element maxOccurs="1" minOccurs="1" name="then"
+					type="stateAssignation" />
+				<xs:element maxOccurs="1" minOccurs="0" name="else"
+					type="stateAssignation" />
+			</xs:sequence>
+		</xs:choice>
+	</xs:complexType>
+
+	<xs:complexType name="stateAssignation">
+		<xs:sequence maxOccurs="1" minOccurs="1">
+			<xs:element maxOccurs="unbounded" minOccurs="1" name="attribute"
+				type="attribute" />
+			<xs:element maxOccurs="1" minOccurs="1" name="value" type="value" />
+		</xs:sequence>
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:complexType name="condition">
+		<xs:sequence maxOccurs="1" minOccurs="1">
+			<xs:choice maxOccurs="1" minOccurs="1">
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="attribute"
+					type="attribute" />
+				<xs:element maxOccurs="1" minOccurs="0" name="eventfield"
+					type="eventfield" />
+			</xs:choice>
+			<xs:choice maxOccurs="1" minOccurs="1">
+				<xs:element maxOccurs="1" minOccurs="1" name="value"
+					type="value" />
+			</xs:choice>
+		</xs:sequence>
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:complexType name="conditionSingle">
+		<xs:choice maxOccurs="1" minOccurs="1">
+			<xs:element name="condition" type="condition" />
+			<xs:element name="not" type="conditionSingle" />
+			<xs:element name="and" type="conditionMultiple" />
+			<xs:element name="or" type="conditionMultiple" />
+		</xs:choice>
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:complexType name="conditionMultiple">
+		<xs:sequence maxOccurs="unbounded" minOccurs="1">
+			<xs:element maxOccurs="1" minOccurs="0" name="condition"
+				type="condition" />
+			<xs:element maxOccurs="1" minOccurs="0" name="or"
+				type="conditionMultiple" />
+			<xs:element maxOccurs="1" minOccurs="0" name="and"
+				type="conditionMultiple" />
+			<xs:element maxOccurs="1" minOccurs="0" name="not"
+				type="conditionSingle" />
+		</xs:sequence>
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:complexType name="attribute">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="attribute"
+				type="attribute" />
+		</xs:sequence>
+		<xs:attribute name="constant" type="xs:string" />
+		<xs:attribute name="eventfield" type="xs:string" />
+		<xs:attribute name="location" type="xs:string" />
+		<xs:attribute name="type">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="null" />
+					<xs:enumeration value="query" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="value">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="attribute"
+				type="attribute" />
+		</xs:sequence>
+		<xs:attribute name="int" type="xs:string" />
+		<xs:attribute name="long" type="xs:string" />
+		<xs:attribute name="eventfield" type="xs:string" />
+		<xs:attribute name="type">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="null" />
+					<xs:enumeration value="query" />
+					<xs:enumeration value="delete" />
+					<xs:enumeration value="eventname" />
+					<xs:enumeration value="increment" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="stack">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="pop"/>
+					<xs:enumeration value="push"/>
+					<xs:enumeration value="peek"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="forcedtype">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="int" />
+					<xs:enumeration value="long" />
+					<xs:enumeration value="string" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="string" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="eventfield">
+		<xs:attribute name="name" type="xs:string" use="required" />
+	</xs:complexType>
+
+</xs:schema>
