@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -98,6 +99,17 @@ public class EnumDeclaration implements IDeclaration {
         return table.query(value);
     }
 
+    /**
+     * @return gets a list of values that are garantied to be in each enum
+     */
+    public List<Long> getAValuePerEnum(){
+        List<Long> retVal = new ArrayList<Long>();
+        for( Range r : table.getRanges()){
+            retVal.add(r.low);
+        }
+        return retVal;
+    }
+
     /*
      * Maps integer range -> string. A simple list for now, but feel free to
      * optimize it. Babeltrace suggests an interval tree.
@@ -107,6 +119,10 @@ public class EnumDeclaration implements IDeclaration {
         private List<Range> ranges = new LinkedList<Range>();
 
         public EnumTable() {
+        }
+
+        public List<Range> getRanges(){
+            return ranges;
         }
 
         public boolean add(long low, long high, String label) {
@@ -137,25 +153,26 @@ public class EnumDeclaration implements IDeclaration {
             return null;
         }
 
-        private static class Range {
+    }
 
-            private long low, high;
-            private String str;
+    static class Range {
 
-            public Range(long low, long high, String str) {
-                this.low = low;
-                this.high = high;
-                this.str = str;
-            }
+        private long low, high;
+        private String str;
 
-            public boolean intersects(long i) {
-                return (i >= this.low) && (i <= this.high);
-            }
+        public Range(long low, long high, String str) {
+            this.low = low;
+            this.high = high;
+            this.str = str;
+        }
 
-            public boolean intersects(Range other) {
-                return this.intersects(other.low)
-                        || this.intersects(other.high);
-            }
+        public boolean intersects(long i) {
+            return (i >= this.low) && (i <= this.high);
+        }
+
+        public boolean intersects(Range other) {
+            return this.intersects(other.low)
+                    || this.intersects(other.high);
         }
     }
 

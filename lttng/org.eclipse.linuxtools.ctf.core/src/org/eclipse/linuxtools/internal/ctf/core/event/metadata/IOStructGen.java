@@ -38,6 +38,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Stream;
 import org.eclipse.linuxtools.ctf.parser.CTFParser;
@@ -1987,6 +1988,14 @@ public class IOStructGen {
 
                 variantTag = variantTagIdentifier.getText();
 
+                IDeclaration decl = getCurrentScope().rLookupIdentifier(variantTag);
+                if (decl == null) {
+                    throw new ParseException("Variant tag not found" + ':' + variantTag); //$NON-NLS-1$
+                }
+                if (!(decl instanceof EnumDeclaration)) {
+                    throw new ParseException("Variant tag must be an enum"); //$NON-NLS-1$
+                }
+
                 break;
             case CTFParser.VARIANT_BODY:
 
@@ -2049,6 +2058,30 @@ public class IOStructGen {
 
         if (hasTag) {
             variantDeclaration.setTag(variantTag);
+
+            IDeclaration decl = getCurrentScope().rLookupIdentifier(variantTag);
+            if (decl == null) {
+                throw new ParseException("Variant tag not found" + ':' + variantTag); //$NON-NLS-1$
+            }
+            if (!(decl instanceof EnumDeclaration)) {
+                throw new ParseException("Variant tag must be an enum"); //$NON-NLS-1$
+            }
+            EnumDeclaration variantTagDecl = (EnumDeclaration) decl;
+            List<Long> aValuePerEnum = variantTagDecl.getAValuePerEnum();
+
+            for( String field : variantDeclaration.getFields().keySet()){
+                boolean found = false;
+                for( long low : aValuePerEnum){
+                    if( variantTagDecl.query(low).equals(field)){
+                        found = true;
+                    }
+                }
+                if( !found ){
+                    throw new ParseException("Variant tag expected to have range: " + field); //$NON-NLS-1$
+                }
+            }
+
+
         }
 
         return variantDeclaration;

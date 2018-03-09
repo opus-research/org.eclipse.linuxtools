@@ -22,10 +22,7 @@ import java.util.List;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -39,10 +36,10 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parameterized.class)
 public class CtfTestSuiteTests {
-
-    /** Time-out tests after 10 seconds. */
-    @Rule
-    public TestRule globalTimeout = new Timeout(10000);
+//
+//    /** Time-out tests after 10 seconds. */
+//    @Rule
+//    public TestRule globalTimeout = new Timeout(10000);
 
     private static final String basePath = "traces/ctf-testsuite/tests/1.8/";
 
