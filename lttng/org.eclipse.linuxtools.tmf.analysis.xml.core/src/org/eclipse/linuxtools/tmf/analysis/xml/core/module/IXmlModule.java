@@ -10,19 +10,22 @@
  *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.analysis.xml.core.tests;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+package org.eclipse.linuxtools.tmf.analysis.xml.core.module;
 
 /**
- * Master test suite for TMF XML Core Analysis plug-in.
+ * Interface that XML analysis modules may implement to interpret the header
+ * information in the XML
+ *
+ * @author Geneviève Bastien
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        XmlAnalysisCorePluginTest.class,
-        org.eclipse.linuxtools.tmf.analysis.xml.core.tests.module.AllTests.class
-})
-public class AllAnalysisXmlCoreTests {
+public interface IXmlModule {
+
+    /**
+     * Set the header information node associated with this module
+     *
+     * @param headInfo
+     *            The header information
+     */
+    void setHeadInfo(XmlHeadInfo headInfo);
 
 }
