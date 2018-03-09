@@ -17,10 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesEntry.Type;
 import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.linuxtools.lttng2.kernel.ui.analysis.LttngKernelAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
@@ -97,10 +99,12 @@ public class ResourcesView extends AbstractTimeGraphView {
             }
             if (aTrace instanceof LttngKernelTrace) {
                 LttngKernelTrace lttngKernelTrace = (LttngKernelTrace) aTrace;
-                ITmfStateSystem ssq = lttngKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
-                if (!ssq.waitUntilBuilt()) {
+                LttngKernelAnalysisModule module = lttngKernelTrace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
+                module.schedule();
+                if (!module.waitForCompletion(new NullProgressMonitor())) {
                     return;
                 }
+                ITmfStateSystem ssq = module.getStateSystem();
                 long startTime = ssq.getStartTime();
                 long endTime = ssq.getCurrentEndTime() + 1;
                 ResourcesEntry groupEntry = new ResourcesEntry(lttngKernelTrace, aTrace.getName(), startTime, endTime, 0);
@@ -146,7 +150,8 @@ public class ResourcesView extends AbstractTimeGraphView {
                 return;
             }
             LttngKernelTrace lttngKernelTrace = traceEntry.getTrace();
-            ITmfStateSystem ssq = lttngKernelTrace.getStateSystems().get(LttngKernelTrace.STATE_ID);
+            LttngKernelAnalysisModule module = lttngKernelTrace.getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
+            ITmfStateSystem ssq = module.getStateSystem();
             long startTime = ssq.getStartTime();
             long endTime = ssq.getCurrentEndTime() + 1;
             long resolution = (endTime - startTime) / getDisplayWidth();
@@ -163,7 +168,8 @@ public class ResourcesView extends AbstractTimeGraphView {
             long startTime, long endTime, long resolution,
             IProgressMonitor monitor) {
         ResourcesEntry resourcesEntry = (ResourcesEntry) entry;
-        ITmfStateSystem ssq = resourcesEntry.getTrace().getStateSystems().get(LttngKernelTrace.STATE_ID);
+        LttngKernelAnalysisModule module = resourcesEntry.getTrace().getAnalysisModules(LttngKernelAnalysisModule.class).get(LttngKernelAnalysisModule.ID);
+        ITmfStateSystem ssq = module.getStateSystem();
         final long realStart = Math.max(startTime, ssq.getStartTime());
         final long realEnd = Math.min(endTime, ssq.getCurrentEndTime() + 1);
         if (realEnd <= realStart) {
