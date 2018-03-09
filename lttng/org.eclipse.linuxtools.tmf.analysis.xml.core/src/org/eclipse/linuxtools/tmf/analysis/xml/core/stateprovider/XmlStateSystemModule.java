@@ -27,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
  * @since 3.0
  */
 public class XmlStateSystemModule extends TmfStateSystemAnalysisModule
-        implements IXmlModule {
+    implements IXmlModule {
 
     private IPath fXmlFile;
     private XmlHeadInfo fHeadInfo = null;

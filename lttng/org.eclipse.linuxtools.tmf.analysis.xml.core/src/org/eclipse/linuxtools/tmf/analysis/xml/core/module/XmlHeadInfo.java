@@ -15,7 +15,7 @@ package org.eclipse.linuxtools.tmf.analysis.xml.core.module;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.XmlStrings;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlStrings;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 import org.w3c.dom.Element;
@@ -86,13 +86,13 @@ public class XmlHeadInfo {
      * @return The name
      */
     public String getName() {
-        List<Element> elements = getElements(XmlStrings.NAME);
+        List<Element> elements = getElements(TmfXmlStrings.NAME);
         if (elements.isEmpty()) {
             return null;
         }
 
         Element element = elements.get(0);
-        return element.getAttribute(XmlStrings.VALUE);
+        return element.getAttribute(TmfXmlStrings.VALUE);
     }
 
 }

@@ -24,7 +24,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.XmlStrings;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlStrings;
 import org.eclipse.linuxtools.tmf.analysis.xml.ui.module.TmfAnalysisModuleHelperXml.XmlAnalysisModuleType;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleSource;
@@ -78,7 +78,7 @@ public class XmlAnalysisModuleSource implements IAnalysisModuleSource {
 
 				/* get State Providers modules */
 				NodeList stateproviderNodes = doc
-						.getElementsByTagName(XmlStrings.STATEPROVIDER);
+						.getElementsByTagName(TmfXmlStrings.STATE_PROVIDER);
 				for (int i = 0; i < stateproviderNodes.getLength(); i++) {
 					Element node = (Element) stateproviderNodes.item(i);
 

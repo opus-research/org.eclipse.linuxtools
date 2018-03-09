@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ***************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
- *
- * All rights reserved. This program and the accompanying materials are
- * made available under the terms of the Eclipse Public License v1.0 which
- * accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *   Florian Wininger - Initial API and implementation
- *************************************************************************** -->
+* Copyright (c) 2013 École Polytechnique de Montréal
+*
+* All rights reserved. This program and the accompanying materials are
+* made available under the terms of the Eclipse Public License v1.0 which
+* accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+*
+* Contributors:
+* 	Florian Wininger - Initial API and implementation
+*************************************************************************** -->
 <tmfxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="stateprovider.xsd">
 
@@ -267,8 +267,8 @@
 				<value int="$SOFT_IRQ_RAISED" />
 			</stateChange>
 		</eventHandler>
-		<!-- case 7 : sched_switch : Fields: string prev_comm, int32 prev_tid, 
-			int32 prev_prio, int64 prev_state, string next_comm, int32 next_tid, int32 
+		<!-- case 7 : sched_switch : Fields: string prev_comm, int32 prev_tid,
+			int32 prev_prio, int64 prev_state, string next_comm, int32 next_tid, int32
 			next_prio -->
 		<eventHandler eventname="sched_switch">
 			<stateChange>
@@ -380,7 +380,7 @@
 				</then>
 			</stateChange>
 		</eventHandler>
-		<!-- case 8 : sched_process_fork : Fields: string parent_comm, int32 parent_tid, 
+		<!-- case 8 : sched_process_fork : Fields: string parent_comm, int32 parent_tid,
 			string child_comm, int32 child_tid -->
 		<eventHandler eventname="sched_process_fork">
 			<stateChange>
@@ -428,7 +428,7 @@
 				</then>
 			</stateChange>
 		</eventHandler>
-		<!-- case 10 : sched_process_free : Fields: string parent_comm, int32 parent_tid, 
+		<!-- case 10 : sched_process_free : Fields: string parent_comm, int32 parent_tid,
 			string child_comm, int32 child_tid -->
 		<eventHandler eventname="sched_process_free">
 			<stateChange>
@@ -437,8 +437,8 @@
 				<value type="delete" />
 			</stateChange>
 		</eventHandler>
-		<!-- case 11 : lttng_statedump_process_state : Fields: int32 type, int32 
-			mode, int32 pid, int32 submode, int32 vpid, int32 ppid, int32 tid, string 
+		<!-- case 11 : lttng_statedump_process_state : Fields: int32 type, int32
+			mode, int32 pid, int32 submode, int32 vpid, int32 ppid, int32 tid, string
 			name, int32 status, int32 vtid -->
 		<eventHandler eventname="lttng_statedump_process_state">
 			<stateChange>
@@ -534,8 +534,8 @@
 				</then>
 			</stateChange>
 		</eventHandler>
-		<!-- case 12 : sched_wakeup : case 13 : sched_wakeup_new : Fields (same 
-			fields for both types): string comm, int32 tid, int32 prio, int32 success, 
+		<!-- case 12 : sched_wakeup : case 13 : sched_wakeup_new : Fields (same
+			fields for both types): string comm, int32 tid, int32 prio, int32 success,
 			int32 target_cpu -->
 		<eventHandler eventname="sched_wakeup*">
 			<stateChange>

@@ -15,7 +15,7 @@ package org.eclipse.linuxtools.tmf.analysis.xml.ui.module;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlHeadInfo;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.XmlStrings;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlStrings;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceTypeHelper;
@@ -45,13 +45,13 @@ public class XmlHeadInfoUi extends XmlHeadInfo {
          * TODO: This wouldn't work for custom traces since {@link
          * TmfTraceType#getTraceType(String)} has no helper for those traces
          */
-        List<Element> elements = getElements(XmlStrings.TRACETYPE);
+        List<Element> elements = getElements(TmfXmlStrings.TRACETYPE);
         if (elements.isEmpty()) {
             return true;
         }
 
         for (Element element : elements) {
-            String traceTypeId = element.getAttribute(XmlStrings.ID);
+            String traceTypeId = element.getAttribute(TmfXmlStrings.ID);
             TraceTypeHelper helper = TmfTraceType.getInstance().getTraceType(
                     traceTypeId);
             if (helper != null) {

@@ -17,7 +17,7 @@ import java.io.File;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.XmlStateSystemModule;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.XmlStrings;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.model.TmfXmlStrings;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
@@ -64,7 +64,7 @@ public class TmfAnalysisModuleHelperXml implements IAnalysisModuleHelper {
         fSourceElement = node;
         fType = type;
 
-        NodeList head = fSourceElement.getElementsByTagName(XmlStrings.HEAD);
+        NodeList head = fSourceElement.getElementsByTagName(TmfXmlStrings.HEAD);
         if (head.getLength() == 1) {
             fHeadInfo = new XmlHeadInfoUi(head.item(0));
         } else {
@@ -74,7 +74,7 @@ public class TmfAnalysisModuleHelperXml implements IAnalysisModuleHelper {
 
     @Override
     public String getId() {
-        return fSourceElement.getAttribute(XmlStrings.ANALYSISID);
+        return fSourceElement.getAttribute(TmfXmlStrings.ANALYSISID);
     }
 
     @Override
