@@ -197,12 +197,10 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
 	}
 
 	protected void repaint() {
-		getDisplay().asyncExec(new Runnable() {
+		getDisplay().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				if (!chart.isDisposed()) {
-					updateDataSet();
-				}
+				updateDataSet();
             }
 		});
 	}

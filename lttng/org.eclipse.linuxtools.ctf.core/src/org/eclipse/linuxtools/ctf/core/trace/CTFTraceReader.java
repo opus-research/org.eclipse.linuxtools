@@ -14,6 +14,7 @@
 package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class CTFTraceReader {
     /**
      * Vector of all the trace file readers.
      */
-    private final List<StreamInputReader> streamInputReaders = new ArrayList<>();
+    private final List<StreamInputReader> streamInputReaders = new ArrayList<StreamInputReader>();
 
     /**
      * Priority queue to order the trace file readers by timestamp.
@@ -175,10 +176,12 @@ public class CTFTraceReader {
      *             if an error occurs
      */
     private void createStreamInputReaders() throws CTFReaderException {
+        Collection<Stream> streams = this.trace.getStreams().values();
+
         /*
          * For each stream.
          */
-        for (Stream stream : this.trace.getStreams()) {
+        for (Stream stream : streams) {
             Set<StreamInput> streamInputs = stream.getStreamInputs();
 
             /*
@@ -213,7 +216,7 @@ public class CTFTraceReader {
      */
     private void populateStreamInputReaderHeap() throws CTFReaderException {
         if (this.streamInputReaders.isEmpty()) {
-            this.prio = new PriorityQueue<>();
+            this.prio = new PriorityQueue<StreamInputReader>();
             return;
         }
 
@@ -221,7 +224,7 @@ public class CTFTraceReader {
          * Create the priority queue with a size twice as bigger as the number
          * of reader in order to avoid constant resizing.
          */
-        this.prio = new PriorityQueue<>(
+        this.prio = new PriorityQueue<StreamInputReader>(
                 this.streamInputReaders.size() * 2,
                 new StreamInputReaderTimestampComparator());
 

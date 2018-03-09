@@ -24,7 +24,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -117,20 +116,20 @@ public class CTFTrace implements IDefinitionScope {
     /**
      * Collection of streams contained in the trace.
      */
-    private final Map<Long, Stream> streams = new HashMap<>();
+    private final Map<Long, Stream> streams = new HashMap<Long, Stream>();
 
     /**
      * Collection of environment variables set by the tracer
      */
-    private final Map<String, String> environment = new HashMap<>();
+    private final Map<String, String> environment = new HashMap<String, String>();
 
     /**
      * Collection of all the clocks in a system.
      */
-    private final Map<String, CTFClock> clocks = new HashMap<>();
+    private final Map<String, CTFClock> clocks = new HashMap<String, CTFClock>();
 
     /** FileInputStreams to the streams */
-    private final List<FileInputStream> fileInputStreams = new LinkedList<>();
+    private final List<FileInputStream> fileInputStreams = new LinkedList<FileInputStream>();
 
     /** Handlers for the metadata files */
     private static final FileFilter METADATA_FILE_FILTER = new MetadataFileFilter();
@@ -139,10 +138,10 @@ public class CTFTrace implements IDefinitionScope {
     /** Callsite helpers */
     private CTFCallsiteComparator ctfCallsiteComparator = new CTFCallsiteComparator();
 
-    private Map<String, TreeSet<CTFCallsite>> callsitesByName = new HashMap<>();
+    private Map<String, TreeSet<CTFCallsite>> callsitesByName = new HashMap<String, TreeSet<CTFCallsite>>();
 
     /** Callsite helpers */
-    private TreeSet<CTFCallsite> callsitesByIP = new TreeSet<>();
+    private TreeSet<CTFCallsite> callsitesByIP = new TreeSet<CTFCallsite>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -200,8 +199,8 @@ public class CTFTrace implements IDefinitionScope {
         }
 
         /* Create their index */
-        for (Stream stream : getStreams()) {
-            Set<StreamInput> inputs = stream.getStreamInputs();
+        for (Map.Entry<Long, Stream> stream : streams.entrySet()) {
+            Set<StreamInput> inputs = stream.getValue().getStreamInputs();
             for (StreamInput s : inputs) {
                 /*
                  * Copy the events
@@ -270,7 +269,7 @@ public class CTFTrace implements IDefinitionScope {
      */
     @Deprecated
     public Map<Long, EventDefinition> getEventDefs(StreamInput id) {
-        return new HashMap<>();
+        return new HashMap<Long, EventDefinition>();
     }
 
     /**
@@ -460,13 +459,12 @@ public class CTFTrace implements IDefinitionScope {
     }
 
     /**
-     * Get all the streams as an iterable.
+     * Method getStreams get all the streams in a map format.
      *
-     * @return Iterable<Stream> an iterable over streams.
-     * @since 3.0
+     * @return Map<Long,Stream> a map of all the streams.
      */
-    public Iterable<Stream> getStreams() {
-        return streams.values();
+    public Map<Long, Stream> getStreams() {
+        return streams;
     }
 
     /**
@@ -636,12 +634,22 @@ public class CTFTrace implements IDefinitionScope {
     /**
      * Gets the Environment variables from the trace metadata (See CTF spec)
      *
-     * @return The environment variables in the form of an unmodifiable map
-     *         (key, value)
+     * @return the environment variables in a map form (key value)
      * @since 2.0
      */
     public Map<String, String> getEnvironment() {
-        return Collections.unmodifiableMap(environment);
+        return environment;
+    }
+
+    /**
+     * Look up a specific environment variable
+     *
+     * @param key
+     *            the key to look for
+     * @return the value of the variable, can be null.
+     */
+    public String lookupEnvironment(String key) {
+        return environment.get(key);
     }
 
     /**
@@ -799,7 +807,7 @@ public class CTFTrace implements IDefinitionScope {
                 fileName, lineNumber);
         TreeSet<CTFCallsite> csl = callsitesByName.get(eventName);
         if (csl == null) {
-            csl = new TreeSet<>(ctfCallsiteComparator);
+            csl = new TreeSet<CTFCallsite>(ctfCallsiteComparator);
             callsitesByName.put(eventName, csl);
         }
 
@@ -819,7 +827,7 @@ public class CTFTrace implements IDefinitionScope {
     public TreeSet<CTFCallsite> getCallsiteCandidates(String eventName) {
         TreeSet<CTFCallsite> retVal = callsitesByName.get(eventName);
         if (retVal == null) {
-            retVal = new TreeSet<>(ctfCallsiteComparator);
+            retVal = new TreeSet<CTFCallsite>(ctfCallsiteComparator);
         }
         return retVal;
     }

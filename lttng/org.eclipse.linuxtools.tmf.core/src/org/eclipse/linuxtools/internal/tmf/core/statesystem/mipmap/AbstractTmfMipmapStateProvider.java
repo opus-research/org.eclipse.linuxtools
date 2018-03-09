@@ -75,7 +75,7 @@ public abstract class AbstractTmfMipmapStateProvider extends AbstractTmfStatePro
     /**
      * Map of mipmap features per attribute. The map's key is the base attribute quark.
      */
-    private Map<Integer, Set<ITmfMipmapFeature>> featureMap = new HashMap<>();
+    private Map<Integer, Set<ITmfMipmapFeature>> featureMap = new HashMap<Integer, Set<ITmfMipmapFeature>>();
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -161,7 +161,7 @@ public abstract class AbstractTmfMipmapStateProvider extends AbstractTmfStatePro
         if (features != null) {
             return features;
         }
-        features = new LinkedHashSet<>();
+        features = new LinkedHashSet<ITmfMipmapFeature>();
         if (value.isNull()) {
             return features;
         }
