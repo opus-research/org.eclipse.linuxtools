@@ -72,7 +72,7 @@ public class IOStructGen {
     // ------------------------------------------------------------------------
 
     /**
-     * Constuctor
+     * Constructor
      *
      * @param tree
      *            the tree (ANTLR generated) with the parsed TSDL data.
@@ -256,7 +256,7 @@ public class IOStructGen {
 
         for (CommonTree child : children) {
             String left;
-            /* this is a regex to find the leading and trailing quotes*/
+            /* this is a regex to find the leading and trailing quotes */
             final String regex = "^\"|\"$"; //$NON-NLS-1$
             /* this is to replace the previous quotes with nothing... effectively deleting them */
             final String nullString = ""; //$NON-NLS-1$
@@ -380,7 +380,7 @@ public class IOStructGen {
         String left = concatenateUnaryStrings(leftStrings);
 
         if (left.equals(MetadataStrings.MAJOR)) {
-            if (trace.majortIsSet()) {
+            if (trace.majorIsSet()) {
                 throw new ParseException("major is already set"); //$NON-NLS-1$
             }
 
@@ -1145,6 +1145,10 @@ public class IOStructGen {
                     /* Sequence */
                     String lengthName = concatenateUnaryStrings(lengthChildren);
 
+                    /* check that lengthName was declared */
+                    if (!isIsUnsignedIntegerField(lengthName)) {
+                        throw new ParseException("Sequnce declared with length that is not an unsigned integer"); //$NON-NLS-1$
+                    }
                     /* Create the sequence declaration. */
                     declaration = new SequenceDeclaration(lengthName,
                             declaration);
@@ -1159,6 +1163,15 @@ public class IOStructGen {
         }
 
         return declaration;
+    }
+
+    private boolean isIsUnsignedIntegerField(String lengthName) {
+        IDeclaration decl = getCurrentScope().rLookupIdentifier(lengthName);
+        if (decl instanceof IntegerDeclaration) {
+            return !((IntegerDeclaration) decl).isSigned();
+        }
+        return false;
+
     }
 
     /**
@@ -1675,6 +1688,7 @@ public class IOStructGen {
             IDeclaration decl = parseTypeDeclarator(typeDeclaratorNode,
                     typeSpecifierListNode, identifierSB);
             String fieldName = identifierSB.toString();
+            getCurrentScope().registerIdentifier(fieldName, decl);
 
             if (struct.hasField(fieldName)) {
                 throw new ParseException("struct: duplicate field " //$NON-NLS-1$
@@ -2070,7 +2084,6 @@ public class IOStructGen {
     private void parseVariantDeclaration(CommonTree declaration,
             VariantDeclaration variant) throws ParseException {
 
-
         /* Get the type specifier list node */
         CommonTree typeSpecifierListNode = (CommonTree) declaration.getFirstChildWithType(CTFParser.TYPE_SPECIFIER_LIST);
 
@@ -2091,12 +2104,16 @@ public class IOStructGen {
             IDeclaration decl = parseTypeDeclarator(typeDeclaratorNode,
                     typeSpecifierListNode, identifierSB);
 
-            if (variant.hasField(identifierSB.toString())) {
+            String name = identifierSB.toString();
+
+            if (variant.hasField(name)) {
                 throw new ParseException("variant: duplicate field " //$NON-NLS-1$
-                        + identifierSB.toString());
+                        + name);
             }
 
-            variant.addField(identifierSB.toString(), decl);
+            getCurrentScope().registerIdentifier(name, decl);
+
+            variant.addField(name, decl);
         }
     }
 
@@ -2323,13 +2340,7 @@ public class IOStructGen {
 
         long intval;
         try {
-            if (unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_DEC) {
-                intval = Long.parseLong(strval, 10);
-            } else if (unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_HEX) {
-                intval = Long.parseLong(strval, 0x10);
-            } else { /* unaryInteger.getType() == CTFParser.UNARY_EXPRESSION_OCT */
-                intval = Long.parseLong(strval, 010); // 010 == 0x08 == 8
-            }
+            intval = Long.decode(strval);
         } catch (NumberFormatException e) {
             throw new ParseException("Invalid integer format: " + strval); //$NON-NLS-1$
         }
