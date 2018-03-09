@@ -69,7 +69,7 @@ public class LttngUstTrace extends CtfTmfTrace {
         }
 
         /* Make sure the domain is "ust" in the trace's env vars */
-        String dom = temp.lookupEnvironment("domain"); //$NON-NLS-1$
+        String dom = temp.getEnvironment().get("domain"); //$NON-NLS-1$
         temp.dispose();
         if (dom != null && dom.equals("\"ust\"")) { //$NON-NLS-1$
             return Status.OK_STATUS;
