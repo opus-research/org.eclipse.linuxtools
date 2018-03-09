@@ -104,7 +104,7 @@ public class CreaterepoProject {
 	private void createContentFolder() throws CoreException {
 		content = getProject().getFolder(ICreaterepoConstants.CONTENT_FOLDER);
 		if (!content.exists()) {
-			content.create(true, true, monitor);
+			content.create(false, true, monitor);
 		}
 	}
 
