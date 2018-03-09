@@ -77,7 +77,7 @@ public class TmfStatisticsModule extends TmfAbstractAnalysisModule
              * FIXME We hard-code the StateStatistics type here, but it could
              * be configurable via an analysis parameter.
              */
-            fStatistics = (trace.getResource() == null ? null : new TmfStateStatistics(trace));
+            fStatistics = (trace == null || trace.getResource() == null ? null : new TmfStateStatistics(trace));
         } catch (TmfTraceException e) {
             return false;
         }
