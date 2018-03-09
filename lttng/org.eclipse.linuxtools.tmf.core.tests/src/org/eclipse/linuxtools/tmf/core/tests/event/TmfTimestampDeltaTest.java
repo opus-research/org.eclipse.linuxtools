@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.tmf.core.tests.event;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -88,9 +89,13 @@ public class TmfTimestampDeltaTest {
         assertEquals("getPrecision", 5, copy.getPrecision());
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void testCopyNullConstructor() {
-        new TmfTimestamp((TmfTimestamp) null);
+        try {
+            new TmfTimestamp(null);
+            fail("TmfIntervalTimestamp: null argument");
+        } catch (final IllegalArgumentException e) {
+        }
     }
 
     // ------------------------------------------------------------------------
