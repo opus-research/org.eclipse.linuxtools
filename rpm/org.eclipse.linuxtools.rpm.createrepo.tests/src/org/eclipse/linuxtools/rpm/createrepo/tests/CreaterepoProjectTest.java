@@ -12,7 +12,6 @@ package org.eclipse.linuxtools.rpm.createrepo.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -47,10 +46,15 @@ import org.osgi.service.prefs.BackingStoreException;
  */
 public class CreaterepoProjectTest {
 
+	private static final String PROJECT_NAME = "createrepo-test-project"; //$NON-NLS-1$
+	private static final String REPO_NAME = "createrepo-test-repo.repo"; //$NON-NLS-1$
+
+	private static final String TEST_RPM1 = "eclipse-egit-github-3.0.0-2.fc19.noarch.rpm"; //$NON-NLS-1$
 	private static final String TEST_RPM_LOC1 = ICreaterepoTestConstants.RPM_RESOURCE_LOC
-			.concat(ICreaterepoTestConstants.RPM1);
+			.concat(TEST_RPM1);
+	private static final String TEST_RPM2 = "hello-2.8-1.fc19.src.rpm"; //$NON-NLS-1$
 	private static final String TEST_RPM_LOC2 = ICreaterepoTestConstants.RPM_RESOURCE_LOC
-			.concat(ICreaterepoTestConstants.RPM2);
+			.concat(TEST_RPM2);
 
 	private static IWorkspaceRoot root;
 	private static NullProgressMonitor monitor;
@@ -73,11 +77,8 @@ public class CreaterepoProjectTest {
 	@Before
 	public void setUp() throws CoreException {
 		if (project == null || !project.exists()) {
-			project = CreaterepoProjectCreator.create(ICreaterepoTestConstants.PROJECT_NAME,
-					root.getLocation(), ICreaterepoTestConstants.REPO_NAME, monitor);
+			project = CreaterepoProjectCreator.create(PROJECT_NAME, root.getLocation(), REPO_NAME, monitor);
 		}
-		assertNotNull(project);
-		assertTrue(project.exists());
 	}
 
 	/**
@@ -86,11 +87,10 @@ public class CreaterepoProjectTest {
 	 * @throws CoreException
 	 */
 	@After
-	public void tearDown() throws CoreException {
+	public void tearDown() throws CoreException{
 		if (project != null && project.exists()) {
-			project.delete(true, true, monitor);
+			project.delete(true, monitor);
 		}
-		assertFalse(project.exists());
 	}
 
 	/**
@@ -102,15 +102,15 @@ public class CreaterepoProjectTest {
 	 */
 	@Test
 	public void testInitialize() throws CoreException {
-		CreaterepoProject createrepoProject = new CreaterepoProject(project,
-				(IFile)project.findMember(ICreaterepoTestConstants.REPO_NAME));
+		assertTrue(project.exists());
+		CreaterepoProject createrepoProject = new CreaterepoProject(project, (IFile)project.findMember(REPO_NAME));
 		// content folder is defined, but not created (wizard does that)
-		assertNotNull(createrepoProject.getContentFolder());
+		assertTrue(createrepoProject.getContentFolder() != null);
 		assertFalse(createrepoProject.getContentFolder().exists());
 		// repo file is found and exists
-		assertNotNull(createrepoProject.getRepoFile());
+		assertTrue(createrepoProject.getRepoFile() != null);
 		assertTrue(createrepoProject.getRepoFile().exists());
-		assertEquals(ICreaterepoTestConstants.REPO_NAME, createrepoProject.getRepoFile().getName());
+		assertEquals(REPO_NAME, createrepoProject.getRepoFile().getName());
 	}
 
 	/**
@@ -122,15 +122,16 @@ public class CreaterepoProjectTest {
 	 */
 	@Test
 	public void testInitializeNoRepoFileSpecfied() throws CoreException, BackingStoreException {
+		assertTrue(project.exists());
 		// repo file will be found rather than initialized
 		CreaterepoProject createrepoProject = new CreaterepoProject(project);
 		// content folder is defined, but not created (wizard does that)
-		assertNotNull(createrepoProject.getContentFolder());
+		assertTrue(createrepoProject.getContentFolder() != null);
 		assertFalse(createrepoProject.getContentFolder().exists());
 		// repo file is found and exists
-		assertNotNull(createrepoProject.getRepoFile());
+		assertTrue(createrepoProject.getRepoFile() != null);
 		assertTrue(createrepoProject.getRepoFile().exists());
-		assertEquals(ICreaterepoTestConstants.REPO_NAME, createrepoProject.getRepoFile().getName());
+		assertEquals(REPO_NAME, createrepoProject.getRepoFile().getName());
 	}
 
 	/**
@@ -149,15 +150,18 @@ public class CreaterepoProjectTest {
 				.getBundle(CreaterepoProjectTest.class), new Path(TEST_RPM_LOC1), null);
 		File rpmFile = new File(FileLocator.toFileURL(rpmURL).getPath());
 		createrepoProject.importRPM(rpmFile);
-		assertNotNull(createrepoProject.getContentFolder());
+		assertTrue(createrepoProject.getContentFolder() != null);
 		assertTrue(createrepoProject.getContentFolder().exists());
 		assertEquals(1, createrepoProject.getContentFolder().members().length);
-		assertTrue(createrepoProject.getContentFolder().findMember(ICreaterepoTestConstants.RPM1).exists());
+		assertTrue(createrepoProject.getContentFolder().findMember(TEST_RPM1).exists());
 
 		// test for duplicate file
+		rpmURL = FileLocator.find(FrameworkUtil
+				.getBundle(CreaterepoProjectTest.class), new Path(TEST_RPM_LOC1), null);
+		rpmFile = new File(FileLocator.toFileURL(rpmURL).getPath());
 		createrepoProject.importRPM(rpmFile);
 		assertEquals(1, createrepoProject.getContentFolder().members().length);
-		assertTrue(createrepoProject.getContentFolder().findMember(ICreaterepoTestConstants.RPM1).exists());
+		assertTrue(createrepoProject.getContentFolder().findMember(TEST_RPM1).exists());
 
 		// test for new file
 		rpmURL = FileLocator.find(FrameworkUtil
@@ -165,7 +169,7 @@ public class CreaterepoProjectTest {
 		rpmFile = new File(FileLocator.toFileURL(rpmURL).getPath());
 		createrepoProject.importRPM(rpmFile);
 		assertEquals(2, createrepoProject.getContentFolder().members().length);
-		assertTrue(createrepoProject.getContentFolder().findMember(ICreaterepoTestConstants.RPM2).exists());
+		assertTrue(createrepoProject.getContentFolder().findMember(TEST_RPM2).exists());
 	}
 
 	/**
@@ -200,7 +204,7 @@ public class CreaterepoProjectTest {
 	@Test
 	public void testSimpleExecute() throws CoreException {
 		CreaterepoProject createrepoProject = new CreaterepoProject(project);
-		assertFalse(createrepoProject.getContentFolder().exists());
+		assertTrue(!createrepoProject.getContentFolder().exists());
 		IStatus status = createrepoProject.createrepo(CreaterepoUtils.findConsole("test").newMessageStream()); //$NON-NLS-1$
 
 		// check if  executing has an OK status and that content folder is created with the repodata contents
