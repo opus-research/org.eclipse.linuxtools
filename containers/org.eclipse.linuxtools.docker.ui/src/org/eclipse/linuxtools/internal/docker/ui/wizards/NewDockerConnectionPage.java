@@ -59,10 +59,12 @@ import org.eclipse.linuxtools.internal.docker.core.UnixSocketConnectionSettings;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -104,7 +106,12 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	@Override
 	public void createControl(final Composite parent) {
-		final Composite container = new Composite(parent, SWT.NONE);
+		final ScrolledComposite scrollTop = new ScrolledComposite(parent,
+				SWT.H_SCROLL | SWT.V_SCROLL);
+		scrollTop.setExpandVertical(true);
+		scrollTop.setExpandHorizontal(true);
+
+		final Composite container = new Composite(scrollTop, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
 				.applyTo(container);
@@ -112,6 +119,11 @@ public class NewDockerConnectionPage extends WizardPage {
 		// attach the Databinding context status to this wizard page.
 		WizardPageSupport.create(this, this.dbc);
 		retrieveDefaultConnectionSettings();
+
+		scrollTop.setContent(container);
+		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		scrollTop.setSize(point);
+		scrollTop.setMinSize(point);
 		setControl(container);
 	}
 
@@ -785,8 +797,8 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(connectionNameModelObservable);
 			return targets;
 		}
@@ -820,8 +832,8 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(unixSocketPathModelObservable);
 			return targets;
 		}
@@ -886,8 +898,8 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(tcpHostModelObservable);
 			return targets;
 		}
@@ -949,8 +961,8 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(tcpCertPathModelObservable);
 			return targets;
 		}
