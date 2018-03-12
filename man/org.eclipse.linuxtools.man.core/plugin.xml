@@ -29,25 +29,4 @@
             class="org.eclipse.linuxtools.internal.man.preferences.PreferenceInitializer">
       </initializer>
    </extension>
-   <extension
-         point="org.eclipse.help.toc">
-      <tocProvider
-            class="org.eclipse.linuxtools.internal.man.docs.ManualTocProvider">
-      </tocProvider>
-   </extension>
-   <extension
-         point="org.eclipse.help.contentProducer">
-      <contentProducer
-            producer="org.eclipse.linuxtools.internal.man.docs.PageProducer">
-      </contentProducer>
-   </extension>
-   <extension
-         point="org.eclipse.help.base.searchParticipant">
-      <searchParticipant
-            extensions="html"
-            headless="true"
-            id="org.eclipse.linuxtools.man.core.SearchParticipant"
-            participant="org.eclipse.linuxtools.internal.man.docs.SimpleSearchParticipant">
-      </searchParticipant>
-   </extension>
 </plugin>
