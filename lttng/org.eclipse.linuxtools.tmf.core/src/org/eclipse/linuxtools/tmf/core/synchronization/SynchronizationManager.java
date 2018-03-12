@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
+import org.eclipse.linuxtools.internal.tmf.core.synchronization.SyncAlgorithmFullyIncremental;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.matching.ITmfEventMatching;
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfNetworkEventMatching;
@@ -50,11 +51,11 @@ public abstract class SynchronizationManager extends TmfComponent {
 
         SynchronizationAlgorithm syncAlgo;
         if (doSync) {
-            syncAlgo = synchronize(syncFile, traces, new SyncAlgorithmFullyIncremental());
+            syncAlgo = synchronize(syncFile, traces, SynchronizationAlgorithmFactory.getDefaultAlgorithm());
         } else {
             syncAlgo = openExisting(syncFile);
             if (syncAlgo == null) {
-                syncAlgo = new SyncAlgorithmFullyIncremental();
+                syncAlgo = SynchronizationAlgorithmFactory.getDefaultAlgorithm();
             }
         }
         return syncAlgo;
@@ -90,7 +91,7 @@ public abstract class SynchronizationManager extends TmfComponent {
                 if (algo != null) {
                     syncAlgo = algo;
                 } else {
-                    syncAlgo = new SyncAlgorithmFullyIncremental();
+                    syncAlgo = SynchronizationAlgorithmFactory.getDefaultAlgorithm();
                 }
             }
         }
