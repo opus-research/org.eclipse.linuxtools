@@ -287,9 +287,9 @@ public interface IDockerConnection {
 	String createContainer(IDockerContainerConfig c, IDockerHostConfig hc)
 			throws DockerException, InterruptedException;
 
-	String createContainer(final IDockerContainerConfig config,
+	public String createContainer(final IDockerContainerConfig config,
 			final IDockerHostConfig hc, final String containerName)
-			throws DockerException, InterruptedException;
+					throws DockerException, InterruptedException;
 
 	void stopContainer(String id) throws DockerException, InterruptedException;
 
