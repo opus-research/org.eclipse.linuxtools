@@ -35,6 +35,7 @@ import org.jboss.reddeer.eclipse.ui.views.properties.PropertiesView;
 import org.jboss.reddeer.jface.preference.PreferenceDialog;
 import org.jboss.reddeer.swt.exception.SWTLayerException;
 import org.jboss.reddeer.swt.impl.button.OkButton;
+import org.jboss.reddeer.swt.impl.button.PushButton;
 import org.jboss.reddeer.swt.impl.shell.DefaultShell;
 import org.jboss.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
@@ -128,7 +129,7 @@ public class AbstractImageBotTest extends AbstractDockerBotTest {
 		} catch (SWTLayerException e) {
 			new DefaultShell("Preferences").setFocus();
 		}
-		new OkButton().click();
+		new PushButton("Apply and Close").click();
 	}
 
 	protected void deleteRegister(String serverAddress) {
