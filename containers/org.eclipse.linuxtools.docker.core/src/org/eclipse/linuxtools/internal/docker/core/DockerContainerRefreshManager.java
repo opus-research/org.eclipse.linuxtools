@@ -28,7 +28,7 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 	private Map<IDockerConnection, ContainerRefreshThread> refreshThreadMap;
 
 	private DockerContainerRefreshManager() {
-		refreshThreadMap = new HashMap<>();
+		refreshThreadMap = new HashMap<IDockerConnection, ContainerRefreshThread>();
 	}
 
 	public static DockerContainerRefreshManager getInstance() {
@@ -104,7 +104,6 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 			this.interrupt();
 		}
 
-		@Override
 		public void run() {
 			for (;;) {
 				try {
