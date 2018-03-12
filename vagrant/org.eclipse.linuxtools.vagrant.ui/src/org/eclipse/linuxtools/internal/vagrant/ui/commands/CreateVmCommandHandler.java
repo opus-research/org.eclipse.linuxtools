@@ -36,7 +36,6 @@ import org.eclipse.linuxtools.internal.vagrant.ui.wizards.CreateVMWizard;
 import org.eclipse.linuxtools.internal.vagrant.ui.wizards.WizardMessages;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
-import org.eclipse.linuxtools.vagrant.core.IVagrantVM;
 import org.eclipse.linuxtools.vagrant.core.VagrantException;
 import org.eclipse.linuxtools.vagrant.core.VagrantService;
 import org.eclipse.swt.widgets.Display;
@@ -83,15 +82,6 @@ public class CreateVmCommandHandler extends AbstractHandler {
 				monitor.beginTask(DVMessages.getFormattedString(CRATE_VM_TITLE, vmName),
 						IProgressMonitor.UNKNOWN);
 				IVagrantConnection connection = VagrantService.getInstance();
-				if (findVM(connection, vmName) != null) {
-					Display.getDefault()
-					.syncExec(() -> MessageDialog.openError(Display.getCurrent()
-							.getActiveShell(),
-							WizardMessages.getString("CreateVmCommandHandler.VMExists.title"), //$NON-NLS-1$
-							WizardMessages.getString("CreateVmCommandHandler.VMExists.msg"))); //$NON-NLS-1$
-					return Status.CANCEL_STATUS;
-				}
-
 				IVagrantBox box = null;
 				File vagrantDir;
 				String boxName = boxRef;
@@ -160,17 +150,6 @@ public class CreateVmCommandHandler extends AbstractHandler {
 		return box;
 	}
 
-	private IVagrantVM findVM(IVagrantConnection connection, String vmName) {
-		IVagrantVM vm = null;
-		for (IVagrantVM v : connection.getVMs()) {
-			if (v.name().equals(vmName)) {
-				vm = v;
-				break;
-			}
-		}
-		return vm;
-	}
-
 	/*
 	 * init the folder in this bundle's state location, and ensure the
 	 * Vagrantfile has the proper vm name and box name
@@ -180,12 +159,7 @@ public class CreateVmCommandHandler extends AbstractHandler {
 		String stateLoc = Activator.getDefault().getStateLocation()
 				.toOSString();
 		File vagrantDir = Paths.get(stateLoc, vmName).toFile();
-		// Project folder exists (but VM cannot exist here)
-		// Safe to remove the stale Vagrant project entry
-		if (!vagrantDir.mkdir()) {
-			CommandUtils.delete(vagrantDir);
-			vagrantDir.mkdir();
-		}
+		vagrantDir.mkdir();
 		connection.init(vagrantDir);
 
 		Path vagrantFilePath = Paths.get(stateLoc, vmName, "Vagrantfile"); //$NON-NLS-1$
@@ -197,7 +171,7 @@ public class CreateVmCommandHandler extends AbstractHandler {
 			for (String line : defaultContent.split("\n")) { //$NON-NLS-1$
 				if (line.contains("config.vm.box")) { //$NON-NLS-1$
 					String defLine = line.replaceAll("config.vm.box = \".*\"", //$NON-NLS-1$
-							"config.vm.define :\"" + vmName + "\""); //$NON-NLS-1$ //$NON-NLS-2$
+							"config.vm.define :" + vmName); //$NON-NLS-1$
 					String boxLine = line.replaceAll("config.vm.box = \".*\"", //$NON-NLS-1$
 							"config.vm.box = \"" + boxName + "\""); //$NON-NLS-1$ //$NON-NLS-2$
 					bcontent.append(defLine + '\n');

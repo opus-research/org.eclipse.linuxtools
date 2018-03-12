@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,11 +16,9 @@ import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLa
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -125,6 +123,7 @@ public class ImageRun extends Wizard {
 		return this.imageRunSelectionPage.getModel().isRemoveWhenExits();
 	}
 
+	@SuppressWarnings("unchecked")
 	public IDockerHostConfig getDockerHostConfig() {
 		final ImageRunSelectionModel selectionModel = this.imageRunSelectionPage
 				.getModel();
@@ -223,6 +222,7 @@ public class ImageRun extends Wizard {
 		return unixPath;
 	}
 
+	@SuppressWarnings("unchecked")
 	public DockerContainerConfig getDockerContainerConfig() {
 		final ImageRunSelectionModel selectionModel = this.imageRunSelectionPage
 				.getModel();
@@ -248,21 +248,6 @@ public class ImageRun extends Wizard {
 			environmentVariables.add(var.getName() + "=" + var.getValue()); //$NON-NLS-1$
 		}
 		config.env(environmentVariables);
-
-		if (!selectionModel.isPublishAllPorts()) {
-			final Set<String> exposedPorts = new HashSet<>();
-			for (Iterator<ExposedPortModel> iterator = selectionModel
-					.getExposedPorts().iterator(); iterator.hasNext();) {
-				final ExposedPortModel exposedPort = iterator.next();
-				// only selected Ports in the CheckboxTableViewer are exposed.
-				if (!selectionModel.getSelectedPorts().contains(exposedPort)) {
-					continue;
-				}
-				exposedPorts.add(exposedPort.getContainerPort()
-						+ exposedPort.getPortType());
-			}
-			config.exposedPorts(exposedPorts);
-		}
 		return config.build();
 	}
 

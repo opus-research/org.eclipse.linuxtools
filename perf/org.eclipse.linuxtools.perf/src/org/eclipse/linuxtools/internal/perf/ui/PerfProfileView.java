@@ -11,13 +11,16 @@
 package org.eclipse.linuxtools.internal.perf.ui;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
 import org.eclipse.swt.SWT;
@@ -41,7 +44,7 @@ public class PerfProfileView extends ViewPart {
     private DrillDownAdapter drillDownAdapter;
     private Action doubleClickAction;
 
-    static class NameComparator extends ViewerComparator {
+    static class NameSorter extends ViewerSorter {
         @Override
         public int compare(Viewer viewer, Object e1, Object e2) {
             return (((TreeParent) e1).getPercent()
@@ -60,7 +63,7 @@ public class PerfProfileView extends ViewPart {
         viewer.setContentProvider(new PerfViewContentProvider());
 
         viewer.setLabelProvider(new PerfViewLabelProvider());
-        viewer.setComparator(new NameComparator());
+        viewer.setSorter(new NameSorter());
 
         // Create the help context id for the viewer's control
         PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.eclipse.linuxtools.internal.perf.viewer"); //$NON-NLS-1$
@@ -77,7 +80,12 @@ public class PerfProfileView extends ViewPart {
     private void hookContextMenu() {
         MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
         menuMgr.setRemoveAllWhenShown(true);
-        menuMgr.addMenuListener(manager -> PerfProfileView.this.fillContextMenu(manager));
+        menuMgr.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager) {
+                PerfProfileView.this.fillContextMenu(manager);
+            }
+        });
         Menu menu = menuMgr.createContextMenu(viewer.getControl());
         viewer.getControl().setMenu(menu);
         getSite().registerContextMenu(menuMgr, viewer);
@@ -100,7 +108,12 @@ public class PerfProfileView extends ViewPart {
 
     private void hookDoubleClickAction() {
         doubleClickAction = new PerfDoubleClickAction(viewer);
-        viewer.addDoubleClickListener(event -> doubleClickAction.run());
+        viewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                doubleClickAction.run();
+            }
+        });
     }
 
     public TreeViewer getTreeViewer () {

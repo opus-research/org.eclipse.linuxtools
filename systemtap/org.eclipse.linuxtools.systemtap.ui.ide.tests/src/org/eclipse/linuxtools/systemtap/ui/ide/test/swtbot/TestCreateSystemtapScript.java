@@ -49,6 +49,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
@@ -1391,11 +1392,14 @@ public class TestCreateSystemtapScript {
         } else {
             // The "Add Graph" button is actually a tab that doesn't get activated when clicked.
             // Use a background thread to supress the wait for tab activation.
-            new Thread(() -> {
-			    try {
-			        bot.activeEditor().bot().cTabItem(1).activate();
-			    } catch (TimeoutException e) {}
-			}).start();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        bot.activeEditor().bot().cTabItem(1).activate();
+                    } catch (TimeoutException e) {}
+                }
+            }).start();
         }
     }
 
@@ -1441,8 +1445,8 @@ public class TestCreateSystemtapScript {
     private static void deselectDefaultSelection(final int currSelection) {
 		UIThreadRunnable.syncExec(() -> {
 			@SuppressWarnings("unchecked")
-			Matcher<Button> matcher = allOf(widgetOfType(Button.class), withStyle(SWT.RADIO, "SWT.RADIO"));
-			Button b = bot.widget(matcher, currSelection);
+			Matcher<Widget> matcher = allOf(widgetOfType(Button.class), withStyle(SWT.RADIO, "SWT.RADIO"));
+			Button b = (Button) bot.widget(matcher, currSelection);
 			b.setSelection(false);
 		});
     }

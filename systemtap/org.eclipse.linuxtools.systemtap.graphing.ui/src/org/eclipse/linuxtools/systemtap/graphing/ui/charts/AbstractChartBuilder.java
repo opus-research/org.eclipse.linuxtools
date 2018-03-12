@@ -1,5 +1,5 @@
 /****************************************************************
- * Copyright (c) 2006, 2016 IBM Corporation and others.
+ * Copyright (c) 2006-2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -147,7 +147,12 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
         maxItems = Math.min(store.getInt(GraphingPreferenceConstants.P_VIEWABLE_DATA_ITEMS),
                 store.getInt(GraphingPreferenceConstants.P_MAX_DATA_ITEMS));
 
-        propertyChangeListener = event -> updateProperties(event);
+        propertyChangeListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                updateProperties(event);
+            }
+        };
         store.addPropertyChangeListener(propertyChangeListener);
     }
 
@@ -375,14 +380,17 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
     }
 
     private void repaint() {
-        getDisplay().asyncExec(() -> {
-		    if (!chart.isDisposed()) {
-		        updateDataSet();
-		        for (IUpdateListener l : listeners) {
-		            l.handleUpdateEvent();
-		        }
-		    }
-		});
+        getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (!chart.isDisposed()) {
+                    updateDataSet();
+                    for (IUpdateListener l : listeners) {
+                        l.handleUpdateEvent();
+                    }
+                }
+            }
+        });
     }
 
     /**
