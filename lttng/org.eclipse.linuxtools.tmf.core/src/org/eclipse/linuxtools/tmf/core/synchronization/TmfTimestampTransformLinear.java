@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.synchronization;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
@@ -26,8 +25,14 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
  *
  * @author Geneviève Bastien
  * @since 3.0
+ * @deprecated This class has been moved to internal. Use one of
+ *             {@link TimestampTransformFactory} methods to create the timestamp
+ *             transform. It will return an optimized transform for the
+ *             parameters given. To have a linear transform, use methods
+ *             <code>createLinear</code> from the factory.
  */
-public class TmfTimestampTransformLinear implements ITmfTimestampTransform, Serializable {
+@Deprecated
+public class TmfTimestampTransformLinear implements ITmfTimestampTransform {
 
     /**
      * Generated serial UID
@@ -36,10 +41,6 @@ public class TmfTimestampTransformLinear implements ITmfTimestampTransform, Seri
 
     /**
      * Respectively the slope and offset and this linear equation.
-     *
-     * FIXME: Maybe doubles will be enough, for the whole synchronization
-     * package as well, I think BigDecimal is a remnant of past trials and
-     * errors
      */
     private final BigDecimal fAlpha;
     private final BigDecimal fBeta;

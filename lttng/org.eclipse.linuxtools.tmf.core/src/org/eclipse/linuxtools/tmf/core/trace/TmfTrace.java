@@ -52,8 +52,9 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
-import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransform;
+import org.eclipse.linuxtools.tmf.core.synchronization.TimestampTransformFactory;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
@@ -87,7 +88,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
  * @see ITmfTraceIndexer
  * @see ITmfEventParser
  */
-public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
+public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, ITmfTraceCompleteness {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -723,11 +724,13 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
                 return;
             }
 
-            final TmfTimeRange timeRange = new TmfTimeRange(getStartTime(), TmfTimestamp.BIG_CRUNCH);
-            final TmfTraceRangeUpdatedSignal rangeUpdatedsignal = new TmfTraceRangeUpdatedSignal(this, this, timeRange);
+            if (isComplete()) {
+                final TmfTimeRange timeRange = new TmfTimeRange(getStartTime(), TmfTimestamp.BIG_CRUNCH);
+                final TmfTraceRangeUpdatedSignal rangeUpdatedsignal = new TmfTraceRangeUpdatedSignal(this, this, timeRange);
 
-            // Broadcast in separate thread to prevent deadlock
-            broadcastAsync(rangeUpdatedsignal);
+                // Broadcast in separate thread to prevent deadlock
+                broadcastAsync(rangeUpdatedsignal);
+            }
             return;
         }
     }
@@ -803,10 +806,10 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
                     fTsTransform = (ITmfTimestampTransform) ois.readObject();
 
                 } catch (ClassNotFoundException | IOException e) {
-                    fTsTransform = TmfTimestampTransform.IDENTITY;
+                    fTsTransform = TimestampTransformFactory.getDefaultTransform();
                 }
             } else {
-                fTsTransform = TmfTimestampTransform.IDENTITY;
+                fTsTransform = TimestampTransformFactory.getDefaultTransform();
             }
         }
         return fTsTransform;
@@ -842,7 +845,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
      */
     @Override
     public ITmfTimestamp createTimestamp(long ts) {
-        return new TmfTimestamp(getTimestampTransform().transform(ts));
+        return new TmfNanoTimestamp(getTimestampTransform().transform(ts));
     }
 
     // ------------------------------------------------------------------------
@@ -857,4 +860,26 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
                 + ", fEndTime=" + fEndTime + ", fStreamingInterval=" + fStreamingInterval + "]";
     }
 
+    /**
+     * @since 3.1
+     */
+    @Override
+    public boolean isComplete() {
+        /*
+         * Be default, all traces are "complete" which means no more data will
+         * be added later
+         */
+        return true;
+    }
+
+    /**
+     * @since 3.1
+     */
+    @Override
+    public void setComplete(boolean isComplete) {
+        /*
+         * This should be overridden by trace classes that can support live
+         * reading (traces in an incomplete state)
+         */
+    }
 }

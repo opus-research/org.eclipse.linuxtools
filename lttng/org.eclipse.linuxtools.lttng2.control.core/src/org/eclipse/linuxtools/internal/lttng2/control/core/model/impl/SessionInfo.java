@@ -1,4 +1,5 @@
 /**********************************************************************
+
  * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
@@ -9,7 +10,9 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
+ *   Marc-Andre Laperle - Support for creating a live session
  **********************************************************************/
+
 package org.eclipse.linuxtools.internal.lttng2.control.core.model.impl;
 
 import java.util.ArrayList;
@@ -22,14 +25,17 @@ import org.eclipse.linuxtools.internal.lttng2.control.core.model.ISnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceSessionState;
 
 /**
- * <p>
  * Implementation of the trace session interface (ISessionInfo) to store session
  * related data.
- * </p>
  *
  * @author Bernd Hufmann
  */
 public class SessionInfo extends TraceInfo implements ISessionInfo {
+
+    /**
+     * The default network URL when creating a live session.
+     */
+    public static final String DEFAULT_LIVE_NETWORK_URK = "net://127.0.0.1"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -71,13 +77,34 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
      */
     private String fDataUrl = null;
 
+    /**
+     * Flag to indicate whether trace is live or not.
+     */
+    private boolean fIsLive = false;
+
+    /**
+     * The delay in micro seconds before the data is flushed and streamed.
+     */
+    private int fLiveDelay = -1;
+
+    /**
+     * The live connection url (Relayd).
+     */
+    private String fLiveUrl;
+
+    /**
+     * The live connection port (Relayd).
+     */
+    private Integer fLivePort;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
     /**
      * Constructor
-     * @param name - name of base event
+     *
+     * @param name
+     *            - name of base event
      */
     public SessionInfo(String name) {
         super(name);
@@ -85,7 +112,9 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
 
     /**
      * Copy constructor
-     * @param other - the instance to copy
+     *
+     * @param other
+     *            - the instance to copy
      */
     public SessionInfo(SessionInfo other) {
         super(other);
@@ -101,7 +130,7 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
         for (Iterator<IDomainInfo> iterator = other.fDomains.iterator(); iterator.hasNext();) {
             IDomainInfo domain = iterator.next();
             if (domain instanceof DomainInfo) {
-                fDomains.add(new DomainInfo((DomainInfo)domain));
+                fDomains.add(new DomainInfo((DomainInfo) domain));
             } else {
                 fDomains.add(domain);
             }
@@ -124,11 +153,7 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
 
     @Override
     public void setSessionState(String stateName) {
-        if (TraceSessionState.INACTIVE.getInName().equals(stateName)) {
-            fState = TraceSessionState.INACTIVE;
-        } else if (TraceSessionState.ACTIVE.getInName().equals(stateName)) {
-            fState = TraceSessionState.ACTIVE;
-        }
+        fState = TraceSessionState.valueOfString(stateName);
     }
 
     @Override
@@ -160,6 +185,9 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
 
     @Override
     public boolean isStreamedTrace() {
+        if (isSnapshotSession() && getSnapshotInfo() != null) {
+            return getSnapshotInfo().isStreamedSnapshot();
+        }
         return fIsStreamedTrace;
     }
 
@@ -188,6 +216,26 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
         fSnapshotInfo = info;
     }
 
+    @Override
+    public boolean isLive() {
+        return fIsLive;
+    }
+
+    @Override
+    public void setLive(boolean isLive) {
+        fIsLive = isLive;
+    }
+
+    @Override
+    public int getLiveDelay() {
+        return fLiveDelay;
+    }
+
+    @Override
+    public void setLiveDelay(int liveDelay) {
+        fLiveDelay = liveDelay;
+    }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -197,41 +245,40 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
         fDomains.add(domainInfo);
     }
 
-
     @SuppressWarnings("nls")
     @Override
     public String toString() {
         StringBuffer output = new StringBuffer();
-            output.append("[SessionInfo(");
-            output.append(super.toString());
-            output.append(",Path=");
-            output.append(getSessionPath());
-            output.append(",State=");
-            output.append(fState);
-            output.append(",isStreamedTrace=");
-            output.append(fIsStreamedTrace);
-            output.append(",isSnapshot=");
-            output.append(fIsSnapshot);
+        output.append("[SessionInfo(");
+        output.append(super.toString());
+        output.append(",Path=");
+        output.append(getSessionPath());
+        output.append(",State=");
+        output.append(fState);
+        output.append(",isStreamedTrace=");
+        output.append(fIsStreamedTrace);
+        output.append(",isSnapshot=");
+        output.append(fIsSnapshot);
 
-            if (fSnapshotInfo != null) {
-                output.append(",snapshotInfo=");
-                output.append(fSnapshotInfo.toString());
-            }
-            output.append(",Domains=");
-            for (Iterator<IDomainInfo> iterator = fDomains.iterator(); iterator.hasNext();) {
-                IDomainInfo domain = iterator.next();
-                output.append(domain.toString());
-            }
+        if (fSnapshotInfo != null) {
+            output.append(",snapshotInfo=");
+            output.append(fSnapshotInfo.toString());
+        }
+        output.append(",Domains=");
+        for (Iterator<IDomainInfo> iterator = fDomains.iterator(); iterator.hasNext();) {
+            IDomainInfo domain = iterator.next();
+            output.append(domain.toString());
+        }
 
-            output.append(",NetworkUrl=");
-            output.append(getNetworkUrl());
-            output.append(",ControlUrl=");
-            output.append(getControlUrl());
-            output.append(",DataUrl=");
-            output.append(getDataUrl());
+        output.append(",NetworkUrl=");
+        output.append(getNetworkUrl());
+        output.append(",ControlUrl=");
+        output.append(getControlUrl());
+        output.append(",DataUrl=");
+        output.append(getDataUrl());
 
-            output.append(")]");
-            return output.toString();
+        output.append(")]");
+        return output.toString();
     }
 
     @Override
@@ -262,5 +309,25 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
     @Override
     public String getDataUrl() {
         return fDataUrl;
+    }
+
+    @Override
+    public void setLiveUrl(String liveUrl) {
+        fLiveUrl = liveUrl;
+    }
+
+    @Override
+    public void setLivePort(Integer livePort) {
+        fLivePort = livePort;
+    }
+
+    @Override
+    public String getLiveUrl() {
+        return fLiveUrl;
+    }
+
+    @Override
+    public Integer getLivePort() {
+        return fLivePort;
     }
 }
