@@ -42,6 +42,11 @@ public interface Attributes {
     //static final String STATUS = "Status"
     static final String EXEC_NAME = "Exec_name";
     static final String SYSTEM_CALL = "System_call";
+    static final String FILE_DESCRIPTORS = "File_descriptors";
+    static final String FILE_DESCRIPTOR = "File_descriptor";
+
+    /* Sub-attributes of the file descriptor node */
+    static final String FILENAME = "Filename";
 
     /* Attributes under "Resources" */
     static final String IRQS = "IRQs";

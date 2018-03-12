@@ -38,12 +38,15 @@ public interface LttngStrings {
     static final String SCHED_PROCESS_FORK = "sched_process_fork";
     static final String SCHED_PROCESS_EXIT = "sched_process_exit";
     static final String SCHED_PROCESS_FREE = "sched_process_free";
+    static final String STATEDUMP_FILE_DESCRIPTOR = "lttng_statedump_file_descriptor";
     static final String STATEDUMP_PROCESS_STATE = "lttng_statedump_process_state";
 
     /* System call names */
     static final String SYSCALL_PREFIX = "sys_";
     static final String COMPAT_SYSCALL_PREFIX = "compat_sys_";
     static final String SYS_CLONE = "sys_clone";
+    static final String SYS_OPEN = "sys_open";
+    static final String SYS_CLOSE = "sys_close";
 
     /* Field names */
     static final String IRQ = "irq";
@@ -63,4 +66,7 @@ public interface LttngStrings {
     static final String CHILD_COMM = "child_comm";
     static final String CHILD_TID = "child_tid";
     static final String CHILD_PID = "child_pid";
+    static final String FILENAME = "filename";
+    static final String FD = "fd";
+    static final String RET = "ret";
 }
