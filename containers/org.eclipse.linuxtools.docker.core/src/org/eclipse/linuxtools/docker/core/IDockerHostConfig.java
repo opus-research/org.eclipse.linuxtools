@@ -21,13 +21,13 @@ public interface IDockerHostConfig {
 
 	public List<IDockerConfParameter> lxcConf();
 
-	public boolean privileged();
+	public Boolean privileged();
 
 	public Map<String, List<IDockerPortBinding>> portBindings();
 
 	public List<String> links();
 
-	public boolean publishAllPorts();
+	public Boolean publishAllPorts();
 
 	public List<String> dns();
 

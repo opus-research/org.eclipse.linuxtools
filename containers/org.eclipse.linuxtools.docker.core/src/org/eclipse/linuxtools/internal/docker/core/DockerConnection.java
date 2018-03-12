@@ -68,8 +68,8 @@ import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
-import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
 import org.eclipse.linuxtools.docker.core.IDockerPortBinding;
+import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
 import org.eclipse.linuxtools.docker.core.IDockerProgressHandler;
 import org.eclipse.linuxtools.docker.core.ILogger;
 import org.eclipse.linuxtools.docker.core.Messages;
@@ -93,7 +93,6 @@ import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.HostConfig.LxcConfParameter;
 import com.spotify.docker.client.messages.Image;
 import com.spotify.docker.client.messages.ImageInfo;
-import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
@@ -224,8 +223,8 @@ public class DockerConnection implements IDockerConnection {
 				// FIXME need to verify the OS and decide which script to run
 				File scriptFile = Activator.getDefault().getBundle()
 						.getDataFile("script.sh"); //$NON-NLS-1$
-				final Process process = Runtime.getRuntime()
-						.exec(new String[] { scriptFile.getAbsolutePath() });
+				final Process process = Runtime.getRuntime().exec(
+						new String[] { scriptFile.getAbsolutePath() });
 				process.waitFor();
 				if (process.exitValue() == 0) {
 					final InputStream processInputStream = process
@@ -255,8 +254,7 @@ public class DockerConnection implements IDockerConnection {
 					// log what happened if the process did not end as expected
 					final InputStream processErrorStream = process
 							.getErrorStream();
-					final String errorMessage = streamToString(
-							processErrorStream);
+					final String errorMessage = streamToString(processErrorStream);
 					Activator.log(new Status(IStatus.ERROR,
 							Activator.PLUGIN_ID, errorMessage));
 				}
@@ -267,8 +265,8 @@ public class DockerConnection implements IDockerConnection {
 		}
 
 		private String streamToString(InputStream stream) {
-			BufferedReader buff = new BufferedReader(
-					new InputStreamReader(stream));
+			BufferedReader buff = new BufferedReader(new InputStreamReader(
+					stream));
 			StringBuffer res = new StringBuffer();
 			String line = "";
 			try {
@@ -368,7 +366,7 @@ public class DockerConnection implements IDockerConnection {
 
 		public Builder tcpCertPath(final String tcpCertPath) {
 			this.tcpCertPath = tcpCertPath;
-			if (this.tcpHost != null) {
+			if (tcpCertPath != null) {
 				this.tcpHost = tcpHost.replace("http://", "https://");
 			}
 			return this;
@@ -498,7 +496,7 @@ public class DockerConnection implements IDockerConnection {
 						addContainerListener(dcrm);
 					}
 				}
-			} catch (DockerCertificateException e) {
+			} catch (Exception e) {
 				throw new DockerException(Messages.Open_Connection_Failure, e);
 			}
 		}
@@ -599,7 +597,8 @@ public class DockerConnection implements IDockerConnection {
 
 	}
 
-	public void notifyContainerListeners(List<IDockerContainer> list) {
+	public void notifyContainerListeners(DockerConnection manager,
+			List<IDockerContainer> list) {
 		if (containerListeners != null) {
 			Object[] listeners = containerListeners.getListeners();
 			for (int i = 0; i < listeners.length; ++i) {
@@ -641,19 +640,23 @@ public class DockerConnection implements IDockerConnection {
 
 	@Override
 	public List<IDockerContainer> getContainers(final boolean force) {
+		List<IDockerContainer> latestContainers;
 		synchronized (containerLock) {
-			if (!isContainersLoaded() || force) {
-				try {
-					this.containers = listContainers();
-				} catch (DockerException e) {
-					this.containers = Collections.emptyList();
-					Activator.log(e);
-				} finally {
-					this.containersLoaded = true;
-				}
-			}
-			return containers;
+			latestContainers = this.containers;
 		}
+		if (!isContainersLoaded() || force) {
+			try {
+				latestContainers = listContainers();
+			} catch (DockerException e) {
+				synchronized (containerLock) {
+					this.containers = Collections.emptyList();
+				}
+				Activator.log(e);
+			} finally {
+				this.containersLoaded = true;
+			}
+		}
+		return latestContainers;
 	}
 
 	@Override
@@ -760,6 +763,12 @@ public class DockerConnection implements IDockerConnection {
 			// core format in case we decide to change the underlying engine
 			// in the future.
 			for (Container c : list) {
+				final List<Container.PortMapping> ports = c.ports();
+				final List<IDockerPortMapping> portMappings = new ArrayList<>();
+				for (Container.PortMapping port : ports) {
+					final DockerPortMapping portMapping = new DockerPortMapping(port.getPrivatePort(), port.getPublicPort(), port.getType(), port.getIp());
+					portMappings.add(portMapping);
+				}
 				// For containers that have exited, make sure we aren't tracking
 				// them with a logging thread.
 				if (c.status().startsWith(Messages.Exited_specifier)) {
@@ -768,13 +777,15 @@ public class DockerConnection implements IDockerConnection {
 						loggingThreads.remove(c.id());
 					}
 				}
-				dclist.add(new DockerContainer(this, c));
+				dclist.add(new DockerContainer(this, c.id(), c.image(), c
+						.command(), c.created(), c.status(), c.sizeRw(), c
+						.sizeRootFs(), portMappings, c.names()));
 			}
 			containers = dclist;
 		}
 		// perform notification outside of containerLock so we don't have a View
 		// causing a deadlock
-		notifyContainerListeners(dclist);
+		notifyContainerListeners(this, dclist);
 		return dclist;
 	}
 
@@ -833,7 +844,8 @@ public class DockerConnection implements IDockerConnection {
 			imageListeners.remove(listener);
 	}
 
-	public void notifyImageListeners(List<IDockerImage> list) {
+	public void notifyImageListeners(DockerConnection manager,
+			List<IDockerImage> list) {
 		if (imageListeners != null) {
 			Object[] listeners = imageListeners.getListeners();
 			for (int i = 0; i < listeners.length; ++i) {
@@ -873,43 +885,13 @@ public class DockerConnection implements IDockerConnection {
 		return imagesLoaded;
 	}
 
-	@Override
-	public List<IDockerImage> listImages() throws DockerException {
+	private List<IDockerImage> listImages() throws DockerException {
+		final List<IDockerImage> dilist = new ArrayList<>();
 		synchronized (imageLock) {
+			List<Image> rawImages = null;
 			try {
-				// FIXME: run multiple queries to correctly identify dangling
-				// and intermediate images.
-				final List<Image> rawImages = client
-						.listImages(DockerClient.ListImagesParam.allImages());
-				this.images = new ArrayList<>();
-				// add all image parent ids in a set to find intermediate images
-				final Set<String> imageParentIds = new HashSet<>();
-				for (Image rawImage : rawImages) {
-					imageParentIds.add(rawImage.parentId());
-				}
-				for (Image rawImage : rawImages) {
-					final boolean taggedImage = !(rawImage.repoTags().size() == 1 && rawImage
-							.repoTags().contains("<none>:<none>")); //$NON-NLS-1$
-					final boolean intermediateImage = !taggedImage
-							&& imageParentIds.contains(rawImage.id());
-					final boolean danglingImage = !taggedImage
-							&& !intermediateImage;
-					// FIXME: if an image with a unique ID belongs to multiple repos, we should
-					// probably have multiple instances of IDockerImage
-					final Map<String, List<String>> repoTags = DockerImage.extractTagsByRepo(rawImage.repoTags());
-					for(Entry<String, List<String>> entry : repoTags.entrySet()) {
-						final String repo = entry.getKey();
-						final List<String> tags = entry.getValue();
-						this.images.add(new DockerImage(this,
-								rawImage
-								.repoTags(), repo, tags, rawImage.id(), rawImage.parentId(),
-								rawImage.created(), rawImage.size(), rawImage
-										.virtualSize(), intermediateImage,
-								danglingImage));
-					}
-				}
-				notifyImageListeners(this.images);
-				return this.images;
+				rawImages = client.listImages(DockerClient.ListImagesParam
+						.allImages());
 			} catch (com.spotify.docker.client.DockerRequestException e) {
 				throw new DockerException(e.message());
 			} catch (com.spotify.docker.client.DockerException
@@ -917,7 +899,32 @@ public class DockerConnection implements IDockerConnection {
 				DockerException f = new DockerException(e);
 				throw f;
 			}
+			// We have a list of images. Now, we translate them to our own
+			// core format in case we decide to change the underlying engine
+			// in the future. We also look for intermediate and dangling images.
+			final Set<String> imageParentIds = new HashSet<>();
+			for (Image rawImage : rawImages) {
+				imageParentIds.add(rawImage.parentId());
+			}
+			for (Image rawImage : rawImages) {
+				final boolean taggedImage = !(rawImage.repoTags().size() == 1 && rawImage
+						.repoTags().contains("<none>:<none>")); //$NON-NLS-1$
+				final boolean intermediateImage = !taggedImage
+						&& imageParentIds.contains(rawImage.id());
+				final boolean danglingImage = !taggedImage
+						&& !intermediateImage;
+				dilist.add(new DockerImage(this, rawImage
+						.repoTags(), rawImage.id(), rawImage.parentId(),
+						rawImage.created(), rawImage.size(), rawImage
+								.virtualSize(), intermediateImage,
+						danglingImage));
+			}
+			images = dilist;
 		}
+		// Perform notification outside of lock so that listener doesn't cause a
+		// deadlock to occur
+		notifyImageListeners(this, dilist);
+		return dilist;
 	}
 
 	@Override
@@ -933,22 +940,6 @@ public class DockerConnection implements IDockerConnection {
 			throw f;
 		}
 	}
-	
-	@Override
-	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException {
-		try {
-			final List<ImageSearchResult> searchResults = client.searchImages(term);
-			final List<IDockerImageSearchResult> results = new ArrayList<>();
-			for(ImageSearchResult r : searchResults) {
-				results.add(new DockerImageSearchResult(r.getDescription(), r.isOfficial(), r.isAutomated(), r.getName(), r.getStarCount()));
-			}
-			return results;
-		} catch (com.spotify.docker.client.DockerException | InterruptedException e) {
-			throw new DockerException(e);
-		}
-	}
-	
-	
 
 	@Override
 	public void pushImage(final String name, final IDockerProgressHandler handler)
@@ -1025,59 +1016,41 @@ public class DockerConnection implements IDockerConnection {
 		DockerConnectionManager.getInstance().saveConnections();
 	}
 
-
 	@Override
 	public String createContainer(final IDockerContainerConfig c)
 			throws DockerException, InterruptedException {
-		return createContainer(c, null);
-	}
-
-	@Override
-	public String createContainer(final IDockerContainerConfig c,
-			final String containerName)
-			throws DockerException, InterruptedException {
 		ContainerConfig.Builder builder = ContainerConfig.builder()
 				.hostname(c.hostname()).domainname(c.domainname())
-				.user(c.user()).memory(c.memory())
-				.memorySwap(c.memorySwap()).cpuShares(c.cpuShares())
-				.cpuset(c.cpuset()).attachStdin(c.attachStdin())
-				.attachStdout(c.attachStdout())
+				.user(c.user()).memory(c.memory()).memorySwap(c.memorySwap())
+				.cpuShares(c.cpuShares()).cpuset(c.cpuset())
+				.attachStdin(c.attachStdin()).attachStdout(c.attachStdout())
 				.attachStderr(c.attachStderr()).tty(c.tty())
-				.openStdin(c.openStdin()).stdinOnce(c.stdinOnce())
-				.cmd(c.cmd()).image(c.image())
-				.workingDir(c.workingDir())
+				.openStdin(c.openStdin()).stdinOnce(c.stdinOnce()).cmd(c.cmd())
+				.image(c.image()).workingDir(c.workingDir())
 				.networkDisabled(c.networkDisabled());
 		// For those fields that are Collections and not set, they will be null.
 		// We can't use their values to set the builder's fields as they are
 		// expecting non-null Collections to copy over. In those cases, we just
 		// don't set those fields in the builder.
-		if (c.portSpecs() != null) {
+		if (c.portSpecs() != null)
 			builder = builder.portSpecs(c.portSpecs());
-		}
-		if (c.exposedPorts() != null) {
+		if (c.exposedPorts() != null)
 			builder = builder.exposedPorts(c.exposedPorts());
-		}
-		if (c.env() != null) {
+		if (c.env() != null)
 			builder = builder.env(c.env());
-		}
-		if (c.volumes() != null) {
+		if (c.volumes() != null)
 			builder = builder.volumes(c.volumes());
-		}
-		if (c.entrypoint() != null) {
+		if (c.entrypoint() != null)
 			builder = builder.entrypoint(c.entrypoint());
-		}
-		if (c.onBuild() != null) {
+		if (c.onBuild() != null)
 			builder = builder.onBuild(c.onBuild());
-		}
+
+		final ContainerConfig config = builder.build();
 
 		try {
 			// create container with default random name
-			final ContainerCreation creation = client
-					.createContainer(builder.build(),
-					containerName);
+			final ContainerCreation creation = client.createContainer(config);
 			final String id = creation.id();
-			// force a refresh of the current containers to include the new one
-			listContainers();
 			return id;
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
@@ -1100,7 +1073,7 @@ public class DockerConnection implements IDockerConnection {
 				}
 			}
 			// list of containers needs to be updated once the given container is stopped, to reflect it new state.
-			listContainers();
+			listContainers(); 
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
@@ -1284,13 +1257,12 @@ public class DockerConnection implements IDockerConnection {
 			// start container with host config
 			client.startContainer(id, builder.build());
 			// Log the started container based on user preference
-			// IEclipsePreferences preferences = InstanceScope.INSTANCE
-			// .getNode("org.eclipse.linuxtools.docker.ui"); //$NON-NLS-1$
+			IEclipsePreferences preferences = InstanceScope.INSTANCE
+					.getNode("org.eclipse.linuxtools.docker.ui"); //$NON-NLS-1$
 
-			// boolean autoLog = preferences.getBoolean("autoLogOnStart", true);
-			// //$NON-NLS-1$
+			boolean autoLog = preferences.getBoolean("autoLogOnStart", true); //$NON-NLS-1$
 
-			if (getContainerInfo(id).config().tty()) {
+			if (autoLog && !getContainerInfo(id).config().tty()) {
 				// display logs for container
 				synchronized (loggingThreads) {
 					LogThread t = loggingThreads.get(loggingId);
@@ -1322,7 +1294,6 @@ public class DockerConnection implements IDockerConnection {
 			client.commitContainer(id, repo, tag, info.config(), comment,
 					author);
 			// update images list
-			listImages();
 			getImages(true);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());

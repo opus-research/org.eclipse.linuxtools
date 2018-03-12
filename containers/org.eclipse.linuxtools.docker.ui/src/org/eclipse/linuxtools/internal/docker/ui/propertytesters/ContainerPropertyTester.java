@@ -44,10 +44,7 @@ public class ContainerPropertyTester extends PropertyTester {
 			case IS_RUNNING:
 				return checkIfStateMatchesExpectation(container, EnumDockerStatus.RUNNING, expectedValue);
 			case IS_STOPPED:
-				return checkIfStateMatchesExpectation(container,
-						EnumDockerStatus.STOPPED, expectedValue)
-						|| checkIfStateMatchesExpectation(container,
-								EnumDockerStatus.UNKNOWN, expectedValue);
+				return checkIfStateMatchesExpectation(container, EnumDockerStatus.STOPPED, expectedValue);
 			case IS_PAUSED:
 				return checkIfStateMatchesExpectation(container, EnumDockerStatus.PAUSED, expectedValue);
 			case IS_REMOVABLE:
