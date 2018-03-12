@@ -174,7 +174,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      * Empty string
      * @since 3.1
      */
-    protected static final String EMPTY_STRING = ""; //$NON-NLS-1$
+    protected static final @NonNull String EMPTY_STRING = ""; //$NON-NLS-1$
 
     private static final Image BOOKMARK_IMAGE = Activator.getDefault().getImageFromPath(
             "icons/elcl16/bookmark_obj.gif"); //$NON-NLS-1$
@@ -408,13 +408,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         }
 
         // Create the UI columns in the table
-        for (TmfEventTableColumn col : fColumns) {
-            TableColumn column = fTable.newTableColumn(SWT.LEFT);
-            column.setText(col.getHeaderName());
-            column.setToolTipText(col.getHeaderTooltip());
-            column.setData(Key.FIELD_ID, col.getFilterFieldId());
-            column.pack();
-        }
+        fTable.createColumns(fColumns);
 
         // Set the frozen row for header row
         fTable.setFrozenRowCount(1);
