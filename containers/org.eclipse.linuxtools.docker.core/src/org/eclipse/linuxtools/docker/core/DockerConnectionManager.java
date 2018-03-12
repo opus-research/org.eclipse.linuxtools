@@ -178,12 +178,10 @@ public class DockerConnectionManager {
 		return connections.toArray(new IDockerConnection[connections.size()]);
 	}
 
-	public IDockerConnection findConnection(final String name) {
-		if (name != null) {
-			for (IDockerConnection connection : connections) {
-				if (connection.getName().equals(name))
-					return connection;
-			}
+	public IDockerConnection findConnection(String name) {
+		for (IDockerConnection connection : connections) {
+			if (connection.getName().equals(name))
+				return connection;
 		}
 		return null;
 	}
@@ -199,6 +197,14 @@ public class DockerConnectionManager {
 
 	public void removeConnection(IDockerConnection d) {
 		connections.remove(d);
+		String uri = d.getUri();
+		String name = d.getName();
+		for (IDockerConnection connection : connections) {
+			if (connection.getUri().equals(uri)
+					&& connection.getName().equals(name)) {
+				break;
+			}
+		}
 		saveConnections();
 		notifyListeners(IDockerConnectionManagerListener.REMOVE_EVENT);
 	}

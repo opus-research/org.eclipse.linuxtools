@@ -85,9 +85,9 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	private WritableList links = new WritableList();
 
-	private boolean interactiveMode = false;
+	private boolean interactiveMode = true;
 
-	private boolean allocatePseudoTTY = false;
+	private boolean allocatePseudoTTY = true;
 
 	private boolean removeWhenExits = false;
 
@@ -234,6 +234,8 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	}
 
 	public void setExposedPorts(final WritableList ports) {
+		// firePropertyChange(EXPOSED_PORTS, this.availablePorts,
+		// this.availablePorts = ports);
 		this.exposedPorts.clear();
 		this.exposedPorts.addAll(ports);
 	}

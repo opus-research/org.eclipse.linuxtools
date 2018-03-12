@@ -46,6 +46,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+/**
+ * @author xcoulon
+ *
+ */
 public class ContainerLinkDialog extends Dialog {
 
 	private final IDockerConnection connection;
@@ -108,7 +112,8 @@ public class ContainerLinkDialog extends Dialog {
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(10, 10)
 				.applyTo(container);
 		final Label explanationLabel = new Label(container, SWT.NONE);
-		explanationLabel.setText(WizardMessages
+		explanationLabel
+.setText(WizardMessages
 				.getString("ContainerLinkDialog.explanationLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(false, false).applyTo(explanationLabel);
@@ -170,18 +175,19 @@ public class ContainerLinkDialog extends Dialog {
 								ContainerLinkDialogModel.CONTAINER_ALIAS)
 						.observe(model));
 		containerNameObservable.addValueChangeListener(
-onContainerLinkSettingsChanged());
+				onContainerLinkSettingsChanged(errorMessageLabel));
 		containerAliasObservable.addValueChangeListener(
-onContainerLinkSettingsChanged());
+				onContainerLinkSettingsChanged(errorMessageLabel));
 		return container;
 	}
 
-	private IValueChangeListener onContainerLinkSettingsChanged() {
+	private IValueChangeListener onContainerLinkSettingsChanged(
+			final Label errorMessageLabel) {
 		return new IValueChangeListener() {
 
 			@Override
 			public void handleValueChange(ValueChangeEvent event) {
-				validateInput();
+				validateInput(errorMessageLabel);
 			}
 		};
 	}
@@ -208,7 +214,7 @@ onContainerLinkSettingsChanged());
 			@Override
 			public IContentProposal[] getProposals(final String contents,
 					final int position) {
-				final List<IContentProposal> proposals = new ArrayList<>();
+				final List<IContentProposal> proposals = new ArrayList<IContentProposal>();
 				for (String containerName : containerSelectionCombo
 						.getItems()) {
 					if (containerName.contains(contents)) {
@@ -221,7 +227,7 @@ onContainerLinkSettingsChanged());
 		};
 	}
 
-	private void validateInput() {
+	private void validateInput(final Label errorMessageLabel) {
 		final String selectedContainerName = model.getContainerName();
 		final Object[] containerNames = model.getContainerNames().toArray();
 		final String containerAlias = model.getContainerAlias();

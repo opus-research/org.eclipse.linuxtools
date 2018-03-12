@@ -100,6 +100,9 @@ public class SpecfileNewWizardPage extends WizardPage {
         this.selection = selection;
     }
 
+    /**
+     * @see WizardPage#createControl(Composite)
+     */
     @Override
     public void createControl(Composite parent) {
         final Composite container = new Composite(parent, SWT.NULL);

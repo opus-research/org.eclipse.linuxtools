@@ -12,30 +12,24 @@
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
-import org.eclipse.core.databinding.AggregateValidationStatus;
 import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.beans.PojoProperties;
+import org.eclipse.core.databinding.observable.ChangeEvent;
+import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.validation.IValidator;
-import org.eclipse.core.databinding.validation.ValidationStatus;
+import org.eclipse.core.databinding.observable.value.IValueChangeListener;
+import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.databinding.swt.ISWTObservableValue;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.viewers.ObservableListContentProvider;
 import org.eclipse.jface.databinding.viewers.ViewerProperties;
-import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -77,6 +71,7 @@ import org.eclipse.swt.widgets.Text;
 public class ImageSearchPage extends WizardPage {
 
 	private final ImageSearchModel model;
+	private Button searchImageButton;
 	private final DataBindingContext ctx = new DataBindingContext();
 
 	/**
@@ -86,11 +81,8 @@ public class ImageSearchPage extends WizardPage {
 		super("ImageSearchPage", //$NON-NLS-1$
 				WizardMessages.getString("ImageSearchPage.title"), //$NON-NLS-1$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
+		setMessage(WizardMessages.getString("ImageSearchPage.title")); //$NON-NLS-1$
 		this.model = model;
-	}
-
-	public IDockerImageSearchResult getSelectedImage() {
-		return model.getSelectedImage();
 	}
 
 	@Override
@@ -119,12 +111,13 @@ public class ImageSearchPage extends WizardPage {
 				.grab(true, false).applyTo(searchImageText);
 		searchImageText.addKeyListener(onKeyPressed());
 		searchImageText.addTraverseListener(onSearchImageTextTraverse());
-		final Button searchImageButton = new Button(container, SWT.NONE);
+		searchImageButton = new Button(container, SWT.NONE);
 		searchImageButton
 				.setText(WizardMessages.getString("ImageSearchPage.search")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(searchImageButton);
 		searchImageButton.addSelectionListener(onSearchImageButtonSelected());
+		searchImageButton.setEnabled(!searchImageText.getText().isEmpty());
 		// result table
 		final Label searchResultLabel = new Label(container, SWT.NONE);
 		searchResultLabel.setText(
@@ -155,7 +148,10 @@ public class ImageSearchPage extends WizardPage {
 				SWT.NONE,
 				SWT.CENTER,
 				70, new ImageAutomatedColumnLabelProvider());
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
+		searchResultTableViewer
+				.setContentProvider(new ObservableListContentProvider());
+		// searchResultTableViewer.addSelectionChangedListener(onImageSelected());
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(COLUMNS, 1).hint(200, 100)
 				.applyTo(table);
 		// description text area
@@ -176,22 +172,36 @@ public class ImageSearchPage extends WizardPage {
 		final IObservableValue observableTermModel = BeanProperties
 				.value(ImageSearchModel.class, ImageSearchModel.TERM)
 				.observe(model);
-		final ISWTObservableValue imageSearchTextObservable = WidgetProperties
-				.text(SWT.Modify).observe(searchImageText);
-		ctx.bindValue(imageSearchTextObservable, observableTermModel,
-				new UpdateValueStrategy().setBeforeSetValidator(
-						new SearchTermValidator(searchImageButton)),
-				null);
-		// observe the viewer content
-		searchResultTableViewer
-				.setContentProvider(new ObservableListContentProvider());
+		ctx.bindValue(
+				WidgetProperties.text(SWT.Modify).observe(searchImageText),
+				observableTermModel);
+		// enable/disable the search button
+		observableTermModel.addValueChangeListener(new IValueChangeListener() {
+
+			@Override
+			public void handleValueChange(final ValueChangeEvent event) {
+				final String term = (String) event.getObservableValue()
+						.getValue();
+				if (term.isEmpty()) {
+					searchImageButton.setEnabled(false);
+				} else {
+					searchImageButton.setEnabled(true);
+				}
+			}
+		});
 		// observe the viewer content
 		final IObservableList observableSearchResultModel = BeanProperties
 				.list(ImageSearchModel.class,
-						ImageSearchModel.IMAGE_SEARCH_RESULT)
+						ImageSearchModel.SEARCH_RESULT)
 				.observe(model);
-		searchResultTableViewer.setInput(observableSearchResultModel);
+		observableSearchResultModel.addChangeListener(new IChangeListener() {
 
+			@Override
+			public void handleChange(ChangeEvent event) {
+				searchResultTableViewer.setInput(event.getObservable());
+
+			}
+		});
 		// observe the viewer selection
 		ctx.bindValue(
 				ViewerProperties.singleSelection()
@@ -206,9 +216,7 @@ public class ImageSearchPage extends WizardPage {
 		ctx.bindValue(WidgetProperties.text().observe(selectedImageDescription),
 				observableSelectedImageDescription);
 		searchImageText.setFocus();
-		// attach the Databinding context status to this wizard page.
-		WizardPageSupport.create(this, this.ctx);
-		setControl(container);
+		setControl(parent);
 	}
 
 	private TableViewerColumn addTableViewerColum(final TableViewer tableViewer,
@@ -243,12 +251,8 @@ public class ImageSearchPage extends WizardPage {
 
 			@Override
 			public void keyReleased(final KeyEvent event) {
-				final IStatus status = AggregateValidationStatus
-						.getStatusMaxSeverity(
-								ctx.getValidationStatusProviders());
-				final String searchTerm = ImageSearchPage.this.model.getTerm();
-				if (event.character == SWT.CR && !searchTerm.isEmpty()
-						&& status.isOK()) {
+				if (event.character == SWT.CR
+						&& !ImageSearchPage.this.model.getTerm().isEmpty()) {
 					searchImages();
 				}
 			}
@@ -283,25 +287,23 @@ public class ImageSearchPage extends WizardPage {
 								final List<IDockerImageSearchResult> searchResults = ImageSearchPage.this.model
 										.getSelectedConnection()
 										.searchImages(term);
+								monitor.beginTask(
+										WizardMessages.getString(
+												"ImageSearchPage.searchTask"), //$NON-NLS-1$
+										1);
 								searchResultQueue.offer(searchResults);
 							} catch (DockerException e) {
 								Activator.log(e);
-								searchResultQueue.offer(
-										new ArrayList<IDockerImageSearchResult>());
 							}
 							monitor.done();
 						}
 					});
-			List<IDockerImageSearchResult> res = searchResultQueue
+			final List<IDockerImageSearchResult> searchResult = searchResultQueue
 					.poll(10, TimeUnit.SECONDS);
-			final List<IDockerImageSearchResult> searchResult = (res == null)
-					? new ArrayList<IDockerImageSearchResult>() : res;
-
 			Display.getCurrent().asyncExec(new Runnable() {
 				@Override
 				public void run() {
-					ImageSearchPage.this.model
-							.setImageSearchResult(searchResult);
+					ImageSearchPage.this.model.setSearchResult(searchResult);
 					// refresh the wizard buttons
 					getWizard().getContainer().updateButtons();
 				}
@@ -332,39 +334,6 @@ public class ImageSearchPage extends WizardPage {
 	@Override
 	public boolean isPageComplete() {
 		return this.model.getSelectedImage() != null;
-	}
-
-	static class SearchTermValidator implements IValidator {
-
-		private static final String REPOSITORY = "[a-z0-9]+([._-][a-z0-9]+)*";
-		private static final String NAME = "[a-z0-9]+([._-][a-z0-9]+)*";
-		private static final Pattern termPattern = Pattern
-				.compile("(" + REPOSITORY + "/)?" + NAME);
-
-		private final Button searchImageButton;
-
-		public SearchTermValidator(final Button searchImageButton) {
-			this.searchImageButton = searchImageButton;
-		}
-
-		@Override
-		public IStatus validate(final Object value) {
-			final String term = (String) value;
-			if (term == null || term.isEmpty()) {
-				this.searchImageButton.setEnabled(false);
-				return ValidationStatus.info(WizardMessages
-						.getString("ImageSearchPage.description")); //$NON-NLS-1$
-			} else if (termPattern.matcher(term).matches()) {
-				this.searchImageButton.setEnabled(true);
-				return Status.OK_STATUS;
-			} else {
-				this.searchImageButton.setEnabled(false);
-				return ValidationStatus.error(WizardMessages.getFormattedString(
-						"ImageSearchPage.term.invalidformat", //$NON-NLS-1$
-						termPattern.pattern()));
-			}
-		}
-
 	}
 
 	static class ImageNameColumnLabelProvider extends ColumnLabelProvider {
@@ -415,7 +384,7 @@ public class ImageSearchPage extends WizardPage {
 	static abstract class IconColumnLabelProvider
 			extends StyledCellLabelProvider {
 
-		private static final Image ICON = SWTImagesFactory.DESC_RESOLVED
+		private static final Image ICON = SWTImagesFactory.DESC_CHECKED
 				.createImage();
 
 		@Override
@@ -440,6 +409,6 @@ public class ImageSearchPage extends WizardPage {
 		}
 
 		abstract boolean doPaint(final Object element);
-	}
 
+	}
 }
