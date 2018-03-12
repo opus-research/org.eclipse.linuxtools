@@ -133,7 +133,7 @@ public class SynchronizeTracesHandler extends AbstractHandler {
                         return;
                     }
                     try {
-                        trace.initTrace(tl.get(i).getResource(), tl.get(i).getLocation().getPath(), traceEvent.getClass());
+                        trace.initTrace(tl.get(i).getResource(), tl.get(i).getResource().getLocation().toOSString(), traceEvent.getClass());
                         TmfTraceManager.refreshSupplementaryFiles(trace);
                     } catch (TmfTraceException e) {
                         TraceUtils.displayErrorMsg(Messages.SynchronizeTracesHandler_Title, Messages.SynchronizeTracesHandler_InitError + CR + CR + e);
@@ -216,7 +216,7 @@ public class SynchronizeTracesHandler extends AbstractHandler {
                                 ITmfEvent traceEvent = newtrace.instantiateEvent();
 
                                 try {
-                                    trace.initTrace(newtrace.getResource(), newtrace.getLocation().getPath(), traceEvent.getClass());
+                                    trace.initTrace(newtrace.getResource(), newtrace.getResource().getLocation().toOSString(), traceEvent.getClass());
                                 } catch (TmfTraceException e) {
                                     Activator.getDefault().logError(String.format(Messages.SynchronizeTracesHandler_ErrorSynchingForTrace, exp.getName(), traceel.getName()), e);
                                     TraceUtils.displayErrorMsg(Messages.SynchronizeTracesHandler_Title, Messages.SynchronizeTracesHandler_Error + CR + CR + e.getMessage());
@@ -233,10 +233,10 @@ public class SynchronizeTracesHandler extends AbstractHandler {
 
                         // Move synchronization file temporarily so that
                         // it doesn't get deleted by the experiment change
-                        IFolder tmpFolder = exp.getTraceSupplementaryFolder(exp.getName() + '.' + experiment.getSynchronizationFolder(false));
+                        IFolder tmpFolder = exp.getTraceSupplementaryFolder(exp.getName() + '.' + TmfExperiment.SYNCHRONIZATION_DIRECTORY);
                         IResource syncFile = null;
                         for (IResource resource : exp.getSupplementaryResources()) {
-                            if (resource.getName().equals(experiment.getSynchronizationFolder(false))) {
+                            if (resource.getName().equals(TmfExperiment.SYNCHRONIZATION_DIRECTORY)) {
                                 try {
                                     resource.move(tmpFolder.getFullPath(), false, null);
                                     syncFile = resource;
