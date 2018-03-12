@@ -26,10 +26,14 @@ import org.eclipse.swt.widgets.Composite;
  *
  * @author Alexandre Montplaisir
  * @since 3.0
+ * @deprecated Users of this class should migrate to
+ *             {@link org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn}
+ *             or
+ *             {@link org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableFieldColumn}
+ *             .
  */
+@Deprecated
 public class TmfTextEventTable extends TmfEventsTable {
-
-    private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
     /**
      * Constructor
