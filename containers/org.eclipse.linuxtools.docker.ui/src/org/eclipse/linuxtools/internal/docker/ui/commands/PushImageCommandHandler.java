@@ -22,7 +22,6 @@ import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IRegistryAccount;
-import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DefaultImagePushProgressHandler;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
@@ -125,8 +124,6 @@ public class PushImageCommandHandler extends AbstractHandler {
 							DVMessages.getFormattedString(ERROR_PUSHING_IMAGE,
 									defaultImageNameTag),
 							e.getMessage()));
-					Activator.logErrorMessage(DVMessages.getFormattedString(
-							ERROR_PUSHING_IMAGE, defaultImageNameTag), e);
 					// for now
 				} catch (InterruptedException e) {
 					// do nothing
