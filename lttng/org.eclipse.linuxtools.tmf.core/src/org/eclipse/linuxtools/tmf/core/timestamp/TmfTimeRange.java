@@ -38,7 +38,7 @@ public class TmfTimeRange {
     /**
      * The null time range
      */
-    public static final TmfTimeRange NULL_RANGE = new TmfTimeRange();
+    public static final @NonNull TmfTimeRange NULL_RANGE = new TmfTimeRange();
 
     // ------------------------------------------------------------------------
     // Attributes

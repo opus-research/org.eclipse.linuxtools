@@ -34,7 +34,9 @@ public class ProtocolConversion {
     public static TmfProtocol wrap(Protocol protocol) {
         @SuppressWarnings("null")
         @NonNull String name = protocol.name();
-        return TmfProtocol.valueOf(name);
+
+        @NonNull TmfProtocol wrappedProtocol = TmfProtocol.valueOf(name);
+        return wrappedProtocol;
     }
 
     /**
