@@ -103,14 +103,4 @@ public class RegistryInfo extends AbstractRegistry {
 		return serverAddress;
 	}
 
-	@Override
-	protected void enableDockerAuthenticator() {
-		return;
-	}
-
-	@Override
-	protected void restoreAuthenticator() {
-		return;
-	}
-
 }

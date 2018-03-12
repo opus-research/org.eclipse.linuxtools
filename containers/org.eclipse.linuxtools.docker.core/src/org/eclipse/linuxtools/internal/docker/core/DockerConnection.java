@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -346,21 +346,7 @@ public class DockerConnection
 	}
 
 	@Override
-	protected void finalize() throws Throwable {
-		close();
-		super.finalize();
-	}
-
-	@Override
 	public void close() {
-		// stop and remove all logging threads
-		for (String key : loggingThreads.keySet()) {
-			LogThread t = loggingThreads.get(key);
-			if (t != null) {
-				t.kill();
-			}
-			loggingThreads.remove(key);
-		}
 		synchronized (clientLock) {
 			if (this.client != null) {
 				this.client.close();
@@ -388,10 +374,7 @@ public class DockerConnection
 	
 	@Override
 	public String getName() {
-		if (name != null && !name.isEmpty()) {
-			return name;
-		}
-		return Messages.Unnamed;
+		return name;
 	}
 
 	@Override
@@ -621,7 +604,6 @@ public class DockerConnection
 
 		@Override
 		public void execute() throws InterruptedException, IOException {
-			LogStream stream = null;
 			try {
 				// Add timestamps to log based on user preference
 				IEclipsePreferences preferences = InstanceScope.INSTANCE
@@ -630,6 +612,7 @@ public class DockerConnection
 				boolean timestamps = preferences.getBoolean(
 						"logTimestamp", true); //$NON-NLS-1$
 
+				LogStream stream = null;
 
 				if (timestamps)
 					stream = copyClient.logs(id, LogsParam.follow(),
@@ -1391,6 +1374,25 @@ public class DockerConnection
 	}
 	
 	@Override
+	@Deprecated
+	public String createContainer(IDockerContainerConfig c)
+			throws DockerException, InterruptedException {
+		IDockerHostConfig hc = new DockerHostConfig(HostConfig.builder()
+				.build());
+		return createContainer(c, hc);
+	}
+
+	@Override
+	@Deprecated
+	public String createContainer(final IDockerContainerConfig c,
+			final String containerName)
+			throws DockerException, InterruptedException {
+		IDockerHostConfig hc = new DockerHostConfig(HostConfig.builder()
+				.build());
+		return createContainer(c, hc, containerName);
+	}
+
+	@Override
 	public String createContainer(final IDockerContainerConfig c,
 			final IDockerHostConfig hc) throws DockerException,
 			InterruptedException {
@@ -1621,29 +1623,30 @@ public class DockerConnection
 		}
 	}
 
-	private String getCmdString(IDockerContainerInfo info) {
-		if (info == null) {
-			return "";
-		}
-		List<String> cmd = info.config().cmd();
-		StringBuffer b = new StringBuffer();
-		cmd.stream().forEach(s -> b.append(s + " "));
-		b.deleteCharAt(b.length() - 1);
-		return b.toString();
+	@Override
+	@Deprecated
+	public void startContainer(String id, IDockerHostConfig config,
+			OutputStream stream)
+			throws DockerException, InterruptedException {
+		startContainer(id, stream);
+	}
+
+	@Override
+	@Deprecated
+	public void startContainer(String id, String loggingId,
+			IDockerHostConfig config, OutputStream stream)
+			throws DockerException, InterruptedException {
+		startContainer(id, loggingId, stream);
 	}
 
 	@Override
 	public void startContainer(final String id, final OutputStream stream)
 			throws DockerException, InterruptedException {
-		final IDockerContainerInfo containerInfo = getContainerInfo(id);
-		if (containerInfo == null) {
-			throw new DockerException(DockerMessages
-					.getFormattedString("DockerContainerNotFound.error", id)); //$NON-NLS-1$
-		}
 		try {
 			// start container
 			client.startContainer(id);
 			// Log the started container if a stream is provided
+			final IDockerContainerInfo containerInfo = getContainerInfo(id);
 			if (stream != null && containerInfo != null
 					&& containerInfo.config() != null
 					&& !containerInfo.config().tty()) {
@@ -1661,11 +1664,7 @@ public class DockerConnection
 			// list of containers needs to be refreshed once the container started, to reflect it new state.
 			listContainers(); 
 		} catch (ContainerNotFoundException e) {
-			// if we get here, it means that the command failed...the actual
-			// message is buried in the throwable cause and isn't actually
-			// clearly stated so report there was a problem starting the command
-			throw new DockerException(DockerMessages.getFormattedString(
-					"DockerStartContainer.error", getCmdString(containerInfo))); //$NON-NLS-1$
+			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
@@ -1676,11 +1675,6 @@ public class DockerConnection
 	@Override
 	public void startContainer(String id, String loggingId, OutputStream stream)
 			throws DockerException, InterruptedException {
-		final IDockerContainerInfo containerInfo = getContainerInfo(id);
-		if (containerInfo == null) {
-			throw new DockerException(DockerMessages
-					.getFormattedString("DockerContainerNotFound.error", id)); //$NON-NLS-1$
-		}
 		try {
 			// start container with host config
 			client.startContainer(id);
@@ -1692,7 +1686,7 @@ public class DockerConnection
 
 			boolean autoLog = preferences.getBoolean("autoLogOnStart", true); //$NON-NLS-1$
 
-			if (autoLog && !containerInfo.config().tty()) {
+			if (autoLog && !getContainerInfo(id).config().tty()) {
 				synchronized (loggingThreads) {
 					LogThread t = loggingThreads.get(loggingId);
 					if (t == null || !t.isAlive()) {
@@ -1706,11 +1700,7 @@ public class DockerConnection
 			// update container list
 			listContainers();
 		} catch (ContainerNotFoundException e) {
-			// if we get here, it means that the command failed...the actual
-			// message is buried in the throwable cause and isn't actually
-			// clearly stated so report there was a problem starting the command
-			throw new DockerException(DockerMessages.getFormattedString(
-					"DockerStartContainer.error", getCmdString(containerInfo))); //$NON-NLS-1$
+			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {

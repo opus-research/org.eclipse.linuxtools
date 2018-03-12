@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2017 Red Hat, Inc.
+ * Copyright (c) 2007, 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.rpm.rpmlint.resolutions;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.linuxtools.internal.rpm.rpmlint.RpmlintLog;
+import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMarkerResolution2;
@@ -41,9 +42,9 @@ public abstract class ARpmlintResolution implements IMarkerResolution2 {
      * Returns the SpecfileEditor for the given IMarker if any.
      *
      * @param marker The marker to use for retrieving the editor.
-     * @return The IEditorPart this marker is from or null.
+     * @return The SpecfileEditor this marker is from or null if it's not a SpecfileEditor.
      */
-    protected IEditorPart getEditor(IMarker marker) {
+    protected SpecfileEditor getEditor(IMarker marker) {
         // Open or activate the editor.
         IWorkbenchPage page = PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getActivePage();
@@ -54,6 +55,10 @@ public abstract class ARpmlintResolution implements IMarkerResolution2 {
             RpmlintLog.logError(e);
             return null;
         }
-        return part;
+        // Get the editor's document.
+        if (!(part instanceof SpecfileEditor)) {
+            return null;
+        }
+        return (SpecfileEditor) part;
     }
 }

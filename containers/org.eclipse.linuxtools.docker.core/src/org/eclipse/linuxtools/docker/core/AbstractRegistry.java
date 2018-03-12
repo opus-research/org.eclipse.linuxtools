@@ -110,7 +110,6 @@ public abstract class AbstractRegistry implements IRegistry {
 				String url = scheme + getServerAddress();
 				WebTarget queryServer = client.target(url).path(ver);
 				try {
-					enableDockerAuthenticator();
 					Response resp = queryServer.request(APPLICATION_JSON_TYPE)
 							.async().method(GET).get();
 					int code = resp.getStatus();
@@ -119,8 +118,6 @@ public abstract class AbstractRegistry implements IRegistry {
 						return url;
 					}
 				} catch (InterruptedException | ExecutionException e) {
-				} finally {
-					restoreAuthenticator();
 				}
 			}
 		}
@@ -191,7 +188,6 @@ public abstract class AbstractRegistry implements IRegistry {
 	@Override
 	public List<IRepositoryTag> getTags(String repository)
 			throws DockerException {
-
 		final Client client = ClientBuilder.newClient(DEFAULT_CONFIG);
 		try {
 			if (isVersion2()) {
@@ -380,17 +376,5 @@ public abstract class AbstractRegistry implements IRegistry {
 		isV2 = false;
 		return false;
 	}
-
-	/**
-	 * Enable an Authenticator used to pass this registry's authentication
-	 * credentials to HTTP Authentication requests.
-	 */
-	protected abstract void enableDockerAuthenticator();
-
-	/**
-	 * Restore the default Authenticator (likely
-	 * org.eclipse.ui.internal.net.auth.NetAuthenticator)
-	 */
-	protected abstract void restoreAuthenticator();
 
 }

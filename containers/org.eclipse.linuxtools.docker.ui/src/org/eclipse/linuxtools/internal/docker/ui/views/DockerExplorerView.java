@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,7 +20,6 @@ import java.util.Map.Entry;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -29,6 +28,7 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
+import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener2;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerListener;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
@@ -62,7 +62,7 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
  *
  */
 public class DockerExplorerView extends CommonNavigator implements
-		IDockerConnectionManagerListener, ITabbedPropertySheetPageContributor {
+		IDockerConnectionManagerListener2, ITabbedPropertySheetPageContributor {
 
 	private static final String NO_CONNECTION_LABEL = "NoConnection.label"; //$NON-NLS-1$
 
@@ -284,6 +284,12 @@ public class DockerExplorerView extends CommonNavigator implements
 	}
 
 	@Override
+	@Deprecated
+	public void changeEvent(final int type) {
+		// method kept for backward compatibility
+	}
+
+	@Override
 	public void changeEvent(final IDockerConnection connection,
 			final int type) {
 		Display.getDefault().asyncExec(() -> {
@@ -359,20 +365,7 @@ public class DockerExplorerView extends CommonNavigator implements
 		Display.getDefault().asyncExec(() -> {
 			if (getCommonViewer().getTree() != null
 					&& !getCommonViewer().getTree().isDisposed()) {
-				ITreeSelection old = (ITreeSelection) getCommonViewer()
-						.getSelection();
 				getCommonViewer().refresh(connection, true);
-				// Bug 499919 - Deselected connection after deleted tag
-				// if we had an old selection and now we don't, assume that
-				// operation in another view removed the item we had selected
-				// so reset the connection so the Images and Containers views
-				// don't reset to no connection.
-				ITreeSelection current = (ITreeSelection) getCommonViewer()
-						.getSelection();
-				if (!old.isEmpty() && current.isEmpty()) {
-					getCommonViewer()
-							.setSelection(new StructuredSelection(connection));
-				}
 			}
 		});
 	}
