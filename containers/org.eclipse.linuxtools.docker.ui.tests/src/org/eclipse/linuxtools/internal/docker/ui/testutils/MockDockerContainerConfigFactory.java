@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.docker.ui.testutils;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 
 import org.eclipse.linuxtools.docker.core.IDockerContainerConfig;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerConfig;
@@ -28,23 +27,13 @@ public class MockDockerContainerConfigFactory {
 		return new Builder().cmd(cmd);
 	}
 
-	public static Builder labels(final Map<String, String> labels) {
-		return new Builder().labels(labels);
-	}
-
 	public static class Builder {
 
 		private final DockerContainerConfig containerConfig;
-		private final Map<String, String> labels;
 
 		private Builder() {
-			this.containerConfig = Mockito.mock(DockerContainerConfig.class, Mockito.RETURNS_DEEP_STUBS);
-			this.labels = Collections.emptyMap();
-		}
-
-		public Builder labels(final Map<String, String> labels) {
-			Mockito.when(this.containerConfig.labels()).thenReturn(labels);
-			return this;
+			this.containerConfig = Mockito
+					.mock(DockerContainerConfig.class, Mockito.RETURNS_DEEP_STUBS);
 		}
 
 		public Builder cmd(final String cmd) {
@@ -55,9 +44,10 @@ public class MockDockerContainerConfigFactory {
 		public DockerContainerConfig build() {
 			Mockito.when(this.containerConfig.exposedPorts()).thenReturn(Collections.emptySet());
 			Mockito.when(this.containerConfig.env()).thenReturn(Collections.emptyList());
-			Mockito.when(this.containerConfig.labels()).thenReturn(this.labels);
+			Mockito.when(this.containerConfig.labels()).thenReturn(Collections.emptyMap());
 			return this.containerConfig;
 		}
 	}
+
 
 }
