@@ -21,7 +21,6 @@ import org.eclipse.linuxtools.docker.integration.tests.mock.MockDockerConnection
 import org.eclipse.linuxtools.docker.reddeer.condition.ContainerIsDeployedCondition;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunResourceVolumesVariablesPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
-import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerContainersTab;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
@@ -29,10 +28,10 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFact
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
-import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.eclipse.ui.views.properties.PropertySheet;
+import org.jboss.reddeer.common.wait.WaitUntil;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.eclipse.ui.views.properties.PropertiesView;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,14 +65,13 @@ public class LabelsTest extends AbstractImageBotTest {
 		DockerImagesTab imagesTab = openDockerImagesTab();
 		imagesTab.runImage(IMAGE_NAME + ":" + IMAGE_TAG);
 
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.setAllocatePseudoTTY();
 		firstPage.setKeepSTDINOpen();
 		firstPage.setGiveExtendedPrivileges();
 		firstPage.next();
-		ImageRunResourceVolumesVariablesPage secondPage = new ImageRunResourceVolumesVariablesPage(wizard);
+		ImageRunResourceVolumesVariablesPage secondPage = new ImageRunResourceVolumesVariablesPage();
 		secondPage.addLabel(CONTAINER_LABEL_KEY, CONTAINER_LABEL_VALUE);
 		secondPage.finish();
 		new WaitWhile(new JobIsRunning());
@@ -86,7 +84,7 @@ public class LabelsTest extends AbstractImageBotTest {
 		DockerContainersTab containerTab = new DockerContainersTab();
 		containerTab.searchContainer(CONTAINER_NAME);
 		containerTab.select(CONTAINER_NAME);
-		PropertySheet propertiesView = new PropertySheet();
+		PropertiesView propertiesView = new PropertiesView();
 		propertiesView.open();
 		getConnection().getContainer(CONTAINER_NAME).select();
 		propertiesView.selectTab("Inspect");

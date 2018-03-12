@@ -16,13 +16,12 @@ import java.io.IOException;
 import org.eclipse.linuxtools.docker.integration.tests.image.AbstractImageBotTest;
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
-import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.docker.reddeer.ui.BrowserView;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
 import org.eclipse.linuxtools.docker.reddeer.utils.BrowserContentsCheck;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.eclipse.condition.ConsoleHasNoChange;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.eclipse.condition.ConsoleHasNoChange;
 import org.junit.After;
 import org.junit.Test;
 
@@ -59,8 +58,7 @@ public class ExposePortTest extends AbstractImageBotTest {
 
 	private void runContainer(String imageName, String imageTag, String containerName, DockerImagesTab imagesTab) {
 		imagesTab.runImage(imageName + ":" + imageTag);
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
 		firstPage.setContainerName(containerName);
 		firstPage.setPublishAllExposedPorts(false);
 		firstPage.finish();
