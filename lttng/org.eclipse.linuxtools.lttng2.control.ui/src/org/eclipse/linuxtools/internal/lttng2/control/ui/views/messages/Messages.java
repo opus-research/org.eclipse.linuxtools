@@ -59,9 +59,8 @@ public final class Messages extends NLS {
     // Xml machine interface failures
     public static String TraceControl_MiInvalidNumberOfElementError;
     public static String TraceControl_MiInvalidProviderError;
-    public static String TraceControl_MiMissingRequieredError;
-    public static String TraceControl_MiInvalidElementError;
-    public static String TraceControl_MiIllegalValueError;
+    public static String TraceControl_MiMissingRequiredError;
+
     // Commands
     public static String TraceControl_ErrorTitle;
     public static String TraceControl_RetrieveNodeConfigurationJob;
@@ -261,7 +260,6 @@ public final class Messages extends NLS {
     public static String TraceControl_KernelDomainDisplayName;
     public static String TraceControl_UstDisplayName;
     public static String TraceControl_UstGlobalDomainDisplayName;
-    public static String TraceControl_JULDomainDisplayName;
     public static String TraceControl_AllSessionsDisplayName;
     public static String TraceControl_SessionDisplayName;
     public static String TraceControl_DomainDisplayName;

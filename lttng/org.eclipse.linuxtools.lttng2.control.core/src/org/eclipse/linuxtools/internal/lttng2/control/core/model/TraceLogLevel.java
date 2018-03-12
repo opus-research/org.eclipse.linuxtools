@@ -8,13 +8,14 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Jonathan Rajotte - Initial API and implementation
  *********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.core.model;
 
+import java.security.InvalidParameterException;
+
 /**
- * <p>
  * Log Level enumeration.
- * </p>
  *
  * @author Bernd Hufmann
  */
@@ -71,7 +72,9 @@ public enum TraceLogLevel {
 
     /**
      * Private constructor
-     * @param name the name of state
+     *
+     * @param name
+     *            the name of state
      */
     private TraceLogLevel(String name) {
         fInName = name;
@@ -92,12 +95,14 @@ public enum TraceLogLevel {
     // ------------------------------------------------------------------------
     /**
      * Return the corresponding {@link TraceLogLevel} to String "name"
-     * @param name String to compare to retrieve the good {@link TraceLogLevel}
+     *
+     * @param name
+     *            String to compare to retrieve the good {@link TraceLogLevel}
      * @return the corresponding {@link TraceLogLevel}
      */
-    public static TraceLogLevel valueOfString(String name){
+    public static TraceLogLevel valueOfString(String name) {
         if (name == null) {
-            throw new NullPointerException();
+            throw new InvalidParameterException();
         }
         for (TraceLogLevel tllevel : TraceLogLevel.values()) {
             if (tllevel.getInName().equalsIgnoreCase(name)) {

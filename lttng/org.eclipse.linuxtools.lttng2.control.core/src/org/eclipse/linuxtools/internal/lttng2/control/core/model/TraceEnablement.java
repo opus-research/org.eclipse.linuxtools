@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,13 +8,14 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Jonathan Rajotte - Machine interface support and utility function
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.core.model;
 
+import java.security.InvalidParameterException;
+
 /**
- * <p>
  * Enumeration for enabled/disabled states.
- * </p>
  *
  * @author Bernd Hufmann
  */
@@ -43,7 +44,9 @@ public enum TraceEnablement {
 
     /**
      * Private constructor
-     * @param name the name of state
+     *
+     * @param name
+     *            the name of state
      */
     private TraceEnablement(String name, String miName) {
         fInName = name;
@@ -68,20 +71,21 @@ public enum TraceEnablement {
     }
 
     /**
-     * @param name name of the desired enum
+     * @param name
+     *            name of the desired enum
      * @return the corresponding {@link TraceEnablement} matching name
      */
-    public static TraceEnablement valueOfString(String name){
+    public static TraceEnablement valueOfString(String name) {
         if (name == null) {
-            throw new NullPointerException();
+            throw new InvalidParameterException();
         }
         for (TraceEnablement enablementType : TraceEnablement.values()) {
             boolean exist = enablementType.fInName.equalsIgnoreCase(name) || enablementType.fInMiName.equalsIgnoreCase(name);
             if (exist) {
-               return enablementType;
+                return enablementType;
             }
         }
-        throw new IllegalArgumentException();
+        return DISABLED;
     }
 
 }
