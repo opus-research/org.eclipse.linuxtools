@@ -39,6 +39,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
+
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
@@ -97,9 +100,6 @@ import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
-
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
@@ -799,8 +799,7 @@ public class DockerConnection implements IDockerConnection {
 			} finally {
 				follow = false;
 				copyClient.close(); // we are done with copyClient..dispose
-				if (outputStream != null)
-					outputStream.close();
+				outputStream.close();
 			}
 		}
 	}
