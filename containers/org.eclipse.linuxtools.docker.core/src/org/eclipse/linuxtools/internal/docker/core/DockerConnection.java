@@ -757,13 +757,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				this.imagesLoaded = true;
 			}
 		}
-		// avoid returning a 'null' list.
-		if (this.images == null) {
-			this.images = Collections.emptyList();
-		}
-		if (latestImages == null) {
-			latestImages = Collections.emptyList();
-		}
 		return latestImages;
 	}
 
@@ -942,21 +935,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			final DockerProgressHandler d = new DockerProgressHandler(handler);
 			final java.nio.file.Path p = FileSystems.getDefault()
 					.getPath(path.makeAbsolute().toOSString());
-			/*
-			 * Workaround error message thrown to stderr due to
-			 * lack of Guava 18.0. Remove this when we begin
-			 * using Guava 18.0.
-			 */
-			PrintStream oldErr = System.err;
-			System.setErr(new PrintStream(new OutputStream() {
-				@Override
-				public void write(int b) {
-				}
-			}));
-			String res = getClientCopy().build(p, d,
+			return getClientCopy().build(p, d,
 					BuildParam.create("forcerm", "true")); //$NON-NLS-1$ //$NON-NLS-2$
-			System.setErr(oldErr);
-			return res;
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException | IOException e) {
@@ -973,21 +953,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			DockerProgressHandler d = new DockerProgressHandler(handler);
 			java.nio.file.Path p = FileSystems.getDefault().getPath(
 					path.makeAbsolute().toOSString());
-			/*
-			 * Workaround error message thrown to stderr due to
-			 * lack of Guava 18.0. Remove this when we begin
-			 * using Guava 18.0.
-			 */
-			PrintStream oldErr = System.err;
-			System.setErr(new PrintStream(new OutputStream() {
-				@Override
-				public void write(int b) {
-				}
-			}));
-			String res = getClientCopy().build(p, name, d,
+			return getClientCopy().build(p, name, d,
 					BuildParam.create("forcerm", "true")); //$NON-NLS-1$ $NON-NLS-2$
-			System.setErr(oldErr);
-			return res;
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException | IOException e) {
@@ -1022,21 +989,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			final DockerProgressHandler d = new DockerProgressHandler(handler);
 			final java.nio.file.Path p = FileSystems.getDefault()
 					.getPath(path.makeAbsolute().toOSString());
-			/*
-			 * Workaround error message thrown to stderr due to
-			 * lack of Guava 18.0. Remove this when we begin
-			 * using Guava 18.0.
-			 */
-			PrintStream oldErr = System.err;
-			System.setErr(new PrintStream(new OutputStream() {
-				@Override
-				public void write(int b) {
-				}
-			}));
-			String res = getClientCopy().build(p, name, d,
-					getBuildParameters(buildOptions));
-			System.setErr(oldErr);
-			return res;
+			return getClientCopy().build(p, name, d, getBuildParameters(buildOptions));
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException | IOException e) {
@@ -1439,7 +1392,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			client.commitContainer(id, repo, tag, info.config(), comment,
 					author);
 			// update images list
-			// FIXME: are we refreshing the list of images twice ?
 			listImages();
 			getImages(true);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
