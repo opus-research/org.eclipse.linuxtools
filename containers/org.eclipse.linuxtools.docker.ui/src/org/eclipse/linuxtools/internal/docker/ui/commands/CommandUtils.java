@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -195,7 +196,7 @@ public class CommandUtils {
 	public static boolean openWizard(final IWizard wizard, final Shell shell) {
 		final WizardDialog wizardDialog = new WizardDialog(shell, wizard);
 		wizardDialog.create();
-		return wizardDialog.open() == Window.OK;
+		return wizardDialog.open() == Dialog.OK;
 	}
 
 }

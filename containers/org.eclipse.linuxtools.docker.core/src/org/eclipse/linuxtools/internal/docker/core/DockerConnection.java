@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystems;
@@ -38,6 +39,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -73,7 +77,6 @@ import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
 import org.eclipse.linuxtools.docker.core.IDockerProgressHandler;
 import org.eclipse.linuxtools.docker.core.ILogger;
 import org.eclipse.linuxtools.docker.core.Messages;
-import org.eclipse.osgi.util.NLS;
 
 import com.spotify.docker.client.ContainerNotFoundException;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -97,9 +100,6 @@ import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
 
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
-
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
  * All low-level communication is delegated to a wrapped {@link DockerClient}.
@@ -110,12 +110,32 @@ public class DockerConnection implements IDockerConnection {
 
 	public static class Defaults {
 
-		public static final String DEFAULT_UNIX_SOCKET_PATH = "unix:///var/run/docker.sock"; //$NON-NLS-1$
+		public static final String DEFAULT_UNIX_SOCKET_PATH = "unix:///var/run/docker.sock";
 
 		private String name = Messages.Default_Name;
 		private final Map<EnumDockerConnectionSettings, Object> settings = new HashMap<>();
 
 		public Defaults() throws DockerException {
+			File scriptFile = Activator.getDefault().getBundle()
+					.getDataFile("script.sh"); //$NON-NLS-1$
+			if (!scriptFile.exists()) {
+				InputStream is = DockerConnection.class
+						.getResourceAsStream("/resources/script.sh"); //$NON-NLS-1$
+				FileOutputStream fo;
+				try {
+					byte[] buff = new byte[1024];
+					fo = new FileOutputStream(scriptFile);
+					int n;
+					while ((n = is.read(buff)) > 0) {
+						fo.write(buff, 0, n);
+					}
+					fo.close();
+					is.close();
+					scriptFile.setExecutable(true);
+				} catch (IOException e) {
+					Activator.logErrorMessage(e.getMessage());
+				}
+			}
 			// first, looking for a Unix socket at /var/run/docker.sock
 			if (defaultsWithUnixSocket() || defaultsWithSystemEnv()
 					|| defaultWithShellEnv()) {
@@ -142,7 +162,7 @@ public class DockerConnection implements IDockerConnection {
 		 *         {@code false} otherwise.
 		 */
 		private boolean defaultsWithUnixSocket() {
-			final File unixSocketFile = new File("/var/run/docker.sock"); //$NON-NLS-1$
+			final File unixSocketFile = new File("/var/run/docker.sock");
 			if (unixSocketFile.exists() && unixSocketFile.canRead()) {
 				try {
 					final UnixSocketAddress address = new UnixSocketAddress(
@@ -169,15 +189,15 @@ public class DockerConnection implements IDockerConnection {
 		 *         {@code false} otherwise.
 		 */
 		private boolean defaultsWithSystemEnv() {
-			final String dockerHostEnv = System.getenv("DOCKER_HOST"); //$NON-NLS-1$
+			final String dockerHostEnv = System.getenv("DOCKER_HOST");
 			if (dockerHostEnv != null) {
 				settings.put(BINDING_MODE, TCP_CONNECTION);
 				settings.put(TCP_HOST, dockerHostEnv);
-				final String tlsVerifyEnv = System.getenv("DOCKER_TLS_VERIFY"); //$NON-NLS-1$
+				final String tlsVerifyEnv = System.getenv("DOCKER_TLS_VERIFY");
 				if (tlsVerifyEnv != null && tlsVerifyEnv.equals("1")) {
 					settings.put(TCP_TLS_VERIFY, Boolean.TRUE);
 					final String dockerCertPathEnv = System
-							.getenv("DOCKER_CERT_PATH"); //$NON-NLS-1$
+							.getenv("DOCKER_CERT_PATH");
 					if (dockerCertPathEnv != null) {
 						settings.put(TCP_CERT_PATH, dockerCertPathEnv);
 					}
@@ -200,16 +220,11 @@ public class DockerConnection implements IDockerConnection {
 		 */
 		private boolean defaultWithShellEnv() throws DockerException {
 			try {
-				final String connectionSettingsDetectionScriptName = getConnectionSettingsDetectionScriptName();
-				if (connectionSettingsDetectionScriptName == null) {
-					Activator.log(new Status(IStatus.WARNING,
-							Activator.PLUGIN_ID,
-							Messages.Docker_No_Settings_Description_Script));
-					return false;
-				}
-				final File connectionSettingsDetectionScript = getConnectionSettingsDetectionScript(connectionSettingsDetectionScriptName);
+				// FIXME need to verify the OS and decide which script to run
+				File scriptFile = Activator.getDefault().getBundle()
+						.getDataFile("script.sh"); //$NON-NLS-1$
 				final Process process = Runtime.getRuntime().exec(
-						new String[] {connectionSettingsDetectionScript.getAbsolutePath()});
+						scriptFile.getAbsolutePath());
 				process.waitFor();
 				if (process.exitValue() == 0) {
 					final InputStream processInputStream = process
@@ -218,20 +233,20 @@ public class DockerConnection implements IDockerConnection {
 					Properties dockerSettings = new Properties();
 					dockerSettings.load(processInputStream);
 					settings.put(BINDING_MODE, TCP_CONNECTION);
-					if (dockerSettings.containsKey("DOCKER_HOST")) { //$NON-NLS-1$
-						settings.put(TCP_HOST,
-								dockerSettings.get("DOCKER_HOST").toString()); //$NON-NLS-1$
+					if (dockerSettings.containsKey("DOCKER_HOST")) {
+						settings.put(TCP_HOST, dockerSettings
+								.get("DOCKER_HOST").toString());
 					}
-					if (dockerSettings.containsKey("DOCKER_CERT_PATH")) { //$NON-NLS-1$
+					if (dockerSettings.containsKey("DOCKER_CERT_PATH")) {
 						settings.put(TCP_CERT_PATH,
-								dockerSettings.get("DOCKER_CERT_PATH") //$NON-NLS-1$
+								dockerSettings.get("DOCKER_CERT_PATH")
 										.toString());
 					}
-					if (dockerSettings.containsKey("DOCKER_TLS_VERIFY")) { //$NON-NLS-1$
-						settings.put(TCP_TLS_VERIFY,
-								Boolean.valueOf(
-										dockerSettings.get("DOCKER_TLS_VERIFY") //$NON-NLS-1$
-												.toString()
+					if (dockerSettings.containsKey("DOCKER_TLS_VERIFY")) {
+						settings.put(
+								TCP_TLS_VERIFY,
+								Boolean.valueOf(dockerSettings
+										.get("DOCKER_TLS_VERIFY").toString()
 										.equals("1")));
 					}
 					return true;
@@ -249,56 +264,6 @@ public class DockerConnection implements IDockerConnection {
 			return false;
 		}
 
-		/**
-		 * Finds the script file in the data directory of the bundle given its
-		 * name, or creates it from the 'resources' dir in the bundle if it was
-		 * not found in the data dir.
-		 * 
-		 * @param scriptName
-		 *            the name of the script to load in the data dir or in the
-		 *            'resources' dir in the bundle
-		 * @return the script {@link File}
-		 */
-		private File getConnectionSettingsDetectionScript(
-				final String scriptName) {
-			final File script = Activator.getDefault().getBundle()
-					.getDataFile(scriptName);
-			if (script != null && !script.exists()) {
-				try (final FileOutputStream output = new FileOutputStream(
-						script);
-						final InputStream is = DockerConnection.class
-								.getResourceAsStream(
-										"/resources/" + scriptName)) { //$NON-NLS-1$
-					byte[] buff = new byte[1024];
-					int n;
-					while ((n = is.read(buff)) > 0) {
-						output.write(buff, 0, n);
-					}
-					script.setExecutable(true);
-				} catch (IOException e) {
-					Activator.logErrorMessage(e.getMessage());
-				}
-			}
-			return script;
-		}
-
-		/**
-		 * @return the name of the script to run, depending on the OS (Windows,
-		 *         MAc, *Nix)
-		 */
-		private String getConnectionSettingsDetectionScriptName() {
-			final String osName = System.getProperty("os.name"); //$NON-NLS-1$
-			if (osName.toLowerCase().startsWith("win")) { //$NON-NLS-1$
-				return "script.bat"; //$NON-NLS-1$
-			} else if (osName.toLowerCase().startsWith("mac") //$NON-NLS-1$
-					|| osName.toLowerCase().contains("linux") //$NON-NLS-1$
-					|| osName.toLowerCase().contains("nix")) { //$NON-NLS-1$
-				return "script.sh";//$NON-NLS-1$
-			} else {
-				return null;
-			}
-		}
-
 		private String streamToString(InputStream stream) {
 			BufferedReader buff = new BufferedReader(new InputStreamReader(
 					stream));
@@ -306,7 +271,7 @@ public class DockerConnection implements IDockerConnection {
 			String line = "";
 			try {
 				while ((line = buff.readLine()) != null) {
-					res.append(System.getProperty("line.separator")); //$NON-NLS-1$
+					res.append(System.getProperty("line.separator"));
 					res.append(line);
 				}
 				buff.close();
@@ -430,7 +395,7 @@ public class DockerConnection implements IDockerConnection {
 
 	private Map<String, Job> actionJobs;
 
-	private Map<String, LogThread> loggingThreads = new HashMap<>();
+	private Map<String, LogThread> loggingThreads = new HashMap<String, LogThread>();
 
 	// private Set<String> printIds = new HashSet<String>();
 
@@ -656,7 +621,7 @@ public class DockerConnection implements IDockerConnection {
 	public void registerActionJob(String id, Job j) {
 		synchronized (actionLock) {
 			if (actionJobs == null)
-				actionJobs = new HashMap<>();
+				actionJobs = new HashMap<String, Job>();
 			actionJobs.put(id, j);
 		}
 	}
@@ -721,12 +686,10 @@ public class DockerConnection implements IDockerConnection {
 			return new LogThread(id, copyClient, follow);
 		}
 
-		@Override
 		public void setOutputStream(OutputStream stream) {
 			outputStream = stream;
 		}
 
-		@Override
 		public void execute() throws InterruptedException, IOException {
 			try {
 				// Add timestamps to log based on user preference
@@ -780,7 +743,7 @@ public class DockerConnection implements IDockerConnection {
 	}
 
 	private List<IDockerContainer> listContainers() throws DockerException {
-		final List<IDockerContainer> dclist = new ArrayList<>();
+		final List<IDockerContainer> dclist = new ArrayList<IDockerContainer>();
 		synchronized (containerLock) {
 			List<Container> list = null;
 			try {
@@ -788,8 +751,7 @@ public class DockerConnection implements IDockerConnection {
 						.allContainers());
 			} catch (com.spotify.docker.client.DockerException
 					| InterruptedException e) {
-				throw new DockerException(
-						NLS.bind(
+				throw new DockerException(Messages.bind(
 						Messages.List_Docker_Containers_Failure,
 						this.getName()), e);
 			}
@@ -921,7 +883,7 @@ public class DockerConnection implements IDockerConnection {
 	}
 
 	private List<IDockerImage> listImages() throws DockerException {
-		final List<IDockerImage> dilist = new ArrayList<>();
+		final List<IDockerImage> dilist = new ArrayList<IDockerImage>();
 		synchronized (imageLock) {
 			List<Image> rawImages = null;
 			try {
@@ -948,7 +910,7 @@ public class DockerConnection implements IDockerConnection {
 						&& imageParentIds.contains(rawImage.id());
 				final boolean danglingImage = !taggedImage
 						&& !intermediateImage;
-				dilist.add(new DockerImage(this, rawImage
+				dilist.add(new DockerImage(this, (List<String>) rawImage
 						.repoTags(), rawImage.id(), rawImage.parentId(),
 						rawImage.created(), rawImage.size(), rawImage
 								.virtualSize(), intermediateImage,
@@ -1262,7 +1224,7 @@ public class DockerConnection implements IDockerConnection {
 				builder.links(config.links());
 			if (config.lxcConf() != null) {
 				List<IDockerConfParameter> lxcconf = config.lxcConf();
-				ArrayList<LxcConfParameter> lxcreal = new ArrayList<>();
+				ArrayList<LxcConfParameter> lxcreal = new ArrayList<LxcConfParameter>();
 				for (IDockerConfParameter param : lxcconf) {
 					lxcreal.add(new LxcConfParameter(param.key(), param.value()));
 				}
@@ -1271,13 +1233,13 @@ public class DockerConnection implements IDockerConnection {
 			if (config.portBindings() != null) {
 				Map<String, List<IDockerPortBinding>> bindings = config
 						.portBindings();
-				HashMap<String, List<PortBinding>> realBindings = new HashMap<>();
+				HashMap<String, List<PortBinding>> realBindings = new HashMap<String, List<PortBinding>>();
 
 				for (Entry<String, List<IDockerPortBinding>> entry : bindings
 						.entrySet()) {
 					String key = entry.getKey();
 					List<IDockerPortBinding> bindingList = entry.getValue();
-					ArrayList<PortBinding> newList = new ArrayList<>();
+					ArrayList<PortBinding> newList = new ArrayList<PortBinding>();
 					for (IDockerPortBinding binding : bindingList) {
 						newList.add(PortBinding.of(binding.hostIp(),
 								binding.hostPort()));
@@ -1413,7 +1375,7 @@ public class DockerConnection implements IDockerConnection {
 
 	public WritableByteChannel attachCommand(final String id,
 			final InputStream in, final OutputStream out)
-					throws DockerException {
+			throws DockerException, InterruptedException {
 
 		final byte[] prevCmd = new byte[1024];
 		try {

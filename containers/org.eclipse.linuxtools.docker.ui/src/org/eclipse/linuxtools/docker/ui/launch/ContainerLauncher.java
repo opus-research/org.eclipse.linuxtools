@@ -88,7 +88,7 @@ public class ContainerLauncher {
 		final String LAUNCH_TITLE = "ContainerLaunch.title"; //$NON-NLS-1$
 		final String LAUNCH_EXITED_TITLE = "ContainerLaunchExited.title"; //$NON-NLS-1$
 
-		final List<String> env = new ArrayList<>();
+		final List<String> env = new ArrayList<String>();
 		env.addAll(toList(origEnv));
 		env.addAll(toList(envMap));
 
@@ -98,7 +98,7 @@ public class ContainerLauncher {
 		// In our case, we want all directories mounted as-is so the executable
 		// will
 		// run as the user expects.
-		final List<String> volumes = new ArrayList<>();
+		final List<String> volumes = new ArrayList<String>();
 		if (additionalDirs != null) {
 			for (String dir : additionalDirs) {
 				volumes.add(dir + ":" + dir); //$NON-NLS-1$
@@ -111,8 +111,8 @@ public class ContainerLauncher {
 
 		final List<String> cmdList = getCmdList(command);
 
-		final Set<String> exposedPorts = new HashSet<>();
-		final Map<String, List<IDockerPortBinding>> portBindingsMap = new HashMap<>();
+		final Set<String> exposedPorts = new HashSet<String>();
+		final Map<String, List<IDockerPortBinding>> portBindingsMap = new HashMap<String, List<IDockerPortBinding>>();
 
 		if (ports != null) {
 			for (String port : ports) {
@@ -393,7 +393,7 @@ public class ContainerLauncher {
 	 * @return list of strings
 	 */
 	private List<String> getCmdList(String s) {
-		ArrayList<String> list = new ArrayList<>();
+		ArrayList<String> list = new ArrayList<String>();
 		int length = s.length();
 		boolean insideQuote1 = false; // single-quote
 		boolean insideQuote2 = false; // double-quote
