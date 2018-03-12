@@ -15,12 +15,21 @@ import java.io.IOException;
 
 import org.eclipse.debug.core.ILaunch;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class ValgrindCoreParserTest {
-	@Test(expected=IOException.class)
+    @Test(expected = IOException.class)
 
-	public void test() throws IOException {
-		ValgrindCoreParser valgrindCoreParser = new ValgrindCoreParser(new File("/tmp/valgrind_aaa01.txt"), (ILaunch) null);
-		valgrindCoreParser.getMessages();
-	}
+    public void test() throws IOException {
+        ValgrindCoreParser valgrindCoreParser = new ValgrindCoreParser(new File("/tmp/valgrind_aaa01.txt"),
+                (ILaunch) null);
+        valgrindCoreParser.getMessages();
+    }
+
+    public void testLaunch() throws IOException {
+        ILaunch l = Mockito.mock(ILaunch.class);
+        ValgrindCoreParser valgrindCoreParser = new ValgrindCoreParser(new File("/tmp/valgrind_aaa01.txt"),
+                l);
+        valgrindCoreParser.getMessages();
+    }
 }
