@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
@@ -192,9 +191,7 @@ public class DockerContainersViewSWTBotTest {
 	public void shouldShowSelectedContainerInPropertiesView() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockContainerFactory.name("angry_bar").status("Stopped").build(),
-						MockContainerInfoFactory.networkMode("host").build())
-				.build();
+				.container(MockContainerFactory.name("angry_bar").status("Stopped").build()).build();
 		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client)
 				.withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
