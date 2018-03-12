@@ -22,7 +22,6 @@ import java.nio.ByteOrder;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.AbstractArrayDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.CompoundDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
@@ -123,7 +122,7 @@ public class ArrayDeclaration2Test {
     public void testIsString_complex() {
         final IntegerDeclaration id = IntegerDeclaration.createDeclaration(8, false, 16,
                 ByteOrder.LITTLE_ENDIAN, Encoding.UTF8, "", 8);
-        CompoundDeclaration ad = new ArrayDeclaration(0, id);
+        ArrayDeclaration ad = new ArrayDeclaration(0, id);
 
         boolean result = ad.isString();
 
