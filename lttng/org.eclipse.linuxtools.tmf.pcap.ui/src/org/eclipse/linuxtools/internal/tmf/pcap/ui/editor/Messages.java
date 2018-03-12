@@ -17,13 +17,16 @@ import org.eclipse.osgi.util.NLS;
 
 @SuppressWarnings("javadoc")
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.pcap.ui.editor.messages"; //$NON-NLS-1$
+
+    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.pcap.ui.editor.messages"; //$NON-NLS-1$
+
     public static @Nullable String PcapEventsTable_Content;
     public static @Nullable String PcapEventsTable_Destination;
     public static @Nullable String PcapEventsTable_Protocol;
     public static @Nullable String PcapEventsTable_Reference;
     public static @Nullable String PcapEventsTable_Source;
     public static @Nullable String PcapEventsTable_Timestamp;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

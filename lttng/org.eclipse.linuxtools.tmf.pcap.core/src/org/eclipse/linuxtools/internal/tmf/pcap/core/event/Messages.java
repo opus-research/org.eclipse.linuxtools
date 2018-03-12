@@ -19,9 +19,12 @@ import org.eclipse.osgi.util.NLS;
 @NonNullByDefault(false)
 @SuppressWarnings("javadoc")
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.pcap.core.event.messages"; //$NON-NLS-1$
+
+    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.pcap.core.event.messages"; //$NON-NLS-1$
+
     public static @Nullable String PcapEventType_DefaultContext;
     public static @Nullable String PcapEventType_DefaultTypeID;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

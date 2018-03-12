@@ -17,13 +17,16 @@ import org.eclipse.osgi.util.NLS;
 
 @SuppressWarnings("javadoc")
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.pcap.core.trace.messages"; //$NON-NLS-1$
+
+    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.pcap.core.trace.messages"; //$NON-NLS-1$
+
     public static @Nullable String PcapTrace_FileEndianness;
     public static @Nullable String PcapTrace_LinkLayerHeaderType;
     public static @Nullable String PcapTrace_MaxSnapLength;
     public static @Nullable String PcapTrace_TimestampAccuracy;
     public static @Nullable String PcapTrace_TimeZoneCorrection;
     public static @Nullable String PcapTrace_Version;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

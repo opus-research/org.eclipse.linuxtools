@@ -17,7 +17,9 @@ import org.eclipse.osgi.util.NLS;
 
 @SuppressWarnings("javadoc")
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.pcap.ui.stream.messages"; //$NON-NLS-1$
+
+    private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.pcap.ui.stream.messages"; //$NON-NLS-1$
+
     public static @Nullable String StreamListView_BPSAtoB;
     public static @Nullable String StreamListView_BPSBtoA;
     public static @Nullable String StreamListView_BytesAtoB;
@@ -36,6 +38,7 @@ public class Messages extends NLS {
     public static @Nullable String StreamListView_StopTime;
     public static @Nullable String StreamListView_TotalBytes;
     public static @Nullable String StreamListView_TotalPackets;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
