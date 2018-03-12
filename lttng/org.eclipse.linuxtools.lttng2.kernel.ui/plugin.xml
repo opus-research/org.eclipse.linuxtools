@@ -75,7 +75,7 @@
             class="org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput"
             id="org.eclipse.linuxtools.lttng2.kernel.ui.views.cpuusage">
          <analysisId
-               id="org.eclipse.linuxtools.lttng2.kernel.core.cpuusage">
+            id="org.eclipse.linuxtools.lttng2.kernel.core.cpuusage">
          </analysisId>
       </output>
    </extension>

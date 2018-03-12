@@ -34,6 +34,10 @@ public interface TmfXmlStrings {
     static final String TRACETYPE = "traceType";
     static final String ID = "id";
     static final String LABEL = "label";
+    /**
+     * @since 2.0
+     */
+    static final String ENTRYLABEL = "entryLabel";
     static final String ANALYSIS = "analysis";
 
     /* XML String */
