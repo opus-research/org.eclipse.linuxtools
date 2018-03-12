@@ -19,20 +19,24 @@ import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Declaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.ICompositeDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDecl;
+import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 
 import com.google.common.collect.ImmutableList;
 
 /**
- * An event header definition, as shown in the example of the CTF spec
+ * An event header definition, as shown in the example of the CTF spec examples
+ * section 6.1.1
  *
  * @author Matthew Khouzam
  */
-public final class EventHeaderDef extends Definition implements ICompositeDefinition {
+public final class EventHeaderDefinition extends Definition implements ICompositeDefinition {
 
-    private static final List<String> FIELD_NAMES = ImmutableList.of(IEventHeaderDecl.ID, IEventHeaderDecl.TIMESTAMP);
+    private static final List<String> FIELD_NAMES = ImmutableList.of(
+            IEventHeaderDeclaration.ID,
+            IEventHeaderDeclaration.TIMESTAMP
+            );
 
     private final int fId;
     private final long fTimestamp;
@@ -50,7 +54,7 @@ public final class EventHeaderDef extends Definition implements ICompositeDefini
      * @param timestampLength
      *            the number of bits valid in the timestamp
      */
-    public EventHeaderDef(@NonNull Declaration eventHeaderDecl, int id, long timestamp, int timestampLength) {
+    public EventHeaderDefinition(@NonNull Declaration eventHeaderDecl, int id, long timestamp, int timestampLength) {
         super(eventHeaderDecl, null, LexicalScope.EVENT_HEADER.toString(), LexicalScope.EVENT_HEADER);
         fId = id;
         fTimestamp = timestamp;
@@ -86,10 +90,10 @@ public final class EventHeaderDef extends Definition implements ICompositeDefini
 
     @Override
     public Definition getDefinition(String fieldName) {
-        if (fieldName.equals(IEventHeaderDecl.ID)) {
-            return new IntegerDefinition(IntegerDeclaration.INT_32B_DECL, null, IEventHeaderDecl.ID, getId());
-        } else if (fieldName.equals(IEventHeaderDecl.TIMESTAMP)) {
-            return new IntegerDefinition(IntegerDeclaration.INT_64B_DECL, null, IEventHeaderDecl.TIMESTAMP, getTimestamp());
+        if (fieldName.equals(IEventHeaderDeclaration.ID)) {
+            return new IntegerDefinition(IntegerDeclaration.INT_32B_DECL, null, IEventHeaderDeclaration.ID, getId());
+        } else if (fieldName.equals(IEventHeaderDeclaration.TIMESTAMP)) {
+            return new IntegerDefinition(IntegerDeclaration.INT_64B_DECL, null, IEventHeaderDeclaration.TIMESTAMP, getTimestamp());
         }
         return null;
     }

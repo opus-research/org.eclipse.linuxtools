@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *      Matthew Khouzam - Initial API and implementation
+ *    Matthew Khouzam - Initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.ctf.core.event.types.composite;
@@ -19,7 +19,7 @@ import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Declaration;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDecl;
+import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
@@ -33,11 +33,11 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  * Reminder
  *
  * <pre>
- * struct event_header_large {
- *     enum : uint16_t { compact = 0 ... 65534, extended = 65535 } id;
+ * struct event_header_compact {
+ *     enum : uint5_t { compact = 0 ... 30, extended = 31 } id;
  *     variant <id> {
  *         struct {
- *             uint32_clock_monotonic_t timestamp;
+ *             uint27_clock_monotonic_t timestamp;
  *         } compact;
  *         struct {
  *             uint32_t id;
@@ -49,13 +49,16 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  *
  * @author Matthew Khouzam
  */
-public class EventHeaderLargeDecl extends Declaration implements IEventHeaderDecl {
+public class EventHeaderCompactDeclaration extends Declaration implements IEventHeaderDeclaration {
 
+    private static final int COMPACT_SIZE = 1;
+    private static final int VARIANT_SIZE = 2;
+    private static final int EXTENDED_FIELD_SIZE = 2;
     /**
-     * The id is 16 bits
+     * The id is 5 bits
      */
-    private static final int COMPACT_ID = 16;
-    private static final int EXTENDED_VALUE = 65535;
+    private static final int COMPACT_ID = 5;
+    private static final int EXTENDED_VALUE = 31;
     /**
      * Full sized id is 32 bits
      */
@@ -65,13 +68,13 @@ public class EventHeaderLargeDecl extends Declaration implements IEventHeaderDec
      */
     private static final int FULL_TS = 64;
     /**
-     * Compact timestamp is 32 bits,
+     * Compact timestamp is 27 bits,
      */
-    private static final int COMPACT_TS = 32;
+    private static final int COMPACT_TS = 27;
     /**
      * Maximum size = largest this header can be
      */
-    private static final int MAX_SIZE = 112;
+    private static final int MAX_SIZE = 104;
     /**
      * Byte aligned
      */
@@ -89,24 +92,28 @@ public class EventHeaderLargeDecl extends Declaration implements IEventHeaderDec
      * @param byteOrder
      *            the byteorder
      */
-    public EventHeaderLargeDecl(ByteOrder byteOrder) {
+    public EventHeaderCompactDeclaration(ByteOrder byteOrder) {
         fByteOrder = byteOrder;
     }
 
     @Override
-    public EventHeaderDef createDefinition(IDefinitionScope definitionScope, String fieldName, BitBuffer input) throws CTFReaderException {
+    public EventHeaderDefinition createDefinition(IDefinitionScope definitionScope, String fieldName, BitBuffer input) throws CTFReaderException {
         alignRead(input);
         ByteOrder bo = input.getByteOrder();
         input.setByteOrder(fByteOrder);
-        int first = (int) input.get(COMPACT_ID, false);
-        int second = (int) input.get(COMPACT_TS, false);
-        if (first != EXTENDED_VALUE) {
+        int enumId = (int) input.get(COMPACT_ID, false);
+        if (enumId != EXTENDED_VALUE) {
+            long timestamp2 = input.get(COMPACT_TS, false);
             input.setByteOrder(bo);
-            return new EventHeaderDef(this, first, second, COMPACT_TS);
+            return new EventHeaderDefinition(this, enumId, timestamp2, COMPACT_TS);
         }
+        // needed since we read 5 bits
+        input.position(input.position() + 3);
+        int id = (int) input.get(ID_SIZE, false);
         long timestampLong = input.get(FULL_TS, false);
         input.setByteOrder(bo);
-        return new EventHeaderDef(this, second, timestampLong, FULL_TS);
+        return new EventHeaderDefinition(this, id, timestampLong, FULL_TS);
+
     }
 
     @Override
@@ -124,9 +131,9 @@ public class EventHeaderLargeDecl extends Declaration implements IEventHeaderDec
      *
      * @param declaration
      *            the declaration
-     * @return true if the event is a large event header
+     * @return true if the struct is a compact event header
      */
-    public static boolean isLargeEventHeader(StructDeclaration declaration) {
+    public static boolean isCompactEventHeader(StructDeclaration declaration) {
 
         IDeclaration iDeclaration = declaration.getFields().get(ID);
         if (!(iDeclaration instanceof EnumDeclaration)) {
@@ -145,22 +152,43 @@ public class EventHeaderLargeDecl extends Declaration implements IEventHeaderDec
         if (!vDec.hasField(COMPACT) || !vDec.hasField(EXTENDED)) {
             return false;
         }
+        if( vDec.getFields().size()!= VARIANT_SIZE) {
+            return false;
+        }
         iDeclaration = vDec.getFields().get(COMPACT);
+        if( !(iDeclaration instanceof StructDeclaration)) {
+            return false;
+        }
         StructDeclaration compactDec = (StructDeclaration) iDeclaration;
+        if (compactDec.getFields().size() != COMPACT_SIZE) {
+            return false;
+        }
         if (!compactDec.hasField(TIMESTAMP)) {
             return false;
         }
         iDeclaration = compactDec.getFields().get(TIMESTAMP);
+        if(!(iDeclaration instanceof IntegerDeclaration)) {
+            return false;
+        }
         IntegerDeclaration tsDec = (IntegerDeclaration) iDeclaration;
         if (tsDec.getLength() != COMPACT_TS || tsDec.isSigned()) {
             return false;
         }
         iDeclaration = vDec.getFields().get(EXTENDED);
+        if( !(iDeclaration instanceof StructDeclaration)) {
+            return false;
+        }
         StructDeclaration extendedDec = (StructDeclaration) iDeclaration;
         if (!extendedDec.hasField(TIMESTAMP)) {
             return false;
         }
+        if (extendedDec.getFields().size() != EXTENDED_FIELD_SIZE) {
+            return false;
+        }
         iDeclaration = extendedDec.getFields().get(TIMESTAMP);
+        if(!(iDeclaration instanceof IntegerDeclaration)) {
+            return false;
+        }
         tsDec = (IntegerDeclaration) iDeclaration;
         if (tsDec.getLength() != FULL_TS || tsDec.isSigned()) {
             return false;
@@ -175,5 +203,4 @@ public class EventHeaderLargeDecl extends Declaration implements IEventHeaderDec
         }
         return true;
     }
-
 }

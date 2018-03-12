@@ -20,7 +20,7 @@ import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A CTF trace event reader. Reads the events of a trace file.
@@ -175,7 +175,7 @@ public class CTFStreamInputReader implements AutoCloseable {
      * @return Unmodifiable set with the event definitions
      */
     public Iterable<IEventDeclaration> getEventDeclarations() {
-        return ImmutableList.copyOf(fStreamInput.getStream().getEventDeclarations());
+        return ImmutableSet.copyOf(fStreamInput.getStream().getEvents().values());
     }
 
     /**
@@ -268,7 +268,7 @@ public class CTFStreamInputReader implements AutoCloseable {
      * @return
      */
     private int getPacketSize() {
-        return fStreamInput.getIndex().size();
+        return fStreamInput.getIndex().getEntries().size();
     }
 
     /**
@@ -346,7 +346,7 @@ public class CTFStreamInputReader implements AutoCloseable {
         /*
          * Search in the index for the packet to search in.
          */
-        final int len = fStreamInput.getIndex().size();
+        final int len = fStreamInput.getIndex().getEntries().size();
 
         /*
          * Go to beginning of trace.
@@ -419,7 +419,7 @@ public class CTFStreamInputReader implements AutoCloseable {
     }
 
     private StreamInputPacketIndexEntry getPacket() {
-        return fStreamInput.getIndex().get(getPacketIndex());
+        return fStreamInput.getIndex().getEntries().get(getPacketIndex());
     }
 
     /**

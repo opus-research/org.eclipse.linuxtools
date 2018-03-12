@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @since 3.1
  */
 @NonNullByDefault
-public interface IEventHeaderDecl extends IDeclaration {
+public interface IEventHeaderDeclaration extends IDeclaration {
     /**
      * The id of an event
      */
