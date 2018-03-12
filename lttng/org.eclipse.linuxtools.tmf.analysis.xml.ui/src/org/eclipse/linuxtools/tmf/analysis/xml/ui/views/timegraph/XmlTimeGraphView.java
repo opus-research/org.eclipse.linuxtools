@@ -241,7 +241,7 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
 
         List<Element> entries = XmlUtils.getChildElements(viewElement, TmfXmlUiStrings.ENTRY_ELEMENT);
         Set<XmlEntry> entryList = new TreeSet<>(getEntryComparator());
-        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(trace)) {
+        for (ITmfTrace aTrace : TmfTraceManager.getTraceSet(parentTrace)) {
             if (monitor.isCanceled()) {
                 return;
             }
@@ -288,9 +288,10 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
                 }
             }
         }
-        putEntryList(trace, new ArrayList<TimeGraphEntry>(entryList));
 
-        if (trace.equals(getTrace())) {
+        putEntryList(parentTrace, new ArrayList<TimeGraphEntry>(entryList));
+
+        if (parentTrace.equals(getTrace())) {
             refresh();
         }
         for (XmlEntry traceEntry : entryList) {
