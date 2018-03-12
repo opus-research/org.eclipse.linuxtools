@@ -45,14 +45,14 @@ public class ImageInfoContentProvider implements ITreeContentProvider {
 							image.createdDate() != null ? image.createdDate()
 									: "unknown" }, //$NON-NLS-1$
 					new Object[] {
-							"RepoTags", LabelProviderUtils.reduce(image.repoTags()) }, //$NON-NLS-1$
-					new Object[] { "Size", LabelProviderUtils.toString(image.size()) }, //$NON-NLS-1$
+							"RepoTags", LabelUtils.reduce(image.repoTags()) }, //$NON-NLS-1$
+					new Object[] { "Size", LabelUtils.toString(image.size()) }, //$NON-NLS-1$
 					new Object[] {
-							"VirtualSize", LabelProviderUtils.toString(image.virtualSize()) }, //$NON-NLS-1$
+							"VirtualSize", LabelUtils.toString(image.virtualSize()) }, //$NON-NLS-1$
 					new Object[] {
-							"IsIntermediateImage", LabelProviderUtils.toString(image.isIntermediateImage()) }, //$NON-NLS-1$
+							"IsIntermediateImage", LabelUtils.toString(image.isIntermediateImage()) }, //$NON-NLS-1$
 					new Object[] {
-							"IsDangling", LabelProviderUtils.toString(image.isDangling()) }, //$NON-NLS-1$
+							"IsDangling", LabelUtils.toString(image.isDangling()) }, //$NON-NLS-1$
 			};
 		}
 		return EMPTY;
@@ -67,7 +67,7 @@ public class ImageInfoContentProvider implements ITreeContentProvider {
 			final List<Object> propertyValues = (List<Object>)propertyValue;
 			final Object[] result = new Object[propertyValues.size()];
 			for (int i = 0; i < propertyValues.size(); i++) {
-				result[i] = new Object[]{"", LabelProviderUtils.toString(propertyValues.get(i))};
+				result[i] = new Object[]{"", LabelUtils.toString(propertyValues.get(i))};
 			}
 			return result;
 		} else if(value instanceof Object[]) {
