@@ -232,9 +232,7 @@ public class OpenCommandScriptDialog extends Dialog implements ISelectCommandScr
         dialog.setFilterExtensions(new String[] { "*.*", "*.*" }); //$NON-NLS-1$ //$NON-NLS-2$
         dialog.setText(Messages.TraceControl_ExecuteScriptDialogTitle);
         String selectedFileName = dialog.open();
-        if (selectedFileName != null) {
-            fFileNameCombo.setText(selectedFileName);
-        }
+        fFileNameCombo.setText(selectedFileName);
     }
 
     @Override
