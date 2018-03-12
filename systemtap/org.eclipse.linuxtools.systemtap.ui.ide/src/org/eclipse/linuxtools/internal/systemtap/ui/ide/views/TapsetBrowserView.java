@@ -34,26 +34,23 @@ public abstract class TapsetBrowserView extends BrowserView {
 
         @Override
         public void aboutToRun(IJobChangeEvent event) {
-            synchronized (TapsetBrowserView.this) {
-                displayLoadingMessage();
-            }
+            displayLoadingMessage();
         }
 
         @Override
         public void done(IJobChangeEvent event) {
-            synchronized (TapsetBrowserView.this) {
-                if (event.getResult().isOK()) {
-                    displayContents();
-                } else {
-                    displayCancelContents();
-                }
+            if (event.getResult().isOK()) {
+                displayContents();
+            } else {
+                setViewerInput(null);
+                setRefreshable(true);
             }
         }
 
     };
 
     /**
-     * Creates a new {@link BrowserView} for displaying tapset contents, which will
+     * Create a new {@link BrowserView} for displaying tapset contents, which will
      * be provided by an externally-run {@link TapsetParser}.
      * @param job The parser used to obtain the tapset contents this view will display.
      */
@@ -65,32 +62,18 @@ public abstract class TapsetBrowserView extends BrowserView {
     @Override
     public void createPartControl(Composite parent) {
         super.createPartControl(parent);
-        parser.addJobChangeListener(viewUpdater);
-        updateContents();
-        makeActions();
-    }
 
-    /**
-     * Updates the contents of this view without using the job listener.
-     * Use this when the result of the parser may be missed by the listener.
-     */
-    private synchronized void updateContents() {
         IStatus result = parser.getResult();
-        if (result != null) {
-            if (result.isOK()) {
-                displayContents();
-            } else {
-                displayCancelContents();
-            }
+        if (result != null && result.isOK()) {
+            displayContents();
         } else {
             displayLoadingMessage();
         }
+
+        parser.addJobChangeListener(viewUpdater);
+        makeActions();
     }
 
-    /**
-     * Displays a loading message in the view and sets the view as refreshable.
-     * Automatically called whenever a parse job restarts; should not be called by clients.
-     */
     @Override
     protected void displayLoadingMessage() {
         super.displayLoadingMessage();
@@ -99,21 +82,11 @@ public abstract class TapsetBrowserView extends BrowserView {
 
     /**
      * Populates the view with its contents obtained by the most recent run of {@link #parser}.
-     * Automatically called whenever a parse job succeeds; should not be called by clients.
      */
     abstract protected void displayContents();
 
     /**
-     * Clears the view and sets it as refreshable when the {@link parser} job fails or is canceled.
-     * Automatically called whenever a parse job fails; should not be called by clients.
-     */
-    protected void displayCancelContents() {
-        setViewerInput(null);
-        setRefreshable(true);
-    }
-
-    /**
-     * Reruns the tapset parser to refresh the list of both probes and functions.
+     * Rerun the tapset parser to refresh the list of both probes and functions.
      */
     @Override
     protected void refresh() {

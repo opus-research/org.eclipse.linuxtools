@@ -41,6 +41,7 @@ public class ImportTraceWizard extends Wizard implements IImportWizard {
     // Attributes
     // ------------------------------------------------------------------------
 
+    private IWorkbench fWorkbench;
     private IStructuredSelection fSelection;
     private ImportTraceWizardPage fTraceImportWizardPage;
 
@@ -65,6 +66,7 @@ public class ImportTraceWizard extends Wizard implements IImportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
+        fWorkbench = workbench;
         fSelection = selection;
 
         setWindowTitle(Messages.ImportTraceWizard_DialogTitle);
@@ -75,7 +77,7 @@ public class ImportTraceWizard extends Wizard implements IImportWizard {
     @Override
     public void addPages() {
         super.addPages();
-        fTraceImportWizardPage = new ImportTraceWizardPage(fSelection);
+        fTraceImportWizardPage = new ImportTraceWizardPage(fWorkbench, fSelection);
         addPage(fTraceImportWizardPage);
     }
 

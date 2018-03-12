@@ -191,7 +191,7 @@ public interface ITmfTrace extends ITmfEventProvider {
      *
      * @return an IStatus object with validation result. Use severity OK to
      *         indicate success.
-     * @see TraceValidationStatus
+     * @see {@link TraceValidationStatus}
      * @since 2.0
      */
     IStatus validate(IProject project, String path);

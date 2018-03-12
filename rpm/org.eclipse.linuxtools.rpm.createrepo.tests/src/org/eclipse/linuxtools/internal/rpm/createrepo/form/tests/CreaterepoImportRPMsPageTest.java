@@ -20,9 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -56,12 +53,10 @@ import org.osgi.framework.FrameworkUtil;
  * SWTBot not supporting native dialogs (File dialogs).
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class ImportRPMsPageTest {
+public class CreaterepoImportRPMsPageTest {
 
     private static final String TEST_RPM_LOC1 = ICreaterepoTestConstants.RPM_RESOURCE_LOC
             .concat(ICreaterepoTestConstants.RPM1);
-
-    private static final Logger fLogger = Logger.getRootLogger();
 
     private static TestCreaterepoProject testProject;
     private static SWTWorkbenchBot bot;
@@ -77,7 +72,6 @@ public class ImportRPMsPageTest {
      */
     @BeforeClass
     public static void setUpBeforeClass() throws CoreException {
-        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         testProject = new TestCreaterepoProject();
         assertTrue(testProject.getProject().exists());
         bot = new SWTWorkbenchBot();
