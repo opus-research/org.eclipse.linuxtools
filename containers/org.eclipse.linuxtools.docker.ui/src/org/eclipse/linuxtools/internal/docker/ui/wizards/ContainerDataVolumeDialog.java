@@ -396,11 +396,10 @@ public class ContainerDataVolumeDialog extends Dialog {
 			final Label errorMessageIcon, final Label errorMessageLabel) {
 
 		return event -> {
-			// skip if dialog has been closed
-			if (Display.getCurrent() == null || getShell().isDisposed()) {
+			final IStatus status = validateInput();
+			if (Display.getCurrent() == null) {
 				return;
 			}
-			final IStatus status = validateInput();
 			Display.getCurrent().syncExec(() -> {
 				if (status.isOK()) {
 					errorMessageIcon.setVisible(false);
@@ -465,11 +464,7 @@ public class ContainerDataVolumeDialog extends Dialog {
 	}
 
 	private void setOkButtonEnabled(final boolean enabled) {
-		final Button okButton = getButton(IDialogConstants.OK_ID);
-		// skip if 'OK' button does not exist yet.
-		if (okButton != null) {
-			okButton.setEnabled(enabled);
-		}
+		getButton(IDialogConstants.OK_ID).setEnabled(enabled);
 	}
 
 }
