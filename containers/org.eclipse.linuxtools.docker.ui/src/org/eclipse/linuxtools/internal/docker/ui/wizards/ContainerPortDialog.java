@@ -151,26 +151,29 @@ public class ContainerPortDialog extends Dialog {
 						.observe(model));
 
 		containerPortObservable.addValueChangeListener(
-onContainerPortSettingsChanged());
+				onContainerPortSettingsChanged(errorMessageLabel));
 		hostPortObservable.addValueChangeListener(
-onContainerPortSettingsChanged());
+				onContainerPortSettingsChanged(errorMessageLabel));
 		hostAddressObservable.addValueChangeListener(
-onContainerPortSettingsChanged());
+				onContainerPortSettingsChanged(errorMessageLabel));
 		return container;
 	}
 
-	private IValueChangeListener onContainerPortSettingsChanged() {
+	private IValueChangeListener onContainerPortSettingsChanged(
+			final Label errorMessageLabel) {
 		return new IValueChangeListener() {
 
 			@Override
 			public void handleValueChange(ValueChangeEvent event) {
-				validateInput();
+				validateInput(errorMessageLabel);
 			}
 		};
 	}
 
-	private void validateInput() {
+	private void validateInput(final Label errorMessageLabel) {
 		final String containerPort = model.getContainerPort();
+		final String hostAddress = model.getHostAddress();
+		final String hostPort = model.getHostPort();
 		if (containerPort == null || containerPort.isEmpty()) {
 			setOkButtonEnabled(false);
 		} else {
