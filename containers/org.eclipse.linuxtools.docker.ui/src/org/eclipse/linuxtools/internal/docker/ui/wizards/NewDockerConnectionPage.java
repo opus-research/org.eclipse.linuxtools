@@ -38,7 +38,9 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -136,6 +138,8 @@ public class NewDockerConnectionPage extends WizardPage {
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(unixSocketPathText);
 		final Button unixSocketPathBrowseButton = new Button(customSettingsGroup, SWT.BUTTON1);
 		unixSocketPathBrowseButton.setText("Browse...");
+		unixSocketPathBrowseButton
+				.addSelectionListener(onBrowseUnixSocketPath());
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(unixSocketPathBrowseButton);
 
 		tcpConnectionSelectionButton = new Button(customSettingsGroup, SWT.RADIO);
@@ -159,6 +163,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(tcpCertPathText);
 		final Button tcpCertPathBrowseButton = new Button(customSettingsGroup, SWT.BUTTON1);
 		tcpCertPathBrowseButton.setText("Browse...");
+		tcpCertPathBrowseButton.addSelectionListener(onBrowseTcpCertPathFile());
 		tcpCertPathText.setEnabled(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(tcpCertPathBrowseButton);
 
@@ -189,6 +194,35 @@ public class NewDockerConnectionPage extends WizardPage {
 				tcpAuthControls);
 	}
 	
+	private SelectionListener onBrowseUnixSocketPath() {
+		return new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				final FileDialog fileDialog = new FileDialog(getShell());
+				final String selectedPath = fileDialog.open();
+				if (selectedPath != null) {
+					unixSocketPathText.setText(selectedPath);
+				}
+
+			}
+		};
+	}
+
+	private SelectionListener onBrowseTcpCertPathFile() {
+		return new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				final DirectoryDialog directoryDialog = new DirectoryDialog(
+						getShell());
+				final String selectedPath = directoryDialog.open();
+				if (selectedPath != null) {
+					tcpCertPathText.setText(selectedPath);
+				}
+
+			}
+		};
+	}
+
 	/**
 	 * Sets the default settings by looking for the:
 	 * <ul>
