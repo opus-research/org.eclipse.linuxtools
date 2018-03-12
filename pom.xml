@@ -178,6 +178,7 @@
     <module>gcov</module>
     <module>gprof</module>
     <module>libhover</module>
+    <module>lttng</module>
     <module>man</module>
     <module>oprofile</module>
     <module>perf</module>

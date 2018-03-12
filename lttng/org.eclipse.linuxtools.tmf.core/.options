@@ -1,0 +1,4 @@
+org.eclipse.linuxtools.tmf.core/component=false
+org.eclipse.linuxtools.tmf.core/request=false
+org.eclipse.linuxtools.tmf.core/signal=false
+org.eclipse.linuxtools.tmf.core/event=false
