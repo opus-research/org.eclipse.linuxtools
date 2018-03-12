@@ -682,11 +682,18 @@
                  			<instanceof
                        			value="org.eclipse.linuxtools.docker.core.IDockerContainer">
                  			</instanceof>
-                    		<test
-                          		forcePluginActivation="true"
-                          		property="org.eclipse.linuxtools.docker.propertytesters.container.isUnknown"
-                          		value="false">
-                    		</test>
+                 			<or>
+                    			<test
+                          			forcePluginActivation="true"
+                          			property="org.eclipse.linuxtools.docker.propertytesters.container.isStopped"
+                          			value="false">
+                    			</test>
+                    			<test
+                          			forcePluginActivation="true"
+                          			property="org.eclipse.linuxtools.docker.propertytesters.container.isUnknown"
+                          			value="true">
+                    			</test>
+                 			</or>
               			</and>
            			</iterate>
         		</with>

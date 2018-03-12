@@ -165,11 +165,7 @@ public class DockerConnectionManager {
 	 */
 	public List<String> getConnectionNames() {
 		return Collections.unmodifiableList(getAllConnections().stream()
-				.map(c -> c.getName())
-				// making sure that no 'null' name is returned in the list of
-				// connection names.
-				.filter(n -> n != null)
-				.collect(Collectors.toList()));
+				.map(c -> c.getName()).collect(Collectors.toList()));
 	}
 
 	public IDockerConnection findConnection(final String name) {

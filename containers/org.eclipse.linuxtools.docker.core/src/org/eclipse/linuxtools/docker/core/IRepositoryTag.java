@@ -25,5 +25,4 @@ public interface IRepositoryTag {
 	 * @return The corresponding image layer for this specific tag
 	 */
 	String getLayer();
-
 }
