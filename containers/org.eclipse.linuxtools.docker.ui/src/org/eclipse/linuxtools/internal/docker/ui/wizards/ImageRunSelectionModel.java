@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.runtime.Assert;
@@ -39,27 +38,27 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public static final String SELECTED_IMAGE_NEEDS_PULLING = "selectedImageNeedsPulling"; //$NON-NLS-1$
 
-	public static final String IMAGE_NAMES = "imageNames"; //$NON-NLS-1$
+	public static final String IMAGE_NAMES = "imageNames";
 
-	public static final String CONTAINER_NAME = "containerName"; //$NON-NLS-1$
+	public static final String CONTAINER_NAME = "containerName";
 
-	public static final String COMMAND = "command"; //$NON-NLS-1$
+	public static final String COMMAND = "command";
 
-	public static final String ENTRYPOINT = "entrypoint"; //$NON-NLS-1$
+	public static final String ENTRYPOINT = "entrypoint";
 
-	public static final String PUBLISH_ALL_PORTS = "publishAllPorts"; //$NON-NLS-1$
+	public static final String PUBLISH_ALL_PORTS = "publishAllPorts";
 
-	public static final String EXPOSED_PORTS = "exposedPorts"; //$NON-NLS-1$
+	public static final String EXPOSED_PORTS = "exposedPorts";
 
-	public static final String SELECTED_PORTS = "selectedPorts"; //$NON-NLS-1$
+	public static final String SELECTED_PORTS = "selectedPorts";
 
-	public static final String LINKS = "links"; //$NON-NLS-1$
+	public static final String LINKS = "links";
 
-	public static final String INTERACTIVE_MODE = "interactiveMode"; //$NON-NLS-1$
+	public static final String INTERACTIVE_MODE = "interactiveMode";
 
-	public static final String ALLOCATE_PSEUDO_TTY = "allocatePseudoTTY"; //$NON-NLS-1$
+	public static final String ALLOCATE_PSEUDO_TTY = "allocatePseudoTTY";
 
-	public static final String REMOVE_WHEN_EXITS = "removeWhenExits"; //$NON-NLS-1$
+	public static final String REMOVE_WHEN_EXITS = "removeWhenExits";
 
 	private final IDockerConnection selectedConnection;
 
@@ -305,17 +304,15 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	public static class ExposedPortModel extends BaseDatabindingModel
 			implements Comparable<ExposedPortModel> {
 
-		public static final String SELECTED = "selected"; //$NON-NLS-1$
+		public static final String SELECTED = "selected";
 
-		public static final String CONTAINER_PORT = "containerPort"; //$NON-NLS-1$
+		public static final String CONTAINER_PORT = "containerPort";
 
-		public static final String PORT_TYPE = "portType"; //$NON-NLS-1$
+		public static final String PORT_TYPE = "portType";
 
-		public static final String HOST_ADDRESS = "hostAddress"; //$NON-NLS-1$
+		public static final String HOST_ADDRESS = "hostAddress";
 
-		public static final String HOST_PORT = "hostPort"; //$NON-NLS-1$
-
-		private final String id = UUID.randomUUID().toString();
+		public static final String HOST_PORT = "hostPort";
 
 		private boolean selected;
 
@@ -338,8 +335,8 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		public ExposedPortModel(final String privatePort, final String type,
 				final String hostAddress, final String hostPort) {
 			Assert.isNotNull(privatePort,
-					"Port Mapping privatePort cannot be null"); //$NON-NLS-1$
-			Assert.isNotNull(type, "Port Mapping portType cannot be null"); //$NON-NLS-1$
+					"Port Mapping privatePort cannot be null");
+			Assert.isNotNull(type, "Port Mapping portType cannot be null");
 			this.containerPort = privatePort;
 			this.hostPort = hostPort;
 			this.portType = type;
@@ -394,7 +391,14 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((id == null) ? 0 : id.hashCode());
+			result = prime * result
+					+ ((hostAddress == null) ? 0 : hostAddress.hashCode());
+			result = prime * result
+					+ ((containerPort == null) ? 0 : containerPort.hashCode());
+			result = prime * result
+					+ ((hostPort == null) ? 0 : hostPort.hashCode());
+			result = prime * result
+					+ ((portType == null) ? 0 : portType.hashCode());
 			return result;
 		}
 
@@ -407,10 +411,25 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 			if (getClass() != obj.getClass())
 				return false;
 			ExposedPortModel other = (ExposedPortModel) obj;
-			if (id == null) {
-				if (other.id != null)
+			if (hostAddress == null) {
+				if (other.hostAddress != null)
 					return false;
-			} else if (!id.equals(other.id))
+			} else if (!hostAddress.equals(other.hostAddress))
+				return false;
+			if (containerPort == null) {
+				if (other.containerPort != null)
+					return false;
+			} else if (!containerPort.equals(other.containerPort))
+				return false;
+			if (hostPort == null) {
+				if (other.hostPort != null)
+					return false;
+			} else if (!hostPort.equals(other.hostPort))
+				return false;
+			if (portType == null) {
+				if (other.portType != null)
+					return false;
+			} else if (!portType.equals(other.portType))
 				return false;
 			return true;
 		}
@@ -424,9 +443,9 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public class ContainerLinkModel extends BaseDatabindingModel {
 
-		public static final String CONTAINER_NAME = "containerName"; //$NON-NLS-1$
+		public static final String CONTAINER_NAME = "containerName";
 
-		public static final String CONTAINER_ALIAS = "containerAlias"; //$NON-NLS-1$
+		public static final String CONTAINER_ALIAS = "containerAlias";
 
 		private String containerName;
 
