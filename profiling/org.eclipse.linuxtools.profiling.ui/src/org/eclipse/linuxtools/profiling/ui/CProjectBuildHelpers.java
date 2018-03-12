@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    lufimtse :  Leo Ufimtsev lufimtse@redhat.com
+ *    Red Hat Inc.
  *******************************************************************************/
 
 package org.eclipse.linuxtools.profiling.ui;
@@ -60,7 +60,7 @@ import org.eclipse.swt.widgets.Display;
  *      <li> Continue with launch. </li>
  * </ol>
  * For an example, see <code> org.eclipse.linuxtools.internal.gprof.launch.GprofLaunchConfigurationDelegate  </code>.
- * @since 3.1.0
+ * @since 3.1
  */
 public class CProjectBuildHelpers {
 
@@ -526,7 +526,7 @@ public class CProjectBuildHelpers {
      * <p> The parent tool is later read to aquire the option template, which is used to set an option. </p>
      * 
      * @param parentToolName a string represeting the parent of the option.  (like 'GCC C++ Compiler').
-     * @param the current active configuration of the project, from which we should be able to find the ITool name.
+     * @param activeConf The current active configuration of the project, from which we should be able to find the ITool name.
      * @return the parent 'ITool' instance. 
      */
     private static ITool helperGetGccCompilerTool(String parentToolName, IConfiguration activeConf) {
