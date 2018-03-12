@@ -73,9 +73,7 @@ public final class GcovAnnotationModelTracker {
     private IPartListener2 partListener = new IPartListener2() {
         @Override
         public void partOpened(IWorkbenchPartReference partref) {
-            if (partref != null) {
-                annotateCEditor(partref);
-            }
+            annotateCEditor(partref);
         }
 
         @Override
