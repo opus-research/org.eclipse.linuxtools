@@ -1,13 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2011 STMicroelectronics.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
- *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.test;
 
 import static org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper.contextMenu;
@@ -24,9 +14,6 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.TreeSet;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -71,14 +58,12 @@ public abstract class GcovTest {
     private static SWTBotView projectExplorer;
     private static SWTBotShell mainShell;
 
-    private static final Logger fLogger = Logger.getRootLogger();
     private static SWTWorkbenchBot bot;
     private static String testProjectName;
     private static String testProjectType;
 
     public static SWTWorkbenchBot init(String projectName, String projectType)
             throws Exception {
-        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         bot = new SWTWorkbenchBot();
         testProjectName = projectName;
         testProjectType = projectType;
