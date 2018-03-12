@@ -17,6 +17,7 @@ import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.Reconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.linuxtools.internal.docker.editor.assist.CompletionProcessor;
 import org.eclipse.linuxtools.internal.docker.editor.scanner.DockerCommentScanner;
@@ -28,11 +29,11 @@ import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 public class DockerConfiguration extends TextSourceViewerConfiguration {
 
 	private DockerEditor editor;
-
+	
 	public DockerConfiguration(DockerEditor editor) {
 		this.editor = editor;
 	}
-
+	
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
 		PresentationReconciler reconciler = new PresentationReconciler();
@@ -56,7 +57,7 @@ public class DockerConfiguration extends TextSourceViewerConfiguration {
 		reconciler.setReconcilingStrategy(strategy, IDocument.DEFAULT_CONTENT_TYPE);
 		return reconciler;
 	}
-
+	
 	@Override
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
 		ContentAssistant ca = new ContentAssistant();
@@ -65,5 +66,9 @@ public class DockerConfiguration extends TextSourceViewerConfiguration {
 		ca.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 		return ca;
 	}
-
+	
+	@Override
+	protected boolean isShownInText(Annotation annotation) {
+		return true;
+	}
 }
