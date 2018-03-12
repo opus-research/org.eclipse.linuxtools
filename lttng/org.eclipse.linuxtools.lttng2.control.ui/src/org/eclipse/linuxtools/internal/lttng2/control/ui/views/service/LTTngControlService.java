@@ -282,34 +282,6 @@ public class LTTngControlService implements ILttngControlService {
                 }
                 continue;
             }
-            matcher = LTTngControlServiceConstants.LIST_LIVE_TIMER_INTERVAL_PATTERN.matcher(line);
-            if (matcher.matches()) {
-                int liveDelay = Integer.parseInt(matcher.group(1));
-                if (liveDelay > 0) {
-                    sessionInfo.setLive(true);
-                    sessionInfo.setLiveUrl(SessionInfo.DEFAULT_LIVE_NETWORK_URL);
-                    sessionInfo.setLivePort(SessionInfo.DEFAULT_LIVE_PORT);
-                    sessionInfo.setLiveDelay(liveDelay);
-                }
-                IDomainInfo domainInfo = new DomainInfo(Messages.TraceControl_UstGlobalDomainDisplayName);
-
-                // set kernel flag
-                domainInfo.setIsKernel(false);
-
-                // in domain UST
-                ArrayList<IChannelInfo> channels = new ArrayList<>();
-                index = parseDomain(result.getOutput(), index, channels, domainInfo);
-
-                if (channels.size() > 0) {
-                    // add domain
-                    sessionInfo.addDomain(domainInfo);
-
-                    // set channels
-                    domainInfo.setChannels(channels);
-                }
-                continue;
-            }
-
             index++;
         }
 
