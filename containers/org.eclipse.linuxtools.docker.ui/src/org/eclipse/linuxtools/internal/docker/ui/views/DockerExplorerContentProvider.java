@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -63,11 +62,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 	@Override
 	public void dispose() {
-		Collection<Job> jobs = Collections.emptyList();
-		synchronized (openRetryJobs) {
-			jobs = openRetryJobs.values();
-		}
-		for (Job job : jobs) {
+		for (Job job : openRetryJobs.values()) {
 			LoadingJob loadingJob = (LoadingJob) job;
 			IProgressMonitor monitor = loadingJob.getMonitor();
 			monitor.setCanceled(true);
