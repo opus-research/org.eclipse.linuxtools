@@ -39,6 +39,4 @@ public interface ICompositeDefinition extends IDefinition {
      */
     List<String> getFieldNames();
 
-    @Override
-    public ICompositeDeclaration getDeclaration();
 }
