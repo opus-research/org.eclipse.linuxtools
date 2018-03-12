@@ -10,13 +10,19 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.vagrant.ui.commands;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.linuxtools.internal.vagrant.core.Activator;
+import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
 import org.eclipse.linuxtools.internal.vagrant.ui.views.DVMessages;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantVM;
-import org.eclipse.linuxtools.vagrant.core.VagrantService;
 
 public class StartVMCommandHandler extends BaseVMCommandHandler {
 
@@ -35,8 +41,23 @@ public class StartVMCommandHandler extends BaseVMCommandHandler {
 
 	@Override
 	void executeInJob(IVagrantVM vm, IProgressMonitor monitor) {
-		IVagrantConnection connection = VagrantService.getInstance();
-		connection.up(vm.directory(), vm.provider());
+		IVagrantConnection connection = VagrantConnection.getInstance();
+		String stateLoc = Activator.getDefault().getStateLocation().toOSString();
+		File vagrantDir = Paths.get(stateLoc, vm.name()).toFile();
+		Process p = connection.up(vagrantDir, vm.provider());
+		String line;
+		try (BufferedReader buff = new BufferedReader(
+				new InputStreamReader(p.getInputStream()))) {
+			while ((line = buff.readLine()) != null) {
+				if (monitor.isCanceled()) {
+					p.destroy();
+					break;
+				}
+				line = line.replaceAll("(=)+>", "");
+				monitor.subTask(line);
+			}
+		} catch (IOException e) {
+		}
 		connection.getVMs(true);
 	}
 

@@ -111,7 +111,6 @@ import jnr.unixsocket.UnixSocketChannel;
  */
 public class DockerConnection implements IDockerConnection, Closeable {
 
-	@Deprecated
 	public static class Defaults {
 
 		public static final String DEFAULT_UNIX_SOCKET_PATH = "unix:///var/run/docker.sock"; //$NON-NLS-1$
@@ -586,8 +585,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 					}
 				}
 			} catch (DockerCertificateException e) {
-				throw new DockerException(
-						NLS.bind(Messages.Open_Connection_Failure, this.name));
+				throw new DockerException(Messages.Open_Connection_Failure, e);
 			}
 		}
 	}

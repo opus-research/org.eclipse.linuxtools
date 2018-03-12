@@ -102,11 +102,6 @@
           id="org.eclipse.linuxtools.vagrant.ui.commands.startVM"
           name="Start VMs">
     </command>
-    <command
-          description="Open Vagrantfile for VM"
-          id="org.eclipse.linuxtools.vagrant.ui.commands.openVFile"
-          name="Open Vagrantfile">
-    </command>
  </extension>
  <extension
        point="org.eclipse.ui.handlers">
@@ -213,6 +208,17 @@
     <handler
           class="org.eclipse.linuxtools.internal.vagrant.ui.commands.CreateVmCommandHandler"
           commandId="org.eclipse.linuxtools.vagrant.ui.commands.createVM">
+       <enabledWhen>
+          <with
+                variable="selection">
+             <iterate
+                   ifEmpty="false">
+                <instanceof
+                      value="org.eclipse.linuxtools.vagrant.core.IVagrantBox">
+                </instanceof>
+             </iterate>
+          </with>
+       </enabledWhen>
     </handler>
     <handler
           class="org.eclipse.linuxtools.internal.vagrant.ui.commands.StartVMCommandHandler"
@@ -239,22 +245,6 @@
                       </test>
                    </or>
                 </and>
-             </iterate>
-          </with>
-       </enabledWhen>
-    </handler>
-    <handler
-          class="org.eclipse.linuxtools.internal.vagrant.ui.commands.OpenVagrantfileCommandHandler"
-          commandId="org.eclipse.linuxtools.vagrant.ui.commands.openVFile">
-       <enabledWhen>
-          <with
-                variable="selection">
-             <iterate
-                   ifEmpty="false"
-                   operator="and">
-                <instanceof
-                      value="org.eclipse.linuxtools.vagrant.core.IVagrantVM">
-                </instanceof>
              </iterate>
           </with>
        </enabledWhen>
@@ -354,14 +344,6 @@
              icon="icons/running.gif"
              id="org.eclipse.linuxtools.vagrant.ui.commands.startVM"
              mnemonic="S"
-             style="push">
-       </command>
-    </menuContribution>
-    <menuContribution
-          locationURI="popup:org.eclipse.linuxtools.vagrant.ui.vagrantVMView">
-       <command
-             commandId="org.eclipse.linuxtools.vagrant.ui.commands.openVFile"
-             mnemonic="O"
              style="push">
        </command>
     </menuContribution>

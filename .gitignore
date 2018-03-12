@@ -2,4 +2,3 @@ target/
 bin/
 **/screenshots
 *.pxm
-lib
