@@ -12,12 +12,9 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -27,13 +24,12 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.PreferenceConstants;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.tparsers.FunctionParser;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.tparsers.ProbeParser;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.tparsers.SharedParser;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+
+
 
 /**
  * This class is used for obtaining all probes and functions from the tapsets.
@@ -43,6 +39,8 @@ import org.eclipse.ui.PlatformUI;
  * @author Ryan Morse
  */
 public final class TapsetLibrary {
+    private static TreeNode functionTree = null;
+    private static TreeNode probeTree = null;
 
     private static FunctionParser functionParser = FunctionParser.getInstance();
     private static ProbeParser probeParser = ProbeParser.getInstance();
@@ -50,15 +48,15 @@ public final class TapsetLibrary {
     private static boolean initialized = false;
 
     public static TreeNode getProbes() {
-        return probeParser.getTree();
+        return probeTree;
     }
 
     public static TreeNode getStaticProbes() {
-        return getProbes().getChildByName(Messages.ProbeParser_staticProbes);
+        return probeTree == null ? null : probeTree.getChildByName(Messages.ProbeParser_staticProbes);
     }
 
     public static TreeNode getProbeAliases() {
-        return getProbes().getChildByName(Messages.ProbeParser_aliasProbes);
+        return probeTree == null ? null : probeTree.getChildByName(Messages.ProbeParser_aliasProbes);
     }
 
     public static TreeNode[] getProbeCategoryNodes() {
@@ -66,7 +64,7 @@ public final class TapsetLibrary {
     }
 
     public static TreeNode getFunctions() {
-        return functionParser.getTree();
+        return functionTree;
     }
 
     /**
@@ -96,9 +94,8 @@ public final class TapsetLibrary {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
             String property = event.getProperty();
-            if (property.equals(IDEPreferenceConstants.P_TAPSETS)) {
-                applyTapsetChanges((String) event.getOldValue(), (String) event.getNewValue());
-            } else if (property.equals(PreferenceConstants.P_ENV.SYSTEMTAP_TAPSET.toPrefKey())
+            if (property.equals(IDEPreferenceConstants.P_TAPSETS)
+                    || property.equals(PreferenceConstants.P_ENV.SYSTEMTAP_TAPSET.toPrefKey())
                     || property.equals(IDEPreferenceConstants.P_REMOTE_PROBES)) {
                 runStapParser();
             } else if (property.equals(IDEPreferenceConstants.P_STORED_TREE)) {
@@ -106,9 +103,9 @@ public final class TapsetLibrary {
                     // When turning off stored trees, reload the tapset contents directly.
                     TreeSettings.deleteTrees();
                     runStapParser();
-                } else if (isReady()) {
-                    // When turning on stored trees, store the current trees immediately.
-                    TreeSettings.setTrees(getFunctions(), getProbes());
+                } else {
+                    // When turning on stored trees, store the current trees (if possible).
+                    TreeSettings.setTrees(functionTree, probeTree);
                 }
             }
         }
@@ -124,27 +121,25 @@ public final class TapsetLibrary {
     private static JobChangeAdapter parseCompletionListener = new JobChangeAdapter() {
         @Override
         public void done(IJobChangeEvent event) {
-            if (event.getResult().isOK()) {
-                if (isReady() && IDEPlugin.getDefault().getPreferenceStore().
-                        getBoolean(IDEPreferenceConstants.P_STORED_TREE)) {
-                    TreeSettings.setTrees(getFunctions(), getProbes());
-                }
+            super.done(event);
+            if (!event.getResult().isOK()) {
+                return;
+            }
+            TreeTapsetParser parser = (TreeTapsetParser) event.getJob();
+            if (parser.equals(functionParser)) {
+                functionTree = parser.getTree();
+            } else {
+                probeTree = parser.getTree();
+            }
 
-                if (event.getJob() instanceof ProbeParser) {
-                    ManpageCacher.clear(TapsetItemType.PROBE, TapsetItemType.PROBEVAR);
-                } else {
-                    ManpageCacher.clear(TapsetItemType.FUNCTION);
-                }
+            if (IDEPlugin.getDefault().getPreferenceStore().getBoolean(IDEPreferenceConstants.P_STORED_TREE)) {
+                TreeSettings.setTrees(functionTree, probeTree);
+            }
+            synchronized (parser) {
+                parser.notifyAll();
             }
         }
     };
-
-    private static boolean isReady() {
-        IStatus probeResult = probeParser.getLatestResult();
-        IStatus funcResult = functionParser.getLatestResult();
-        return probeResult != null && funcResult != null
-                && probeResult.isOK() && funcResult.isOK();
-    }
 
     /**
      * This method will trigger the appropriate parsing jobs
@@ -153,29 +148,27 @@ public final class TapsetLibrary {
      */
     public static void runStapParser() {
         stop();
+        clearTrees();
         SharedParser.getInstance().clearTapsetContents();
+        ManpageCacher.clear();
         functionParser.schedule();
         probeParser.schedule();
     }
 
-    private static void applyTapsetChanges(String oldTapsets, String newTapsets) {
-        List<String> oldList = Arrays.asList(oldTapsets.split(File.pathSeparator));
-        List<String> newList = Arrays.asList(newTapsets.split(File.pathSeparator));
-        List<String> additions = new ArrayList<>(newList);
-        additions.removeAll(oldList);
-        additions.remove(""); //$NON-NLS-1$
-        List<String> deletions = new ArrayList<>(oldList);
-        deletions.removeAll(newList);
-        deletions.remove(""); //$NON-NLS-1$
-        String[] additionArray = additions.toArray(new String[additions.size()]);
-        String[] deletionArray = deletions.toArray(new String[deletions.size()]);
-        SharedParser.getInstance().clearTapsetContents();
-        probeParser.runUpdate(additionArray, deletionArray);
-        functionParser.runUpdate(additionArray, deletionArray);
+    private static void clearTrees() {
+        if (functionTree != null) {
+            functionTree.dispose();
+            functionTree = null;
+        }
+        if (probeTree != null) {
+            probeTree.dispose();
+            probeTree = null;
+        }
     }
 
     /**
-     * This method will get all of the tree information from the TreeSettings xml file.
+     * This method will get all of the tree information from
+     * the TreeSettings xml file.
      */
     public static void readTreeFile() {
         functionParser.setTree(TreeSettings.getFunctionTree());
@@ -293,8 +286,35 @@ public final class TapsetLibrary {
     }
 
     /**
+     * Blocks the current thread until the parser has finished
+     * parsing probes and functions.
+     * @since 2.0
+     */
+    public static void waitForInitialization() {
+        while (functionParser.getState() != Job.NONE) {
+            try {
+                synchronized (functionParser) {
+                    functionParser.wait(5000);
+                }
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+        while (probeParser.getState() != Job.NONE) {
+            try {
+                synchronized (probeParser) {
+                    probeParser.wait(5000);
+                }
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+    }
+
+    /**
      * This method will stop all running tapset parsers, and will block
      * the calling thread until they have terminated.
+     * @since 1.2
      */
     public static void stop() {
         functionParser.cancel();

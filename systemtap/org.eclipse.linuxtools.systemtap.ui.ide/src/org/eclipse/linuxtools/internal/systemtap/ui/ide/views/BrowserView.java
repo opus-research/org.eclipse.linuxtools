@@ -106,8 +106,7 @@ public abstract class BrowserView extends ViewPart {
         @Override
         public Image getImage(Object obj) {
             TreeNode treeObj = (TreeNode) obj;
-            if (treeObj.toString().equals(Localization.getString("BrowserView.Loading")) //$NON-NLS-1$
-             || treeObj.toString().equals(Localization.getString("BrowserView.TryRefresh"))) { //$NON-NLS-1$
+            if (treeObj.toString().equals(Localization.getString("BrowserView.Loading"))) { //$NON-NLS-1$
                 return null;
             }
             return getEntryImage(treeObj);
@@ -122,10 +121,10 @@ public abstract class BrowserView extends ViewPart {
         viewer.setContentProvider(new ViewContentProvider());
         viewer.setLabelProvider(new ViewLabelProvider());
 
-        IHandlerService handlerService = getSite().getService(IHandlerService.class);
+        IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
         collapseHandler = new CollapseAllHandler(getViewer());
         handlerService.activateHandler(CollapseAllHandler.COMMAND_ID, collapseHandler);
-        refreshHandler = new RefreshHandler();
+        refreshHandler = new RefreshHandler(this);
         handlerService.activateHandler(RefreshHandler.COMMAND_ID, refreshHandler);
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc.
+ * Copyright (c) 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,7 +36,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 
 /**
  * Shared class for displaying profiling options in a single tab.
@@ -68,25 +67,18 @@ public abstract class AbstractProfilingOptionsTab extends AbstractLaunchConfigur
 
     @Override
     public void createControl(Composite parent) {
-    	top = new Composite(parent, SWT.NONE);
-    	setControl(top);
-    	top.setLayout(new GridLayout(1, true));
+        top = new Composite(parent, SWT.NONE);
+        setControl(top);
+        top.setLayout(new GridLayout(1, true));
 
-    	comboItems = getProviders();
-    	Set<String> providerNames = comboItems.keySet();
+        providerCombo = new Combo(top, SWT.READ_ONLY);
+        comboItems = getProviders();
+        Set<String> providerNames = comboItems.keySet();
+        providerCombo.setItems(providerNames.toArray(new String[0]));
 
-    	providerCombo = new Combo(top, SWT.READ_ONLY);
-    	providerCombo.setItems(providerNames.toArray(new String[0]));
-    	if (providerNames.size() == 0) {
-    		providerCombo.setVisible(false);
-    		providerCombo.setEnabled(false);
-    		Label label = new Label(top, SWT.NULL);
-    		label.setText(Messages.ProfilingTab_no_category_profilers_installed);
-    	}
-
-    	tabgroup = new CTabFolder(top, SWT.NONE);
+        tabgroup = new CTabFolder(top, SWT.NONE);
         tabgroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true,
-        		true));
+                true));
 
         providerCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -335,7 +327,7 @@ public abstract class AbstractProfilingOptionsTab extends AbstractLaunchConfigur
     /**
      * Get index of specific id in the provider combo items list
      *
-     * @param id Combo item id.
+     * @param id
      * @return index of given id in provider combo items list, -1 if it not found.
      */
     private int getComboItemIndexFromId(String id) {
@@ -369,7 +361,6 @@ public abstract class AbstractProfilingOptionsTab extends AbstractLaunchConfigur
             // Validate tab configurations of underlying tool.
             for (AbstractLaunchConfigurationTab tab : tabs) {
                 if (!tab.isValid(config)) {
-                    setErrorMessage(tab.getErrorMessage());
                     return false;
                 }
             }
@@ -390,7 +381,7 @@ public abstract class AbstractProfilingOptionsTab extends AbstractLaunchConfigur
     /**
      * Set the name for this tab.
      *
-     * @param name New tab name.
+     * @param name
      */
     protected void setName(String name) {
         this.name = name;
@@ -404,7 +395,7 @@ public abstract class AbstractProfilingOptionsTab extends AbstractLaunchConfigur
     /**
      * Set the id for this tab.
      *
-     * @param id New id of the tab.
+     * @param id
      */
     protected void setId(String id) {
         this.id = id;
@@ -422,7 +413,7 @@ public abstract class AbstractProfilingOptionsTab extends AbstractLaunchConfigur
     /**
      * Set profiling type of configuration.
      *
-     * @param type New profiling type.
+     * @param type
      */
     protected void setProfilingType(String type) {
         this.type = type;
@@ -436,7 +427,7 @@ public abstract class AbstractProfilingOptionsTab extends AbstractLaunchConfigur
     /**
      * Set the image for this tab.
      *
-     * @param img New image.
+     * @param img
      */
     public void setImage(Image img) {
         this.img = img;

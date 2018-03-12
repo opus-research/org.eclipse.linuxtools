@@ -57,7 +57,7 @@ public class STPCompletionProcessorTest {
             this.setupDocument(document);
         }
 
-        protected IDocument createDocument() {
+        protected IDocument createDocument(Object element) {
             return document;
         }
     }
@@ -120,10 +120,11 @@ public class STPCompletionProcessorTest {
     @Test
     public void testGlobalCompletion() {
         MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(TEST_STP_SCRIPT));
-        IDocument testDocument = provider.createDocument();
+        IDocument testDocument = provider.createDocument(null);
         int offset = TEST_STP_SCRIPT.indexOf("//marker1");
 
         STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+        completionProcessor.waitForInitialization();
         ICompletionProposal[] proposals = completionProcessor
                 .computeCompletionProposals(testDocument,
                         offset);
@@ -187,6 +188,7 @@ public class STPCompletionProcessorTest {
         offset += prefix.length() - 1;
 
         STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+        completionProcessor.waitForInitialization();
         ICompletionProposal[] proposals = completionProcessor
                 .computeCompletionProposals(testDocument,
                         offset);
@@ -235,14 +237,15 @@ public class STPCompletionProcessorTest {
         assertTrue(proposalsContain(proposals, "module(string).statement(string)"));
     }
 
-    private static ICompletionProposal[] getCompletionsForPrefix(String prefix) throws BadLocationException {
+    private ICompletionProposal[] getCompletionsForPrefix(String prefix) throws BadLocationException {
         MockSTPDocumentProvider provider = new MockSTPDocumentProvider(new Document(TEST_STP_SCRIPT));
-        IDocument testDocument = provider.createDocument();
+        IDocument testDocument = provider.createDocument(null);
         int offset = TEST_STP_SCRIPT.indexOf("//marker1");
         testDocument.replace(offset, 0, prefix);
         offset += prefix.length();
 
         STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+        completionProcessor.waitForInitialization();
 
         ICompletionProposal[] proposals = completionProcessor
                 .computeCompletionProposals(testDocument,
@@ -262,6 +265,7 @@ public class STPCompletionProcessorTest {
         offset += prefix.length() - 1;
 
         STPCompletionProcessor completionProcessor = new STPCompletionProcessor();
+        completionProcessor.waitForInitialization();
 
         ICompletionProposal[] proposals = completionProcessor
                 .computeCompletionProposals(testDocument,
@@ -272,7 +276,7 @@ public class STPCompletionProcessorTest {
         assertTrue(proposalsContain(proposals, "addr_from_rqst_str"));
     }
 
-    private static boolean proposalsContain(ICompletionProposal[] proposals, String proposal){
+    private boolean proposalsContain(ICompletionProposal[] proposals, String proposal){
         for (ICompletionProposal p : proposals) {
             if (p.getDisplayString().contains(proposal)) {
                 return true;

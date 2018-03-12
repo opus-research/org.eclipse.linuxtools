@@ -43,8 +43,6 @@ public class StopScriptAction extends ConsoleAction implements ScriptConsoleObse
     }
 
     /**
-     * Creates the action for the given console.
-     * @param fConsole The console which will be stoppable.
      * @since 2.0
      */
     public StopScriptAction(ScriptConsole fConsole) {

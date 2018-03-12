@@ -116,32 +116,32 @@ public class LibHover implements ICHelpProvider {
         return libraries.values();
     }
 
-    public static void saveLibraries(IPath locationBase, IPreferenceStore ps) {
-    	// If user preference is to cache libhover data, then save any un-saved
-    	// library hover data.
-    	if (ps.getBoolean(PreferenceConstants.CACHE_EXT_LIBHOVER)) {
-    		for (Iterator<LibHoverLibrary> i = libraries.values().iterator(); i.hasNext();) {
+    public static void saveLibraries() {
+        // If user preference is to cache libhover data, then save any un-saved
+        // library hover data.
+        IPreferenceStore ps = LibhoverPlugin.getDefault().getPreferenceStore();
+        if (ps.getBoolean(PreferenceConstants.CACHE_EXT_LIBHOVER)) {
+            IPath locationBase = LibhoverPlugin.getDefault().getStateLocation();
+            for (Iterator<LibHoverLibrary> i = libraries.values().iterator(); i.hasNext();) {
                 LibHoverLibrary l = i.next();
                 try {
                     // Now, output the LibHoverInfo for caching later
                     IPath locationDir = locationBase;
-                    if (l.isCPP()) {
+                    if (l.isCPP())
                         locationDir = locationBase.append("CPP"); //$NON-NLS-1$
-                    } else {
+                    else
                         locationDir = locationBase.append("C"); //$NON-NLS-1$
-                    }
                     File lDir = new File(locationDir.toOSString());
                     lDir.mkdir();
                     IPath location = locationDir.append(getTransformedName(l.getName()) + ".libhover"); //$NON-NLS-1$
                     File target = new File(location.toOSString());
                     if (!target.exists()) {
-                        try (FileOutputStream f = new FileOutputStream(locationDir.append("tmpFile").toOSString()); //$NON-NLS-1$
-                                ObjectOutputStream out = new ObjectOutputStream(f)) {
-                            out.writeObject(l.getHoverInfo());
-                            out.close();
-                            File tmp = new File(locationDir.append("tmpFile").toOSString()); //$NON-NLS-1$
-                            tmp.renameTo(target);
-                        }
+                        FileOutputStream f = new FileOutputStream(locationDir.append("tmpFile").toOSString()); //$NON-NLS-1$
+                        ObjectOutputStream out = new ObjectOutputStream(f);
+                        out.writeObject(l.getHoverInfo());
+                        out.close();
+                        File tmp = new File(locationDir.append("tmpFile").toOSString()); //$NON-NLS-1$
+                        tmp.renameTo(target);
                     }
                 } catch(Exception e) {
                     e.printStackTrace();
@@ -151,9 +151,8 @@ public class LibHover implements ICHelpProvider {
     }
 
     public static synchronized void getLibHoverDocs() {
-        if (docsFetched) {
+        if (docsFetched)
             return;
-        }
         libraries.clear();
         helpBooks.clear();
         helpBooksMap.clear();
@@ -167,13 +166,11 @@ public class LibHover implements ICHelpProvider {
             IPath CLibraryLocation = stateLocation.append("C"); //$NON-NLS-1$
             IPath CPPLibraryLocation = stateLocation.append("CPP"); //$NON-NLS-1$
             IFileStore cDir = fs.getStore(CLibraryLocation);
-            if (cDir.fetchInfo().exists()) {
+            if (cDir.fetchInfo().exists())
                 getCachedLibraries(cDir, "C"); //$NON-NLS-1$
-            }
             IFileStore cppDir = fs.getStore(CPPLibraryLocation);
-            if (cppDir.fetchInfo().exists()) {
+            if (cppDir.fetchInfo().exists())
                 getCachedLibraries(cppDir, "C++"); //$NON-NLS-1$
-            }
         }
         IExtensionRegistry x = RegistryFactory.getRegistry();
         IConfigurationElement[] ces = x.getConfigurationElementsFor(LIBHOVER_DOC_EXTENSION);
@@ -201,9 +198,8 @@ public class LibHover implements ICHelpProvider {
                     libraries.put(h, l);
                 } else {
                     LibHoverLibrary l = libraries.get(book);
-                    if (l != null) {
+                    if (l != null)
                         l.setDocs(helpdocs);
-                    }
                 }
                 docsFetched = true;
             }
@@ -305,14 +301,13 @@ public class LibHover implements ICHelpProvider {
             @Override
             public String getPrototypeString(boolean namefirst) {
                 if (true == namefirst) {
-                    if (prototypeHasBrackets()) {
+                    if (prototypeHasBrackets())
                         return Name + " " + Prototype + " " + ReturnType; //$NON-NLS-1$ //$NON-NLS-2$
-                    }
                     return Name + " (" + Prototype + ") " + ReturnType; //$NON-NLS-1$ //$NON-NLS-2$
-                } else {
-                    if (prototypeHasBrackets()) {
+                }
+                else {
+                    if (prototypeHasBrackets())
                         return ReturnType + " " + Name + " " + Prototype; //$NON-NLS-1$ //$NON-NLS-2$
-                    }
                     return ReturnType + " " + Name + " (" + Prototype + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 }
             }
@@ -381,18 +376,17 @@ public class LibHover implements ICHelpProvider {
                     // Now, let's find the declaration of the method.  We need to do this because we want the specific
                     // member prototype to go searching for.  There could be many members called "x" which have different
                     // documentation.
-                    final IASTName[] result= {null};
-                    EnclosingASTNameJob job = new EnclosingASTNameJob(t, region.getOffset(), region.getLength());
-                    job.schedule();
-                    try {
-                        job.join();
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    if (job.getResult() == Status.OK_STATUS) {
-                        result[0] = job.getASTName();
-                    }
+                       final IASTName[] result= {null};
+                       EnclosingASTNameJob job = new EnclosingASTNameJob(t, region.getOffset(), region.getLength());
+                       job.schedule();
+                       try {
+                           job.join();
+                       } catch (InterruptedException e) {
+                           // TODO Auto-generated catch block
+                           e.printStackTrace();
+                       }
+                       if (job.getResult() == Status.OK_STATUS)
+                           result[0] = job.getASTName();
                     if (result[0] != null) {
                         final IBinding binding = result[0].getBinding();
                         // Check to see we have a member function.
@@ -420,15 +414,13 @@ public class LibHover implements ICHelpProvider {
             LibHoverLibrary l = libraries.get(helpBooks[i]);
             if (name != null) {
                 if (className != null) {
-                    if (l.isCPP()) {
+                    if (l.isCPP())
                         f = getMemberSummary(l, className, name, methodType);
-                    }
                 } else {
                     f = getFunctionSummary(l, name);
                 }
-                if (f != null) {
+                if (f != null)
                     return f;
-                }
             }
         }
 
@@ -463,19 +455,17 @@ public class LibHover implements ICHelpProvider {
                     // The template may have a type specified or a value.
                     // In the case of a value, figure out its type and use
                     // that when we do a lookup.
-                    if (ta.isTypeValue()) {
+                    if (ta.isTypeValue())
                         type = ta.getTypeValue();
-                    } else {
+                    else
                         type = ta.getTypeOfNonTypeValue();
-                    }
                     if (tp.getTemplateNestingLevel() == 0) {
                         // if the parameter is a class type, use recursion to
                         // get its class name including template parameters
-                        if (type instanceof ICPPClassType) {
+                        if (type instanceof ICPPClassType)
                             className += separator + getClassName((ICPPClassType)type);
-                        } else {
+                        else
                             className += separator + type.toString();
-                        }
                         separator = ","; //$NON-NLS-1$
                     }
                 }
@@ -496,9 +486,8 @@ public class LibHover implements ICHelpProvider {
             f.Summary = x.getDescription();
             f.Name = x.getName();
             ArrayList<String> headers = x.getHeaders();
-            for (int i = 0; i < headers.size(); ++i) {
+            for (int i = 0; i < headers.size(); ++i)
                 f.setIncludeName(headers.get(i));
-            }
             return f;
         }
         return null;
@@ -512,9 +501,8 @@ public class LibHover implements ICHelpProvider {
         String[] args = new String[0];
         @SuppressWarnings("unused")
         IType returnType = null;
-        if (info == null) {
+        if (info == null)
             return null;
-        }
         if (methodType != null) {
             try {
                 args = resolveArgs(info, methodType.getParameterTypes(), templateTypes);
@@ -616,11 +604,10 @@ public class LibHover implements ICHelpProvider {
                 // We assume no class has more than 9 template parms.
                 int digit = param.charAt(index + 1) - '0';
                 // where possible, replace template parms with real values
-                if (digit < templateTypes.size()) {
+                if (digit < templateTypes.size())
                     param = param.replaceFirst(param.substring(index, index + 2), templateTypes.get(digit));
-                } else {
+                else
                     param = param.replaceFirst(param.substring(index, index + 2), templateParms[digit]);
-                }
                 index = param.indexOf('#');
             }
             result[i] = param;
@@ -686,9 +673,8 @@ public class LibHover implements ICHelpProvider {
                         f.Summary = x.getDescription();
                         f.Name = x.getName();
                         ArrayList<String> headers = x.getHeaders();
-                        for (int i1 = 0; i1 < headers.size(); ++i1) {
+                        for (int i1 = 0; i1 < headers.size(); ++i1)
                             f.setIncludeName(headers.get(i1));
-                        }
                         fList.add(f);
                     }
                 }
@@ -744,15 +730,12 @@ public class LibHover implements ICHelpProvider {
 
     @Override
     public ICHelpResourceDescriptor[] getHelpResources(ICHelpInvocationContext context, ICHelpBook[] helpBooks, String name) {
-    	for (int i = 0; i < helpBooks.length; ++i) {
-    		IFunctionSummary fs = getFunctionInfo(context, new ICHelpBook[]{helpBooks[i]}, name);
-    		if (fs != null) {
-    			LibHoverLibrary l = libraries.get(helpBooks[i]);
-    			if (l != null && l.getDocs() != null) {
-    				return new HelpResourceDescriptor[]{new HelpResourceDescriptor(helpBooks[i])};
-    			}
-    		}
-    	}
+        for (int i = 0; i < helpBooks.length; ++i) {
+            IFunctionSummary fs = getFunctionInfo(context, new ICHelpBook[]{helpBooks[i]}, name);
+            if (fs != null) {
+                return new HelpResourceDescriptor[]{new HelpResourceDescriptor(helpBooks[i])};
+            }
+        }
         return null;
     }
 }
