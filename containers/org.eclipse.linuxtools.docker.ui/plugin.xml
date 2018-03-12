@@ -1488,16 +1488,13 @@
           <enablement>
              <with variable="selection">
                 <count value="1"/>
-                <iterate
-                      ifEmpty="false"
-                      operator="or">
+                <iterate>
                    <adapt
                          type="org.eclipse.core.resources.IResource">
                       <and>
                          <test
-                               forcePluginActivation="true"
-                               property="org.eclipse.core.resources.name"
-                               value="Dockerfile">
+                            property="org.eclipse.core.resources.name"
+                            value="Dockerfile">
                          </test>
                       </and>
                    </adapt>
