@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012 Ericsson
+ * Copyright (c) 2012 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -85,5 +85,26 @@ public enum TraceLogLevel {
      */
     public String getInName() {
         return fInName;
+    }
+
+    // ------------------------------------------------------------------------
+    // Utility
+    // ------------------------------------------------------------------------
+    /**
+     * Return the corresponding {@link TraceLogLevel} to String "name"
+     * @param name String to compare to retrieve the good {@link TraceLogLevel}
+     * @return the corresponding {@link TraceLogLevel}
+     */
+    public static TraceLogLevel valueOfString(String name){
+        if (name == null) {
+            throw new NullPointerException();
+        }
+        for (TraceLogLevel tllevel : TraceLogLevel.values()) {
+            if (tllevel.getInName().equalsIgnoreCase(name)) {
+                return tllevel;
+            }
+        }
+        // No match
+        return LEVEL_UNKNOWN;
     }
 }
