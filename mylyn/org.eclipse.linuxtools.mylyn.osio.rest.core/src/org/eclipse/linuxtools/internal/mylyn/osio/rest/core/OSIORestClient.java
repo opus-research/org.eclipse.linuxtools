@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.internal.mylyn.osio.rest.core;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,24 +38,26 @@ import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.Named;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.RestResponse;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.Space;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.SpaceResponse;
+import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.SpaceSingleResponse;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.User;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.UserSingleResponse;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.UsersResponse;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.WorkItemLinkTypeData;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.WorkItemLinkTypeResponse;
+import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.WorkItemResponse;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.WorkItemTypeData;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.WorkItemTypeResponse;
+import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.WorkItemsResponse;
 import org.eclipse.mylyn.commons.core.StatusHandler;
 import org.eclipse.mylyn.commons.core.operations.IOperationMonitor;
 import org.eclipse.mylyn.commons.repositories.core.RepositoryLocation;
-import org.eclipse.mylyn.commons.repositories.core.auth.AuthenticationType;
-import org.eclipse.mylyn.commons.repositories.core.auth.UserCredentials;
 import org.eclipse.mylyn.commons.repositories.http.core.CommonHttpClient;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse.ResponseKind;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMetaData;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.eclipse.osgi.util.NLS;
@@ -64,6 +67,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.reflect.TypeToken;
 
+@SuppressWarnings("restriction")
 public class OSIORestClient {
 
 	private final CommonHttpClient client;
@@ -74,8 +78,6 @@ public class OSIORestClient {
 	
 	private Map<String, Space> cachedSpaces;
 	
-	private Map<String, User> cachedUsers;
-
 	private final OSIORestConnector connector;
 
 	public static final int MAX_RETRIEVED_PER_QUERY = 50;
@@ -92,10 +94,9 @@ public class OSIORestClient {
 	}
 
 	public boolean validate(IOperationMonitor monitor) throws OSIORestException {
-		@SuppressWarnings("restriction")
 		RepositoryLocation location = getClient().getLocation();
 		if (location.getProperty(IOSIORestConstants.REPOSITORY_AUTH_TOKEN) != null) {
-			UserCredentials credentials = location.getCredentials(AuthenticationType.REPOSITORY);
+//			UserCredentials credentials = location.getCredentials(AuthenticationType.REPOSITORY);
 //			Preconditions.checkState(credentials != null, "Authentication requested without valid credentials");
 			String userName = location.getProperty(IOSIORestConstants.REPOSITORY_AUTH_ID);
 			OSIORestUser response = new OSIORestGetAuthUser(client).run(monitor);
@@ -108,7 +109,7 @@ public class OSIORestClient {
 
 	public OSIORestConfiguration getConfiguration(TaskRepository repository, IOperationMonitor monitor) {
 		try {
-			OSIORestConfiguration config = new OSIORestConfiguration(repository.getUrl());
+			OSIORestConfiguration config = new OSIORestConfiguration(repository.getUrl(), userName);
 			Map<String, Space> spaces = getSpaces(monitor);
 			for (Space space : spaces.values()) {
 				Map<String, WorkItemTypeData> workItemTypes = getSpaceWorkItemTypes(new NullOperationMonitor(), space);
@@ -218,13 +219,102 @@ public class OSIORestClient {
 		});
 	}
 
+	public Space getSpaceById(String spaceId, TaskRepository taskRepository) throws CoreException {
+		OSIORestConfiguration config = null;
+		config = connector.getRepositoryConfiguration(taskRepository);
+		Map<String, Space> spaces = config.getSpaces();
+		Space space = null;
+		for (Space s : spaces.values()) {
+			if (s.getId().equals(spaceId)) {
+				space = s;
+				break;
+			}
+		}
+		if (space == null) {
+
+			Map<String, Space> externalSpaces = config.getExternalSpaces();
+			for (Space s : spaces.values()) {
+				if (s.getId().equals(spaceId)) {
+					space = s;
+					break;
+				}
+			}
+			if (space == null) {
+				SpaceSingleResponse spaceResponse = null;
+				try {
+					spaceResponse = new OSIORestGetRequest<SpaceSingleResponse>(client, "/spaces/" + spaceId, new TypeToken<SpaceSingleResponse>() {}).run(new NullOperationMonitor());
+					space = spaceResponse.getData();
+					Map<String, WorkItemTypeData> workItemTypes = getSpaceWorkItemTypes(new NullOperationMonitor(), space);
+					space.setWorkItemTypes(workItemTypes);
+					Map<String, WorkItemLinkTypeData> workItemLinkTypes = getSpaceWorkItemLinkTypes(new NullOperationMonitor(), space);
+					space.setWorkItemLinkTypes(workItemLinkTypes);
+					Map<String, Area> areas = getSpaceAreas(new NullOperationMonitor(), space);
+					space.setAreas(areas);
+					Map<String, Iteration> iterations = getSpaceIterations(new NullOperationMonitor(), space);
+					space.setIterations(iterations);
+					Map<String, Label> labels = getSpaceLabels(new NullOperationMonitor(), space);
+					space.setLabels(labels);
+					Map<String, User> users = getUsers(new NullOperationMonitor(), space);
+					space.setUsers(users);
+				} catch (OSIORestException e) {
+					com.google.common.base.Throwables.propagate(
+							new CoreException(new Status(IStatus.ERROR, OSIORestCore.ID_PLUGIN,
+									"Can not find Space (" + spaceId + ")"))); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+				externalSpaces.put(space.getName(), space);
+			}
+		}
+		return space;
+	}
+	
+	public Map<String, String> getSpaceLinkTypes(String spaceId, TaskRepository taskRepository) {
+		Space s = null;
+		Map<String, String> linkMap = new LinkedHashMap<>();
+		try {
+			s = getSpaceById(spaceId, taskRepository);
+		} catch (CoreException e1) {
+			StatusHandler.log(new Status(IStatus.ERROR, OSIORestCore.ID_PLUGIN,
+					NLS.bind("Unexpected error during retrieval of configuration for Task Repository {0}", //$NON-NLS-1$
+							taskRepository.getRepositoryUrl()),
+					e1));
+
+			return linkMap;
+		}
+		if (s != null) {
+			Map<String, WorkItemLinkTypeData> linkTypes = s.getWorkItemLinkTypes();
+			for (WorkItemLinkTypeData linkType : linkTypes.values()) {
+				linkMap.put(linkType.getAttributes().getForwardName(), linkType.getId());
+				linkMap.put(linkType.getAttributes().getReverseName(), linkType.getId());
+			}
+		}
+		return linkMap;
+	}
+	
+	public Map<String, WorkItemResponse> getSpaceWorkItems(String spaceId) {
+		try {
+			return retrieveItems(new NullOperationMonitor(), "/spaces/" + spaceId + "/workitems", new TypeToken<WorkItemsResponse>() {});
+		} catch (OSIORestException e) {
+			StatusHandler.log(new Status(IStatus.ERROR, OSIORestCore.ID_PLUGIN,
+					NLS.bind("Unexpected error during retrieval of work items for space {0}", //$NON-NLS-1$
+							spaceId),
+					e));
+			return new HashMap<String, WorkItemResponse>();
+		}
+	}
+	
 	public RepositoryResponse postTaskData(TaskData taskData, Set<TaskAttribute> oldAttributes,
 			TaskRepository repository, IOperationMonitor monitor) throws OSIORestException {
-		TaskAttribute spaceAttribute = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().SPACE.getKey());
-		String spaceName = spaceAttribute.getValue();
+		TaskAttribute spaceIdAttribute = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().SPACE_ID.getKey());
+		String spaceId = spaceIdAttribute.getValue();
+		Space space = null;
 		if (taskData.isNew()) {
 			Map<String, Space> spaces = getCachedSpaces(new NullOperationMonitor());
-			Space space = spaces.get(spaceName);
+			for (Space s : spaces.values()) {
+				if (s.getId().equals(spaceId)) {
+					space = s;
+					break;
+				}
+			}
 			String id = null;
 			try {
 				id = new OSIORestPostNewTask(client, taskData, space, connector, repository).run(monitor);
@@ -236,6 +326,7 @@ public class OSIORestClient {
 			OSIORestConfiguration config;
 			try {
 				config = connector.getRepositoryConfiguration(repository);
+				space = getSpaceById(spaceId, repository);
 			} catch (CoreException e1) {
 				throw new OSIORestException(e1);
 			}
@@ -248,27 +339,44 @@ public class OSIORestClient {
 					newComment.setValue("");
 				}
 			}
-			Map<String, Space> spaces = config.getSpaces();
-			Space space = spaces.get(spaceName);
-			if (space == null) {
-				Map<String, Space> externalSpaces = config.getExternalSpaces();
-				space = externalSpaces.get(spaceName);
+
+			TaskAttribute removeLinks = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().REMOVE_LINKS.getKey());
+			if (removeLinks != null) {
+				List<String> links = removeLinks.getValues();
+				TaskAttributeMetaData metadata = removeLinks.getMetaData();
+				TaskAttribute widAttr = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().UUID.getKey());
+				String wid = widAttr.getValue();
+				for (String link : links) {
+					try {
+						String id = metadata.getValue(link);
+						new OSIORestDeleteLink(client, wid, id).run(monitor);
+					} catch (Exception e) {
+						StatusHandler.log(new Status(IStatus.ERROR, OSIORestCore.ID_PLUGIN,
+								NLS.bind("Unexpected error during deletion of work item link: <{0}>", //$NON-NLS-1$
+										link),
+								e));
+					}
+				}
 			}
+			
+			TaskAttribute addLink = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().ADD_LINK.getKey());
+			TaskAttributeMetaData metadata = addLink.getMetaData();
+			String linkid = metadata.getValue("linkid"); //$NON-NLS-1$
+			String sourceid = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().UUID.getKey()).getValue();
+			String targetid = metadata.getValue("targetWid"); //$NON-NLS-1$
+			String direction = metadata.getValue("direction"); //$NON-NLS-1$
+			boolean isForward = true;
+			if (direction != null && !direction.isEmpty()) {
+				isForward = direction.equals("forward"); //$NON-NLS-1$
+			}
+			if (linkid != null && targetid != null) {
+				new OSIORestPostNewLink(client, linkid, sourceid, targetid, isForward).run(monitor);
+			}
+			
 			new OSIORestPatchUpdateTask(client, taskData, oldAttributes, space).run(monitor);
 			return new RepositoryResponse(ResponseKind.TASK_UPDATED, taskData.getTaskId());
 		}
 	}
-
-	private final Function<String, String> removeLeadingZero = new Function<String, String>() {
-
-		@Override
-		public String apply(String input) {
-			while (input.startsWith("0")) { //$NON-NLS-1$
-				input = input.substring(1);
-			}
-			return input;
-		}
-	};
 
 	public void getTaskData(Set<String> taskIds, TaskRepository taskRepository, TaskDataCollector collector,
 			IOperationMonitor monitor) throws OSIORestException {
@@ -299,6 +407,7 @@ public class OSIORestClient {
 				// The easiest way is to use a namedspaces request that we know will give
 				// us a "ResourceMovedPermanently" error which will contain the URL of the
 				// real location of the workitem which contains the workitem uuid.
+				user = URLQueryEncoder.transform(user);
 				String query = "/namedspaces/" + user + "/" + spaceName + "/workitems/" + wiNumber; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				String wid = ""; //$NON-NLS-1$
 				try {
@@ -316,24 +425,24 @@ public class OSIORestClient {
 				String workitemquery = "/workitems/" + wid; //$NON-NLS-1$
 				TaskData taskData = new OSIORestGetSingleTaskData(client, connector, workitemquery, taskRepository)
 						.run(monitor);
-				Map<String, Space> spaces = getCachedSpaces(monitor);
-				Space space = spaces.get(spaceName);
-				if (space == null) {
-					Map<String, Space> externalSpaces = config.getExternalSpaces();
-					space = externalSpaces.get(spaceName);
-				}
+				Map<String, Space> spaces = config.getSpaces();
+				Space space = null;
+				String spaceId = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().SPACE_ID.getKey()).getValue();
+				space = getSpaceById(spaceId, taskRepository);
+				
 				new OSIORestGetTaskComments(getClient(), space,taskData).run(monitor);
 				new OSIORestGetTaskCreator(getClient(), taskData).run(monitor);
-				new OSIORestGetTaskLinks(getClient(), space, taskData).run(monitor);
 				new OSIORestGetTaskLabels(getClient(), space, taskData).run(monitor);
+				new OSIORestGetTaskLinks(getClient(), this, space, taskData, config).run(monitor);
 				setTaskAssignees(taskData);
 				config.updateSpaceOptions(taskData);
 				config.addValidOperations(taskData);
 				collector.accept(taskData);
 			} catch (RuntimeException | CoreException e) {
-				// if the Throwable was warped in a RuntimeException in
+				// if the Throwable was wrapped in a RuntimeException in
 				// OSIORestGetTaskData.JSonTaskDataDeserializer.deserialize()
-				// we now remove the warper and throw a  OSIORestException
+				// we now remove the wrapper and throw an OSIORestException	
+				e.printStackTrace();
 				Throwable cause = e.getCause();
 				if (cause instanceof CoreException) {
 					throw new OSIORestException(cause);
