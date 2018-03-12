@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.btf.core.trace;
 
-import org.eclipse.jdt.annotation.NonNull;
-
 /**
  * Column names
  *
@@ -54,14 +52,14 @@ public enum BtfColumnNames {
      */
     NOTES("Notes"); //$NON-NLS-1$
 
-    private final @NonNull String fField;
+    private final String fField;
 
-    private BtfColumnNames(@NonNull String field) {
+    private BtfColumnNames(String field) {
         fField = field;
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return fField;
     }
 }

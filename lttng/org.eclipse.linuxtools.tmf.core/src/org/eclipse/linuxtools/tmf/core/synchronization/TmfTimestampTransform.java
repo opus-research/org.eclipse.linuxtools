@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.core.synchronization;
 
+import java.io.Serializable;
+
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
@@ -21,7 +23,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
  * @author Geneviève Bastien
  * @since 3.0
  */
-public class TmfTimestampTransform implements ITmfTimestampTransform {
+public class TmfTimestampTransform implements ITmfTimestampTransform, Serializable {
 
     /**
      * Generated serial UID
