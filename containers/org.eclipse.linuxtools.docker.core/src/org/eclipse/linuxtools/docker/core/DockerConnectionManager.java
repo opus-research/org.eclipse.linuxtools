@@ -178,12 +178,10 @@ public class DockerConnectionManager {
 		return connections.toArray(new IDockerConnection[connections.size()]);
 	}
 
-	public IDockerConnection findConnection(final String name) {
-		if (name != null) {
-			for (IDockerConnection connection : connections) {
-				if (connection.getName().equals(name))
-					return connection;
-			}
+	public IDockerConnection findConnection(String name) {
+		for (IDockerConnection connection : connections) {
+			if (connection.getName().equals(name))
+				return connection;
 		}
 		return null;
 	}
