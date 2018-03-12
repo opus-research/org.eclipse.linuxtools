@@ -59,7 +59,6 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
 import org.eclipse.linuxtools.docker.ui.Activator;
-import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.utils.IRunnableWithResult;
@@ -695,12 +694,16 @@ public class ImageRunSelectionPage extends WizardPage {
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {
-					final IDockerImageSearchResult selectedImage = imageSearchWizard
+					final IDockerImageSearchResult selectedSearchImage = imageSearchWizard
 							.getSelectedImage();
-					final DockerImageTagSearchResult selectedImageTag = imageSearchWizard
-							.getSelectedImageTag();
-					model.setSelectedImageName(selectedImage.getName()
-							+ selectedImageTag.getName());
+					if (selectedSearchImage.getName().contains(":")) {
+						model.setSelectedImageName(
+								selectedSearchImage.getName());
+					} else {
+						// assume tag is 'latest'
+						model.setSelectedImageName(
+								selectedSearchImage.getName() + ":latest"); //$NON-NLS-1$
+					}
 				}
 			}
 		};

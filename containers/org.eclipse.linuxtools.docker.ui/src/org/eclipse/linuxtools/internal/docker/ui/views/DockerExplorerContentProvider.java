@@ -252,7 +252,6 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 	}
 	
-
 	public static class LoadingStub {
 		
 		private final Object element;
