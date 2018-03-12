@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.internal.docker.ui.views.ImagePullProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImagePull;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
@@ -48,9 +47,7 @@ public class PullImageCommandHandler extends AbstractHandler {
 		final IDockerConnection connection = CommandUtils
 				.getCurrentConnection(activePart);
 		if (connection == null) {
-			MessageDialog.openError(
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getShell(),
+			MessageDialog.openError(Display.getCurrent().getActiveShell(),
 					CommandMessages.getString(MISSING_CONNECTION),
 					CommandMessages
 							.getString(ERROR_PULLING_IMAGE_NO_CONNECTION));
@@ -86,9 +83,7 @@ public class PullImageCommandHandler extends AbstractHandler {
 						@Override
 						public void run() {
 							MessageDialog.openError(
-									PlatformUI.getWorkbench()
-											.getActiveWorkbenchWindow()
-											.getShell(),
+									Display.getCurrent().getActiveShell(),
 									DVMessages.getFormattedString(
 											ERROR_PULLING_IMAGE, imageName),
 									e.getMessage());

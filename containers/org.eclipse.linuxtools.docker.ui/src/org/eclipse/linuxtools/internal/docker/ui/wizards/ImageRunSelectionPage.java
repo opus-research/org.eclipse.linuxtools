@@ -96,7 +96,6 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * A {@link WizardPage} to let the user select the {@link IDockerImage} to run
@@ -957,9 +956,7 @@ public class ImageRunSelectionPage extends WizardPage {
 							@Override
 							public void run() {
 								MessageDialog.openError(
-										PlatformUI.getWorkbench()
-												.getActiveWorkbenchWindow()
-												.getShell(),
+										Display.getCurrent().getActiveShell(),
 										DVMessages.getFormattedString(
 												ERROR_PULLING_IMAGE, imageName),
 										e.getMessage());

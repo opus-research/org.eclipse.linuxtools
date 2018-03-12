@@ -74,7 +74,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ListDialog;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
@@ -638,9 +637,7 @@ public class NewDockerConnectionPage extends WizardPage {
 
 					@Override
 					public void run() {
-						new MessageDialog(
-								PlatformUI.getWorkbench()
-										.getActiveWorkbenchWindow().getShell(),
+						new MessageDialog(Display.getDefault().getActiveShell(),
 								dialogTitle, null, dialogMessage, icon,
 								buttonLabels, 0).open();
 					}
