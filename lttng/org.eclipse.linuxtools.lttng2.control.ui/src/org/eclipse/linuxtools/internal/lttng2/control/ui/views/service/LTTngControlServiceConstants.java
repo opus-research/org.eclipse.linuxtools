@@ -40,7 +40,20 @@ public interface LTTngControlServiceConstants {
      * Unused value
      */
     static final int UNUSED_VALUE = -1;
+    /**
+     * String representation of numerical true element
+     */
+    static final String TRUE_NUMERICAL = "1"; //$NON-NLS-1$
 
+    // ------------------------------------------------------------------------
+    // LTTng Machine Interface constants
+    // ------------------------------------------------------------------------
+
+    /**
+     * Name of the XSD to validate against the xml machine interface
+     * output from LTTng
+     */
+    static final String MI_XSD_FILENAME = "mi_lttng.xsd"; //$NON-NLS-1$
     // ------------------------------------------------------------------------
     // Command constants
     // ------------------------------------------------------------------------
@@ -48,6 +61,14 @@ public interface LTTngControlServiceConstants {
      * The lttng tools command.
      */
     static final String CONTROL_COMMAND = "lttng"; //$NON-NLS-1$
+    /**
+     * The lttng tools machine interface command.
+     */
+    static final String CONTROL_COMMAND_MI = CONTROL_COMMAND + " --mi "; //$NON-NLS-1$
+    /**
+     * The lttng tools XML machine interface command.
+     */
+    static final String CONTROL_COMMAND_MI_XML = CONTROL_COMMAND_MI + " xml "; //$NON-NLS-1$
     /**
      * Command: lttng version.
      */
