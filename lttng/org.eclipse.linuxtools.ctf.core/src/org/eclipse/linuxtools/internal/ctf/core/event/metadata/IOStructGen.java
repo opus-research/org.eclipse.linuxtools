@@ -32,7 +32,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
@@ -46,8 +45,6 @@ import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseE
 import org.eclipse.linuxtools.internal.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.SequenceDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.StructDeclarationFlattener;
-import org.eclipse.linuxtools.internal.ctf.core.event.types.composite.EventHeaderCompactDeclaration;
-import org.eclipse.linuxtools.internal.ctf.core.event.types.composite.EventHeaderLargeDeclaration;
 
 /**
  * IOStructGen
@@ -654,14 +651,11 @@ public class IOStructGen {
             IDeclaration eventHeaderDecl = parseTypeSpecifierList(
                     typeSpecifier, null);
 
-            if (eventHeaderDecl instanceof StructDeclaration) {
-                stream.setEventHeader((StructDeclaration) eventHeaderDecl);
-            } else if (eventHeaderDecl instanceof IEventHeaderDeclaration) {
-                stream.setEventHeader((IEventHeaderDeclaration) eventHeaderDecl);
-            } else {
+            if (!(eventHeaderDecl instanceof StructDeclaration)) {
                 throw new ParseException("event.header expects a struct"); //$NON-NLS-1$
             }
 
+            stream.setEventHeader((StructDeclaration) eventHeaderDecl);
         } else if (left.equals(MetadataStrings.EVENT_CONTEXT)) {
             if (stream.isEventContextSet()) {
                 throw new ParseException("event.context already defined"); //$NON-NLS-1$
@@ -800,13 +794,8 @@ public class IOStructGen {
             }
 
             long id = getEventID(rightNode);
-            if (id > Integer.MAX_VALUE) {
-                throw new ParseException("id is greater than int.maxvalue, unsupported. id : " + id); //$NON-NLS-1$
-            }
-            if (id < 0) {
-                throw new ParseException("negative id, unsupported. id : " + id); //$NON-NLS-1$
-            }
-            event.setId((int) id);
+
+            event.setId(id);
         } else if (left.equals(MetadataStrings.STREAM_ID)) {
             if (event.streamIsSet()) {
                 throw new ParseException("stream id already defined"); //$NON-NLS-1$
@@ -1258,15 +1247,6 @@ public class IOStructGen {
             break;
         case CTFParser.STRUCT:
             declaration = parseStruct(firstChild);
-            StructDeclaration structDeclaration = (StructDeclaration) declaration;
-            IDeclaration idEnumDecl = structDeclaration.getFields().get("id"); //$NON-NLS-1$
-            if (EventHeaderCompactDeclaration.isCompactEventHeader(structDeclaration)) {
-                ByteOrder bo = ((EnumDeclaration) idEnumDecl).getContainerType().getByteOrder();
-                declaration = new EventHeaderCompactDeclaration(bo);
-            } else if (EventHeaderLargeDeclaration.isLargeEventHeader(structDeclaration)) {
-                ByteOrder bo = ((EnumDeclaration) idEnumDecl).getContainerType().getByteOrder();
-                declaration = new EventHeaderLargeDeclaration(bo);
-            }
             break;
         case CTFParser.VARIANT:
             declaration = parseVariant(firstChild);
@@ -2724,9 +2704,7 @@ public class IOStructGen {
             }
 
             long intval = parseUnaryInteger(firstChild);
-            if (intval > Integer.MAX_VALUE) {
-                throw new ParseException("Event id larger than int.maxvalue, something is amiss"); //$NON-NLS-1$
-            }
+
             return intval;
         }
         throw new ParseException("invalid value for event id"); //$NON-NLS-1$

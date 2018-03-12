@@ -56,6 +56,7 @@ public abstract class Definition implements IDefinition {
      *
      * @param declaration
      *            the event declaration
+     *
      * @param definitionScope
      *            the definition is in a scope, (normally a struct) what is it?
      * @param fieldName
