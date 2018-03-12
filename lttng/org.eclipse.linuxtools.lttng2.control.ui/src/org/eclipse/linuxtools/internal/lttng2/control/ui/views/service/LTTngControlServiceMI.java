@@ -19,11 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.validation.SchemaFactory;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -97,15 +95,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setValidating(false);
 
-        // Schema factory for validation
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
-        try {
-            docBuilderFactory.setSchema(schemaFactory.newSchema(xsdUrl));
-        } catch (SAXException e) {
-            throw new ExecutionException(Messages.TraceControl_InvalidSchemaError, e);
-        }
-
+        // TODO: Add xsd validation for machine interface via mi_lttng.xsd from LTTng
         try {
             fDocumentBuilder = docBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
@@ -851,8 +841,20 @@ public class LTTngControlServiceMI extends LTTngControlService {
                         throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                     }
 
+                    Node rawDataNode = null;
+                    TraceEventType eventType = probeEvent.getEventType();
+                    if (eventType == TraceEventType.FUNCTION || eventType == TraceEventType.PROBE) {
+                        rawDataNode = getFirstOf(rawAttributes.getChildNodes(), MIStrings.PROBE_ATTRIBUTES);
+                    } else if (eventType == TraceEventType.SYSCALL || eventType == TraceEventType.TRACEPOINT || eventType == TraceEventType.UNKNOWN || true) {
+                        throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
+                    }
+
+                    if (rawDataNode == null) {
+                        throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
+                    }
+
                     // Extract info
-                    NodeList rawDatas = rawAttributes.getChildNodes();
+                    NodeList rawDatas = rawDataNode.getChildNodes();
                     for (int j = 0; j < rawDatas.getLength(); j++) {
                         Node rawData = rawDatas.item(j);
                         switch (rawData.getNodeName()) {
