@@ -630,19 +630,16 @@ public class DockerConnection
 				} while (follow && !stop);
 				listContainers();
 			} catch (com.spotify.docker.client.DockerRequestException e) {
-				Activator.logErrorMessage(
-						ProcessMessages.getString("Monitor_Logs_Exception"), e); //$NON-NLS-1$
+				Activator.logErrorMessage(e.message());
 				throw new InterruptedException();
 			} catch (com.spotify.docker.client.DockerException | IOException e) {
-				Activator.logErrorMessage(
-						ProcessMessages.getString("Monitor_Logs_Exception"), e); //$NON-NLS-1$
+				Activator.logErrorMessage(e.getMessage());
 				throw new InterruptedException();
 			} catch (InterruptedException e) {
 				kill = true;
 				Thread.currentThread().interrupt();
 			} catch (Exception e) {
-				Activator.logErrorMessage(
-						ProcessMessages.getString("Monitor_Logs_Exception"), e); //$NON-NLS-1$
+				Activator.logErrorMessage(e.getMessage());
 			} finally {
 				follow = false;
 				copyClient.close(); // we are done with copyClient..dispose
@@ -834,8 +831,7 @@ public class DockerConnection
 			final ContainerInfo info = client.inspectContainer(id);
 			return new DockerContainerInfo(info);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
-			Activator.logErrorMessage(
-					ProcessMessages.getString("Container_Info_Exception"), e); //$NON-NLS-1$
+			Activator.logErrorMessage(e.message());
 			return null;
 		} catch (com.spotify.docker.client.DockerException
 				| InterruptedException e) {
@@ -853,8 +849,7 @@ public class DockerConnection
 			final ImageInfo info = this.client.inspectImage(id);
 			return new DockerImageInfo(info);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
-			Activator.logErrorMessage(
-					ProcessMessages.getString("Image_Info_Exception"), e); //$NON-NLS-1$
+			Activator.logErrorMessage(e.message());
 			return null;
 		} catch (com.spotify.docker.client.DockerException
 				| InterruptedException e) {
