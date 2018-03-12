@@ -869,10 +869,10 @@ public class LTTngControlServiceMI extends LTTngControlService {
                             probeEvent.setSymbol(rawData.getTextContent());
                             break;
                         case MIStrings.ADDRESS:
-                            probeEvent.setAddress(rawData.getTextContent());
+                            probeEvent.setAddress(Long.toHexString(Long.parseLong(rawData.getTextContent())));
                             break;
                         case MIStrings.OFFSET:
-                            probeEvent.setOffset(rawData.getTextContent());
+                            probeEvent.setOffset(Long.toHexString(Long.parseLong(rawData.getTextContent())));
                             break;
                         default:
                             break;
