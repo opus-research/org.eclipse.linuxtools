@@ -28,10 +28,6 @@ public final class Messages extends NLS {
 
     public static String EnableChannelDialog_DefaultMessage;
 
-    public static String ImportHandler_LiveTraceElementError;
-
-    public static String ImportHandler_LiveTraceInitError;
-
     // Failures
     public static String TraceControl_ConnectionFailure;
     public static String TraceControl_DisconnectionFailure;
@@ -114,12 +110,8 @@ public final class Messages extends NLS {
     public static String TraceControl_CreateSessionNameTooltip;
     public static String TraceControl_CreateSessionPathLabel;
     public static String TraceControl_CreateSessionPathTooltip;
-    public static String TraceControl_CreateSessionNormalLabel;
-    public static String TraceControl_CreateSessionNormalTooltip;
     public static String TraceControl_CreateSessionSnapshotLabel;
     public static String TraceControl_CreateSessionSnapshotTooltip;
-    public static String TraceControl_CreateSessionLiveLabel;
-    public static String TraceControl_CreateSessionLiveTooltip;
 
     public static String TraceControl_CreateSessionConfigureStreamingButtonText;
     public static String TraceControl_CreateSessionConfigureStreamingButtonTooltip;
@@ -144,17 +136,11 @@ public final class Messages extends NLS {
     public static String TraceControl_CreateSessionNoConsumertTooltip;
     public static String TraceControl_CreateSessionDisableConsumertText;
     public static String TraceControl_CreateSessionDisableConsumertTooltip;
-    public static String TraceControl_CreateSessionLiveConnectionLabel;
-    public static String TraceControl_CreateSessionLiveConnectionUrlTooltip;
-    public static String TraceControl_CreateSessionLiveConnectionPortTooltip;
-    public static String TraceControl_CreateSessionLiveDelayLabel;
-    public static String TraceControl_CreateSessionLiveDelayTooltip;
 
     public static String TraceControl_InvalidSessionNameError;
     public static String TraceControl_SessionAlreadyExistsError;
     public static String TraceControl_SessionPathAlreadyExistsError;
     public static String TraceControl_InvalidSessionPathError;
-    public static String TraceControl_InvalidLiveDelayError;
     public static String TraceControl_FileSubSystemError;
 
     public static String TraceControl_EnableChannelDialogTitle;
@@ -222,8 +208,6 @@ public final class Messages extends NLS {
     public static String TraceControl_AddContextAvailableContextsTooltip;
     public static String TraceControl_AddContextAllLabel;
 
-    public static String TraceControl_ImportDialogStreamedTraceNotification;
-    public static String TraceControl_ImportDialogStreamedTraceNotificationToggle;
     public static String TraceControl_ImportDialogTitle;
     public static String TraceControl_ImportDialogTracesGroupName;
     public static String TraceControl_ImportDialogTracesTooltip;
