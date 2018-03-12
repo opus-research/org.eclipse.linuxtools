@@ -11,18 +11,14 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
-import org.eclipse.linuxtools.docker.core.IDockerImageHierarchyImageNode;
 import org.eclipse.linuxtools.docker.core.IDockerImageHierarchyNode;
-import org.eclipse.linuxtools.internal.docker.core.DockerImage;
+import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -30,58 +26,58 @@ import org.eclipse.swt.graphics.Image;
  * {@link DockerImageHierarchyView}.
  */
 public class DockerImageHierarchyLabelProvider
-		extends DockerExplorerLabelProvider {
+		implements IStyledLabelProvider, ILabelProvider {
+
+	private Image IMAGE_IMAGE = SWTImagesFactory.DESC_IMAGE.createImage();
+
+	private Image CONTAINER_IMAGE = SWTImagesFactory.DESC_CONTAINER
+			.createImage();
+
+	@Override
+	public void dispose() {
+		IMAGE_IMAGE.dispose();
+		CONTAINER_IMAGE.dispose();
+	}
 
 	@Override
 	public Image getImage(Object element) {
-		if (element instanceof IDockerImageHierarchyNode) {
-			return super.getImage(
-					((IDockerImageHierarchyNode) element).getElement());
+		if (element instanceof IDockerImageHierarchyNode
+				&& (((IDockerImageHierarchyNode) element)
+						.getElement() instanceof IDockerImage)) {
+			return IMAGE_IMAGE;
+		} else if (element instanceof IDockerImageHierarchyNode
+				&& (((IDockerImageHierarchyNode) element)
+						.getElement() instanceof IDockerContainer)) {
+			return CONTAINER_IMAGE;
 		}
-		return super.getImage(element);
+		return null;
+	}
+
+	@Override
+	public String getText(Object element) {
+		return getStyledText(element).getString();
 	}
 
 	@Override
 	public StyledString getStyledText(Object element) {
-		if (element instanceof IDockerImageHierarchyImageNode) {
-			final IDockerImage image = ((IDockerImageHierarchyImageNode) element)
-					.getElement();
-			// we display all repo/tags in a single line
-			return getStyledText(image);
-		}
 		if (element instanceof IDockerImageHierarchyNode) {
-			return super.getStyledText(
+			return LabelProviderUtils.getStyledText(
 					((IDockerImageHierarchyNode) element).getElement());
 		}
-		return super.getStyledText(element);
+		return null;
 	}
 
-	/**
-	 * @param image
-	 *            the {@link IDockerImage} to process
-	 * @return the {@link StyledString} to be displayed.
-	 */
-	public static StyledString getStyledText(final IDockerImage image) {
-		final Map<String, List<String>> imageTagsByRepo = DockerImage
-				.extractTagsByRepo(image.repoTags());
-		final List<String> imageRepos = new ArrayList<>(
-				imageTagsByRepo.keySet());
-		Collections.sort(imageRepos);
-		final StyledString result = new StyledString();
-		imageRepos.forEach(repo -> {
-			result.append(repo);
-			final List<String> tags = imageTagsByRepo.get(repo);
-			final String joinedTags = tags.stream()
-					.collect(Collectors.joining(", ")); //$NON-NLS-1$
-			result.append(':');
-			result.append(joinedTags, StyledString.COUNTER_STYLER); // $NON-NLS-1$
-			result.append(' ');
-		});
-		// TODO: remove the cast to 'DockerImage' once the 'shortId()'
-		// method is in the public API
-		result.append('(', StyledString.QUALIFIER_STYLER) // $NON-NLS-1$
-				.append(((DockerImage) image).shortId(), StyledString.QUALIFIER_STYLER).append(')', StyledString.QUALIFIER_STYLER); // $NON-NLS-1$
-		return result;
+	@Override
+	public void addListener(ILabelProviderListener listener) {
+	}
+
+	@Override
+	public void removeListener(ILabelProviderListener listener) {
+	}
+
+	@Override
+	public boolean isLabelProperty(Object element, String property) {
+		return false;
 	}
 
 }

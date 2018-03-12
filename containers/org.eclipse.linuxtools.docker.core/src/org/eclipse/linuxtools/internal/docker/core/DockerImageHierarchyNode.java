@@ -21,15 +21,17 @@ import org.eclipse.linuxtools.docker.core.IDockerImageHierarchyNode;
 /**
  * Default implementation of the {@link IDockerImageHierarchyNode} interface.
  */
-public abstract class DockerImageHierarchyNode
-		implements IDockerImageHierarchyNode {
+public class DockerImageHierarchyNode implements IDockerImageHierarchyNode {
+
+	private final Object image;
 
 	private IDockerImageHierarchyNode parent;
 
 	private List<IDockerImageHierarchyNode> children;
 
-	public DockerImageHierarchyNode(
+	public DockerImageHierarchyNode(final Object image,
 			final IDockerImageHierarchyNode parentImageHiearchyNode) {
+		this.image = image;
 		this.children = new ArrayList<>();
 		this.parent = parentImageHiearchyNode;
 		if (parent != null) {
@@ -38,8 +40,8 @@ public abstract class DockerImageHierarchyNode
 	}
 
 	@Override
-	public <T> T getAdapter(final Class<T> adapter) {
-		return null;
+	public Object getElement() {
+		return this.image;
 	}
 
 	@Override
