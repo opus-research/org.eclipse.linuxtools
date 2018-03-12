@@ -745,7 +745,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
         long currentStart = Long.MAX_VALUE;
         for (CTFStream stream : fStreams.values()) {
             for (CTFStreamInput si : stream.getStreamInputs()) {
-                currentStart = Math.min(currentStart, si.getIndex().getEntries().get(0).getTimestampBegin());
+                currentStart = Math.min(currentStart, si.getIndex().get(0).getTimestampBegin());
             }
         }
         return timestampCyclesToNanos(currentStart);
