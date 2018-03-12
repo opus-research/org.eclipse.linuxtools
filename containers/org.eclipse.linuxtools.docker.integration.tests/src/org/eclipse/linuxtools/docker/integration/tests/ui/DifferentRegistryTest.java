@@ -40,7 +40,7 @@ public class DifferentRegistryTest extends AbstractImageBotTest {
 	public void testDifferentRegistry() {
 		clearConsole();
 		setUpRegister(REGISTRY_SERVER_ADDRESS, EMAIL, USERNAME, PASSWORD);
-		setSecureStorage(PASSWORD);
+//		setSecureStorage(PASSWORD);
 		pullImage(IMAGE_RHEL, IMAGE_RHEL_TAG, USERNAME + "@" + REGISTRY_SERVER_ADDRESS);
 		assertTrue("Image is not deployed!", imageIsDeployed(IMAGE_RHEL));
 	}
