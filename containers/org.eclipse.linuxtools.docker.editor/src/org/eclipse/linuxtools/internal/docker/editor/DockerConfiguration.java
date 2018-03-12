@@ -17,6 +17,7 @@ import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.Reconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.linuxtools.internal.docker.editor.assist.CompletionProcessor;
 import org.eclipse.linuxtools.internal.docker.editor.scanner.DockerCommentScanner;
@@ -66,4 +67,8 @@ public class DockerConfiguration extends TextSourceViewerConfiguration {
 		return ca;
 	}
 	
+	@Override
+	protected boolean isShownInText(Annotation annotation) {
+		return true;
+	}
 }
