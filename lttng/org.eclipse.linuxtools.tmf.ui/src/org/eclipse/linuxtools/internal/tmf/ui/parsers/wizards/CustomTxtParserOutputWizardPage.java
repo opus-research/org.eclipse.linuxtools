@@ -22,7 +22,7 @@ import java.util.List;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomEventTableColumns;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomEventsTable;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTrace;
@@ -30,7 +30,6 @@ import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpointIndexer;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -60,7 +59,7 @@ public class CustomTxtParserOutputWizardPage extends WizardPage {
     private ScrolledComposite outputsScrolledComposite;
     private Composite outputsContainer;
     private Composite tableContainer;
-    private TmfEventsTable previewTable;
+    private CustomEventsTable previewTable;
     private File tmpFile;
 
     /**
@@ -106,7 +105,7 @@ public class CustomTxtParserOutputWizardPage extends WizardPage {
         tableLayout.marginHeight = 0;
         tableLayout.marginWidth = 0;
         tableContainer.setLayout(tableLayout);
-        previewTable = new TmfEventsTable(tableContainer, 0, CustomEventTableColumns.generateColumns(new CustomTxtTraceDefinition()));
+        previewTable = new CustomEventsTable(new CustomTxtTraceDefinition(), tableContainer, 0);
         previewTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         if (wizard.definition != null) {
@@ -233,7 +232,7 @@ public class CustomTxtParserOutputWizardPage extends WizardPage {
             };
             trace.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, false);
             previewTable.dispose();
-            previewTable = new TmfEventsTable(tableContainer, CACHE_SIZE, CustomEventTableColumns.generateColumns(definition));
+            previewTable = new CustomEventsTable(definition, tableContainer, CACHE_SIZE);
             previewTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
             previewTable.setTrace(trace, true);
         } catch (final TmfTraceException e) {

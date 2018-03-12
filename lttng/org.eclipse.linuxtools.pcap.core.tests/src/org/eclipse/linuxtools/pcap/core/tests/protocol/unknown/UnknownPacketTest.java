@@ -23,12 +23,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Map;
 
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.unknown.UnknownEndpoint;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.unknown.UnknownPacket;
-import org.eclipse.linuxtools.internal.pcap.core.trace.BadPcapFileException;
-import org.eclipse.linuxtools.internal.pcap.core.trace.PcapFile;
+import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
+import org.eclipse.linuxtools.pcap.core.protocol.unknown.UnknownEndpoint;
+import org.eclipse.linuxtools.pcap.core.protocol.unknown.UnknownPacket;
 import org.eclipse.linuxtools.pcap.core.tests.shared.PcapTestTrace;
+import org.eclipse.linuxtools.pcap.core.trace.BadPcapFileException;
+import org.eclipse.linuxtools.pcap.core.trace.PcapFile;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -75,7 +75,8 @@ public class UnknownPacketTest {
     public void CompleteUnknownPacketTest() throws IOException, BadPcapFileException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        try (PcapFile dummy = new PcapFile(trace.getPath())) {
+        String file = trace.getPath();
+        try (PcapFile dummy = new PcapFile(file)) {
             ByteBuffer byteBuffer = fPacket;
             if (byteBuffer == null) {
                 fail("CompleteUnknownPacketTest has failed!");
@@ -84,9 +85,9 @@ public class UnknownPacketTest {
             UnknownPacket packet = new UnknownPacket(dummy, null, byteBuffer);
 
             // Protocol Testing
-            assertEquals(PcapProtocol.UNKNOWN, packet.getProtocol());
-            assertTrue(packet.hasProtocol(PcapProtocol.UNKNOWN));
-            assertFalse(packet.hasProtocol(PcapProtocol.UDP));
+            assertEquals(Protocol.UNKNOWN, packet.getProtocol());
+            assertTrue(packet.hasProtocol(Protocol.UNKNOWN));
+            assertFalse(packet.hasProtocol(Protocol.UDP));
 
             // Abstract methods Testing
             assertTrue(packet.validate());
