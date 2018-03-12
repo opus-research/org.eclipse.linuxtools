@@ -684,7 +684,6 @@ public class LTTngControlService implements ILttngControlService {
             if (isVersionSupported("2.2.0")) { //$NON-NLS-1$
 //                --buffers-uid  Every application sharing the same UID use the same buffers
 //                --buffers-pid Buffers are allocated per PID
-                BufferType.valueOf("");
                 if (!isKernel) {
                     if (info.getBufferType() == BufferType.BUFFER_PER_PID) {
                         command.append(LTTngControlServiceConstants.OPTION_PER_PID_BUFFERS);
