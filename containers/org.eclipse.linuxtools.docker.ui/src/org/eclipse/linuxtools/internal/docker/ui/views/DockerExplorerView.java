@@ -260,20 +260,15 @@ public class DockerExplorerView extends CommonNavigator implements
 	@Override
 	public void changeEvent(final IDockerConnection connection,
 			final int type) {
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				showConnectionsOrExplanations();
-				switch (type) {
-				case IDockerConnectionManagerListener.ADD_EVENT:
-					registerListeners(connection);
-					break;
-				case IDockerConnectionManagerListener.REMOVE_EVENT:
-					unregisterListeners(connection);
-					break;
-				}
-			}
-		});
+		showConnectionsOrExplanations();
+		switch(type) {
+		case IDockerConnectionManagerListener.ADD_EVENT:
+			registerListeners(connection);
+			break;
+		case IDockerConnectionManagerListener.REMOVE_EVENT:
+			unregisterListeners(connection);
+			break;
+		}
 	}
 
 	private void registerListeners() {
