@@ -21,9 +21,11 @@ public class LoggingPreferencePage extends FieldEditorPreferencePage implements
 
 	private static final String AUTO_START_MSG = "AutoLogOnStart.label"; //$NON-NLS-1$
 	private static final String TIME_STAMP_MSG = "LogTimeStamp.label"; //$NON-NLS-1$
+	private static final String SHOW_OLD_LOGS_MSG = "ShowOldLogs.label"; //$NON-NLS-1$
 
 	private BooleanFieldEditor autoLogOnStart;
 	private BooleanFieldEditor addTimeStamp;
+	private BooleanFieldEditor showOldLogs;
 
 	public LoggingPreferencePage() {
 		super(GRID);
@@ -47,6 +49,10 @@ public class LoggingPreferencePage extends FieldEditorPreferencePage implements
 				PreferenceConstants.LOG_TIMESTAMP,
 				Messages.getString(TIME_STAMP_MSG), getFieldEditorParent());
 		addField(addTimeStamp);
+
+		showOldLogs = new BooleanFieldEditor(PreferenceConstants.SHOW_OLD_LOGS,
+				Messages.getString(SHOW_OLD_LOGS_MSG), getFieldEditorParent());
+		addField(showOldLogs);
 	}
 
 }
