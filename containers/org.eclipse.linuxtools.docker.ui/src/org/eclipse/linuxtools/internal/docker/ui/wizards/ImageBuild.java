@@ -14,17 +14,10 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.widgets.Display;
 
 public class ImageBuild extends Wizard {
 
@@ -93,49 +86,6 @@ public class ImageBuild extends Wizard {
 			lines = numberOfLines();
 		} catch (IOException e) {
 			// do nothing
-		}
-
-		try {
-			Files.walkFileTree(Paths.get(directory.toString()),
-					new FileVisitor<java.nio.file.Path>() {
-						@Override
-						public FileVisitResult preVisitDirectory(
-								java.nio.file.Path dir,
-								BasicFileAttributes attrs) {
-							return FileVisitResult.CONTINUE;
-						}
-						@Override
-						public FileVisitResult visitFile(
-								java.nio.file.Path file,
-								BasicFileAttributes attrs) {
-							return FileVisitResult.CONTINUE;
-						}
-						@Override
-						public FileVisitResult visitFileFailed(
-								java.nio.file.Path file, IOException exc)
-										throws IOException {
-							throw exc;
-						}
-						@Override
-						public FileVisitResult postVisitDirectory(
-								java.nio.file.Path dir, IOException exc) {
-							return FileVisitResult.CONTINUE;
-						}
-					});
-		} catch (final IOException e) {
-			Display.getDefault().syncExec(new Runnable() {
-				@Override
-				public void run() {
-					MessageDialog.openError(
-							Display.getCurrent().getActiveShell(),
-									WizardMessages.getString(
-											"ErrorInvalidDirectory.msg"),
-							WizardMessages.getFormattedString(
-									"ErrorInvalidPermissions.msg",
-									directory.toString()));
-				}
-			});
-			return false;
 		}
 
 		return true;
