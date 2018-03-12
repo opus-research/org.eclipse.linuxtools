@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -34,6 +35,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -531,7 +533,8 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         IPath location = resource.getLocation();
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         try {
-            String traceType = TmfTraceType.getTraceTypeId(resource);
+            Map<QualifiedName, String> properties = resource.getPersistentProperties();
+            String traceType = properties.get(TmfCommonConstants.TRACETYPE);
             TraceTypeHelper traceTypeHelper = TmfTraceType.getTraceType(traceType);
 
             if (resource instanceof IFolder) {
@@ -628,7 +631,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
         if (folder.exists()) {
             try {
                 for (IResource member : folder.members()) {
-                    if (TmfTrace.class.getCanonicalName().equals(TmfTraceType.getTraceTypeId(member))) {
+                    if (TmfTrace.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
                         member.delete(true, null);
                     }
                 }
@@ -640,7 +643,7 @@ public class DropAdapterAssistant extends CommonDropAdapterAssistant {
 
     private static void setTraceType(IResource traceResource) {
         try {
-            String traceType = TmfTraceType.getTraceTypeId(traceResource);
+            String traceType = traceResource.getPersistentProperties().get(TmfCommonConstants.TRACETYPE);
             TraceTypeHelper traceTypeHelper = TmfTraceType.getTraceType(traceType);
             if (traceTypeHelper == null) {
                 traceTypeHelper = TmfTraceTypeUIUtils.selectTraceType(traceResource.getLocation().toOSString(), null, null);
