@@ -39,6 +39,7 @@ public class Messages extends NLS {
     public static String TmfEventsTable_AddBookmarkDialogTitle;
     public static String TmfEventsTable_ApplyPresetFilterMenuName;
     public static String TmfEventsTable_ClearFiltersActionText;
+    public static String TmfEventsTable_CollapseFilterMenuName;
     public static String TmfEventsTable_ContentColumnHeader;
     public static String TmfEventsTable_Export_to_text;
     public static String TmfEventsTable_FilterHint;
@@ -118,6 +119,8 @@ public class Messages extends NLS {
     public static String TmfTimeGraphViewer_FollowArrowForwardActionToolTipText;
     public static String TmfTimeGraphViewer_FollowArrowBackwardActionNameText;
     public static String TmfTimeGraphViewer_FollowArrowBackwardActionToolTipText;
+
+    public static String Utils_ClockCyclesUnit;
 
     public static String ColorsView_AddActionToolTipText;
     public static String ColorsView_BackgroundButtonText;
