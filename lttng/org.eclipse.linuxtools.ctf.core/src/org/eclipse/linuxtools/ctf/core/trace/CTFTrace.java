@@ -542,8 +542,8 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
             /* Read the stream ID */
             IDefinition streamIDDef = fPacketHeaderDef.lookupDefinition("stream_id"); //$NON-NLS-1$
 
-            if (streamIDDef instanceof IntegerDefinition) {
-                /* This doubles as a null check */
+            if (streamIDDef instanceof IntegerDefinition) { // this doubles as a
+                // null check
                 long streamID = ((IntegerDefinition) streamIDDef).getValue();
                 stream = fStreams.get(streamID);
             } else {
@@ -562,17 +562,23 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
 
         /*
          * Create the stream input and add a reference to the streamInput in the
-         * stream.
+         * stream
          */
         stream.addInput(new CTFStreamInput(stream, streamFile));
+        /*
+         * This should no longer leak resources as stream inputs have no more
+         * resources
+         */
         return stream;
     }
 
     private void validateUUID(StructDefinition packetHeaderDef) throws CTFReaderException {
+        /* Check UUID */
         IDefinition lookupDefinition = packetHeaderDef.lookupDefinition("uuid"); //$NON-NLS-1$
         ArrayDefinition uuidDef = (ArrayDefinition) lookupDefinition;
         if (uuidDef != null) {
             UUID otheruuid = Utils.getUUIDfromDefinition(uuidDef);
+
             if (!fUuid.equals(otheruuid)) {
                 throw new CTFReaderException("UUID mismatch"); //$NON-NLS-1$
             }
@@ -580,6 +586,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
     }
 
     private static void validateMagicNumber(StructDefinition packetHeaderDef) throws CTFReaderException {
+        /* Check the magic number */
         IntegerDefinition magicDef = (IntegerDefinition) packetHeaderDef.lookupDefinition("magic"); //$NON-NLS-1$
         int magic = (int) magicDef.getValue();
         if (magic != Utils.CTF_MAGIC) {
