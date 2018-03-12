@@ -64,16 +64,16 @@ public class TmfTraceTest {
 
     /** Time-out tests after 20 seconds */
     @Rule
-    public TestRule globalTimeout = new Timeout(2000000);
+    public TestRule globalTimeout= new Timeout(20000);
 
     // ------------------------------------------------------------------------
     // Variables
     // ------------------------------------------------------------------------
 
     private static final TmfTestTrace TEST_TRACE = TmfTestTrace.A_TEST_10K;
-    private static final long DEFAULT_INITIAL_OFFSET_VALUE = (1L * 100 * 1000 * 1000); // .1sec
-    private static final int NB_EVENTS = 10000;
-    private TmfTraceStub fTrace = null;
+    private static final long   DEFAULT_INITIAL_OFFSET_VALUE = (1L * 100 * 1000 * 1000); // .1sec
+    private static final int    NB_EVENTS   = 10000;
+    private TmfTraceStub fTrace      = null;
 
     private static int SCALE = -3;
 
@@ -237,17 +237,17 @@ public class TmfTraceTest {
         }
 
         assertEquals("getType", ITmfEvent.class, trace.getType());
-        assertNull("getResource", trace.getResource());
+        assertNull  ("getResource", trace.getResource());
         assertEquals("getPath", path, trace.getPath());
         assertEquals("getCacheSize", ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, trace.getCacheSize());
         assertEquals("getStreamingInterval", 0, trace.getStreamingInterval());
         assertEquals("getName", path, trace.getName());
 
-        assertEquals("getNbEvents", 0, trace.getNbEvents());
+        assertEquals("getNbEvents",    0, trace.getNbEvents());
         assertEquals("getRange-start", Long.MIN_VALUE, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end", Long.MIN_VALUE, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("getStartTime", Long.MIN_VALUE, trace.getStartTime().getValue());
-        assertEquals("getEndTime", Long.MIN_VALUE, trace.getEndTime().getValue());
+        assertEquals("getRange-end",   Long.MIN_VALUE, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("getStartTime",   Long.MIN_VALUE, trace.getStartTime().getValue());
+        assertEquals("getEndTime",     Long.MIN_VALUE, trace.getEndTime().getValue());
     }
 
     @Test
@@ -265,17 +265,17 @@ public class TmfTraceTest {
         }
 
         assertEquals("getType", ITmfEvent.class, trace.getType());
-        assertNull("getResource", trace.getResource());
+        assertNull  ("getResource", trace.getResource());
         assertEquals("getPath", path, trace.getPath());
         assertEquals("getCacheSize", ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, trace.getCacheSize());
         assertEquals("getStreamingInterval", 0, trace.getStreamingInterval());
         assertEquals("getName", name, trace.getName());
 
-        assertEquals("getNbEvents", 0, trace.getNbEvents());
+        assertEquals("getNbEvents",    0, trace.getNbEvents());
         assertEquals("getRange-start", Long.MIN_VALUE, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end", Long.MIN_VALUE, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("getStartTime", Long.MIN_VALUE, trace.getStartTime().getValue());
-        assertEquals("getEndTime", Long.MIN_VALUE, trace.getEndTime().getValue());
+        assertEquals("getRange-end",   Long.MIN_VALUE, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("getStartTime",   Long.MIN_VALUE, trace.getStartTime().getValue());
+        assertEquals("getEndTime",     Long.MIN_VALUE, trace.getEndTime().getValue());
     }
 
     @Test
@@ -283,17 +283,17 @@ public class TmfTraceTest {
         // Instantiate an "empty" trace
         final TmfTraceStub trace = new TmfTraceStub();
 
-        assertNull("getType", trace.getType());
-        assertNull("getResource", trace.getResource());
+        assertNull  ("getType",  trace.getType());
+        assertNull  ("getResource", trace.getResource());
         assertEquals("getCacheSize", ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, trace.getCacheSize());
         assertEquals("getStreamingInterval", 0, trace.getStreamingInterval());
         assertEquals("getName", "", trace.getName());
 
-        assertEquals("getNbEvents", 0, trace.getNbEvents());
+        assertEquals("getNbEvents",    0, trace.getNbEvents());
         assertEquals("getRange-start", Long.MIN_VALUE, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end", Long.MIN_VALUE, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("getStartTime", Long.MIN_VALUE, trace.getStartTime().getValue());
-        assertEquals("getEndTime", Long.MIN_VALUE, trace.getEndTime().getValue());
+        assertEquals("getRange-end",   Long.MIN_VALUE, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("getStartTime",   Long.MIN_VALUE, trace.getStartTime().getValue());
+        assertEquals("getEndTime",     Long.MIN_VALUE, trace.getEndTime().getValue());
 
         // Validate
         final URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(TEST_TRACE.getFullPath()), null);
@@ -313,16 +313,16 @@ public class TmfTraceTest {
         }
 
         assertEquals("getType", ITmfEvent.class, trace.getType());
-        assertNull("getResource", trace.getResource());
+        assertNull  ("getResource", trace.getResource());
         assertEquals("getCacheSize", ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, trace.getCacheSize());
         assertEquals("getStreamingInterval", 0, trace.getStreamingInterval());
         assertEquals("getName", TEST_TRACE.getPath(), trace.getName());
 
-        assertEquals("getNbEvents", NB_EVENTS, trace.getNbEvents());
-        assertEquals("getRange-start", 1, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end", NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("getStartTime", 1, trace.getStartTime().getValue());
-        assertEquals("getEndTime", NB_EVENTS, trace.getEndTime().getValue());
+        assertEquals("getNbEvents",    NB_EVENTS, trace.getNbEvents());
+        assertEquals("getRange-start", 1,         trace.getTimeRange().getStartTime().getValue());
+        assertEquals("getRange-end",   NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("getStartTime",   1,         trace.getStartTime().getValue());
+        assertEquals("getEndTime",     NB_EVENTS, trace.getEndTime().getValue());
     }
 
     // ------------------------------------------------------------------------
@@ -360,16 +360,16 @@ public class TmfTraceTest {
         final TmfTraceStub trace = new TmfTraceStub(fTrace);
         trace.indexTrace(true);
 
-        assertEquals("getRange-start", 1, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end", NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("getStartTime", 1, trace.getStartTime().getValue());
-        assertEquals("getEndTime", NB_EVENTS, trace.getEndTime().getValue());
+        assertEquals("getRange-start", 1,         trace.getTimeRange().getStartTime().getValue());
+        assertEquals("getRange-end",   NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("getStartTime",   1,         trace.getStartTime().getValue());
+        assertEquals("getEndTime",     NB_EVENTS, trace.getEndTime().getValue());
 
         trace.setTimeRange(new TmfTimeRange(new TmfTimestamp(100), new TmfTimestamp(200)));
-        assertEquals("setTimeRange", 100, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("setTimeRange", 200, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("setTimeRange", 100, trace.getStartTime().getValue());
-        assertEquals("setTimeRange", 200, trace.getEndTime().getValue());
+        assertEquals("setTimeRange",   100, trace.getTimeRange().getStartTime().getValue());
+        assertEquals("setTimeRange",   200, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("setTimeRange",   100, trace.getStartTime().getValue());
+        assertEquals("setTimeRange",   200, trace.getEndTime().getValue());
 
         trace.dispose();
     }
@@ -379,16 +379,16 @@ public class TmfTraceTest {
         final TmfTraceStub trace = new TmfTraceStub(fTrace);
         trace.indexTrace(true);
 
-        assertEquals("getRange-start", 1, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end", NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("getStartTime", 1, trace.getStartTime().getValue());
-        assertEquals("getEndTime", NB_EVENTS, trace.getEndTime().getValue());
+        assertEquals("getRange-start", 1,         trace.getTimeRange().getStartTime().getValue());
+        assertEquals("getRange-end",   NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("getStartTime",   1,         trace.getStartTime().getValue());
+        assertEquals("getEndTime",     NB_EVENTS, trace.getEndTime().getValue());
 
         trace.setStartTime(new TmfTimestamp(100));
-        assertEquals("setStartTime", 100, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("setStartTime", NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("setStartTime", 100, trace.getStartTime().getValue());
-        assertEquals("setStartTime", NB_EVENTS, trace.getEndTime().getValue());
+        assertEquals("setStartTime",   100,       trace.getTimeRange().getStartTime().getValue());
+        assertEquals("setStartTime",   NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("setStartTime",   100,       trace.getStartTime().getValue());
+        assertEquals("setStartTime",   NB_EVENTS, trace.getEndTime().getValue());
 
         trace.dispose();
     }
@@ -398,16 +398,16 @@ public class TmfTraceTest {
         final TmfTraceStub trace = new TmfTraceStub(fTrace);
         trace.indexTrace(true);
 
-        assertEquals("getRange-start", 1, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end", NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("getStartTime", 1, trace.getStartTime().getValue());
-        assertEquals("getEndTime", NB_EVENTS, trace.getEndTime().getValue());
+        assertEquals("getRange-start", 1,         trace.getTimeRange().getStartTime().getValue());
+        assertEquals("getRange-end",   NB_EVENTS, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("getStartTime",   1,         trace.getStartTime().getValue());
+        assertEquals("getEndTime",     NB_EVENTS, trace.getEndTime().getValue());
 
         trace.setEndTime(new TmfTimestamp(100));
-        assertEquals("setEndTime", 1, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("setEndTime", 100, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("setEndTime", 1, trace.getStartTime().getValue());
-        assertEquals("setEndTime", 100, trace.getEndTime().getValue());
+        assertEquals("setEndTime",     1,   trace.getTimeRange().getStartTime().getValue());
+        assertEquals("setEndTime",     100, trace.getTimeRange().getEndTime().getValue());
+        assertEquals("setEndTime",     1,   trace.getStartTime().getValue());
+        assertEquals("setEndTime",     100, trace.getEndTime().getValue());
 
         trace.dispose();
     }
@@ -907,7 +907,7 @@ public class TmfTraceTest {
         svContext = new TmfContext(context);
         event = fTrace.parseEvent(context);
         assertEquals("Event timestamp", NB_READS, event.getTimestamp().getValue());
-        assertEquals("Event rank", NB_READS - 1, context.getRank());
+        assertEquals("Event rank", NB_READS -1 , context.getRank());
         assertTrue("parseEvent", context.equals(svContext));
 
         event = fTrace.parseEvent(context);
@@ -1160,7 +1160,7 @@ public class TmfTraceTest {
         request.waitForCompletion();
 
         assertEquals("nbEvents", NB_EVENTS, requestedEvents.size());
-        assertTrue("isCompleted", request.isCompleted());
+        assertTrue("isCompleted",  request.isCompleted());
         assertFalse("isCancelled", request.isCancelled());
 
         // Ensure that we have distinct events.
@@ -1172,7 +1172,7 @@ public class TmfTraceTest {
 
     @Test
     public void testProcessEventRequestForNbEvents() throws InterruptedException {
-        final int nbEvents = 1000;
+        final int nbEvents  = 1000;
         final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(TmfTimestamp.BIG_BANG, TmfTimestamp.BIG_CRUNCH);
@@ -1189,7 +1189,7 @@ public class TmfTraceTest {
         request.waitForCompletion();
 
         assertEquals("nbEvents", nbEvents, requestedEvents.size());
-        assertTrue("isCompleted", request.isCompleted());
+        assertTrue("isCompleted",  request.isCompleted());
         assertFalse("isCancelled", request.isCancelled());
 
         // Ensure that we have distinct events.
@@ -1202,7 +1202,7 @@ public class TmfTraceTest {
     @Test
     public void testProcessEventRequestForSomeEvents() throws InterruptedException {
         final long startTime = 100;
-        final int nbEvents = 1000;
+        final int nbEvents  = 1000;
         final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(startTime, SCALE), TmfTimestamp.BIG_CRUNCH);
@@ -1219,7 +1219,7 @@ public class TmfTraceTest {
         request.waitForCompletion();
 
         assertEquals("nbEvents", nbEvents, requestedEvents.size());
-        assertTrue("isCompleted", request.isCompleted());
+        assertTrue("isCompleted",  request.isCompleted());
         assertFalse("isCancelled", request.isCancelled());
 
         // Ensure that we have distinct events.
@@ -1233,7 +1233,7 @@ public class TmfTraceTest {
     public void testProcessEventRequestForOtherEvents() throws InterruptedException {
         final int startIndex = 99;
         final long startTime = 100;
-        final int nbEvents = 1000;
+        final int nbEvents  = 1000;
         final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfTimeRange range = new TmfTimeRange(new TmfTimestamp(startTime, SCALE), TmfTimestamp.BIG_CRUNCH);
@@ -1250,7 +1250,7 @@ public class TmfTraceTest {
         request.waitForCompletion();
 
         assertEquals("nbEvents", nbEvents, requestedEvents.size());
-        assertTrue("isCompleted", request.isCompleted());
+        assertTrue("isCompleted",  request.isCompleted());
         assertFalse("isCancelled", request.isCancelled());
 
         // Ensure that we have distinct events.
@@ -1263,7 +1263,7 @@ public class TmfTraceTest {
     @Test
     public void testProcessDataRequestForSomeEvents() throws InterruptedException {
         final int startIndex = 100;
-        final int nbEvents = 1000;
+        final int nbEvents  = 1000;
         final Vector<ITmfEvent> requestedEvents = new Vector<>();
 
         final TmfEventRequest request = new TmfEventRequest(ITmfEvent.class,
@@ -1282,7 +1282,7 @@ public class TmfTraceTest {
         request.waitForCompletion();
 
         assertEquals("nbEvents", nbEvents, requestedEvents.size());
-        assertTrue("isCompleted", request.isCompleted());
+        assertTrue("isCompleted",  request.isCompleted());
         assertFalse("isCancelled", request.isCancelled());
 
         // Ensure that we have distinct events.
@@ -1319,7 +1319,7 @@ public class TmfTraceTest {
         providers[0].sendRequest(request);
         request.waitForCompletion();
 
-        assertEquals("nbEvents", limit, requestedEvents.size());
+        assertEquals("nbEvents",  limit, requestedEvents.size());
         assertTrue("isCompleted", request.isCompleted());
         assertTrue("isCancelled", request.isCancelled());
     }
@@ -1330,17 +1330,17 @@ public class TmfTraceTest {
 
     @Test
     public void testDefaultTmfTraceStub() {
-        assertFalse("Open trace", fTrace == null);
-        assertEquals("getType", ITmfEvent.class, fTrace.getType());
-        assertNull("getResource", fTrace.getResource());
+        assertFalse ("Open trace", fTrace == null);
+        assertEquals("getType",  ITmfEvent.class, fTrace.getType());
+        assertNull  ("getResource", fTrace.getResource());
         assertEquals("getStreamingInterval", 0, fTrace.getStreamingInterval());
         assertEquals("getName", TEST_TRACE.getPath(), fTrace.getName());
 
-        assertEquals("getNbEvents", NB_EVENTS, fTrace.getNbEvents());
-        assertEquals("getRange-start", 1, fTrace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end", NB_EVENTS, fTrace.getTimeRange().getEndTime().getValue());
-        assertEquals("getStartTime", 1, fTrace.getStartTime().getValue());
-        assertEquals("getEndTime", NB_EVENTS, fTrace.getEndTime().getValue());
+        assertEquals("getNbEvents",    NB_EVENTS, fTrace.getNbEvents());
+        assertEquals("getRange-start", 1,         fTrace.getTimeRange().getStartTime().getValue());
+        assertEquals("getRange-end",   NB_EVENTS, fTrace.getTimeRange().getEndTime().getValue());
+        assertEquals("getStartTime",   1,         fTrace.getStartTime().getValue());
+        assertEquals("getEndTime",     NB_EVENTS, fTrace.getEndTime().getValue());
 
         String expected = "TmfTrace [fPath=" + fTrace.getPath() + ", fCacheSize=" + fTrace.getCacheSize() +
                 ", fNbEvents=" + fTrace.getNbEvents() + ", fStartTime=" + fTrace.getStartTime() +
