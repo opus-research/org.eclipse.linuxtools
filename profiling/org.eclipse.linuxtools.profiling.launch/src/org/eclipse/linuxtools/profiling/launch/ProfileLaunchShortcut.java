@@ -87,7 +87,8 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
         try {
             ILaunchConfiguration[] configs = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations(configType);
             candidateConfigs = new ArrayList<>(configs.length);
-            for (ILaunchConfiguration config : configs) {
+            for (int i = 0; i < configs.length; i++) {
+                ILaunchConfiguration config = configs[i];
                 IPath programPath = CDebugUtils.getProgramPath(config);
                 String projectName = CDebugUtils.getProjectName(config);
                 IPath binPath = bin.getResource().getProjectRelativePath();
@@ -217,9 +218,9 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
                                             try {
                                                 IBinary[] bins = cproject.getBinaryContainer().getBinaries();
 
-                                                for (IBinary bin : bins) {
-                                                    if (bin.isExecutable()) {
-                                                        results.add(bin);
+                                                for (int j = 0; j < bins.length; j++) {
+                                                    if (bins[j].isExecutable()) {
+                                                        results.add(bins[j]);
                                                     }
                                                 }
                                             } catch (CModelException e) {
@@ -280,7 +281,10 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
             @Override
             public String getText(Object element) {
                 if (element instanceof IBinary) {
-                    return ((IBinary)element).getPath().lastSegment();
+                    IBinary bin = (IBinary)element;
+                    StringBuffer name = new StringBuffer();
+                    name.append(bin.getPath().lastSegment());
+                    return name.toString();
                 }
                 return super.getText(element);
             }
@@ -291,7 +295,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
             public String getText(Object element) {
                 if (element instanceof IBinary) {
                     IBinary bin = (IBinary)element;
-                    StringBuilder name = new StringBuilder();
+                    StringBuffer name = new StringBuffer();
                     name.append(bin.getCPU() + (bin.isLittleEndian() ? "le" : "be")); //$NON-NLS-1$ //$NON-NLS-2$
                     name.append(" - "); //$NON-NLS-1$
                     name.append(bin.getPath().toString());
