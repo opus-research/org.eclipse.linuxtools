@@ -54,7 +54,7 @@ import com.google.common.collect.ImmutableMap;
 public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTraceProperties, AutoCloseable {
 
     @SuppressWarnings("null")
-    private static final Map<String, String> EMPTY_MAP = ImmutableMap.of();
+    private static final @NonNull Map<String, String> EMPTY_MAP = ImmutableMap.of();
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
     private static final int CONFIDENCE = 50;
     private @Nullable PcapFile fPcapFile; // not final because of initTrace();
