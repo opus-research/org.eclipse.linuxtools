@@ -35,6 +35,7 @@ public class DefaultUnixConnectionSettingsProvider implements IDockerConnectionS
 				// assume socket works
 				final UnixSocketConnectionSettings socket = new UnixSocketConnectionSettings(
 						DefaultDockerConnectionSettingsFinder.Defaults.DEFAULT_UNIX_SOCKET_PATH);
+				socket.setName(socket.getPath());
 				return Arrays.asList(new IDockerConnectionSettings[] { socket });
 			} catch (IOException e) {
 				// do nothing, just assume socket did not work.

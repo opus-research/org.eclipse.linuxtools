@@ -165,7 +165,7 @@ public class DefaultDockerConnectionSettingsFinder
 	 *         environment variables exist, {@code null} otherwise.
 	 */
 	public IDockerConnectionSettings defaultsWithSystemEnv() {
-		List<IDockerConnectionSettings> res = new DefaultSystemConnectionSettingsProvider()
+		List<IDockerConnectionSettings> res = new SystemConnectionSettingsProvider()
 				.getConnectionSettings();
 		if (res != null) {
 			return res.get(0);
@@ -181,7 +181,7 @@ public class DefaultDockerConnectionSettingsFinder
 	 *         environment variables exist, {@code null} otherwise.
 	 */
 	public IDockerConnectionSettings defaultsWithShellEnv() {
-		List<IDockerConnectionSettings> res = new DefaultShellConnectionSettingsProvider()
+		List<IDockerConnectionSettings> res = new ShellConnectionSettingsProvider()
 				.getConnectionSettings();
 		if (res != null) {
 			return res.get(0);

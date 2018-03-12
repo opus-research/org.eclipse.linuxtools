@@ -16,7 +16,7 @@ import java.util.List;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettingsProvider;
 
-public class DefaultSystemConnectionSettingsProvider implements IDockerConnectionSettingsProvider {
+public class SystemConnectionSettingsProvider implements IDockerConnectionSettingsProvider {
 
 	@Override
 	public List<IDockerConnectionSettings> getConnectionSettings() {

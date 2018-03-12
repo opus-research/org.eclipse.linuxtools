@@ -15,13 +15,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings.BindingType;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionStorageManager;
-import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
-import org.eclipse.linuxtools.internal.docker.core.TCPConnectionSettings;
-import org.eclipse.linuxtools.internal.docker.core.UnixSocketConnectionSettings;
 
 public class DockerConnectionManager {
 
@@ -55,20 +51,6 @@ public class DockerConnectionManager {
 		for (IDockerConnection connection : connections) {
 				notifyListeners(connection,
 						IDockerConnectionManagerListener.ADD_EVENT);
-		}
-		List<IDockerConnectionSettings> settings = connectionSettingsFinder
-				.getKnownConnectionSettings();
-		for (IDockerConnectionSettings setting : settings) {
-			IDockerConnection conn;
-			if (setting.getType().equals(BindingType.UNIX_SOCKET_CONNECTION)) {
-				UnixSocketConnectionSettings usetting = (UnixSocketConnectionSettings) setting;
-				conn = new DockerConnection.Builder()
-						.unixSocketConnection(usetting);
-			} else {
-				TCPConnectionSettings tsetting = (TCPConnectionSettings) setting;
-				conn = new DockerConnection.Builder().tcpConnection(tsetting);
-			}
-			addConnection(conn);
 		}
 	}
 
@@ -112,10 +94,12 @@ public class DockerConnectionManager {
 	}
 
 	public void addConnection(final IDockerConnection dockerConnection) {
-		connections.add(dockerConnection);
-		saveConnections();
-		notifyListeners(dockerConnection,
-				IDockerConnectionManagerListener.ADD_EVENT);
+		if (!connections.contains(dockerConnection)) {
+			connections.add(dockerConnection);
+			saveConnections();
+			notifyListeners(dockerConnection,
+					IDockerConnectionManagerListener.ADD_EVENT);
+		}
 	}
 
 	public void removeConnection(final IDockerConnection connection) {
