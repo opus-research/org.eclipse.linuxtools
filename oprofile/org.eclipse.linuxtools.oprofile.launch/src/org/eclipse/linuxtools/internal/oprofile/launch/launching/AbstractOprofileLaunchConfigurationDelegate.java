@@ -33,14 +33,17 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.linuxtools.internal.oprofile.core.OpcontrolException;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
 import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonEvent;
+import org.eclipse.linuxtools.internal.oprofile.core.daemon.OprofileDaemonOptions;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchMessages;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
 import org.eclipse.linuxtools.internal.oprofile.launch.configuration.LaunchOptions;
@@ -48,6 +51,7 @@ import org.eclipse.linuxtools.internal.oprofile.launch.configuration.OprofileCou
 import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiPlugin;
 import org.eclipse.linuxtools.internal.oprofile.ui.view.OcountView;
 import org.eclipse.linuxtools.internal.oprofile.ui.view.OprofileView;
+import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
@@ -110,6 +114,23 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
             return;
         }
         Process process = null;
+        if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
+            IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(oprofileProject());
+            IPath workingDirPath = new Path(oprofileWorkingDirURI(config).getPath());
+            for(int i = 0; i < options.getExecutionsNumber(); i++){
+                process = launcher.execute(exePath, appArgs, appEnv , workingDirPath, monitor);
+                DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
+                try{
+                    process.waitFor();
+                } catch (InterruptedException e){
+                	if (process != null)
+                		process.destroy();
+                    Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
+                    throw new CoreException(status);
+                }
+            }
+        }
+
         // Executing operf with the default or specified events,
         // outputing the profiling data to the project dir/OPROFILE_DATA
         if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
@@ -314,6 +335,26 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
 
     /* all these functions exist to be overridden by the test class in order to allow launch testing */
 
+    protected void oprofileShutdown() throws OpcontrolException {
+        OprofileCorePlugin.getDefault().getOpcontrolProvider().shutdownDaemon();
+    }
+
+    protected void oprofileReset() throws OpcontrolException {
+        OprofileCorePlugin.getDefault().getOpcontrolProvider().reset();
+    }
+
+    protected void oprofileSetupDaemon(OprofileDaemonOptions options, OprofileDaemonEvent[] events) throws OpcontrolException {
+        OprofileCorePlugin.getDefault().getOpcontrolProvider().setupDaemon(options, events);
+    }
+
+    protected void oprofileStartCollection() throws OpcontrolException {
+        OprofileCorePlugin.getDefault().getOpcontrolProvider().startCollection();
+    }
+
+    protected void oprofileDumpSamples() throws OpcontrolException {
+        OprofileCorePlugin.getDefault().getOpcontrolProvider().dumpSamples();
+    }
+
     protected IProject oprofileProject(){
         return Oprofile.OprofileProject.getProject();
     }
@@ -353,25 +394,30 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
      * otherwise. Return value can be used to tell if the user successfully
      * entered a password.
      * @return true if opcontrol --help was run correctly. False otherwise
+     * @throws OpcontrolException
      */
-    protected boolean oprofileStatus() {
-		if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
-			try {
-				Process p = RuntimeProcessFactory.getFactory().exec(new String[] { "operf", "--version" }, //$NON-NLS-1$ //$NON-NLS-2$
-						OprofileProject.getProject());
-				return (p != null);
-			} catch (IOException e) {
-				return false;
-			}
-		} else {
-			try {
-				Process p = RuntimeProcessFactory.getFactory().exec(new String[] { "ocount", "--version" }, //$NON-NLS-1$ //$NON-NLS-2$
-						OprofileProject.getProject());
-				return (p != null);
-			} catch (IOException e) {
-				return false;
-			}
-		}
+    protected boolean oprofileStatus() throws OpcontrolException {
+        if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
+            try {
+                Process p = RuntimeProcessFactory.getFactory().exec(
+                        new String [] {"operf", "--version"}, //$NON-NLS-1$ //$NON-NLS-2$
+                        OprofileProject.getProject());
+                return (p != null);
+            } catch (IOException e) {
+                return false;
+            }
+        } else if (OprofileProject.getProfilingBinary().equals(OprofileProject.OCOUNT_BINARY)) {
+                try {
+                    Process p = RuntimeProcessFactory.getFactory().exec(
+                            new String [] {"ocount", "--version"}, //$NON-NLS-1$ //$NON-NLS-2$
+                            OprofileProject.getProject());
+                    return (p != null);
+                } catch (IOException e) {
+                    return false;
+                }
+       } else {
+            return OprofileCorePlugin.getDefault().getOpcontrolProvider().status();
+        }
     }
 
     protected IProject getProject(){
