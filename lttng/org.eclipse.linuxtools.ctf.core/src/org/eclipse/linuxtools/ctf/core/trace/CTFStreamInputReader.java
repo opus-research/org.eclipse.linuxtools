@@ -12,12 +12,17 @@
 
 package org.eclipse.linuxtools.ctf.core.trace;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
+import org.eclipse.linuxtools.internal.ctf.core.Activator;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 import com.google.common.collect.ImmutableList;
@@ -38,7 +43,11 @@ public class CTFStreamInputReader implements AutoCloseable {
     /**
      * The StreamInput we are reading.
      */
+    private final @NonNull File fFile;
+
     private final @NonNull CTFStreamInput fStreamInput;
+
+    private final FileChannel fFileChannel;
 
     /**
      * The packet reader used to read packets from this trace file.
@@ -68,20 +77,25 @@ public class CTFStreamInputReader implements AutoCloseable {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /**
      * Constructs a StreamInputReader that reads a StreamInput.
      *
      * @param streamInput
      *            The StreamInput to read.
      * @throws CTFReaderException
-     *             if an error occurs
+     *             If the file cannot be opened
      */
     public CTFStreamInputReader(CTFStreamInput streamInput) throws CTFReaderException {
         if (streamInput == null) {
-            throw new IllegalArgumentException("streamInput cannot be null"); //$NON-NLS-1$
+            throw new IllegalArgumentException("stream cannot be null"); //$NON-NLS-1$
         }
         fStreamInput = streamInput;
+        fFile = fStreamInput.getFile();
+        try {
+            fFileChannel = FileChannel.open(fFile.toPath(), StandardOpenOption.READ);
+        } catch (IOException e) {
+            throw new CTFReaderException(e);
+        }
         fPacketReader = new CTFStreamInputPacketReader(this);
         /*
          * Get the iterator on the packet index.
@@ -95,9 +109,13 @@ public class CTFStreamInputReader implements AutoCloseable {
 
     /**
      * Dispose the StreamInputReader
+     *
+     * @throws IOException
+     *             exceptional exception
      */
     @Override
-    public void close() {
+    public void close() throws IOException {
+        fFileChannel.close();
         fPacketReader.close();
     }
 
@@ -296,6 +314,7 @@ public class CTFStreamInputReader implements AutoCloseable {
                 goToNextPacket();
             } catch (CTFReaderException e) {
                 // do nothing here
+                Activator.log(e.getMessage());
             }
         }
         if (fPacketReader.getCurrentPacket() == null) {
@@ -435,7 +454,7 @@ public class CTFStreamInputReader implements AutoCloseable {
         int result = 1;
         result = (prime * result) + fId;
         result = (prime * result)
-                + fStreamInput.hashCode();
+                + fFile.hashCode();
         return result;
     }
 
@@ -454,12 +473,22 @@ public class CTFStreamInputReader implements AutoCloseable {
         if (fId != other.fId) {
             return false;
         }
-        return fStreamInput.equals(other.fStreamInput);
+        return fFile.equals(other.fFile);
     }
 
     @Override
     public String toString() {
         // this helps debugging
         return fId + ' ' + fCurrentEvent.toString();
+    }
+
+    /**
+     * file channel
+     *
+     * @return filechannel
+     * @since 3.1
+     */
+    public FileChannel getFc() {
+        return fFileChannel;
     }
 }
