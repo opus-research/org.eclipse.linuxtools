@@ -39,9 +39,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
@@ -100,6 +97,9 @@ import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
+
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
@@ -1542,11 +1542,9 @@ public class DockerConnection implements IDockerConnection {
 
 		final byte[] prevCmd = new byte[1024];
 		try {
-
 			final LogStream pty_stream = client.attachContainer(id,
 					AttachParameter.STDIN, AttachParameter.STDOUT,
-					AttachParameter.STDERR, AttachParameter.STREAM,
-					AttachParameter.LOGS);
+					AttachParameter.STDERR, AttachParameter.STREAM);
 			final boolean isTtyEnabled = getContainerInfo(id).config().tty();
 
 			// Data from the given input stream
