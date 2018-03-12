@@ -34,13 +34,13 @@ import org.eclipse.swt.widgets.Shell;
  * </p>
  *
  * <p>
- * Please see the  <a href="https://wiki.eclipse.org/File:TitleAreaDialogWithRadioButtonsExample.png">Screen shot</a>
- * to see what it looks like. </p>
+ * Please see the  the following for a screenshot: <br>
+ * <code> https://wiki.eclipse.org/File:TitleAreaDialogWithRadioButtonsExample.png</code> <br></p>
  *
  * <p> 
- * Please see <a href="https://wiki.eclipse.org/Eclipse_Plug-in_Development_FAQ/TitleAreaDialogWithRadioButtons""> wiki page </a>
- * for additional details & example usage code
- * </p>
+ * Please see the following wiki page: <br>
+ * <code> https://wiki.eclipse.org/Eclipse_Plug-in_Development_FAQ/TitleAreaDialogWithRadioButtons</code>
+ * for additional details and example usage code</p>
  *  @since 3.1
  */
 public class TitleAreaDialogWithRadioButtons extends TitleAreaDialog {
@@ -56,15 +56,15 @@ public class TitleAreaDialogWithRadioButtons extends TitleAreaDialog {
      * <p>
      * Specify paramaters, then use open. 
      * </p>
-     * <p> 
-     * Please see <a href="https://wiki.eclipse.org/Eclipse_Plug-in_Development_FAQ/TitleAreaDialogWithRadioButtons""> wiki page </a>
-     * for additional details & example.
-     * </p>
+	 * <p> 
+	 * Please see the following wiki page: <br>
+	 * <code> https://wiki.eclipse.org/Eclipse_Plug-in_Development_FAQ/TitleAreaDialogWithRadioButtons</code>
+	 * for additional details and example usage code</p>
      *
      * @param parentShell    Parent Shell
      * @param title          Title of the dialogue
      * @param bodyMsg        Body message of the dialogue
-     * @param userButtonList A list of SimpleEntry<String,String> mapping ButtonIDs and their visable text.
+     * @param userButtonList A list of SimpleEntry(String,String) mapping ButtonIDs and their visable text.
      * (see <a href="https://wiki.eclipse.org/Eclipse_Plug-in_Development_FAQ/TitleAreaDialogWithRadioButtons#Example_usage"> wiki example </a> for details)
      * @param msgType        'IMessageProvider.INFORMATION '  Can be one of: NONE ERROR INFORMATION WARNING
      */

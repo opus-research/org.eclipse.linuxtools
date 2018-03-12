@@ -36,18 +36,14 @@ import org.eclipse.swt.widgets.Display;
 /**
  * <h1> C and C++ Project configuration and build helpers. </h1>
  * <p> This class is focused on automating the proccess of enabling profing plugins. <br>
- *  Used primarily for gcov & gprof. </p>
+ *  Used primarily for gcov gprof. </p>
  *
- * <p> 
- * It supports c/c++ in Managed & Autotools projects, <br> 
+ * <p> It supports c/c++ in Managed and Autotools projects, <br> 
  * by providing the following functionality : <br>
- * <ul>
- *      <li> Identify project type & differentiate C from C++ </li>
- *      <li> Check if a flag is set  </li>
- *      <li> Enable a build-flag prog </li>
- *      <li> Rebuild a project </li>
- * </ul>
- *</p>
+ * - Identify project type and differentiate C from C++ <br>
+ * - Check if a flag is set  <br>
+ * - Enable a build-flag prog <br>
+ * - Rebuild a project </p>
  *
  * <p> Common steps: <br>
  * <ol>
@@ -72,14 +68,10 @@ public class CProjectBuildHelpers {
      *  Check the return value against these constants.<br>
      *  </p>
      *
-     *  <p> 
-     *  Can be set to one of the following:
-     *  <ul>
-     *          <li> AUTO_TOOLS </li>
-     *          <li> MANAGED_MAKEFILE </li>
-     *          <li> OTHER </li>
-     *  </ul>
-     *  </p>
+     *  <p> Can be set to one of the following:
+     *  - AUTO_TOOLS <br>
+     *  - MANAGED_MAKEFILE <br>
+     *  - OTHER <br></p>
      */
     public static enum ProjectBuildType {
         AUTO_TOOLS, MANAGED_MAKEFILE, OTHER
@@ -88,18 +80,15 @@ public class CProjectBuildHelpers {
     /**
      * <h1>Finds out the type of the project as defined by {@link ProjectBuildType ProjectBuildType}.</h1>
      *
-     * <p>
-     * A project can be of different types.<br>
+     * <p> A project can be of different types.<br>
      * Common types are:
-     * <ul>
-     * - <li>Autotools</li>
-     * - <li>Managed Make project</li>
-     * - <li>Manual Makefiles</li>
-     * </ul>
-     * </p>
+	 *  - Autotools<br>
+     *  - Managed Make project<br>
+     *  - Manual Makefiles<br></p>
+     * 
      *
      * <p>
-     * Some dialogues (initially in gCov & gProf) distinguish between these when displaying dialogues. This code is used
+     * Some dialogues (initially in gCov and gProf) distinguish between these when displaying dialogues. This code is used
      * by these dialogues.
      * </p>
      *
@@ -280,21 +269,15 @@ public class CProjectBuildHelpers {
 
     /**
      * <h1> Enable a checkbox in the tools preference store and save to disk.</h1>
-     * <p>
-     * The tools prefernce store is where most compiler build flags are stored. <br>
-     * More specifically for 'debug' flags like gprof and gCov
-     * </p>
+     * <p>  The tools prefernce store is where most compiler build flags are stored. <br>
+     * More specifically for 'debug' flags like gprof and gCov</p>
      *
-     * <p>
-     * If you don't know how to get your IProject, see example: <br>
-     * <code> org.eclipse.linuxtools.internal.gprof.launch.GprofLaunchConfigurationDelegate.getProject() </code>
-     * <p>
+     * <p>If you don't know how to get your IProject, see example: <br>
+     * <code> org.eclipse.linuxtools.internal.gprof.launch.GprofLaunchConfigurationDelegate.getProject() </code></p>
      *
-     * <p>
-     * Related wiki:
+     * <p>Related wiki:
      * <a href="https://wiki.eclipse.org/CDT/Developer/Code_Snippets#Programmatically_set_an_option_in_the_project_settings">
-     * Programmaticall check option wiki page. </a>
-     * </p>
+     * Programmaticall check option wiki page. </a></p>
      *
      * @param project
      *            I project for which to set the flag
@@ -379,8 +362,9 @@ public class CProjectBuildHelpers {
      * <p> Check to see if an option is enabled in the .autotools configuration.</p>
      * 
      * @param project  the IProject project which will be read to check if it is c or cpp.
-     * @param optionId copy & paste directly from .autotools. pick the 'ID' field value.
-     * @return true if it is*/
+     * @param optionId copy paste directly from .autotools. pick the 'ID' field value.
+     * @return true if it is
+     */
     public static boolean isOptionCheckedInAutotoolsPrefStore(final IProject project, final String optionId) {
 
         //We define a 'final' variable that will be accessible in the runnable object.
@@ -414,9 +398,9 @@ public class CProjectBuildHelpers {
     }
 
     /**
-     * <h1>Set Autotools option & write to disk.</h1>
+     * <h1>Set Autotools option and write to disk.</h1>
      *
-     * <p> Set an option (as well as flags) in the .autotools configuration & update gui. <br>
+     * <p> Set an option (as well as flags) in the .autotools configuration and update gui. <br>
      * It is oblivious as to whether the option ID is an option or a flag, it just looks at the ID in the xml. </p>
      *
      * <p> It is designed so that it can be ran from a background thread.
