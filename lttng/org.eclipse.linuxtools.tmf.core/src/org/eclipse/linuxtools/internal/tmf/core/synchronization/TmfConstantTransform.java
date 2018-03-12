@@ -96,7 +96,7 @@ public class TmfConstantTransform implements ITmfTimestampTransform {
     }
 
     private void restoreTimestamp() {
-        if (getOffset() == null) {
+        if (fOffset == null) {
             fOffset = new TmfTimestamp(fValue, fScale, fPrecision);
         }
     }
