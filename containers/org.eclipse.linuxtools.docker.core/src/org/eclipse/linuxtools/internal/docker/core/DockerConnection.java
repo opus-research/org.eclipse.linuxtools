@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -329,19 +330,26 @@ public class DockerConnection implements IDockerConnection {
 		}
 
 		public Builder unixSocket(String unixSocketPath) {
-			if (unixSocketPath != null && !unixSocketPath.startsWith("unix://")) { //$NON-NLS-1$
-				unixSocketPath = "unix://" + unixSocketPath; //$NON-NLS-1$
+			try {
+				if (unixSocketPath != null
+						&& new URI(unixSocketPath).getScheme() == null) {
+					unixSocketPath = "unix://" + unixSocketPath;
+				}
+			} catch (URISyntaxException e) {
 			}
 			this.unixSocketPath = unixSocketPath;
 			return this;
 		}
 
 		public Builder tcpHost(String tcpHost) {
-			if (tcpHost != null) {
-				if (!tcpHost.startsWith("tcp://")) { //$NON-NLS-1$
-					tcpHost = "tcp://" + tcpHost; //$NON-NLS-1$
+			try {
+				if (tcpHost != null) {
+					if (new URI(tcpHost).getScheme() == null) {
+						tcpHost = "tcp://" + tcpHost;
+					}
+					this.tcpHost = tcpHost.replace("tcp://", "http://");
 				}
-				this.tcpHost = tcpHost.replace("tcp://", "http://"); //$NON-NLS-1$ //$NON-NLS-2$
+			} catch (URISyntaxException e) {
 			}
 			return this;
 		}

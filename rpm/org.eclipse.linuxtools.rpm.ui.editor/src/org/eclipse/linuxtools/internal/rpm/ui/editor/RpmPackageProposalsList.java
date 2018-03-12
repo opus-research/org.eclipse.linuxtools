@@ -11,7 +11,10 @@
 
 package org.eclipse.linuxtools.internal.rpm.ui.editor;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -32,7 +35,7 @@ import org.eclipse.linuxtools.rpm.core.utils.Utils;
  *
  */
 public class RpmPackageProposalsList {
-    private final Set<String> list = new HashSet<>();
+    private Set<String> list = new HashSet<>();
 
     public RpmPackageProposalsList() {
         setPackagesList();
@@ -41,27 +44,31 @@ public class RpmPackageProposalsList {
     private void setPackagesList() {
         String rpmpkgsFile = Activator.getDefault().getPreferenceStore()
                 .getString(PreferenceConstants.P_RPM_LIST_FILEPATH);
-        if (Utils.fileExist(rpmpkgsFile)) {
-            try {
-                Set<String> newList = RpmPackageBuildProposalsJob.getPackages();
-                list.clear();
-                list.addAll(newList);
-            } catch (IOException e) {
-                RpmPackageBuildProposalsJob.updateAsync();
-                SpecfileLog.logError(e);
-            } catch (InterruptedException e) {
-                // ignore
+        try {
+            if (Utils.fileExist(rpmpkgsFile)) {
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(new FileInputStream(rpmpkgsFile)))) {
+                    String line = reader.readLine();
+                    while (line != null) {
+                        list.add(line.trim());
+                        line = reader.readLine();
+                    }
+                }
+            } else {
+                RpmPackageBuildProposalsJob.update();
             }
-        } else {
-            RpmPackageBuildProposalsJob.updateAsync();
+        } catch (IOException e) {
+            RpmPackageBuildProposalsJob.update();
+            SpecfileLog.logError(e);
         }
     }
 
     public List<String[]> getProposals(String prefix) {
+        this.waitForUpdates();
         int rpmpkgsMaxProposals = Activator.getDefault().getPreferenceStore()
                 .getInt(PreferenceConstants.P_RPM_LIST_MAX_PROPOSALS);
         List<String[]> proposalsList = new ArrayList<>(list.size());
-        for (String listValue : list) {
+        for (String listValue:list){
             String item[] = new String[2];
             item[0] = listValue;
             String message = Messages.RpmPackageProposalsList_0
@@ -78,7 +85,7 @@ public class RpmPackageProposalsList {
          */
         if (proposalsList.size() < rpmpkgsMaxProposals) {
             List<String[]> proposalsListWithInfo = new ArrayList<>(proposalsList.size());
-            for (String[]  proposals : proposalsList) {
+            for (String[]  proposals: proposalsList){
                 proposals[1] = getRpmInfo(proposals[0]);
                 proposalsListWithInfo.add(proposals);
             }
@@ -89,12 +96,13 @@ public class RpmPackageProposalsList {
     }
 
     public String getValue(String key) {
-        for (String item : list) {
+        for (String item :list){
             if (item.equals(key.trim())) {
                 return getRpmInfo(item);
             }
         }
         return null;
+
     }
 
     public String getRpmInfo(String pkgName) {
@@ -172,6 +180,14 @@ public class RpmPackageProposalsList {
         }
         return formatedInfoString.toString();
 
+    }
+
+    /**
+     * If the rpm package proposals list is being updated
+     * block this thread
+     */
+    private void waitForUpdates() {
+        RpmPackageBuildProposalsJob.waitForUpdates();
     }
 
 }
