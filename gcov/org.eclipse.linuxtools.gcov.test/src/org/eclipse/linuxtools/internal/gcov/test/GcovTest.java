@@ -96,7 +96,6 @@ public abstract class GcovTest extends AbstractTest {
             project = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), getTestProjectName()).getProject();
             isCppProject = project.getNature(CCProjectNature.CC_NATURE_ID) != null;
 
-            System.err.println("Setting up " + getTestProjectName());
             gcovFiles = new TreeSet<>();
             for (IResource r : project.members()) {
                 if (r.getType() == IResource.FILE && r.exists()) {
@@ -104,10 +103,8 @@ public abstract class GcovTest extends AbstractTest {
                     if (fileName.endsWith(".gcda") || fileName.endsWith(".gcno")) {
                         gcovFiles.add(fileName);
                     }
-                    System.err.println(fileName);
                 }
             }
-            System.err.println("---");
         }
     }
 
