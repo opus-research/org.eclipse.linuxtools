@@ -239,7 +239,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
         NodeList sessionsNode = document.getElementsByTagName(MIStrings.SESSION);
         // There should be only one session
         if (sessionsNode.getLength() != 1) {
-            throw new ExecutionException(Messages.TraceControl_MiInvalidNumberOfElementError);
+            throw new ExecutionException(NLS.bind(Messages.TraceControl_MiInvalidNumberOfElementError, MIStrings.SESSION));
         }
 
         // Populate session information
@@ -449,8 +449,22 @@ public class LTTngControlServiceMI extends LTTngControlService {
         ICommandResult result = executeCommand(command.toString(), monitor, false);
         List<IBaseEventInfo> events = new ArrayList<>();
 
-        if (isError(result)) {
-            return events;
+        if (isError(result) && result.getErrorOutput() != null) {
+            // Ignore the following 2 cases:
+            // Spawning a session daemon
+            // Error: Unable to list kernel events
+            // or:
+            // Error: Unable to list kernel events
+            int index = 0;
+            while (index < result.getErrorOutput().length) {
+                String line = result.getErrorOutput()[index];
+                Matcher matcher = LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(line);
+                if (matcher.matches()) {
+                    return events;
+                }
+                index++;
+            }
+            throw new ExecutionException(Messages.TraceControl_CommandError + LTTngControlServiceConstants.COMMAND_LIST_KERNEL);
         }
 
         Document document = getDocumentFromStrings(result.getOutput());
@@ -469,8 +483,22 @@ public class LTTngControlServiceMI extends LTTngControlService {
         ICommandResult result = executeCommand(command.toString(), monitor, false);
         List<IUstProviderInfo> allProviders = new ArrayList<>();
 
-        if (isError(result)) {
-            return allProviders;
+        if (isError(result) && result.getErrorOutput() != null) {
+            // Ignore the following 2 cases:
+            // Spawning a session daemon
+            // Error: Unable to list UST events: Listing UST events failed
+            // or:
+            // Error: Unable to list UST events: Listing UST events failed
+            int index = 0;
+            while (index < result.getErrorOutput().length) {
+                String line = result.getErrorOutput()[index];
+                Matcher matcher = LTTngControlServiceConstants.LIST_UST_NO_UST_PROVIDER_PATTERN.matcher(line);
+                if (matcher.matches()) {
+                    return allProviders;
+                }
+                index++;
+            }
+            throw new ExecutionException(Messages.TraceControl_CommandError + LTTngControlServiceConstants.COMMAND_LIST_UST);
         }
 
         Document document = getDocumentFromStrings(result.getOutput());
@@ -647,20 +675,43 @@ public class LTTngControlServiceMI extends LTTngControlService {
     }
     @Override
     public void destroySession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        // TODO Auto-generated method stub
+        String newName = formatParameter(sessionName);
 
-    }
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_DESTROY_SESSION, newName);
 
-    @Override
-    public void startSession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        // TODO Auto-generated method stub
+        ICommandResult result = executeCommand(command.toString(), monitor, false);
+        String[] errorOutput = result.getErrorOutput();
 
-    }
+        if (isError(result) && (errorOutput != null)) {
+            int index = 0;
+            while (index < errorOutput.length) {
+                String line = errorOutput[index];
+                Matcher matcher = LTTngControlServiceConstants.SESSION_NOT_FOUND_ERROR_PATTERN.matcher(line);
+                if (matcher.matches()) {
+                    // Don't treat this as an error
+                    return;
+                }
+                index++;
+            }
+            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command.toString() + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
+        }
 
-    @Override
-    public void stopSession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        // TODO Auto-generated method stub
+        // Check for action effect
+        Document doc = getDocumentFromStrings(result.getOutput());
+        NodeList sessions = doc.getElementsByTagName(MIStrings.SESSION);
+        if (sessions.getLength() != 1) {
+            throw new ExecutionException(NLS.bind(Messages.TraceControl_MiInvalidNumberOfElementError, MIStrings.SESSION));
+        }
 
+        Node rawSessionName = getFirstOf(sessions.item(0).getChildNodes(), MIStrings.NAME);
+        if (rawSessionName == null) {
+            throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+        }
+
+        // Validity check
+        if (!rawSessionName.getTextContent().equals(sessionName)) {
+            throw new ExecutionException(NLS.bind(Messages.TraceControl_UnexpectedValueError, rawSessionName.getTextContent(), sessionName));
+        }
     }
 
     @Override
