@@ -17,7 +17,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.UUID;
@@ -34,6 +33,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.internal.ctf.core.SafeMappedByteBuffer;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.ArrayDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndex;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
@@ -314,7 +314,7 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
 
     @NonNull
     ByteBuffer getByteBufferAt(long position, long size) throws CTFReaderException, IOException {
-        MappedByteBuffer map = fFileChannel.map(MapMode.READ_ONLY, position, size);
+        ByteBuffer map = SafeMappedByteBuffer.map(fFileChannel, MapMode.READ_ONLY, position, size);
         if (map == null) {
             throw new CTFReaderException("Failed to allocate mapped byte buffer"); //$NON-NLS-1$
         }
