@@ -43,6 +43,9 @@ public class DevHelpPlugin extends AbstractUIPlugin implements IStartup {
 
     // The shared instance
     private static DevHelpPlugin plugin;
+    
+    // Startup job
+    private static Job k;
 
     /*
      * (non-Javadoc)
@@ -55,7 +58,7 @@ public class DevHelpPlugin extends AbstractUIPlugin implements IStartup {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        Job k = new DevhelpStartupJob(LibHoverMessages.getString(REGENERATE_MSG)) ;
+        k = new DevhelpStartupJob(LibHoverMessages.getString(REGENERATE_MSG)) ;
         k.schedule();
     }
 
@@ -68,6 +71,7 @@ public class DevHelpPlugin extends AbstractUIPlugin implements IStartup {
      */
     @Override
     public void stop(BundleContext context) throws Exception {
+    	k.cancel();
         plugin = null;
         super.stop(context);
     }
@@ -93,26 +97,43 @@ public class DevHelpPlugin extends AbstractUIPlugin implements IStartup {
      */
     private static class DevhelpStartupJob extends Job {
 
+    	private IProgressMonitor runMonitor;
+    	
         public DevhelpStartupJob(String name) {
             super(name);
         }
 
         @Override
+        protected void canceling() {
+        	if (runMonitor != null)
+        		runMonitor.setCanceled(true);
+        };
+        
+        @Override
         protected IStatus run(IProgressMonitor monitor) {
+        	runMonitor = monitor;
+        	if (monitor.isCanceled())
+        		return Status.CANCEL_STATUS;
             IPreferenceStore ps = DevHelpPlugin.getDefault()
                     .getPreferenceStore();
             ParseDevHelp.DevHelpParser p = new ParseDevHelp.DevHelpParser(
                     ps.getString(PreferenceConstants.DEVHELP_DIRECTORY));
             LibHoverInfo hover = p.parse(monitor);
+            if (monitor.isCanceled())
+            	return Status.CANCEL_STATUS;
             // Update the devhelp library info if it is on library list
             Collection<LibHoverLibrary> libs = LibHover.getLibraries();
             for (LibHoverLibrary l : libs) {
+            	if (monitor.isCanceled())
+            		return Status.CANCEL_STATUS;
                 if (l.getName().equals("devhelp")) { //$NON-NLS-1$
                     l.setHoverinfo(hover);
                     break;
                 }
             }
             try {
+            	if (monitor.isCanceled())
+            		return Status.CANCEL_STATUS;
                 // Now, output the LibHoverInfo for caching later
                 IPath location = LibhoverPlugin.getDefault()
                         .getStateLocation().append("C"); //$NON-NLS-1$
@@ -125,6 +146,9 @@ public class DevHelpPlugin extends AbstractUIPlugin implements IStartup {
                     out.writeObject(hover);
                 }
                 monitor.done();
+            } catch (NullPointerException e) {
+            	monitor.done();
+            	return Status.CANCEL_STATUS;
             } catch (IOException e) {
                 monitor.done();
                 return new Status(IStatus.ERROR, DevHelpPlugin.PLUGIN_ID,
