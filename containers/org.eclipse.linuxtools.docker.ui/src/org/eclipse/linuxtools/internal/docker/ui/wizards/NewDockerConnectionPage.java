@@ -28,7 +28,6 @@ import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.EnumDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
-import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -42,6 +41,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
+import com.spotify.docker.client.DockerCertificateException;
 
 /**
  * @author xcoulon
@@ -69,8 +70,8 @@ public class NewDockerConnectionPage extends WizardPage {
 	private Text tcpCertPathText;
 
 	public NewDockerConnectionPage() {
-		super("NewDockerConnectionPage", "Connect to a Docker daemon",
-				SWTImagesFactory.DESC_BANNER_REPOSITORY);
+		super("NewDockerConnectionPage", "Connect to a Docker daemon", Activator
+				.getImageDescriptor("icons/banner-repository.gif"));
 		setMessage("Select the binding mode to connect to the Docker daemon");
 	}
 
@@ -111,6 +112,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(connectionNameLabel);
 		connectionNameText = new Text(container, SWT.BORDER);
 		connectionNameText.setToolTipText("Name of the connection");
+		//connectionNameText.setText(this.connectionName);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).span(2, 1)
 				.applyTo(connectionNameText);
 
