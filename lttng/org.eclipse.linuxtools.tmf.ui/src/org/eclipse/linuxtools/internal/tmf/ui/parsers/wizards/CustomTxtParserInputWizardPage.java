@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.internal.tmf.ui.parsers.wizards;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,10 @@ import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -38,6 +43,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
@@ -47,10 +53,15 @@ import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition.I
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition.InputLine;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.TitleEvent;
+import org.eclipse.swt.browser.TitleListener;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -60,6 +71,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -71,16 +84,19 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.osgi.framework.Bundle;
 
 /**
  * Input wizard page for custom text parsers.
  *
  * @author Patrick Tasse
  */
-public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWizardPage {
+public class CustomTxtParserInputWizardPage extends WizardPage {
 
     private static final String DEFAULT_REGEX = "\\s*(.*\\S)"; //$NON-NLS-1$
     private static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"; //$NON-NLS-1$
+    private static final String TIMESTAMP_FORMAT_BUNDLE = "org.eclipse.linuxtools.lttng.help"; //$NON-NLS-1$
+    private static final String TIMESTAMP_FORMAT_PATH = "reference/api/org/eclipse/linuxtools/tmf/core/timestamp/TmfTimestampFormat.html"; //$NON-NLS-1$
     private static final String PATTERN_URL = "http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum"; //$NON-NLS-1$
     private static final Image LINE_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/line_icon.gif"); //$NON-NLS-1$
     private static final Image ADD_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/add_button.gif"); //$NON-NLS-1$
@@ -106,6 +122,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
     private String editDefinitionName;
     private String defaultDescription;
     private Line selectedLine;
+    private Composite container;
     private Text logtypeText;
     private Text timestampOutputFormatText;
     private Text timestampPreviewText;
@@ -114,6 +131,8 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
     private Composite lineContainer;
     private StyledText inputText;
     private Font fixedFont;
+    private UpdateListener updateListener;
+    private Browser helpBrowser;
 
     // variables used recursively through line traversal
     private String timeStampFormat;
@@ -146,7 +165,21 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
     }
 
     @Override
-    public void createControl(Composite headerComposite, UpdateListener updateListener) {
+    public void createControl(Composite parent) {
+        container = new Composite(parent, SWT.NULL);
+        container.setLayout(new GridLayout());
+
+        updateListener = new UpdateListener();
+
+        Composite headerComposite = new Composite(container, SWT.FILL);
+        GridLayout headerLayout = new GridLayout(5, false);
+        headerLayout.marginHeight = 0;
+        headerLayout.marginWidth = 0;
+        headerComposite.setLayout(headerLayout);
+        headerComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        Label logtypeLabel = new Label(headerComposite, SWT.NULL);
+        logtypeLabel.setText(Messages.CustomTxtParserInputWizardPage_logType);
 
         logtypeText = new Text(headerComposite, SWT.BORDER | SWT.SINGLE);
         logtypeText.setLayoutData(new GridData(120, SWT.DEFAULT));
@@ -161,7 +194,19 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
         Button timeStampFormatHelpButton = new Button(headerComposite, SWT.PUSH);
         timeStampFormatHelpButton.setImage(HELP_IMAGE);
         timeStampFormatHelpButton.setToolTipText(Messages.CustomTxtParserInputWizardPage_timestampFormatHelp);
-        timeStampFormatHelpButton.addSelectionListener(getTimestampHelpListener());
+        timeStampFormatHelpButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Bundle plugin = Platform.getBundle(TIMESTAMP_FORMAT_BUNDLE);
+                IPath path = new Path(TIMESTAMP_FORMAT_PATH);
+                URL fileURL = FileLocator.find(plugin, path, null);
+                try {
+                    URL pageURL = FileLocator.toFileURL(fileURL);
+                    openHelpShell(pageURL.toString());
+                } catch (IOException e1) {
+                }
+            }
+        });
 
         Label timestampPreviewLabel = new Label(headerComposite, SWT.NULL);
         timestampPreviewLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
@@ -171,7 +216,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
         timestampPreviewText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
         timestampPreviewText.setText(Messages.CustomTxtParserInputWizardPage_noMatchingTimestamp);
 
-        Composite buttonBar = new Composite(getCompositeContainer(), SWT.NONE);
+        Composite buttonBar = new Composite(container, SWT.NONE);
         GridLayout buttonBarLayout = new GridLayout(5, false);
         buttonBarLayout.marginHeight = 0;
         buttonBarLayout.marginWidth = 0;
@@ -295,7 +340,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
             }
         });
 
-        SashForm vSash = new SashForm(getCompositeContainer(), SWT.VERTICAL);
+        SashForm vSash = new SashForm(container, SWT.VERTICAL);
         vSash.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         vSash.setBackground(vSash.getDisplay().getSystemColor(SWT.COLOR_GRAY));
 
@@ -397,6 +442,10 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
 
         vSash.setWeights(new int[] { hSash.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, sashBottom.computeSize(SWT.DEFAULT, SWT.DEFAULT).y });
 
+        setControl(container);
+
+        validate();
+        updatePreviews();
     }
 
     private static class InputLineTreeNodeContentProvider implements ITreeContentProvider {
@@ -465,7 +514,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
                 selectedLine = new Line(lineContainer, getName(inputLine), inputLine);
                 lineContainer.layout();
                 lineScrolledComposite.setMinSize(lineContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).x, lineContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).y - 1);
-                getCompositeContainer().layout();
+                container.layout();
                 validate();
                 updatePreviews();
             }
@@ -549,7 +598,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
         selectedLine = null;
         lineContainer.layout();
         lineScrolledComposite.setMinSize(lineContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).x, lineContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT).y - 1);
-        getCompositeContainer().layout();
+        container.layout();
     }
 
     private String getSelectionText() {
@@ -583,8 +632,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
         return ""; //$NON-NLS-1$
     }
 
-    @Override
-    protected void updatePreviews() {
+    private void updatePreviews() {
         updatePreviews(false);
     }
 
@@ -866,6 +914,31 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
         }
     }
 
+    private void openHelpShell(String url) {
+        if (helpBrowser != null && !helpBrowser.isDisposed()) {
+            helpBrowser.getShell().setActive();
+            if (!helpBrowser.getUrl().equals(url)) {
+                helpBrowser.setUrl(url);
+            }
+            return;
+        }
+        final Shell helpShell = new Shell(getShell(), SWT.SHELL_TRIM);
+        helpShell.setLayout(new FillLayout());
+        helpBrowser = new Browser(helpShell, SWT.NONE);
+        helpBrowser.addTitleListener(new TitleListener() {
+            @Override
+            public void changed(TitleEvent event) {
+                helpShell.setText(event.title);
+            }
+        });
+        Rectangle r = container.getBounds();
+        Point p = container.toDisplay(r.x, r.y);
+        Rectangle trim = helpShell.computeTrim(p.x + (r.width - 750) / 2, p.y + (r.height - 400) / 2, 750, 400);
+        helpShell.setBounds(trim);
+        helpShell.open();
+        helpBrowser.setUrl(url);
+    }
+
     private void openLegend() {
         final String cg = Messages.CustomTxtParserInputWizardPage_capturedGroup;
         final String ucg = Messages.CustomTxtParserInputWizardPage_unidentifiedCaptureGroup;
@@ -903,6 +976,28 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
         legendShell.setText(Messages.CustomTxtParserInputWizardPage_previewLegend);
         legendShell.pack();
         legendShell.open();
+    }
+
+    private class UpdateListener implements ModifyListener, SelectionListener {
+
+        @Override
+        public void modifyText(ModifyEvent e) {
+            validate();
+            updatePreviews();
+        }
+
+        @Override
+        public void widgetDefaultSelected(SelectionEvent e) {
+            validate();
+            updatePreviews();
+        }
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            validate();
+            updatePreviews();
+        }
+
     }
 
     private class Line {
@@ -952,7 +1047,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
             gd.widthHint = 0;
             regexText.setLayoutData(gd);
             regexText.setText(inputLine.getRegex());
-            regexText.addModifyListener(getUpdateListener());
+            regexText.addModifyListener(updateListener);
 
             Button regexHelpButton = new Button(regexContainer, SWT.PUSH);
             regexHelpButton.setImage(HELP_IMAGE);
@@ -1086,8 +1181,8 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
                 }
             };
 
-            cardinalityMinText.addModifyListener(getUpdateListener());
-            cardinalityMaxText.addModifyListener(getUpdateListener());
+            cardinalityMinText.addModifyListener(updateListener);
+            cardinalityMaxText.addModifyListener(updateListener);
             cardinalityMinText.addVerifyListener(digitsListener);
             cardinalityMaxText.addVerifyListener(digitsListener);
 
@@ -1100,7 +1195,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
                         inputGroup.tagLabel.setText(Messages.CustomTxtParserInputWizardPage_format);
                         inputGroup.tagLabel.setVisible(true);
                         inputGroup.tagText.setVisible(true);
-                        inputGroup.tagText.addModifyListener(getUpdateListener());
+                        inputGroup.tagText.addModifyListener(updateListener);
                     } else if (inputData.name.equals(CustomTraceDefinition.TAG_MESSAGE)) {
                         inputGroup.tagCombo.select(1);
                     } else {
@@ -1109,7 +1204,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
                         inputGroup.tagLabel.setText(Messages.CustomTxtParserInputWizardPage_name);
                         inputGroup.tagLabel.setVisible(true);
                         inputGroup.tagText.setVisible(true);
-                        inputGroup.tagText.addModifyListener(getUpdateListener());
+                        inputGroup.tagText.addModifyListener(updateListener);
                     }
                     inputGroup.actionCombo.select(inputData.action);
                     inputs.add(inputGroup);
@@ -1286,13 +1381,13 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    tagText.removeModifyListener(getUpdateListener());
+                    tagText.removeModifyListener(updateListener);
                     switch (tagCombo.getSelectionIndex()) {
                     case 0: // Time Stamp
                         tagLabel.setText(Messages.CustomTxtParserInputWizardPage_format);
                         tagLabel.setVisible(true);
                         tagText.setVisible(true);
-                        tagText.addModifyListener(getUpdateListener());
+                        tagText.addModifyListener(updateListener);
                         break;
                     case 1: // Message
                         tagLabel.setVisible(false);
@@ -1302,7 +1397,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
                         tagLabel.setText(Messages.CustomTxtParserInputWizardPage_name);
                         tagLabel.setVisible(true);
                         tagText.setVisible(true);
-                        tagText.addModifyListener(getUpdateListener());
+                        tagText.addModifyListener(updateListener);
                         break;
                     case 3: // Continue
                         tagLabel.setVisible(false);
@@ -1330,7 +1425,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
             actionCombo = new Combo(tagComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
             actionCombo.setItems(new String[] { Messages.CustomTxtParserInputWizardPage_set, Messages.CustomTxtParserInputWizardPage_append, Messages.CustomTxtParserInputWizardPage_appendWith });
             actionCombo.select(0);
-            actionCombo.addSelectionListener(getUpdateListener());
+            actionCombo.addSelectionListener(updateListener);
 
             previewLabel = new Label(parent, SWT.NULL);
             previewLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
@@ -1358,8 +1453,7 @@ public class CustomTxtParserInputWizardPage extends AbstractCustomParserInputWiz
         }
     }
 
-    @Override
-    protected void validate() {
+    private void validate() {
 
         definition.definitionName = logtypeText.getText().trim();
         definition.timeStampOutputFormat = timestampOutputFormatText.getText().trim();
