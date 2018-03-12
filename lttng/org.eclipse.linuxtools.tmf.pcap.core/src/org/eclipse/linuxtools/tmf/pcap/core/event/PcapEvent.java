@@ -47,6 +47,7 @@ public class PcapEvent extends TmfEvent {
     public static final String EVENT_FIELD_PACKET_PROTOCOL = ":protocol:"; //$NON-NLS-1$
 
     private static final List<TmfProtocol> EMPTY_LIST = new ArrayList<>();
+    private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
     private final Packet fPacket;
     private @Nullable List<TmfProtocol> fList;
@@ -184,7 +185,8 @@ public class PcapEvent extends TmfEvent {
 
         if (packet == null) {
             @SuppressWarnings("null")
-            @NonNull List<TmfProtocol> emptyList = ImmutableList.copyOf(EMPTY_LIST);
+            @NonNull
+            List<TmfProtocol> emptyList = ImmutableList.copyOf(EMPTY_LIST);
             fList = emptyList;
             return fList;
         }
@@ -198,7 +200,8 @@ public class PcapEvent extends TmfEvent {
         }
 
         @SuppressWarnings("null")
-        @NonNull ImmutableList<TmfProtocol> immutableList = ImmutableList.copyOf(list);
+        @NonNull
+        ImmutableList<TmfProtocol> immutableList = ImmutableList.copyOf(list);
         fList = immutableList;
         return immutableList;
     }
@@ -212,5 +215,26 @@ public class PcapEvent extends TmfEvent {
      */
     Packet getPacket() {
         return fPacket;
+    }
+
+    @Override
+    public String toString() {
+        return fPacket.getGlobalSummaryString();
+    }
+
+    /**
+     * Return the signification of the PcapEvent at a specific protocol level.
+     *
+     * @param protocol
+     *            The specified protocol.
+     * @return The signification as a String.
+     */
+    public String toString(TmfProtocol protocol) {
+        Protocol p = ProtocolConversion.unwrap(protocol);
+        Packet packet = fPacket.getPacket(p);
+        if (packet == null) {
+            return EMPTY_STRING;
+        }
+        return packet.getLocalSummaryString();
     }
 }
