@@ -38,8 +38,9 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 	}
 
 	@Override
-	public synchronized void listChanged(IDockerConnection connection,
-			List<IDockerContainer> dclist) {
+	public synchronized void containersChanged(
+			final IDockerConnection connection,
+			final List<IDockerContainer> dclist) {
 
 		ContainerRefreshThread rt = refreshThreadMap.get(connection);
 		if (rt == null) {

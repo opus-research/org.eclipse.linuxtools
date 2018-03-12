@@ -672,7 +672,8 @@ public class DockerConnection implements IDockerConnection {
 		if (containerListeners != null) {
 			Object[] listeners = containerListeners.getListeners();
 			for (int i = 0; i < listeners.length; ++i) {
-				((IDockerContainerListener) listeners[i]).listChanged(this,
+				((IDockerContainerListener) listeners[i])
+						.containersChanged(this,
 						list);
 			}
 		}
@@ -918,7 +919,7 @@ public class DockerConnection implements IDockerConnection {
 		if (imageListeners != null) {
 			Object[] listeners = imageListeners.getListeners();
 			for (int i = 0; i < listeners.length; ++i) {
-				((IDockerImageListener) listeners[i]).listChanged(this, list);
+				((IDockerImageListener) listeners[i]).imagesChanged(this, list);
 			}
 		}
 	}
