@@ -90,7 +90,7 @@ public class LTTngControlServiceFactory {
 
         // Logging
         if (ControlPreferences.getInstance().isLoggingEnabled()) {
-            ControlCommandLogger.log(LTTngControlService.toCommandSring(commandMi));
+            ControlCommandLogger.log(LTTngControlService.toCommandString(commandMi));
         }
 
         ICommandResult result = null;
@@ -113,7 +113,7 @@ public class LTTngControlServiceFactory {
 
             // Logging
             if (ControlPreferences.getInstance().isLoggingEnabled()) {
-                ControlCommandLogger.log(LTTngControlService.toCommandSring(command));
+                ControlCommandLogger.log(LTTngControlService.toCommandString(command));
             }
 
             try {

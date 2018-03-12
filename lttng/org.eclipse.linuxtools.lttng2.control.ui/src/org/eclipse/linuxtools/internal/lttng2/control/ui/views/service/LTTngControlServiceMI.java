@@ -509,7 +509,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             if (ignoredPattern(result.getErrorOutput(), LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN)) {
                 return events;
             }
-            throw new ExecutionException(Messages.TraceControl_CommandError + toCommandSring(command));
+            throw new ExecutionException(Messages.TraceControl_CommandError + toCommandString(command));
         }
 
         Document document = getDocumentFromStrings(result.getOutput());
@@ -537,7 +537,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             if (ignoredPattern(result.getErrorOutput(), LTTngControlServiceConstants.LIST_UST_NO_UST_PROVIDER_PATTERN)) {
                 return allProviders;
             }
-            throw new ExecutionException(Messages.TraceControl_CommandError + toCommandSring(command));
+            throw new ExecutionException(Messages.TraceControl_CommandError + toCommandString(command));
         }
 
         Document document = getDocumentFromStrings(result.getOutput());
@@ -693,7 +693,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 return;
 
             }
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + toCommandSring(command) + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
+            throw new ExecutionException(Messages.TraceControl_CommandError + " " + toCommandString(command) + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         // Check for action effect
