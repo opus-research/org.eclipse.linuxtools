@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.docker.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
@@ -22,7 +21,7 @@ import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
 
-public class DockerContainer implements IDockerContainer, IAdaptable {
+public class DockerContainer implements IDockerContainer {
 
 	private IDockerConnection parent;
 	private String id;
@@ -212,14 +211,6 @@ public class DockerContainer implements IDockerContainer, IAdaptable {
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
-		if (adapter.equals(IDockerConnection.class))
-			return (T) this.parent;
-		return null;
 	}
 	
 	
