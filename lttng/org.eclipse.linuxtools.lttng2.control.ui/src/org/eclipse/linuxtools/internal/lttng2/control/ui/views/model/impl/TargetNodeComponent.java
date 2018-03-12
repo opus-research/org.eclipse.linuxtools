@@ -211,7 +211,7 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     public String getNodeVersion() {
         // Control service is null during connection to node
         if (getControlService() != null) {
-            return getControlService().getVersionString();
+            return getControlService().getVersion();
         }
         return ""; //$NON-NLS-1$
     }
