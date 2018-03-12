@@ -56,8 +56,8 @@ public class TmfRequestExecutor implements Executor {
     private final String fExecutorName;
 
     // The request queues
-    private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<>(5);
-    private final Queue<TmfEventThread> fBackgroundTasks = new ArrayBlockingQueue<>(5);
+    private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<>(100);
+    private final Queue<TmfEventThread> fBackgroundTasks = new ArrayBlockingQueue<>(100);
 
     // The tasks
     private TmfEventThread fActiveTask;
@@ -89,14 +89,14 @@ public class TmfRequestExecutor implements Executor {
     /**
      * @return the shutdown state (i.e. if it is accepting new requests)
      */
-    public boolean isShutdown() {
+    public synchronized boolean isShutdown() {
         return fExecutor.isShutdown();
     }
 
     /**
      * @return the termination state
      */
-    public boolean isTerminated() {
+    public synchronized boolean isTerminated() {
         return fExecutor.isTerminated();
     }
 
@@ -143,13 +143,9 @@ public class TmfRequestExecutor implements Executor {
         ExecutionType priority = thread.getExecType();
 
         if (priority == ExecutionType.FOREGROUND) {
-            if (!fForegroundTasks.offer(wrapper)) {
-                wrapper.cancel();
-            }
+            fForegroundTasks.add(wrapper);
         } else {
-            if (!fBackgroundTasks.offer(wrapper)) {
-                wrapper.cancel();
-            }
+            fBackgroundTasks.add(wrapper);
         }
     }
 
@@ -181,10 +177,7 @@ public class TmfRequestExecutor implements Executor {
                 } else {
                     if (hasTasks()) {
                         fActiveTask.getThread().suspend();
-                        if (!fForegroundTasks.offer(fActiveTask)) {
-                            fActiveTask.cancel();
-                            fActiveTask = null;
-                        }
+                        fForegroundTasks.add(fActiveTask);
                         schedule();
                     }
                 }
@@ -196,10 +189,7 @@ public class TmfRequestExecutor implements Executor {
                 } else {
                     if (hasTasks()) {
                         fActiveTask.getThread().suspend();
-                        if (!fBackgroundTasks.offer(fActiveTask)) {
-                            fActiveTask.cancel();
-                            fActiveTask = null;
-                        }
+                        fBackgroundTasks.add(fActiveTask);
                         schedule();
                     }
                 }
