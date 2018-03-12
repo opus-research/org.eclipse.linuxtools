@@ -369,7 +369,8 @@ public class DockerContainersView extends ViewPart implements
 	}
 	
 	@Override
-	public void listChanged(final IDockerConnection connection, final List<IDockerContainer> containers) {
+	public void listChanged(final IDockerConnection connection,
+			final List<IDockerContainer> containers) {
 		if (connection.getName().equals(connection.getName())) {
 			Display.getDefault().asyncExec(new Runnable() {
 				@Override
@@ -400,7 +401,7 @@ public class DockerContainersView extends ViewPart implements
 		this.connection = conn;
 		if (conn != null) {
 			viewer.setInput(conn);
-			form.setText(conn.getName());
+			refreshViewTitle();
 		} else {
 			viewer.setInput(new IDockerContainer[0]);
 			form.setText(DVMessages.getString(DaemonMissing));

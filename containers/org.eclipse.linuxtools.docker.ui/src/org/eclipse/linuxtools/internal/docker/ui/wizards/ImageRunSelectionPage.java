@@ -57,8 +57,8 @@ import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
-import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
 import org.eclipse.linuxtools.docker.ui.Activator;
+import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.utils.IRunnableWithResult;
@@ -690,20 +690,14 @@ public class ImageRunSelectionPage extends WizardPage {
 			public void widgetSelected(SelectionEvent e) {
 				final ImageSearch imageSearchWizard = new ImageSearch(
 						ImageRunSelectionPage.this.model
-								.getSelectedConnection());
+								.getSelectedConnection(),
+						ImageRunSelectionPage.this.model
+								.getSelectedImageName());
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {
-					final IDockerImageSearchResult selectedSearchImage = imageSearchWizard
-							.getSelectedImage();
-					if (selectedSearchImage.getName().contains(":")) {
-						model.setSelectedImageName(
-								selectedSearchImage.getName());
-					} else {
-						// assume tag is 'latest'
-						model.setSelectedImageName(
-								selectedSearchImage.getName() + ":latest"); //$NON-NLS-1$
-					}
+					model.setSelectedImageName(
+							imageSearchWizard.getSelectedImage());
 				}
 			}
 		};
