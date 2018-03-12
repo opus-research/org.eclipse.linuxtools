@@ -670,7 +670,7 @@ public class TimeGraphCombo extends Composite {
             if (fFilterDialog.getResult() != null) {
                 fInhibitTreeSelection = true;
                 if (fFilterDialog.getResult().length != allElements.size()) {
-                    ArrayList<Object> filteredElements = new ArrayList<Object>(allElements);
+                    ArrayList<Object> filteredElements = new ArrayList<>(allElements);
                     filteredElements.removeAll(Arrays.asList(fFilterDialog.getResult()));
                     fFilter.setFiltered(filteredElements);
                 } else {

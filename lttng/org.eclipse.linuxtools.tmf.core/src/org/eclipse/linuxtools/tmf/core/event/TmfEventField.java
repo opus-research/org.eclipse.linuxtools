@@ -74,8 +74,10 @@ public class TmfEventField implements ITmfEventField {
             /* Java 8 streams will make this even more simple! */
             ImmutableMap.Builder<String, ITmfEventField> mapBuilder = new ImmutableMap.Builder<>();
             for (ITmfEventField field : fields) {
-                final String curName = field.getName();
-                mapBuilder.put(curName, field);
+                if (field != null) {
+                    final String curName = field.getName();
+                    mapBuilder.put(curName, field);
+                }
             }
             fFields = mapBuilder.build();
         }
