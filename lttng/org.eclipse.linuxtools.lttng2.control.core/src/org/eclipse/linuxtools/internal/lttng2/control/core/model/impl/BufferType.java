@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -61,11 +61,9 @@ public enum BufferType {
 
     /**
      * Private constructor
-     *
-     * @param name
-     *            the name of state
+     * @param name the name of state
      */
-    private BufferType(String name, String miName) {
+    private BufferType(String name, String miName ) {
         fInName = name;
         fInMiName = miName;
     }
@@ -86,31 +84,28 @@ public enum BufferType {
     }
 
     /**
-     * @return machine interface buffer name
+     * @return mi buffer name
      */
     public String getInMiName() {
         return fInMiName;
     }
 
-    // /
-    // ------------------------------------------------------------------------
+    /// ------------------------------------------------------------------------
     // Utility function
     // -------------------------------------------------------------------------
     /**
-     * @param name
-     *            the string representation of the type
+     * @param miName the string representation of the type
      * @return enum BufferType of the corresponding type
      */
-    public static BufferType valueOfString(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException();
+    public static BufferType valueOfMi(String miName){
+        if (miName == null) {
+            throw new NullPointerException();
         }
         for (BufferType bufferType : BufferType.values()) {
-            boolean isEqual = bufferType.getInName().equalsIgnoreCase(name) || bufferType.getInMiName().equalsIgnoreCase(name);
-            if (isEqual) {
+            if (bufferType.getInMiName().equalsIgnoreCase(miName)) {
                 return bufferType;
             }
         }
-        return BUFFER_TYPE_UNKNOWN;
+        throw new IllegalArgumentException();
     }
 }

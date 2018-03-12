@@ -12,8 +12,11 @@
 
 package org.eclipse.linuxtools.internal.lttng2.control.core.model;
 
+
 /**
+ * <p>
  * Trace domain type enumeration.
+ * </p>
  *
  * @author Jonathan Rajotte
  */
@@ -23,9 +26,7 @@ public enum TraceDomainType {
     /** Domain type : kernel */
     KERNEL("kernel"), //$NON-NLS-1$
     /** Domain type : jul */
-    JUL("jul"), //$NON-NLS-1$
-    /** Unknown domain type */
-    UNKNOWN("Unknown domain type"); //$NON-NLS-1$
+    JUL("jul"); //$NON-NLS-1$
 
     private final String fInName;
 
@@ -44,21 +45,18 @@ public enum TraceDomainType {
 
     /**
      * Return the corresponding {@link TraceDomainType} of string miName
-     *
-     * @param miName
-     *            name of the Trace domain type to look for
+     * @param miName name of the Trace domain type to look for
      * @return the corresponding {@link TraceDomainType}
      */
-    public static TraceDomainType valueOfString(String miName) {
-        if (miName == null) {
-            throw new IllegalArgumentException();
+    public static TraceDomainType valueOfString(String miName){
+        if ( miName == null) {
+            throw new NullPointerException();
         }
         for (TraceDomainType tdType : TraceDomainType.values()) {
             if (tdType.getInName().equalsIgnoreCase(miName)) {
                 return tdType;
             }
         }
-        // Unknown domain
-        return UNKNOWN;
+        throw new IllegalArgumentException();
     }
 }
