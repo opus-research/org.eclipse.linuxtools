@@ -489,8 +489,9 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		}
 		int index = 0;
 		for (int i = 0; i < connections.length; ++i) {
-			if (connections[i].getUri().equals(currUri))
+			if (currUri.equals(connections[i].getUri())) {
 				index = i;
+			}
 		}
 		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
 			index = currIndex; // no change in connection displayed
