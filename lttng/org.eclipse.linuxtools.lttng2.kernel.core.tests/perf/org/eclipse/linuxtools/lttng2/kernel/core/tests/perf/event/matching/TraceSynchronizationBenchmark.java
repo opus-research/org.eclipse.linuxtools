@@ -15,7 +15,7 @@ package org.eclipse.linuxtools.lttng2.kernel.core.tests.perf.event.matching;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import org.eclipse.linuxtools.lttng2.kernel.core.event.matching.TcpEventMatching;
 import org.eclipse.linuxtools.lttng2.kernel.core.event.matching.TcpLttngEventMatching;
@@ -23,6 +23,8 @@ import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventMatching;
 import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithm;
 import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationManager;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.ctf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.test.performance.Dimension;
@@ -42,6 +44,7 @@ public class TraceSynchronizationBenchmark {
     private static final String TIME = " (time)";
     private static final String MEMORY = " (memory usage)";
     private static final String TEST_SUMMARY = "Trace synchronization";
+    private static final int BLOCK_SIZE = 1000;
 
     /**
      * Initialize some data
@@ -62,7 +65,8 @@ public class TraceSynchronizationBenchmark {
         try (CtfTmfTrace trace1 = CtfTmfTestTrace.SYNC_SRC.getTrace();
                 CtfTmfTrace trace2 = CtfTmfTestTrace.SYNC_DEST.getTrace();) {
             ITmfTrace[] traces = { trace1, trace2 };
-            runCpuTest(traces, "Match TCP events", 40);
+            TmfExperiment experiment = new TmfExperiment(CtfTmfEvent.class, "Test experiment", traces, BLOCK_SIZE);
+            runCpuTest(experiment, "Match TCP events", 40);
         }
     }
 
@@ -78,19 +82,20 @@ public class TraceSynchronizationBenchmark {
                 CtfTmfTrace trace2 = CtfTmfTestTrace.DJANGO_DB.getTrace();
                 CtfTmfTrace trace3 = CtfTmfTestTrace.DJANGO_HTTPD.getTrace();) {
             ITmfTrace[] traces = { trace1, trace2, trace3 };
-            runCpuTest(traces, "Django traces", 10);
-            runMemoryTest(traces, "Django traces", 10);
+            TmfExperiment experiment = new TmfExperiment(CtfTmfEvent.class, "Test experiment", traces, BLOCK_SIZE);
+            runCpuTest(experiment, "Django traces", 10);
+            runMemoryTest(experiment, "Django traces", 10);
         }
     }
 
-    private static void runCpuTest(ITmfTrace[] testTraces, String testName, int loop_count) {
+    private static void runCpuTest(TmfExperiment experiment, String testName, int loop_count) {
         Performance perf = Performance.getDefault();
         PerformanceMeter pm = perf.createPerformanceMeter(TEST_ID + testName + TIME);
         perf.tagAsSummary(pm, TEST_SUMMARY + ':' + testName + TIME, Dimension.CPU_TIME);
 
         for (int i = 0; i < loop_count; i++) {
             pm.start();
-            SynchronizationManager.synchronizeTraces(null, Arrays.asList(testTraces), true);
+            SynchronizationManager.synchronizeTraces(null, Collections.singleton(experiment), true);
             pm.stop();
         }
         pm.commit();
@@ -98,7 +103,7 @@ public class TraceSynchronizationBenchmark {
     }
 
     /* Benchmark memory used by the algorithm */
-    private static void runMemoryTest(ITmfTrace[] testTraces, String testName, int loop_count) {
+    private static void runMemoryTest(TmfExperiment experiment, String testName, int loop_count) {
         Performance perf = Performance.getDefault();
         PerformanceMeter pm = perf.createPerformanceMeter(TEST_ID + testName + MEMORY);
         perf.tagAsSummary(pm, TEST_SUMMARY + ':' + testName + MEMORY, Dimension.USED_JAVA_HEAP);
@@ -107,7 +112,7 @@ public class TraceSynchronizationBenchmark {
 
             System.gc();
             pm.start();
-            SynchronizationAlgorithm algo = SynchronizationManager.synchronizeTraces(null, Arrays.asList(testTraces), true);
+            SynchronizationAlgorithm algo = SynchronizationManager.synchronizeTraces(null, Collections.singleton(experiment), true);
             assertNotNull(algo);
 
             System.gc();
