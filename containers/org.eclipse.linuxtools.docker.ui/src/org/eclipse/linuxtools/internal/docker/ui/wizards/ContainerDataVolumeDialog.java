@@ -396,11 +396,10 @@ public class ContainerDataVolumeDialog extends Dialog {
 			final Label errorMessageIcon, final Label errorMessageLabel) {
 
 		return event -> {
-			// skip if dialog has been closed
-			if (Display.getCurrent() == null || getShell().isDisposed()) {
+			final IStatus status = validateInput();
+			if (Display.getCurrent() == null) {
 				return;
 			}
-			final IStatus status = validateInput();
 			Display.getCurrent().syncExec(() -> {
 				if (status.isOK()) {
 					errorMessageIcon.setVisible(false);
