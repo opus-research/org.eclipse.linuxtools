@@ -30,7 +30,6 @@ import org.junit.runners.Suite;
     EnumDeclarationTest.class,
     EnumDefinitionTest.class,
     EventDeclarationTest.class,
-    EventHeaderDeclarationTest.class,
     FloatDeclarationTest.class,
     FloatDefinitionTest.class,
     IntegerDeclarationTest.class,
