@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -174,8 +174,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	private List<IDockerImage> images;
 	private boolean imagesLoaded = false;
 
-	ListenerList containerListeners;
-	ListenerList imageListeners;
+	ListenerList<IDockerContainerListener> containerListeners;
+	ListenerList<IDockerImageListener> imageListeners;
 
 	/**
 	 * Constructor for a unix socket based connection
@@ -336,14 +336,15 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void addContainerListener(IDockerContainerListener listener) {
 		if (containerListeners == null)
-			containerListeners = new ListenerList(ListenerList.IDENTITY);
+			containerListeners = new ListenerList<>(ListenerList.IDENTITY);
 		containerListeners.add(listener);
 	}
 
 	@Override
 	public void removeContainerListener(IDockerContainerListener listener) {
-		if (containerListeners != null)
+		if (containerListeners != null) {
 			containerListeners.remove(listener);
+		}
 	}
 
 	/**
@@ -371,11 +372,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	// accordingly.
 	public void notifyContainerListeners(List<IDockerContainer> list) {
 		if (containerListeners != null) {
-			Object[] listeners = containerListeners.getListeners();
-			for (int i = 0; i < listeners.length; ++i) {
-				((IDockerContainerListener) listeners[i])
-						.listChanged(this,
-						list);
+			for (IDockerContainerListener listener : containerListeners) {
+				listener.listChanged(this, list);
 			}
 		}
 	}
@@ -385,6 +383,9 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	 */
 	// TODO: include in IDockerConnection API
 	public List<IDockerContainerListener> getContainerListeners() {
+		if (this.containerListeners == null) {
+			return Collections.emptyList();
+		}
 		final IDockerContainerListener[] result = new IDockerContainerListener[this.containerListeners
 				.size()];
 		final Object[] listeners = containerListeners.getListeners();
@@ -676,21 +677,21 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void addImageListener(IDockerImageListener listener) {
 		if (imageListeners == null)
-			imageListeners = new ListenerList(ListenerList.IDENTITY);
+			imageListeners = new ListenerList<>(ListenerList.IDENTITY);
 		imageListeners.add(listener);
 	}
 
 	@Override
 	public void removeImageListener(IDockerImageListener listener) {
-		if (imageListeners != null)
+		if (imageListeners != null) {
 			imageListeners.remove(listener);
+		}
 	}
 
 	public void notifyImageListeners(List<IDockerImage> list) {
 		if (imageListeners != null) {
-			Object[] listeners = imageListeners.getListeners();
-			for (int i = 0; i < listeners.length; ++i) {
-				((IDockerImageListener) listeners[i]).listChanged(this, list);
+			for (IDockerImageListener listener : imageListeners) {
+				listener.listChanged(this, list);
 			}
 		}
 	}
@@ -700,6 +701,9 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	 */
 	// TODO: include in IDockerConnection API
 	public List<IDockerImageListener> getImageListeners() {
+		if (this.imageListeners == null) {
+			return Collections.emptyList();
+		}
 		final IDockerImageListener[] result = new IDockerImageListener[this.imageListeners
 				.size()];
 		final Object[] listeners = imageListeners.getListeners();
@@ -759,7 +763,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public List<IDockerImage> listImages() throws DockerException {
-		final List<IDockerImage> dilist = new ArrayList<>();
+		final List<IDockerImage> tempImages = new ArrayList<>();
 		synchronized (imageLock) {
 			List<Image> rawImages = null;
 			try {
@@ -768,7 +772,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 					// been closed but there is an async request to update the
 					// images list left in the queue
 					if (client == null)
-						return dilist;
+						return tempImages;
 					rawImages = client.listImages(
 							DockerClient.ListImagesParam.allImages());
 				}
@@ -795,25 +799,25 @@ public class DockerConnection implements IDockerConnection, Closeable {
 						&& imageParentIds.contains(rawImage.id());
 				final boolean danglingImage = !taggedImage
 						&& !intermediateImage;
-				// FIXME: if an image with a unique ID belongs to multiple repos, we should
-				// probably have multiple instances of IDockerImage
-				final Map<String, List<String>> repoTags = DockerImage.extractTagsByRepo(rawImage.repoTags());
-				for(Entry<String, List<String>> entry : repoTags.entrySet()) {
-					final String repo = entry.getKey();
-					final List<String> tags = entry.getValue();
-					dilist.add(new DockerImage(this, rawImage
-							.repoTags(), repo, tags, rawImage.id(), rawImage.parentId(),
-							rawImage.created(), rawImage.size(), rawImage
-									.virtualSize(), intermediateImage,
-							danglingImage));
-				}
+				// return one IDockerImage per raw image
+				final List<String> repoTags = new ArrayList<>(
+						rawImage.repoTags());
+				Collections.sort(repoTags);
+				final String repo = DockerImage.extractRepo(repoTags.get(0));
+				final List<String> tags = Arrays
+						.asList(DockerImage.extractTag(repoTags.get(0)));
+				tempImages.add(new DockerImage(this, repoTags, repo,
+						tags, rawImage.id(), rawImage.parentId(),
+						rawImage.created(), rawImage.size(),
+						rawImage.virtualSize(), intermediateImage,
+						danglingImage));
 			}
-			images = dilist;
+			images = tempImages;
 		}
 		// Perform notification outside of lock so that listener doesn't cause a
 		// deadlock to occur
-		notifyImageListeners(dilist);
-		return dilist;
+		notifyImageListeners(tempImages);
+		return tempImages;
 	}
 
 	@Override
