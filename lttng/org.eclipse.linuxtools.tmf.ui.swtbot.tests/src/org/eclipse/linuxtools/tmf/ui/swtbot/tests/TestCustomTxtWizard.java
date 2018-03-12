@@ -177,7 +177,7 @@ public class TestCustomTxtWizard {
         fBot.button("Finish").click();
         String xmlPart = extractTestXml(xmlFile, CATEGORY_NAME, TRACETYPE_NAME);
         assertEquals(EXPECTED_TEST_DEFINITION, xmlPart);
-        fBot.list().select(CATEGORY_NAME + " : " + TRACETYPE_NAME);
+        fBot.list().select(CATEGORY_NAME + ':' + TRACETYPE_NAME);
         fBot.button("Delete").click();
         fBot.button("Yes").click();
         fBot.button("Close").click();
@@ -244,7 +244,7 @@ public class TestCustomTxtWizard {
         assertNotNull(treeNode);
         treeNode.contextMenu("Manage Custom Parsers...").click();
         fBot.shell(MANAGE_CUSTOM_PARSERS_SHELL_TITLE).setFocus();
-        fBot.list().select("Demo Category : Demo trace");
+        fBot.list().select(fBot.list().getItems()[0]);
         fBot.button("Edit...").click();
 
         fBot.textWithLabel("Category:").setText(CATEGORY_NAME);
@@ -279,7 +279,7 @@ public class TestCustomTxtWizard {
         fBot.button("Finish").click();
         String xmlPart = extractTestXml(xmlFile, CATEGORY_NAME, TRACETYPE_NAME);
         assertEquals(EXPECTED_TEST_DEFINITION, xmlPart);
-        fBot.list().select(CATEGORY_NAME + " : " + TRACETYPE_NAME);
+        fBot.list().select(CATEGORY_NAME + ':' + TRACETYPE_NAME);
         fBot.button("Delete").click();
         fBot.button("Yes").click();
         fBot.button("Close").click();
