@@ -32,7 +32,6 @@
     <module>org.eclipse.linuxtools.docker-feature</module>
     <module>org.eclipse.linuxtools.docker.reddeer</module>
     <module>org.eclipse.linuxtools.docker.integration.tests</module>
-    <module>org.eclipse.linuxtools.docker.tests-feature</module>
   </modules>
 
 	<build>
