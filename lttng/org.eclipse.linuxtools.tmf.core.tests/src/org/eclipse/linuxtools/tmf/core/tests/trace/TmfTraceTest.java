@@ -224,38 +224,11 @@ public class TmfTraceTest {
     }
 
     @Test
-    public void testInitializeSimplePath() {
-        // Instantiate an "empty" trace
-        final TmfTraceStub trace = new TmfTraceStub();
-
-        // Path == trace name
-        String path = "TraceName";
-        try {
-            trace.initialize(null, path, ITmfEvent.class);
-        } catch (Exception e) {
-            fail("TmfTrace.initialize() - Exception thrown");
-        }
-
-        assertEquals("getType", ITmfEvent.class, trace.getType());
-        assertNull  ("getResource", trace.getResource());
-        assertEquals("getPath", path, trace.getPath());
-        assertEquals("getCacheSize", ITmfTrace.DEFAULT_TRACE_CACHE_SIZE, trace.getCacheSize());
-        assertEquals("getStreamingInterval", 0, trace.getStreamingInterval());
-        assertEquals("getName", path, trace.getName());
-
-        assertEquals("getNbEvents",    0, trace.getNbEvents());
-        assertEquals("getRange-start", Long.MIN_VALUE, trace.getTimeRange().getStartTime().getValue());
-        assertEquals("getRange-end",   Long.MIN_VALUE, trace.getTimeRange().getEndTime().getValue());
-        assertEquals("getStartTime",   Long.MIN_VALUE, trace.getStartTime().getValue());
-        assertEquals("getEndTime",     Long.MIN_VALUE, trace.getEndTime().getValue());
-    }
-
-    @Test
     public void testInitializeNormalPath() {
         // Instantiate an "empty" trace
         final TmfTraceStub trace = new TmfTraceStub();
 
-        // Path == trace name
+        // Path != trace name
         String name = "TraceName";
         String path = "/my/trace/path/" + name;
         try {
