@@ -167,24 +167,31 @@ public class StructDeclaration extends Declaration {
         alignRead(input);
         final Definition[] myFields = new Definition[fFieldMap.size()];
         StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldName, fFieldMap.keySet(), myFields);
-        fillStruct(input, myFields, structDefinition);
+
+        Iterator<Map.Entry<String, IDeclaration>> iter = fFieldMap.entrySet().iterator();
+        for (int i = 0; i < fFieldMap.size(); i++) {
+            Map.Entry<String, IDeclaration> entry = iter.next();
+            String name = entry.getKey();
+            if (name == null) {
+                throw new IllegalStateException();
+            }
+            myFields[i] = entry.getValue().createDefinition(structDefinition, name, input);
+        }
         return structDefinition;
     }
 
     /**
-     * Create a definition from this declaration. This is a faster constructor
-     * as it has a lexical scope and this does not need to look it up.
+     * Accelerated create definition
      *
      * @param definitionScope
-     *            the definition scope, the parent where the definition will be
-     *            placed
+     *            the definition scope
      * @param fieldScope
-     *            the scope of the definition
+     *            the lexical scope of this element
      * @param input
-     *            a bitbuffer to read from
-     * @return a reference to the definition
+     *            the {@Link BitBuffer} to read
+     * @return the Struct definition
      * @throws CTFReaderException
-     *             error in reading
+     *             read error and such
      * @since 3.1
      */
     public StructDefinition createDefinition(IDefinitionScope definitionScope,
@@ -196,7 +203,15 @@ public class StructDeclaration extends Declaration {
          */
         @SuppressWarnings("null")
         StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldScope, fieldScope.getName(), fFieldMap.keySet(), myFields);
-        fillStruct(input, myFields, structDefinition);
+        Iterator<Map.Entry<String, IDeclaration>> iter = fFieldMap.entrySet().iterator();
+        for (int i = 0; i < fFieldMap.size(); i++) {
+            Map.Entry<String, IDeclaration> entry = iter.next();
+            String fieldName = entry.getKey();
+            if (fieldName == null) {
+                throw new IllegalStateException();
+            }
+            myFields[i] = entry.getValue().createDefinition(structDefinition, fieldName, input);
+        }
         return structDefinition;
     }
 
@@ -211,15 +226,6 @@ public class StructDeclaration extends Declaration {
     public void addField(String name, IDeclaration declaration) {
         fFieldMap.put(name, declaration);
         fMaxAlign = Math.max(fMaxAlign, declaration.getAlignment());
-    }
-
-    @SuppressWarnings("null")
-    private void fillStruct(@NonNull BitBuffer input, final Definition[] myFields, StructDefinition structDefinition) throws CTFReaderException {
-        Iterator<Map.Entry<String, IDeclaration>> iter = fFieldMap.entrySet().iterator();
-        for (int i = 0; i < fFieldMap.size(); i++) {
-            Map.Entry<String, IDeclaration> entry = iter.next();
-            myFields[i] = entry.getValue().createDefinition(structDefinition, entry.getKey(), input);
-        }
     }
 
     @Override
