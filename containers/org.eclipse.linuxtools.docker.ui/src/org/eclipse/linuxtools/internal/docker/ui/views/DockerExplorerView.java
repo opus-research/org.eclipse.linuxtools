@@ -11,6 +11,10 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
@@ -19,9 +23,12 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
+import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
+import org.eclipse.linuxtools.docker.core.IDockerContainerListener;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
+import org.eclipse.linuxtools.docker.core.IDockerImageListener;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.NewDockerConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -30,6 +37,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
@@ -56,6 +64,7 @@ public class DockerExplorerView extends CommonNavigator implements
 	private Control connectionsPane;
 	private Control explanationsPane;
 	private PageBook pageBook;
+	private Map<IDockerConnection, DockerContainersRefresher> containersRefreshers = new HashMap<>();
 
 	/** the search text widget. to filter containers and images. */
 	private Text search;
@@ -71,8 +80,6 @@ public class DockerExplorerView extends CommonNavigator implements
 	protected CommonViewer createCommonViewer(final Composite parent) {
 		final CommonViewer viewer = super.createCommonViewer(parent);
 		setLinkingEnabled(false);
-		DockerConnectionManager.getInstance()
-				.addConnectionManagerListener(this);
 		return viewer;
 	}
 
@@ -106,6 +113,9 @@ public class DockerExplorerView extends CommonNavigator implements
 		showConnectionsOrExplanations();
 		this.containersAndImagesSearchFilter = getContainersAndImagesSearchFilter();
 		getCommonViewer().addFilter(containersAndImagesSearchFilter);
+		DockerConnectionManager.getInstance()
+				.addConnectionManagerListener(this);
+
 	}
 
 	/**
@@ -208,7 +218,6 @@ public class DockerExplorerView extends CommonNavigator implements
 				// DockerExplorerView#changeEvent(int) method
 				// will be called and the pageBook will show the connectionsPane
 				// instead of the explanationsPane
-
 			}
 		};
 	}
@@ -223,12 +232,72 @@ public class DockerExplorerView extends CommonNavigator implements
 			pageBook.showPage(explanationsPane);
 		} else {
 			pageBook.showPage(connectionsPane);
+			registerListeners();
 		}
 	}
 
 	@Override
 	public void changeEvent(int type) {
 		showConnectionsOrExplanations();
+		switch(type) {
+		case IDockerConnectionManagerListener.ADD_EVENT:
+			registerListeners();
+			break;
+		case IDockerConnectionManagerListener.REMOVE_EVENT:
+			unregisterListeners();
+			break;
+		}
+	}
+
+	private void registerListeners() {
+		for (IDockerConnection connection : DockerConnectionManager
+				.getInstance().getConnections()) {
+			if (!containersRefreshers.containsKey(connection)) {
+				final DockerContainersRefresher containerRefresher = new DockerContainersRefresher();
+				connection.addContainerListener(containerRefresher);
+				containersRefreshers.put(connection, containerRefresher);
+			}
+		}
+	}
+
+	private void unregisterListeners() {
+		for (IDockerConnection connection : DockerConnectionManager
+				.getInstance().getConnections()) {
+			if (containersRefreshers.containsKey(connection)) {
+				final DockerContainersRefresher dockerContainersRefresher = containersRefreshers
+						.get(connection);
+				connection.removeContainerListener(dockerContainersRefresher);
+				containersRefreshers.remove(connection);
+			}
+		}
+	}
+
+	class DockerContainersRefresher implements IDockerContainerListener {
+		@Override
+		public void listChanged(final IDockerConnection connection,
+				final List<IDockerContainer> list) {
+			Display.getDefault().asyncExec(new Runnable() {
+
+				@Override
+				public void run() {
+					getCommonViewer().refresh(connection, true);
+				}
+			});
+		}
+	}
+
+	class DockerImagesRefresher implements IDockerImageListener {
+		@Override
+		public void listChanged(final IDockerConnection connection,
+				final List<IDockerImage> list) {
+			Display.getDefault().asyncExec(new Runnable() {
+
+				@Override
+				public void run() {
+					getCommonViewer().refresh(connection, true);
+				}
+			});
+		}
 	}
 
 }

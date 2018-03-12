@@ -38,6 +38,9 @@ public class ContainerPropertyTester extends PropertyTester {
 
 	@Override
 	public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
+		if(receiver instanceof IDockerContainer) {
+			System.err.println("testing " + property + " on " + ((IDockerContainer)receiver).status());
+		}
 		if (receiver instanceof IDockerContainer) {
 			final IDockerContainer container = (IDockerContainer) receiver;
 			switch (property) {
