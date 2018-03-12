@@ -32,7 +32,6 @@ public abstract class AbstractValgrindMarkerResolution extends AbstractCodanCMar
     /**
      * Returns the enclosed AST node in the given marker.
      * @param marker The {@link IMarker} containing the {@link IASTNode}
-     * @param document - document which is used to calculate offset
      * @return the enclosed {@link IASTNode}
      */
     protected IASTNode getIASTNode(IMarker marker, IDocument document){

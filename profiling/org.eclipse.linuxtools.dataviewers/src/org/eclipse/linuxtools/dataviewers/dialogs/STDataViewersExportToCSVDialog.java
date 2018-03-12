@@ -23,6 +23,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersCSVExporter;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersCSVExporterConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -81,7 +82,12 @@ public class STDataViewersExportToCSVDialog extends Dialog {
 
     private STDataViewersCSVExporter exporter = null;
 
-    private ModifyListener updatePreviewModifyListener = e -> updatePreview();
+    private ModifyListener updatePreviewModifyListener = new ModifyListener() {
+        @Override
+        public void modifyText(ModifyEvent e) {
+            updatePreview();
+        }
+    };
 
     private SelectionListener updatePreviewSelectionListener = new SelectionListener() {
         @Override
