@@ -174,13 +174,18 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
     }
 
     @Override
-    public String getOutputType() {
-        return fOutputType.getInName();
+    public TraceChannelOutputType getOutputType() {
+        return fOutputType;
     }
 
     @Override
     public void setOutputType(String type) {
         fOutputType = TraceChannelOutputType.valueOfString(type);
+    }
+
+    @Override
+    public void setOutputType(TraceChannelOutputType type) {
+        fOutputType = type;
     }
 
     @Override
