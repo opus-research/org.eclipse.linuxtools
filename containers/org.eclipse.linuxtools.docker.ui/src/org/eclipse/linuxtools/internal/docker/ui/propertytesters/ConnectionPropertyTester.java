@@ -34,8 +34,7 @@ public class ConnectionPropertyTester extends PropertyTester {
 		case EXISTS_ACTIVE_CONNECTION:
 			return expectedValue.equals(DockerConnectionWatcher.getInstance().getConnection() != null);
 		case EXISTS_ANY_CONNECTION:
-			return expectedValue.equals(
-					DockerConnectionManager.getInstance().hasConnections());
+			return expectedValue.equals(DockerConnectionManager.getInstance().getConnections().length > 0);
 		}
 		return false;
 	}

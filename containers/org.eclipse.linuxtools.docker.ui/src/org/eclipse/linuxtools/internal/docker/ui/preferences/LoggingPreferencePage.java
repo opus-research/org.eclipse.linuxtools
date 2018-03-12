@@ -40,12 +40,12 @@ public class LoggingPreferencePage extends FieldEditorPreferencePage implements
 	protected void createFieldEditors() {
 		autoLogOnStart = new BooleanFieldEditor(
 				PreferenceConstants.AUTOLOG_ON_START,
-				PreferenceMessages.getString(AUTO_START_MSG), getFieldEditorParent());
+				Messages.getString(AUTO_START_MSG), getFieldEditorParent());
 		addField(autoLogOnStart);
 
 		addTimeStamp = new BooleanFieldEditor(
 				PreferenceConstants.LOG_TIMESTAMP,
-				PreferenceMessages.getString(TIME_STAMP_MSG), getFieldEditorParent());
+				Messages.getString(TIME_STAMP_MSG), getFieldEditorParent());
 		addField(addTimeStamp);
 	}
 

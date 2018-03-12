@@ -81,9 +81,6 @@ public class DockerExplorerView extends CommonNavigator implements
 
 	private ViewerFilter containersAndImagesSearchFilter;
 
-	/**
-	 * Constructor.
-	 */
 	public DockerExplorerView() {
 		super();
 		// Make sure DockerConnectionWatcher is up and running before first
@@ -198,11 +195,6 @@ public class DockerExplorerView extends CommonNavigator implements
 		super.createPartControl(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
 				.grab(true, true).applyTo(getCommonViewer().getControl());
-		if (DockerConnectionManager.getInstance().hasConnections()) {
-			final IDockerConnection connection = DockerConnectionManager
-					.getInstance().getFirstConnection();
-			getCommonViewer().setSelection(new StructuredSelection(connection));
-		}
 		return form;
 	}
 
@@ -262,17 +254,15 @@ public class DockerExplorerView extends CommonNavigator implements
 	 * connections in the {@link DockerConnectionManager}.
 	 */
 	public void showConnectionsOrExplanations() {
-		if (!DockerConnectionManager.getInstance().hasConnections()
-				&& pageBook != explanationsPane) {
+		if (DockerConnectionManager.getInstance().getConnections().length < 1) {
 			pageBook.showPage(explanationsPane);
 			this.currentPane = explanationsPane;
-		} else if (pageBook != connectionsPane) {
+		} else {
 			pageBook.showPage(connectionsPane);
 			this.currentPane = connectionsPane;
 			registerListeners();
 		}
 	}
-
 
 	/**
 	 * @return <code>true</code> if the current panel is the one containing a
@@ -313,11 +303,11 @@ public class DockerExplorerView extends CommonNavigator implements
 				// move viewer selection to the first connection or set to
 				// null if
 				// no other connection exists
-				if (DockerConnectionManager.getInstance().hasConnections()) {
+				final IDockerConnection[] connections = DockerConnectionManager
+						.getInstance().getConnections();
+				if (connections.length > 0) {
 					getCommonViewer().setSelection(
-							new StructuredSelection(DockerConnectionManager
-									.getInstance().getFirstConnection()),
-							true);
+							new StructuredSelection(connections[0]), true);
 				} else {
 					getCommonViewer().setSelection(null);
 				}
@@ -327,14 +317,13 @@ public class DockerExplorerView extends CommonNavigator implements
 	}
 
 	private void registerListeners() {
-		DockerConnectionManager.getInstance().getAllConnections().stream()
-				.forEach(connection -> registerListeners(connection));
+		for (IDockerConnection connection : DockerConnectionManager
+				.getInstance().getConnections()) {
+			registerListeners(connection);
+		}
 	}
 
 	private void registerListeners(final IDockerConnection connection) {
-		if (connection == null) {
-			return;
-		}
 		if (!containersRefreshers.containsKey(connection)) {
 			final ContainersRefresher refresher = new ContainersRefresher();
 			connection.addContainerListener(refresher);
