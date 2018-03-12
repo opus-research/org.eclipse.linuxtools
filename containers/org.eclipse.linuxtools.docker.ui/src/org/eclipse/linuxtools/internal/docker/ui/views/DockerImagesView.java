@@ -456,10 +456,8 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 					connection.getImages(true);
 					connection.addImageListener(DockerImagesView.this);
 					Display.getDefault().asyncExec(() -> {
-						if (!viewer.getControl().isDisposed()) {
-							viewer.setInput(connection);
-							refreshViewTitle();
-						}
+						viewer.setInput(connection);
+						refreshViewTitle();
 					});
 					return Status.OK_STATUS;
 				}
