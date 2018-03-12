@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.tmf.ui.project.model;
 
 import java.net.URL;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -24,13 +23,13 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType.TraceElementType;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.navigator.ICommonContentExtensionSite;
 import org.eclipse.ui.navigator.ICommonLabelProvider;
 import org.osgi.framework.Bundle;
@@ -49,7 +48,6 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider, IStyledL
 
     private static final Image fFolderIcon = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
     private static final String fTraceIconFile = "icons/elcl16/trace.gif"; //$NON-NLS-1$
-    private static final String fUnknownIconFile = "icons/elcl16/unknown_parser.gif"; //$NON-NLS-1$
     private static final String fExperimentIconFile = "icons/elcl16/experiment.gif"; //$NON-NLS-1$
     private static final String fAnalysisIconFile = "icons/ovr16/experiment_folder_ovr.png"; //$NON-NLS-1$
     private static final String fViewIconFile = "icons/obj16/node_obj.gif"; //$NON-NLS-1$
@@ -62,10 +60,11 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider, IStyledL
     private final Image fExperimentFolderIcon = fFolderIcon;
 
     private final Image fDefaultTraceIcon;
-    private final Image fUnknownTraceIcon;
     private final Image fExperimentIcon;
     private final Image fDefaultAnalysisIcon;
     private final Image fDefaultViewIcon;
+
+    private final WorkbenchLabelProvider fWorkspaceLabelProvider = new WorkbenchLabelProvider();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -79,7 +78,6 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider, IStyledL
     public TmfNavigatorLabelProvider() {
         Bundle bundle = Activator.getDefault().getBundle();
         fDefaultTraceIcon = loadIcon(bundle, fTraceIconFile);
-        fUnknownTraceIcon = loadIcon(bundle, fUnknownIconFile);
         fExperimentIcon = loadIcon(bundle, fExperimentIconFile);
         fDefaultAnalysisIcon = loadIcon(bundle, fAnalysisIconFile);
         fDefaultViewIcon = loadIcon(bundle, fViewIconFile);
@@ -109,30 +107,28 @@ public class TmfNavigatorLabelProvider implements ICommonLabelProvider, IStyledL
 
         if (element instanceof TmfCommonProjectElement) {
             TmfCommonProjectElement trace = (TmfCommonProjectElement) element;
-            try {
-                String traceType = trace.getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE);
-                if (traceType == null || TmfTraceType.getTraceType(traceType) == null) {
-                    return fUnknownTraceIcon;
-                }
+            String traceType = trace.getTraceType();
+            if (traceType == null || TmfTraceType.getTraceType(traceType) == null) {
+                // request the label to the Eclipse platform
+                return fWorkspaceLabelProvider.getImage(((TmfCommonProjectElement) element).getResource());
+            }
 
-                IConfigurationElement traceUIAttributes = TmfTraceTypeUIUtils.getTraceUIAttributes(traceType, (element instanceof TmfTraceElement) ? TraceElementType.TRACE : TraceElementType.EXPERIMENT);
-                if (traceUIAttributes != null) {
-                    String iconAttr = traceUIAttributes.getAttribute(TmfTraceTypeUIUtils.ICON_ATTR);
-                    if (iconAttr != null) {
-                        String name = traceUIAttributes.getContributor().getName();
-                        if (name != null) {
-                            Bundle bundle = Platform.getBundle(name);
-                            if (bundle != null) {
-                                Image image = loadIcon(bundle, iconAttr);
-                                if (image != null) {
-                                    return image;
-                                }
+            IConfigurationElement traceUIAttributes = TmfTraceTypeUIUtils.getTraceUIAttributes(traceType, (element instanceof TmfTraceElement) ? TraceElementType.TRACE : TraceElementType.EXPERIMENT);
+            if (traceUIAttributes != null) {
+                String iconAttr = traceUIAttributes.getAttribute(TmfTraceTypeUIUtils.ICON_ATTR);
+                if (iconAttr != null) {
+                    String name = traceUIAttributes.getContributor().getName();
+                    if (name != null) {
+                        Bundle bundle = Platform.getBundle(name);
+                        if (bundle != null) {
+                            Image image = loadIcon(bundle, iconAttr);
+                            if (image != null) {
+                                return image;
                             }
                         }
                     }
-
                 }
-            } catch (CoreException e) {
+
             }
             if (element instanceof TmfTraceElement) {
                 return fDefaultTraceIcon;

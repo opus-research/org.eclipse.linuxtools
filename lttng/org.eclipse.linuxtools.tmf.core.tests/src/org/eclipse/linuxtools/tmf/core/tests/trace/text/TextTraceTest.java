@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Locale;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -73,6 +74,7 @@ public class TextTraceTest {
         IEclipsePreferences defaultPreferences = InstanceScope.INSTANCE.getNode(Activator.PLUGIN_ID);
         defaultPreferences.put(ITmfTimePreferencesConstants.DATIME, "MMM d HH:mm:ss");
         defaultPreferences.put(ITmfTimePreferencesConstants.SUBSEC, ITmfTimePreferencesConstants.SUBSEC_NO_FMT);
+        defaultPreferences.put(ITmfTimePreferencesConstants.LOCALE, Locale.CANADA.toLanguageTag());
         TmfTimestampFormat.updateDefaultFormats();
 
         if (fTrace == null) {
@@ -109,6 +111,7 @@ public class TextTraceTest {
         IEclipsePreferences defaultPreferences = InstanceScope.INSTANCE.getNode(Activator.PLUGIN_ID);
         defaultPreferences.put(ITmfTimePreferencesConstants.DATIME, ITmfTimePreferencesConstants.TIME_HOUR_FMT);
         defaultPreferences.put(ITmfTimePreferencesConstants.SUBSEC, ITmfTimePreferencesConstants.SUBSEC_NANO_FMT);
+        defaultPreferences.put(ITmfTimePreferencesConstants.LOCALE, Locale.getDefault().toLanguageTag());
         TmfTimestampFormat.updateDefaultFormats();
     }
 
@@ -134,7 +137,7 @@ public class TextTraceTest {
         IStatus status = trace.validate(null, validTracePath);
         assertTrue(status.isOK());
         assertTrue(status instanceof TraceValidationStatus);
-        assertEquals(100, ((TraceValidationStatus) status).getConfidence());
+        assertEquals(180, ((TraceValidationStatus) status).getConfidence());
 
         URL location = FileLocator.find(TmfCoreTestPlugin.getDefault().getBundle(), new Path(OTHER_PATH), null);
         URI uri = FileLocator.toFileURL(location).toURI();

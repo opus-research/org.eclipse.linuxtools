@@ -27,7 +27,6 @@ import org.eclipse.test.performance.Dimension;
 import org.eclipse.test.performance.Performance;
 import org.eclipse.test.performance.PerformanceMeter;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
@@ -39,7 +38,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class EventMatchingBenchmark {
 
-    private static final String TEST_ID = "org.eclipse.linuxtools#Event matching";
+    private static final String TEST_ID = "org.eclipse.linuxtools#Event matching#";
     private static final String TIME = " (time)";
     private static final String MEMORY = " (memory usage)";
     private static final String TEST_SUMMARY = "Event matching";
@@ -63,17 +62,13 @@ public class EventMatchingBenchmark {
         try (CtfTmfTrace trace1 = CtfTmfTestTrace.SYNC_SRC.getTrace();
                 CtfTmfTrace trace2 = CtfTmfTestTrace.SYNC_DEST.getTrace();) {
             Set<ITmfTrace> traces = ImmutableSet.of((ITmfTrace) trace1, trace2);
-            runCpuTest(traces, "Match TCP events", 40);
+            runCpuTest(traces, "Match TCP events", 100);
         }
     }
 
     /**
      * Run the benchmark with 3 bigger traces
-     *
-     * TODO: For now, this test takes a lot of RAM. To run, remove the @Ignore
-     * and set at least 1024Mb RAM, or else there is OutOfMemoryError exception
      */
-    @Ignore
     @Test
     public void testDjangoTraces() {
         assumeTrue(CtfTmfTestTrace.DJANGO_CLIENT.exists());
@@ -90,8 +85,8 @@ public class EventMatchingBenchmark {
 
     private static void runCpuTest(Set<ITmfTrace> testTraces, String testName, int loop_count) {
         Performance perf = Performance.getDefault();
-        PerformanceMeter pm = perf.createPerformanceMeter(TEST_ID + TIME + '#' + testName);
-        perf.tagAsSummary(pm, TEST_SUMMARY + TIME + ':' + testName, Dimension.CPU_TIME);
+        PerformanceMeter pm = perf.createPerformanceMeter(TEST_ID + testName + TIME);
+        perf.tagAsSummary(pm, TEST_SUMMARY + ':' + testName + TIME, Dimension.CPU_TIME);
 
         for (int i = 0; i < loop_count; i++) {
             TmfNetworkEventMatching traceMatch = new TmfNetworkEventMatching(testTraces);
@@ -107,8 +102,8 @@ public class EventMatchingBenchmark {
     /* Benchmark memory used by the algorithm */
     private static void runMemoryTest(Set<ITmfTrace> testTraces, String testName, int loop_count) {
         Performance perf = Performance.getDefault();
-        PerformanceMeter pm = perf.createPerformanceMeter(TEST_ID + MEMORY + '#' + testName);
-        perf.tagAsSummary(pm, TEST_SUMMARY + MEMORY + ':' + testName, Dimension.USED_JAVA_HEAP);
+        PerformanceMeter pm = perf.createPerformanceMeter(TEST_ID + testName + MEMORY);
+        perf.tagAsSummary(pm, TEST_SUMMARY + ':' + testName + MEMORY, Dimension.USED_JAVA_HEAP);
 
         for (int i = 0; i < loop_count; i++) {
             TmfNetworkEventMatching traceMatch = new TmfNetworkEventMatching(testTraces);

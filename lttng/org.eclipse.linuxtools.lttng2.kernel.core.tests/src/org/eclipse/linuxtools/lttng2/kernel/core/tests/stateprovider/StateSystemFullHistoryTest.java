@@ -17,7 +17,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 
@@ -32,8 +31,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -47,16 +45,12 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     private static final @NonNull String TEST_FILE_NAME = "test.ht";
     private static final @NonNull String BENCHMARK_FILE_NAME = "test.benchmark.ht";
 
-    private static File stateFile;
-    private static File stateFileBenchmark;
-    private static TestLttngKernelAnalysisModule module;
+    private File stateFile;
+    private File stateFileBenchmark;
+    private TestLttngKernelAnalysisModule module;
 
-    /**
-     * Initialize the test cases (build the history file once for all tests).
-     */
-    @BeforeClass
-    public static void initialize() {
-        assumeTrue(testTrace.exists());
+    @Override
+    protected ITmfStateSystem initialize() {
         stateFile = createStateFile(TEST_FILE_NAME);
         stateFileBenchmark = createStateFile(BENCHMARK_FILE_NAME);
 
@@ -68,19 +62,23 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
         }
         module.schedule();
         assertTrue(module.waitForCompletion());
-        ssq = module.getStateSystem();
-
-        assertNotNull(ssq);
+        return module.getStateSystem();
     }
 
     /**
      * Clean-up
      */
-    @AfterClass
-    public static void tearDownClass() {
-        module.close();
-        stateFile.delete();
-        stateFileBenchmark.delete();
+    @After
+    public void cleanup() {
+        if (module != null) {
+            module.close();
+        }
+        if (stateFile != null) {
+            stateFile.delete();
+        }
+        if (stateFileBenchmark != null) {
+            stateFileBenchmark.delete();
+        }
     }
 
     // ------------------------------------------------------------------------

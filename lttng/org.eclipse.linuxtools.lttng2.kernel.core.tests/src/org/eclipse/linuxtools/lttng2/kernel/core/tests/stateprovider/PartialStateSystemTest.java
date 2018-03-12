@@ -12,10 +12,8 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 
@@ -23,6 +21,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
+import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
 import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
@@ -30,8 +29,7 @@ import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -43,16 +41,11 @@ public class PartialStateSystemTest extends StateSystemTest {
 
     private static final @NonNull String TEST_FILE_NAME = "test-partial";
 
-    private static File stateFile;
-    private static TestLttngKernelAnalysisModule module;
+    private File stateFile;
+    private TestLttngKernelAnalysisModule module;
 
-
-    /**
-     * Initialization
-     */
-    @BeforeClass
-    public static void initialize() {
-        assumeTrue(testTrace.exists());
+    @Override
+    protected ITmfStateSystem initialize() {
         stateFile = new File(TmfTraceManager.getSupplementaryFileDir(testTrace.getTrace()) + TEST_FILE_NAME);
         if (stateFile.exists()) {
             stateFile.delete();
@@ -66,18 +59,20 @@ public class PartialStateSystemTest extends StateSystemTest {
         }
         module.schedule();
         assertTrue(module.waitForCompletion());
-        ssq = module.getStateSystem();
-
-        assertNotNull(ssq);
+        return module.getStateSystem();
     }
 
     /**
      * Class clean-up
      */
-    @AfterClass
-    public static void tearDownClass() {
-        module.close();
-        stateFile.delete();
+    @After
+    public void cleanup() {
+        if (module != null) {
+            module.close();
+        }
+        if (stateFile != null) {
+            stateFile.delete();
+        }
     }
 
     /**

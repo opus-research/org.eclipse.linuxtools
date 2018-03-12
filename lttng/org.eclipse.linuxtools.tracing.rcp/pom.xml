@@ -14,11 +14,11 @@
   <parent>
     <artifactId>linuxtools-lttng-parent</artifactId>
     <groupId>org.eclipse.linuxtools.lttng</groupId>
-    <version>3.1.0-SNAPSHOT</version>
+    <version>3.2.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.tracing.rcp</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.1.0-SNAPSHOT</version>
   <packaging>eclipse-feature</packaging>
 
   <name>Linux Tools Trace Viewer Feature</name>
@@ -39,6 +39,8 @@
             </goals>
             <configuration>
               <excludes>
+                <plugin id="org.eclipse.cdt.core"/>
+                <plugin id="org.eclipse.cdt.core.native"/>
                 <plugin id="org.eclipse.core.runtime.compatibility.auth"/>
                 <plugin id="org.eclipse.swt"/>
                 <plugin id="org.eclipse.swt.wpf.win32.x86"/>

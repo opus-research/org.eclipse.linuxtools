@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Red Hat Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Andrew Ferrazzutti <aferrazz@redhat.com> - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher;
 
 import org.eclipse.debug.core.DebugPlugin;
@@ -20,6 +30,9 @@ public class SystemTapScriptLaunch extends Launch
     }
 
     public void setConsole(ScriptConsole console) {
+        if (this.console == console) {
+            return;
+        }
         // If another launch is using the same console, remove that launch since
         // ScriptConsole prevents two identical stap scripts from being be run at once.
         this.console = console;
@@ -89,7 +102,6 @@ public class SystemTapScriptLaunch extends Launch
     private void removeConsole() {
         if (console != null) {
             console.removeScriptConsoleObserver(this);
-            console.stop();
             console = null;
         }
     }

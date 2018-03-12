@@ -207,7 +207,7 @@ public class BtfTrace extends TmfTrace implements ITmfEventParser, ITmfPersisten
             fFileInput = new RandomAccessFile(fFile, "r"); //$NON-NLS-1$
             parseHeader(fFileInput);
         } catch (IOException e) {
-            // won't happen
+            throw new TmfTraceException(e.getMessage(), e);
         }
 
     }
@@ -387,7 +387,7 @@ public class BtfTrace extends TmfTrace implements ITmfEventParser, ITmfPersisten
         ITmfEventField content = type.generateContent(event, sourceInstance, targetInstance);
 
         return new BtfEvent(this, rank,
-                fTsFormat.createTimestamp(timestamp + fTsOffset),
+                getTimestampTransform().transform(fTsFormat.createTimestamp(timestamp + fTsOffset)),
                 source,
                 type,
                 type.getDescription(),

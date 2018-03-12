@@ -43,6 +43,7 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
     @Override
     public void setInitializationData(IConfigurationElement config,
             String propertyName, Object data) {
+        @SuppressWarnings("unchecked")
         Map<String, String> parameters = (Map<String, String>) data;
         String profilingType = parameters
                 .get(ProviderProfileConstants.INIT_DATA_TYPE_KEY);
@@ -292,9 +293,9 @@ public class ProviderLaunchShortcut extends ProfileLaunchShortcut implements IEx
      * It combines <code>configName</code> and <code>toolName</code> into a String of
      * consistent format: <configuration name> [<tool name>].
      *
-     * @param configName
-     * @param toolName
-     * @return String tool name appended to original configuration name.
+     * @param configName The configuration name.
+     * @param toolName The tool name.
+     * @return String Tool name appended to original configuration name.
      * @since 1.2
      */
     public static String generateProviderConfigurationName(String configName, String toolName){

@@ -16,11 +16,13 @@ package org.eclipse.linuxtools.tmf.ctf.ui.swtbot.tests;
 
 import static org.junit.Assert.assertNotNull;
 
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.importtrace.BatchImportTraceWizard;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
+import org.eclipse.linuxtools.tmf.ui.swtbot.tests.SWTBotUtil;
 import org.eclipse.linuxtools.tmf.ui.swtbot.tests.conditions.ConditionHelpers;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
@@ -59,13 +61,14 @@ public class ImportAndReadSmokeTest extends AbstractImportAndReadSmokeTest {
         batchImportSelectTrace();
         importFinish();
 
-        TmfEventsEditor tmfEd = openEditor();
+        TmfEventsEditor tmfEd = openEditor(new Path(TRACE_NAME));
 
         testHistogramView(getViewPart("Histogram"), tmfEd);
         testPropertyView(getViewPart("Properties"));
         testStatisticsView(getViewPart("Statistics"));
+        fBot.closeAllEditors();
 
-        deleteProject();
+        SWTBotUtil.deleteProject(getProjectName(), fBot);
     }
 
     private static void batchImportOpenWizard() {

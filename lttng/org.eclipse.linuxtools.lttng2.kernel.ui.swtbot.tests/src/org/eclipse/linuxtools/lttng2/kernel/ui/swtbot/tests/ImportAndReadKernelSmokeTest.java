@@ -14,20 +14,14 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.ui.swtbot.tests;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.SimpleLayout;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow.ControlFlowView;
@@ -39,13 +33,11 @@ import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.ctf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.linuxtools.tmf.ui.swtbot.tests.SWTBotUtil;
 import org.eclipse.linuxtools.tmf.ui.swtbot.tests.conditions.ConditionHelpers;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramView;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.eclipse.finder.matchers.WidgetMatcherFactory;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
@@ -59,6 +51,7 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
+import org.hamcrest.Matcher;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,11 +64,12 @@ import org.junit.runner.RunWith;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class ImportAndReadKernelSmokeTest {
 
+    private static final String TRACE_TYPE = "org.eclipse.linuxtools.lttng2.kernel.tracetype";
     private static final String KERNEL_PERSPECTIVE_ID = "org.eclipse.linuxtools.lttng2.kernel.ui.perspective";
     private static final String TRACE_PROJECT_NAME = "test";
 
     private static SWTWorkbenchBot fBot;
-    private static CtfTmfTestTrace ctt = CtfTmfTestTrace.SYNTHETIC_TRACE;
+    public static CtfTmfTestTrace ctt = CtfTmfTestTrace.SYNTHETIC_TRACE;
     private ITmfEvent fDesired1;
     private ITmfEvent fDesired2;
 
@@ -90,7 +84,7 @@ public class ImportAndReadKernelSmokeTest {
         SWTBotUtil.failIfUIThread();
 
         /* set up for swtbot */
-        SWTBotPreferences.TIMEOUT = 300000; /* 300 second timeout */
+        SWTBotPreferences.TIMEOUT = 20000; /* 20 second timeout */
         fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         fBot = new SWTWorkbenchBot();
 
@@ -133,55 +127,19 @@ public class ImportAndReadKernelSmokeTest {
     @Test
     public void test() {
         SWTBotUtil.createProject(TRACE_PROJECT_NAME);
-        openTrace();
+        SWTBotUtil.openTrace(TRACE_PROJECT_NAME, ctt.getPath(), TRACE_TYPE);
         openEditor();
         testHV(getViewPart("Histogram"));
         testCFV((ControlFlowView) getViewPart("Control Flow"));
         testRV((ResourcesView) getViewPart("Resources"));
-    }
 
-    private static void openTrace() {
-        final Exception exception[] = new Exception[1];
-        exception[0] = null;
-        UIThreadRunnable.syncExec(new VoidResult() {
-            @Override
-            public void run() {
-                try {
-                    IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(TRACE_PROJECT_NAME);
-                    TmfTraceFolder destinationFolder = TmfProjectRegistry.getProject(project, true).getTracesFolder();
-                    TmfOpenTraceHelper.openTraceFromPath(destinationFolder, ctt.getPath(), PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "org.eclipse.linuxtools.lttng2.kernel.tracetype");
-                } catch (CoreException e) {
-                    exception[0] = e;
-                }
-            }
-        });
-        if (exception[0] != null) {
-            fail(exception[0].getMessage());
-        }
-
-        SWTBotUtil.delay(1000);
-        SWTBotUtil.waitForJobs();
+        fBot.closeAllEditors();
+        SWTBotUtil.deleteProject(TRACE_PROJECT_NAME, fBot);
     }
 
     private void openEditor() {
-        final List<IEditorReference> editorRefs = new ArrayList<>();
-        UIThreadRunnable.syncExec(new VoidResult() {
-            @Override
-            public void run() {
-                IEditorReference[] ieds = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-                editorRefs.addAll(Arrays.asList(ieds));
-            }
-
-        });
-        assertFalse(editorRefs.isEmpty());
-        IEditorPart iep = null;
-        for (IEditorReference ied : editorRefs) {
-            if (ied.getTitle().equals(ctt.getTrace().getName())) {
-                iep = ied.getEditor(true);
-                break;
-            }
-        }
-        assertNotNull(iep);
+        Matcher<IEditorReference> matcher = WidgetMatcherFactory.withPartName(ctt.getTrace().getName());
+        IEditorPart iep = fBot.editor(matcher).getReference().getEditor(true);
         fDesired1 = getEvent(100);
         fDesired2 = getEvent(10000);
         final TmfEventsEditor tmfEd = (TmfEventsEditor) iep;

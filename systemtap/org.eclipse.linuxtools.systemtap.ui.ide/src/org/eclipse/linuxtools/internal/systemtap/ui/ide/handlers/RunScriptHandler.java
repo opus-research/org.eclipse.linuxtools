@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2009 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +19,6 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -75,12 +75,10 @@ public class RunScriptHandler extends AbstractHandler {
     /**
      * @since 2.0
      */
-    protected boolean continueRun = true;
     private RemoteScriptOptions remoteOptions = null;
     private IEditorPart targetEditor = null;
     private String fileName = null;
     private String tmpfileName = null;
-    private String serverfileName = null;
     private IPath path = null;
     private IProject project = null;
     private SystemTapScriptLaunch launch = null;
@@ -111,7 +109,7 @@ public class RunScriptHandler extends AbstractHandler {
      * @param option
      */
     public void addComandLineOptions(String option) {
-        this.cmdList.add(option);
+        cmdList.add(option);
     }
 
     /**
@@ -158,6 +156,7 @@ public class RunScriptHandler extends AbstractHandler {
     }
 
     private void executeAction(ExecutionEvent event) throws ExecutionException {
+        cmdList.clear();
         final boolean local = getRunLocal();
         findTargetEditor(event);
         findFilePath();
@@ -170,7 +169,7 @@ public class RunScriptHandler extends AbstractHandler {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                String name = !local ? serverfileName : fileName;
+                String name = getConsoleName();
                 if (ScriptConsole.instanceIsRunning(name)) {
                     MessageDialog dialog = new MessageDialog(
                             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
@@ -185,16 +184,20 @@ public class RunScriptHandler extends AbstractHandler {
                     }
                 }
                 final ScriptConsole console = ScriptConsole.getInstance(name);
-                synchronized (console) {
-                    if (!local) {
-                        console.run(script, envVars, remoteOptions, new StapErrorParser());
-                    } else {
-                        console.runLocally(script, envVars, new StapErrorParser(), getProject());
-                    }
-                    scriptConsoleInitialized(console);
+                if (!local) {
+                    console.run(script, envVars, remoteOptions, new StapErrorParser());
+                } else {
+                    console.runLocally(script, envVars, new StapErrorParser(), getProject());
                 }
+                scriptConsoleInitialized(console);
             }
         });
+    }
+
+    private String getConsoleName() {
+        return getRunLocal() ? fileName :
+            MessageFormat.format(Messages.RunScriptHandler_NonLocalTitle,
+                    fileName, remoteOptions.userName, remoteOptions.hostName);
     }
 
     /**
@@ -235,7 +238,7 @@ public class RunScriptHandler extends AbstractHandler {
     }
 
     private boolean editorMatchesPath(IEditorInput input) {
-        return input instanceof IPathEditorInput && ((IPathEditorInput) (input)).getPath().equals(this.path);
+        return input instanceof IPathEditorInput && ((IPathEditorInput) (input)).getPath().equals(path);
     }
 
     /**
@@ -291,8 +294,7 @@ public class RunScriptHandler extends AbstractHandler {
     private void prepareNonLocalScript() throws ExecutionException {
         try {
             ScpClient scpclient = new ScpClient(remoteOptions);
-            serverfileName = getFileName(fileName);
-            tmpfileName = new Path("/tmp").append(serverfileName).toOSString(); //$NON-NLS-1$
+            tmpfileName = new Path("/tmp").append(getFileName(fileName)).toOSString(); //$NON-NLS-1$
             scpclient.transfer(fileName, tmpfileName);
         } catch (final JSchException | IOException e) {
             String message = e instanceof JSchException
@@ -393,37 +395,19 @@ public class RunScriptHandler extends AbstractHandler {
      * @since 2.0
      */
     private String[] finalizeScript() throws ExecutionException {
-        boolean local = getRunLocal();
-        String modname;
-        if (!local) {
-            modname = getFileNameWithoutExtension(serverfileName);
-        }
-        /* We need to remove the directory prefix here because in the case of
-         * running the script remotely, this is already done.  Not doing so
-         * causes a modname error.
-         */
-        else {
-            modname = getFileNameWithoutExtension(getFileName(fileName));
-        }
-
         // Make sure script name only contains underscores and/or alphanumeric characters.
-        Pattern validModName = Pattern.compile("^[a-z0-9_A-Z]+$"); //$NON-NLS-1$
-        Matcher modNameMatch = validModName.matcher(modname);
-        if (!modNameMatch.matches()) {
-            continueRun = false;
+        if (!Pattern.matches("^[a-z0-9_A-Z]+$", //$NON-NLS-1$
+                getFileNameWithoutExtension(getFileName(fileName)))) {
             throw new ExecutionException(Messages.RunScriptHandler_InvalidScriptMessage);
         }
 
-        String[] script = new String[cmdList.size() + 4];
+        String[] script = new String[cmdList.size() + 2];
         script[0] = "stap"; //$NON-NLS-1$
-        script[script.length - 1] = !local ? tmpfileName : fileName;
+        script[script.length - 1] = !getRunLocal() ? tmpfileName : fileName;
 
         for (int i = 0; i < cmdList.size(); i++) {
             script[i + 1] = cmdList.get(i);
         }
-        script[script.length - 3] = "-m"; //$NON-NLS-1$
-
-        script[script.length - 2] = modname;
         return script;
     }
 
@@ -431,10 +415,5 @@ public class RunScriptHandler extends AbstractHandler {
         int dotIndex = fileName.lastIndexOf('.');
         return dotIndex != -1 ? fileName.substring(0, dotIndex) : fileName;
     }
-
-    /*@Override
-    public boolean isEnabled() {
-        return (PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor() instanceof STPEditor);
-    }*/
 
 }

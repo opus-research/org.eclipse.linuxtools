@@ -17,10 +17,12 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.swtchart.Chart;
 import org.swtchart.IAxis;
 import org.swtchart.IBarSeries;
 import org.swtchart.ISeries;
+import org.swtchart.ITitle;
 
 public class PieChart extends Chart {
 
@@ -35,7 +37,21 @@ public class PieChart extends Chart {
             axis.getTitle().setVisible(false);
         }
         getPlotArea().setVisible(false);
-        addPaintListener(pieChartPaintListener = new PieChartPaintListener(this));
+        // Make the title draw after the pie-chart itself so we can modify the title
+        // to center over the pie-chart area
+        ITitle title = getTitle();
+        // Underlying SWT Chart implementation changes from the title being a Control to just
+        // a PaintListener.  In the Control class case, we can move it's location to
+        // center over a PieChart, but in the latter case, we need to alter the title
+        // with blanks in the PieChartPaintListener and have the title paint after it
+        // once the title has been altered.
+        if (title instanceof Control) {
+        	addPaintListener(pieChartPaintListener = new PieChartPaintListener(this));
+        } else {
+        	removePaintListener((PaintListener)title);
+        	addPaintListener(pieChartPaintListener = new PieChartPaintListener(this));
+        	addPaintListener((PaintListener)title);
+        }
         IAxis xAxis = getAxisSet().getXAxis(0);
         xAxis.enableCategory(true);
         xAxis.setCategorySeries(new String[]{""}); //$NON-NLS-1$
@@ -49,6 +65,8 @@ public class PieChart extends Chart {
     }
 
     /**
+     * Sets the custom colors to use.
+     * @param customColors The custom colors to use.
      * @since 2.0
      */
     public void setCustomColors(Color[] customColors) {
@@ -61,6 +79,7 @@ public class PieChart extends Chart {
      * charts. For the first one, 'a' will be 1 and 'b' will be 4. For the second chart 'a' will be 2 and 'b' will be 5.
      * For the third 'a' will be 3 and 'b' will be 6.
      * @param labels The titles of each series. (These are not the same as titles given to pies.)
+     * @param val New values.
      */
     public void addPieChartSeries(String labels[], double val[][]) {
         setSeriesNames(val[0].length);

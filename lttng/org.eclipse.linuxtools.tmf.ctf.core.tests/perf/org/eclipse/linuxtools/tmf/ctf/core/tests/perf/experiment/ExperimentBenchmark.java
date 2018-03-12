@@ -40,11 +40,12 @@ import org.junit.Test;
  */
 public class ExperimentBenchmark {
 
-    private static final String TEST_ID = "org.eclipse.linuxtools#Experiment benchmark";
+    private static final String TEST_ID = "org.eclipse.linuxtools#Experiment benchmark#";
     private static final int MAX_TRACES = 160;
     private static final int BLOCK_SIZE = 100;
     private static final String TRACES_ROOT_PATH = CtfTestTrace.TRACE_EXPERIMENT.getPath();
-    private static final int SAMPLE_SIZE = 5;
+    private static final int SAMPLE_SIZE_SLOW = 20;
+    private static final int SAMPLE_SIZE = 100;
 
     private TmfExperimentStub fExperiment;
 
@@ -56,13 +57,18 @@ public class ExperimentBenchmark {
         Performance perf = Performance.getDefault();
 
         for (int numTraces = 1; numTraces < MAX_TRACES; numTraces = (int) (1.6 * (numTraces + 1))) {
-            PerformanceMeter pm = perf.createPerformanceMeter(TEST_ID + '(' + numTraces + ')');
-            perf.tagAsSummary(pm, "Experiment Benchmark traces:" + numTraces, Dimension.CPU_TIME);
+            PerformanceMeter pm = perf.createPerformanceMeter(TEST_ID + numTraces + " traces");
+            perf.tagAsSummary(pm, "Experiment Benchmark:" + numTraces + " traces", Dimension.CPU_TIME);
             if ((int) (1.6 * (numTraces + 1)) > MAX_TRACES) {
-                perf.tagAsGlobalSummary(pm, "Experiment Benchmark traces: " + numTraces, Dimension.CPU_TIME);
+                perf.tagAsGlobalSummary(pm, "Experiment Benchmark:" + numTraces + " traces", Dimension.CPU_TIME);
             }
 
-            for (int s = 0; s < SAMPLE_SIZE; s++) {
+            int sampleSize = SAMPLE_SIZE;
+            if (numTraces > 20) {
+                sampleSize = SAMPLE_SIZE_SLOW;
+            }
+
+            for (int s = 0; s < sampleSize; s++) {
 
                 InnerEventRequest expReq = new InnerEventRequest(ITmfEvent.class, 0, ITmfEventRequest.ALL_DATA, ExecutionType.BACKGROUND);
                 InnerEventRequest traceReq[] = new InnerEventRequest[numTraces];
