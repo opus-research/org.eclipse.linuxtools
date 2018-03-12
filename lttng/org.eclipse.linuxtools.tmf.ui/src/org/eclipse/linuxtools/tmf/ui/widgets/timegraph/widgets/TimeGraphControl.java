@@ -2356,25 +2356,13 @@ public class TimeGraphControl extends TimeGraphBaseControl
         if (p.x >= 0 && p.x < parentSize.x && p.y >= 0 && p.y < parentSize.y) {
             // over the parent control
             if (e.x > getCtrlSize().x) {
-                // over the vertical scroll bar
+                // over the horizontal scroll bar
                 zoomScroll = false;
-            } else if (e.y < 0 || e.y >= getCtrlSize().y) {
-                // over the time scale or horizontal scroll bar
-                zoomScroll = true;
+            } else if (e.y >= 0 && e.y < getCtrlSize().y && e.x < fTimeProvider.getNameSpace()) {
+                // over the name space
+                zoomScroll = false;
             } else {
-                if (e.x < fTimeProvider.getNameSpace()) {
-                    // over the name space
-                    zoomScroll = false;
-                } else {
-                    // over the state area
-                    if ((e.stateMask & SWT.MODIFIER_MASK) == SWT.CTRL) {
-                        // over the state area, CTRL pressed
-                        zoomScroll = true;
-                    } else {
-                        // over the state area, CTRL not pressed
-                        zoomScroll = false;
-                    }
-                }
+                zoomScroll = true;
             }
         }
         if (zoomScroll && fTimeProvider.getTime0() != fTimeProvider.getTime1()) {
