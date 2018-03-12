@@ -408,9 +408,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         }
 
         // Create the UI columns in the table
-        for (TmfEventTableColumn col : fColumns) {
-            fTable.addColumn(col.getHeaderName(), col.getHeaderTooltip(), col.getFilterFieldId());
-        }
+        fTable.createColumns(fColumns);
 
         // Set the frozen row for header row
         fTable.setFrozenRowCount(1);

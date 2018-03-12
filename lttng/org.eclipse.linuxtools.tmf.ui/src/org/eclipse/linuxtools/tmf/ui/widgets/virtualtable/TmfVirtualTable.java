@@ -15,9 +15,11 @@
 
 package org.eclipse.linuxtools.tmf.ui.widgets.virtualtable;
 
-import org.eclipse.jdt.annotation.Nullable;
+import java.util.List;
+
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable.Key;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.TableEditor;
@@ -905,37 +907,38 @@ public class TmfVirtualTable extends Composite {
     }
 
     /**
-     * Add a column to this table
+     * Method setColumnHeaders.
      *
-     * @param header
-     *            The header (title) of this column
-     * @param tooltip
-     *            The custom tooltip for this column, or 'null' for no tooltip
-     * @param filterId
-     *            The Filter ID string for this column, to be used for
-     *            searching/filtering
+     * @param columns
+     *            The configuration elements of every column, in the order they
+     *            should be initially in the table.
      * @since 3.1
      */
-    public void addColumn(String header, @Nullable String tooltip,
-            @Nullable String filterId) {
-        TableColumn tableCol = new TableColumn(fTable, SWT.LEFT);
-        tableCol.setText(header);
+    public void createColumns(List<TmfEventTableColumn> columns) {
+        for (TmfEventTableColumn column : columns) {
 
-        if (tooltip != null) {
-         tableCol.setToolTipText(tooltip);
-        }
-        if (filterId != null) {
-            tableCol.setData(Key.FIELD_ID, filterId);
-        }
+            /* Set the column's header and properties */
+            TableColumn tableCol = new TableColumn(fTable, SWT.LEFT);
+            tableCol.setText(column.getHeaderName());
 
-        /*
-         * In Linux the table does not receive a control resized event when
-         * a table column resize causes the horizontal scroll bar to become
-         * visible or invisible, so a resize listener must be added to every
-         * table column to properly update the number of fully visible rows.
-         */
-        tableCol.addControlListener(fResizeListener);
-        tableCol.pack();
+            /* Set the column's tooltip, if any */
+            String tooltip = column.getHeaderTooltip();
+            if (tooltip != null) {
+                tableCol.setToolTipText(tooltip);
+            }
+
+            /* Set the column's Field ID (for filtering) */
+            tableCol.setData(Key.FIELD_ID, column.getFilterFieldId());
+
+            /*
+             * In Linux the table does not receive a control resized event when
+             * a table column resize causes the horizontal scroll bar to become
+             * visible or invisible, so a resize listener must be added to every
+             * table column to properly update the number of fully visible rows.
+             */
+            tableCol.addControlListener(fResizeListener);
+            tableCol.pack();
+        }
     }
 
     /**
