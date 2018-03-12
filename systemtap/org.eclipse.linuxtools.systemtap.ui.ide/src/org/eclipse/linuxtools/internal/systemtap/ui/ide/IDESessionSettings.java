@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2017 IBM Corporation and others.
+ * Copyright (c) 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor;
+import org.eclipse.linuxtools.systemtap.ui.editor.handlers.file.NewFileHandler;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
@@ -33,6 +34,47 @@ import org.eclipse.ui.dialogs.ListDialog;
  * @author Ryan Morse
  */
 public class IDESessionSettings {
+    /**
+     * Use {@link IDESessionSettings#setActiveSTPEditor(STPEditor)} and
+     * {@link IDESessionSettings#getActiveSTPEditor()}
+     */
+    private static STPEditor activeSTPEditor = null;
+
+    /**
+     * Returns the most recent active {@link STPEditor} script editor if one was
+     * set. If one was not set and there is only one {@link STPEditor} script editor
+     * open then that one is returned. Otherwise returns null.
+     * @return The most recent active {@link STPEditor}
+     * @since 1.2
+     */
+    public static STPEditor getActiveSTPEditor() {
+        if (activeSTPEditor == null) {
+            // If no active editor is et and there is only one
+            // opened stap script editor, set it to be the active editor.
+            IEditorReference[] editors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+            STPEditor stpEditor = null;
+            for (IEditorReference editor: editors) {
+                if (editor.getId().equals(STPEditor.ID)) {
+                    if (stpEditor == null) {
+                        stpEditor = (STPEditor) editor.getEditor(true);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+            activeSTPEditor = stpEditor;
+        }
+        return activeSTPEditor;
+    }
+
+    /**
+     * Sets the current active editor.
+     * @param editor the active editor.
+     * @since 1.2
+     */
+    public static void setActiveSTPEditor(STPEditor editor) {
+        activeSTPEditor = editor;
+    }
 
     /**
      * Restore and return an STPEditor based on the user's choice.

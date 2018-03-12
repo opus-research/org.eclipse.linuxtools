@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2017 Red Hat Inc.
+ * Copyright (c) 2009, 2016 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,9 +37,9 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
-import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileEditor;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePartitionScanner;
+import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
 import org.eclipse.linuxtools.rpm.ui.editor.markers.SpecfileErrorHandler;
 import org.eclipse.linuxtools.rpm.ui.editor.markers.SpecfileTaskHandler;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
@@ -180,10 +180,12 @@ public class SpecStructureCreator extends StructureCreator {
 		if (is == null) {
 			return null;
 		}
-		StringBuffer buffer = new StringBuffer();
-		char[] part = new char[2048];
-		int read = 0;
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, encoding))) {
+		BufferedReader reader = null;
+		try {
+			StringBuffer buffer = new StringBuffer();
+			char[] part = new char[2048];
+			int read = 0;
+			reader = new BufferedReader(new InputStreamReader(is, encoding));
 
 			while ((read = reader.read(part)) != -1) {
 				buffer.append(part, 0, read);
@@ -194,6 +196,14 @@ public class SpecStructureCreator extends StructureCreator {
 		} catch (IOException ex) {
 			// NeedWork
 			SpecfileLog.logError(ex);
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException ex) {
+					SpecfileLog.logError(ex);
+				}
+			}
 		}
 		return null;
 	}

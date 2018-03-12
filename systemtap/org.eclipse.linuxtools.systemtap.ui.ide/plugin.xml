@@ -38,16 +38,9 @@
             name="%view.probe.name">
       </view>
    </extension>
+
    <extension
          point="org.eclipse.ui.menus">
-      <menuContribution locationURI="toolbar:org.eclipse.ui.workbench.file?before=save">
-            <command
-                commandId="org.eclipse.linuxtools.internal.systemtap.ui.ide.OpenFileCommand"
-                icon="icons/actions/file/open_wiz.gif"
-                label="%command.open.name">
-                    <visibleWhen checkEnabled="true"/>
-            </command>
-      </menuContribution>
       <menuContribution
             locationURI="toolbar:org.eclipse.linuxtools.internal.systemtap.ui.ide.views.FunctionBrowserView">
          <command commandId="org.eclipse.ui.navigate.collapseAll"/>
@@ -199,105 +192,26 @@
          </command>
       </menuContribution>
    </extension>
-   <extension
-         point="org.eclipse.core.contenttype.contentTypes">
-      <content-type
-            base-type="org.eclipse.core.runtime.text"
-            file-extensions="stp"
-            id="org.eclipse.linuxtools.stap.content-type"
-            name="SystemTap Script"
-            priority="high">
-      </content-type>
-   </extension>
+
    <extension
          point="org.eclipse.ui.editors">
       <editor
             class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
             default="true"
+            extensions="stp"
             icon="icons/views/page_obj.gif"
             id="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor"
             name="%editor.stp.name">
-         <contentTypeBinding
-               contentTypeId="org.eclipse.linuxtools.stap.content-type">
-         </contentTypeBinding>
       </editor>
-   </extension>
-   <extension
-         point="org.eclipse.ui.genericeditor.presentationReconcilers">
-      <presentationReconciler
-            class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPPresentationReconciler"
-            contentType="org.eclipse.linuxtools.stap.content-type">
-      </presentationReconciler>
-   </extension>
-   <extension point="org.eclipse.ui.genericeditor.contentAssistProcessors">
-      <contentAssistProcessor
-            class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPCompletionProcessor"
-            contentType="org.eclipse.linuxtools.stap.content-type">
-      </contentAssistProcessor>
-   </extension>
-   <extension point="org.eclipse.ui.genericeditor.hoverProviders">
-      <hoverProvider
-     		class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPCompletionProcessor"
-            contentType="org.eclipse.linuxtools.stap.content-type">
-  	  </hoverProvider>
-   </extension>
-   <extension
-         point="org.eclipse.ui.editors.documentProviders">
-      <provider
-            class="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPDocumentProvider"
-            extensions="stp"
-            id="org.eclipse.linuxtools.stap.editor.documentProvider">
-      </provider>
-   </extension>
-   <extension
-         point="org.eclipse.ui.themes">
-      <themeElementCategory
-            id="org.eclipse.linuxtools.stap.editor.presentation"
-            label="SystemTap">
-      </themeElementCategory>
-      <colorDefinition
-            categoryId="org.eclipse.linuxtools.stap.editor.presentation"
-            id="org.eclipse.linuxtools.stap.editor.color.keyword"
-            label="Keyword"
-            value="127,0,85">
-      </colorDefinition>
-      <colorDefinition
-            categoryId="org.eclipse.linuxtools.stap.editor.presentation"
-            id="org.eclipse.linuxtools.stap.editor.color.string"
-            label="String"
-            value="0,0,255">
-      </colorDefinition>
-      <colorDefinition
-            categoryId="org.eclipse.linuxtools.stap.editor.presentation"
-            id="org.eclipse.linuxtools.stap.editor.color.comment"
-            label="Comment"
-            value="63,127,95">
-      </colorDefinition>
-      <colorDefinition
-            categoryId="org.eclipse.linuxtools.stap.editor.presentation"
-            id="org.eclipse.linuxtools.stap.editor.color.type"
-            label="Type"
-            value="0,0,128">
-      </colorDefinition>
-      <colorDefinition
-            categoryId="org.eclipse.linuxtools.stap.editor.presentation"
-            id="org.eclipse.linuxtools.stap.editor.color.default"
-            label="Default"
-            value="0,0,0">
-      </colorDefinition>
-      <colorDefinition
-            categoryId="org.eclipse.linuxtools.stap.editor.presentation"
-            id="org.eclipse.linuxtools.stap.editor.color.embedded"
-            label="Default"
-            value="0,64,64">
-      </colorDefinition>
-      <colorDefinition
-            categoryId="org.eclipse.linuxtools.stap.editor.presentation"
-            id="org.eclipse.linuxtools.stap.editor.color.embeddedc"
-            label="Default"
-            value="0,64,64">
-      </colorDefinition>
+      <editor
+            name="%editor.simple.name"
+            id="org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor"
+            class="org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor"
+            icon="icons/views/page_obj.gif"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true">
+      </editor>
    </extension>
 
    <extension
@@ -345,11 +259,6 @@
             description="%category.file.desc"
             id="org.eclipse.linuxtools.systemtap.ui.ide.category.file">
       </category>
-      <command
-            name="%command.open.name"
-            description="%command.open.desc"
-            categoryId="org.eclipse.linuxtools.systemtap.ui.ide.category.file"
-            id="org.eclipse.linuxtools.internal.systemtap.ui.ide.OpenFileCommand"/>
       <command
             name="%command.import.name"
             description="%command.import.desc"
@@ -442,16 +351,6 @@
 
    <extension
          point="org.eclipse.ui.handlers">
-       <handler
-            class="org.eclipse.linuxtools.internal.systemtap.ui.ide.OpenFileHandler"
-            commandId="org.eclipse.linuxtools.internal.systemtap.ui.ide.OpenFileCommand">
-            <activeWhen>
-                <with
-                    variable="activeWorkbenchWindow.activePerspective">
-                    <equals value="org.eclipse.linuxtools.systemtap.ui.ide.IDEPerspective"/>
-                </with>
-            </activeWhen>
-      </handler>
       <handler
             class="org.eclipse.linuxtools.internal.systemtap.ui.ide.handlers.RunScriptHandler"
             commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand">
