@@ -429,7 +429,7 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
         traceEntry.setEventList(eventList);
         redraw();
 
-        for (ITimeGraphEntry entry : traceEntry.getChildren()) {
+        for (TimeGraphEntry entry : traceEntry.getChildren()) {
             if (monitor.isCanceled()) {
                 return;
             }
