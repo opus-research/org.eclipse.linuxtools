@@ -20,7 +20,6 @@ import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLa
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.PRIVILEGED;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.PUBLISHED_PORTS;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.PUBLISH_ALL_PORTS;
-import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.READONLY;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -700,19 +699,6 @@ public class ImageRunSelectionPage extends WizardPage {
 						.value(ImageRunSelectionModel.class,
 								ImageRunSelectionModel.UNCONFINED)
 						.observe(model));
-
-		// readonly with tmpfs /run and /tmp
-		final Button basicSecurityButton = new Button(container, SWT.CHECK);
-		basicSecurityButton.setText(WizardMessages
-				.getString("ImageRunSelectionPage.basicSecurity")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.span(COLUMNS, 1).grab(true, false)
-				.applyTo(basicSecurityButton);
-		dbc.bindValue(WidgetProperties.selection().observe(basicSecurityButton),
-				BeanProperties
-						.value(ImageRunSelectionModel.class,
-								ImageRunSelectionModel.BASIC_SECURITY)
-						.observe(model));
 	}
 
 	/**
@@ -881,8 +867,6 @@ public class ImageRunSelectionPage extends WizardPage {
 						.getAttribute(ALLOCATE_PSEUDO_CONSOLE, false));
 				this.model.setPrivileged(lastLaunchConfiguration
 						.getAttribute(PRIVILEGED, false));
-				this.model.setBasicSecurity(
-						lastLaunchConfiguration.getAttribute(READONLY, false));
 			} catch (CoreException e) {
 				Activator.log(e);
 			}
