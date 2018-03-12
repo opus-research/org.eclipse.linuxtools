@@ -21,13 +21,6 @@ import org.osgi.framework.Version;
  */
 public class LttngVersion extends Version {
 
-    private final String fLicense;
-    private final String fCommit;
-    private final String fName;
-    private final String fDescription;
-    private final String fUrl;
-    private final String fFullVersion;
-
     /**
      * Constructor
      *
@@ -36,33 +29,6 @@ public class LttngVersion extends Version {
      */
     public LttngVersion(String version) {
         super(version);
-        fLicense = ""; //$NON-NLS-1$
-        fCommit = ""; //$NON-NLS-1$
-        fName = ""; //$NON-NLS-1$
-        fDescription = ""; //$NON-NLS-1$
-        fUrl = ""; //$NON-NLS-1$
-        fFullVersion = ""; //$NON-NLS-1$
-    }
-
-    /**
-     * @param major major version number
-     * @param minor minor version number
-     * @param micro micro version number
-     * @param license licence text of LTTng
-     * @param commit current git commit information about LTTng
-     * @param name name of the version
-     * @param description description of the version
-     * @param url url to website
-     * @param fullVersion complete string representation of the version
-     */
-    public LttngVersion(int major, int minor, int micro, String license, String commit, String name, String description, String url, String fullVersion) {
-        super(major, minor, micro);
-        fLicense = license;
-        fCommit = commit;
-        fName = name;
-        fDescription = description;
-        fUrl = url;
-        fFullVersion = fullVersion;
     }
 
     /**
@@ -79,6 +45,7 @@ public class LttngVersion extends Version {
         if (other == this) { // quicktest
             return 0;
         }
+
         int result = getMajor() - other.getMajor();
         if (result != 0) {
             return result;
@@ -94,47 +61,5 @@ public class LttngVersion extends Version {
             return result;
         }
         return getQualifier().compareTo(other.getQualifier());
-    }
-
-    /**
-     * @return String representing the lttng license
-     */
-    public String getLicense() {
-        return fLicense;
-    }
-
-    /**
-     * @return commit id of lttng
-     */
-    public String getCommit() {
-        return fCommit;
-    }
-
-    /**
-     * @return name of lttng version
-     */
-    public String getName() {
-        return fName;
-    }
-
-    /**
-     * @return full description of lttng
-     */
-    public String getDescription() {
-        return fDescription;
-    }
-
-    /**
-     * @return url of lttng
-     */
-    public String getUrl() {
-        return fUrl;
-    }
-
-    /**
-     * @return the full_version
-     */
-    public String getFullVersion() {
-        return fFullVersion;
     }
 }

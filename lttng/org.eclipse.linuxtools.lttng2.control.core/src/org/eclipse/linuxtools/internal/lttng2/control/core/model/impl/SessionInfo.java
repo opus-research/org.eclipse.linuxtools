@@ -157,15 +157,6 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
     }
 
     @Override
-    public void setSessionState(boolean enabled) {
-        if (enabled) {
-            fState = TraceSessionState.ACTIVE;
-        } else {
-            fState = TraceSessionState.INACTIVE;
-        }
-    }
-
-    @Override
     public String getSessionPath() {
         if (isSnapshotSession() && fSnapshotInfo != null) {
             return fSnapshotInfo.getSnapshotPath();
