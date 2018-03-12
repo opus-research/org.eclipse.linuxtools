@@ -332,8 +332,12 @@ public class CTFStream {
         if (fEventUnsetId) {
             throw new CTFReaderException("Cannot add to a stream with an unidentified event"); //$NON-NLS-1$
         }
+        boolean isUnset = isUnsetList(events);
         if (fEvents.isEmpty()) {
             fEvents.addAll(events);
+            if (isUnset) {
+                fEventUnsetId = isUnset;
+            }
             return;
         }
         for (IEventDeclaration event : events) {
@@ -346,6 +350,19 @@ public class CTFStream {
                 fEvents.set(index, event);
             }
         }
+    }
+
+    private static boolean isUnsetList(Collection<IEventDeclaration> events) throws CTFReaderException {
+
+        for (IEventDeclaration event : events) {
+            if (event.getId() == null || event.getId().longValue() == (EventDeclaration.UNSET_EVENT_ID)) {
+                if (events.size() > 1) {
+                    throw new CTFReaderException("A list cannot contain both unset and set IDs"); //$NON-NLS-1$
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     private void ensureSize(int index) {
