@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2014 Ericsson
+ * Copyright (c) 2012, 2013. 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Jonathan Rajotte - machine interface support
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views.service;
 
@@ -23,8 +22,10 @@ import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.ICommandRe
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.ICommandShell;
 
 /**
+ * <p>
  * Factory to create LTTngControlService instances depending on the version of
  * the LTTng Trace Control installed on the remote host.
+ * </p>
  *
  * @author Bernd Hufmann
  */
@@ -77,48 +78,27 @@ public class LTTngControlServiceFactory {
         // get the version
         boolean machineInterfaceMode = true;
         String command = LTTngControlServiceConstants.CONTROL_COMMAND + LTTngControlServiceConstants.COMMAND_VERSION;
-        String commandMi = LTTngControlServiceConstants.CONTROL_COMMAND_MI_XML + LTTngControlServiceConstants.COMMAND_VERSION;
+        String commandMI = LTTngControlServiceConstants.CONTROL_COMMAND_MI_XML + LTTngControlServiceConstants.COMMAND_VERSION;
 
-        // Logging
         if (ControlPreferences.getInstance().isLoggingEnabled()) {
-            ControlCommandLogger.log(commandMi);
+            ControlCommandLogger.log(command);
         }
-
         ICommandResult result = null;
 
-        // Looking for a machine interface on LTTng side
-        try {
-            result = shell.executeCommand(commandMi, new NullProgressMonitor());
-        } catch (ExecutionException e) {
-            throw new ExecutionException(Messages.TraceControl_GettingVersionError, e);
-        }
-
-        // Output logging
-        if (ControlPreferences.getInstance().isLoggingEnabled()) {
-            ControlCommandLogger.log(LTTngControlService.formatOutput(result));
-        }
-
+        result = shell.executeCommand(commandMI, new NullProgressMonitor());
         if (result.getResult() != 0) {
             machineInterfaceMode = false;
             // Fall back if no machine interface is present
-
-            // Logging
-            if (ControlPreferences.getInstance().isLoggingEnabled()) {
-                ControlCommandLogger.log(command);
-            }
-
             try {
                 result = shell.executeCommand(command, new NullProgressMonitor());
             } catch (ExecutionException e) {
                 throw new ExecutionException(Messages.TraceControl_GettingVersionError + ": " + e); //$NON-NLS-1$
             }
-
-            // Output logging
-            if (ControlPreferences.getInstance().isLoggingEnabled()) {
-                ControlCommandLogger.log(LTTngControlService.formatOutput(result));
-            }
         }
 
+        if (ControlPreferences.getInstance().isLoggingEnabled()) {
+            ControlCommandLogger.log(LTTngControlService.formatOutput(result));
+        }
 
         if ((result != null) && (result.getResult() == 0) && (result.getOutput().length >= 1)) {
             if (machineInterfaceMode) {
