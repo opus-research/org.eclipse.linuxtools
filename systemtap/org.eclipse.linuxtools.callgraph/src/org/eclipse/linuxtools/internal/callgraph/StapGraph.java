@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2016 Red Hat, Inc.
+ * Copyright (c) 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -688,8 +688,8 @@ public class StapGraph extends Graph {
      * @param y
      */
     private void moveAllNodesTo(int x, int y) {
-        for (StapNode node : nodeMap.values()) {
-            node.setLocation(x, y);
+        for (int i : nodeMap.keySet()) {
+            nodeMap.get(i).setLocation(x, y);
         }
     }
 
@@ -868,7 +868,8 @@ public class StapGraph extends Graph {
         }
 
         // -------------Delete all nodes
-        for (StapNode node : nodeMap.values()) {
+        for (int i : nodeMap.keySet()) {
+            StapNode node = nodeMap.get(i);
             if (node == null) {
                 continue;
             }
@@ -1322,7 +1323,8 @@ public class StapGraph extends Graph {
         }
 
         // -------------Handle nodes that only appeared once
-        for (int childID : collapsedNodesWithOnlyOneNodeInThem.values()) {
+        for (int i : collapsedNodesWithOnlyOneNodeInThem.keySet()) {
+            int childID = collapsedNodesWithOnlyOneNodeInThem.get(i);
             nodeDataMap.get(childID).onlyChildWithThisName = true;
             nodeDataMap.get(id).collapsedChildren.add(childID);
             newNodeMap.remove(nodeDataMap.get(childID).name);
