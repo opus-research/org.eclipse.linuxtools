@@ -12,7 +12,6 @@
  *********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.core.model;
 
-import java.security.InvalidParameterException;
 
 /**
  * Log Level enumeration.
@@ -102,7 +101,7 @@ public enum TraceLogLevel {
      */
     public static TraceLogLevel valueOfString(String name) {
         if (name == null) {
-            throw new InvalidParameterException();
+            throw new IllegalArgumentException();
         }
         for (TraceLogLevel tllevel : TraceLogLevel.values()) {
             if (tllevel.getInName().equalsIgnoreCase(name)) {
