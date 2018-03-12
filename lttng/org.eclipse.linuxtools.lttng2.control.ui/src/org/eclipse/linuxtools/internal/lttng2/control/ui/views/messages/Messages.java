@@ -28,10 +28,6 @@ public final class Messages extends NLS {
 
     public static String EnableChannelDialog_DefaultMessage;
 
-    public static String ImportHandler_LiveTraceElementError;
-
-    public static String ImportHandler_LiveTraceInitError;
-
     // Failures
     public static String TraceControl_ConnectionFailure;
     public static String TraceControl_DisconnectionFailure;
@@ -144,9 +140,6 @@ public final class Messages extends NLS {
     public static String TraceControl_CreateSessionNoConsumertTooltip;
     public static String TraceControl_CreateSessionDisableConsumertText;
     public static String TraceControl_CreateSessionDisableConsumertTooltip;
-    public static String TraceControl_CreateSessionLiveConnectionLabel;
-    public static String TraceControl_CreateSessionLiveConnectionUrlTooltip;
-    public static String TraceControl_CreateSessionLiveConnectionPortTooltip;
     public static String TraceControl_CreateSessionLiveDelayLabel;
     public static String TraceControl_CreateSessionLiveDelayTooltip;
 

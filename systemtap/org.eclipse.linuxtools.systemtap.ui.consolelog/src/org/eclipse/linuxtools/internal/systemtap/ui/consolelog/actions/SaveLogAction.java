@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006 IBM Corporation and others.
+ * Copyright (c) 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,20 +7,15 @@
  *
  * Contributors:
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
- *     Red Hat - ongoing maintenance
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.systemtap.ui.consolelog.actions;
 
 import java.io.File;
-import java.text.MessageFormat;
 
-import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
-import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole.ScriptConsoleObserver;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.PlatformUI;
@@ -29,9 +24,7 @@ import org.eclipse.ui.PlatformUI;
  * This class is used to allow the user to save the log generated from an active console
  * @author Ryan Morse
  */
-public class SaveLogAction extends ConsoleAction implements ScriptConsoleObserver {
-
-    private String logFileName = null;
+public class SaveLogAction extends ConsoleAction {
 
     /**
      * @since 2.0
@@ -40,9 +33,7 @@ public class SaveLogAction extends ConsoleAction implements ScriptConsoleObserve
         super(fConsole,
                 ConsoleLogPlugin.getDefault().getBundle().getEntry("icons/actions/save_log.gif"), //$NON-NLS-1$
                 Localization.getString("action.saveLog.name"), //$NON-NLS-1$
-                Localization.getString("action.saveLog.desc"), //$NON-NLS-1$
-                IAction.AS_CHECK_BOX);
-        console.addScriptConsoleObserver(this);
+                Localization.getString("action.saveLog.desc")); //$NON-NLS-1$
     }
 
     /**
@@ -51,13 +42,12 @@ public class SaveLogAction extends ConsoleAction implements ScriptConsoleObserve
      */
     @Override
     public void run() {
-        File file = getFile();
-        if (file != null) {
-            if (console.saveStreamAndReturnResult(file)) {
-                logFileName = file.toString();
+        if(null != console) {
+            File file = getFile();
+            if(null != file){
+                console.saveStream(file);
             }
         }
-        updateChecked();
     }
 
     /**
@@ -65,47 +55,16 @@ public class SaveLogAction extends ConsoleAction implements ScriptConsoleObserve
      * @return File representing the desired destination for the log.
      */
     private File getFile() {
-        FileDialog dialog = new FileDialog(PlatformUI
-                .getWorkbench().getActiveWorkbenchWindow()
-                .getShell(), SWT.SAVE);
+        String path = null;
+        FileDialog dialog= new FileDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
+        dialog.setText(Localization.getString("SaveLogAction.OutputFile")); //$NON-NLS-1$
 
-        if (logFileName != null) {
-            Path logPath = new Path(logFileName);
-            dialog.setFilterPath(logPath.removeLastSegments(1).toOSString());
-            dialog.setFileName(logPath.lastSegment());
+        path = dialog.open();
+
+        if(null == path){
+            return null;
         }
-        dialog.setText(Localization.getString(
-                !isLogging() ? "SaveLogAction.OutputFile" //$NON-NLS-1$
-                        : "SaveLogAction.OutputFileLocation")); //$NON-NLS-1$
-        dialog.setOverwrite(true);
-        String path = dialog.open();
-        return path != null ? new File(path) : null;
-    }
 
-    public void updateChecked() {
-        if (isLogging()) {
-            setToolTipText(MessageFormat.format(
-                    Localization.getString("action.saveLog.name2"), //$NON-NLS-1$
-                    logFileName));
-            setChecked(true);
-        } else {
-            setToolTipText(Localization.getString("action.saveLog.name")); //$NON-NLS-1$
-            setChecked(false);
-        }
+        return new File(path);
     }
-
-    private boolean isLogging() {
-        return logFileName != null;
-    }
-
-    @Override
-    public void runningStateChanged(boolean started, boolean stopped) {
-        // Uncheck the button whenever a script restarts, for it will be associated with
-        // a new command and therefore a new logger.
-        if (started && !stopped) {
-            logFileName = null;
-            updateChecked();
-        }
-    }
-
 }
