@@ -522,6 +522,7 @@ public class EditDockerConnectionPage extends WizardPage {
 				return ValidationStatus.error(WizardMessages.getString(
 						"DockerConnectionPage.validation.duplicateConnectionName.msg")); //$NON-NLS-1$
 			}
+			System.err.println("Name Validation status: OK");
 			return ValidationStatus.ok();
 		}
 	}
