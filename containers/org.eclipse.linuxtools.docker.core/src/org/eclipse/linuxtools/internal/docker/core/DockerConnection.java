@@ -1433,7 +1433,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
-			// Permit kill to fail silently even on non-running containers
+			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
