@@ -20,7 +20,6 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreePath;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
@@ -54,9 +53,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributo
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 
 /**
- * {@link CommonNavigator} that display a tree of available
- * {@link IDockerConnection}s and for each one, the {@link IDockerContainer}s
- * and {@link IDockerImage}s under separate categories.
+ * @author xcoulon
  *
  */
 public class DockerExplorerView extends CommonNavigator implements
@@ -68,7 +65,6 @@ public class DockerExplorerView extends CommonNavigator implements
 	
 	private Control connectionsPane;
 	private Control explanationsPane;
-	private Control currentPane;
 	private PageBook pageBook;
 	private Map<IDockerConnection, ContainersRefresher> containersRefreshers = new HashMap<>();
 	private Map<IDockerConnection, ImagesRefresher> imagesRefreshers = new HashMap<>();
@@ -121,6 +117,7 @@ public class DockerExplorerView extends CommonNavigator implements
 		getCommonViewer().addFilter(containersAndImagesSearchFilter);
 		DockerConnectionManager.getInstance()
 				.addConnectionManagerListener(this);
+
 	}
 
 	/**
@@ -233,21 +230,10 @@ public class DockerExplorerView extends CommonNavigator implements
 	private void showConnectionsOrExplanations() {
 		if (DockerConnectionManager.getInstance().getConnections().length < 1) {
 			pageBook.showPage(explanationsPane);
-			this.currentPane = explanationsPane;
 		} else {
 			pageBook.showPage(connectionsPane);
-			this.currentPane = connectionsPane;
 			registerListeners();
 		}
-	}
-
-	/**
-	 * @return <code>true</code> if the current panel is the one containing a
-	 *         {@link TreeViewer} of {@link IDockerConnection}s,
-	 *         <code>false</code> otherwise.
-	 */
-	public boolean isShowingConnectionsPane() {
-		return this.currentPane == connectionsPane;
 	}
 
 	@Override
