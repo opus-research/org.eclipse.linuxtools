@@ -16,9 +16,7 @@
 package org.eclipse.linuxtools.tmf.ui.project.wizards;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -44,7 +42,6 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
@@ -154,35 +151,21 @@ public class SelectTracesWizardPage extends WizardPage {
 
             @Override
             public Object[] getElements(Object inputElement) {
-                return getChildren(inputElement);
+                return super.getChildren(inputElement);
             }
 
             @Override
             public synchronized Object[] getChildren(Object parentElement) {
                 // We only care about the content of trace folders
                 if (parentElement instanceof TmfTraceFolder) {
-                    Object[] children = super.getChildren(parentElement);
-                    List<ITmfProjectModelElement> filteredChildren = new ArrayList<>();
-                    for (Object child : children) {
-                        if (child instanceof TmfTraceElement) {
-                            TmfTraceElement traceElement = (TmfTraceElement) child;
-                            String traceType = traceElement.getTraceType();
-                            if (traceType != null && TmfTraceType.getTraceType(traceType) != null) {
-                                filteredChildren.add(traceElement);
-                            }
-                        } else if (child instanceof TmfTraceFolder) {
-                            filteredChildren.add((TmfTraceFolder) child);
-                        }
-                    }
-                    return filteredChildren.toArray();
+                    return super.getChildren(parentElement);
                 }
                 return null;
             }
 
             @Override
             public boolean hasChildren(Object element) {
-                Object[] children = getChildren(element);
-                return children != null && children.length > 0;
+                return getChildren(element) != null;
             }
         };
         fCheckboxTreeViewer.setContentProvider(fContentProvider);

@@ -211,7 +211,7 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     public String getNodeVersion() {
         // Control service is null during connection to node
         if (getControlService() != null) {
-            return getControlService().getVersionString();
+            return getControlService().getVersion();
         }
         return ""; //$NON-NLS-1$
     }
@@ -264,14 +264,7 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     public boolean isSnapshotSupported() {
         return getControlService().isVersionSupported("2.3.0"); //$NON-NLS-1$
     }
-    /**
-     * Returns if node supports live or not
-     * @return <code>true</code> if it supports live else <code>false</code>
-     *
-     */
-    public boolean isLiveSupported() {
-        return getControlService().isVersionSupported("2.4.0"); //$NON-NLS-1$;
-    }
+
     /**
      * Returns if node supports adding contexts on event
      * @return <code>true</code> if it supports adding contexts on events else <code>false</code>

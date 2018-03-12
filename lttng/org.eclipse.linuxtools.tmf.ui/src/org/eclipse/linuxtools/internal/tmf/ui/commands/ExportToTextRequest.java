@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Kalray, Ericsson
+ * Copyright (c) 2013 Kalray
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,14 +8,12 @@
  *
  * Contributors:
  *   Xavier Raynaud - Initial API and implementation
- *   Bernd Hufmann - Adapted to new events table column API
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.commands;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
@@ -23,7 +21,7 @@ import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
 
 /**
  * This TMF Requests exports traces to text files.
@@ -33,7 +31,7 @@ public class ExportToTextRequest extends TmfEventRequest {
 
     private final Writer fWriter;
     private final ITmfFilter fFilter;
-    private final List<TmfEventTableColumn> fColumns;
+    private final TmfEventsTable fTable;
     private IOException fIOException;
 
     /**
@@ -42,14 +40,14 @@ public class ExportToTextRequest extends TmfEventRequest {
      *          a Writer, typically a FileWriter.
      * @param filter
      *          a TmfFilter, if we want to filter some events. May be <code>null</code>.
-     * @param columns
-     *            the {@link TmfEventTableColumn} requesting the export (may be <code>null</code>)
+     * @param table
+     *            the {@link TmfEventsTable} requesting the export (may be <code>null</code>)
      */
-    public ExportToTextRequest(Writer w, ITmfFilter filter, List<TmfEventTableColumn> columns) {
+    public ExportToTextRequest(Writer w, ITmfFilter filter, TmfEventsTable table) {
         super(ITmfEvent.class, TmfTimeRange.ETERNITY, 0, ITmfEventRequest.ALL_DATA, ExecutionType.FOREGROUND);
         this.fWriter = w;
         this.fFilter = filter;
-        this.fColumns = columns;
+        this.fTable = table;
     }
 
     /**
@@ -68,13 +66,14 @@ public class ExportToTextRequest extends TmfEventRequest {
         }
         try {
             if (fFilter == null || fFilter.matches(event)) {
-                if (fColumns != null) {
+                if (fTable != null) {
+                    String[] entries = fTable.getItemStrings(event);
                     boolean needTab = false;
-                    for (TmfEventTableColumn column : fColumns) {
+                    for (String entry : entries) {
                         if (needTab) {
                             fWriter.write('\t');
                         }
-                        fWriter.write(column.getItemString(event));
+                        printValue(entry);
                         needTab = true;
                     }
                 } else { // fallback to default formatting
@@ -87,16 +86,19 @@ public class ExportToTextRequest extends TmfEventRequest {
                     fWriter.write(event.getReference());
                     fWriter.write('\t');
                     ITmfEventField content = event.getContent();
-                    Object value = content.getValue();
-                    if (value != null) {
-                        fWriter.write(value.toString());
-                    }
+                    printValue(content.getValue());
                 }
                 fWriter.write('\n');
             }
         } catch (IOException ex) {
             fIOException = ex;
             fail();
+        }
+    }
+
+    private void printValue(Object value) throws IOException {
+        if (value != null) {
+            fWriter.write(value.toString());
         }
     }
 
