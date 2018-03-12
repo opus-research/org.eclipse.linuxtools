@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 Open Analytics NV and others.
+ * Copyright (c) 2015-2016 Open Analytics NV and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,10 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.editor.assist;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -27,11 +30,9 @@ public class CompletionProcessor implements IContentAssistProcessor {
 	private static final IContextInformation[] NO_CONTEXTS = {};
 	private static final char[] PROPOSAL_ACTIVATION_CHARS = {};
 	private static final char[] INFO_ACTIVATION_CHARS = {};
-	private AssetLoader assetLoader;
 
-	public CompletionProcessor() {
-		assetLoader = new AssetLoader();
-	}
+	private static final String ADDITIONAL_INFO_PATH = "assets/additional-info";
+	private Map<String, String> additionalInfos = new HashMap<>();
 
 	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
@@ -45,7 +46,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 			boolean isNewLine = (offset == 0) || (document.getChar(offset - 1) == '\n');
 			if (isNewLine) {
 				for (String instr : InstructionWordRule.INSTRUCTIONS)
-					result.add(new CompletionProposal(instr, lineOffset, 0, assetLoader.getInfo(instr)));
+					result.add(new CompletionProposal(instr, lineOffset, 0, getAdditionalInfo(instr)));
 			}
 
 			boolean isFirstWord = true;
@@ -60,7 +61,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 				for (String instr : InstructionWordRule.INSTRUCTIONS) {
 					if (instr.toLowerCase().startsWith(prefix.toLowerCase()))
 						result.add(
-								new CompletionProposal(instr, lineOffset, prefix.length(), assetLoader.getInfo(instr)));
+								new CompletionProposal(instr, lineOffset, prefix.length(), getAdditionalInfo(instr)));
 				}
 			}
 
@@ -97,4 +98,19 @@ public class CompletionProcessor implements IContentAssistProcessor {
 		return null;
 	}
 
+	private String getAdditionalInfo(String instruction) {
+		if (additionalInfos.containsKey(instruction))
+			return additionalInfos.get(instruction);
+
+		String additionalInfo = "";
+		String targetFile = ADDITIONAL_INFO_PATH + "/" + instruction + ".html";
+		try {
+			additionalInfo = AssetLoader.loadAsset(targetFile);
+		} catch (IOException e) {
+			Activator.log(IStatus.WARNING, "Failed to load additional info file for instruction " + instruction, e);
+		}
+
+		additionalInfos.put(instruction, additionalInfo);
+		return additionalInfo;
+	}
 }
