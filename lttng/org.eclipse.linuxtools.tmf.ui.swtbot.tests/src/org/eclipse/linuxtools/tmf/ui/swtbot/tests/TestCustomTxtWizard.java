@@ -19,11 +19,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
+import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -62,10 +69,10 @@ import org.junit.runner.RunWith;
  *
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class TestCustomTxtWizard extends AbstractCustomParserWizard {
+public class TestCustomTxtWizard {
 
     private static final String MANAGE_CUSTOM_PARSERS_SHELL_TITLE = "Manage Custom Parsers";
-    private static final String PROJECT_NAME = "TestText";
+    private static final String PROJECT_NAME = "Test";
     private static final String CATEGORY_NAME = "Test Category";
     private static final String TRACETYPE_NAME = "Test Trace";
     private static final String EXPECTED_TEST_DEFINITION = "<Definition category=\"Test Category\" name=\"Test Trace\">\n" +
@@ -84,6 +91,28 @@ public class TestCustomTxtWizard extends AbstractCustomParserWizard {
             "<OutputColumn name=\"Time Stamp\"/>\n" +
             "<OutputColumn name=\"Message\"/>\n";
 
+    /** The Log4j logger instance. */
+    private static final Logger fLogger = Logger.getRootLogger();
+    private static SWTWorkbenchBot fBot;
+
+    /** Test Class setup */
+    @BeforeClass
+    public static void init() {
+        SWTBotUtil.failIfUIThread();
+        Thread.currentThread().setName("SWTBot Thread"); // for the debugger
+        /* set up for swtbot */
+        SWTBotPreferences.TIMEOUT = 20000; /* 20 second timeout */
+        fLogger.addAppender(new ConsoleAppender(new SimpleLayout()));
+        fBot = new SWTWorkbenchBot();
+
+        SWTBotUtil.closeView("welcome", fBot);
+
+        SWTBotUtil.switchToTracingPerspective();
+        /* finish waiting for eclipse to load */
+        SWTBotUtil.waitForJobs();
+
+    }
+
     /**
      * Test to create a custom txt trace and compare the xml
      *
@@ -96,7 +125,7 @@ public class TestCustomTxtWizard extends AbstractCustomParserWizard {
     public void testNew() throws FileNotFoundException, IOException {
         File xmlFile = ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".metadata/.plugins/org.eclipse.linuxtools.tmf.core/custom_txt_parsers.xml").toFile();
         SWTBotUtil.createProject(PROJECT_NAME);
-        SWTBotView proejctExplorerBot = getBot().viewByTitle("Project Explorer");
+        SWTBotView proejctExplorerBot = fBot.viewByTitle("Project Explorer");
         proejctExplorerBot.show();
         SWTBotTreeItem treeItem = proejctExplorerBot.bot().tree().getTreeItem(PROJECT_NAME);
         treeItem.select();
@@ -111,20 +140,20 @@ public class TestCustomTxtWizard extends AbstractCustomParserWizard {
         }
         assertNotNull(treeNode);
         treeNode.contextMenu("Manage Custom Parsers...").click();
-        getBot().shell(MANAGE_CUSTOM_PARSERS_SHELL_TITLE).setFocus();
+        fBot.shell(MANAGE_CUSTOM_PARSERS_SHELL_TITLE).setFocus();
 
-        getBot().button("New...").click();
+        fBot.button("New...").click();
 
-        getBot().textWithLabel("Category:").setText(CATEGORY_NAME);
-        getBot().textWithLabel("Trace type:").setText(TRACETYPE_NAME);
-        getBot().textWithLabel("Time Stamp format:").setText("ss");
-        getBot().comboBox(1).setSelection("Time Stamp");
-        getBot().textWithLabel("format:").setText("ss");
-        getBot().button(8).click();
-        getBot().button(2).click();
-        SWTBotTreeItem[] treeItems = getBot().tree().getAllItems();
+        fBot.textWithLabel("Category:").setText(CATEGORY_NAME);
+        fBot.textWithLabel("Trace type:").setText(TRACETYPE_NAME);
+        fBot.textWithLabel("Time Stamp format:").setText("ss");
+        fBot.comboBox(1).setSelection("Time Stamp");
+        fBot.textWithLabel("format:").setText("ss");
+        fBot.button(8).click();
+        fBot.button(2).click();
+        SWTBotTreeItem[] treeItems = fBot.tree().getAllItems();
         SWTBotTreeItem eventLine[] = new SWTBotTreeItem[2];
-        treeItems = getBot().tree().getAllItems();
+        treeItems = fBot.tree().getAllItems();
         for (SWTBotTreeItem item : treeItems) {
             if (item.getText().startsWith("Root Line 1")) {
                 eventLine[0] = item;
@@ -135,27 +164,27 @@ public class TestCustomTxtWizard extends AbstractCustomParserWizard {
         }
         assertNotNull(eventLine[0]);
         assertNotNull(eventLine[1]);
-        getBot().styledText().setText("12 Hello\nWorld\n23 Goodbye\ncruel world");
+        fBot.styledText().setText("12 Hello\nWorld\n23 Goodbye\ncruel world");
         eventLine[0].select();
         SWTBotUtil.waitForJobs();
-        getBot().textWithLabel("Regular expression:").setText("\\s*(\\d\\d)\\s(.*\\S)");
+        fBot.textWithLabel("Regular expression:").setText("\\s*(\\d\\d)\\s(.*\\S)");
         eventLine[1].select();
-        getBot().textWithLabel("Regular expression:").setText("([^0-9]*)");
-        getBot().button(7).click();
-        getBot().comboBox("Set").setSelection("Append with |");
-        getBot().button("Highlight All").click();
-        getBot().button("Next >").click();
-        getBot().button("Finish").click();
+        fBot.textWithLabel("Regular expression:").setText("([^0-9]*)");
+        fBot.button(7).click();
+        fBot.comboBox("Set").setSelection("Append with |");
+        fBot.button("Highlight All").click();
+        fBot.button("Next >").click();
+        fBot.button("Finish").click();
         String xmlPart = extractTestXml(xmlFile, CATEGORY_NAME, TRACETYPE_NAME);
         assertEquals(EXPECTED_TEST_DEFINITION, xmlPart);
-        getBot().list().select(CATEGORY_NAME + " : " + TRACETYPE_NAME);
-        getBot().button("Delete").click();
-        getBot().button("Yes").click();
-        getBot().button("Close").click();
+        fBot.list().select(CATEGORY_NAME + " : " + TRACETYPE_NAME);
+        fBot.button("Delete").click();
+        fBot.button("Yes").click();
+        fBot.button("Close").click();
         xmlPart = extractTestXml(xmlFile, CATEGORY_NAME, TRACETYPE_NAME);
         assertEquals("", xmlPart);
 
-        SWTBotUtil.deleteProject(PROJECT_NAME, getBot());
+        SWTBotUtil.deleteProject(PROJECT_NAME, fBot);
     }
 
     /**
@@ -199,7 +228,7 @@ public class TestCustomTxtWizard extends AbstractCustomParserWizard {
             fw.flush();
         }
         SWTBotUtil.createProject(PROJECT_NAME);
-        SWTBotView proejctExplorerBot = getBot().viewByTitle("Project Explorer");
+        SWTBotView proejctExplorerBot = fBot.viewByTitle("Project Explorer");
         proejctExplorerBot.show();
         SWTBotTreeItem treeItem = proejctExplorerBot.bot().tree().getTreeItem(PROJECT_NAME);
         treeItem.select();
@@ -214,17 +243,17 @@ public class TestCustomTxtWizard extends AbstractCustomParserWizard {
         }
         assertNotNull(treeNode);
         treeNode.contextMenu("Manage Custom Parsers...").click();
-        getBot().shell(MANAGE_CUSTOM_PARSERS_SHELL_TITLE).setFocus();
-        getBot().list().select("Demo Category : Demo trace");
-        getBot().button("Edit...").click();
+        fBot.shell(MANAGE_CUSTOM_PARSERS_SHELL_TITLE).setFocus();
+        fBot.list().select("Demo Category : Demo trace");
+        fBot.button("Edit...").click();
 
-        getBot().textWithLabel("Category:").setText(CATEGORY_NAME);
-        getBot().textWithLabel("Trace type:").setText(TRACETYPE_NAME);
-        getBot().textWithLabel("Time Stamp format:").setText("ss");
-        getBot().comboBox(1).setSelection("Time Stamp");
-        getBot().textWithLabel("format:").setText("ss");
-        getBot().button(2).click();
-        SWTBotTreeItem[] treeItems = getBot().tree().getAllItems();
+        fBot.textWithLabel("Category:").setText(CATEGORY_NAME);
+        fBot.textWithLabel("Trace type:").setText(TRACETYPE_NAME);
+        fBot.textWithLabel("Time Stamp format:").setText("ss");
+        fBot.comboBox(1).setSelection("Time Stamp");
+        fBot.textWithLabel("format:").setText("ss");
+        fBot.button(2).click();
+        SWTBotTreeItem[] treeItems = fBot.tree().getAllItems();
         SWTBotTreeItem eventLine[] = new SWTBotTreeItem[2];
         for (SWTBotTreeItem item : treeItems) {
             if (item.getText().startsWith("Root Line 1")) {
@@ -234,29 +263,51 @@ public class TestCustomTxtWizard extends AbstractCustomParserWizard {
                 eventLine[1] = item;
             }
         }
-        treeItems = getBot().tree().getAllItems();
+        treeItems = fBot.tree().getAllItems();
         assertNotNull(eventLine[0]);
         assertNotNull(eventLine[1]);
-        getBot().styledText().setText("12 Hello\nWorld\n23 Goodbye\ncruel world");
+        fBot.styledText().setText("12 Hello\nWorld\n23 Goodbye\ncruel world");
         eventLine[0].select();
         SWTBotUtil.waitForJobs();
-        getBot().textWithLabel("Regular expression:").setText("\\s*(\\d\\d)\\s(.*\\S)");
+        fBot.textWithLabel("Regular expression:").setText("\\s*(\\d\\d)\\s(.*\\S)");
         eventLine[1].select();
-        getBot().textWithLabel("Regular expression:").setText("([^0-9]*)");
-        getBot().button(7).click();
-        getBot().comboBox("Set").setSelection("Append with |");
-        getBot().button("Highlight All").click();
-        getBot().button("Next >").click();
-        getBot().button("Finish").click();
+        fBot.textWithLabel("Regular expression:").setText("([^0-9]*)");
+        fBot.button(7).click();
+        fBot.comboBox("Set").setSelection("Append with |");
+        fBot.button("Highlight All").click();
+        fBot.button("Next >").click();
+        fBot.button("Finish").click();
         String xmlPart = extractTestXml(xmlFile, CATEGORY_NAME, TRACETYPE_NAME);
         assertEquals(EXPECTED_TEST_DEFINITION, xmlPart);
-        getBot().list().select(CATEGORY_NAME + " : " + TRACETYPE_NAME);
-        getBot().button("Delete").click();
-        getBot().button("Yes").click();
-        getBot().button("Close").click();
+        fBot.list().select(CATEGORY_NAME + " : " + TRACETYPE_NAME);
+        fBot.button("Delete").click();
+        fBot.button("Yes").click();
+        fBot.button("Close").click();
         xmlPart = extractTestXml(xmlFile, CATEGORY_NAME, TRACETYPE_NAME);
         assertEquals("", xmlPart);
 
-        SWTBotUtil.deleteProject(PROJECT_NAME, getBot());
+        SWTBotUtil.deleteProject(PROJECT_NAME, fBot);
+    }
+
+    private static String extractTestXml(File xmlFile, String category, String definitionName) throws IOException, FileNotFoundException {
+        StringBuilder xmlPart = new StringBuilder();
+        boolean started = false;
+        try (RandomAccessFile raf = new RandomAccessFile(xmlFile, "r");) {
+            String s = raf.readLine();
+            while (s != null) {
+                if (s.equals("<Definition category=\"" + category + "\" name=\"" + definitionName + "\">")) {
+                    started = true;
+                }
+                if (started) {
+                    if (s.equals("</Definition>")) {
+                        break;
+                    }
+                    xmlPart.append(s);
+                    xmlPart.append('\n');
+                }
+                s = raf.readLine();
+            }
+        }
+        return xmlPart.toString();
     }
 }
