@@ -20,7 +20,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
-import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
+import org.eclipse.linuxtools.docker.core.IRegistry;
+import org.eclipse.linuxtools.docker.core.IRegistryAccount;
+import org.eclipse.linuxtools.internal.docker.core.RegistryAccountManager;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.linuxtools.internal.docker.ui.views.ImagePushProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImagePush;
@@ -28,6 +30,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+
+import com.spotify.docker.client.DockerCertificateException;
 
 /**
  * Command handler to push a given image to the registry
@@ -50,13 +54,14 @@ public class PushImageCommandHandler extends AbstractHandler {
 		if (pushImage) {
 			final IDockerConnection connection = CommandUtils
 					.getCurrentConnection(activePart);
-			performPushImage(wizard, connection);
+			IRegistry info = wizard.getRegistry();
+			performPushImage(wizard, connection, info);
 		}
 		return null;
 	}
 	
 	private void performPushImage(final ImagePush wizard,
-			final IDockerConnection connection) {
+			final IDockerConnection connection, final IRegistry info) {
 		if (connection == null) {
 			Display.getDefault()
 					.syncExec(() -> MessageDialog.openError(
@@ -77,10 +82,32 @@ public class PushImageCommandHandler extends AbstractHandler {
 						IProgressMonitor.UNKNOWN);
 				// push the image and let the progress
 				// handler refresh the images when done
+				String tmpRegistryTag = null;
+				boolean createdTag = false;
 				try {
-					((DockerConnection) connection).pushImage(tag,
-							new ImagePushProgressHandler(connection, tag));
-				} catch (final DockerException e) {
+					String repo = info.getServerAddress();
+					tmpRegistryTag = repo + '/' + tag;
+					if (!connection.hasImage(repo, tag)) {
+						connection.tagImage(tag, tmpRegistryTag);
+						createdTag = true;
+					}
+
+					if (info instanceof IRegistryAccount) {
+						IRegistryAccount acc = (IRegistryAccount) info;
+						IRegistryAccount real = RegistryAccountManager.getInstance()
+								.getAccount(
+										acc.getServerAddress(),
+										acc.getUsername(),
+										acc.getEmail());
+						connection.pushImage(tmpRegistryTag, real,
+								new ImagePushProgressHandler(connection,
+										tmpRegistryTag));
+					} else {
+						connection.pushImage(tmpRegistryTag,
+								new ImagePushProgressHandler(connection,
+										tmpRegistryTag));
+					}
+				} catch (final DockerException | DockerCertificateException e) {
 					Display.getDefault().syncExec(() -> MessageDialog.openError(
 							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 									.getShell(),
@@ -91,6 +118,13 @@ public class PushImageCommandHandler extends AbstractHandler {
 				} catch (InterruptedException e) {
 					// do nothing
 				} finally {
+					if (tmpRegistryTag != null && createdTag) {
+						try {
+							connection.removeTag(tmpRegistryTag);
+						} catch (Exception e) {
+							// do nothing
+						}
+					}
 					monitor.done();
 				}
 				return Status.OK_STATUS;
