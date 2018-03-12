@@ -28,6 +28,7 @@ import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
 import org.eclipse.cdt.core.CCorePlugin;
+import org.eclipse.cdt.core.index.IIndex;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.ElementChangedEvent;
 import org.eclipse.cdt.core.model.ICProject;
@@ -36,6 +37,7 @@ import org.eclipse.cdt.internal.core.CCoreInternals;
 import org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTNameBase;
 import org.eclipse.cdt.internal.core.pdom.CModelListener;
 import org.eclipse.cdt.internal.core.pdom.PDOMManager;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceStatus;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -101,7 +103,7 @@ public class BaseTestCase extends TestCase {
 
 	private static Test getFailingTests(Class<?> clazz, String prefix) {
 		TestSuite suite= new TestSuite("Failing Tests");
-		HashSet<String> names= new HashSet<>();
+		HashSet<String> names= new HashSet<String>();
 		Class<?> superClass= clazz;
 		while (Test.class.isAssignableFrom(superClass) && !TestCase.class.equals(superClass)) {
 			Method[] methods= superClass.getDeclaredMethods();
@@ -313,5 +315,9 @@ public class BaseTestCase extends TestCase {
 		}
 		assertTrue(indexManager.isProjectRegistered(project));
 		assertTrue(indexManager.joinIndexer(INDEXER_TIMEOUT_SEC * 1000, npm()));
+	}
+
+	public static void waitUntilFileIsIndexed(IIndex index, IFile file) throws Exception {
+		TestSourceReader.waitUntilFileIsIndexed(index, file, INDEXER_TIMEOUT_SEC * 1000);
 	}
 }

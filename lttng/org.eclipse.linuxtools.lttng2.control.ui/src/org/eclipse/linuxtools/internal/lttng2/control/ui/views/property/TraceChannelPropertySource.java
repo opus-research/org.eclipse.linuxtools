@@ -153,7 +153,7 @@ public class TraceChannelPropertySource extends BasePropertySource {
             return String.valueOf(fChannel.getReadTimer());
         }
         if(TRACE_CHANNEL_OUTPUT_TYPE_PROPERTY_ID.equals(id)) {
-            return fChannel.getOutputType().getInName();
+            return fChannel.getOutputType();
         }
         return null;
     }
