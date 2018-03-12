@@ -7,51 +7,28 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
- *    Alena Laskavaia - Bug 482947 - Valgrind Message API's: get rid of launch dependency
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.core;
 
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 
 public class ValgrindStackFrame extends AbstractValgrindMessage {
-	protected String file;
-	protected int line;
-	private ISourceLocator locator;
+    protected String file;
+    protected int line;
 
-	/**
-	 * @deprecated use {@link #ValgrindStackFrame(IValgrindMessage, String, ISourceLocator, String, int)}
-	 */
-	@Deprecated
-	public ValgrindStackFrame(IValgrindMessage message, String text, ILaunch launch, String file, int line) {
-		super(message, text, launch);
-		this.file = file;
-		this.line = line;
-		this.locator = ValgrindCoreParser.copyLaunchSourceLocator(launch);
-	}
+    public ValgrindStackFrame(IValgrindMessage message, String text, ILaunch launch, String file, int line) {
+        super(message, text, launch);
+        this.file = file;
+        this.line = line;
+    }
 
-	public ValgrindStackFrame(IValgrindMessage message, String text, ISourceLocator locator, String file, int line) {
-		super(message, text, null);
-		this.file = file;
-		this.line = line;
-		this.locator = locator;
-	}
+    public String getFile() {
+        return file;
+    }
 
-	public String getFile() {
-		return file;
-	}
+    public int getLine() {
+        return line;
+    }
 
-	public int getLine() {
-		return line;
-	}
-
-	public ISourceLocator getSourceLocator() {
-		if (locator != null)
-			return locator;
-		if (getLaunch() != null) {
-			return getLaunch().getSourceLocator();
-		}
-		return null;
-	}
 }
