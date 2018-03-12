@@ -35,6 +35,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampDelta;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphColorListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider2;
@@ -46,9 +49,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTreeExpansionEve
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.Resolution;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -113,7 +113,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
     private static final double ZOOM_OUT_FACTOR = 1.25;
 
     private static final int SNAP_WIDTH = 2;
-    private static final int ARROW_HOVER_MAX_DIST = 5;
 
     private static final int NO_STATUS = -1;
 
@@ -1147,41 +1146,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
     }
 
     /**
-     * Return the arrow event closest to the given point that is no further than
-     * a maximum distance.
-     *
-     * @param pt
-     *            a point in the widget
-     * @return The closest arrow event, or null if there is none close enough.
-     * @since 3.2
-     */
-    protected ILinkEvent getArrow(Point pt) {
-        if (fHideArrows) {
-            return null;
-        }
-        ILinkEvent linkEvent = null;
-        double minDistance = Double.MAX_VALUE;
-        for (ILinkEvent event : fItemData.fLinks) {
-            Rectangle rect = getArrowRectangle(new Rectangle(0, 0, 0, 0), event);
-            if (rect != null) {
-                int x1 = rect.x;
-                int y1 = rect.y;
-                int x2 = x1 + rect.width;
-                int y2 = y1 + rect.height;
-                double d = Utils.distance(pt.x, pt.y, x1, y1, x2, y2);
-                if (minDistance > d) {
-                    minDistance = d;
-                    linkEvent = event;
-                }
-            }
-        }
-        if (minDistance <= ARROW_HOVER_MAX_DIST) {
-            return linkEvent;
-        }
-        return null;
-    }
-
-    /**
      * @since 2.0
      */
     @Override
@@ -1596,19 +1560,15 @@ public class TimeGraphControl extends TimeGraphBaseControl
      * @since 2.1
      */
     protected void drawLink(ILinkEvent event, Rectangle bounds, ITimeDataProvider timeProvider, int nameSpace, GC gc) {
-        drawArrow(getColorScheme(), event, getArrowRectangle(bounds, event), gc);
-    }
-
-    private Rectangle getArrowRectangle(Rectangle bounds, ILinkEvent event) {
         int srcIndex = fItemData.findItemIndex(event.getEntry());
         int destIndex = fItemData.findItemIndex(event.getDestinationEntry());
 
         if ((srcIndex == -1) || (destIndex == -1)) {
-            return null;
+            return;
         }
 
-        Rectangle src = getStatesRect(bounds, srcIndex, fTimeProvider.getNameSpace());
-        Rectangle dst = getStatesRect(bounds, destIndex, fTimeProvider.getNameSpace());
+        Rectangle src = getStatesRect(bounds, srcIndex, nameSpace);
+        Rectangle dst = getStatesRect(bounds, destIndex, nameSpace);
 
         int x0 = getXForTime(event.getTime());
         int x1 = getXForTime(event.getTime() + event.getDuration());
@@ -1621,7 +1581,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
 
         int y0 = src.y + src.height / 2;
         int y1 = dst.y + dst.height / 2;
-        return new Rectangle(x0, y0, x1 - x0, y1 - y0);
+        drawArrow(getColorScheme(), event, new Rectangle(x0, y0, x1 - x0, y1 - y0), gc);
     }
 
     /**
@@ -1641,9 +1601,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
     protected boolean drawArrow(TimeGraphColorScheme colors, ITimeEvent event,
             Rectangle rect, GC gc) {
 
-        if (rect == null) {
-            return false;
-        }
         int colorIdx = fTimeGraphProvider.getStateTableIndex(event);
         if (colorIdx < 0) {
             return false;
@@ -2054,54 +2011,38 @@ public class TimeGraphControl extends TimeGraphBaseControl
     }
 
     private void updateStatusLine(int x) {
-        // use the time provider of the time graph scale for the status line
-        ITimeDataProvider tdp = fTimeGraphScale.getTimeProvider();
-        if (fStatusLineManager == null || null == tdp ||
-                tdp.getTime0() == tdp.getTime1()) {
+        if (fStatusLineManager == null || null == fTimeProvider ||
+                fTimeProvider.getTime0() == fTimeProvider.getTime1()) {
             return;
         }
-        TimeFormat tf = tdp.getTimeFormat();
-        Resolution res = Resolution.NANOSEC;
         StringBuilder message = new StringBuilder();
         if (x >= 0 && fDragState == DRAG_NONE) {
             long time = getTimeAtX(x);
             if (time >= 0) {
-                if (tdp instanceof ITimeDataProviderConverter) {
-                    time = ((ITimeDataProviderConverter) tdp).convertTime(time);
-                }
-                long selectionBegin = tdp.getSelectionBegin();
-                long selectionEnd = tdp.getSelectionEnd();
-                message.append(NLS.bind("T: {0}{1}     T1: {2}{3}", //$NON-NLS-1$
-                        new Object[] {
-                                tf == TimeFormat.CALENDAR ? Utils.formatDate(time) + ' ' : "", //$NON-NLS-1$
-                                Utils.formatTime(time, tf, res),
-                                tf == TimeFormat.CALENDAR ? Utils.formatDate(Math.min(selectionBegin, selectionEnd)) + ' ' : "", //$NON-NLS-1$
-                                Utils.formatTime(Math.min(selectionBegin, selectionEnd), tf, res)
-                        }));
+                message.append("T: "); //$NON-NLS-1$
+                message.append(new TmfNanoTimestamp(time).toString());
+                message.append("     T1: "); //$NON-NLS-1$
+                long selectionBegin = fTimeProvider.getSelectionBegin();
+                long selectionEnd = fTimeProvider.getSelectionEnd();
+                message.append(new TmfNanoTimestamp(Math.min(selectionBegin, selectionEnd)).toString());
                 if (selectionBegin != selectionEnd) {
-                    message.append(NLS.bind("     T2: {0}{1}     \u0394: {2}", //$NON-NLS-1$
-                            new Object[] {
-                                    tf == TimeFormat.CALENDAR ? Utils.formatDate(Math.max(selectionBegin, selectionEnd)) + ' ' : "", //$NON-NLS-1$
-                                    Utils.formatTime(Math.max(selectionBegin, selectionEnd), tf, res),
-                                    Utils.formatDelta(Math.abs(selectionBegin - selectionEnd), tf, res)
-                            }));
+                    message.append("     T2: "); //$NON-NLS-1$
+                    message.append(new TmfNanoTimestamp(Math.max(selectionBegin, selectionEnd)).toString());
+                    message.append("     \u0394: "); //$NON-NLS-1$
+                    message.append(new TmfTimestampDelta(Math.abs(selectionBegin - selectionEnd), ITmfTimestamp.NANOSECOND_SCALE));
                 }
             }
         } else if (fDragState == DRAG_SELECTION || fDragState == DRAG_ZOOM) {
             long time0 = fDragTime0;
             long time = getTimeAtX(fDragX);
-            if (tdp instanceof ITimeDataProviderConverter) {
-                time0 = ((ITimeDataProviderConverter) tdp).convertTime(time0);
-                time = ((ITimeDataProviderConverter) tdp).convertTime(time);
+            message.append("T1: "); //$NON-NLS-1$
+            message.append(new TmfNanoTimestamp(Math.min(time, time0)).toString());
+            if (time != time0) {
+                message.append("     T2: "); //$NON-NLS-1$
+                message.append(new TmfNanoTimestamp(Math.max(time, time0)).toString());
+                message.append("     \u0394: "); //$NON-NLS-1$
+                message.append(new TmfTimestampDelta(Math.abs(time - time0), ITmfTimestamp.NANOSECOND_SCALE));
             }
-            message.append(NLS.bind("T1: {0}{1}     T2: {2}{3}     \u0394: {4}", //$NON-NLS-1$
-                    new Object[] {
-                            tf == TimeFormat.CALENDAR ? Utils.formatDate(Math.min(time, time0)) + ' ' : "", //$NON-NLS-1$
-                            Utils.formatTime(Math.min(time, time0), tf, res),
-                            tf == TimeFormat.CALENDAR ? Utils.formatDate(Math.max(time, time0)) + ' ' : "", //$NON-NLS-1$
-                            Utils.formatTime(Math.max(time, time0), tf, res),
-                            Utils.formatDelta(Math.abs(time - time0), tf, res)
-                    }));
         }
         fStatusLineManager.setMessage(message.toString());
     }
@@ -2267,7 +2208,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
             setCapture(true);
             fDragX = Math.min(Math.max(e.x, fTimeProvider.getNameSpace()), getCtrlSize().x - RIGHT_MARGIN);
             fDragX0 = fDragX;
-            fDragTime0 = getTimeAtX(fDragX0);
             fDragState = DRAG_ZOOM;
             fDragButton = e.button;
             redraw();
@@ -2356,25 +2296,13 @@ public class TimeGraphControl extends TimeGraphBaseControl
         if (p.x >= 0 && p.x < parentSize.x && p.y >= 0 && p.y < parentSize.y) {
             // over the parent control
             if (e.x > getCtrlSize().x) {
-                // over the vertical scroll bar
+                // over the horizontal scroll bar
                 zoomScroll = false;
-            } else if (e.y < 0 || e.y >= getCtrlSize().y) {
-                // over the time scale or horizontal scroll bar
-                zoomScroll = true;
+            } else if (e.y >= 0 && e.y < getCtrlSize().y && e.x < fTimeProvider.getNameSpace()) {
+                // over the name space
+                zoomScroll = false;
             } else {
-                if (e.x < fTimeProvider.getNameSpace()) {
-                    // over the name space
-                    zoomScroll = false;
-                } else {
-                    // over the state area
-                    if ((e.stateMask & SWT.MODIFIER_MASK) == SWT.CTRL) {
-                        // over the state area, CTRL pressed
-                        zoomScroll = true;
-                    } else {
-                        // over the state area, CTRL not pressed
-                        zoomScroll = false;
-                    }
-                }
+                zoomScroll = true;
             }
         }
         if (zoomScroll && fTimeProvider.getTime0() != fTimeProvider.getTime1()) {

@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -208,9 +207,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     // The list of supplementary patterns
     private List<String> fSupplPatterns = new ArrayList<>();
 
-    // The locale
-    private final Locale fLocale;
-
     /**
      * The supplementary pattern letters. Can be redefined by sub-classes
      * to either override existing letters or augment the letter set.
@@ -257,7 +253,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * @param pattern the format pattern
      */
     public TmfTimestampFormat(String pattern) {
-        fLocale = Locale.getDefault();
         applyPattern(pattern);
     }
 
@@ -269,24 +264,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * @since 2.1
      */
     public TmfTimestampFormat(String pattern, TimeZone timeZone) {
-        fLocale = Locale.getDefault();
         setTimeZone(timeZone);
-        applyPattern(pattern);
-    }
-
-    /**
-     * The fuller constructor
-     *
-     * @param pattern the format pattern
-     * @param timeZone the time zone
-     * @param locale the locale
-     * @since 3.2
-     */
-    public TmfTimestampFormat(String pattern, TimeZone timeZone, Locale locale) {
-        super("", locale); //$NON-NLS-1$
-        fLocale = locale;
-        setTimeZone(timeZone);
-        setCalendar(Calendar.getInstance(timeZone, locale));
         applyPattern(pattern);
     }
 
@@ -296,7 +274,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * @param other the other format pattern
      */
     public TmfTimestampFormat(TmfTimestampFormat other) {
-        this(other.fPattern, other.getTimeZone(), other.fLocale);
+        this(other.fPattern);
     }
 
     // ------------------------------------------------------------------------
@@ -307,10 +285,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * @since 2.1
      */
     public static void updateDefaultFormats() {
-        fDefaultTimeFormat = new TmfTimestampFormat(
-                TmfTimePreferences.getInstance().getTimePattern(),
-                TmfTimePreferences.getInstance().getTimeZone(),
-                TmfTimePreferences.getInstance().getLocale());
+        fDefaultTimeFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getTimePattern(), TmfTimePreferences.getInstance().getTimeZone());
         fDefaultIntervalFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getIntervalPattern());
     }
 
@@ -319,10 +294,7 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      */
     public static TmfTimestampFormat getDefaulTimeFormat() {
         if (fDefaultTimeFormat == null) {
-            fDefaultTimeFormat = new TmfTimestampFormat(
-                    TmfTimePreferences.getInstance().getTimePattern(),
-                    TmfTimePreferences.getInstance().getTimeZone(),
-                    TmfTimePreferences.getInstance().getLocale());
+            fDefaultTimeFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getTimePattern(), TmfTimePreferences.getInstance().getTimeZone());
         }
         return fDefaultTimeFormat;
     }
@@ -492,9 +464,9 @@ public class TmfTimestampFormat extends SimpleDateFormat {
             getCalendar();
 
             if (ref != Long.MIN_VALUE) {
-                Calendar baseTime = Calendar.getInstance(getTimeZone(), fLocale);
+                Calendar baseTime = Calendar.getInstance(getTimeZone());
                 baseTime.setTimeInMillis(baseDate.getTime());
-                Calendar newTime = Calendar.getInstance(getTimeZone(), fLocale);
+                Calendar newTime = Calendar.getInstance(getTimeZone());
                 newTime.setTimeInMillis(ref / 1000000);
                 boolean setRemainingFields = false;
                 if (dateTimePatternContains("yY")) { //$NON-NLS-1$
@@ -534,7 +506,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
                 if (setRemainingFields || dateTimePatternContains("s")) { //$NON-NLS-1$
                     newTime.set(Calendar.SECOND, baseTime.get(Calendar.SECOND));
                 }
-                newTime.set(Calendar.MILLISECOND, 0);
                 seconds = newTime.getTimeInMillis() / 1000;
             } else {
                 seconds = baseDate.getTime() / 1000;
