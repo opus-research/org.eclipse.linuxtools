@@ -12,19 +12,23 @@
 
 package org.eclipse.linuxtools.tmf.ui.swtbot.tests;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.TestSuite;
 
 /**
  * SWTBot test suite for tmf.ui
  *
  * @author Matthew Khouzam
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        TestCustomTxtWizard.class,
-        TestCustomXmlWizard.class,
-        TracingPerspectiveChecker.class
-})
-public class AllTmfUISWTBotTests {
+public class AllTmfUISWTBotTests extends TestSuite {
+
+    public static TestSuite suite() {
+        TestSuite suite = new TestSuite(AllTmfUISWTBotTests.class.getName());
+        for (int i = 0; i < 30; i++) {
+            suite.addTest(new JUnit4TestAdapter(TracingPerspectiveChecker.class));
+            suite.addTest(new JUnit4TestAdapter(TestCustomXmlWizard.class));
+            suite.addTest(new JUnit4TestAdapter(TestCustomTxtWizard.class));
+        }
+        return suite;
+    }
 }
