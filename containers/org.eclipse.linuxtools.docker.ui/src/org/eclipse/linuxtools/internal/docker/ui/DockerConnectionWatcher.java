@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.docker.ui;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.ui.ISelectionListener;
@@ -65,10 +66,27 @@ public class DockerConnectionWatcher implements ISelectionListener {
 	/**
 	 * Get the current connection
 	 * 
-	 * @return the current connection or null if none is set
+	 * @return the current connection or <code>null</code> if none is set
 	 */
 	public IDockerConnection getConnection() {
 		return this.connection;
+	}
+
+	/**
+	 * @return the active connection, or the first connection in the
+	 *         {@link DockerConnectionManager} or <code>null</code> if none
+	 *         exists.
+	 */
+	public IDockerConnection getCurrentOrDefaultConnection() {
+		if (getConnection() != null) {
+			return getConnection();
+		}
+		final IDockerConnection[] connections = DockerConnectionManager
+				.getInstance().getConnections();
+		if (connections.length > 0) {
+			return connections[0];
+		}
+		return null;
 	}
 
 	@Override

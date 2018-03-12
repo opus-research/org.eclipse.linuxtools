@@ -30,6 +30,7 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
+import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.jobs.BuildDockerImageJob;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
@@ -74,7 +75,7 @@ public class BuildImageCommandHandler extends AbstractHandler {
 			if (connections.length > 0)
 				connection = connections[0];
 		}
-		if (connection == null || !connection.isActive()) {
+		if (connection == null || connection.getState() != EnumDockerConnectionState.ESTABLISHED) {
 			// if no active connection, issue error message dialog and return
 			Display.getDefault().syncExec(() -> MessageDialog.openError(
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
