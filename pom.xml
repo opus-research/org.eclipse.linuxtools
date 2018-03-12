@@ -21,7 +21,7 @@
   </prerequisites>
   <groupId>org.eclipse.linuxtools</groupId>
   <artifactId>linuxtools-parent</artifactId>
-  <version>6.0.0-SNAPSHOT</version>
+  <version>5.3.0</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools Parent</name>
@@ -49,11 +49,11 @@
   </distributionManagement>
 
   <properties>
-    <mirror-repo-name>updates-nightly</mirror-repo-name>
-    <mirror-docker-repo-name>updates-docker-nightly</mirror-docker-repo-name>
+    <mirror-repo-name>update-5.3.0</mirror-repo-name>
+    <mirror-docker-repo-name>update-docker-2.3.0</mirror-docker-repo-name>
     <tycho-version>1.0.0</tycho-version>
     <tycho-extras-version>1.0.0</tycho-extras-version>
-    <target-platform>linuxtools-e4.7</target-platform>
+    <target-platform>linuxtools-e4.6</target-platform>
     <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.jacoco.reportPath>${project.basedir}/../../target/jacoco.exec</sonar.jacoco.reportPath>
