@@ -27,11 +27,7 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.ArrayDefinition;
@@ -50,6 +46,8 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
+    private static final int MAP_SIZE = 4096;
 
     /**
      * The associated Stream
@@ -76,12 +74,12 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
     /**
      * Definition of trace packet header
      */
-    private StructDeclaration fTracePacketHeaderDecl = null;
+    private final StructDeclaration fTracePacketHeaderDecl;
 
     /**
      * Definition of trace stream packet context
      */
-    private StructDeclaration fStreamPacketContextDecl = null;
+    private final StructDeclaration fStreamPacketContextDecl;
 
     /**
      * Total number of lost events in this stream
@@ -118,6 +116,20 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
 
         fFileChannel = fFileInputStream.getChannel();
         fIndex = new StreamInputPacketIndex();
+        /*
+         * Create the definitions we need to read the packet headers + contexts
+         */
+        if (getStream().getTrace().getPacketHeader() != null) {
+            fTracePacketHeaderDecl = getStream().getTrace().getPacketHeader();
+        } else {
+            fTracePacketHeaderDecl = null;
+        }
+
+        if (getStream().getPacketContextDecl() != null) {
+            fStreamPacketContextDecl = getStream().getPacketContextDecl();
+        } else {
+            fStreamPacketContextDecl = null;
+        }
     }
 
     @Override
@@ -207,17 +219,6 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
         BitBuffer bitBuffer = new BitBuffer();
         bitBuffer.setByteOrder(getStream().getTrace().getByteOrder());
 
-        /*
-         * Create the definitions we need to read the packet headers + contexts
-         */
-        if (getStream().getTrace().getPacketHeader() != null) {
-            fTracePacketHeaderDecl = getStream().getTrace().getPacketHeader();
-        }
-
-        if (getStream().getPacketContextDecl() != null) {
-            fStreamPacketContextDecl = getStream().getPacketContextDecl();
-        }
-
     }
 
     /**
@@ -238,12 +239,8 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
         }
         long fileSize = getStreamSize();
         if (currentPos < fileSize) {
-
-            StreamInputPacketIndexEntry packetIndex = new StreamInputPacketIndexEntry(
-                    currentPos);
-            createPacketIndexEntry(fileSize, currentPos, packetIndex,
-                    fTracePacketHeaderDecl, fStreamPacketContextDecl);
-            fIndex.add(packetIndex);
+            fIndex.add(createPacketIndexEntry(fileSize, currentPos,
+                    fTracePacketHeaderDecl, fStreamPacketContextDecl));
             return true;
         }
         return false;
@@ -253,17 +250,13 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
         return fFile.length();
     }
 
-    private long createPacketIndexEntry(long fileSizeBytes,
-            long packetOffsetBytes, StreamInputPacketIndexEntry packetIndex,
+    private StreamInputPacketIndexEntry createPacketIndexEntry(long fileSizeBytes,
+            long dataOffsetbits,
             StructDeclaration tracePacketHeaderDecl,
             StructDeclaration streamPacketContextDecl)
             throws CTFReaderException {
 
-        /*
-         * create a packet bit buffer to read the packet header
-         */
-        BitBuffer bitBuffer = new BitBuffer(createPacketBitBuffer(fileSizeBytes, packetOffsetBytes, packetIndex));
-        bitBuffer.setByteOrder(getStream().getTrace().getByteOrder());
+        BitBuffer bitBuffer = createBitBufferForPacketHeader(fileSizeBytes, dataOffsetbits, streamPacketContextDecl, tracePacketHeaderDecl);
         /*
          * Read the trace packet header if it exists.
          */
@@ -274,12 +267,8 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
         /*
          * Read the stream packet context if it exists.
          */
-        if (streamPacketContextDecl != null) {
-            parsePacketContext(fileSizeBytes, streamPacketContextDecl,
-                    bitBuffer, packetIndex);
-        } else {
-            setPacketContextNull(fileSizeBytes, packetIndex);
-        }
+        StreamInputPacketIndexEntry packetIndex =
+                parsePacketContext(dataOffsetbits, fileSizeBytes, streamPacketContextDecl, bitBuffer);
 
         /* Basic validation */
         if (packetIndex.getContentSizeBits() > packetIndex.getPacketSizeBits()) {
@@ -292,14 +281,29 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
         }
 
         /*
-         * Offset in the file, in bits
-         */
-        packetIndex.setDataOffsetBits(bitBuffer.position());
-
-        /*
          * Update the counting packet offset
          */
-        return computeNextOffset(packetIndex);
+        computeNextOffset(packetIndex);
+        return packetIndex;
+    }
+
+    @NonNull
+    private BitBuffer createBitBufferForPacketHeader(long fileSizeBytes, long dataOffsetbits, StructDeclaration streamPacketContextDecl, StructDeclaration tracePacketHeaderDecl) throws CTFReaderException {
+        /*
+         * create a packet bit buffer to read the packet header
+         */
+        int maximumSize = MAP_SIZE;
+        if(streamPacketContextDecl != null &&  tracePacketHeaderDecl != null ){
+            maximumSize = streamPacketContextDecl.getMaximumSize() + tracePacketHeaderDecl.getMaximumSize();
+        }else if(streamPacketContextDecl != null ){
+            maximumSize = streamPacketContextDecl.getMaximumSize();
+        }else if(tracePacketHeaderDecl != null ){
+            maximumSize = tracePacketHeaderDecl.getMaximumSize();
+        }
+
+        BitBuffer bitBuffer = new BitBuffer(createPacketBitBuffer(fileSizeBytes, dataOffsetbits, maximumSize));
+        bitBuffer.setByteOrder(getStream().getTrace().getByteOrder());
+        return bitBuffer;
     }
 
     /**
@@ -323,20 +327,20 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
 
     @NonNull
     private ByteBuffer createPacketBitBuffer(long fileSizeBytes,
-            long packetOffsetBytes, StreamInputPacketIndexEntry packetIndex) throws CTFReaderException {
+            long packetOffsetBytes, long maxSize) throws CTFReaderException {
         /*
          * Initial size, it should map at least the packet header + context
          * size.
          *
          * TODO: use a less arbitrary size.
          */
-        long mapSize = 4096;
+        long mapSize = MAP_SIZE;
         /*
          * If there is less data remaining than what we want to map, reduce the
          * map size.
          */
-        if ((fileSizeBytes - packetIndex.getOffsetBytes()) < mapSize) {
-            mapSize = fileSizeBytes - packetIndex.getOffsetBytes();
+        if ((fileSizeBytes - maxSize) < mapSize) {
+            mapSize = fileSizeBytes - maxSize;
         }
 
         /*
@@ -349,7 +353,7 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
         }
     }
 
-    private void parseTracePacketHeader(StructDeclaration tracePacketHeaderDecl,
+    private StructDefinition parseTracePacketHeader(StructDeclaration tracePacketHeaderDecl,
             @NonNull BitBuffer bitBuffer) throws CTFReaderException {
         StructDefinition tracePacketHeaderDef = tracePacketHeaderDecl.createDefinition(fStream.getTrace(), LexicalScope.TRACE_PACKET_HEADER, bitBuffer);
 
@@ -391,94 +395,26 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
                 throw new CTFReaderException("Stream ID changing within a StreamInput"); //$NON-NLS-1$
             }
         }
+        return tracePacketHeaderDef;
     }
 
-    private static void setPacketContextNull(long fileSizeBytes,
-            StreamInputPacketIndexEntry packetIndex) {
-        /*
-         * If there is no packet context, infer the content and packet size from
-         * the file size (assume that there is only one packet and no padding)
-         */
-        packetIndex.setContentSizeBits(fileSizeBytes * 8);
-        packetIndex.setPacketSizeBits(fileSizeBytes * 8);
-    }
-
-    private void parsePacketContext(long fileSizeBytes,
-            StructDeclaration streamPacketContextDecl, @NonNull BitBuffer bitBuffer,
-            StreamInputPacketIndexEntry packetIndex) throws CTFReaderException {
-        StructDefinition streamPacketContextDef = streamPacketContextDecl.createDefinition(this, LexicalScope.STREAM_PACKET_CONTEXT, bitBuffer);
-
-        for (String field : streamPacketContextDef.getDeclaration()
-                .getFieldsList()) {
-            IDefinition id = streamPacketContextDef.lookupDefinition(field);
-            if (id instanceof IntegerDefinition) {
-                packetIndex.addAttribute(field,
-                        ((IntegerDefinition) id).getValue());
-            } else if (id instanceof FloatDefinition) {
-                packetIndex.addAttribute(field,
-                        ((FloatDefinition) id).getValue());
-            } else if (id instanceof EnumDefinition) {
-                packetIndex.addAttribute(field,
-                        ((EnumDefinition) id).getValue());
-            } else if (id instanceof StringDefinition) {
-                packetIndex.addAttribute(field,
-                        ((StringDefinition) id).getValue());
-            }
-        }
-
-        Long contentSize = (Long) packetIndex.lookupAttribute("content_size"); //$NON-NLS-1$
-        Long packetSize = (Long) packetIndex.lookupAttribute("packet_size"); //$NON-NLS-1$
-        Long tsBegin = (Long) packetIndex.lookupAttribute("timestamp_begin"); //$NON-NLS-1$
-        Long tsEnd = (Long) packetIndex.lookupAttribute("timestamp_end"); //$NON-NLS-1$
-        String device = (String) packetIndex.lookupAttribute("device"); //$NON-NLS-1$
-        // LTTng Specific
-        Long cpuId = (Long) packetIndex.lookupAttribute("cpu_id"); //$NON-NLS-1$
-        Long lostEvents = (Long) packetIndex.lookupAttribute("events_discarded"); //$NON-NLS-1$
-
-        /* Read the content size in bits */
-        if (contentSize != null) {
-            packetIndex.setContentSizeBits(contentSize.intValue());
-        } else if (packetSize != null) {
-            packetIndex.setContentSizeBits(packetSize.longValue());
+    private StreamInputPacketIndexEntry parsePacketContext(long dataOffsetBits, long fileSizeBytes,
+            StructDeclaration streamPacketContextDecl, @NonNull BitBuffer bitBuffer) throws CTFReaderException {
+        StreamInputPacketIndexEntry packetIndex;
+        if (streamPacketContextDecl != null) {
+            StructDefinition streamPacketContextDef = streamPacketContextDecl.createDefinition(this, LexicalScope.STREAM_PACKET_CONTEXT, bitBuffer);
+            packetIndex = new StreamInputPacketIndexEntry(dataOffsetBits, streamPacketContextDef, fileSizeBytes, fLostSoFar);
+            fLostSoFar = packetIndex.getLostEvents() + fLostSoFar;
         } else {
-            packetIndex.setContentSizeBits((int) (fileSizeBytes * 8));
+            /*
+             * If there is no packet context, infer the content and packet size
+             * from the file size (assume that there is only one packet and no
+             * padding)
+             */
+            packetIndex = new StreamInputPacketIndexEntry(dataOffsetBits, fileSizeBytes);
         }
-
-        /* Read the packet size in bits */
-        if (packetSize != null) {
-            packetIndex.setPacketSizeBits(packetSize.intValue());
-        } else if (packetIndex.getContentSizeBits() != 0) {
-            packetIndex.setPacketSizeBits(packetIndex.getContentSizeBits());
-        } else {
-            packetIndex.setPacketSizeBits((int) (fileSizeBytes * 8));
-        }
-
-        /* Read the begin timestamp */
-        if (tsBegin != null) {
-            packetIndex.setTimestampBegin(tsBegin.longValue());
-        }
-
-        /* Read the end timestamp */
-        if (tsEnd != null) {
-            if (tsEnd == -1) {
-                tsEnd = Long.MAX_VALUE;
-            }
-            packetIndex.setTimestampEnd(tsEnd.longValue());
-            setTimestampEnd(packetIndex.getTimestampEnd());
-        }
-
-        if (device != null) {
-            packetIndex.setTarget(device);
-        }
-
-        if (cpuId != null) {
-            packetIndex.setTarget("CPU" + cpuId.toString()); //$NON-NLS-1$
-        }
-
-        if (lostEvents != null) {
-            packetIndex.setLostEvents(lostEvents - fLostSoFar);
-            fLostSoFar = lostEvents;
-        }
+        setTimestampEnd(packetIndex.getTimestampEnd());
+        return packetIndex;
     }
 
     @Override

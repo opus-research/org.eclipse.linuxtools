@@ -14,6 +14,14 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.nio.ByteBuffer;
+
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
+import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +42,7 @@ public class CTFStreamInputPacketIndexEntryTest {
      */
     @Before
     public void setUp() {
-        fixture = new StreamInputPacketIndexEntry(1L);
+        fixture = new StreamInputPacketIndexEntry(1L, 1L);
     }
 
     /**
@@ -42,8 +50,7 @@ public class CTFStreamInputPacketIndexEntryTest {
      */
     @Test
     public void testStreamInputPacketIndexEntry_1() {
-        String expectedResult = "StreamInputPacketIndexEntry [offsetBytes=1, " +
-                "timestampBegin=0, timestampEnd=0]";
+        String expectedResult = "StreamInputPacketIndexEntry [offsetBytes=1, timestampBegin=-9223372036854775808, timestampEnd=9223372036854775807]";
 
         assertNotNull(fixture);
         assertEquals(expectedResult, fixture.toString());
@@ -51,19 +58,18 @@ public class CTFStreamInputPacketIndexEntryTest {
 
     /**
      * Run the String toString() method test.
+     * @throws CTFReaderException won't happen
      */
     @Test
-    public void testToString() {
-        String expectedResult = "StreamInputPacketIndexEntry [offsetBytes=1,"+
-                " timestampBegin=1, timestampEnd=1]";
+    public void testToString() throws CTFReaderException {
+        String expectedResult = "StreamInputPacketIndexEntry [offsetBytes=0, timestampBegin=0, timestampEnd=0]";
+        StructDeclaration sd = new StructDeclaration(8);
+        sd.addField("timestamp_begin", IntegerDeclaration.INT_32B_DECL);
+        sd.addField("timestamp_end", IntegerDeclaration.INT_32B_DECL);
+        @SuppressWarnings("null")
+        BitBuffer bb = new BitBuffer(ByteBuffer.allocate(128));
+        StructDefinition sdef = sd.createDefinition(null, LexicalScope.PACKET_HEADER, bb);
 
-
-        fixture.setContentSizeBits(1);
-        fixture.setDataOffsetBits(1);
-        fixture.setTimestampEnd(1L);
-        fixture.setPacketSizeBits(1);
-        fixture.setTimestampBegin(1L);
-
-        assertEquals(expectedResult, fixture.toString());
+        assertEquals(expectedResult, new StreamInputPacketIndexEntry(0, sdef, 10000, 0).toString());
     }
 }

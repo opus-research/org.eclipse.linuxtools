@@ -15,6 +15,13 @@ package org.eclipse.linuxtools.internal.ctf.core.trace;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+
 /**
  * <b><u>StreamInputPacketIndexEntry</u></b>
  * <p>
@@ -29,37 +36,32 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
     /**
      * Offset of the packet in the file, in bytes
      */
-    final private long fOffsetBytes;
-
-    /**
-     * Offset of the data in the packet, in bits
-     */
-    private long fDataOffsetBits = 0;
+    private final long fOffsetBytes;
 
     /**
      * Packet size, in bits
      */
-    private long fPacketSizeBits = 0;
+    private final long fPacketSizeBits;
 
     /**
      * Content size, in bits
      */
-    private long fContentSizeBits = 0;
+    private final long fContentSizeBits;
 
     /**
      * Begin timestamp
      */
-    private long fTimestampBegin = 0;
+    private final long fTimestampBegin;
 
     /**
      * End timestamp
      */
-    private long fTimestampEnd = 0;
+    private final long fTimestampEnd;
 
     /**
      * How many lost events are there?
      */
-    private long fLostEvents = 0;
+    private final long fLostEvents;
 
     /**
      * Which target is being traced
@@ -79,12 +81,113 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
     /**
      * Constructs an index entry.
      *
-     * @param offset
-     *            The offset of the packet in the file, in bytes.
+     * @param dataOffsetBits
+     *            offset in the file for the start of data
+     * @param fileSizeBytes
+     *            number of bytes in a file
      */
 
-    public StreamInputPacketIndexEntry(long offset) {
-        fOffsetBytes = offset;
+    public StreamInputPacketIndexEntry(long dataOffsetBits, long fileSizeBytes) {
+        fContentSizeBits = (fileSizeBytes * 8);
+        fPacketSizeBits = (fileSizeBytes * 8);
+        fOffsetBytes = dataOffsetBits;
+        fLostEvents = 0;
+        fTarget = ""; //$NON-NLS-1$
+        fTargetID = 0;
+        fTimestampBegin = Long.MIN_VALUE;
+        fTimestampEnd = Long.MAX_VALUE;
+    }
+
+    /**
+     * full Constructor
+     *
+     * @param dataOffsetBits
+     *            offset in the file for the start of data
+     * @param streamPacketContextDef
+     *            packet context
+     * @param fileSizeBytes
+     *            number of bytes in a file
+     * @param lostSoFar
+     *            number of lost events so far
+     */
+    public StreamInputPacketIndexEntry(long dataOffsetBits, StructDefinition streamPacketContextDef, long fileSizeBytes, long lostSoFar) {
+        for (String field : streamPacketContextDef.getDeclaration()
+                .getFieldsList()) {
+            IDefinition id = streamPacketContextDef.lookupDefinition(field);
+            if (id instanceof IntegerDefinition) {
+                this.addAttribute(field,
+                        ((IntegerDefinition) id).getValue());
+            } else if (id instanceof FloatDefinition) {
+                this.addAttribute(field,
+                        ((FloatDefinition) id).getValue());
+            } else if (id instanceof EnumDefinition) {
+                this.addAttribute(field,
+                        ((EnumDefinition) id).getValue());
+            } else if (id instanceof StringDefinition) {
+                this.addAttribute(field,
+                        ((StringDefinition) id).getValue());
+            }
+        }
+
+        Long contentSize = (Long) this.lookupAttribute("content_size"); //$NON-NLS-1$
+        Long packetSize = (Long) this.lookupAttribute("packet_size"); //$NON-NLS-1$
+        Long tsBegin = (Long) this.lookupAttribute("timestamp_begin"); //$NON-NLS-1$
+        Long tsEnd = (Long) this.lookupAttribute("timestamp_end"); //$NON-NLS-1$
+        String device = (String) this.lookupAttribute("device"); //$NON-NLS-1$
+        // LTTng Specific
+        Long cpuId = (Long) this.lookupAttribute("cpu_id"); //$NON-NLS-1$
+        Long lostEvents = (Long) this.lookupAttribute("events_discarded"); //$NON-NLS-1$
+
+        /* Read the content size in bits */
+        if (contentSize != null) {
+            fContentSizeBits = (contentSize.intValue());
+        } else if (packetSize != null) {
+            fContentSizeBits = (packetSize.longValue());
+        } else {
+            fContentSizeBits = ((int) (fileSizeBytes * 8));
+        }
+
+        /* Read the packet size in bits */
+        if (packetSize != null) {
+            fPacketSizeBits = (packetSize.intValue());
+        } else if (this.getContentSizeBits() != 0) {
+            fPacketSizeBits = (getContentSizeBits());
+        } else {
+            fPacketSizeBits = ((int) (fileSizeBytes * 8));
+        }
+
+        /* Read the begin timestamp */
+        if (tsBegin != null) {
+            fTimestampBegin = (tsBegin.longValue());
+        } else {
+            fTimestampBegin = Long.MIN_VALUE;
+        }
+
+        /* Read the end timestamp */
+        if (tsEnd != null) {
+            if (tsEnd == -1) {
+                tsEnd = Long.MAX_VALUE;
+            }
+            fTimestampEnd = (tsEnd.longValue());
+        } else {
+            fTimestampEnd = Long.MAX_VALUE;
+        }
+
+        if (device != null) {
+            this.setTarget(device);
+        }
+
+        if (cpuId != null) {
+            this.setTarget("CPU" + cpuId.toString()); //$NON-NLS-1$
+        }
+
+        if (lostEvents != null) {
+            fLostEvents = (lostEvents - lostSoFar);
+        } else {
+            fLostEvents = 0;
+        }
+
+        fOffsetBytes = dataOffsetBits;
     }
 
     // ------------------------------------------------------------------------
@@ -122,33 +225,10 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
     }
 
     /**
-     * @return the dataOffsetBits
-     */
-    public long getDataOffsetBits() {
-        return fDataOffsetBits;
-    }
-
-    /**
-     * @param dataOffsetBits
-     *            the dataOffsetBits to set
-     */
-    public void setDataOffsetBits(long dataOffsetBits) {
-        fDataOffsetBits = dataOffsetBits;
-    }
-
-    /**
      * @return the packetSizeBits
      */
     public long getPacketSizeBits() {
         return fPacketSizeBits;
-    }
-
-    /**
-     * @param packetSizeBits
-     *            the packetSizeBits to set
-     */
-    public void setPacketSizeBits(long packetSizeBits) {
-        fPacketSizeBits = packetSizeBits;
     }
 
     /**
@@ -159,26 +239,10 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
     }
 
     /**
-     * @param contentSizeBits
-     *            the contentSizeBits to set
-     */
-    public void setContentSizeBits(long contentSizeBits) {
-        fContentSizeBits = contentSizeBits;
-    }
-
-    /**
      * @return the timestampBegin
      */
     public long getTimestampBegin() {
         return fTimestampBegin;
-    }
-
-    /**
-     * @param timestampBegin
-     *            the timestampBegin to set
-     */
-    public void setTimestampBegin(long timestampBegin) {
-        fTimestampBegin = timestampBegin;
     }
 
     /**
@@ -189,26 +253,10 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
     }
 
     /**
-     * @param timestampEnd
-     *            the timestampEnd to set
-     */
-    public void setTimestampEnd(long timestampEnd) {
-        fTimestampEnd = timestampEnd;
-    }
-
-    /**
      * @return the lostEvents in this packet
      */
     public long getLostEvents() {
         return fLostEvents;
-    }
-
-    /**
-     * @param lostEvents
-     *            the lostEvents to set
-     */
-    public void setLostEvents(long lostEvents) {
-        fLostEvents = lostEvents;
     }
 
     /**
