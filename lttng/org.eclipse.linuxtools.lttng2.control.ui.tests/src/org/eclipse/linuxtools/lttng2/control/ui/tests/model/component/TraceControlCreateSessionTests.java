@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2013, 2014 Ericsson
+ * Copyright (c) 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,9 +8,7 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Jonathan Rajotte - Support for LTTng 2.6
  **********************************************************************/
-
 package org.eclipse.linuxtools.lttng2.control.ui.tests.model.component;
 
 import static org.junit.Assert.assertEquals;
@@ -31,7 +29,6 @@ import org.eclipse.linuxtools.internal.lttng2.control.ui.views.dialogs.TraceCont
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.ITraceControlComponent;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TargetNodeComponent;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TraceSessionComponent;
-import org.eclipse.linuxtools.internal.lttng2.control.ui.views.service.ILttngControlService;
 import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.rse.core.model.IHost;
 import org.eclipse.rse.core.model.ISystemProfile;
@@ -42,9 +39,11 @@ import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
 /**
- * The class {@link TraceControlKernelSessionTests} contains Kernel
- * session/channel/event handling test cases.
+ * The class <code>TraceControlKernelSessionTests</code> contains Kernel session/channel/event
+ * handling test cases.
  */
+
+@SuppressWarnings("javadoc")
 public class TraceControlCreateSessionTests {
 
     // ------------------------------------------------------------------------
@@ -55,8 +54,6 @@ public class TraceControlCreateSessionTests {
     private static final String SCEN_SCENARIO_CONTROL_DATA_TEST = "CreateSessionControlData";
     private static final String SCEN_SCENARIO_NETWORK_TEST = "CreateSessionNetwork";
     private static final String SCEN_SCENARIO_NETWORK2_TEST = "CreateSessionNetwork2";
-
-    private static final String SESSION = "mysession";
 
     // ------------------------------------------------------------------------
     // Test data
@@ -73,29 +70,25 @@ public class TraceControlCreateSessionTests {
      * Perform pre-test initialization.
      *
      * @throws Exception
-     *             if the initialization fails for some reason
+     *         if the initialization fails for some reason
+     *
      */
     @Before
     public void setUp() throws Exception {
         fFacility = TraceControlTestFacility.getInstance();
         fFacility.init();
         fProxy = new TestRemoteSystemProxy();
-        URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path(TraceControlTestFacility.DIRECTORY + File.separator + getTestStream()), null);
+        URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path(TraceControlTestFacility.DIRECTORY + File.separator + TEST_STREAM), null);
         File testfile = new File(FileLocator.toFileURL(location).toURI());
         fTestFile = testfile.getAbsolutePath();
     }
 
     /**
-     * Get the test stream file name to use for the test suite
-     *
-     * @return the name of the test stream file
-     */
-    protected String getTestStream() {
-        return TEST_STREAM;
-    }
-
-    /**
      * Perform post-test clean-up.
+     *
+     * @throws Exception
+     *         if the clean-up fails for some reason
+     *
      */
     @After
     public void tearDown() {
@@ -104,9 +97,6 @@ public class TraceControlCreateSessionTests {
 
     /**
      * Run the TraceControlComponent.
-     *
-     * @throws Exception
-     *             on internal error
      */
     @Test
     public void testTraceSessionTree() throws Exception {
@@ -117,7 +107,7 @@ public class TraceControlCreateSessionTests {
         ITraceControlComponent root = TraceControlTestFacility.getInstance().getControlView().getTraceControlRoot();
 
         ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
-        ISystemProfile profile = registry.createSystemProfile("myProfile", true);
+        ISystemProfile profile =  registry.createSystemProfile("myProfile", true);
         IHost host = registry.createLocalHost(profile, "myProfile", "user");
 
         TargetNodeComponent node = new TargetNodeComponent("myNode", root, host, fProxy);
@@ -134,8 +124,6 @@ public class TraceControlCreateSessionTests {
 
         // Verify that node is connected
         assertEquals(TargetNodeState.CONNECTED, node.getTargetNodeState());
-
-        ILttngControlService controleService = node.getControlService();
 
         // Get provider groups
         ITraceControlComponent[] groups = node.getChildren();
@@ -159,13 +147,8 @@ public class TraceControlCreateSessionTests {
 
         // Verify that session was created
         assertNotNull(session);
-        assertEquals(getSessionName(), session.getName());
-        if (controleService.isVersionSupported("2.6.0")) {
-            assertEquals("/tmp", session.getSessionPath());
-        } else {
-            assertEquals("file:///tmp", session.getSessionPath());
-        }
-
+        assertEquals("mysession", session.getName());
+        assertEquals("file:///tmp", session.getSessionPath());
         assertTrue(!session.isStreamedTrace());
         assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
         sessionDialogStub.setNetworkUrl(null);
@@ -190,12 +173,8 @@ public class TraceControlCreateSessionTests {
 
         // Verify that session was created
         assertNotNull(session);
-        assertEquals(getSessionName(), session.getName());
-        if (controleService.isVersionSupported("2.6.0")) {
-            assertEquals("tcp4://172.0.0.1:5342/ [data: 5343]", session.getSessionPath());
-        } else {
-            assertEquals("tcp://172.0.0.1:5342 [data: 5343]", session.getSessionPath());
-        }
+        assertEquals("mysession", session.getName());
+        assertEquals("tcp://172.0.0.1:5342 [data: 5343]", session.getSessionPath());
         assertTrue(session.isStreamedTrace());
         assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
         sessionDialogStub.setControlUrl(null);
@@ -220,12 +199,8 @@ public class TraceControlCreateSessionTests {
 
         // Verify that session was created
         assertNotNull(session);
-        assertEquals(getSessionName(), session.getName());
-        if (controleService.isVersionSupported("2.6.0")) {
-            assertEquals("tcp4://172.0.0.1:1234/mysession-20140820-153527 [data: 2345]", session.getSessionPath());
-        } else {
-            assertEquals("net://172.0.0.1:1234 [data: 2345]", session.getSessionPath());
-        }
+        assertEquals("mysession", session.getName());
+        assertEquals("net://172.0.0.1:1234 [data: 2345]", session.getSessionPath());
         assertTrue(session.isStreamedTrace());
         assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
         sessionDialogStub.setNetworkUrl(null);
@@ -248,12 +223,8 @@ public class TraceControlCreateSessionTests {
 
         // Verify that session was created
         assertNotNull(session);
-        assertEquals(getSessionName(), session.getName());
-        if (controleService.isVersionSupported("2.6.0")) {
-            assertEquals("tcp6://[ffff::eeee:dddd:cccc:0]:5342/mysession-20140820-153801 [data: 5343]", session.getSessionPath());
-        } else {
-            assertEquals("net://[ffff::eeee:dddd:cccc:0]:5342/mysession-20130221-144451 [data: 5343]", session.getSessionPath());
-        }
+        assertEquals("mysession", session.getName());
+        assertEquals("net://[ffff::eeee:dddd:cccc:0]:5342/mysession-20130221-144451 [data: 5343]", session.getSessionPath());
         assertTrue(session.isStreamedTrace());
         assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
         sessionDialogStub.setNetworkUrl(null);
@@ -263,22 +234,19 @@ public class TraceControlCreateSessionTests {
         // Verify that no more session components exist
         assertEquals(0, groups[1].getChildren().length);
 
-        // -------------------------------------------------------------------------
+
+        //-------------------------------------------------------------------------
         // Disconnect node
-        // -------------------------------------------------------------------------
+        //-------------------------------------------------------------------------
         fFacility.executeCommand(node, "disconnect");
         assertEquals(TargetNodeState.DISCONNECTED, node.getTargetNodeState());
 
-        // -------------------------------------------------------------------------
+        //-------------------------------------------------------------------------
         // Delete node
-        // -------------------------------------------------------------------------
+        //-------------------------------------------------------------------------
 
         fFacility.executeCommand(node, "delete");
-        assertEquals(0, fFacility.getControlView().getTraceControlRoot().getChildren().length);
-    }
-
-    private static String getSessionName() {
-        return SESSION;
+        assertEquals(0,fFacility.getControlView().getTraceControlRoot().getChildren().length);
     }
 
 }
