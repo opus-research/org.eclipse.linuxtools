@@ -62,16 +62,27 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.cdt.autotools.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.launchbar.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/tools/cdt/releases/9.3"/>
+<repository location="http://download.eclipse.org/tools/cdt/builds/oxygen/milestones"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jdt.core" version="0.0.0"/>
 <unit id="org.eclipse.jdt.debug.ui" version="0.0.0"/>
 <unit id="org.eclipse.jdt.ui" version="0.0.0"/>
-<unit id="org.eclipse.platform.ide" version="0.0.0"/>
 <unit id="org.eclipse.pde.runtime" version="0.0.0"/>
-<repository location="http://download.eclipse.org/eclipse/updates/4.7"/>
+<unit id="org.eclipse.platform.ide" version="0.0.0"/>
+<repository location="http://download.eclipse.org/eclipse/updates/4.7milestones"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.dstore.core" version="0.0.0"/>
+<repository location="http://download.eclipse.org/tm/updates/4.2milestones"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.ptp.rdt.sync.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/tools/ptp/builds/oxygen/milestones"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.remote.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/tools/ptp/builds/remote/oxygen/milestones"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="0.0.0"/>
@@ -85,17 +96,21 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jgit.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.zest.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.tm.terminal.feature.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.remote.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.dstore.core" version="0.0.0"/>
-<unit id="org.eclipse.ptp.rdt.sync.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/oxygen/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.tm.terminal.feature.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/tm/terminal/builds/development/nightly"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.reddeer.tests.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.reddeer.ui.feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/reddeer/milestones/2.0.0.Beta"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.launchbar.feature.group" version="0.0.0"/>
+<repository location="https://hudson.eclipse.org/cdt/job/launchbar-master/lastSuccessfulBuild/artifact/repo/target/repository/"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
