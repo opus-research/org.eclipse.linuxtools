@@ -81,8 +81,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 
 class FilterViewer extends Composite {
 
@@ -93,16 +91,8 @@ class FilterViewer extends Composite {
     private Composite fComposite;
     private MenuManager fMenuManager;
 
-    private boolean fIsDialog = false;
-
     public FilterViewer(Composite parent, int style) {
-        this(parent, style, false);
-    }
-
-    public FilterViewer(Composite parent, int style, boolean isDialog) {
         super(parent, style);
-
-        this.fIsDialog = isDialog;
 
         setLayout(new FillLayout());
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -202,24 +192,10 @@ class FilterViewer extends Composite {
             }
         }
 
-        final ITmfFilterTreeNode selectedNode = filterTreeNode;
-        if (selectedNode != null) {
-            fillContextMenuForNode(selectedNode, manager);
+        if (filterTreeNode != null) {
+            fillContextMenuForNode(filterTreeNode, manager);
         }
-
         manager.add(new Separator("delete")); //$NON-NLS-1$
-
-        if (fIsDialog && (selectedNode != null)) {
-            Action deleteAction = new Action(Messages.FilterViewer_DeleteActionText) {
-                @Override
-                public void run() {
-                    selectedNode.remove();
-                    fViewer.refresh();
-                }
-            };
-            deleteAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
-            manager.add(deleteAction);
-        }
         manager.add(new Separator("edit")); //$NON-NLS-1$
 
         if (fViewer.getInput() instanceof TmfFilterRootNode || filterTreeNode == null) {
