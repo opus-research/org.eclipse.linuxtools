@@ -69,8 +69,8 @@ public class ResourceHelper {
 	private final static IProgressMonitor NULL_MONITOR = new NullProgressMonitor();
 	private static final int MAX_RETRY= 5;
 
-	private final static Set<String> externalFilesCreated = new HashSet<>();
-	private final static Set<IResource> resourcesCreated = new HashSet<>();
+	private final static Set<String> externalFilesCreated = new HashSet<String>();
+	private final static Set<IResource> resourcesCreated = new HashSet<IResource>();
 
 	/**
 	 * Creates CDT project in a specific path in workspace and opens it.
@@ -217,8 +217,9 @@ public class ResourceHelper {
 	 * Deletes project by name.
 	 *
 	 * @param projectName
+	 * @throws CoreException
 	 */
-	public static void deleteProject(String projectName) {
+	public static void deleteProject(String projectName) throws CoreException {
 		IWorkspaceRoot root= ResourcesPlugin.getWorkspace().getRoot();
 		IProject project= root.getProject(projectName);
 		if (project.exists())
@@ -229,8 +230,9 @@ public class ResourceHelper {
 	 * Deletes given project with content.
 	 *
 	 * @param project
+	 * @throws CoreException
 	 */
-	public static void delete(final IProject project) {
+	public static void delete(final IProject project) throws CoreException {
 		delete(project, true);
 	}
 
@@ -239,8 +241,9 @@ public class ResourceHelper {
 	 *
 	 * @param project
 	 * @param deleteContent  whether to delete project content
+	 * @throws CoreException
 	 */
-	public static void delete(final IProject project, boolean deleteContent) {
+	public static void delete(final IProject project, boolean deleteContent) throws CoreException {
 		for (int i= 0; i < MAX_RETRY; i++) {
 			try {
 				project.delete(deleteContent, true, NULL_MONITOR);
@@ -349,8 +352,9 @@ public class ResourceHelper {
 	 *
 	 * @param name - folder name.
 	 * @return absolute location of the folder on the file system.
+	 * @throws IOException if something goes wrong.
 	 */
-	public static IPath createWorkspaceFolder(String name) throws CoreException {
+	public static IPath createWorkspaceFolder(String name) throws CoreException, IOException {
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IPath fullPath = workspaceRoot.getLocation().append(name);
 		java.io.File folder = new java.io.File(fullPath.toOSString());
@@ -369,8 +373,9 @@ public class ResourceHelper {
 	 * Creates new temporary folder with generated name from workspace root.
 	 *
 	 * @return absolute location of the folder on the file system.
+	 * @throws IOException if something goes wrong.
 	 */
-	public static IPath createTemporaryFolder() throws CoreException {
+	public static IPath createTemporaryFolder() throws CoreException, IOException {
 		return ResourceHelper.createWorkspaceFolder("tmp/" + System.currentTimeMillis() + '.' + UUID.randomUUID());
 	}
 
@@ -679,7 +684,7 @@ public class ResourceHelper {
 	 * files / folders created with the #createWorkspaceFile #createWorkspaceFolder
 	 * methods in this class
 	 */
-	public static void cleanUp() throws CoreException {
+	public static void cleanUp() throws CoreException, IOException {
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		root.refreshLocal(IResource.DEPTH_INFINITE, NULL_MONITOR);
 
