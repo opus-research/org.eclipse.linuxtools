@@ -576,16 +576,19 @@ public class DockerConnection
 		private DockerClient copyClient;
 		private OutputStream outputStream;
 		private boolean follow;
+		private long timestamp;
 
-		public LogThread(String id, DockerClient copyClient, boolean follow) {
+		public LogThread(String id, DockerClient copyClient, boolean follow,
+				long timestamp) {
 			this.id = id;
 			this.copyClient = copyClient;
 			this.follow = follow;
+			this.timestamp = timestamp;
 		}
 
 		@Override
 		public LogThread clone() {
-			return new LogThread(id, copyClient, follow);
+			return new LogThread(id, copyClient, follow, timestamp);
 		}
 
 		@Override
@@ -603,15 +606,23 @@ public class DockerConnection
 				boolean timestamps = preferences.getBoolean(
 						"logTimestamp", true); //$NON-NLS-1$
 
+				boolean showOldLogs = preferences.getBoolean("showOldLogs",
+						false);
+
 				LogStream stream = null;
 
+				ArrayList<LogsParam> params = new ArrayList<>();
+
+				params.add(LogsParam.follow());
+				params.add(LogsParam.stdout());
+				params.add(LogsParam.stderr());
 				if (timestamps)
-					stream = copyClient.logs(id, LogsParam.follow(),
-							LogsParam.stdout(), LogsParam.stderr(),
-							LogsParam.timestamps());
-				else
-					stream = copyClient.logs(id, LogsParam.follow(),
-							LogsParam.stdout(), LogsParam.stderr());
+					params.add(LogsParam.timestamps());
+				if (!showOldLogs)
+					params.add(LogsParam
+							.since(Integer.valueOf((int) (timestamp / 1000L))));
+				stream = copyClient.logs(id,
+						params.toArray(new LogsParam[] {}));
 
 				// First time through, don't sleep before showing log data
 				int delayTime = 100;
@@ -1578,7 +1589,8 @@ public class DockerConnection
 				synchronized (loggingThreads) {
 					LogThread t = loggingThreads.get(id);
 					if (t == null || !t.isAlive()) {
-						t = new LogThread(id, getClientCopy(), true);
+						long timestamp = System.currentTimeMillis();
+						t = new LogThread(id, getClientCopy(), true, timestamp);
 						loggingThreads.put(id, t);
 						t.setOutputStream(stream);
 						t.start();
@@ -1649,7 +1661,8 @@ public class DockerConnection
 				synchronized (loggingThreads) {
 					LogThread t = loggingThreads.get(id);
 					if (t == null || !t.isAlive()) {
-						t = new LogThread(id, getClientCopy(), true);
+						long timestamp = System.currentTimeMillis();
+						t = new LogThread(id, getClientCopy(), true, timestamp);
 						loggingThreads.put(id, t);
 						t.setOutputStream(stream);
 						t.start();
@@ -1685,7 +1698,8 @@ public class DockerConnection
 				synchronized (loggingThreads) {
 					LogThread t = loggingThreads.get(loggingId);
 					if (t == null || !t.isAlive()) {
-						t = new LogThread(id, getClientCopy(), true);
+						long timestamp = System.currentTimeMillis();
+						t = new LogThread(id, getClientCopy(), true, timestamp);
 						loggingThreads.put(loggingId, t);
 						t.setOutputStream(stream);
 						t.start();
@@ -1832,7 +1846,7 @@ public class DockerConnection
 				LogThread t = loggingThreads.get(id);
 				if (t == null || !t.isAlive()) {
 					t = new LogThread(id, getClientCopy(), info.state()
-							.running());
+							.running(), 0);
 					loggingThreads.put(id, t);
 					t.setOutputStream(stream);
 					t.start();

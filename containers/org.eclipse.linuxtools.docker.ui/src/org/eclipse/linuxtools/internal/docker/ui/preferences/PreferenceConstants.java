@@ -21,6 +21,7 @@ public class PreferenceConstants {
 	
 	public static final String AUTOLOG_ON_START = "autoLogOnStart"; //$NON-NLS-1$
 	public static final String LOG_TIMESTAMP = "logTimestamp"; //$NON-NLS-1$
+	public static final String SHOW_OLD_LOGS = "showOldLogs"; //$NON-NLS-1$
 
 	/** the installation directory for Docker Machine. */
 	public static final String DOCKER_MACHINE_INSTALLATION_DIRECTORY = "dockerMachineInstallDir"; //$NON-NLS-1$
