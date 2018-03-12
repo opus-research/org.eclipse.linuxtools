@@ -233,7 +233,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
         if (path == null) {
             throw new TmfTraceException("Invalid trace path"); //$NON-NLS-1$
         }
-        fPath = (new File(path)).getAbsolutePath();
+        fPath = path;
         fResource = resource;
         String traceName = getName();
         if (traceName == null || traceName.isEmpty()) {
