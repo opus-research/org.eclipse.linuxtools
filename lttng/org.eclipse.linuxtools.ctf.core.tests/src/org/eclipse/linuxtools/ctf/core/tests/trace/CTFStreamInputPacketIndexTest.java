@@ -33,7 +33,6 @@ import org.junit.Test;
 public class CTFStreamInputPacketIndexTest {
 
     private StreamInputPacketIndex fixture;
-    private StreamInputPacketIndexEntry entry;
 
     /**
      * Perform pre-test initialization.
@@ -43,8 +42,7 @@ public class CTFStreamInputPacketIndexTest {
     @Before
     public void setUp() throws CTFReaderException {
         fixture = new StreamInputPacketIndex();
-        fixture.addEntry(new StreamInputPacketIndexEntry(1L));
-        entry = new StreamInputPacketIndexEntry(1L);
+        fixture.addEntry(new StreamInputPacketIndexEntry(1L, 0L,0L));
     }
 
     /**
@@ -55,45 +53,6 @@ public class CTFStreamInputPacketIndexTest {
         assertNotNull(fixture);
     }
 
-    /**
-     * Run the void addEntry(StreamInputPacketIndexEntry) method test, by
-     * specifying only 1 parameter to the entry.
-     *
-     * @throws CTFReaderException
-     */
-    @Test
-    public void testAddEntry_1param() throws CTFReaderException {
-        entry.setPacketSizeBits(0);
-        fixture.addEntry(entry);
-    }
-
-    /**
-     * Run the void addEntry(StreamInputPacketIndexEntry) method test by
-     * specifying 2 parameters to the entry.
-     *
-     * @throws CTFReaderException
-     */
-    @Test
-    public void testAddEntry_2params() throws CTFReaderException {
-        entry.setPacketSizeBits(1);
-        entry.setContentSizeBits(0);
-        fixture.addEntry(entry);
-    }
-
-    /**
-     * Run the void addEntry(StreamInputPacketIndexEntry) method test, by
-     * specifying all 4 parameters to the entry.
-     *
-     * @throws CTFReaderException
-     */
-    @Test
-    public void testAddEntry_4params() throws CTFReaderException {
-        entry.setTimestampBegin(1L);
-        entry.setPacketSizeBits(1);
-        entry.setContentSizeBits(1);
-        entry.setTimestampEnd(1L);
-        fixture.addEntry(entry);
-    }
 
     /**
      * Run the ListIterator<StreamInputPacketIndexEntry> listIterator() method

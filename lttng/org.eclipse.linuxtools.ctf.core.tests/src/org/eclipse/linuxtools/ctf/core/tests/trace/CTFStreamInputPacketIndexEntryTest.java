@@ -34,7 +34,7 @@ public class CTFStreamInputPacketIndexEntryTest {
      */
     @Before
     public void setUp() {
-        fixture = new StreamInputPacketIndexEntry(1L);
+        fixture = new StreamInputPacketIndexEntry(1L, 1L, 1L);
     }
 
     /**
@@ -57,12 +57,6 @@ public class CTFStreamInputPacketIndexEntryTest {
         String expectedResult = "StreamInputPacketIndexEntry [offsetBytes=1,"+
                 " timestampBegin=1, timestampEnd=1]";
 
-
-        fixture.setContentSizeBits(1);
-        fixture.setDataOffsetBits(1);
-        fixture.setTimestampEnd(1L);
-        fixture.setPacketSizeBits(1);
-        fixture.setTimestampBegin(1L);
 
         assertEquals(expectedResult, fixture.toString());
     }
