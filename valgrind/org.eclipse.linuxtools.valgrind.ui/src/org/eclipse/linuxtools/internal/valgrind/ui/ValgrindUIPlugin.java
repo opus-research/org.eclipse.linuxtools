@@ -84,34 +84,40 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
      * @param toolID              the valgrind tool identifier
      */
     public void createView(final String contentDescription, final String toolID) {
-        Display.getDefault().syncExec(() -> {
-		    try {
-		        activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		        activePage.showView(IValgrindToolView.VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
-		        // Bug #366831 Need to show the view otherwise the toolbar is disposed.
-		        activePage.showView(IValgrindToolView.VIEW_ID);
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                    activePage.showView(IValgrindToolView.VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
+                    // Bug #366831 Need to show the view otherwise the toolbar is disposed.
+                    activePage.showView(IValgrindToolView.VIEW_ID);
 
-		        // create the view's tool specific controls and populate content description
-		        view.createDynamicContent(contentDescription, toolID);
+                    // create the view's tool specific controls and populate content description
+                    view.createDynamicContent(contentDescription, toolID);
 
-		        view.refreshView();
-		    } catch (CoreException e) {
-		        e.printStackTrace();
-		    }
-		});
+                    view.refreshView();
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**
      * Shows the Valgrind view in the active page and gives it focus.
      */
     public void showView() {
-        Display.getDefault().syncExec(() -> {
-		    try {
-		        activePage.showView(IValgrindToolView.VIEW_ID);
-		    } catch (PartInitException e) {
-		        e.printStackTrace();
-		    }
-		});
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    activePage.showView(IValgrindToolView.VIEW_ID);
+                } catch (PartInitException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**
@@ -119,7 +125,12 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
      */
     public void refreshView() {
         if (view != null) {
-            Display.getDefault().syncExec(() -> view.refreshView());
+            Display.getDefault().syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    view.refreshView();
+                }
+            });
         }
     }
 
@@ -128,13 +139,16 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
      */
     public void resetView() {
         if (view != null) {
-            Display.getDefault().syncExec(() -> {
-			    try {
-			        view.createDynamicContent(Messages.getString("ValgrindViewPart.No_Valgrind_output"), null); //$NON-NLS-1$
-			    } catch (CoreException e) {
-			        e.printStackTrace();
-			    }
-			});
+            Display.getDefault().syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        view.createDynamicContent(Messages.getString("ValgrindViewPart.No_Valgrind_output"), null); //$NON-NLS-1$
+                    } catch (CoreException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
     }
 
@@ -195,7 +209,7 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 	/**
 	 * Set the project to be profiled
 	 *
-	 * @param project - project to be profiled
+	 * @param project
 	 */
 	public void setProfiledProject(IProject project) {
 		this.project = project;
@@ -208,34 +222,5 @@ public class ValgrindUIPlugin extends AbstractUIPlugin {
 	 */
 	public IProject getProfiledProject() {
 		return project;
-	}
-
-	/**
-	 * log the status
-	 * @param status - Status to log
-	 * */
-	public static void log(IStatus status) {
-		if (plugin != null)
-			getDefault().getLog().log(status);
-		else {
-			// log on console when plugin is not loaded, can happen when run junit without osgi
-			System.err.println(status.getMessage());
-			if (status.getException() != null) {
-				status.getException().printStackTrace(System.err);
-			}
-		}
-	}
-	/** log string as error
-	 * @param string - String to log
-	 * */
-	public static void log(String string) {
-		log(new Status(IStatus.ERROR, PLUGIN_ID, IStatus.ERROR, string, null));
-	}
-
-	/** log Throwable
-	 * @param e - Throwable to log
-	 * */
-	public static void log(Throwable e) {
-		log(new Status(IStatus.ERROR, PLUGIN_ID, IStatus.ERROR, e.getMessage(), e));
 	}
 }

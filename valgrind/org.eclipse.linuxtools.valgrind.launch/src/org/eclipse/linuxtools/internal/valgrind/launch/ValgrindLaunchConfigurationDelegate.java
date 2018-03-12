@@ -47,7 +47,6 @@ import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.sourcelookup.containers.LocalFileStorage;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindCommand;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindCoreParser;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindError;
@@ -70,7 +69,12 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
 
     private static final String LOG_FILE = CommandLineConstants.LOG_PREFIX + "%p.txt"; //$NON-NLS-1$
     private static final Pattern CORE_PATTERN = Pattern.compile("^.*\\.txt\\.core\\.[0-9]+$");  //$NON-NLS-1$
-    private static final FileFilter LOG_FILTER = pathname -> pathname.getName().startsWith(CommandLineConstants.LOG_PREFIX) && !CORE_PATTERN.matcher(pathname.getName()).matches();
+    private static final FileFilter LOG_FILTER = new FileFilter() {
+        @Override
+        public boolean accept(File pathname) {
+            return pathname.getName().startsWith(CommandLineConstants.LOG_PREFIX) && !CORE_PATTERN.matcher(pathname.getName()).matches();
+        }
+    };
 
     protected String toolID;
     protected ValgrindCommand command;
@@ -110,14 +114,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
 
             String valgrindCommand= getValgrindCommand().getValgrindCommand();
             // also ensure Valgrind version is usable
-        	try {
-        		valgrindVersion = getPlugin().getValgrindVersion(project);
-        	} catch(CoreException e) {
-        		// if versioning failed, issue an error dialog and return
-        		errorDialog(Messages.getString("ValgrindLaunchConfigurationDelegate.Valgrind_version_failed_msg"), //$NON-NLS-1$
-        				e.getMessage());
-        		return;
-        	}
+            valgrindVersion = getPlugin().getValgrindVersion(project);
 
             monitor.worked(1);
             IPath exePath = CDebugUtils.verifyProgramPath(config);
@@ -146,7 +143,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
             ArrayList<String> cmdLine = new ArrayList<>(1 + arguments.length);
             cmdLine.add(valgrindCommand);
             cmdLine.addAll(Arrays.asList(opts));
-            cmdLine.add(exePath.toPortableString());
+            cmdLine.add(exePath.toOSString());
             cmdLine.addAll(Arrays.asList(arguments));
             String[] commandArray = cmdLine.toArray(new String[cmdLine.size()]);
             boolean usePty = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_USE_TERMINAL, ICDTLaunchConfigurationConstants.USE_TERMINAL_DEFAULT);
@@ -243,7 +240,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
                 if (children[i] instanceof ValgrindStackFrame && marker == null) {
                     ValgrindStackFrame frame = (ValgrindStackFrame) children[i];
                     if (frame.getLine() > 0) {
-                        ISourceLocator locator = frame.getSourceLocator();
+                        ISourceLocator locator = frame.getLaunch().getSourceLocator();
                         ISourceLookupResult result = DebugUITools.lookupSource(frame.getFile(), locator);
                         Object sourceElement = result.getSourceElement();
 
@@ -335,7 +332,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
         ArrayList<String> opts = new ArrayList<>();
         opts.add(CommandLineConstants.OPT_TOOL + EQUALS + getPlugin().getToolName(toolID));
         opts.add(CommandLineConstants.OPT_QUIET); // suppress uninteresting output
-        opts.add(CommandLineConstants.OPT_LOGFILE + EQUALS + outputPath.append(LOG_FILE).toPortableString());
+        opts.add(CommandLineConstants.OPT_LOGFILE + EQUALS + outputPath.append(LOG_FILE).toOSString());
 
         opts.add(CommandLineConstants.OPT_TRACECHILD + EQUALS + (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_TRACECHILD, LaunchConfigurationConstants.DEFAULT_GENERAL_TRACECHILD) ? YES : NO));
         opts.add(CommandLineConstants.OPT_CHILDSILENT + EQUALS + YES); // necessary for parsing
@@ -367,7 +364,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
         for (Object strpath : suppFiles) {
             IPath suppfile = getPlugin().parseWSPath((String) strpath);
             if (suppfile != null) {
-                opts.add(CommandLineConstants.OPT_SUPPFILE + EQUALS + suppfile.toPortableString());
+                opts.add(CommandLineConstants.OPT_SUPPFILE + EQUALS + suppfile.toOSString());
             }
         }
         opts.addAll(Arrays.asList(dynamicDelegate.getCommandArray(config, valgrindVersion, outputPath)));
@@ -396,11 +393,4 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
         root.deleteMarkers(ValgrindLaunchPlugin.MARKER_TYPE, true, IResource.DEPTH_INFINITE);
         return super.finalLaunchCheck(configuration, mode, monitor);
     }
-
-    // Display an error dialog to denote an error scenario.
-    private void errorDialog(final String title, final String message) {
-        ValgrindLaunchPlugin.getShell().getDisplay().asyncExec( () -> MessageDialog.openError(ValgrindLaunchPlugin.getShell(), title, message));
-    }
-
-
 }

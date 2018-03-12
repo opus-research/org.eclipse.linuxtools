@@ -27,11 +27,10 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.vagrant.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
@@ -68,13 +67,12 @@ public class AddBoxPage extends WizardPage {
 
 	@Override
 	public void createControl(Composite parent) {
-		ScrolledComposite scrollTop = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
-		scrollTop.setExpandVertical(true);
-		scrollTop.setExpandHorizontal(true);
-
-		final Composite container = new Composite(scrollTop, SWT.NONE);
+		parent.setLayout(new GridLayout());
+		final Composite container = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(3).margins(6, 6)
 				.applyTo(container);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(1, 1)
+				.grab(true, false).applyTo(container);
 
 		// Box name
 		final Label boxNameLabel = new Label(container, SWT.NONE);
@@ -89,7 +87,7 @@ public class AddBoxPage extends WizardPage {
 		boxNameText.setToolTipText(
 				WizardMessages.getString("ImagePull.name.tooltip")); //$NON-NLS-1$
 		// Name binding
-		final IObservableValue<String> boxNameObservable = BeanProperties
+		final IObservableValue boxNameObservable = BeanProperties
 				.value(AddBoxPageModel.class, AddBoxPageModel.BOX_NAME)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxNameText),
@@ -108,7 +106,7 @@ public class AddBoxPage extends WizardPage {
 		boxLocText.setToolTipText(
 				WizardMessages.getString("ImagePull.loc.tooltip")); //$NON-NLS-1$
 		// Location binding
-		final IObservableValue<String> imageNameObservable = BeanProperties
+		final IObservableValue imageNameObservable = BeanProperties
 				.value(AddBoxPageModel.class, AddBoxPageModel.BOX_LOC)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxLocText),
@@ -126,11 +124,6 @@ public class AddBoxPage extends WizardPage {
 
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
-
-		scrollTop.setContent(container);
-		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		scrollTop.setSize(point);
-		scrollTop.setMinSize(point);
 		setControl(container);
 	}
 
@@ -155,25 +148,24 @@ public class AddBoxPage extends WizardPage {
 
 	private class CreateBoxValidationStatusProvider extends MultiValidator {
 
-		private IObservableValue<String> boxNameOb, boxLocOb;
+		private IObservableValue boxNameOb, boxLocOb;
 
-		public CreateBoxValidationStatusProvider(
-				IObservableValue<String> boxNameOb,
-				IObservableValue<String> boxLocOb) {
+		public CreateBoxValidationStatusProvider(IObservableValue boxNameOb,
+				IObservableValue boxLocOb) {
 			this.boxNameOb = boxNameOb;
 			this.boxLocOb = boxLocOb;
 		}
 
 		@Override
-		public IObservableList<String> getTargets() {
+		public IObservableList getTargets() {
 			// Work around for NPE triggered by DialogPageSupport.dispose()
-			return new WritableList<>();
+			return new WritableList();
 		}
 
 		@Override
 		protected IStatus validate() {
-			String boxName = boxNameOb.getValue();
-			String boxLoc = boxLocOb.getValue();
+			String boxName = (String) boxNameOb.getValue();
+			String boxLoc = (String) boxLocOb.getValue();
 			if (boxName == null || boxName.isEmpty()) {
 				return ValidationStatus.error(
 						WizardMessages

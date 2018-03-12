@@ -23,6 +23,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.linuxtools.tools.launch.core.LaunchCoreConstants;
 import org.eclipse.linuxtools.tools.launch.core.properties.LinuxtoolsPathProperty;
 import org.eclipse.swt.SWT;
@@ -137,13 +139,16 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
         linuxtoolsPathCombo.setPage(this);
         linuxtoolsPathCombo.setPreferenceStore(getPreferenceStore());
         linuxtoolsPathCombo.load();
-        linuxtoolsPathCombo.setPropertyChangeListener(event -> {
-		    customSelected = event.getNewValue().toString().equals(""); //$NON-NLS-1$
-		    if (!customSelected){
-		        linuxtoolsPath.setStringValue(event.getNewValue().toString());
-		    }
-		    updateOptionsEnable();
-		});
+        linuxtoolsPathCombo.setPropertyChangeListener(new IPropertyChangeListener (){
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                customSelected = event.getNewValue().toString().equals(""); //$NON-NLS-1$
+                if (!customSelected){
+                    linuxtoolsPath.setStringValue(event.getNewValue().toString());
+                }
+                updateOptionsEnable();
+            }
+        });
 
         //Add textbox
         linuxtoolsPath = new StringFieldEditor(
@@ -206,12 +211,13 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
      */
     @Override
     public void setElement(IAdaptable element) {
-		this.element = element;
-		IAdaptable e = getElement();
-		if (e != null) {
-			setPreferenceStore(
-					new ScopedPreferenceStore(new ProjectScope((IProject) e), LaunchCoreConstants.PLUGIN_ID));
-		}
+        this.element = element;
+        IAdaptable e = getElement();
+        if (e != null) {
+            setPreferenceStore(new ScopedPreferenceStore(
+                        new ProjectScope((IProject) e),
+                        LaunchCoreConstants.PLUGIN_ID));
+        }
     }
 
     /**

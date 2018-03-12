@@ -25,13 +25,15 @@ import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile.OprofileProject;
 import org.eclipse.linuxtools.internal.oprofile.core.OprofileCorePlugin;
@@ -42,6 +44,8 @@ import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchMessages;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -585,7 +589,12 @@ AbstractLaunchConfigurationTab {
             eventFilterLayout.horizontalAlignment = SWT.FILL;
             eventFilterLayout.grabExcessHorizontalSpace = true;
             eventFilterText.setLayoutData(eventFilterLayout);
-            eventFilterText.addModifyListener(e -> eventList.refresh(false));
+            eventFilterText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    eventList.refresh(false);
+                }
+            });
 
             // profile user binary and profile kernel
             createRightCell(parent);
@@ -626,14 +635,19 @@ AbstractLaunchConfigurationTab {
             });
 
             // sorter
-            ListviewerComparator comparator = new ListviewerComparator();
-            eventList.setComparator(comparator);
+            ListviewerSorter sorter = new ListviewerSorter();
+            eventList.setSorter(sorter);
 
             //adds the events to the list from the counter
             sourceList.addAll(Arrays.asList(counter.getValidEvents()));
             eventList.setInput(sourceList);
 
-            eventList.addSelectionChangedListener(sce -> handleEventListSelectionChange());
+            eventList.addSelectionChangedListener(new ISelectionChangedListener() {
+                @Override
+                public void selectionChanged(SelectionChangedEvent sce) {
+                    handleEventListSelectionChange();
+                }
+            });
 
             HandleButtonClick listener = new HandleButtonClick();
             add = new Button(parent, SWT.PUSH);
@@ -677,8 +691,8 @@ AbstractLaunchConfigurationTab {
             });
 
             // sorter
-             ListviewerComparator viewerComparator = new ListviewerComparator();
-             selectedEventList.setComparator(viewerComparator);
+             sorter = new ListviewerSorter();
+             selectedEventList.setSorter(sorter);
 
             //adds the events to the list from the counter
             if(counter.getEvents().length != 0 && null != counter.getEvents()[0])
@@ -687,11 +701,14 @@ AbstractLaunchConfigurationTab {
             }
             selectedEventList.setInput(targetList);
 
-            selectedEventList.addSelectionChangedListener(sce -> {
-			    handleListSelection(selectedEventList);
-			    eventList.getList().deselectAll();
-			    updateLaunchConfigurationDialog();
-			});
+            selectedEventList.addSelectionChangedListener(new ISelectionChangedListener() {
+                @Override
+                public void selectionChanged(SelectionChangedEvent sce) {
+                    handleListSelection(selectedEventList);
+                    eventList.getList().deselectAll();
+                    updateLaunchConfigurationDialog();
+                }
+            });
 
 
 
@@ -1216,7 +1233,12 @@ AbstractLaunchConfigurationTab {
             countText = new Text(parent, SWT.SINGLE | SWT.BORDER);
             countText.setText(Integer.toString(counter.getCount()));
             countText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-            countText.addModifyListener(me -> handleCountTextModify());
+            countText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent me) {
+                    handleCountTextModify();
+                }
+            });
 
             //unit mask widget
             Composite unitMaskComp = new Composite(parent, SWT.NONE);
@@ -1422,7 +1444,7 @@ AbstractLaunchConfigurationTab {
      * Event sorting for selected as well as all available events
      * @since 3.0
      */
-    protected class ListviewerComparator extends ViewerComparator
+    protected class ListviewerSorter extends ViewerSorter
     {
         @Override
         public int compare(Viewer viewer, Object e1, Object e2) {
@@ -1431,7 +1453,7 @@ AbstractLaunchConfigurationTab {
             String op1txt = op1.getText();
             String op2txt = op2.getText();
             if(op1txt !=null && op2txt !=null && op1txt.trim().length() !=0 && op2txt.trim().length() !=0)
-                return getComparator().compare(op1txt, op2txt);
+                return collator.compare(op1txt, op2txt);
             return super.compare(viewer, e1, e2);
         }
     }
