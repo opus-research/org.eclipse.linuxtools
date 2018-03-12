@@ -155,7 +155,8 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
         chkShowStat.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent se) {
-                handleShowStatSelection();
+                Version perfVersion = PerfCore.getPerfVersion(lastConfig);
+                handleShowStatSelection(perfVersion);
             }
         });
         statRunCount = new Spinner(showStatComp, SWT.BORDER);
@@ -256,13 +257,13 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
     /**
      * Handle selection of show stat button
      */
-    private void handleShowStatSelection() {
+    private void handleShowStatSelection(Version version) {
         if (chkShowStat.getSelection()) {
             statRunCount.setEnabled(true);
-            toggleButtonsEnablement(false);
+            toggleButtonsEnablement(false, version);
         } else {
             statRunCount.setEnabled(false);
-            toggleButtonsEnablement(true);
+            toggleButtonsEnablement(true, version);
         }
     }
 
@@ -300,8 +301,7 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
      * Toggle enablement of all buttons, excluding the stat button.
      * @param enable enablement of buttons
      */
-    private void toggleButtonsEnablement(boolean enable) {
-    	Version version = PerfCore.getPerfVersion(lastConfig);
+    private void toggleButtonsEnablement(boolean enable, Version version) {
         txtKernelLocation.setEnabled(enable);
         chkRecordRealtime.setEnabled(enable);
         chkRecordVerbose.setEnabled(enable);
@@ -350,7 +350,7 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
             chkShowStat.setSelection(config.getAttribute(PerfPlugin.ATTR_ShowStat, PerfPlugin.ATTR_ShowStat_default));
             int runCount = config.getAttribute(PerfPlugin.ATTR_StatRunCount, PerfPlugin.ATTR_StatRunCount_default);
             statRunCount.setSelection(runCount);
-            handleShowStatSelection();
+            handleShowStatSelection(perfVersion);
         } catch (CoreException e) {
             // do nothing
         }
