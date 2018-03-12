@@ -9,13 +9,10 @@
  *     Red Hat - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.tparsers;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.jobs.IJobChangeListener;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.Messages;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 
 /**
@@ -35,9 +32,7 @@ public abstract class TreeTapsetParser extends TapsetParser {
         }
     }
 
-    private final Object lock = new Object();
-
-    protected TreeNode tree = new TreeNode(null, false);
+    protected TreeNode tree = null;
     private TreeNode forcedTree = null;
     private TapsetChanges tapsetChanges = null;
 
@@ -46,60 +41,22 @@ public abstract class TreeTapsetParser extends TapsetParser {
     }
 
     /**
-     * Adds a listener to this job and returns this job's latest result, which will
-     * not be pre-empted by another job completing. Clients should call this instead of
-     * {@link #addJobChangeListener(IJobChangeListener)} only when knowing the previous
-     * job result is required for synchronization purposes (such as UI updating).
-     * @param listener the listener to be added.
-     * @return The result of {@link #getLatestResult()}.
-     * @see #addJobChangeListener(IJobChangeListener)
-     * @see #getLatestResult()
-     */
-    public IStatus safelyAddJobChangeListener(IJobChangeListener listener) {
-        synchronized (lock) {
-            super.addJobChangeListener(listener);
-            return getLatestResult();
-        }
-    }
-
-    /**
-     * Gets the result of the last job that was started, rather than the last job
-     * that was finished. This should only be used when a {@link IJobChangeListener}
-     * is already registered with this job, so true job completion can be caught.
-     * @return The result of this job's last run, or null if this job has either
-     * never finished running or is currently running.
-     * @see #getResult()
-     */
-    public IStatus getLatestResult() {
-        synchronized (lock) {
-            return getState() != Job.RUNNING ? getResult() : null;
-        }
-    }
-
-    /**
      * Prepares the parser for a run. Clients must override this method to perform
      * actions during the run; a call to super.run() is necessary.
      */
     @Override
     protected final synchronized IStatus run(IProgressMonitor monitor) {
-        IStatus result;
         if (forcedTree != null) {
-            if (isValidTree(forcedTree)) {
-                tree = forcedTree;
-                result = createStatus(IStatus.OK);
-            } else {
-                result = createStatus(IStatus.ERROR, Messages.TapsetParser_ErrorInvalidTapsetTree);
-            }
+            tapsetChanges = null;
+            tree = forcedTree;
             forcedTree = null;
-        } else if (tapsetChanges != null) {
-            result = performUpdate(monitor);
-        } else {
-            tree = new TreeNode(null, false);
-            result = createStatus(runAction(monitor));
+            return createStatus(IStatus.OK);
         }
-        synchronized (lock) {
-            return result;
+        if (tapsetChanges != null) {
+            return performUpdate(monitor);
         }
+        tree = new TreeNode(null, false);
+        return createStatus(runAction(monitor));
     }
 
     /**
@@ -110,7 +67,7 @@ public abstract class TreeTapsetParser extends TapsetParser {
     protected abstract int runAction(IProgressMonitor monitor);
 
     /**
-     * After adding / removing tapsets, schedule the job that
+     * After adding / removing tapsets, scheduled the job that
      * loads in / discards the tapsets that were added / removed.
      * @param additions The list of added tapset directories.
      * @param deletions The list of removed tapset directories.
@@ -166,9 +123,9 @@ public abstract class TreeTapsetParser extends TapsetParser {
     protected abstract int addTapsets(String tapsetContents, String[] additions, IProgressMonitor monitor);
 
     /**
-     * @return The tree that this parser constructs. Guaranteed not be null.
+     * @return The tree that this parser constructs.
      */
-    public final TreeNode getTree() {
+    public final synchronized TreeNode getTree() {
         return tree;
     }
 
@@ -177,7 +134,11 @@ public abstract class TreeTapsetParser extends TapsetParser {
      * that normally get called when a parse operation completes.
      * @param tree The tree to put into this parser.
      */
-    public final void setTree(TreeNode tree) {
+    final synchronized void setTree(TreeNode tree) {
+        String errorMessage = isValidTree(tree);
+        if (errorMessage != null) {
+            throw new IllegalArgumentException(errorMessage);
+        }
         cancel();
         forcedTree = tree;
         schedule();
@@ -187,10 +148,11 @@ public abstract class TreeTapsetParser extends TapsetParser {
      * Check if the provided tree a valid tree for this parser.
      * Called internally by {@link #setTree(TreeNode)}.
      * @param tree The tree to check for validity.
-     * @return <code>true</code> if the tree is valid, <code>false</code> otherwise.
+     * @return <code>null</code> if the tree is valid; otherwise,
+     * an error message signifying why the tree is invalid.
      */
-    protected boolean isValidTree(TreeNode tree) {
-        return tree != null;
+    protected String isValidTree(TreeNode tree) {
+        return null;
     }
 
 }

@@ -82,7 +82,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 
 class FilterViewer extends Composite {
@@ -219,8 +218,6 @@ class FilterViewer extends Composite {
                 }
             };
             deleteAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
-            deleteAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_DELETE);
-            deleteAction.setAccelerator(SWT.DEL);
             manager.add(deleteAction);
         }
         manager.add(new Separator("edit")); //$NON-NLS-1$
