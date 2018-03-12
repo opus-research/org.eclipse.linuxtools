@@ -15,7 +15,9 @@ package org.eclipse.linuxtools.tmf.pcap.ui.swtbot.tests;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -82,6 +84,7 @@ public class ImportAndReadPcapTest {
      */
     @BeforeClass
     public static void init() {
+
         SWTBotUtil.failIfUIThread();
 
         /* set up for swtbot */
@@ -127,6 +130,7 @@ public class ImportAndReadPcapTest {
      */
     @Test
     public void test() {
+        assumeTrue(pttt.exists());
         SWTBotUtil.createProject(TRACE_PROJECT_NAME);
         openTrace();
         openEditor();
@@ -137,14 +141,18 @@ public class ImportAndReadPcapTest {
     }
 
     private void testStreamView(IViewReference viewPart) {
-        SWTBotView botView= new SWTBotView(viewPart, fBot);
-        StreamListView slv  = (StreamListView) getViewPart("Stream List");
+        SWTBotView botView = new SWTBotView(viewPart, fBot);
+        StreamListView slv = (StreamListView) getViewPart("Stream List");
         botView.setFocus();
         SWTBotTree botTree = fBot.tree();
         assertNotNull(botTree);
         final TmfTimeSynchSignal signal = new TmfTimeSynchSignal(slv, fDesired1.getTimestamp());
         slv.broadcast(signal);
         SWTBotUtil.waitForJobs();
+        // FIXME This is a race condition:
+        // TmfEventsTable launches an async exec that may be run after the wait
+        // for jobs. This last delay catches it.
+        SWTBotUtil.delay(1000);
 
     }
 
@@ -157,7 +165,8 @@ public class ImportAndReadPcapTest {
                 try {
                     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(TRACE_PROJECT_NAME);
                     TmfTraceFolder destinationFolder = TmfProjectRegistry.getProject(project, true).getTracesFolder();
-                    TmfOpenTraceHelper.openTraceFromPath(destinationFolder, pttt.getTrace().getPath(), PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "org.eclipse.linuxtools.tmf.pcap.core.pcaptrace");
+                    String absolutePath = (new File(pttt.getTrace().getPath())).getAbsolutePath();
+                    TmfOpenTraceHelper.openTraceFromPath(destinationFolder, absolutePath, PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "org.eclipse.linuxtools.tmf.pcap.core.pcaptrace");
                 } catch (CoreException e) {
                     exception[0] = e;
                 }
@@ -208,7 +217,6 @@ public class ImportAndReadPcapTest {
     private static void testHV(IViewPart vp) {
         assertNotNull(vp);
     }
-
 
     private static ITmfEvent getEvent(int rank) {
         try (PcapTrace trace = pttt.getTrace()) {
