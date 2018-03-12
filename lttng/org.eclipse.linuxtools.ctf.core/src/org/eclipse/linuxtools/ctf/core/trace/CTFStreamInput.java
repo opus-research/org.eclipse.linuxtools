@@ -370,10 +370,9 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
      * Gets the wrapped file
      *
      * @return the file
-     * @since 3.1
      */
     @NonNull
-    public File getFile() {
+    File getFile() {
         return fFile;
     }
 
