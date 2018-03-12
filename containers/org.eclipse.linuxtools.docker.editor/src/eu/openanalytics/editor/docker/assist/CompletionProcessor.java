@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.docker.editor.assist;
+package eu.openanalytics.editor.docker.assist;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,9 +20,10 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
-import org.eclipse.linuxtools.internal.docker.editor.Activator;
-import org.eclipse.linuxtools.internal.docker.editor.scanner.InstructionWordRule;
-import org.eclipse.linuxtools.internal.docker.editor.util.AssetLoader;
+
+import eu.openanalytics.editor.docker.Activator;
+import eu.openanalytics.editor.docker.scanner.InstructionWordRule;
+import eu.openanalytics.editor.docker.util.AssetLoader;
 
 public class CompletionProcessor implements IContentAssistProcessor {
 

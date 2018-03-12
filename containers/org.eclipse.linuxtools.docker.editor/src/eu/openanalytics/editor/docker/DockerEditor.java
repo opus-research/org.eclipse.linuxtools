@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.docker.editor;
+package eu.openanalytics.editor.docker;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -13,8 +13,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.linuxtools.internal.docker.editor.syntax.SyntaxProblemReporter;
 import org.eclipse.ui.editors.text.TextEditor;
+
+import eu.openanalytics.editor.docker.syntax.SyntaxProblemReporter;
 
 public class DockerEditor extends TextEditor {
 
