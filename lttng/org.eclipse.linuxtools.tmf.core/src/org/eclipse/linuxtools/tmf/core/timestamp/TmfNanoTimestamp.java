@@ -13,6 +13,7 @@
 
 package org.eclipse.linuxtools.tmf.core.timestamp;
 
+
 /**
  * A simplified timestamp where scale is nanoseconds and precision is set to 0.
  *
@@ -25,6 +26,11 @@ public class TmfNanoTimestamp extends TmfTimestamp {
     // ------------------------------------------------------------------------
 
     /**
+     * Serial ID
+     */
+    private static final long serialVersionUID = -3284297610210081864L;
+
+    /**
      * Default constructor (value = 0)
      */
     public TmfNanoTimestamp() {
@@ -34,7 +40,8 @@ public class TmfNanoTimestamp extends TmfTimestamp {
     /**
      * Full constructor
      *
-     * @param value the timestamp value
+     * @param value
+     *            the timestamp value
      */
     public TmfNanoTimestamp(final long value) {
         super(value, ITmfTimestamp.NANOSECOND_SCALE, 0);
@@ -43,8 +50,8 @@ public class TmfNanoTimestamp extends TmfTimestamp {
     /**
      * Copy constructor.
      *
-     * If the parameter is not a TmfNanoTimestamp, the timestamp will be
-     * scaled to nanoseconds, and the precision will be discarded.
+     * If the parameter is not a TmfNanoTimestamp, the timestamp will be scaled
+     * to nanoseconds, and the precision will be discarded.
      *
      * @param timestamp
      *            The timestamp to copy

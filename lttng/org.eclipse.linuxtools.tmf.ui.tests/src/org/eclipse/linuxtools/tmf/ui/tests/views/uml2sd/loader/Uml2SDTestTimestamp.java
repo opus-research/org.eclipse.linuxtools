@@ -20,6 +20,12 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
  *
  */
 public class Uml2SDTestTimestamp extends TmfTimestamp {
+
+    /**
+     * Serial id
+     */
+    private static final long serialVersionUID = -7553253970895585353L;
+
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
@@ -30,7 +36,9 @@ public class Uml2SDTestTimestamp extends TmfTimestamp {
 
     /**
      * Constructor
-     * @param value time as long value (nanoseconds)
+     *
+     * @param value
+     *            time as long value (nanoseconds)
      */
     public Uml2SDTestTimestamp(long value) {
         super(value, IUml2SDTestConstants.TIME_SCALE);

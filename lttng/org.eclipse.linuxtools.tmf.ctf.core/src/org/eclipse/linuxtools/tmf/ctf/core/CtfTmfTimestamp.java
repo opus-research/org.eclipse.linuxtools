@@ -25,6 +25,11 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 public final class CtfTmfTimestamp extends TmfTimestamp {
 
     /**
+     * Serial id
+     */
+    private static final long serialVersionUID = 3040859006939894447L;
+
+    /**
      * Constructor for CtfTmfTimestamp.
      *
      * @param timestamp
