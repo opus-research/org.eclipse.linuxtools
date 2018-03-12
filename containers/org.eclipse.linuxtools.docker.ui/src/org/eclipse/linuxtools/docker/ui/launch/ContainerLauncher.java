@@ -23,6 +23,7 @@ import java.util.Set;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
+import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainerExit;
 import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
