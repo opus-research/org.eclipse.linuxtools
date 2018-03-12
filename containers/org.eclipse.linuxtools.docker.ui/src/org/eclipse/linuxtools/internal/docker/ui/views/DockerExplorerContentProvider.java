@@ -71,6 +71,8 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			final DockerImagesCategory imagesCategory = (DockerImagesCategory) parentElement;
 			final IDockerConnection connection = imagesCategory.getConnection();
 			if(connection.isImagesLoaded()) {
+				//System.err.println("Images in DockerImagesCategory: "
+				// + connection.getImages());
 				return connection.getImages().toArray();
 			}
 			loadImages(imagesCategory);
@@ -89,6 +91,11 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			protected IStatus run(final IProgressMonitor monitor) {
 				containersCategory.getConnection().getContainers(true);
 				return Status.OK_STATUS;
+			}
+
+			@Override
+			public boolean belongsTo(Object family) {
+				return family == DockerExplorerView.class;
 			}
 		};
 		loadContainersJob.addJobChangeListener(new JobChangeAdapter() {
@@ -117,6 +124,12 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				imagesCategory.getConnection().getImages(true);
 				return Status.OK_STATUS;
 			}
+
+			@Override
+			public boolean belongsTo(Object family) {
+				return family == DockerExplorerView.class;
+			}
+
 		};
 		loadImagesJob.addJobChangeListener(new JobChangeAdapter() {
 			@Override
