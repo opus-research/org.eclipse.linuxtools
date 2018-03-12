@@ -14,8 +14,10 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.oprofile.launch.launching;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -51,6 +53,10 @@ import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
 
 public abstract class AbstractOprofileLaunchConfigurationDelegate extends AbstractCLaunchDelegate {
     protected ILaunchConfiguration config;
@@ -178,8 +184,77 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
                     throw new CoreException(status);
                 }
             }
+        }
 
+        // Executing ocount with the default or specified events,
+        // outputing the profiling data to the project dir/OPROFILE_DATA
+        if (OprofileProject.getProfilingBinary().equals(OprofileProject.OCOUNT_BINARY)) {
+            String eventsString=null;
+            // Event spec: "EVENT:count:mask:profileKernel:profileUser"
+            StringBuilder spec = new StringBuilder();
+            spec.append(EVENTS);
+            boolean isCommaAllowed = false;
+            for (int i=0;i<events.size();i++) {
+                OprofileDaemonEvent event = events.get(i);
+                if(isCommaAllowed) {
+                    spec.append(',');
+                }
+                spec.append(event.getEvent().getText());
+                spec.append(OPD_SETUP_EVENT_SEPARATOR);
+                spec.append(event.getResetCount());
+                spec.append(OPD_SETUP_EVENT_SEPARATOR);
+                spec.append(event.getEvent().getUnitMask().getMaskValue());
+                spec.append(OPD_SETUP_EVENT_SEPARATOR);
+                spec.append((event.getProfileKernel() ? OPD_SETUP_EVENT_TRUE : OPD_SETUP_EVENT_FALSE));
+                spec.append(OPD_SETUP_EVENT_SEPARATOR);
+                spec.append((event.getProfileUser() ? OPD_SETUP_EVENT_TRUE : OPD_SETUP_EVENT_FALSE));
+                isCommaAllowed = true;
+            }
+            eventsString = spec.toString();
 
+            ArrayList<String> argArray = new ArrayList<>(Arrays.asList(getProgramArgumentsArray( config )));
+            argArray.add(0, exePath.toOSString());
+            if (events.size()>0) {
+                argArray.add(0,eventsString);
+            }
+            argArray.add(0, OprofileProject.OCOUNT_BINARY);
+
+            for(int i = 0; i < options.getExecutionsNumber(); i++){
+                if (i!=0) {
+                    argArray.add(APPEND);
+                }
+                String[] arguments = new String[argArray.size()];
+                arguments = argArray.toArray(arguments);
+                try {
+                    process = RuntimeProcessFactory.getFactory().exec(arguments, OprofileProject.getProject());
+                    MessageConsole console = new MessageConsole("ocount Console", null); //$NON-NLS-1$
+                    console.activate();
+                    ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { console });
+                    MessageConsoleStream stream = console.newMessageStream();
+
+                    if (process != null) {
+                        try (BufferedReader error = new BufferedReader(
+                                new InputStreamReader(process.getInputStream()))) {
+                            String err = error.readLine();
+                            while (err != null) {
+                                stream.println(err);
+                                err = error.readLine();
+                            }
+                        }
+                    }
+                } catch (IOException e1) {
+                    process.destroy();
+                    Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
+                    throw new CoreException(status);
+                }
+                try{
+                    process.waitFor();
+                } catch (InterruptedException e){
+                    process.destroy();
+                    Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
+                    throw new CoreException(status);
+                }
+            }
         }
 
         postExec(options, daemonEvents, process);
