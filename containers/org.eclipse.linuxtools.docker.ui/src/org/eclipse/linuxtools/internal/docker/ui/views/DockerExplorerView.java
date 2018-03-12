@@ -66,7 +66,7 @@ public class DockerExplorerView extends CommonNavigator implements
 	private Control connectionsPane;
 	private Control explanationsPane;
 	private PageBook pageBook;
-	private Map<IDockerConnection, DockerContainersRefresher> containersRefreshers = new HashMap<>();
+	private Map<IDockerConnection, Refresher> refreshers = new HashMap<>();
 
 	/** the search text widget. to filter containers and images. */
 	private Text search;
@@ -251,10 +251,11 @@ public class DockerExplorerView extends CommonNavigator implements
 	private void registerListeners() {
 		for (IDockerConnection connection : DockerConnectionManager
 				.getInstance().getConnections()) {
-			if (!containersRefreshers.containsKey(connection)) {
-				final DockerContainersRefresher containerRefresher = new DockerContainersRefresher();
-				connection.addContainerListener(containerRefresher);
-				containersRefreshers.put(connection, containerRefresher);
+			if (!refreshers.containsKey(connection)) {
+				final Refresher refresher = new Refresher();
+				connection.addContainerListener(refresher);
+				connection.addImageListener(refresher);
+				refreshers.put(connection, refresher);
 			}
 		}
 	}
@@ -262,19 +263,30 @@ public class DockerExplorerView extends CommonNavigator implements
 	private void unregisterListeners() {
 		for (IDockerConnection connection : DockerConnectionManager
 				.getInstance().getConnections()) {
-			if (containersRefreshers.containsKey(connection)) {
-				final DockerContainersRefresher dockerContainersRefresher = containersRefreshers
+			if (refreshers.containsKey(connection)) {
+				final Refresher refresher = refreshers
 						.get(connection);
-				connection.removeContainerListener(dockerContainersRefresher);
-				containersRefreshers.remove(connection);
+				connection.removeContainerListener(refresher);
+				connection.removeImageListener(refresher);
+				refreshers.remove(connection);
 			}
 		}
 	}
 
-	class DockerContainersRefresher implements IDockerContainerListener {
+	class Refresher implements IDockerContainerListener, IDockerImageListener {
 		@Override
-		public void listChanged(final IDockerConnection connection,
-				final List<IDockerContainer> list) {
+		public void containersChanged(final IDockerConnection connection,
+				final List<IDockerContainer> containers) {
+			refresh(connection);
+		}
+
+		@Override
+		public void imagesChanged(final IDockerConnection connection,
+				final List<IDockerImage> images) {
+			refresh(connection);
+		}
+
+		private void refresh(final IDockerConnection connection) {
 			Display.getDefault().asyncExec(new Runnable() {
 
 				@Override
@@ -284,34 +296,14 @@ public class DockerExplorerView extends CommonNavigator implements
 					// default.
 					final ISelection selection = getCommonViewer()
 							.getSelection();
-					if (selection != null) {
-						getCommonViewer().setSelection(selection, false);
-					}
-					getCommonViewer().refresh();
-				}
-			});
-		}
-	}
-
-	class DockerImagesRefresher implements IDockerImageListener {
-		@Override
-		public void listChanged(final IDockerConnection connection,
-				final List<IDockerImage> list) {
-			Display.getDefault().asyncExec(new Runnable() {
-
-				@Override
-				public void run() {
-					// following is to force Image property testers
-					// to run again after list is updated. They won't do so by
-					// default.
-					ISelection selection = getCommonViewer().getSelection();
-					if (selection != null) {
-						getCommonViewer().setSelection(selection, false);
-					}
 					getCommonViewer().refresh(connection, true);
+					if (selection != null) {
+						getCommonViewer().setSelection(selection, false);
+					}
 				}
 			});
 		}
+
 	}
 
 }
