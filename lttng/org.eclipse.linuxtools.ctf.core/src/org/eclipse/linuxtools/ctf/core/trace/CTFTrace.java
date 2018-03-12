@@ -216,12 +216,18 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
     /**
      * Dispose the trace
      *
-     * FIXME Not needed anymore, class doesn't need to be AutoCloseable.
-     *
      * @since 3.0
      */
     @Override
     public void close() {
+        for (CTFStream s : fStreams.values()) {
+            for (CTFStreamInput input : s.getStreamInputs()) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------------
