@@ -111,7 +111,7 @@ public class IntegerDeclaration extends Declaration implements ISimpleDatatypeDe
      *
      * @since 3.1
      */
-    public static final IntegerDeclaration UINT_5L_DECL = new IntegerDeclaration(5, false, ByteOrder.BIG_ENDIAN);
+    public static final IntegerDeclaration UINT_5L_DECL = new IntegerDeclaration(5, false, ByteOrder.LITTLE_ENDIAN);
     /**
      * Unsigned 5 bit int, used for event headers
      *
@@ -123,7 +123,7 @@ public class IntegerDeclaration extends Declaration implements ISimpleDatatypeDe
      *
      * @since 3.1
      */
-    public static final IntegerDeclaration UINT_27L_DECL = new IntegerDeclaration(27, false, ByteOrder.BIG_ENDIAN);
+    public static final IntegerDeclaration UINT_27L_DECL = new IntegerDeclaration(27, false, ByteOrder.LITTLE_ENDIAN);
     /**
      * Unsigned 16 bit int, used for event headers
      *

@@ -493,6 +493,46 @@ public class BitBufferIntTest {
     }
 
     /**
+     * Test {@link BitBuffer#putInt(int)} Little endian
+     *
+     * @throws CTFReaderException
+     *             Not expected
+     */
+    @Test
+    public void testPutIntLe() throws CTFReaderException {
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        fixture.position(1);
+        fixture.putInt(1);
+    }
+
+    /**
+     * Test {@link BitBuffer#putInt(int, int)} Little endian
+     *
+     * @throws CTFReaderException
+     *             Not expected
+     */
+    @Test
+    public void testPutIntLe_length1() throws CTFReaderException {
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        fixture.position(1);
+        fixture.putInt(1, 1);
+    }
+
+    /**
+     * Test {@link BitBuffer#putInt(int, int)} with length = 0. Little endian
+     *
+     * @throws CTFReaderException
+     *             Not expected
+     */
+    @Test
+    public void testPutIntLe_length0() throws CTFReaderException {
+        fixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        fixture.position(1);
+        fixture.putInt(0, 1);
+    }
+
+
+    /**
      * Test writing and reading a value defined in hex format.
      *
      * @throws CTFReaderException
