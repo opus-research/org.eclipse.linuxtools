@@ -38,8 +38,9 @@ public class TmfEventMatches implements IMatchProcessingUnit {
     /**
      * IMatchProcessingUnit overrides
      */
+
     @Override
-    public void init(Collection<? extends ITmfTrace> fTraces) {
+    public void init(Collection<ITmfTrace> fTraces) {
         fMatchCount = 0;
     }
 

@@ -13,13 +13,10 @@
 package org.eclipse.linuxtools.tmf.core.event.matching;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -27,7 +24,6 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 
 /**
  * Abstract class to extend to match certain type of events in a trace
@@ -53,7 +49,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
     /**
      * The array of traces to match
      */
-    private final Collection<? extends ITmfTrace> fTraces;
+    private final Collection<ITmfTrace> fTraces;
 
     /**
      * The class to call once a match is found
@@ -72,7 +68,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      * @param tmfEventMatches
      *            The match processing class
      */
-    public TmfEventMatching(Collection<? extends ITmfTrace> traces, IMatchProcessingUnit tmfEventMatches) {
+    public TmfEventMatching(Collection<ITmfTrace> traces, IMatchProcessingUnit tmfEventMatches) {
         if (tmfEventMatches == null) {
             throw new IllegalArgumentException();
         }
@@ -86,11 +82,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      * @return The traces
      */
     protected Collection<? extends ITmfTrace> getTraces() {
-        Set<ITmfTrace> traces = new HashSet<>();
-        for (ITmfTrace trace : fTraces) {
-            traces.addAll(Arrays.asList(TmfTraceManager.getTraceSet(trace)));
-        }
-        return traces;
+        return fTraces;
     }
 
     /**
@@ -124,7 +116,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
         if (deflist == null) {
             return;
         }
-        for (ITmfTrace trace : getTraces()) {
+        for (ITmfTrace trace : fTraces) {
             for (ITmfMatchEventDefinition def : deflist) {
                 if (def.canMatchTrace(trace)) {
                     fMatchMap.put(trace, def);
