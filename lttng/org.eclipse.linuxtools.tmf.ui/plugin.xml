@@ -880,14 +880,6 @@
                </with>
             </visibleWhen>
          </command>
-         <command
-               commandId="org.eclipse.linuxtools.tmf.ui.command.offset_traces"
-               icon="icons/obj16/add_obj.gif"
-               label="%command.offset_traces"
-               mnemonic="%command.offset_traces.mnemonic"
-               style="push"
-               tooltip="%command.offset_traces.description">
-         </command>
          <separator
                name="org.eclipse.linuxtools.tmf.ui.separator5"
                visible="true">
@@ -1160,12 +1152,6 @@
             description="%command.OpenFile.description"
             id="org.eclipse.linuxtools.tmf.ui.openFile"
             name="%command.OpenFile.name">
-      </command>
-      <command
-            categoryId="org.eclipse.linuxtools.tmf.ui.commands.category"
-            description="%command.offset_traces.description"
-            id="org.eclipse.linuxtools.tmf.ui.command.offset_traces"
-            name="%command.offset_traces">
       </command>
    </extension>
    <extension
@@ -1599,38 +1585,6 @@
                      value="org.eclipse.linuxtools.tmf.ui.views.filter.FilterView">
                </instanceof>
             </with>
-         </activeWhen>
-      </handler>
-      <handler
-            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.OffsetTraceHandler"
-            commandId="org.eclipse.linuxtools.tmf.ui.command.offset_traces">
-         <activeWhen>
-            <and>
-               <count
-                     value="1">
-               </count>
-               <iterate>
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
-                  </instanceof>
-               </iterate>
-            </and>
-         </activeWhen>
-      </handler>
-      <handler
-            class="org.eclipse.linuxtools.internal.tmf.ui.project.handlers.OffsetTraceHandler"
-            commandId="org.eclipse.linuxtools.tmf.ui.command.offset_traces">
-         <activeWhen>
-            <and>
-               <count
-                     value="1">
-               </count>
-               <iterate>
-                  <instanceof
-                        value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
-                  </instanceof>
-               </iterate>
-            </and>
          </activeWhen>
       </handler>
    </extension>
