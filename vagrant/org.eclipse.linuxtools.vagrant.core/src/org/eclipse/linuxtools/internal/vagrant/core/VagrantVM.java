@@ -24,12 +24,10 @@ public class VagrantVM implements IVagrantVM {
 	private File directory;
 	private String ip;
 	private String user;
-	private int port;
 	private String identityFile;
 
 	public VagrantVM(String id, String name, String provider, String state,
-			String state_desc, File directory, String ip, String user,
-			int port, String identityFile) {
+			String state_desc, File directory, String ip, String user, String identityFile) {
 		this.id = id;
 		this.name = name;
 		this.provider = provider;
@@ -38,7 +36,6 @@ public class VagrantVM implements IVagrantVM {
 		this.directory = directory;
 		this.ip = ip;
 		this.user = user;
-		this.port = port;
 		this.identityFile = identityFile;
 	}
 
@@ -80,11 +77,6 @@ public class VagrantVM implements IVagrantVM {
 	@Override
 	public String user() {
 		return user;
-	}
-
-	@Override
-	public int port() {
-		return port;
 	}
 
 	@Override

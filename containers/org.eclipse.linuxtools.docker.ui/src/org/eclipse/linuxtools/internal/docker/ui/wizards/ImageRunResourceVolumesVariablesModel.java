@@ -73,8 +73,6 @@ public class ImageRunResourceVolumesVariablesModel
 
 	private WritableList environmentVariables = new WritableList();
 
-	private IDockerImage selectedImage;
-
 	public ImageRunResourceVolumesVariablesModel(
 			final IDockerConnection connection) throws DockerException {
 		this.connection = connection;
@@ -91,20 +89,17 @@ public class ImageRunResourceVolumesVariablesModel
 	 * @param selectedImage
 	 */
 	public void setSelectedImage(final IDockerImage selectedImage) {
-		if (this.selectedImage != selectedImage) {
-			this.selectedImage = selectedImage;
-			final WritableList newDataVolumes = new WritableList();
-			if (selectedImage != null) {
-				this.imageInfo = selectedImage.getConnection()
-						.getImageInfo(selectedImage.id());
-				if (this.imageInfo.config().volumes() != null) {
-					for (String volume : this.imageInfo.config().volumes()) {
-						newDataVolumes.add(new DataVolumeModel(volume));
-					}
+		final WritableList newDataVolumes = new WritableList();
+		if (selectedImage != null) {
+			this.imageInfo = selectedImage.getConnection()
+					.getImageInfo(selectedImage.id());
+			if (this.imageInfo.config().volumes() != null) {
+				for (String volume : this.imageInfo.config().volumes()) {
+					newDataVolumes.add(new DataVolumeModel(volume));
 				}
 			}
-			setDataVolumes(newDataVolumes);
 		}
+		setDataVolumes(newDataVolumes);
 	}
 
 	public IDockerImageInfo getSelectedImageInfo() {

@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantVM;
 import org.eclipse.linuxtools.vagrant.core.IVagrantVMListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -209,7 +210,13 @@ public class VagrantVMView extends ViewPart implements IVagrantVMListener {
 	 * @return
 	 */
 	private ModifyListener onSearch() {
-		return e -> VagrantVMView.this.viewer.refresh();
+		return new ModifyListener() {
+
+			@Override
+			public void modifyText(final ModifyEvent e) {
+				VagrantVMView.this.viewer.refresh();
+			}
+		};
 	}
 
 	/**
@@ -231,17 +238,21 @@ public class VagrantVMView extends ViewPart implements IVagrantVMListener {
 
 	@Override
 	public void listChanged(final IVagrantConnection connection,
-			final List<IVagrantVM> containers) {
-		Display.getDefault().asyncExec(() -> {
-			// remember the current selection before the viewer is refreshed
-			final ISelection currentSelection = VagrantVMView.this.viewer
-					.getSelection();
-			VagrantVMView.this.viewer.refresh();
-			// restore the selection
-			if (currentSelection != null) {
-				VagrantVMView.this.viewer.setSelection(currentSelection);
+		final List<IVagrantVM> containers) {
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				// remember the current selection before the viewer is
+				// refreshed
+				final ISelection currentSelection = VagrantVMView.this.viewer.getSelection();
+				VagrantVMView.this.viewer.refresh();
+				// restore the selection
+				if (currentSelection != null) {
+					VagrantVMView.this.viewer
+							.setSelection(currentSelection);
+				}
+				refreshViewTitle();
 			}
-			refreshViewTitle();
 		});
 	}
 
@@ -282,14 +293,16 @@ public class VagrantVMView extends ViewPart implements IVagrantVMListener {
 
 	private void refreshViewTitle() {
 		if (this.viewer == null || this.viewer.getControl().isDisposed()
-				|| this.form == null || this.connection == null) {
+				|| this.form == null
+				|| this.connection == null) {
 			return;
 		} else if (!this.connection.isVMsLoaded()) {
 			form.setText(connection.getName());
 		} else {
 			this.form.setText(DVMessages.getFormattedString(
-					"VagrantVMViewTitle.all.msg", connection.getName(),
-					Integer.toString(connection.getVMs().size())));
+					"VagrantVMViewTitle.all.msg",
+					new String[] { connection.getName(),
+							Integer.toString(connection.getVMs().size()) }));
 		}
 	}
 

@@ -15,33 +15,33 @@ import java.util.List;
 
 public interface IVagrantConnection {
 
-	String getName();
+	public String getName();
 
-	void addVMListener(IVagrantVMListener listener);
+	public void addVMListener(IVagrantVMListener listener);
 
-	void removeVMListener(IVagrantVMListener listener);
+	public void removeVMListener(IVagrantVMListener listener);
 
-	List<IVagrantVM> getVMs();
+	public List<IVagrantVM> getVMs();
 
-	List<IVagrantVM> getVMs(boolean force);
+	public List<IVagrantVM> getVMs(boolean force);
 
-	boolean isVMsLoaded();
+	public boolean isVMsLoaded();
 
-	void addToTrackedKeys(String key);
+	public void addToTrackedKeys(String key);
 
-	void addBoxListener(IVagrantBoxListener listener);
+	public void addBoxListener(IVagrantBoxListener listener);
 
-	void removeBoxListener(IVagrantBoxListener listener);
+	public void removeBoxListener(IVagrantBoxListener listener);
 
-	boolean isBoxesLoaded();
+	public boolean isBoxesLoaded();
 
-	List<IVagrantBox> getBoxes();
+	public List<IVagrantBox> getBoxes();
 
-	List<IVagrantBox> getBoxes(boolean force);
+	public List<IVagrantBox> getBoxes(boolean force);
 
-	void init(File vagrantDir);
+	public void init(File vagrantDir);
 
-	Process up(File vagrantDir, String provider);
+	public Process up(File vagrantDir);
 
 	void addBox(String name, String location) throws VagrantException, InterruptedException;
 

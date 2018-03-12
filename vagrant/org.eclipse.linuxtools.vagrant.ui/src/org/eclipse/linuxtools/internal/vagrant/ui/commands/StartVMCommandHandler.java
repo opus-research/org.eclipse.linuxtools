@@ -44,10 +44,10 @@ public class StartVMCommandHandler extends BaseVMCommandHandler {
 		IVagrantConnection connection = VagrantConnection.getInstance();
 		String stateLoc = Activator.getDefault().getStateLocation().toOSString();
 		File vagrantDir = Paths.get(stateLoc, vm.name()).toFile();
-		Process p = connection.up(vagrantDir, vm.provider());
+		Process p = connection.up(vagrantDir);
+		BufferedReader buff = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		String line;
-		try (BufferedReader buff = new BufferedReader(
-				new InputStreamReader(p.getInputStream()))) {
+		try {
 			while ((line = buff.readLine()) != null) {
 				if (monitor.isCanceled()) {
 					p.destroy();
