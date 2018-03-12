@@ -88,9 +88,7 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
     @Override
     protected boolean executeAnalysis(@Nullable IProgressMonitor monitor) throws TmfAnalysisException {
         IProgressMonitor mon = (monitor == null ? new NullProgressMonitor() : monitor);
-        ITmfTrace trace = getTrace();
-        if (trace == null) {
-            /* This analysis was cancelled in the meantime */
+        if (getTrace() == null) {
             return false;
         }
 
@@ -117,7 +115,7 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
 
             }
         };
-        trace.sendRequest(request);
+        getTrace().sendRequest(request);
         fRequest = request;
         try {
             request.waitForCompletion();

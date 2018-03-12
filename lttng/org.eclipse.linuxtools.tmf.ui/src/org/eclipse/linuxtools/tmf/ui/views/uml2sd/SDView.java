@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2005, 2014 IBM Corporation, Ericsson
+ * Copyright (c) 2005, 2013 IBM Corporation, Ericsson
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -197,11 +197,6 @@ public class SDView extends ViewPart {
      */
     private Cursor fWaitCursor;
 
-    private Zoom fResetZoomAction;
-    private Zoom fNoZoomAction;
-    private Zoom fZoomInAction;
-    private Zoom fZoomOutAction;
-
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
@@ -265,23 +260,7 @@ public class SDView extends ViewPart {
     @Override
     public void dispose() {
         KeyBindingsManager.getInstance().remove(this.getSite().getId());
-        disposeZoomActions();
         super.dispose();
-    }
-
-    private void disposeZoomActions() {
-        if (fResetZoomAction != null) {
-            fResetZoomAction.dispose();
-        }
-        if (fNoZoomAction != null) {
-            fNoZoomAction.dispose();
-        }
-        if (fZoomInAction != null) {
-            fZoomInAction.dispose();
-        }
-        if (fZoomOutAction != null) {
-            fZoomOutAction.dispose();
-        }
     }
 
     /**
@@ -618,26 +597,25 @@ public class SDView extends ViewPart {
 
         bar.getMenuManager().removeAll();
         bar.getToolBarManager().removeAll();
-        disposeZoomActions();
 
         createMenuGroup();
 
-        fResetZoomAction = new Zoom(this, ZoomType.ZOOM_RESET);
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fResetZoomAction);
-        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fResetZoomAction);
+        Zoom resetZoom = new Zoom(this, ZoomType.ZOOM_RESET);
+        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, resetZoom);
+        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, resetZoom);
 
-        fNoZoomAction = new Zoom(this, ZoomType.ZOOM_NONE);
-        fNoZoomAction.setChecked(true);
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fNoZoomAction);
-        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fNoZoomAction);
+        Zoom noZoom = new Zoom(this, ZoomType.ZOOM_NONE);
+        noZoom.setChecked(true);
+        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, noZoom);
+        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, noZoom);
 
-        fZoomInAction = new Zoom(this, ZoomType.ZOOM_IN);
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fZoomInAction);
-        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fZoomInAction);
+        Zoom zoomIn = new Zoom(this, ZoomType.ZOOM_IN);
+        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, zoomIn);
+        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, zoomIn);
 
-        fZoomOutAction = new Zoom(this, ZoomType.ZOOM_OUT);
-        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fZoomOutAction);
-        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, fZoomOutAction);
+        Zoom zoomOut = new Zoom(this, ZoomType.ZOOM_OUT);
+        bar.getMenuManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, zoomOut);
+        bar.getToolBarManager().appendToGroup(UML2SD_OTHER_COMMANDS_SEPARATOR, zoomOut);
 
         MenuManager navigation = new MenuManager(Messages.SequenceDiagram_Navigation);
 

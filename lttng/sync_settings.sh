@@ -42,7 +42,7 @@ done
 
 
 # Test plugins
-for DIR in *.tests *.alltests
+for DIR in *.tests
 do
   # Skip non-directories
   if [ ! -d $DIR ]; then

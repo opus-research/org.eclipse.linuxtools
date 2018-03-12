@@ -35,6 +35,7 @@ public class DeleteHandler extends BaseNodeHandler {
         try {
             ITraceControlComponent root = fTargetNode.getParent();
             fTargetNode.removeAllChildren();
+            fTargetNode.deregister();
             root.removeChild(fTargetNode);
         } finally {
             fLock.unlock();

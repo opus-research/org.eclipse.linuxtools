@@ -47,9 +47,11 @@ import org.eclipse.osgi.util.NLS;
  */
 public abstract class TmfAbstractAnalysisModule extends TmfComponent implements IAnalysisModule {
 
+    @NonNull private static final String UNDEFINED_ID = "undefined"; //$NON-NLS-1$
+
     private String fName, fId;
     private boolean fAutomatic = false, fStarted = false;
-    private volatile ITmfTrace fTrace;
+    private ITmfTrace fTrace;
     private final Map<String, Object> fParameters = new HashMap<>();
     private final List<String> fParameterNames = new ArrayList<>();
     private final List<IAnalysisOutput> fOutputs = new ArrayList<>();
@@ -88,8 +90,8 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     public String getId() {
         String id = fId;
         if (id == null) {
-            id = new String(this.getClass().getCanonicalName());
-            fId = id;
+            Activator.logError("Analysis module getId(): the id should not be null in class " + this.getClass().getSimpleName()); //$NON-NLS-1$
+            return UNDEFINED_ID;
         }
         return id;
     }
@@ -115,7 +117,7 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
 
         fTrace = trace;
         /* Get the parameter providers for this trace */
-        fParameterProviders = TmfAnalysisManager.getParameterProviders(this, trace);
+        fParameterProviders = TmfAnalysisManager.getParameterProviders(this, fTrace);
         for (IAnalysisParameterProvider provider : fParameterProviders) {
             provider.registerModule(this);
         }
@@ -293,7 +295,7 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
                     broadcast(new TmfStartAnalysisSignal(TmfAbstractAnalysisModule.this, TmfAbstractAnalysisModule.this));
                     fAnalysisCancelled = !executeAnalysis(monitor);
                 } catch (TmfAnalysisException e) {
-                    Activator.logError("Error executing analysis with trace " + trace.getName(), e); //$NON-NLS-1$
+                    Activator.logError("Error executing analysis with trace " + getTrace().getName(), e); //$NON-NLS-1$
                 } finally {
                     synchronized (syncObj) {
                         monitor.done();
@@ -320,13 +322,11 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
 
     @Override
     public IStatus schedule() {
-        synchronized (syncObj) {
-            final ITmfTrace trace = getTrace();
-            if (trace == null) {
-                return new Status(IStatus.ERROR, Activator.PLUGIN_ID, String.format("No trace specified for analysis %s", getName())); //$NON-NLS-1$
-            }
-            execute(trace);
+        final ITmfTrace trace = fTrace;
+        if (trace == null) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, String.format("No trace specified for analysis %s", getName())); //$NON-NLS-1$
         }
+        execute(trace);
 
         return Status.OK_STATUS;
     }
@@ -377,11 +377,9 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     @TmfSignalHandler
     public void traceClosed(TmfTraceClosedSignal signal) {
         /* Is the closing trace the one that was requested? */
-        synchronized (syncObj) {
-            if (signal.getTrace() == fTrace) {
-                cancel();
-                fTrace = null;
-            }
+        if (signal.getTrace() == fTrace) {
+            cancel();
+            fTrace = null;
         }
     }
 

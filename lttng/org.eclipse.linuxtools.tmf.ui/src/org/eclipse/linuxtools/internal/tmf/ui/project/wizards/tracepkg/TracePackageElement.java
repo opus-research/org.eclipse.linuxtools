@@ -24,8 +24,8 @@ import org.eclipse.ui.model.WorkbenchAdapter;
  * @author Marc-Andre Laperle
  */
 public abstract class TracePackageElement extends WorkbenchAdapter {
-    private final List<TracePackageElement> fChildren;
-    private TracePackageElement fParent;
+    private TracePackageElement[] fChildren;
+    private final TracePackageElement fParent;
     private boolean fEnabled;
     private boolean fChecked;
     private boolean fVisible;
@@ -39,56 +39,7 @@ public abstract class TracePackageElement extends WorkbenchAdapter {
         fParent = parent;
         fEnabled = true;
         fVisible = true;
-        fChildren = new ArrayList<>();
-        if (parent != null) {
-            parent.addChild(this);
-        }
-    }
-
-    /**
-     * Add a child at the end of the element's children list.
-     *
-     * @param child
-     *            the element to add as a child
-     */
-    public void addChild(TracePackageElement child) {
-        child.setParent(this);
-        fChildren.add(child);
-    }
-
-    /**
-     * Insert a child at the specified position in the element's children list.
-     *
-     * @param index
-     *            the index at which the element is to be inserted
-     * @param child
-     *            the element to insert as a child
-     */
-    public void addChild(int index, TracePackageElement child) {
-        fChildren.add(index, child);
-        child.setParent(this);
-    }
-
-    /**
-     * Remove a child from the element's children list.
-     *
-     * @param child
-     *            the child to remove
-     */
-    public void removeChild(TracePackageElement child) {
-        fChildren.remove(child);
-        child.setParent(null);
-    }
-
-    /**
-     * Returns the index of the specified child in the element's children list.
-     *
-     * @param child
-     *            the child to search for
-     * @return the index of the child in the list, or -1 if not found
-     */
-    public int indexOf(TracePackageElement child) {
-        return fChildren.indexOf(child);
+        fChildren = new TracePackageElement[0];
     }
 
     /**
@@ -96,10 +47,6 @@ public abstract class TracePackageElement extends WorkbenchAdapter {
      */
     public TracePackageElement getParent() {
         return fParent;
-    }
-
-    private void setParent(TracePackageElement parent) {
-        fParent = parent;
     }
 
     /**
@@ -115,7 +62,7 @@ public abstract class TracePackageElement extends WorkbenchAdapter {
      * @return the children of this element
      */
     public TracePackageElement[] getChildren() {
-        return fChildren.toArray(new TracePackageElement[fChildren.size()]);
+        return fChildren;
     }
 
     /**
@@ -131,6 +78,16 @@ public abstract class TracePackageElement extends WorkbenchAdapter {
             }
         }
         return visibleChildren.toArray(new TracePackageElement[0]);
+    }
+
+    /**
+     * Set the children of this element
+     *
+     * @param children
+     *            the children of this element
+     */
+    public void setChildren(TracePackageElement[] children) {
+        this.fChildren = children;
     }
 
     /**

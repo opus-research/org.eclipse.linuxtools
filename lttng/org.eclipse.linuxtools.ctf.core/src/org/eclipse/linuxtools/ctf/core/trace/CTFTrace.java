@@ -16,13 +16,13 @@ package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,7 +44,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.SafeMappedByteBuffer;
 import org.eclipse.linuxtools.internal.ctf.core.event.CTFCallsiteComparator;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.ArrayDefinition;
@@ -249,7 +248,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
      * @param streamId
      *            The ID of the stream from which to read
      * @return The list of event declarations
-     * @since 3.2
+     * @since 3.1
      */
     public Collection<IEventDeclaration> getEventDeclarations(Long streamId) {
         return fStreams.get(streamId).getEventDeclarations();
@@ -271,6 +270,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
         return getStream(streamId).getEventDeclaration((int) id);
     }
 
+
     /**
      * Get an event by it's ID
      *
@@ -279,7 +279,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
      * @param id
      *            the ID of the event
      * @return the event declaration
-     * @since 3.2
+     * @since 3.1
      */
     public IEventDeclaration getEventType(long streamId, int id) {
         return getEvents(streamId).get(id);
@@ -477,6 +477,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
         return (fPath != null) ? fPath.getPath() : ""; //$NON-NLS-1$
     }
 
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
@@ -508,7 +509,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
      *             if there is a file error
      */
     private CTFStream openStreamInput(File streamFile) throws CTFReaderException {
-        ByteBuffer byteBuffer;
+        MappedByteBuffer byteBuffer;
         BitBuffer streamBitBuffer;
         CTFStream stream;
 
@@ -517,33 +518,48 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
                     + streamFile.getPath());
         }
 
-        try (FileChannel fc = FileChannel.open(streamFile.toPath(), StandardOpenOption.READ)) {
+        try (FileInputStream fis = new FileInputStream(streamFile);
+                FileChannel fc = fis.getChannel()) {
             /* Map one memory page of 4 kiB */
-            byteBuffer = SafeMappedByteBuffer.map(fc, MapMode.READ_ONLY, 0, (int) Math.min(fc.size(), 4096L));
-            if (byteBuffer == null) {
+            byteBuffer = fc.map(MapMode.READ_ONLY, 0, (int) Math.min(fc.size(), 4096L));
+            if( byteBuffer == null){
                 throw new IllegalStateException("Failed to allocate memory"); //$NON-NLS-1$
-            }
-            /* Create a BitBuffer with this mapping and the trace byte order */
-            streamBitBuffer = new BitBuffer(byteBuffer, this.getByteOrder());
-
-            if (fPacketHeaderDecl != null) {
-                /* Read the packet header */
-                fPacketHeaderDef = fPacketHeaderDecl.createDefinition(this, LexicalScope.PACKET_HEADER, streamBitBuffer);
             }
         } catch (IOException e) {
             /* Shouldn't happen at this stage if every other check passed */
             throw new CTFReaderException(e);
         }
-        if (fPacketHeaderDef != null) {
-            validateMagicNumber(fPacketHeaderDef);
 
-            validateUUID(fPacketHeaderDef);
+        /* Create a BitBuffer with this mapping and the trace byte order */
+        streamBitBuffer = new BitBuffer(byteBuffer, this.getByteOrder());
+
+        if (fPacketHeaderDecl != null) {
+            /* Read the packet header */
+            fPacketHeaderDef = fPacketHeaderDecl.createDefinition(this, LexicalScope.PACKET_HEADER, streamBitBuffer);
+
+            /* Check the magic number */
+            IntegerDefinition magicDef = (IntegerDefinition) fPacketHeaderDef.lookupDefinition("magic"); //$NON-NLS-1$
+            int magic = (int) magicDef.getValue();
+            if (magic != Utils.CTF_MAGIC) {
+                throw new CTFReaderException("CTF magic mismatch"); //$NON-NLS-1$
+            }
+
+            /* Check UUID */
+            IDefinition lookupDefinition = fPacketHeaderDef.lookupDefinition("uuid"); //$NON-NLS-1$
+            ArrayDefinition uuidDef = (ArrayDefinition) lookupDefinition;
+            if (uuidDef != null) {
+                UUID otheruuid = Utils.getUUIDfromDefinition(uuidDef);
+
+                if (!fUuid.equals(otheruuid)) {
+                    throw new CTFReaderException("UUID mismatch"); //$NON-NLS-1$
+                }
+            }
 
             /* Read the stream ID */
             IDefinition streamIDDef = fPacketHeaderDef.lookupDefinition("stream_id"); //$NON-NLS-1$
 
-            if (streamIDDef instanceof IntegerDefinition) {
-                /* This doubles as a null check */
+            if (streamIDDef instanceof IntegerDefinition) { // this doubles as a
+                                                            // null check
                 long streamID = ((IntegerDefinition) streamIDDef).getValue();
                 stream = fStreams.get(streamID);
             } else {
@@ -562,29 +578,11 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
 
         /*
          * Create the stream input and add a reference to the streamInput in the
-         * stream.
+         * stream
          */
         stream.addInput(new CTFStreamInput(stream, streamFile));
+
         return stream;
-    }
-
-    private void validateUUID(StructDefinition packetHeaderDef) throws CTFReaderException {
-        IDefinition lookupDefinition = packetHeaderDef.lookupDefinition("uuid"); //$NON-NLS-1$
-        ArrayDefinition uuidDef = (ArrayDefinition) lookupDefinition;
-        if (uuidDef != null) {
-            UUID otheruuid = Utils.getUUIDfromDefinition(uuidDef);
-            if (!fUuid.equals(otheruuid)) {
-                throw new CTFReaderException("UUID mismatch"); //$NON-NLS-1$
-            }
-        }
-    }
-
-    private static void validateMagicNumber(StructDefinition packetHeaderDef) throws CTFReaderException {
-        IntegerDefinition magicDef = (IntegerDefinition) packetHeaderDef.lookupDefinition("magic"); //$NON-NLS-1$
-        int magic = (int) magicDef.getValue();
-        if (magic != Utils.CTF_MAGIC) {
-            throw new CTFReaderException("CTF magic mismatch"); //$NON-NLS-1$
-        }
     }
 
     // ------------------------------------------------------------------------
@@ -760,7 +758,6 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
 
     /**
      * Gets the current first packet start time
-     *
      * @return the current start time
      * @since 3.0
      */
@@ -776,7 +773,6 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
 
     /**
      * Gets the current last packet end time
-     *
      * @return the current end time
      * @since 3.0
      */
@@ -960,21 +956,15 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
      *             The file must exist
      * @since 3.0
      */
-    // TODO: remove suppress warning
-    @SuppressWarnings("resource")
     public void addStream(long id, File streamFile) throws CTFReaderException {
         CTFStream stream = null;
-        final File file = streamFile;
-        if (file == null) {
-            throw new CTFReaderException("cannot create a stream with no file"); //$NON-NLS-1$
-        }
         if (fStreams.containsKey(id)) {
             stream = fStreams.get(id);
         } else {
             stream = new CTFStream(this);
             fStreams.put(id, stream);
         }
-        stream.addInput(new CTFStreamInput(stream, file));
+        stream.addInput(new CTFStreamInput(stream, streamFile));
     }
 }
 

@@ -24,9 +24,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.wizards.CustomXmlParserWiz
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -48,9 +45,6 @@ import org.eclipse.swt.widgets.Shell;
  * @author Patrick Tassé
  */
 public class ManageCustomParsersDialog extends Dialog {
-
-    private static final String SEP = " : "; //$NON-NLS-1$
-    private static final int SEP_LEN = SEP.length();
 
     private static final Image image = Activator.getDefault().getImageFromPath("/icons/etool16/customparser_wizard.gif"); //$NON-NLS-1$
 
@@ -180,15 +174,12 @@ public class ManageCustomParsersDialog extends Dialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 WizardDialog dialog = null;
-                String selection = parserList.getSelection()[0];
-                String category = selection.substring(0, selection.indexOf(SEP));
-                String name = selection.substring(selection.indexOf(SEP) + SEP_LEN);
                 if (txtButton.getSelection()) {
                     dialog = new WizardDialog(getShell(),
-                            new CustomTxtParserWizard(CustomTxtTraceDefinition.load(category, name)));
+                            new CustomTxtParserWizard(CustomTxtTraceDefinition.load(parserList.getSelection()[0])));
                 } else if (xmlButton.getSelection()) {
                     dialog = new WizardDialog(getShell(),
-                            new CustomXmlParserWizard(CustomXmlTraceDefinition.load(category, name)));
+                            new CustomXmlParserWizard(CustomXmlTraceDefinition.load(parserList.getSelection()[0])));
                 }
                 if (dialog != null) {
                     dialog.open();
@@ -212,15 +203,12 @@ public class ManageCustomParsersDialog extends Dialog {
                 boolean confirm = MessageDialog.openQuestion(
                         getShell(),
                         Messages.ManageCustomParsersDialog_DeleteParserDialogHeader,
-                        NLS.bind(Messages.ManageCustomParsersDialog_DeleteConfirmation, parserList.getSelection()[0]));
+                        Messages.ManageCustomParsersDialog_DeleteConfirmation + parserList.getSelection()[0] + "?"); //$NON-NLS-1$
                 if (confirm) {
-                    String selection = parserList.getSelection()[0];
-                    String category = selection.substring(0, selection.indexOf(SEP));
-                    String name = selection.substring(selection.indexOf(SEP) + SEP_LEN);
                     if (txtButton.getSelection()) {
-                        CustomTxtTraceDefinition.delete(category, name);
+                        CustomTxtTraceDefinition.delete(parserList.getSelection()[0]);
                     } else if (xmlButton.getSelection()) {
-                        CustomXmlTraceDefinition.delete(category, name);
+                        CustomXmlTraceDefinition.delete(parserList.getSelection()[0]);
                     }
                     fillParserList();
                 }
@@ -251,10 +239,7 @@ public class ManageCustomParsersDialog extends Dialog {
                     }
                     if (defs != null && defs.length > 0) {
                         for (CustomTraceDefinition def : defs) {
-                            boolean ok = checkNameConflict(def);
-                            if (ok) {
-                                def.save();
-                            }
+                            def.save();
                         }
                         fillParserList();
                     }
@@ -273,18 +258,15 @@ public class ManageCustomParsersDialog extends Dialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(Display.getCurrent().getActiveShell(), SWT.SAVE);
-                dialog.setText(NLS.bind(Messages.ManageCustomParsersDialog_ExportParserSelection, parserList.getSelection()[0]));
+                dialog.setText(Messages.ManageCustomParsersDialog_ExportParserSelection + parserList.getSelection()[0]);
                 dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 String path = dialog.open();
                 if (path != null) {
-                    String selection = parserList.getSelection()[0];
-                    String category = selection.substring(0, selection.indexOf(SEP));
-                    String name = selection.substring(selection.indexOf(SEP) + SEP_LEN);
                     CustomTraceDefinition def = null;
                     if (txtButton.getSelection()) {
-                        def = CustomTxtTraceDefinition.load(category, name);
+                        def = CustomTxtTraceDefinition.load(parserList.getSelection()[0]);
                     } else if (xmlButton.getSelection()) {
-                        def = CustomXmlTraceDefinition.load(category, name);
+                        def = CustomXmlTraceDefinition.load(parserList.getSelection()[0]);
                     }
                     if (def != null) {
                         def.save(path);
@@ -307,12 +289,12 @@ public class ManageCustomParsersDialog extends Dialog {
     private void fillParserList() {
         parserList.removeAll();
         if (txtButton.getSelection()) {
-            for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll(false)) {
-                parserList.add(def.categoryName + SEP + def.definitionName);
+            for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
+                parserList.add(def.definitionName);
             }
         } else if (xmlButton.getSelection()) {
-            for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll(false)) {
-                parserList.add(def.categoryName + SEP + def.definitionName);
+            for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
+                parserList.add(def.definitionName);
             }
         }
         editButton.setEnabled(false);
@@ -320,48 +302,4 @@ public class ManageCustomParsersDialog extends Dialog {
         exportButton.setEnabled(false);
     }
 
-    private boolean checkNameConflict(CustomTraceDefinition def) {
-        for (TraceTypeHelper helper : TmfTraceType.getTraceTypeHelpers()) {
-            if (def.categoryName.equals(helper.getCategoryName()) &&
-                    def.definitionName.equals(helper.getName())) {
-                String newName = findAvailableName(def);
-                MessageDialog dialog = new MessageDialog(
-                        getShell(),
-                        null,
-                        null,
-                        NLS.bind(Messages.ManageCustomParsersDialog_ConflictMessage,
-                                new Object[] { def.categoryName, def.definitionName, newName}),
-                        MessageDialog.QUESTION,
-                        new String[] { Messages.ManageCustomParsersDialog_ConflictRenameButtonLabel,
-                            Messages.ManageCustomParsersDialog_ConflictSkipButtonLabel },
-                        0);
-                int result = dialog.open();
-                if (result == 0) {
-                    def.definitionName = newName;
-                    return true;
-                }
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static String findAvailableName(CustomTraceDefinition def) {
-        int i = 2;
-        Iterable<TraceTypeHelper> helpers = TmfTraceType.getTraceTypeHelpers();
-        while (true) {
-            String newName = def.definitionName + '(' + Integer.toString(i++) + ')';
-            boolean available = true;
-            for (TraceTypeHelper helper : helpers) {
-                if (def.categoryName.equals(helper.getCategoryName()) &&
-                        newName.equals(helper.getName())) {
-                    available = false;
-                    break;
-                }
-            }
-            if (available) {
-                return newName;
-            }
-        }
-    }
 }

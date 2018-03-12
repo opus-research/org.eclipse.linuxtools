@@ -58,30 +58,22 @@ public class STExportToCSVAction extends Action {
         STDataViewersExportToCSVDialog dialog = new STDataViewersExportToCSVDialog(stViewer.getViewer().getControl()
                 .getShell(), exporter);
         if (dialog.open() == Window.OK) {
-            export();
+            Job exportToCSVJob = new Job("Export to CSV") {
+                @Override
+                public IStatus run(IProgressMonitor monitor) {
+                    exporter.export(monitor);
+                    return Status.OK_STATUS;
+                }
+
+                @Override
+                public boolean belongsTo(Object family) {
+                    return EXPORT_TO_CSV_JOB_FAMILY.equals(family);
+                }
+
+            };
+            exportToCSVJob.setUser(true);
+            exportToCSVJob.schedule();
         }
-    }
-
-    /**
-     * Export the CSV with a user job, without UI prompts.
-     * @since 6.0
-     */
-    public void export() {
-        Job exportToCSVJob = new Job("Export to CSV") {
-            @Override
-            public IStatus run(IProgressMonitor monitor) {
-                exporter.export(monitor);
-                return Status.OK_STATUS;
-            }
-
-            @Override
-            public boolean belongsTo(Object family) {
-                return EXPORT_TO_CSV_JOB_FAMILY.equals(family);
-            }
-
-        };
-        exportToCSVJob.setUser(true);
-        exportToCSVJob.schedule();
     }
 
     /**

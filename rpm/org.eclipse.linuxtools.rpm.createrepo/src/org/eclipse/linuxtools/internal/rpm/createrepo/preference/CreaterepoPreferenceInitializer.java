@@ -23,6 +23,10 @@ import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoPreferenceConsta
 public class CreaterepoPreferenceInitializer extends
         AbstractPreferenceInitializer {
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
+     */
     @Override
     public void initializeDefaultPreferences() {
         // initial preferences
