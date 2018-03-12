@@ -65,34 +65,4 @@ final class StringStateValue extends TmfStateValue {
     public String unboxStr() {
         return value;
     }
-
-    @Override
-    public int compareTo(@Nullable ITmfStateValue object) {
-        if (object == null) {
-            /*
-             * We assume that every string state value is greater than any other
-             * non-string state values.
-             */
-            return 1;
-        }
-        int result = 0;
-
-        switch (object.getType()) {
-        case DOUBLE:
-        case INTEGER:
-        case LONG:
-        case NULL:
-            result = 1;
-            break;
-        case STRING:
-            StringStateValue other = (StringStateValue) object;
-            result = value.compareTo(other.value);
-            break;
-        default:
-            break;
-        }
-        return result;
-
-    }
-
 }
