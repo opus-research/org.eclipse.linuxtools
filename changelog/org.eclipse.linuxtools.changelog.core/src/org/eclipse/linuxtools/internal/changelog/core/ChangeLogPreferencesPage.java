@@ -16,6 +16,7 @@ package org.eclipse.linuxtools.internal.changelog.core;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
@@ -28,6 +29,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.osgi.service.prefs.BackingStoreException;
 
 /**
  * @author pmuldoon (Phil Muldoon)
@@ -220,9 +222,6 @@ public class ChangeLogPreferencesPage extends PreferencePage implements
 
     }
 
-    /*
-     * (non-Javadoc) Method declared on PreferencePage
-     */
     @Override
     protected void performDefaults() {
         super.performDefaults();
@@ -230,14 +229,14 @@ public class ChangeLogPreferencesPage extends PreferencePage implements
 
     }
 
-    /*
-     * (non-Javadoc) Method declared on PreferencePage
-     */
-    @SuppressWarnings("deprecation")
     @Override
     public boolean performOk() {
         storeValues();
-        ChangelogPlugin.getDefault().savePluginPreferences();
+        try {
+			InstanceScope.INSTANCE.getNode(ChangelogPlugin.PLUGIN_ID).flush();
+		} catch (BackingStoreException e) {
+			// ignore saving exception
+		}
         return true;
     }
 
