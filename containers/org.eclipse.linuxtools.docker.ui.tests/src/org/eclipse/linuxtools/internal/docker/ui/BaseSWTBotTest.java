@@ -13,11 +13,8 @@ package org.eclipse.linuxtools.internal.docker.ui;
 
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
@@ -28,8 +25,6 @@ import org.junit.runner.RunWith;
 public abstract class BaseSWTBotTest {
 
 	protected static SWTWorkbenchBot bot;
-	protected SWTBotView dockerExplorerViewBot;
-	protected DockerExplorerView dockerExplorerView;
 
 	@BeforeClass
 	public static void beforeClass() throws InterruptedException {
@@ -43,12 +38,4 @@ public abstract class BaseSWTBotTest {
 		Thread.sleep(TimeUnit.SECONDS.toMillis(1));
 	}
 	
-	@Before
-	public void setup() {
-		dockerExplorerViewBot = bot.viewById("org.eclipse.linuxtools.docker.ui.dockerExplorerView");
-		dockerExplorerViewBot.show();
-		dockerExplorerView = (DockerExplorerView) (dockerExplorerViewBot.getViewReference().getView(false));
-	}
-
-
 }
