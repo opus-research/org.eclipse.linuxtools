@@ -48,7 +48,7 @@
                        </fileset>
                      </delete>
                      <copy includeemptydirs="false"
-                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-nightly-oxygen">
+                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-oxygen">
                        <fileset dir="target/repository">
                          <include name="**" />
                        </fileset>
