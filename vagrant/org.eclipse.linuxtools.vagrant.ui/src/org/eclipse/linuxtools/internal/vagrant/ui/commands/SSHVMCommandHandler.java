@@ -17,11 +17,8 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.linuxtools.internal.vagrant.ui.wizards.WizardMessages;
+import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantVM;
-import org.eclipse.linuxtools.vagrant.core.VagrantService;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.tm.terminal.connector.ssh.launcher.SshLauncherDelegate;
 
 public class SSHVMCommandHandler extends BaseVMCommandHandler {
@@ -30,14 +27,6 @@ public class SSHVMCommandHandler extends BaseVMCommandHandler {
 	private static final String KEY = "PRIVATEKEY";
 	@Override
 	void executeInJob(final IVagrantVM vm, IProgressMonitor monitor) {
-		if (vm.ip() == null || vm.port() == 0 || vm.user() == null) {
-			Display.getDefault()
-			.syncExec(() -> MessageDialog.openError(Display.getCurrent()
-					.getActiveShell(),
-					WizardMessages.getString("SSHVMCommandHandler.sshError"), //$NON-NLS-1$
-					WizardMessages.getString("SSHVMCommandHandler.invalidCredentials"))); //$NON-NLS-1$
-			return;
-		}
 		// org.eclipse.tm.terminal.connector.ssh.controls.SshWizardConfigurationPanel
 		Map<String, Object> properties = new HashMap<>();
 		properties.put("ssh.keep_alive", 300);
@@ -64,7 +53,7 @@ public class SSHVMCommandHandler extends BaseVMCommandHandler {
 			currentKeys = DefaultScope.INSTANCE.getNode(JSCH_ID).get(KEY, "");
 		}
 		InstanceScope.INSTANCE.getNode(JSCH_ID).put(KEY, currentKeys + "," + identityFile);
-		VagrantService.getInstance().addToTrackedKeys(identityFile);
+		VagrantConnection.getInstance().addToTrackedKeys(identityFile);
 	}
 
 	@Override
