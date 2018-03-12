@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.core.synchronization;
 
+import java.io.Serializable;
+
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
@@ -21,7 +23,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
  * @author Geneviève Bastien
  * @since 3.0
  */
-public interface ITmfTimestampTransform {
+public interface ITmfTimestampTransform extends Serializable {
 
     /**
      * Transforms a timestamp
@@ -36,7 +38,7 @@ public interface ITmfTimestampTransform {
      * Transforms a timestamp value
      *
      * @param timestamp
-     *            The timestamp to transform
+     *            The timestamp to transform in nanoseconds
      * @return the transformed value
      */
     long transform(long timestamp);
