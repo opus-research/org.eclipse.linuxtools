@@ -165,8 +165,7 @@ AbstractLaunchConfigurationTab {
                 control.dispose();
             }
 
-            OprofileCounter [] ctrs = getOprofileCounters(null);
-            if (getOprofileTimerMode() || (ctrs.length > 0 && ctrs[0].getValidEvents() == null)) {
+            if (getOprofileTimerMode()) {
                 Label timerModeLabel = new Label(top, SWT.LEFT);
                 timerModeLabel.setText(OprofileLaunchMessages.getString("tab.event.timermode.no.options")); //$NON-NLS-1$
             } else {
@@ -188,10 +187,6 @@ AbstractLaunchConfigurationTab {
 
         }
 
-        if (! isValid(config)) {
-            return;
-        }
-
         if(!getOprofileTimerMode()){
             for (int i = 0; i < counters.length; i++) {
                 counters[i].loadConfiguration(config);
@@ -209,7 +204,6 @@ AbstractLaunchConfigurationTab {
                 e.printStackTrace();
             }
         }
-
     }
 
     @Override
@@ -217,10 +211,6 @@ AbstractLaunchConfigurationTab {
         IProject project = getProject(config);
         setOprofileProject(project);
 
-        OprofileCounter [] ctrs = getOprofileCounters(null);
-        if (ctrs.length > 0 && ctrs[0].getValidEvents() == null) {
-            return false;
-        }
         if (getOprofileTimerMode() || counterSubTabs == null) {
             return true;        //no options to check for validity
         } else {
