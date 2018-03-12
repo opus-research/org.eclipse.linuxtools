@@ -26,6 +26,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.linuxtools.internal.vagrant.core.EnvironmentsManager;
 import org.eclipse.linuxtools.internal.vagrant.ui.Activator;
 import org.eclipse.linuxtools.internal.vagrant.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.vagrant.core.EnumVMStatus;
@@ -40,10 +41,8 @@ import org.eclipse.ui.handlers.IHandlerService;
 public class VagrantToolBarContributionItem extends ContributionItem {
 
 	public VagrantToolBarContributionItem() {
-		Thread t = new Thread(() -> {
-			VagrantService.getInstance().getVMs();
-		});
-		t.start();
+		EnvironmentsManager.getSingleton();
+		VagrantService.getInstance().getVMs();
 	}
 
 	public VagrantToolBarContributionItem(String id) {
@@ -54,7 +53,7 @@ public class VagrantToolBarContributionItem extends ContributionItem {
 	public void fill(Menu menu, int index) {
 		// The menu passed in doesn't allow us to have sub-menus
 		// Ignore it, get the parent IMenuManager and create the structure
-		if (getParent() instanceof IMenuManager && VagrantService.getInstance().isVMsLoaded()) {
+		if (getParent() instanceof IMenuManager) {
 			IMenuManager mm = (IMenuManager) getParent();
 			IContributionItem v = mm.find(getId());
 			// Menu manager contributions get aggregated so remove them first
