@@ -40,7 +40,7 @@ public class ExportToTextCommandHandler extends AbstractHandler {
      * Id used to retrieve the header (as a String) of the trace to export.
      * This header is from the application context of this handler.
      */
-    public static final String TMF_EVENT_TABLE_COLUMNS_ID = "org.eclipse.linuxtools.tmf.ui.exportToText.columns"; //$NON-NLS-1$
+    public static final String TMF_EVENT_TABLE_COLUMN_ID = "org.eclipse.linuxtools.tmf.ui.exportToText.columns"; //$NON-NLS-1$
 
     /**
      * Constructor
@@ -50,7 +50,7 @@ public class ExportToTextCommandHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        List<TmfEventTableColumn> columns = getColumns(event.getApplicationContext());
+        List<TmfEventTableColumn> header = getHeader(event.getApplicationContext());
         ITmfTrace trace = TmfTraceManager.getInstance().getActiveTrace();
         ITmfFilter filter = TmfTraceManager.getInstance().getCurrentFilter();
         if (trace != null) {
@@ -59,7 +59,7 @@ public class ExportToTextCommandHandler extends AbstractHandler {
             fd.setOverwrite(true);
             final String s = fd.open();
             if (s != null) {
-                Job j = new ExportToTextJob(trace, filter, columns, s);
+                Job j = new ExportToTextJob(trace, filter, header, s);
                 j.setUser(true);
                 j.schedule();
             }
@@ -68,9 +68,9 @@ public class ExportToTextCommandHandler extends AbstractHandler {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<TmfEventTableColumn> getColumns(Object evaluationContext) {
+    private static List<TmfEventTableColumn> getHeader(Object evaluationContext) {
         if (evaluationContext instanceof IEvaluationContext) {
-            Object s = ((IEvaluationContext) evaluationContext).getVariable(TMF_EVENT_TABLE_COLUMNS_ID);
+            Object s = ((IEvaluationContext) evaluationContext).getVariable(TMF_EVENT_TABLE_COLUMN_ID);
             if (s instanceof List<?>) {
                 return (List<TmfEventTableColumn>) s;
             }
