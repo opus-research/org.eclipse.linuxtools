@@ -73,13 +73,9 @@ public class JavaImageTab extends AbstractLaunchConfigurationTab {
 			@Override
 			public Object[] getElements(Object inputElement) {
 				IDockerConnection conn = (IDockerConnection) inputElement;
-				if (conn == null || conn.getImages() == null) {
-					return new Object[0];
-				} else {
-					return conn.getImages().stream()
-							.filter(i -> ! i.repoTags().get(0).equals("<none>:<none>")) //$NON-NLS-1$
-							.toArray(size -> new IDockerImage[size]);
-				}
+				return conn.getImages().stream()
+						.filter(i -> ! i.repoTags().get(0).equals("<none>:<none>")) //$NON-NLS-1$
+						.toArray(size -> new IDockerImage[size]);
 			}
 		});
 		imageCmb.setLabelProvider(new ColumnLabelProvider() {
