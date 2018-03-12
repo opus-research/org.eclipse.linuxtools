@@ -121,7 +121,9 @@ public class EthernetIIPacket extends Packet {
      * @return The source MAC address.
      */
     public byte[] getSourceMacAddress() {
-        return fSourceMacAddress;
+        @SuppressWarnings("null")
+        @NonNull byte[] mac = Arrays.copyOf(fSourceMacAddress, fSourceMacAddress.length);
+        return mac;
     }
 
     /**
@@ -130,7 +132,9 @@ public class EthernetIIPacket extends Packet {
      * @return The destination MAC address.
      */
     public byte[] getDestinationMacAddress() {
-        return fDestinationMacAddress;
+        @SuppressWarnings("null")
+        @NonNull byte[] mac = Arrays.copyOf(fDestinationMacAddress, fDestinationMacAddress.length);
+        return mac;
     }
 
     /**
