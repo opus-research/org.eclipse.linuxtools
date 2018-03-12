@@ -168,15 +168,17 @@ public class RunConsole extends IOConsole {
 		Thread t = new Thread(() -> {
 			try {
 				DockerConnection conn = (DockerConnection) connection;
-				IDockerContainerState state = conn.getContainerInfo(containerId)
-						.state();
-				do {
-					if (!state.running() && state.finishDate() == null) {
-						Thread.sleep(300);
-					}
-					state = conn.getContainerInfo(containerId).state();
-				} while (!state.running() && state.finishDate() == null);
-				conn.attachCommand(containerId, null, null);
+				if (conn.getContainerInfo(containerId).config().openStdin()) {
+					IDockerContainerState state = conn
+							.getContainerInfo(containerId).state();
+					do {
+						if (!state.running() && state.finishDate() == null) {
+							Thread.sleep(300);
+						}
+						state = conn.getContainerInfo(containerId).state();
+					} while (!state.running() && state.finishDate() == null);
+					conn.attachCommand(containerId, null, null);
+				}
 			} catch (Exception e) {
 			}
 		});
