@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -309,8 +312,22 @@ public class SelectTracesWizardPage extends WizardPage {
             getContainer().run(true, true, new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    operation.run(monitor);
-                    monitor.done();
+                    // Wrapper to have only one resource changed event at the end of the operation.
+                    IWorkspaceRunnable workspaceRunnable = new IWorkspaceRunnable() {
+                        @Override
+                        public void run(IProgressMonitor pm) throws CoreException {
+                            operation.run(pm);
+                        }
+                    };
+
+                    IWorkspace workspace = ResourcesPlugin.getWorkspace();
+                    try {
+                        workspace.run(workspaceRunnable, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
+                    } catch (CoreException e) {
+                        throw new InvocationTargetException(e);
+                    } finally {
+                        monitor.done();
+                    }
                 }
             });
 
@@ -368,7 +385,7 @@ public class SelectTracesWizardPage extends WizardPage {
                         fPreviousTraces.remove(name);
                     } else {
                         subMonitor.setTaskName(Messages.SelectTracesWizardPage_TraceSelectionTask + " " + trace.getElementPath()); //$NON-NLS-1$
-                        fExperiment.addTrace(trace);
+                        fExperiment.addTrace(trace, false);
                         changed = true;
                     }
                     subMonitor.worked(1);
@@ -387,6 +404,7 @@ public class SelectTracesWizardPage extends WizardPage {
                         Activator.getDefault().logError(Messages.SelectTracesWizardPage_SelectionError + " " + experiment.getName(), e); //$NON-NLS-1$
                     }
                     changed = true;
+                    subMonitor.worked(1);
                 }
                 if (changed) {
                     fExperiment.closeEditors();

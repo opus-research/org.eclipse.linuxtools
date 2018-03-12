@@ -14,17 +14,12 @@
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.TreeSelection;
@@ -38,7 +33,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 /**
  * <b><u>DeleteTraceHandler</u></b>
@@ -112,50 +106,26 @@ public class DeleteTraceHandler extends AbstractHandler {
             return null;
         }
 
-        final Iterator<Object> iterator = fSelection.iterator();
-        final int nbTraces = fSelection.size();
-
-        WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
-            @Override
-            public void execute(IProgressMonitor monitor) throws CoreException {
-                SubMonitor subMonitor = SubMonitor.convert(monitor, nbTraces);
-
-                while (iterator.hasNext()) {
-                    if (monitor.isCanceled()) {
-                        throw new OperationCanceledException();
-                    }
-                    Object element = iterator.next();
-                    if (element instanceof TmfTraceElement) {
-                        final TmfTraceElement trace = (TmfTraceElement) element;
-                        subMonitor.setTaskName(Messages.DeleteTraceHandler_TaskName + " " + trace.getElementPath()); //$NON-NLS-1$
-                        try {
-                            trace.delete(null);
-                        } catch (final CoreException e) {
-                            Display.getDefault().asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-                                    mb.setText(Messages.DeleteTraceHandler_Error + ' ' + trace.getName());
-                                    mb.setMessage(e.getMessage());
-                                    mb.open();
-                                }
-                            });
-                            Activator.getDefault().logError("Error deleting trace: " + trace.getName(), e); //$NON-NLS-1$
+        Iterator<Object> iterator = fSelection.iterator();
+        while (iterator.hasNext()) {
+            Object element = iterator.next();
+            if (element instanceof TmfTraceElement) {
+                final TmfTraceElement trace = (TmfTraceElement) element;
+                try {
+                    trace.delete(null);
+                } catch (final CoreException e) {
+                    Display.getDefault().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+                            mb.setText(Messages.DeleteTraceHandler_Error + ' ' + trace.getName());
+                            mb.setMessage(e.getMessage());
+                            mb.open();
                         }
-                    }
-                    subMonitor.setTaskName(""); //$NON-NLS-1$
-                    subMonitor.worked(1);
+                    });
+                    Activator.getDefault().logError("Error deleting trace: " + trace.getName(), e); //$NON-NLS-1$
                 }
-           }
-        };
-
-        try {
-            PlatformUI.getWorkbench().getProgressService().run(true, true, operation);
-        } catch (InterruptedException e) {
-            return null;
-        } catch (InvocationTargetException e) {
-            MessageDialog.openError(window.getShell(), e.toString(), e.getTargetException().toString());
-            return null;
+            }
         }
 
         return null;
