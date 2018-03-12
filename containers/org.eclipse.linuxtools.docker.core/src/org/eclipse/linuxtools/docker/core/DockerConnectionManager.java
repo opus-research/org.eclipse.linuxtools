@@ -14,7 +14,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings.BindingType;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionStorageManager;
@@ -41,7 +45,15 @@ public class DockerConnectionManager {
 	}
 
 	private DockerConnectionManager() {
-		reloadConnections();
+		Job rj = new Job(Messages.DockerConnectionManager_loading_connections) {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				reloadConnections();
+				return Status.OK_STATUS;
+			}
+		};
+		rj.setUser(false);
+		rj.schedule();
 	}
 
 	public void reloadConnections() {
@@ -64,9 +76,7 @@ public class DockerConnectionManager {
 					conn = new DockerConnection.Builder().name(tsetting.getName())
 							.tcpConnection(tsetting);
 				}
-				// add the connection but do not notify the listeners to avoid
-				// flickering on the Docker Explorer view for each entry
-				addConnection(conn, false);
+				addConnection(conn, true);
 			}
 		}
 	}
