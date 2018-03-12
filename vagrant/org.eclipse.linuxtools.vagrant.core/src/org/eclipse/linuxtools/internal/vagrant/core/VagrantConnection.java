@@ -24,10 +24,17 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.linuxtools.vagrant.core.EnumVMStatus;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBoxListener;
@@ -337,12 +344,11 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	}
 
 	@Override
-	public Process up(File vagrantDir, String provider) {
+	public void up(File vagrantDir, String provider) {
 		if (provider != null) {
-			return rtCall(new String[] { "up", "--provider", provider },
-					vagrantDir);
+			rtCall(new String[] { "up", "--provider", provider }, vagrantDir);
 		} else {
-			return rtCall(new String[] { "up" }, vagrantDir);
+			rtCall(new String[] { "up" }, vagrantDir);
 		}
 	}
 
@@ -403,17 +409,25 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		return result.toArray(new String[0]);
 	}
 
-	private static Process rtCall(String[] args, File vagrantDir) {
+	private void rtCall(String[] args, File vagrantDir) {
+		final String EXTERNAL_TOOLS = "org.eclipse.ui.externaltools.ProgramLaunchConfigurationType"; //$NON-NLS-1$
+		final String UI_PLUGIN_ID = "org.eclipse.ui.externaltools"; //$NON-NLS-1$
+		final String ATTR_LOCATION = UI_PLUGIN_ID + ".ATTR_LOCATION"; //$NON-NLS-1$
+		final String ATTR_TOOL_ARGUMENTS = UI_PLUGIN_ID + ".ATTR_TOOL_ARGUMENTS"; //$NON-NLS-1$
+		final String ATTR_WORKING_DIRECTORY = UI_PLUGIN_ID + ".ATTR_WORKING_DIRECTORY"; //$NON-NLS-1$
+
+		String arguments = Arrays.asList(args).stream().map(u -> u.toString()).collect(Collectors.joining(" "));
+		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+		ILaunchConfigurationType type = manager.getLaunchConfigurationType(EXTERNAL_TOOLS);
 		try {
-			List<String> cmd = new ArrayList<>();
-			cmd.add(VG);
-			cmd.addAll(Arrays.asList(args));
-			Process p = Runtime.getRuntime().exec(cmd.toArray(new String[0]),
-					null, vagrantDir);
-			return p;
-		} catch (IOException e) {
+			ILaunchConfigurationWorkingCopy wc = type.newInstance(null, "vagrant-up");
+			wc.setAttribute(ATTR_LOCATION, "/usr/bin/vagrant");
+			wc.setAttribute(ATTR_TOOL_ARGUMENTS, arguments);
+			wc.setAttribute(ATTR_WORKING_DIRECTORY, vagrantDir.getAbsolutePath());
+			wc.doSave();
+			wc.launch("run", new NullProgressMonitor());
+		} catch (CoreException e1) {
 		}
-		return null;
 	}
 
 }
