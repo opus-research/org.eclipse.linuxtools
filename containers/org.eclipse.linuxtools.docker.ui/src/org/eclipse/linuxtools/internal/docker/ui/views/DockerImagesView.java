@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.docker.ui.views;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -69,9 +68,6 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	public static final String VIEW_ID = "org.eclipse.linuxtools.docker.ui.dockerImagesView";
 
 	private final static String DaemonMissing = "ViewerDaemonMissing.msg"; //$NON-NLS-1$
-	private final static String ViewAllTitle = "ImagesViewTitle.all.msg"; //$NON-NLS-1$
-	private final static String ViewFilteredTitle = "ImagesViewTitle.filtered.msg"; //$NON-NLS-1$
-
 	private Form form;
 	private Text search;
 	private TableViewer viewer;
@@ -86,8 +82,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	@Override
 	public void dispose() {
 		// stop tracking selection changes in the Docker Explorer view (only)
-		getSite().getWorkbenchWindow().getSelectionService()
-				.removeSelectionListener(DockerExplorerView.VIEW_ID, this);
+		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener("org.eclipse.linuxtools.docker.ui.dockerExplorerView", this);
 		DockerConnectionManager.getInstance().removeConnectionManagerListener(
 				this);
 		super.dispose();
@@ -95,7 +90,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 
 	@Override
 	public String getContributorId() {
-		return DockerExplorerView.VIEW_ID;
+		return "org.eclipse.linuxtools.docker.ui.dockerExplorerView"; //$NON-NLS-1$
 	}
 
 	@SuppressWarnings("unchecked")
@@ -108,7 +103,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	}
 
 	private void hookContextMenu() {
-		MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
+		MenuManager menuMgr = new MenuManager("#PopupMenu");
 		menuMgr.setRemoveAllWhenShown(true);
 		// menuMgr.addMenuListener(new IMenuListener() {
 		// public void menuAboutToShow(IMenuManager manager) {
@@ -130,13 +125,10 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(container);
 		createTableViewer(container);
 		// track selection changes in the Docker Explorer view (only)
-		getSite().getWorkbenchWindow().getSelectionService()
-				.addSelectionListener(DockerExplorerView.VIEW_ID, this);
+		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener("org.eclipse.linuxtools.docker.ui.dockerExplorerView", this);
 		DockerConnectionManager.getInstance()
 				.addConnectionManagerListener(this);
 		hookContextMenu();
-		// by default, hide dangling and intermediate images
-		showAllImages(false);
 	}
 	
 	private void createTableViewer(final Composite container) {
@@ -182,7 +174,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 			public String getText(final Object element) {
 				if (element instanceof IDockerImage) {
 					final StringBuilder tags = new StringBuilder();
-					List<String> repoTags = new ArrayList<>();
+					List<String> repoTags = new ArrayList<String>();
 					repoTags.addAll(((IDockerImage) element).repoTags());
 					Collections.sort(repoTags);
 					for (Iterator<String> iterator = repoTags.iterator(); iterator
@@ -352,39 +344,11 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 					// remember the current selection before the viewer is
 					// refreshed
 					final ISelection currentSelection = DockerImagesView.this.viewer.getSelection();
-					CommandUtils.refresh(DockerImagesView.this.getViewer());
+					CommandUtils.refresh(DockerImagesView.this);
 					// restore the selection
 					DockerImagesView.this.viewer.setSelection(currentSelection);
-					refreshViewTitle();
 				}
 			});
-		}
-	}
-	
-	private void refreshViewTitle() {
-		if (this.viewer == null || this.form == null
-				|| this.connection == null) {
-			return;
-		} else if (!this.connection.isImagesLoaded()) {
-			form.setText(connection.getName());
-		} else {
-			final List<ViewerFilter> filters = Arrays
-					.asList(this.viewer.getFilters());
-			if (filters.contains(hideDanglingImagesFilter)
-					|| filters.contains(hideIntermediateImagesFilter)) {
-				this.form.setText(
-						DVMessages.getFormattedString(ViewFilteredTitle,
-								new String[] { connection.getName(),
-										Integer.toString(viewer.getTable()
-												.getItemCount()),
-								Integer.toString(
-										connection.getImages().size()), }));
-			} else {
-				this.form.setText(DVMessages.getFormattedString(ViewAllTitle,
-						new String[] { connection.getName(), Integer
-								.toString(connection.getImages().size()) }));
-
-			}
 		}
 	}
 	
@@ -435,17 +399,10 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		if(!enabled) {
 			this.viewer.addFilter(hideDanglingImagesFilter);
 			this.viewer.addFilter(hideIntermediateImagesFilter);
-			this.form.setText(DVMessages.getFormattedString(
-					connection.getName(),
-					Integer.toString(connection.getContainers().size())));
 		} else {
 			this.viewer.removeFilter(hideDanglingImagesFilter);
 			this.viewer.removeFilter(hideIntermediateImagesFilter);
-			this.form.setText(DVMessages.getFormattedString(
-					connection.getName(),
-					Integer.toString(connection.getContainers().size())));
 		}
-		refreshViewTitle();
 	}
 
 	@Override
