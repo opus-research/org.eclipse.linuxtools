@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -111,11 +110,10 @@ public class SpecfileEditorPrepareSourcesActionDelegate extends AbstractHandler 
                     return false;
                 }
 
-                URLConnection connection = url.openConnection();
+                HttpURLConnection connection = (HttpURLConnection) url
+                        .openConnection();
 
-                if (!(connection instanceof HttpURLConnection) ||
-                        ((HttpURLConnection) connection).getResponseCode() != HttpURLConnection.HTTP_NOT_FOUND) {
-                    connection.connect();
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_NOT_FOUND) {
                     // grab the name of the file from the URL
                     int offset = url.toString().lastIndexOf("/"); //$NON-NLS-1$
                     String filename = url.toString().substring(offset + 1);
