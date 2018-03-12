@@ -465,11 +465,7 @@ public class ContainerDataVolumeDialog extends Dialog {
 	}
 
 	private void setOkButtonEnabled(final boolean enabled) {
-		final Button okButton = getButton(IDialogConstants.OK_ID);
-		// skip if 'OK' button does not exist yet.
-		if (okButton != null) {
-			okButton.setEnabled(enabled);
-		}
+		getButton(IDialogConstants.OK_ID).setEnabled(enabled);
 	}
 
 }
