@@ -32,7 +32,6 @@ import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -51,11 +50,6 @@ public class CTFStreamTest {
 
     private CTFStreamInput fInput;
 
-    @BeforeClass
-    public static void initialize() {
-        assumeTrue(testTrace.exists());
-    }
-
     /**
      * Perform pre-test initialization.
      *
@@ -63,6 +57,7 @@ public class CTFStreamTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
+        assumeTrue(testTrace.exists());
         fixture = new CTFStream(testTrace.getTrace());
         fixture.setEventContext(new StructDeclaration(1L));
         fixture.setPacketContext(new StructDeclaration(1L));
