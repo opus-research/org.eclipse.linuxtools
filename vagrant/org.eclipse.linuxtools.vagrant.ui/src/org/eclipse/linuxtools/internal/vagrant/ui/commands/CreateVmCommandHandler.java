@@ -34,6 +34,7 @@ import org.eclipse.linuxtools.internal.vagrant.ui.wizards.CreateVMWizard;
 import org.eclipse.linuxtools.internal.vagrant.ui.wizards.WizardMessages;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
+import org.eclipse.linuxtools.vagrant.core.VagrantException;
 import org.eclipse.linuxtools.vagrant.core.VagrantService;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
@@ -80,15 +81,30 @@ public class CreateVmCommandHandler extends AbstractHandler {
 						IProgressMonitor.UNKNOWN);
 				IVagrantConnection connection = VagrantService.getInstance();
 				File vagrantDir;
+				String realBoxName = boxName;
 				if (vmFile == null) {
+					// The boxName is a reference to an actual box file
+					if (Paths.get(boxName).toFile().canRead()) {
+						try {
+							String boxPath = boxName;
+							// Generate the box name from the file name (basename)
+							realBoxName = boxName.substring(
+									boxName.lastIndexOf(File.separator) + 1)
+									.replace(".box", ""); //$NON-NLS-1$
+							connection.addBox(realBoxName, boxPath);
+						} catch (VagrantException e) {
+						} catch (InterruptedException e) {
+						}
+					}
+
 					// Init a new vagrant folder inside plugin metadata
-					vagrantDir = performInit(vmName, boxName, connection);
+					vagrantDir = performInit(vmName, realBoxName, connection);
 				} else {
 					vagrantDir = Paths.get(vmFile).getParent().toFile();
 				}
 				EnvironmentsManager.getSingleton().setEnvironment(vagrantDir,
 						environment);
-				IVagrantBox box = findBox(connection, boxName);
+				IVagrantBox box = findBox(connection, realBoxName);
 				String provider = (box == null ? null : box.getProvider());
 				connection.up(vagrantDir, provider);
 				connection.getVMs(true);
