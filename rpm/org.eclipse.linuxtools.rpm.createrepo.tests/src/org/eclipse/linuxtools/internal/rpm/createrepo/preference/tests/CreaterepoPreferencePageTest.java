@@ -31,6 +31,7 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -231,7 +232,8 @@ public class CreaterepoPreferencePageTest {
         bot.menu(ICreaterepoTestConstants.WINDOW).menu(ICreaterepoTestConstants.PREFERENCES).click();
         SWTBotShell shell = bot.shell(ICreaterepoTestConstants.PREFERENCES);
         shell.activate();
-        bot.tree().select(ICreaterepoTestConstants.CREATEREPO_CATEGORY);
+        SWTBotTreeItem treeItem = bot.tree().expandNode(ICreaterepoTestConstants.CREATEREPO_PROJECT_CATEGORY).click();
+        treeItem.select(ICreaterepoTestConstants.CREATEREPO_CATEGORY);
     }
 
 }
