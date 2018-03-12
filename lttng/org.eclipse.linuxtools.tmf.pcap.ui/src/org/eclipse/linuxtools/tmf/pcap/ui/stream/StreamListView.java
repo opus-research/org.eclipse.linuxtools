@@ -69,8 +69,8 @@ import org.eclipse.ui.PlatformUI;
  * <br>
  * TODO Switch to TmfUiRefreshHandler once the behavior is fixed
  *
- * FIXME analysis is leaking ressource. Someone I will not name told me not to worry about it since
- * AnalysisModule will not be autocloseable later.
+ * FIXME analysis is leaking ressource. Someone I will not name told me not to
+ * worry about it since AnalysisModule will not be autocloseable later.
  *
  * @author Vincent Perot
  */
@@ -99,20 +99,20 @@ public class StreamListView extends TmfView {
     };
 
     private static final int[] COLUMN_SIZES =
-        { 75,
-        350,
-        350,
-        110,
-        110,
-        110,
-        110,
-        110,
-        110,
-        180,
-        180,
-        110,
-        110,
-        110 };
+    { 75,
+            350,
+            350,
+            110,
+            110,
+            110,
+            110,
+            110,
+            110,
+            180,
+            180,
+            110,
+            110,
+            110 };
 
     private static final String KEY_PROTOCOL = "$protocol$"; //$NON-NLS-1$
     private static final String KEY_STREAM = "$stream$"; //$NON-NLS-1$
@@ -189,28 +189,28 @@ public class StreamListView extends TmfView {
                 if (trace == null || (!(trace instanceof PcapTrace))) {
                     return;
                 }
-                StreamListAnalysis analysis = trace.getAnalysisModuleOfClass(StreamListAnalysis.class, StreamListAnalysis.ID);
-                if (analysis == null) {
-                    return;
-                }
-                while (!analysis.isFinished() && !fStopThread) {
-                    updateUI();
-                    try {
-                        Thread.sleep(WAIT_TIME);
-                    } catch (InterruptedException e) {
-                        String message = e.getMessage();
-                        if (message == null) {
-                            message = EMPTY_STRING;
-                        }
-                        Activator.logError(message, e);
+                try (StreamListAnalysis analysis = trace.getAnalysisModuleOfClass(StreamListAnalysis.class, StreamListAnalysis.ID)) {
+                    if (analysis == null) {
                         return;
                     }
+                    while (!analysis.isFinished() && !fStopThread) {
+                        updateUI();
+                        try {
+                            Thread.sleep(WAIT_TIME);
+                        } catch (InterruptedException e) {
+                            String message = e.getMessage();
+                            if (message == null) {
+                                message = EMPTY_STRING;
+                            }
+                            Activator.logError(message, e);
+                            return;
+                        }
+                    }
+                    // Update UI one more time (daft punk)
+                    if (!fStopThread) {
+                        updateUI();
+                    }
                 }
-                // Update UI one more time (daft punk)
-                if (!fStopThread) {
-                    updateUI();
-                }
-
             }
         });
 
@@ -265,43 +265,45 @@ public class StreamListView extends TmfView {
                     return;
                 }
 
-                StreamListAnalysis analysis = trace.getAnalysisModuleOfClass(StreamListAnalysis.class, StreamListAnalysis.ID);
-                if (analysis == null) {
-                    return;
-                }
+                try (StreamListAnalysis analysis = trace.getAnalysisModuleOfClass(StreamListAnalysis.class, StreamListAnalysis.ID)) {
+                    if (analysis == null) {
+                        return;
+                    }
 
-                Map<TmfProtocol, Table> tables = fTableMap;
-                if (tables == null) {
-                    return;
-                }
-                for (TmfProtocol p : tables.keySet()) {
-                    @SuppressWarnings("null")
-                    @NonNull TmfProtocol protocol = p;
-                    TmfPacketStreamBuilder builder = analysis.getBuilder(protocol);
-                    if (builder != null && !(tables.get(protocol).isDisposed())) {
-                        for (TmfPacketStream stream : builder.getStreams()) {
+                    Map<TmfProtocol, Table> tables = fTableMap;
+                    if (tables == null) {
+                        return;
+                    }
+                    for (TmfProtocol p : tables.keySet()) {
+                        @SuppressWarnings("null")
+                        @NonNull
+                        TmfProtocol protocol = p;
+                        TmfPacketStreamBuilder builder = analysis.getBuilder(protocol);
+                        if (builder != null && !(tables.get(protocol).isDisposed())) {
+                            for (TmfPacketStream stream : builder.getStreams()) {
 
-                            TableItem item;
-                            if (stream.getID() < tables.get(protocol).getItemCount()) {
-                                item = tables.get(protocol).getItem(stream.getID());
-                            } else {
-                                item = new TableItem(tables.get(protocol), SWT.NONE);
+                                TableItem item;
+                                if (stream.getID() < tables.get(protocol).getItemCount()) {
+                                    item = tables.get(protocol).getItem(stream.getID());
+                                } else {
+                                    item = new TableItem(tables.get(protocol), SWT.NONE);
+                                }
+                                item.setText(0, String.valueOf(stream.getID()));
+                                item.setText(1, stream.getFirstEndpoint().toString());
+                                item.setText(2, stream.getSecondEndpoint().toString());
+                                item.setText(3, String.valueOf(stream.getNbPackets()));
+                                item.setText(4, String.valueOf(stream.getNbBytes()));
+                                item.setText(5, String.valueOf(stream.getNbPacketsAtoB()));
+                                item.setText(6, String.valueOf(stream.getNbBytesAtoB()));
+                                item.setText(7, String.valueOf(stream.getNbPacketsBtoA()));
+                                item.setText(8, String.valueOf(stream.getNbBytesBtoA()));
+                                item.setText(9, stream.getStartTime().toString());
+                                item.setText(10, stream.getStopTime().toString());
+                                item.setText(11, String.format("%.3f", stream.getDuration())); //$NON-NLS-1$
+                                item.setText(12, String.format("%.3f", stream.getBPSAtoB())); //$NON-NLS-1$
+                                item.setText(13, String.format("%.3f", stream.getBPSBtoA())); //$NON-NLS-1$
+                                item.setData(KEY_STREAM, stream);
                             }
-                            item.setText(0, String.valueOf(stream.getID()));
-                            item.setText(1, stream.getFirstEndpoint().toString());
-                            item.setText(2, stream.getSecondEndpoint().toString());
-                            item.setText(3, String.valueOf(stream.getNbPackets()));
-                            item.setText(4, String.valueOf(stream.getNbBytes()));
-                            item.setText(5, String.valueOf(stream.getNbPacketsAtoB()));
-                            item.setText(6, String.valueOf(stream.getNbBytesAtoB()));
-                            item.setText(7, String.valueOf(stream.getNbPacketsBtoA()));
-                            item.setText(8, String.valueOf(stream.getNbBytesBtoA()));
-                            item.setText(9, stream.getStartTime().toString());
-                            item.setText(10, stream.getStopTime().toString());
-                            item.setText(11, String.format("%.3f", stream.getDuration())); //$NON-NLS-1$
-                            item.setText(12, String.format("%.3f", stream.getBPSAtoB())); //$NON-NLS-1$
-                            item.setText(13, String.format("%.3f", stream.getBPSBtoA())); //$NON-NLS-1$
-                            item.setData(KEY_STREAM, stream);
                         }
                     }
                 }

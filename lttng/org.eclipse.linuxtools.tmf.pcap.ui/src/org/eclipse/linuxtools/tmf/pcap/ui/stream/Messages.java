@@ -18,6 +18,8 @@ import org.eclipse.osgi.util.NLS;
 @SuppressWarnings("javadoc")
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.pcap.ui.stream.messages"; //$NON-NLS-1$
+    public static @Nullable String StreamDiagramLoader_Stream;
+    public static @Nullable String StreamDiagramLoader_TitleString;
     public static @Nullable String StreamListView_BPSAtoB;
     public static @Nullable String StreamListView_BPSBtoA;
     public static @Nullable String StreamListView_BytesAtoB;
