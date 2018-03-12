@@ -33,6 +33,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.ITimeDataProvider;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeDataProviderCyclesWrapper;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphColorScheme;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphControl;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.TimeGraphScale;
@@ -103,14 +104,18 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     private Object fInputElement;
     private ITimeGraphContentProvider fTimeGraphContentProvider;
     private ITimeGraphPresentationProvider fTimeGraphProvider;
+    private ITimeDataProvider fTimeDataProvider = this;
+    private TimeGraphTooltipHandler fToolTipHandler;
 
     private List<ITimeGraphSelectionListener> fSelectionListeners = new ArrayList<>();
     private List<ITimeGraphTimeListener> fTimeListeners = new ArrayList<>();
     private List<ITimeGraphRangeListener> fRangeListeners = new ArrayList<>();
 
-    // Time format, using Epoch reference, Relative time format(default) or
-    // Number
+    // Time format, using Epoch reference, Relative time format(default),
+    // Number, or Cycles
     private TimeFormat fTimeFormat = TimeFormat.RELATIVE;
+    // Clock frequency to use for Cycles time format
+    private long fClockFrequency = 1000000000L;
     private int fBorderWidth = 0;
     private int fTimeScaleHeight = DEFAULT_HEIGHT;
 
@@ -181,8 +186,8 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     public void setTimeGraphProvider(ITimeGraphPresentationProvider timeGraphProvider) {
         fTimeGraphProvider = timeGraphProvider;
         fTimeGraphCtrl.setTimeGraphProvider(timeGraphProvider);
-        TimeGraphTooltipHandler toolTipHandler = new TimeGraphTooltipHandler(fTimeGraphProvider, this);
-        toolTipHandler.activateHoverHelp(fTimeGraphCtrl);
+        fToolTipHandler = new TimeGraphTooltipHandler(fTimeGraphProvider, fTimeDataProvider);
+        fToolTipHandler.activateHoverHelp(fTimeGraphCtrl);
     }
 
     /**
@@ -345,7 +350,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         fDataViewer.setLayout(gl);
 
         fTimeScaleCtrl = new TimeGraphScale(fDataViewer, fColorScheme);
-        fTimeScaleCtrl.setTimeProvider(this);
+        fTimeScaleCtrl.setTimeProvider(fTimeDataProvider);
         fTimeScaleCtrl.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
         fTimeScaleCtrl.setHeight(fTimeScaleHeight);
 
@@ -1057,6 +1062,33 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
      */
     public void setTimeFormat(TimeFormat tf) {
         this.fTimeFormat = tf;
+        if (tf == TimeFormat.CYCLES) {
+            fTimeDataProvider = new TimeDataProviderCyclesWrapper(this, fClockFrequency);
+        } else {
+            fTimeDataProvider = this;
+        }
+        fTimeScaleCtrl.setTimeProvider(fTimeDataProvider);
+        if (fToolTipHandler != null) {
+            fToolTipHandler.setTimeProvider(fTimeDataProvider);
+        }
+    }
+
+    /**
+     * Sets the clock frequency. Used when the time format is set to CYCLES.
+     *
+     * @param clockFrequency
+     *            the clock frequency in Hz
+     * @since 3.1
+     */
+    public void setClockFrequency(long clockFrequency) {
+        fClockFrequency = clockFrequency;
+        if (fTimeFormat == TimeFormat.CYCLES) {
+            fTimeDataProvider = new TimeDataProviderCyclesWrapper(this, fClockFrequency);
+            fTimeScaleCtrl.setTimeProvider(fTimeDataProvider);
+            if (fToolTipHandler != null) {
+                fToolTipHandler.setTimeProvider(fTimeDataProvider);
+            }
+        }
     }
 
     /**
