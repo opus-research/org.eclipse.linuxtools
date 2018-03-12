@@ -107,11 +107,6 @@
           id="org.eclipse.linuxtools.vagrant.ui.commands.openVFile"
           name="Open Vagrantfile">
     </command>
-    <command
-          description="Package selected VM"
-          id="org.eclipse.linuxtools.vagrant.ui.commands.packageVM"
-          name="Package VM">
-    </command>
  </extension>
  <extension
        point="org.eclipse.ui.handlers">
@@ -264,26 +259,6 @@
           </with>
        </enabledWhen>
     </handler>
-    <handler
-          class="org.eclipse.linuxtools.internal.vagrant.ui.commands.PackageVMCommandHandler"
-          commandId="org.eclipse.linuxtools.vagrant.ui.commands.packageVM">
-       <enabledWhen>
-          <with
-                variable="selection">
-             <iterate
-                   ifEmpty="false">
-                <and>
-                   <instanceof
-                         value="org.eclipse.linuxtools.vagrant.core.IVagrantVM">
-                   </instanceof>
-                </and>
-             </iterate>
-             <count
-                   value="1">
-             </count>
-          </with>
-       </enabledWhen>
-    </handler>
  </extension>
  <extension
        point="org.eclipse.ui.menus">
@@ -411,16 +386,6 @@
              id="org.eclipse.linuxtools.vagrant.ui.dynamic">
        </dynamic>
     </menuContribution>
-    <menuContribution
-          locationURI="toolbar:org.eclipse.linuxtools.vagrant.ui.vagrantVMView">
-       <command
-             commandId="org.eclipse.linuxtools.vagrant.ui.commands.packageVM"
-             icon="icons/build_exec.png"
-             id="org.eclipse.linuxtools.vagrant.ui.commands.packageVM"
-             mnemonic="B"
-             style="push">
-       </command>
-    </menuContribution>
  </extension>
  <extension
        point="org.eclipse.core.expressions.propertyTesters">
@@ -431,19 +396,5 @@
           properties="isRunning,isShutoff,isPaused,isRemovable,isUnknown"
           type="org.eclipse.linuxtools.vagrant.core.IVagrantVM">
     </propertyTester>
- </extension>
- <extension
-       point="org.eclipse.core.runtime.preferences">
-    <initializer
-          class="org.eclipse.linuxtools.internal.vagrant.ui.preferences.PreferenceInitializer">
-    </initializer>
- </extension>
- <extension
-       point="org.eclipse.ui.preferencePages">
-    <page
-          class="org.eclipse.linuxtools.internal.vagrant.ui.preferences.VagrantPreferencePage"
-          id="org.eclipse.linuxtools.vagrant.ui.preferences.VagrantPreferencePage"
-          name="%VagrantCategory.name">
-    </page>
  </extension>
 </plugin>

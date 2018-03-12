@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2016 STMicroelectronics and others.
+ * Copyright (c) 2011-2015 STMicroelectronics and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -75,18 +75,21 @@ public abstract class GcovTest extends AbstractTest {
     @BeforeClass
     public static void init() {
         display = Display.getDefault();
-        display.syncExec(() -> {
-		    try {
-		        window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		        IWorkbenchPart part = window.getActivePage().getActivePart();
-		        if (part.getTitle().equals("Welcome")) {
-		            part.dispose();
-		        }
-		        PlatformUI.getWorkbench().showPerspective(CUIPlugin.ID_CPERSPECTIVE, window);
-		    } catch (WorkbenchException e) {
-		        Assert.fail("Couldn't open C/C++ perspective.");
-		    }
-		});
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                    IWorkbenchPart part = window.getActivePage().getActivePart();
+                    if (part.getTitle().equals("Welcome")) {
+                        part.dispose();
+                    }
+                    PlatformUI.getWorkbench().showPerspective(CUIPlugin.ID_CPERSPECTIVE, window);
+                } catch (WorkbenchException e) {
+                    Assert.fail("Couldn't open C/C++ perspective.");
+                }
+            }
+        });
     }
 
     @Before
@@ -109,16 +112,19 @@ public abstract class GcovTest extends AbstractTest {
 
     @After
     public void cleanUp() {
-        display.syncExec(() -> {
-		    Shell[] shells = Display.getCurrent().getShells();
-		    for (final Shell shell : shells) {
-		        String shellTitle = shell.getText();
-		        if (!shellTitle.isEmpty() && !shellTitle.startsWith("Quick Access")
-		                && shell.getParent() != null) {
-		            shell.close();
-		        }
-		    }
-		});
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                Shell[] shells = Display.getCurrent().getShells();
+                for (final Shell shell : shells) {
+                    String shellTitle = shell.getText();
+                    if (!shellTitle.isEmpty() && !shellTitle.startsWith("Quick Access")
+                            && shell.getParent() != null) {
+                        shell.close();
+                    }
+                }
+            }
+        });
     }
 
     @AfterClass
@@ -143,25 +149,28 @@ public abstract class GcovTest extends AbstractTest {
     private void testGcovFileDetails(final String filename, final String binPath) {
         openGcovResult(project.getFile(filename), binPath, false);
 
-        display.syncExec(() -> {
-		    final IWorkbenchPage page = window.getActivePage();
-		    final IEditorPart editorPart = page.getActiveEditor();
-		    final IFile openedFile = project.getFile(editorPart.getEditorInput().getName());
-		    final IFile targetFile = project.getFile(
-		            new Path(filename).removeFileExtension().addFileExtension(
-		                    isCppProject ? "cpp" : "c"));
-		    if (!targetFile.equals(openedFile)) {
-		        System.err.println("WARNING: editor for " + targetFile
-		                + " is not in focus.");
-		        for (IEditorReference ref : page.getEditorReferences()) {
-		            if (targetFile.equals(project.getFile(ref.getName()))) {
-		                return;
-		            }
-		        }
-		        Assert.fail("Editor for file " + targetFile + " was not opened,"
-		                + " instead opened " + openedFile + ".");
-		    }
-		});
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                final IWorkbenchPage page = window.getActivePage();
+                final IEditorPart editorPart = page.getActiveEditor();
+                final IFile openedFile = project.getFile(editorPart.getEditorInput().getName());
+                final IFile targetFile = project.getFile(
+                        new Path(filename).removeFileExtension().addFileExtension(
+                                isCppProject ? "cpp" : "c"));
+                if (!targetFile.equals(openedFile)) {
+                    System.err.println("WARNING: editor for " + targetFile
+                            + " is not in focus.");
+                    for (IEditorReference ref : page.getEditorReferences()) {
+                        if (targetFile.equals(project.getFile(ref.getName()))) {
+                            return;
+                        }
+                    }
+                    Assert.fail("Editor for file " + targetFile + " was not opened,"
+                            + " instead opened " + openedFile + ".");
+                }
+            }
+        });
     }
 
     @Test
@@ -208,7 +217,12 @@ public abstract class GcovTest extends AbstractTest {
     }
 
     private void dumpCSV(final IAction sortAction, final STExportToCSVAction csvAction, String type, boolean testProducedReference) {
-        display.asyncExec(() -> sortAction.run());
+        display.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                sortAction.run();
+            }
+        });
 
         String s = project.getLocation() + "/" + type + "-dump.csv";
         new File(s).delete();
@@ -243,27 +257,30 @@ public abstract class GcovTest extends AbstractTest {
 
     @Test
     public void testGcovSummaryByLaunch() {
-        display.syncExec(() -> {
-		    try {
-		        CommonNavigator vc = (CommonNavigator) window.getActivePage().showView(ProjectExplorer.VIEW_ID);
-		        vc.selectReveal(new StructuredSelection(project.getFile(getBinName())));
-		        Menu menu = new MenuManager().createContextMenu(vc.getCommonViewer().getControl());
-		        new ProfileContextualLaunchAction(menu);
-		        for (MenuItem item : menu.getItems()) {
-		            if (item.getText().endsWith("Profile Code Coverage")) {
-		                ((ActionContributionItem) item.getData()).getAction().run();
-		                break;
-		            }
-		        }
-		    } catch (PartInitException e1) {
-		        Assert.fail("Cannot show Project Explorer.");
-		    }
-		    try {
-		        window.getActivePage().showView("org.eclipse.linuxtools.gcov.view");
-		    } catch (PartInitException e2) {
-		        Assert.fail("Cannot show GCov View.");
-		    }
-		});
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    CommonNavigator vc = (CommonNavigator) window.getActivePage().showView(ProjectExplorer.VIEW_ID);
+                    vc.selectReveal(new StructuredSelection(project.getFile(getBinName())));
+                    Menu menu = new MenuManager().createContextMenu(vc.getCommonViewer().getControl());
+                    new ProfileContextualLaunchAction(menu);
+                    for (MenuItem item : menu.getItems()) {
+                        if (item.getText().endsWith("Profile Code Coverage")) {
+                            ((ActionContributionItem) item.getData()).getAction().run();
+                            break;
+                        }
+                    }
+                } catch (PartInitException e) {
+                    Assert.fail("Cannot show Project Explorer.");
+                }
+                try {
+                    window.getActivePage().showView("org.eclipse.linuxtools.gcov.view");
+                } catch (PartInitException e) {
+                    Assert.fail("Cannot show GCov View.");
+                }
+            }
+        });
 
         // Wait for the build job to finish (note: DebugUIPlugin doesn't put launch jobs in a family)
         Job[] jobs = Job.getJobManager().find(null);
