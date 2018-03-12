@@ -18,9 +18,10 @@ import static org.junit.Assume.assumeTrue;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
@@ -32,7 +33,6 @@ import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -51,11 +51,6 @@ public class CTFStreamTest {
 
     private CTFStreamInput fInput;
 
-    @BeforeClass
-    public static void initialize() {
-        assumeTrue(testTrace.exists());
-    }
-
     /**
      * Perform pre-test initialization.
      *
@@ -63,6 +58,7 @@ public class CTFStreamTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
+        assumeTrue(testTrace.exists());
         fixture = new CTFStream(testTrace.getTrace());
         fixture.setEventContext(new StructDeclaration(1L));
         fixture.setPacketContext(new StructDeclaration(1L));
@@ -73,14 +69,13 @@ public class CTFStreamTest {
     }
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() throws IOException{
         fInput.close();
     }
 
-    @NonNull
     private static File createFile() {
         File path = new File(testTrace.getPath());
-        final File[] listFiles = path.listFiles(new FilenameFilter() {
+        return path.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 if (name.contains("hann")) {
@@ -88,11 +83,7 @@ public class CTFStreamTest {
                 }
                 return false;
             }
-        });
-        assertNotNull(listFiles);
-        final File returnFile = listFiles[0];
-        assertNotNull(returnFile);
-        return returnFile;
+        })[0];
     }
 
     /**
@@ -165,7 +156,8 @@ public class CTFStreamTest {
      */
     @Test
     public void testGetEvents() {
-        assertNotNull(fixture.getEventDeclarations());
+        Map<Long, IEventDeclaration> result = fixture.getEvents();
+        assertNotNull(result);
     }
 
     /**
