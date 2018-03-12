@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
@@ -40,9 +39,7 @@ public class PushImageCommandHandler extends AbstractHandler {
 	@Override
 	public Object execute(final ExecutionEvent event) {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-		final IDockerImage selectedImage = RunImageCommandHandler
-				.getSelectedImage(activePart);
-		final ImagePush wizard = new ImagePush(selectedImage);
+		final ImagePush wizard = new ImagePush();
 		final boolean pushImage = CommandUtils.openWizard(wizard,
 				HandlerUtil.getActiveShell(event));
 		if (pushImage) {
@@ -96,6 +93,5 @@ public class PushImageCommandHandler extends AbstractHandler {
 		pushImageJob.schedule();
 
 	}
-
 
 }
