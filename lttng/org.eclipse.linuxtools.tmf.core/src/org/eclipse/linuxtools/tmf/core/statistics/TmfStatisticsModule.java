@@ -104,8 +104,8 @@ public class TmfStatisticsModule extends TmfAbstractAnalysisModule
     protected boolean executeAnalysis(IProgressMonitor monitor) throws TmfAnalysisException {
         ITmfTrace trace = getTrace();
         if (trace == null) {
-            /* This analysis's trace should not be null when this is called */
-            throw new IllegalStateException();
+            /* This analysis was cancelled in the meantime */
+            return false;
         }
 
         IStatus status1 = totalsModule.schedule();

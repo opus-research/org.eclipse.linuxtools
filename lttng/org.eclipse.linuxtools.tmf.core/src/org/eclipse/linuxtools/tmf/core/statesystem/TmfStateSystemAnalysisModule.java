@@ -181,14 +181,20 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             StateSystemBackendType backend = getBackendType();
             String directory;
             File htFile;
+
+            ITmfTrace trace = getTrace();
+            if (trace == null) {
+                // Analysis was cancelled in the meantime
+                return false;
+            }
             switch (backend) {
             case FULL:
-                directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
+                directory = TmfTraceManager.getSupplementaryFileDir(trace);
                 htFile = new File(directory + getSsFileName());
                 createFullHistory(id, provider, htFile);
                 break;
             case PARTIAL:
-                directory = TmfTraceManager.getSupplementaryFileDir(getTrace());
+                directory = TmfTraceManager.getSupplementaryFileDir(trace);
                 htFile = new File(directory + getSsFileName());
                 createPartialHistory(id, provider, htFile);
                 break;
