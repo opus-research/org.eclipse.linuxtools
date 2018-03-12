@@ -577,22 +577,24 @@ public class IOStructGen {
             ByteOrder byteOrder) throws ParseException {
 
         for (String s : sd.getFieldsList()) {
-            IDeclaration d = sd.getField(s);
+            if (s != null) {
+                IDeclaration d = sd.getField(s);
 
-            if (d instanceof StructDeclaration) {
-                setAlign(parentScope, (StructDeclaration) d, byteOrder);
+                if (d instanceof StructDeclaration) {
+                    setAlign(parentScope, (StructDeclaration) d, byteOrder);
 
-            } else if (d instanceof VariantDeclaration) {
-                setAlign(parentScope, (VariantDeclaration) d, byteOrder);
-            } else if (d instanceof IntegerDeclaration) {
-                IntegerDeclaration decl = (IntegerDeclaration) d;
-                if (decl.getByteOrder() != byteOrder) {
-                    IntegerDeclaration newI;
-                    newI = IntegerDeclaration.createDeclaration(decl.getLength(),
-                            decl.isSigned(), decl.getBase(), byteOrder,
-                            decl.getEncoding(), decl.getClock(),
-                            decl.getAlignment());
-                    sd.getFields().put(s, newI);
+                } else if (d instanceof VariantDeclaration) {
+                    setAlign(parentScope, (VariantDeclaration) d, byteOrder);
+                } else if (d instanceof IntegerDeclaration) {
+                    IntegerDeclaration decl = (IntegerDeclaration) d;
+                    if (decl.getByteOrder() != byteOrder) {
+                        IntegerDeclaration newI;
+                        newI = IntegerDeclaration.createDeclaration(decl.getLength(),
+                                decl.isSigned(), decl.getBase(), byteOrder,
+                                decl.getEncoding(), decl.getClock(),
+                                decl.getAlignment());
+                        sd.getFields().put(s, newI);
+                    }
                 }
             }
         }
