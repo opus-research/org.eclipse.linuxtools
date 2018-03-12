@@ -14,8 +14,6 @@ import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -32,8 +30,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-public class RemoveTagCommandHandler extends AbstractHandler implements
-		IHandler {
+public class RemoveTagCommandHandler extends AbstractHandler {
 
 	private final static String REMOVE_TAG_JOB_TITLE = "ImageRemoveTagTitle.msg"; //$NON-NLS-1$
 	private final static String REMOVE_TAG_MSG = "ImageRemoveTag.msg"; //$NON-NLS-1$
@@ -43,7 +40,7 @@ public class RemoveTagCommandHandler extends AbstractHandler implements
 	private IDockerImage image;
 
 	@Override
-	public Object execute(final ExecutionEvent event) throws ExecutionException {
+	public Object execute(final ExecutionEvent event) {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		List<IDockerImage> selectedImages = CommandUtils
 				.getSelectedImages(activePart);
@@ -74,8 +71,6 @@ public class RemoveTagCommandHandler extends AbstractHandler implements
 			protected IStatus run(final IProgressMonitor monitor) {
 				final String tag = wizard.getTag();
 				monitor.beginTask(DVMessages.getString(REMOVE_TAG_MSG), 2);
-				// tag the image and let the progress
-				// handler refresh the images when done
 				try {
 					((DockerConnection) connection).removeTag(tag);
 					monitor.worked(1);
