@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2016 Red Hat, Inc.
+ * Copyright (c) 2007, 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,9 @@ public class Activator extends AbstractUIPlugin {
 
 	private ContributionTemplateStore fTemplateStore;
 	private ContributionContextTypeRegistry fContextTypeRegistry;
+
+	// RPM macros list
+	private RpmMacroProposalsList macrosList;
 
 	// RPM Groups
 	private List<String> rpmGroups = new ArrayList<>();
@@ -97,7 +100,8 @@ public class Activator extends AbstractUIPlugin {
 	}
 
 	public RpmMacroProposalsList getRpmMacroList() {
-		return new RpmMacroProposalsList();
+		macrosList = new RpmMacroProposalsList();
+		return macrosList;
 	}
 
 	public RpmPackageProposalsList getRpmPackageList() {
