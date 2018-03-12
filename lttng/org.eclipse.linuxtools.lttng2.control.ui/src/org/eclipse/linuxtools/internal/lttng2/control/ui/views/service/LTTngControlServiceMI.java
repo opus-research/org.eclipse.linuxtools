@@ -198,8 +198,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public String[] getSessionNames(IProgressMonitor monitor) throws ExecutionException {
-        List<String> command = createCommand(LTTngControlServiceConstants.COMMAND_LIST);
-        ICommandResult result = executeCommand(command, monitor);
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST);
+        ICommandResult result = executeCommand(command.toString(), monitor);
 
         Document doc = getDocumentFromStrings(result.getOutput());
 
@@ -217,8 +217,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public ISessionInfo getSession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        List<String> command = createCommand(LTTngControlServiceConstants.COMMAND_LIST, sessionName);
-        ICommandResult result = executeCommand(command, monitor);
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST, sessionName);
+        ICommandResult result = executeCommand(command.toString(), monitor);
 
         ISessionInfo sessionInfo = new SessionInfo(sessionName);
         Document document = getDocumentFromStrings(result.getOutput());
@@ -453,8 +453,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
         // Currently the SessionInfo object does not support multiple snashot
         // output.
         // For now only keep the last one.
-        List<String> command = createCommand(LTTngControlServiceConstants.COMMAND_SNAPSHOT, LTTngControlServiceConstants.COMMAND_LIST_SNAPSHOT_OUTPUT, LTTngControlServiceConstants.OPTION_SESSION, sessionName);
-        ICommandResult result = executeCommand(command, monitor);
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_SNAPSHOT_OUTPUT, LTTngControlServiceConstants.OPTION_SESSION, sessionName);
+        ICommandResult result = executeCommand(command.toString(), monitor);
         Document doc = getDocumentFromStrings(result.getOutput());
         NodeList rawSnapshotsOutputs = doc.getElementsByTagName(MIStrings.SNAPSHOT_OUTPUTS);
 
@@ -496,8 +496,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public List<IBaseEventInfo> getKernelProvider(IProgressMonitor monitor) throws ExecutionException {
-        List<String> command = createCommand(LTTngControlServiceConstants.COMMAND_LIST, LTTngControlServiceConstants.OPTION_KERNEL);
-        ICommandResult result = executeCommand(command, monitor, false);
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_KERNEL);
+        ICommandResult result = executeCommand(command.toString(), monitor, false);
         List<IBaseEventInfo> events = new ArrayList<>();
 
         if (isError(result) && result.getErrorOutput() != null) {
@@ -509,7 +509,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             if (ignoredPattern(result.getErrorOutput(), LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN)) {
                 return events;
             }
-            throw new ExecutionException(Messages.TraceControl_CommandError + toCommandSring(command));
+            throw new ExecutionException(Messages.TraceControl_CommandError + LTTngControlServiceConstants.COMMAND_LIST_KERNEL);
         }
 
         Document document = getDocumentFromStrings(result.getOutput());
@@ -520,12 +520,12 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public List<IUstProviderInfo> getUstProvider(IProgressMonitor monitor) throws ExecutionException {
-        List<String> command = createCommand(LTTngControlServiceConstants.COMMAND_LIST, LTTngControlServiceConstants.OPTION_UST);
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_UST);
         // Get the field to
-        command.add(LTTngControlServiceConstants.OPTION_FIELDS);
+        command.append(LTTngControlServiceConstants.OPTION_FIELDS);
 
         // Execute
-        ICommandResult result = executeCommand(command, monitor, false);
+        ICommandResult result = executeCommand(command.toString(), monitor, false);
         List<IUstProviderInfo> allProviders = new ArrayList<>();
 
         if (isError(result) && result.getErrorOutput() != null) {
@@ -537,7 +537,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             if (ignoredPattern(result.getErrorOutput(), LTTngControlServiceConstants.LIST_UST_NO_UST_PROVIDER_PATTERN)) {
                 return allProviders;
             }
-            throw new ExecutionException(Messages.TraceControl_CommandError + toCommandSring(command));
+            throw new ExecutionException(Messages.TraceControl_CommandError + LTTngControlServiceConstants.COMMAND_LIST_UST);
         }
 
         Document document = getDocumentFromStrings(result.getOutput());
@@ -583,9 +583,9 @@ public class LTTngControlServiceMI extends LTTngControlService {
             return createStreamedSession(sessionInfo, monitor);
         }
 
-        List<String> command = prepareSessionCreationCommand(sessionInfo);
+        StringBuffer command = prepareSessionCreationCommand(sessionInfo);
 
-        ICommandResult result = executeCommand(command, monitor);
+        ICommandResult result = executeCommand(command.toString(), monitor);
 
         Document document = getDocumentFromStrings(result.getOutput());
         NodeList sessions = document.getElementsByTagName(MIStrings.SESSION);
@@ -626,9 +626,9 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     private ISessionInfo createStreamedSession(ISessionInfo sessionInfo, IProgressMonitor monitor) throws ExecutionException {
 
-        List<String> command = prepareStreamedSessionCreationCommand(sessionInfo);
+        StringBuffer command = prepareStreamedSessionCreationCommand(sessionInfo);
 
-        ICommandResult result = executeCommand(command, monitor);
+        ICommandResult result = executeCommand(command.toString(), monitor);
 
         Document document = getDocumentFromStrings(result.getOutput());
         NodeList sessions = document.getElementsByTagName(MIStrings.SESSION);
@@ -682,9 +682,11 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public void destroySession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        List<String> command = createCommand(LTTngControlServiceConstants.COMMAND_DESTROY_SESSION, sessionName);
+        String newName = formatParameter(sessionName);
 
-        ICommandResult result = executeCommand(command, monitor, false);
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_DESTROY_SESSION, newName);
+
+        ICommandResult result = executeCommand(command.toString(), monitor, false);
         String[] errorOutput = result.getErrorOutput();
 
         if (isError(result) && (errorOutput != null)) {
@@ -693,7 +695,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 return;
 
             }
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + toCommandSring(command) + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
+            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command.toString() + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         // Check for action effect
@@ -720,17 +722,12 @@ public class LTTngControlServiceMI extends LTTngControlService {
      * @return string buffer with created command line
      */
     @Override
-    protected List<String> createCommand(String... strings) {
-        List<String> command = new ArrayList<>();
-        command.add(LTTngControlServiceConstants.CONTROL_COMMAND);
-        command.add(LTTngControlServiceConstants.CONTROL_COMMAND_MI_OPTION);
-        command.add(LTTngControlServiceConstants.CONTROL_COMMAND_MI_XML);
-        String groupOption = getTracingGroupOption();
-        if (!groupOption.isEmpty()) {
-            command.add(groupOption);
-        }
+    protected StringBuffer createCommand(String... strings) {
+        StringBuffer command = new StringBuffer();
+        command.append(LTTngControlServiceConstants.CONTROL_COMMAND_MI_XML);
+        command.append(getTracingGroupOption());
         for (String string : strings) {
-            command.add(string);
+            command.append(string);
         }
         return command;
     }
