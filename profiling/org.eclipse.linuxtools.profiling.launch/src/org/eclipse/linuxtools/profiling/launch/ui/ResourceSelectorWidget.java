@@ -91,13 +91,13 @@ public class ResourceSelectorWidget {
 
 
     /**
-     * Update the filesystem selector, if possible.
+     * Update the filesystem selector, if possible
      *
-     * @param newPath The new path to be set.
+     * @param newPath
      */
     private void updateFilesystemSelector(String newPath) {
-        try {
-            URI selectedURI = new URI(newPath);
+    try {
+            URI selectedURI  = new URI(newPath);
             String scheme = selectedURI.getScheme();
             try {
                 if (scheme == null) {
@@ -106,12 +106,11 @@ public class ResourceSelectorWidget {
                     fileSystemSelectionArea.setSelectedFileSystem(scheme);
                 }
             } catch (CoreException e) {
-                // Probably an unrecognized scheme. Don't change the setting of
+                // Probably an unrecognized scheme.  Don't change the setting of
                 // the filesystem selector.
             }
         } catch (URISyntaxException e) {
-            // This error can be ignored because we just won't set the
-            // filesystem selector
+            // This error can be ignored because we just won't set the filesystem selector
             // to a anything
         }
     }
@@ -119,7 +118,7 @@ public class ResourceSelectorWidget {
     /**
      * Update the URI field based on the selected path.
      *
-     * @param selectedPath The path to be selected.
+     * @param selectedPath
      */
     private void updateURIField(String selectedPath) {
         uriField.setText(TextProcessor.process(selectedPath));
@@ -129,7 +128,7 @@ public class ResourceSelectorWidget {
     /**
      * Create the file system selection area.
      *
-     * @param composite Parent composite
+     * @param composite
      */
     private void createFileSystemSelection(Composite composite) {
         fileSystemSelectionArea = new FileSystemSelectionArea();
@@ -139,8 +138,8 @@ public class ResourceSelectorWidget {
     /**
      * Create the area for user entry.
      *
-     * @param composite Parent composite
-     * @param uriLabelText Label for uri text widget.
+     * @param composite
+     * @param uriLabelText
      */
     private void createUserEntryArea(Composite composite, String uriLabelText) {
         // location label
