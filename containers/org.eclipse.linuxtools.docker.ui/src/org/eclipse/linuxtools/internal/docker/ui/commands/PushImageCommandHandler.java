@@ -12,6 +12,8 @@ package org.eclipse.linuxtools.internal.docker.ui.commands;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -28,15 +30,17 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-public class PushImageCommandHandler extends AbstractHandler {
+public class PushImageCommandHandler extends AbstractHandler implements
+		IHandler {
 
-	private final static String PUSH_IMAGE_JOB_TITLE = "ImagePush.msg"; //$NON-NLS-1$
+	private final static String PUSH_IMAGE_JOB_TITLE = "ImagePush.title"; //$NON-NLS-1$
+	private final static String PUSH_IMAGE_JOB_TASK = "ImagePush.msg"; //$NON-NLS-1$
 	private static final String ERROR_PUSHING_IMAGE = "ImagePushError.msg"; //$NON-NLS-1$
 	
 	private IDockerConnection connection;
 
 	@Override
-	public Object execute(final ExecutionEvent event) {
+	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		final ImagePush wizard = new ImagePush();
 		final boolean pushImage = CommandUtils.openWizard(wizard,
@@ -52,19 +56,19 @@ public class PushImageCommandHandler extends AbstractHandler {
 	}
 	
 	private void performPushImage(final ImagePush wizard) {
-		final Job pushImageJob = new Job(
-				DVMessages.getString(PUSH_IMAGE_JOB_TITLE)) {
+		final Job pushImageJob = new Job(DVMessages.getFormattedString(
+				PUSH_IMAGE_JOB_TITLE, wizard.getImageTag())) {
 
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final String tag = wizard.getImageTag();
-				monitor.beginTask(DVMessages.getString(PUSH_IMAGE_JOB_TITLE), 1);
+				monitor.beginTask(DVMessages.getString(PUSH_IMAGE_JOB_TASK),
+						IProgressMonitor.UNKNOWN);
 				// pull the image and let the progress
 				// handler refresh the images when done
 				try {
 					((DockerConnection) connection).pushImage(tag,
 							new ImagePushProgressHandler(connection, tag));
-					monitor.worked(1);
 				} catch (final DockerException e) {
 					Display.getDefault().syncExec(new Runnable() {
 

@@ -93,11 +93,10 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		return "org.eclipse.linuxtools.docker.ui.dockerExplorerView"; //$NON-NLS-1$
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T getAdapter(Class<T> adapter) {
+	public Object getAdapter(@SuppressWarnings("rawtypes") final Class adapter) {
 		if (adapter == IPropertySheetPage.class) {
-			return (T) new TabbedPropertySheetPage(this, true);
+			return new TabbedPropertySheetPage(this, true);
 		}
 		return super.getAdapter(adapter);
 	}

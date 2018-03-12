@@ -44,7 +44,7 @@ public class DockerConnectionManager {
 	private ListenerList connectionManagerListeners;
 
 	private DockerConnectionManager() {
-		connections = new ArrayList<>();
+		connections = new ArrayList<IDockerConnection>();
 		loadConnections();
 	}
 
