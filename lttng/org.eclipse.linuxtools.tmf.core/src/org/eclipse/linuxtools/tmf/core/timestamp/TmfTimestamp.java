@@ -34,6 +34,11 @@ public class TmfTimestamp implements ITmfTimestamp {
     // ------------------------------------------------------------------------
 
     /**
+     * Serial id
+     */
+    private static final long serialVersionUID = -2672640562206065229L;
+
+    /**
      * The beginning of time
      */
     public static final ITmfTimestamp BIG_BANG =
