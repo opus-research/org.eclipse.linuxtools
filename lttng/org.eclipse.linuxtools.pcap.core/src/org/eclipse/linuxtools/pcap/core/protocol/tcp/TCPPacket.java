@@ -484,8 +484,13 @@ public class TCPPacket extends Packet {
             .append(fAcknowledgmentNumber);
         }
 
-        sb.append(" Len=") //$NON-NLS-1$
-        .append((fDataOffset * TCPValues.BLOCK_SIZE));
+        final ByteBuffer payload = fPayload;
+        if (payload != null) {
+            sb.append(" Len=") //$NON-NLS-1$
+            .append(payload.array().length);
+        } else {
+            sb.append(" Len=0"); //$NON-NLS-1$
+        }
 
         String string = sb.toString();
         if (string == null) {
