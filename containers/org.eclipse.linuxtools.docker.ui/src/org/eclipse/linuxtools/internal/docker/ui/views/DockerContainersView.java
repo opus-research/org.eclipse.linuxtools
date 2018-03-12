@@ -40,8 +40,6 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.EnumDockerStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
-import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener2;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerListener;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
@@ -78,14 +76,13 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
  */
 public class DockerContainersView extends ViewPart implements
 		IDockerContainerListener, ISelectionListener,
-		ITabbedPropertySheetPageContributor, IDockerConnectionManagerListener2 {
+		ITabbedPropertySheetPageContributor {
 
 	private static final String TOGGLE_STATE = "org.eclipse.ui.commands.toggleState"; //$NON-NLS-1$
 
 	private static final String SHOW_ALL_CONTAINERS_COMMAND_ID = "org.eclipse.linuxtools.docker.ui.commands.showAllContainers"; //$NON-NLS-1$
 	private static final String SHOW_ALL_CONTAINERS_PREFERENCE = "showAllContainers"; //$NON-NLS-1$
 
-	/** Id of the view. */
 	public static final String VIEW_ID = "org.eclipse.linuxtools.docker.ui.dockerContainersView";
 
 	private final static String DaemonMissing = "ViewerDaemonMissing.msg"; //$NON-NLS-1$
@@ -113,21 +110,12 @@ public class DockerContainersView extends ViewPart implements
 		// stop tracking selection changes in the Docker Explorer view (only)
 		getSite().getWorkbenchWindow().getSelectionService()
 				.removeSelectionListener(DockerExplorerView.VIEW_ID, this);
-		DockerConnectionManager.getInstance()
-				.removeConnectionManagerListener(this);
 		super.dispose();
 	}
 
 	@Override
 	public String getContributorId() {
 		return DockerExplorerView.VIEW_ID;
-	}
-
-	/**
-	 * @return the title of the form inside the view
-	 */
-	public String getFormTitle() {
-		return this.form.getText();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,9 +164,6 @@ public class DockerContainersView extends ViewPart implements
 		service.getCommand(SHOW_ALL_CONTAINERS_COMMAND_ID)
 				.getState(TOGGLE_STATE).setValue(showAll);
 		service.refreshElements(SHOW_ALL_CONTAINERS_COMMAND_ID, null);
-		DockerConnectionManager.getInstance()
-				.addConnectionManagerListener(this);
-
 	}
 	
 	private void createTableViewer(final Composite container) {
@@ -484,16 +469,10 @@ public class DockerContainersView extends ViewPart implements
 		return connection;
 	}
 
-	/**
-	 * Sets the active connection
-	 * 
-	 * @param connection
-	 *            the active connection
-	 */
-	public void setConnection(final IDockerConnection connection) {
-		this.connection = connection;
-		if (connection != null && this.viewer != null) {
-			this.viewer.setInput(connection);
+	public void setConnection(IDockerConnection conn) {
+		this.connection = conn;
+		if (conn != null && this.viewer != null) {
+			this.viewer.setInput(conn);
 			refreshViewTitle();
 		} else if (this.viewer != null) {
 			viewer.setInput(new IDockerContainer[0]);
@@ -571,19 +550,6 @@ public class DockerContainersView extends ViewPart implements
 						new String[] { connection.getName(), Integer.toString(
 								connection.getContainers().size()) }));
 			}
-		}
-	}
-
-	@Override
-	public void changeEvent(int type) {
-		// do nothing, this method has been deprecated
-	}
-
-	@Override
-	public void changeEvent(final IDockerConnection connection,
-			final int type) {
-		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
-			refreshViewTitle();
 		}
 	}
 
