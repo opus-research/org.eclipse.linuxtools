@@ -54,7 +54,7 @@ public class ImageRun extends Wizard {
 	 */
 	public ImageRun(final IDockerConnection connection) throws DockerException {
 		super();
-		setWindowTitle(WizardMessages.getString("ImageRun.title")); //$NON-NLS-1$
+		setWindowTitle("Run a Docker Image");
 		setNeedsProgressMonitor(true);
 		this.imageRunSelectionPage = new ImageRunSelectionPage(connection);
 		this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
@@ -69,7 +69,7 @@ public class ImageRun extends Wizard {
 	 * @throws DockerException
 	 */
 	public ImageRun(final IDockerImage selectedImage) throws DockerException {
-		setWindowTitle(WizardMessages.getString("ImageRun.title")); //$NON-NLS-1$
+		setWindowTitle("Run a Docker Image");
 		setNeedsProgressMonitor(true);
 		this.imageRunSelectionPage = new ImageRunSelectionPage(selectedImage);
 		this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
@@ -196,7 +196,7 @@ public class ImageRun extends Wizard {
 		for (Iterator<EnvironmentVariableModel> iterator = resourcesModel
 				.getEnvironmentVariables().iterator(); iterator.hasNext();) {
 			final EnvironmentVariableModel var = iterator.next();
-			environmentVariables.add(var.getName() + "=" + var.getValue()); //$NON-NLS-1$
+			environmentVariables.add(var.getName() + "=" + var.getValue());
 		}
 		config.env(environmentVariables);
 		return config.build();
