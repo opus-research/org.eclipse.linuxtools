@@ -1036,7 +1036,7 @@ trace:
  20 s, sys_close, fd = 5
 
 Now let's say we want to implement an analysis module which will track the
-amount of bytes read and written to eachfile. Here, of course the sys_read is
+amount of bytes read and written to each file. Here, of course the sys_read is
 interesting. However, by just looking at that event, we have no information on
 which file is being read, only its fd (5) is known. To get the match
 fd5 = /home/user/myfile, we have to go back to the sys_open event which happens
@@ -3695,7 +3695,7 @@ Supporting a new network protocol in TMF is straightforward. The architecture is
 === Architecture ===
 
 All the TMF pcap-related code is divided in three projects (not considering the tests plugins):
-* org.eclipse.linuxtools.pcap.core, which contains the parser that will read pcap files and constructs the different packets from a ByteBuffer. It also contains means to build packet streams, which are conversation (list of packets) between two endpoints. To add a protocol, almost all of the work will be in that project. 
+* org.eclipse.linuxtools.pcap.core, which contains the parser that will read pcap files and constructs the different packets from a ByteBuffer. It also contains means to build packet streams, which are conversation (list of packets) between two endpoints. To add a protocol, almost all of the work will be in that project.
 * org.eclipse.linuxtools.tmf.pcap.core, which contains TMF-specific concepts and act as a wrapper between TMF and the pcap parsing library. It only depends on org.eclipse.linuxtools.tmf.core and org.eclipse.pcap.core. To add a protocol, one file must be edited in this project.
 * org.eclipse.linuxtools.tmf.pcap.ui, which contains all TMF pcap UI-specific concepts, such as the views and perspectives. No work is needed in that project.
 
@@ -3732,7 +3732,7 @@ First, in org.eclipse.linuxtools.pcap.core, create a new package named org.eclip
 
 In this package, we create a new class named UDPPacket that extends Packet. All new protocol must define a packet type that extends the abstarct class Packet. We also add different fields:
 * Packet fChildPacket, which is the packet encapsulated by this UDP packet, if it exists. This field will be initialized by findChildPacket().
-* ByteBuffer fPayload, which is the payload of this packet. Basically, it is the UDP packet without its header. 
+* ByteBuffer fPayload, which is the payload of this packet. Basically, it is the UDP packet without its header.
 * int fSourcePort, which is an unsigned 16-bits field, that contains the source port of the packet (see packet structure).
 * int fDestinationPort, which is an unsigned 16-bits field, that contains the destination port of the packet (see packet structure).
 * int fTotalLength, which is an unsigned 16-bits field, that contains the total length (header + payload) of the packet.
@@ -3957,7 +3957,7 @@ We get the following code:
      */
     @Override
     protected @Nullable Packet findChildPacket() throws BadPacketException {
-        // When more protocols are implemented, we can simply do a switch on the fDestinationPort field to find the child packet. 
+        // When more protocols are implemented, we can simply do a switch on the fDestinationPort field to find the child packet.
         // For instance, if the destination port is 80, then chances are the HTTP protocol is encapsulated. We can create a new HTTP
         // packet (after some verification that it is indeed the HTTP protocol).
         ByteBuffer payload = fPayload;
