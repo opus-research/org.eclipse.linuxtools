@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.rpm.rpmlint.Activator;
 import org.eclipse.linuxtools.internal.rpm.rpmlint.builder.RpmlintNature;
@@ -40,16 +41,18 @@ public class ToggleRpmlintNatureAction extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) {
-		IStructuredSelection selection = HandlerUtil.getCurrentStructuredSelection(event);
-		for (Object element : selection.toList()) {
-			IProject project = null;
-			if (element instanceof IProject) {
-				project = (IProject) element;
-			} else if (element instanceof IAdaptable) {
-				project = ((IAdaptable) element).getAdapter(IProject.class);
-			}
-			if (project != null) {
-				toggleNature(project);
+		ISelection selection = HandlerUtil.getCurrentSelection(event);
+		if (selection instanceof IStructuredSelection) {
+			for (Object element : ((IStructuredSelection) selection).toList()) {
+				IProject project = null;
+				if (element instanceof IProject) {
+					project = (IProject) element;
+				} else if (element instanceof IAdaptable) {
+					project = ((IAdaptable) element).getAdapter(IProject.class);
+				}
+				if (project != null) {
+					toggleNature(project);
+				}
 			}
 		}
 		return null;

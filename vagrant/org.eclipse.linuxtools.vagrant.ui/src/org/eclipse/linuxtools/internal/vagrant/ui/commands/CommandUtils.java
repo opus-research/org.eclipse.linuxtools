@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 Red Hat.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -61,8 +61,7 @@ public class CommandUtils {
 	 */
 	public static List<IVagrantVM> getSelectedContainers(final IWorkbenchPart activePart) {
 		if (activePart instanceof VagrantVMView) {
-			final IStructuredSelection selection = ((VagrantVMView) activePart)
-					.getStructuredSelection();
+			final ISelection selection = ((VagrantVMView) activePart).getSelection();
 			return getSelectedContainers(selection);
 		}
 		return Collections.emptyList();
@@ -76,18 +75,20 @@ public class CommandUtils {
 	 *         given {@link ISelection}, or {@link Collections#emptyList()} if
 	 *         none was selected.
 	 */
-	public static List<IVagrantVM> getSelectedContainers(
-			final IStructuredSelection selection) {
-		final List<IVagrantVM> selectedContainers = new ArrayList<>();
-		for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
-			final Object selectedElement = iterator.next();
-			if (selectedElement instanceof IVagrantVM) {
-				selectedContainers.add((IVagrantVM) selectedElement);
+	public static List<IVagrantVM> getSelectedContainers(final ISelection selection) {
+		if (selection instanceof IStructuredSelection) {
+			final List<IVagrantVM> selectedContainers = new ArrayList<>();
+			final IStructuredSelection structuredSelection = (IStructuredSelection) selection;
+			for (Iterator<?> iterator = structuredSelection.iterator(); iterator.hasNext();) {
+				final Object selectedElement = iterator.next();
+				if (selectedElement instanceof IVagrantVM) {
+					selectedContainers.add((IVagrantVM) selectedElement);
+				}
 			}
+			return Collections.unmodifiableList(selectedContainers);
 		}
-		return Collections.unmodifiableList(selectedContainers);
+		return Collections.emptyList();
 	}
-
 	/**
 	 * @param activePart
 	 *            the active {@link IWorkbenchPart}
@@ -98,8 +99,8 @@ public class CommandUtils {
 	public static List<IVagrantBox> getSelectedImages(
 			final IWorkbenchPart activePart) {
 		if (activePart instanceof VagrantBoxView) {
-			final IStructuredSelection selection = ((VagrantBoxView) activePart)
-					.getStructuredSelection();
+			final ISelection selection = ((VagrantBoxView) activePart)
+					.getSelection();
 			return getSelectedImages(selection);
 		}
 		return Collections.emptyList();
@@ -114,15 +115,20 @@ public class CommandUtils {
 	 *         none was selected.
 	 */
 	public static List<IVagrantBox> getSelectedImages(
-			final IStructuredSelection selection) {
-		final List<IVagrantBox> selectedImages = new ArrayList<>();
-		for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
-			final Object selectedElement = iterator.next();
-			if (selectedElement instanceof IVagrantBox) {
-				selectedImages.add((IVagrantBox) selectedElement);
+			final ISelection selection) {
+		if (selection instanceof IStructuredSelection) {
+			final List<IVagrantBox> selectedImages = new ArrayList<>();
+			final IStructuredSelection structuredSelection = (IStructuredSelection) selection;
+			for (Iterator<?> iterator = structuredSelection.iterator(); iterator
+					.hasNext();) {
+				final Object selectedElement = iterator.next();
+				if (selectedElement instanceof IVagrantBox) {
+					selectedImages.add((IVagrantBox) selectedElement);
+				}
 			}
+			return Collections.unmodifiableList(selectedImages);
 		}
-		return Collections.unmodifiableList(selectedImages);
+		return Collections.emptyList();
 	}
 
 	/**
