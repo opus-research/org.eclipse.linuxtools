@@ -182,13 +182,12 @@ public class UIUtils {
 		Assert.isNotNull(contributionManager);
 		Assert.isTrue(control != null && !control.isDisposed());
 
-		final IMenuService menuService = PlatformUI
+		final IMenuService menuService = (IMenuService) PlatformUI
 				.getWorkbench().getService(IMenuService.class);
 		menuService.populateContributionManager(
 				(ContributionManager) contributionManager, id);
 		contributionManager.update(true);
 		control.addDisposeListener(new DisposeListener() {
-			@Override
 			public void widgetDisposed(DisposeEvent e) {
 				menuService
 						.releaseContributions((ContributionManager) contributionManager);

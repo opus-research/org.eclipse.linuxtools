@@ -14,6 +14,8 @@ import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -30,7 +32,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-public class CommitContainerCommandHandler extends AbstractHandler {
+public class CommitContainerCommandHandler extends AbstractHandler implements
+		IHandler {
 
 	private final static String COMMIT_CONTAINER_JOB_TITLE = "ContainerCommitTitle.msg"; //$NON-NLS-1$
 	private final static String COMMIT_CONTAINER_MSG = "ContainerCommit.msg"; //$NON-NLS-1$
@@ -40,7 +43,7 @@ public class CommitContainerCommandHandler extends AbstractHandler {
 	private IDockerContainer container;
 
 	@Override
-	public Object execute(final ExecutionEvent event) {
+	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		List<IDockerContainer> selectedContainers = CommandUtils
 				.getSelectedContainers(activePart);

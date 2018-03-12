@@ -331,7 +331,7 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 
 		public Builder portSpecs(final List<String> portSpecs) {
 
-			this.portSpecs = new ArrayList<>(portSpecs);
+			this.portSpecs = new ArrayList<String>(portSpecs);
 			return this;
 		}
 
@@ -345,12 +345,12 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder exposedPorts(final Set<String> exposedPorts) {
-			this.exposedPorts = new TreeSet<>(exposedPorts);
+			this.exposedPorts = new TreeSet<String>(exposedPorts);
 			return this;
 		}
 
 		public Builder exposedPorts(final String... exposedPorts) {
-			this.exposedPorts = new TreeSet<>(Arrays.asList(exposedPorts));
+			this.exposedPorts = new TreeSet<String>(Arrays.asList(exposedPorts));
 			return this;
 		}
 
@@ -386,7 +386,7 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder env(final List<String> env) {
-			this.env = new ArrayList<>(env);
+			this.env = new ArrayList<String>(env);
 			return this;
 		}
 
@@ -400,7 +400,7 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder cmd(final List<String> cmd) {
-			this.cmd = new ArrayList<>(cmd);
+			this.cmd = new ArrayList<String>(cmd);
 			return this;
 		}
 
@@ -423,12 +423,12 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder volumes(final Set<String> volumes) {
-			this.volumes = new TreeSet<>(volumes);
+			this.volumes = new TreeSet<String>(volumes);
 			return this;
 		}
 
 		public Builder volumes(final String... volumes) {
-			this.volumes = new TreeSet<>(Arrays.asList(volumes));
+			this.volumes = new TreeSet<String>(Arrays.asList(volumes));
 			return this;
 		}
 
@@ -446,7 +446,7 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder entryPoint(final List<String> entrypoint) {
-			this.entrypoint = new ArrayList<>(entrypoint);
+			this.entrypoint = new ArrayList<String>(entrypoint);
 			return this;
 		}
 
@@ -469,7 +469,7 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder onBuild(final List<String> onBuild) {
-			this.onBuild = new ArrayList<>(onBuild);
+			this.onBuild = new ArrayList<String>(onBuild);
 			return this;
 		}
 
