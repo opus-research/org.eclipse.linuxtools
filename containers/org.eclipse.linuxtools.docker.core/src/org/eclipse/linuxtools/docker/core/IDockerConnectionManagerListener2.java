@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2014 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,8 +8,19 @@
  * Contributors:
  *     Red Hat - Initial Contribution
  *******************************************************************************/
+package org.eclipse.linuxtools.docker.core;
 
-/**
- * 
- */
-package org.eclipse.linuxtools.internal.docker.ui.validators;
+public interface IDockerConnectionManagerListener2
+		extends IDockerConnectionManagerListener {
+
+	/**
+	 * Notifies the listener that the given {@link IDockerConnection} changed.
+	 * 
+	 * @param connection
+	 *            the connection that changed
+	 * @param type
+	 *            the type of change
+	 */
+	public void changeEvent(IDockerConnection connection, int type);
+
+}

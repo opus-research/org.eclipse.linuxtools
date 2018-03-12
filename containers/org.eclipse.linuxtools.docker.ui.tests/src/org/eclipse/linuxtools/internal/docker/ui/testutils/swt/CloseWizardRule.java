@@ -9,7 +9,21 @@
  *     Red Hat - Initial Contribution
  *******************************************************************************/
 
+package org.eclipse.linuxtools.internal.docker.ui.testutils.swt;
+
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.junit.rules.ExternalResource;
+
 /**
- * 
+ * Clears the connection manager after each test.
  */
-package org.eclipse.linuxtools.internal.docker.ui.validators;
+public class CloseWizardRule extends ExternalResource {
+
+	@Override
+	protected void after() {
+		final SWTWorkbenchBot bot = new SWTWorkbenchBot();
+		if (bot.button("Cancel") != null) {
+			bot.button("Cancel").click();
+		}
+	}
+}
