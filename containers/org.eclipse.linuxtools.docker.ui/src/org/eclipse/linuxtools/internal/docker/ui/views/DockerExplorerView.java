@@ -22,6 +22,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
@@ -204,8 +206,13 @@ public class DockerExplorerView extends CommonNavigator implements
 		return new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				NewDockerConnection.open(PlatformUI.getWorkbench()
-						.getModalDialogShellProvider().getShell());
+				final NewDockerConnection wizard = new NewDockerConnection();
+				final WizardDialog dialog = new WizardDialog(PlatformUI
+						.getWorkbench().getModalDialogShellProvider()
+						.getShell(), wizard);
+				if (dialog.open() == Window.OK) {
+					getCommonViewer().refresh();
+				}
 				// if a (first) connection is added, the
 				// DockerExplorerView#changeEvent(int) method
 				// will be called and the pageBook will show the connectionsPane
