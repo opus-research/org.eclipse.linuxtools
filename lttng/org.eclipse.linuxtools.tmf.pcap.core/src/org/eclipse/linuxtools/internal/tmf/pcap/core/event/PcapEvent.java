@@ -13,7 +13,7 @@
 package org.eclipse.linuxtools.internal.tmf.pcap.core.event;
 
 import java.nio.ByteBuffer;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +21,8 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.pcap.core.packet.Packet;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.protocol.TmfPcapProtocol;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.Protocol;
+import org.eclipse.linuxtools.internal.tmf.pcap.core.protocol.TmfProtocol;
 import org.eclipse.linuxtools.internal.tmf.pcap.core.util.ProtocolConversion;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
@@ -50,11 +50,7 @@ public class PcapEvent extends TmfEvent {
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
     private final Packet fPacket;
-
-    /**
-     * Lazy-loaded field representing all the protocols in this event
-     */
-    private transient @Nullable Collection<TmfPcapProtocol> fProtocols;
+    private @Nullable List<TmfProtocol> fList;
 
     /**
      * Full constructor.
@@ -100,8 +96,8 @@ public class PcapEvent extends TmfEvent {
      *            The specified protocol
      * @return A map containing the fields.
      */
-    public @Nullable Map<String, String> getFields(TmfPcapProtocol protocol) {
-        PcapProtocol p = ProtocolConversion.unwrap(protocol);
+    public @Nullable Map<String, String> getFields(TmfProtocol protocol) {
+        Protocol p = ProtocolConversion.unwrap(protocol);
         Packet packet = fPacket.getPacket(p);
         if (packet == null) {
             return null;
@@ -117,8 +113,8 @@ public class PcapEvent extends TmfEvent {
      *            The specified protocol
      * @return The payload as a ByteBuffer.
      */
-    public @Nullable ByteBuffer getPayload(TmfPcapProtocol protocol) {
-        PcapProtocol p = ProtocolConversion.unwrap(protocol);
+    public @Nullable ByteBuffer getPayload(TmfProtocol protocol) {
+        Protocol p = ProtocolConversion.unwrap(protocol);
         Packet packet = fPacket.getPacket(p);
         if (packet == null) {
             return null;
@@ -134,8 +130,8 @@ public class PcapEvent extends TmfEvent {
      *            The specified protocol
      * @return The source endpoint.
      */
-    public @Nullable String getSourceEndpoint(TmfPcapProtocol protocol) {
-        PcapProtocol p = ProtocolConversion.unwrap(protocol);
+    public @Nullable String getSourceEndpoint(TmfProtocol protocol) {
+        Protocol p = ProtocolConversion.unwrap(protocol);
         Packet packet = fPacket.getPacket(p);
         if (packet == null) {
             return null;
@@ -151,8 +147,8 @@ public class PcapEvent extends TmfEvent {
      *            The specified protocol
      * @return The destination endpoint.
      */
-    public @Nullable String getDestinationEndpoint(TmfPcapProtocol protocol) {
-        PcapProtocol p = ProtocolConversion.unwrap(protocol);
+    public @Nullable String getDestinationEndpoint(TmfProtocol protocol) {
+        Protocol p = ProtocolConversion.unwrap(protocol);
         Packet packet = fPacket.getPacket(p);
         if (packet == null) {
             return null;
@@ -166,20 +162,20 @@ public class PcapEvent extends TmfEvent {
      *
      * @return The most encapsulated TmfProtocol.
      */
-    public TmfPcapProtocol getMostEncapsulatedProtocol() {
+    public TmfProtocol getMostEncapsulatedProtocol() {
         return ProtocolConversion.wrap(fPacket.getMostEcapsulatedPacket().getProtocol());
     }
 
     /**
-     * Method that returns all the protocols in this PcapEvent.
+     * Method that returns a list of all the protocols in this PcapEvent.
      *
      * @return A list containing all the TmfProtocol.
      */
-    public Collection<TmfPcapProtocol> getProtocols() {
-        if (fProtocols != null) {
-            return fProtocols;
+    public List<TmfProtocol> getProtocols() {
+        if (fList != null) {
+            return fList;
         }
-        ImmutableList.Builder<TmfPcapProtocol> builder = new ImmutableList.Builder<>();
+        List<TmfProtocol> list = new ArrayList<>();
         Packet packet = fPacket;
 
         // Go to start.
@@ -189,22 +185,22 @@ public class PcapEvent extends TmfEvent {
 
         if (packet == null) {
             @SuppressWarnings("null")
-            @NonNull List<TmfPcapProtocol> emptyList = Collections.EMPTY_LIST;
-            fProtocols = emptyList;
-            return fProtocols;
+            @NonNull List<TmfProtocol> emptyList = Collections.EMPTY_LIST;
+            fList = emptyList;
+            return fList;
         }
         // Go through all the packets and add them to list.
-        builder.add(ProtocolConversion.wrap(packet.getProtocol()));
+        list.add(ProtocolConversion.wrap(packet.getProtocol()));
         while (packet != null && packet.getChildPacket() != null) {
             packet = packet.getChildPacket();
             if (packet != null) {
-                builder.add(ProtocolConversion.wrap(packet.getProtocol()));
+                list.add(ProtocolConversion.wrap(packet.getProtocol()));
             }
         }
 
         @SuppressWarnings("null")
-        @NonNull ImmutableList<TmfPcapProtocol> immutableList = builder.build();
-        fProtocols = immutableList;
+        @NonNull ImmutableList<TmfProtocol> immutableList = ImmutableList.copyOf(list);
+        fList = immutableList;
         return immutableList;
     }
 
@@ -231,8 +227,8 @@ public class PcapEvent extends TmfEvent {
      *            The specified protocol.
      * @return The signification as a String.
      */
-    public String toString(TmfPcapProtocol protocol) {
-        PcapProtocol p = ProtocolConversion.unwrap(protocol);
+    public String toString(TmfProtocol protocol) {
+        Protocol p = ProtocolConversion.unwrap(protocol);
         Packet packet = fPacket.getPacket(p);
         if (packet == null) {
             return EMPTY_STRING;
