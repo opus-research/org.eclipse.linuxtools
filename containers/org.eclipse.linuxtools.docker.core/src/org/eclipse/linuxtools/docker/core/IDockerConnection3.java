@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2017 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,36 +10,19 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.io.OutputStream;
 
-public interface IDockerHostConfig {
+/**
+ * @since 3.0
+ */
+public interface IDockerConnection3 {
 
-	List<String> binds();
+	public IDockerContainerExit waitForContainer(String id)
+			throws DockerException, InterruptedException;
 
-	String containerIDFile();
-
-	List<IDockerConfParameter> lxcConf();
-
-	boolean privileged();
-
-	Map<String, List<IDockerPortBinding>> portBindings();
-
-	List<String> links();
-
-	boolean publishAllPorts();
-
-	List<String> dns();
-
-	List<String> dnsSearch();
-
-	List<String> volumesFrom();
-
-	/**
-	 * @since 3.0
-	 */
-	List<String> securityOpt();
-
-	String networkMode();
+	public void attachLog(final String id, final OutputStream out,
+			final OutputStream err)
+			throws DockerException, InterruptedException, IOException;
 
 }
