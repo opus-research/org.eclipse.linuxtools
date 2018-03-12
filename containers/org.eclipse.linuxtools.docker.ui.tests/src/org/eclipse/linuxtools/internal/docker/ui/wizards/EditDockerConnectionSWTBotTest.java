@@ -394,7 +394,7 @@ public class EditDockerConnectionSWTBotTest {
 	@Test
 	public void shouldRefreshDockerImagesViewWhenConnectionNameChanges() {
 		// given
-		configureTCPConnection("Test");
+		final IDockerConnection connection = configureTCPConnection("Test");
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
 		assertThat(connectionTreeItem).isNotNull();
 		// when
@@ -411,7 +411,7 @@ public class EditDockerConnectionSWTBotTest {
 	@Test
 	public void shouldRefreshDockerContainersViewWhenConnectionNameChanges() {
 		// given
-		configureTCPConnection("Test");
+		final IDockerConnection connection = configureTCPConnection("Test");
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
 		assertThat(connectionTreeItem).isNotNull();
 		// when
@@ -428,7 +428,7 @@ public class EditDockerConnectionSWTBotTest {
 	@Test
 	public void shouldRefreshDockerExplorerViewWhenNameChangedTwice() {
 		// given
-		configureTCPConnection("Test");
+		final IDockerConnection connection = configureTCPConnection("Test");
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
 		assertThat(connectionTreeItem).isNotNull();
 		// name change #1

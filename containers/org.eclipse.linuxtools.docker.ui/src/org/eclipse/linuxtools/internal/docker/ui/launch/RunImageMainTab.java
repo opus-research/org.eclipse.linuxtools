@@ -599,8 +599,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 						.getInstance().findConnection(connectionName);
 				if (connection == null || !connection.isOpen()) {
 					setErrorMessage(WizardMessages
-							.getFormattedString("ErrorInactiveConnection.msg", //$NON-NLS-1$
-									connectionName));
+							.getString("ErrorInactiveConnection.msg")); //$NON-NLS-1$
 					return false;
 				}
 			}
