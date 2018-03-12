@@ -18,7 +18,6 @@ import org.eclipse.linuxtools.docker.integration.tests.mock.MockDockerConnection
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockDockerTerminal;
 import org.eclipse.linuxtools.docker.reddeer.condition.ContainerIsDeployedCondition;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
-import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerTerminal;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
@@ -26,11 +25,11 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFact
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
-import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.eclipse.condition.ConsoleHasNoChange;
-import org.eclipse.reddeer.eclipse.ui.views.properties.PropertySheet;
+import org.jboss.reddeer.common.wait.WaitUntil;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.eclipse.condition.ConsoleHasNoChange;
+import org.jboss.reddeer.eclipse.ui.views.properties.PropertiesView;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,11 +57,10 @@ public class LinkContainersTest extends AbstractImageBotTest {
 	}
 
 	private ImageRunSelectionPage openImageRunSelectionPage(String containerName, boolean publishAllExposedPorts) {
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
-		firstPage.setContainerName(containerName);
-		firstPage.setPublishAllExposedPorts(publishAllExposedPorts);
-		return firstPage;
+		ImageRunSelectionPage page = new ImageRunSelectionPage();
+		page.setContainerName(containerName);
+		page.setPublishAllExposedPorts(publishAllExposedPorts);
+		return page;
 	}
 
 	@Test
@@ -113,7 +111,7 @@ public class LinkContainersTest extends AbstractImageBotTest {
 	}
 
 	private String getHttpServerAddress(String containerName) {
-		PropertySheet propertiesView = new PropertySheet();
+		PropertiesView propertiesView = new PropertiesView();
 		propertiesView.open();
 		getConnection().getContainer(containerName).select();
 		propertiesView.selectTab("Inspect");

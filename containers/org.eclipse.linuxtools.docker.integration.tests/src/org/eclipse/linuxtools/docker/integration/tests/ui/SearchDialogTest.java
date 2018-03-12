@@ -19,18 +19,17 @@ import org.eclipse.linuxtools.docker.integration.tests.image.AbstractImageBotTes
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockDockerConnectionManager;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageSearchPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageTagSelectionPage;
-import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.SearchDockerImageWizard;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageSearchResultFactory;
-import org.eclipse.reddeer.common.wait.AbstractWait;
-import org.eclipse.reddeer.common.wait.TimePeriod;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
-import org.eclipse.reddeer.swt.impl.button.CancelButton;
-import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.jboss.reddeer.common.wait.AbstractWait;
+import org.jboss.reddeer.common.wait.TimePeriod;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.core.condition.ProgressInformationShellIsActive;
+import org.jboss.reddeer.swt.impl.button.CancelButton;
+import org.jboss.reddeer.swt.impl.button.PushButton;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,17 +61,16 @@ public class SearchDialogTest extends AbstractImageBotTest {
 	@Test
 	public void testSearchDialog() {
 		getConnection().openImageSearchDialog(IMAGE_NAME, null, REGISTRY_URL);
-		SearchDockerImageWizard wizard = new SearchDockerImageWizard();
-		ImageSearchPage pageOne = new ImageSearchPage(wizard);
+		ImageSearchPage pageOne = new ImageSearchPage();
 		pageOne.searchImage();
 		assertFalse("Search result is empty!", pageOne.getSearchResults().isEmpty());
 		assertTrue("Search result do not contains image:" + EXPECTED_IMAGE_NAME + "!",
 				pageOne.searchResultsContains(EXPECTED_IMAGE_NAME));
 		pageOne.next();
 
-		new WaitWhile(new ShellIsAvailable("Progress Information"), TimePeriod.DEFAULT);
+		new WaitWhile(new ProgressInformationShellIsActive(), TimePeriod.NORMAL);
 		AbstractWait.sleep(TimePeriod.getCustom(5));
-		ImageTagSelectionPage pageTwo = new ImageTagSelectionPage(wizard);
+		ImageTagSelectionPage pageTwo = new ImageTagSelectionPage();
 		assertFalse("Search tags are empty!", pageTwo.getTags().isEmpty());
 		new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
 		if (!pageTwo.tagsContains(IMAGE_TAG)) {
