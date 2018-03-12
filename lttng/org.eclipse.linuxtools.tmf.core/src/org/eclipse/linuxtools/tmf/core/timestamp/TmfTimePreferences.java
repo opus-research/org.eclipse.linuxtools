@@ -14,7 +14,6 @@
 package org.eclipse.linuxtools.tmf.core.timestamp;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -117,16 +116,6 @@ public class TmfTimePreferences {
      */
     public TimeZone getTimeZone() {
         return TimeZone.getTimeZone(Platform.getPreferencesService().getString(Activator.PLUGIN_ID, ITmfTimePreferencesConstants.TIME_ZONE, TimeZone.getDefault().getID(), null));
-    }
-
-    /**
-     * Get the locale
-     *
-     * @return the locale
-     * @since 3.2
-     */
-    public Locale getLocale() {
-        return Locale.forLanguageTag(Platform.getPreferencesService().getString(Activator.PLUGIN_ID, ITmfTimePreferencesConstants.LOCALE, Locale.getDefault().toLanguageTag(), null));
     }
 
     /**
