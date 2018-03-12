@@ -61,8 +61,7 @@ public class SystemtapProcessFactory {
 
     /**
      * Runs stap with the given arguments on the given host using the given
-     * credentials and waits for the process to finish executing, or until
-     * the executing thread is interrupted.
+     * credentials and waits for the process to finish executing.
      *
      * @param user the user name to use on the remote machine.
      * @param host the host where the systemtap process will be run.
@@ -78,8 +77,7 @@ public class SystemtapProcessFactory {
 
     /**
      * Runs stap with the given arguments on the given host using the given
-     * credentials and waits for the process to finish executing, or until
-     * the executing thread is interrupted.
+     * credentials and waits for the process to finish executing.
      *
      * @param user the user name to use on the remote machine.
      * @param host the host where the systemtap process will be run.
