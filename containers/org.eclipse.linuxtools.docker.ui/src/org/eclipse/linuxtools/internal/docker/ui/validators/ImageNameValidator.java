@@ -1,4 +1,4 @@
-package org.eclipse.linuxtools.internal.docker.ui.wizards;
+package org.eclipse.linuxtools.internal.docker.ui.validators;
 
 import java.util.regex.Matcher;
 
@@ -7,6 +7,7 @@ import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.docker.core.DockerImage;
+import org.eclipse.linuxtools.internal.docker.ui.wizards.WizardMessages;
 
 /**
  * Validates that the image name matches
