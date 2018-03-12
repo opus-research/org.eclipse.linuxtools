@@ -424,7 +424,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
         }
 
         /**
-         * @since 3.2
+         * @since 3.1
          */
         @Override
         public Image getImage(Object element) {
@@ -432,7 +432,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
         }
 
         /**
-         * @since 3.2
+         * @since 3.1
          */
         @Override
         public String getText(Object element) {
@@ -1047,7 +1047,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
     protected void rebuild() {
         setStartTime(Long.MAX_VALUE);
         setEndTime(Long.MIN_VALUE);
-        refresh();
         synchronized (fBuildThreadMap) {
             for (ITmfTrace trace : getTracesToBuild(fTrace)) {
                 BuildThread buildThread = new BuildThread(trace, fTrace, getName());

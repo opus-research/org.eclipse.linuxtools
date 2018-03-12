@@ -657,7 +657,6 @@ public final class TmfTraceType {
             if (traceTypeHelper != null) {
                 return traceTypeHelper.isDirectoryTraceType();
             }
-            return false;
         }
         throw new IllegalArgumentException("Invalid trace type string: " + traceType); //$NON-NLS-1$
     }
@@ -670,7 +669,7 @@ public final class TmfTraceType {
      * @return the trace type id or null if it is not set
      * @throws CoreException
      *             if the trace type id cannot be accessed
-     * @since 3.2
+     * @since 3.1
      */
     public static String getTraceTypeId(IResource resource) throws CoreException {
         String traceTypeId = resource.getPersistentProperties().get(TmfCommonConstants.TRACETYPE);

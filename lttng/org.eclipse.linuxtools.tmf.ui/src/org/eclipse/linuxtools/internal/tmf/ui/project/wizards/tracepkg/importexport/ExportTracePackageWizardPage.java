@@ -314,6 +314,7 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
             for (IResource res : supplementaryResources) {
                 suppFilesChildren.add(new TracePackageSupplFileElement(res, suppFilesElement));
             }
+            suppFilesElement.setChildren(suppFilesChildren.toArray(new TracePackageElement[] {}));
 
             // Bookmarks
             IFile bookmarksFile = tmfTraceElement.getBookmarksFile();
@@ -329,6 +330,8 @@ public class ExportTracePackageWizardPage extends AbstractTracePackageWizardPage
                     Activator.getDefault().logError("Error finding bookmarks", e); //$NON-NLS-1$
                 }
             }
+
+            traceElement.setChildren(children.toArray(new TracePackageElement[] {}));
 
             traceElements.add(traceElement);
 

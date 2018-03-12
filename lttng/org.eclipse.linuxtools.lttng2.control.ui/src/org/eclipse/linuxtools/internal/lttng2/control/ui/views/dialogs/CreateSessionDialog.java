@@ -10,13 +10,11 @@
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
  *   Marc-Andre Laperle - Support for creating a live session
- *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  **********************************************************************/
 
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views.dialogs;
 
-import org.eclipse.core.filesystem.IFileInfo;
-import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.ISessionInfo;
@@ -27,7 +25,9 @@ import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.Target
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TraceSessionGroup;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.IRemoteSystemProxy;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.service.LTTngControlServiceConstants;
-import org.eclipse.remote.core.IRemoteFileManager;
+import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
+import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSystem;
+import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.FocusEvent;
@@ -832,16 +832,22 @@ public class CreateSessionDialog extends TitleAreaDialog implements ICreateSessi
             if (!fIsAdvancedEnabled && !fIsLive) {
                 TargetNodeComponent node = (TargetNodeComponent)fParent.getParent();
                 IRemoteSystemProxy proxy = node.getRemoteSystemProxy();
-                IRemoteFileManager fsss = proxy.getFileServiceSubSystem();
+                IFileServiceSubSystem fsss = proxy.getFileServiceSubSystem();
                 if (fsss != null) {
-                    IFileStore remoteFolder = fsss.getResource(fSessionPath);
-                    if (remoteFolder == null) {
-                        setErrorMessage(Messages.TraceControl_InvalidSessionPathError + " (" + fSessionPath + ") \n"); //$NON-NLS-1$ //$NON-NLS-2$
-                        return;
-                    }
-                    IFileInfo fileInfo = remoteFolder.fetchInfo();
-                    if (fileInfo.exists()) {
-                        setErrorMessage(Messages.TraceControl_SessionPathAlreadyExistsError + " (" + fSessionPath + ") \n"); //$NON-NLS-1$ //$NON-NLS-2$
+                    try {
+                        IRemoteFile remoteFolder = fsss.getRemoteFileObject(fSessionPath, new NullProgressMonitor());
+
+                        if (remoteFolder == null) {
+                            setErrorMessage(Messages.TraceControl_InvalidSessionPathError + " (" + fSessionPath + ") \n"); //$NON-NLS-1$ //$NON-NLS-2$
+                            return;
+                        }
+
+                        if (remoteFolder.exists()) {
+                            setErrorMessage(Messages.TraceControl_SessionPathAlreadyExistsError + " (" + fSessionPath + ") \n"); //$NON-NLS-1$ //$NON-NLS-2$
+                            return;
+                        }
+                    } catch (SystemMessageException e) {
+                        setErrorMessage(Messages.TraceControl_FileSubSystemError + "\n" + e); //$NON-NLS-1$
                         return;
                     }
                 }

@@ -119,7 +119,7 @@ The Eclipse LTTng controls the LTTng tracer through an ''ssh'' connection, if th
 
 Therefore, the target system (where the tracer runs) needs to run an ''ssh'' server as well as ''sftp'' server (for file transfer) to which you have permission to connect.
 
-On the host side (where Eclipse is running), you also need to have Eclipse Remote Services installed to handle the SSH connection and transport. The Remote Services can be installed the standard way (''Help'' > ''Install New Software...'' > ''General Purpose Tools'' > ''Remote Services'').
+On the host side (where Eclipse is running), you also need to have Eclipse RSE (Remote System Explorer) installed to handle the SSH connection and transport. The RSE can be installed the standard way (''Help'' > ''Install New Software...'' > ''General Purpose Tools'' > ''Remote System Explorer End-User Runtime'').
 
 == Installation Verification ==
 
@@ -170,6 +170,7 @@ In addition to these views, the '''Tracing and Monitoring Framework (TMF)''' fea
 * [[#Colors_View | Colors View]]
 * [[#Filters_View | Filters View]]
 * [[#Time_Chart_View  | Time Chart View]]
+* [[#Environment_Variables_View  | Environment Variables View]]
 * [[#State_System_Explorer_View | State System Explorer View]]
 * [[#Call_Stack_View | Call Stack View]]
 
@@ -550,19 +551,6 @@ It is possible to export the content of the trace to a text file based on the co
 
 ''Note'':  The columns in the text file are separated by tabs.
 
-=== Collapsing of Repetitive Events ===
-The implementation for collapsing of repetitive events is trace type specific and is only available for certain trace types. For example, a trace type could allow collapsing of consecutive events that have the same event content but not the same timestamp. If a trace type supports this feature then it is possible to select the '''Collapse Events''' menu item after pressing the right mouse button in the table.
-
-When the collapsing of events is executing, the table will clear all events and fill itself with all relevant events. If the collapse condition is met, the first column of the table will show the number of times this event was repeated consecutively.
-
-[[Image:images/TablePreCollapse.png]]
-
-A status row will be displayed before and after the events, dynamically showing how many non-collapsed events were found and how many events were processed so far. Once the collapsing is completed, the status row icon in the left margin will change from a 'stop' to a 'filter' icon.
-
-[[Image:images/TablePostCollapse.png]]
-
-To clear collapsing, press the right mouse button in the table and select menu item '''Clear Filters''' in the context sensitive menu. ''Note'' that collapsing is also removed when another filter is applied to the table.
-
 == Histogram View ==
 
 The Histogram View displays the trace events distribution with respect to time. When streaming a trace, this view is dynamically updated as the events are received.
@@ -680,6 +668,11 @@ When a bookmark is applied in the events table, the ticks corresponding to the b
 When a filter is applied in the events table, the non-matching ticks are removed from the Time Chart view.
 
 The Time Chart only supports traces that are opened in an editor. The use of an editor is specified in the plug-in extension for that trace type, or is enabled by default for custom traces.
+
+== Environment Variables View ==
+A new feature of CTF traces is their ability to store user defined data that is not to be placed in an event. It is generally data that is per-trace specific, such as the tracer version and the trace domain. It will be populated when a trace is loaded if the trace has environment variables. <br>
+[[Image:images/LTTng2EnvironmentsView.png]]<br>
+The above picture shows a trace loaded that was collected with the '''lttng-modules''' version '''2'''.'''0'''.'''0''' tracer. It is a '''kernel''' trace of the '''3.2.0-18-generic''' '''linux''' kernel.
 
 == State System Explorer View ==
 
@@ -882,7 +875,7 @@ The trace will be opened in an editor showing the events table, and an entry wil
 
 = LTTng Tracer Control =
 
-The LTTng Tracer Control in Eclipse for the LTTng Tracer toolchain version v2.0 (or later) is done using SSH and requires an SSH server to be running on the remote host. For the SSH connection the SSH implementation of Remote Services is used. The functions to control the LTTng tracer (e.g. start and stop), either locally or remotely, are available from a dedicated Control View.
+The LTTng Tracer Control in Eclipse for the LTTng Tracer toolchain version v2.0 (or later) is done using SSH and requires an SSH server to be running on the remote host. For the SSH connection the SSH implementation of RSE is used. For that a new System Type was defined using the corresponding RSE extension. The functions to control the LTTng tracer (e.g. start and stop), either locally or remotely, are available from a dedicated Control View.
 
 In the following sections the LTTng 2.0 tracer control integration in Eclipse is described. Please refer to the LTTng 2.0 tracer control command line manual for more details and descriptions about all commands and their command line parameters [[#References | References]].
 
@@ -897,24 +890,19 @@ To connect to a remote host, select the '''New Connection''' button in the Contr
 
 [[Image:images/LTTngControlViewConnect.png]]
 
-A new dialog is opened for selecting a remote connection. You can also edit or define a remote connection from here.
+A new display will show for entering the remote host information. A drop down menu will filled with all existing host information which were used before. To enter the host information either select one of the hosts in the drop down menu or enter the host information manually.
 
 [[Image:images/LTTng2NewConnection.png]]
 
-To define a new remote host using the default SSH service, select '''Buit-in SSH''' and then select '''Create...'''. 
-This will start the standard '''New Connection''' wizard provided by the Remote Services plugin.
-Similar, to edit the definition of a remote connection, select '''Edit...''' and use the '''Edit Connection''' 
-wizard provided by the SSH service.
-In case you have installed an additional adapter for the Remote Services, you can choose to define a remote connection
-based on this adapter. 
-
-[[Image:images/LTTng2NewRemoteConnection.png]]
-
-To use an existing connection definition, select the relevant entry in the tree and then select '''Ok'''.
+To use an existing connection definition, select the relevant entry in the drop-down menu and then select '''Ok'''.
 
 [[Image:images/LTTng2SelectConnection.png]]
 
-A new display will show for providing the user name and password. This display only opens if no password had been saved before. Enter user name and password in the '''Password Required''' dialog box and select '''Ok'''.
+To enter the host information manually select first the button '''Edit connection information'''. Then the text fields '''Connection Name''', '''Host Name''' and '''Port Number''' will be enabled. The '''Host Name''' holds the IP address or DNS name of the remote system. The '''Connection Name''' is the alias name to be displayed in the Control View. The '''Port Number''' is the port number to be used for the IP connection. This parameter is optional and if it is omitted the default port will be used. Enter the relevant information and then select '''Ok'''.
+
+[[Image:images/LTTng2EditConnection.png]]
+
+A new display will show for providing the user name and password. This display only opens if no password had been saved before. Enter user name and password in the '''Enter Password''' dialog box and select '''Ok'''.
 
 [[Image:images/LTTng2EnterPassword.png]]
 
@@ -1859,66 +1847,6 @@ When opening the experiment now, all the views will be synchronized. The followi
 Information on the quality of the synchronization, the timestamp transformation formula and some synchronization statistics can be visualized in the '''Synchronization''' view. To open the '''Synchronization''' view, use the Eclipse Show View dialog ('''Window''' -> '''Show View''' -> '''Other...'''). Then select '''Synchronization''' under '''Tracing'''.
 
 [[Image:images/Sync_view.png|Example of Synchronization view]]
-
-= Time offsetting =
-
-The time offsetting feature allows the user to apply a fixed offset to all event timestamps in a trace. It can be used, for example, to adjust the start time of a trace, or to manually align the timestamp of events from different traces.
-
-== Basic mode ==
-
-If the time offset to apply is known, it can be applied directly to the trace. In the '''Project Explorer''' view, select a trace, right-click and select '''Apply Time Offset...'''. It is also possible to select multiple traces, experiments or trace folders. All contained traces will be selected.
-
-[[Image:images/TimeOffsetApply.png|Apply Time Offset menu]]
-
-The dialog opens, in '''Basic''' mode.
-
-[[Image:images/TimeOffsetBasicDialog.png|Apply Time Offset dialog - Basic mode]]
-
-Enter a time offset to apply in the '''Offset in seconds''' column, with or without decimals. Then press the '''OK''' button.
-
-[[Image:images/TimeOffsetBasicDialogFilled.png|Apply Time Offset dialog - Basic mode - filled]]
-
-The time offset is applied to the trace and can be seen in the '''time offset''' property in the '''Properties''' view when the trace is selected.
-
-The applied time offset is added to any time offset or time transformation formula currently set for the trace, and the resulting offset replaces any previous setting.
-
-== Advanced mode ==
-
-The time offset can also be computed using selected trace events or manually entered timestamps. After selecting one or more traces in the '''Project Explorer''' view, right-click and select '''Apply Time Offset...'''. In the opened dialog, select the '''Advanced''' button.
-
-[[Image:images/TimeOffsetAdvancedDialog.png|Apply Time Offset dialog - Advanced mode]]
-
-Double-clicking a trace name will open the trace in an editor. The '''Reference Time''' will be set to the trace start time. Selecting any event in the trace editor will set the '''Reference Time''' for that trace to the event's timestamp.
-
-Selecting an event or a time in any view or editor that supports time synchronization will set the '''Target Time''' for every trace in the dialog.
-
-Pressing the '''<<''' button will compute the time offset that should be applied in order to make the reference time align to the target time, provided that both fields are set.
-
-The '''Reference Time''', '''Target Time''' and '''Offset in seconds''' fields can also be edited and entered manually.
-
-To synchronize two events from different traces, first select an event in the trace to which the time offset should be applied, which will set its '''Reference Time''' field.
-
-[[Image:images/TimeOffsetAdvancedSetReference.png|Apply Time Offset dialog - Set Reference Time]]
-
-Then select a corresponding event in the second trace, which will set the '''Target Time''' field for the first trace.
-
-[[Image:images/TimeOffsetAdvancedSetTarget.png|Apply Time Offset dialog - Set Target Time]]
-
-Finally, press the '''<<''' button, which will automatically compute the time offset that should be applied in order to make the first event's timestamp align to the second event's timestamp.
-
-[[Image:images/TimeOffsetAdvancedComputeOffset.png|Apply Time Offset dialog - Compute Offset]]
-
-Then press the '''OK''' button. The time offset is applied to the trace and can be seen in the '''time offset''' property in the '''Properties''' view when the trace is selected.
-
-The applied time offset is added to any time offset or time transformation formula currently set for the trace, and the resulting offset replaces any previous setting.
-
-[[Image:images/TimeOffsetProperty.png|Time Offset - Properties view]]
-
-== Clearing time offset ==
-
-The time offset previously applied can be cleared to reset the trace to its original timestamps. In the '''Project Explorer''' view, select a trace, right-click and select '''Clear Time Offset'''. It is also possible to select multiple traces, experiments or trace folders. All contained traces will be affected.
-
-The time offset or any time transformation formula will be deleted.
 
 = Timestamp formatting =
 

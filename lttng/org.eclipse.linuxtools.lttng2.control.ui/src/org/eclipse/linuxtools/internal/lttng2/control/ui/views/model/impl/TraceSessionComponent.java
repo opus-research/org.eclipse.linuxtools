@@ -281,19 +281,16 @@ public class TraceSessionComponent extends TraceControlComponent {
     public void getConfigurationFromNode(IProgressMonitor monitor)
             throws ExecutionException {
         removeAllChildren();
-        ISessionInfo newInfo = getControlService().getSession(getName(), monitor);
-        if (newInfo != null) {
-            ISessionInfo oldSessionInfo = fSessionInfo;
-            fSessionInfo = newInfo;
-            copyLiveInfo(oldSessionInfo);
+        ISessionInfo oldSessionInfo = fSessionInfo;
+        fSessionInfo = getControlService().getSession(getName(), monitor);
+        copyLiveInfo(oldSessionInfo);
 
-            IDomainInfo[] domains = fSessionInfo.getDomains();
-            for (int i = 0; i < domains.length; i++) {
-                TraceDomainComponent domainComponent = new TraceDomainComponent(
-                        domains[i].getName(), this);
-                addChild(domainComponent);
-                domainComponent.setDomainInfo(domains[i]);
-            }
+        IDomainInfo[] domains = fSessionInfo.getDomains();
+        for (int i = 0; i < domains.length; i++) {
+            TraceDomainComponent domainComponent = new TraceDomainComponent(
+                    domains[i].getName(), this);
+            addChild(domainComponent);
+            domainComponent.setDomainInfo(domains[i]);
         }
     }
 

@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.stubs.shells;
 
@@ -29,7 +28,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.CommandResult;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.ICommandResult;
-import org.eclipse.linuxtools.internal.lttng2.control.ui.views.service.LTTngControlService;
 
 @SuppressWarnings("javadoc")
 public class LTTngToolsFileShell extends TestCommandShell {
@@ -48,7 +46,7 @@ public class LTTngToolsFileShell extends TestCommandShell {
     private final static String ERROR_OUTPUT_END_KEY = "</COMMAND_ERROR_OUTPUT>";
     private final static String COMMENT_KEY = "#.*";
 
-    private final static Pattern LTTNG_LIST_SESSION_PATTERN = Pattern.compile("lttng\\s+list\\s+(.+)");
+    private final static Pattern LTTNG_LIST_SESSION_PATTERN =  Pattern.compile("lttng\\s+list\\s+(.+)");
     private final static String LTTNG_LIST_PROVIDER_PATTERN = "lttng\\s+list\\s+(-u|-k)";
 
     // ------------------------------------------------------------------------
@@ -62,7 +60,6 @@ public class LTTngToolsFileShell extends TestCommandShell {
 
     /**
      * Parse a scenario file with the format:
-     *
      * <pre>
      * &lt;SCENARIO&gt;
      * ScenarioName
@@ -92,8 +89,7 @@ public class LTTngToolsFileShell extends TestCommandShell {
      *
      * Note: 1) There can be many scenarios per file
      *       2) There can be many (Command-CommandResult-CommandOutput) triples per scenario
-     * 3) Lines starting with # will be ignored (comments)
-     *
+     *       3) Lines starting with # will be ignored (comments)
      * <pre>
      * @param scenariofile - path to scenario file
      * @throws Exception
@@ -239,13 +235,12 @@ public class LTTngToolsFileShell extends TestCommandShell {
     }
 
     @Override
-    public synchronized ICommandResult executeCommand(List<String> command, IProgressMonitor monitor) throws ExecutionException {
+   public synchronized ICommandResult executeCommand(String command, IProgressMonitor monitor, boolean checkReturnValue) throws ExecutionException {
         Map<String, ICommandResult> commands = fScenarioMap.get(fScenario);
-        String commandLine = LTTngControlService.toCommandString(command);
-        String fullCommand = commandLine;
+        String fullCommand = command;
 
-        Matcher matcher = LTTNG_LIST_SESSION_PATTERN.matcher(commandLine);
-        if (matcher.matches() && !commandLine.matches(LTTNG_LIST_PROVIDER_PATTERN)) {
+        Matcher matcher = LTTNG_LIST_SESSION_PATTERN.matcher(command);
+        if (matcher.matches() && !command.matches(LTTNG_LIST_PROVIDER_PATTERN)) {
             String sessionName = matcher.group(1).trim();
             Integer i = fSessionNameMap.get(sessionName);
             if (i != null) {
@@ -269,7 +264,7 @@ public class LTTngToolsFileShell extends TestCommandShell {
         result.setErrorOutput(output);
         result.setResult(1);
         return result;
-    }
+   }
 
     // ------------------------------------------------------------------------
     // Helper methods

@@ -64,7 +64,7 @@ public class Utils {
 
         /**
          * Timestamp displayed as cycles
-         * @since 3.2
+         * @since 3.1
          */
         CYCLES
     }
@@ -314,10 +314,6 @@ public class Utils {
      * @since 2.0
      */
     public static int drawText(GC gc, String text, int x, int y, int width, boolean isCentered, boolean isTransparent) {
-        if (width < 1) {
-            return 0;
-        }
-
         int len = text.length();
         int textWidth = 0;
         boolean isReallyCentered = isCentered;
@@ -422,7 +418,7 @@ public class Utils {
      *            The time format to use
      * @param resolution
      *            The resolution to use
-     * @since 3.2
+     * @since 3.1
      * @return the formatted time delta
      */
     public static String formatDelta(long delta, TimeFormat format, Resolution resolution) {
@@ -441,7 +437,7 @@ public class Utils {
      * @param resolution
      *            The resolution to use
      * @return the formatted time delta
-     * @since 3.2
+     * @since 3.1
      */
     public static String formatDeltaAbs(long delta, Resolution resolution) {
         StringBuffer str = new StringBuffer();
@@ -768,7 +764,7 @@ public class Utils {
      *            y-coordinate of point 2
      *
      * @return the square of the distance in pixels^2
-     * @since 3.2
+     * @since 3.1
      */
     public static double distance2(int x1, int y1, int x2, int y2) {
         int dx = x2 - x1;
@@ -797,7 +793,7 @@ public class Utils {
      *            y-coordinate of segment point 2
      *
      * @return the distance in pixels
-     * @since 3.2
+     * @since 3.1
      */
     public static double distance(int px, int py, int x1, int y1, int x2, int y2) {
         double length2 = distance2(x1, y1, x2, y2);

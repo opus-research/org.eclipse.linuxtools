@@ -116,9 +116,9 @@ public class GprofNoGmonDialog {
    /**
     * Browse file sytem to find gmon.out. Return null if bad input.
     */
-   private static String browseFileSystemHandler(Shell shell, IProject project) {
+   private String browseFileSystemHandler(Shell shell, IProject project) {
 
-        FileDialog dialog = new FileDialog((shell != null) ? shell : new Shell(), SWT.OPEN);
+        FileDialog dialog = new FileDialog(shell, SWT.OPEN);
         dialog.setText(GprofLaunchMessages.GprofNoGmonDialog_OpenGmon);
 
         // Open Project path.
@@ -135,7 +135,7 @@ public class GprofNoGmonDialog {
     * @param parent
     * @return gmon.out location or null if bad.
     */
-   private static String browseWorkspaceHandler(Shell shell, IProject project) {
+   private String browseWorkspaceHandler(Shell shell, IProject project) {
 
        //New tree Dialogue.
        ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(shell,
