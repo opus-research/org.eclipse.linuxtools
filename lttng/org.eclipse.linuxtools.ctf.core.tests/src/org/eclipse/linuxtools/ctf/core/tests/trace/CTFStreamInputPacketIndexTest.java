@@ -43,8 +43,8 @@ public class CTFStreamInputPacketIndexTest {
     @Before
     public void setUp() throws CTFReaderException {
         fixture = new StreamInputPacketIndex();
-        fixture.addEntry(new StreamInputPacketIndexEntry(1L, 0L,0L));
-        entry = new StreamInputPacketIndexEntry(1L,0L,0L);
+        fixture.addEntry(new StreamInputPacketIndexEntry(1L));
+        entry = new StreamInputPacketIndexEntry(1L);
     }
 
     /**
