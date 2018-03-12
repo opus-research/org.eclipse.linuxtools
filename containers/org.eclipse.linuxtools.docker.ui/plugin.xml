@@ -21,12 +21,6 @@
             id="org.eclipse.linuxtools.docker.ui.preferences.DockerMachinePreferencePage"
             name="%DockerMachinePreferencePage.name">
       </page>
-      <page
-            category="org.eclipse.linuxtools.docker.ui.preferences.DockerPreferencePage"
-            class="org.eclipse.linuxtools.internal.docker.ui.preferences.DockerRegistryAccountPreferencePage"
-            id="org.eclipse.linuxtools.docker.ui.preferences.DockerRegistryAccountPreferencePage"
-            name="%DockerRegistryAccountPreferencePage.name">
-      </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
