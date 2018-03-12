@@ -30,7 +30,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @see ITmfEventField
  * @see ITmfTrace
  */
-public class TmfEvent extends PlatformObject implements ITmfEvent {
+public class TmfEvent extends PlatformObject implements ITimeshiftedTmfEvent {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -57,16 +57,22 @@ public class TmfEvent extends PlatformObject implements ITmfEvent {
     }
 
     /**
-     * Standard constructor. The event rank will be set to TmfContext.UNKNOWN_RANK.
+     * Standard constructor. The event rank will be set to
+     * TmfContext.UNKNOWN_RANK.
      *
-     * @param trace the parent trace
-     * @param timestamp the event timestamp
-     * @param source the event source
-     * @param type the event type
-     * @param content the event content (payload)
-     * @param reference the event reference
+     * @param trace
+     *            the parent trace
+     * @param timestamp
+     *            the event timestamp
+     * @param source
+     *            the event source
+     * @param type
+     *            the event type
+     * @param content
+     *            the event content (payload)
+     * @param reference
+     *            the event reference
      * @since 2.0
-
      */
     public TmfEvent(final ITmfTrace trace, final ITmfTimestamp timestamp, final String source,
             final ITmfEventType type, final ITmfEventField content, final String reference)
@@ -77,13 +83,20 @@ public class TmfEvent extends PlatformObject implements ITmfEvent {
     /**
      * Full constructor
      *
-     * @param trace the parent trace
-     * @param rank the event rank (in the trace)
-     * @param timestamp the event timestamp
-     * @param source the event source
-     * @param type the event type
-     * @param content the event content (payload)
-     * @param reference the event reference
+     * @param trace
+     *            the parent trace
+     * @param rank
+     *            the event rank (in the trace)
+     * @param timestamp
+     *            the event timestamp
+     * @param source
+     *            the event source
+     * @param type
+     *            the event type
+     * @param content
+     *            the event content (payload)
+     * @param reference
+     *            the event reference
      * @since 2.0
      */
     public TmfEvent(final ITmfTrace trace, final long rank, final ITmfTimestamp timestamp, final String source,
@@ -101,7 +114,8 @@ public class TmfEvent extends PlatformObject implements ITmfEvent {
     /**
      * Copy constructor
      *
-     * @param event the original event
+     * @param event
+     *            the original event
      */
     public TmfEvent(final ITmfEvent event) {
         if (event == null) {
@@ -244,6 +258,14 @@ public class TmfEvent extends PlatformObject implements ITmfEvent {
                 + ", fSource=" + getSource() + ", fType=" + getType()
                 + ", fContent=" + getContent() + ", fReference=" + getReference()
                 + "]";
+    }
+
+    /**
+     * @since 3.1
+     */
+    @Override
+    public ITmfEvent copy(ITmfTimestamp newTimestamp) {
+        return new TmfEvent(fTrace, fRank, newTimestamp, fSource, fType, fContent, fReference);
     }
 
 }
