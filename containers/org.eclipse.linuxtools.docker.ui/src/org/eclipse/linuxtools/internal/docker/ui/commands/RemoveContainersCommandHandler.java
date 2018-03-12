@@ -18,7 +18,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
-import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.swt.widgets.Display;
 
@@ -41,12 +40,9 @@ public class RemoveContainersCommandHandler extends BaseContainersCommandHandler
 			final IDockerConnection connection) {
 		try {
 			connection.removeContainer(container.id());
-			RunConsole rc = RunConsole.findConsole(container.id());
-			if (rc != null)
-				RunConsole.removeConsole(rc);
 		} catch (DockerException | InterruptedException e) {
 			final String errorMessage = DVMessages.getFormattedString(
-					CONTAINER_REMOVE_ERROR_MSG, container.name());
+					CONTAINER_REMOVE_ERROR_MSG, container.id().substring(0, 8));
 			openError(errorMessage, e);
 		} finally {
 			// always get images as we sometimes get errors on intermediate

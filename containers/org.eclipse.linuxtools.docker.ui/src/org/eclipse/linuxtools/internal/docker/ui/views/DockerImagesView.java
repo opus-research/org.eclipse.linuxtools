@@ -18,8 +18,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -38,7 +36,7 @@ import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
-import org.eclipse.linuxtools.docker.ui.Activator;
+import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -74,7 +72,6 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	private static final String TOGGLE_STATE = "org.eclipse.ui.commands.toggleState"; //$NON-NLS-1$
 
 	private static final String SHOW_ALL_IMAGES_COMMAND_ID = "org.eclipse.linuxtools.docker.ui.commands.showAllImages"; //$NON-NLS-1$
-	private static final String SHOW_ALL_IMAGES_PREFERENCE = "showAllImages"; //$NON-NLS-1$
 
 	private final static String DaemonMissing = "ViewerDaemonMissing.msg"; //$NON-NLS-1$
 	private final static String ViewAllTitle = "ImagesViewTitle.all.msg"; //$NON-NLS-1$
@@ -143,24 +140,18 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		DockerConnectionManager.getInstance()
 				.addConnectionManagerListener(this);
 		hookContextMenu();
-		// Look at stored preference to determine if all images should be
-		// shown or just top-level images. By default, only show
-		// top-level images.
-		IEclipsePreferences preferences = InstanceScope.INSTANCE
-				.getNode(Activator.PLUGIN_ID);
-		boolean showAll = preferences.getBoolean(SHOW_ALL_IMAGES_PREFERENCE,
-				false);
-		showAllImages(showAll);
+		// by default, hide dangling and intermediate images
+		showAllImages(false);
 		final ICommandService service = getViewSite().getWorkbenchWindow()
 				.getService(ICommandService.class);
 		service.getCommand(SHOW_ALL_IMAGES_COMMAND_ID).getState(TOGGLE_STATE)
-				.setValue(showAll);
+				.setValue(false);
 		service.refreshElements(SHOW_ALL_IMAGES_COMMAND_ID, null);
 
 	}
 	
 	private void createTableViewer(final Composite container) {
-		search = new Text(container, SWT.SEARCH | SWT.ICON_SEARCH);
+		search = new Text(container, SWT.SEARCH);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, false).applyTo(search);
 		search.addModifyListener(onSearch());
 		Composite tableArea = new Composite(container, SWT.NONE);
@@ -364,7 +355,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	
 	@Override
 	public void listChanged(final IDockerConnection connection,
-			final List<IDockerImage> images) {
+			final List<IDockerImage> containers) {
 		if (connection.getName().equals(connection.getName())) {
 			Display.getDefault().asyncExec(new Runnable() {
 				@Override
@@ -372,12 +363,9 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 					// remember the current selection before the viewer is
 					// refreshed
 					final ISelection currentSelection = DockerImagesView.this.viewer.getSelection();
-					DockerImagesView.this.viewer.refresh();
+					CommandUtils.refresh(DockerImagesView.this.getViewer());
 					// restore the selection
-					if (currentSelection != null) {
-						DockerImagesView.this.viewer
-								.setSelection(currentSelection);
-					}
+					DockerImagesView.this.viewer.setSelection(currentSelection);
 					refreshViewTitle();
 				}
 			});
@@ -396,10 +384,13 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 					.asList(this.viewer.getFilters());
 			if (filters.contains(hideDanglingImagesFilter)
 					|| filters.contains(hideIntermediateImagesFilter)) {
-				this.form.setText(DVMessages.getFormattedString(
-						ViewFilteredTitle, connection.getName(),
-						Integer.toString(viewer.getTable().getItemCount()),
-						Integer.toString(connection.getImages().size())));
+				this.form.setText(
+						DVMessages.getFormattedString(ViewFilteredTitle,
+								new String[] { connection.getName(),
+										Integer.toString(viewer.getTable()
+												.getItemCount()),
+								Integer.toString(
+										connection.getImages().size()), }));
 			} else {
 				this.form.setText(DVMessages.getFormattedString(ViewAllTitle,
 						new String[] { connection.getName(), Integer
@@ -471,28 +462,22 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 			}
 			this.viewer.setFilters(filters.toArray(new ViewerFilter[0]));
 		}
-		// Save enablement across sessions using a preference variable.
-		IEclipsePreferences preferences = InstanceScope.INSTANCE
-				.getNode(Activator.PLUGIN_ID);
-		preferences.putBoolean(SHOW_ALL_IMAGES_PREFERENCE, enabled);
 		refreshViewTitle();
 	}
 
 	@Override
 	public void changeEvent(int type) {
-		String currUri = null;
+		String currName = null;
 		int currIndex = 0;
 		IDockerConnection[] connections = DockerConnectionManager.getInstance()
 				.getConnections();
 		if (connection != null) {
-			currUri = connection.getUri();
+			currName = connection.getName();
 		}
 		int index = 0;
 		for (int i = 0; i < connections.length; ++i) {
-			if (connections[i].getUri() != null
-					&& connections[i].getUri().equals(currUri)) {
+			if (connections[i].getName().equals(currName))
 				index = i;
-			}
 		}
 		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
 			index = currIndex; // no change in connection displayed

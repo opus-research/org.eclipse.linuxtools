@@ -140,9 +140,20 @@
               </parameter>
               <visibleWhen
                     checkEnabled="false">
-                 <reference
-                       definitionId="org.eclipse.linuxtools.rpm.core.rpmselection">
-                 </reference>
+                 <or>
+                    <with
+                          variable="activeMenuSelection">
+                       <reference
+                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
+                       </reference>
+                    </with>
+                    <with
+                          variable="activeMenuEditorInput">
+                       <reference
+                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
+                       </reference>
+                    </with>
+                 </or>
               </visibleWhen>
            </command>
            <command
@@ -157,9 +168,20 @@
               </parameter>
               <visibleWhen
                     checkEnabled="false">
-                 <reference
-                       definitionId="org.eclipse.linuxtools.rpm.core.rpmselection">
-                 </reference>
+                 <or>
+                    <with
+                          variable="activeMenuSelection">
+                       <reference
+                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
+                       </reference>
+                    </with>
+                    <with
+                          variable="activeMenuEditorInput">
+                       <reference
+                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
+                       </reference>
+                    </with>
+                 </or>
               </visibleWhen>
            </command>
            <command
@@ -170,9 +192,20 @@
                  tooltip="%command.name.2">
               <visibleWhen
                     checkEnabled="false">
-                 <reference
-                       definitionId="org.eclipse.linuxtools.rpm.core.rpmselection">
-                 </reference>
+                 <or>
+                    <with
+                          variable="activeMenuSelection">
+                       <reference
+                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
+                       </reference>
+                    </with>
+                    <with
+                          variable="activeMenuEditorInput">
+                       <reference
+                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
+                       </reference>
+                    </with>
+                 </or>
               </visibleWhen>
               <parameter
                     name="buildType"
@@ -305,11 +338,4 @@
         </enablement>
      </consolePageParticipant>
   </extension>
-  <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.eclipse.linuxtools.internal.rpm.ui.MainPage"
-            id="org.eclipse.linuxtools.rpm.ui.mainpage"
-            name="%category.name.0"/>
-      </extension>
 </plugin>

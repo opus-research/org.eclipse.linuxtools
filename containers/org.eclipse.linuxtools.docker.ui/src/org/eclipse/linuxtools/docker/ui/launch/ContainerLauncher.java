@@ -230,7 +230,7 @@ public class ContainerLauncher {
 				// create the container
 				try {
 					String containerId = ((DockerConnection) connection)
-							.createContainer(config, hostConfig);
+							.createContainer(config);
 					OutputStream stream = null;
 					RunConsole oldConsole = getConsole();
 					final RunConsole rc = RunConsole.findConsole(containerId,
@@ -263,7 +263,7 @@ public class ContainerLauncher {
 					// and console id
 					String loggingId = containerId + "." + consoleId;
 					((DockerConnection) connection).startContainer(containerId,
-							loggingId, stream);
+							loggingId, hostConfig, stream);
 					if (rc != null)
 						rc.showConsole();
 					if (containerListener != null) {
@@ -304,9 +304,7 @@ public class ContainerLauncher {
 						// Look for any Display Log console that the user may
 						// have opened which would be
 						// separate and make sure it is removed as well
-						RunConsole rc2 = RunConsole
-								.findConsole(((DockerConnection) connection)
-										.getContainer(containerId));
+						RunConsole rc2 = RunConsole.findConsole(containerId);
 						if (rc2 != null)
 							RunConsole.removeConsole(rc2);
 						((DockerConnection) connection)

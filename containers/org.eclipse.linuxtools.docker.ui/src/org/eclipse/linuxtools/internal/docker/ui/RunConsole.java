@@ -19,7 +19,6 @@ import java.nio.channels.WritableByteChannel;
 
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.swt.custom.StyledText;
@@ -47,7 +46,6 @@ public class RunConsole extends IOConsole {
 
 	private String containerId;
 	private String id;
-
 	private OutputStream outputStream;
 	private boolean attached = false;
 	private final WritableByteChannel[] ptyOutRef = new WritableByteChannel[1];
@@ -57,31 +55,12 @@ public class RunConsole extends IOConsole {
 	 * such a console does not yet exist, it will be created.
 	 *
 	 * @param containerId
-	 *            The container id this console will be for. Must not be
-	 *            <code>null</code>.
-	 * @return A console instance or <code>null</code> if the given containerId
-	 *         was <code>null</code>.
-	 */
-	public static RunConsole findConsole(String containerId) {
-		if (containerId == null)
-			return null;
-		return findConsole(containerId, DEFAULT_ID);
-	}
-
-	/**
-	 * Returns a reference to the console that is for the given container id. If
-	 * such a console does not yet exist, it will be created.
-	 *
-	 * @param container
 	 *            The container this console will be for. Must not be
 	 *            <code>null</code>.
-	 * @return A console instance or <code>null</code> if the given containerId
-	 *         was <code>null</code>.
+	 * @return A console instance.
 	 */
-	public static RunConsole findConsole(IDockerContainer container) {
-		if (container == null)
-			return null;
-		return findConsole(container.id(), DEFAULT_ID, container.name());
+	public static RunConsole findConsole(String containerId) {
+		return findConsole(containerId, DEFAULT_ID);
 	}
 
 	/**
@@ -100,20 +79,6 @@ public class RunConsole extends IOConsole {
 		return findConsole(containerId, id, containerId.substring(0, 8));
 	}
 
-	/**
-	 * Returns a reference to the console that is for the given container id. If
-	 * such a console does not yet exist, it will be created.
-	 *
-	 * @param containerId
-	 *            The container this console will be for. Must not be
-	 *            <code>null</code>.
-	 * @param id
-	 *            The secondary id used to identify consoles belonging to
-	 *            various owners.
-	 * @param name
-	 *            the name of the console to create if it did not already exist
-	 * @return A console instance.
-	 */
 	public static RunConsole findConsole(String containerId, String id,
 			String name) {
 		RunConsole ret = null;
@@ -164,14 +129,13 @@ public class RunConsole extends IOConsole {
 			public void run() {
 				try {
 					DockerConnection conn = (DockerConnection) connection;
-					if (conn.getContainerInfo(containerId).config()
-							.openStdin()) {
+					if (conn.getContainerInfo(containerId).config().openStdin()) {
 						while (!conn.getContainerInfo(containerId).state()
 								.running()) {
 							Thread.sleep(1000);
 						}
-						WritableByteChannel pty_out = conn
-								.attachCommand(containerId, in, out);
+						WritableByteChannel pty_out = conn.attachCommand(
+								containerId, in, out);
 						if (conn.getContainerInfo(containerId).config().tty()) {
 							ptyOutRef[0] = pty_out;
 						}
@@ -309,11 +273,12 @@ public class RunConsole extends IOConsole {
 						isCtrlOn = false;
 						break;
 					case TAB_CODE:
-						pty_out.write(
-								ByteBuffer.wrap(new byte[] { 9, 9 }, 0, 2));
+						pty_out.write(ByteBuffer
+								.wrap(new byte[] { 9, 9 }, 0, 2));
 						break;
 					}
 				} catch (IOException e1) {
+					e1.printStackTrace();
 				}
 			}
 		}
@@ -324,16 +289,16 @@ public class RunConsole extends IOConsole {
 				WritableByteChannel pty_out = ptyOutRef[0];
 				try {
 					switch (e.keyCode) {
-						/*
-						 * TODO : These values are configurable, so we should
-						 * start using 'stty -a' to know what they really are.
-						 */
+					/*
+					 * TODO : These values are configurable, so we should start
+					 * using 'stty -a' to know what they really are.
+					 */
 					case C_CODE:
 						// ETX (End Of Text) (3) is usually the interrupt
 						// signal.
 						if (isCtrlOn) {
-							pty_out.write(
-									ByteBuffer.wrap(new byte[] { 3 }, 0, 1));
+							pty_out.write(ByteBuffer.wrap(new byte[] { 3 }, 0,
+									1));
 						}
 						break;
 					case CTRL_CODE:
@@ -341,6 +306,7 @@ public class RunConsole extends IOConsole {
 						break;
 					}
 				} catch (IOException e1) {
+					e1.printStackTrace();
 				}
 			}
 		}

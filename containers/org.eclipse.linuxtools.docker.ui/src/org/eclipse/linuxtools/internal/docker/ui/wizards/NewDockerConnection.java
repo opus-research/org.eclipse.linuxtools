@@ -40,6 +40,9 @@ public class NewDockerConnection extends Wizard {
 		addPage(wizardPage);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.wizard.Wizard#performFinish()
+	 */
 	@Override
 	public boolean performFinish() {
 		try {
@@ -47,14 +50,7 @@ public class NewDockerConnection extends Wizard {
 			DockerConnectionManager.getInstance().addConnection(dockerConnection);
 			return true;
 		} catch (DockerException e) {
-			new MessageDialog(Display.getDefault().getActiveShell(),
-					WizardMessages.getString("NewDockerConnection.failure"), //$NON-NLS-1$
-					null,
-					WizardMessages.getString("NewDockerConnection.failMessage"), //$NON-NLS-1$
-					SWT.ICON_ERROR,
-					new String[] { WizardMessages
-							.getString("NewDockerConnectionPage.ok") }, //$NON-NLS-1$
-					0).open(); // ;
+			new MessageDialog(Display.getDefault().getActiveShell(), "Failure", null, "Failed to connect!", SWT.ICON_ERROR, new String[]{"OK"}, 0).open();
 		}
 		return false;
 	}
