@@ -49,8 +49,6 @@ import org.eclipse.linuxtools.docker.core.Activator;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerContainerNotFoundException;
 import org.eclipse.linuxtools.docker.core.DockerException;
-import org.eclipse.linuxtools.docker.core.DockerOpenConnectionException;
-import org.eclipse.linuxtools.docker.core.DockerPingConnectionException;
 import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConfParameter;
@@ -262,8 +260,7 @@ public class DockerConnection
 					}
 				} catch (DockerCertificateException e) {
 					setState(EnumDockerConnectionState.CLOSED);
-					throw new DockerOpenConnectionException(
-							NLS
+					throw new DockerException(NLS
 							.bind(Messages.Open_Connection_Failure, this.name,
 									this.getUri()),
 							e);
@@ -326,14 +323,14 @@ public class DockerConnection
 			if (this.client != null) {
 				this.client.ping();
 			} else {
-				throw new DockerPingConnectionException(NLS.bind(
+				throw new DockerException(NLS.bind(
 						Messages.Docker_Daemon_Ping_Failure, this.getName()));
 			}
 			setState(EnumDockerConnectionState.ESTABLISHED);
 		} catch (com.spotify.docker.client.DockerException
 				| InterruptedException e) {
 			setState(EnumDockerConnectionState.CLOSED);
-			throw new DockerPingConnectionException(NLS.bind(
+			throw new DockerException(NLS.bind(
 					Messages.Docker_Daemon_Ping_Failure, this.getName()), e);
 		}
 	}
