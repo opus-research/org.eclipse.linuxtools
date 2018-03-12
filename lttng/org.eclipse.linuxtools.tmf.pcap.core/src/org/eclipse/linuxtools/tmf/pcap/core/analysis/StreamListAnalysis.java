@@ -43,7 +43,7 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
      */
     public static final String ID = "org.eclipse.linuxtools.tmf.pcap.core.analysis.stream"; //$NON-NLS-1$
 
-    private final ITmfEventRequest fRequest;
+    private @Nullable ITmfEventRequest fRequest;
     private final Map<TmfProtocol, TmfPacketStreamBuilder> fBuilders;
 
     /**
@@ -57,26 +57,6 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
                 fBuilders.put(protocol, new TmfPacketStreamBuilder(protocol));
             }
         }
-
-        fRequest = new TmfEventRequest(PcapEvent.class,
-                TmfTimeRange.ETERNITY, 0L, ITmfEventRequest.ALL_DATA,
-                ITmfEventRequest.ExecutionType.BACKGROUND) {
-
-            @Override
-            public void handleData(ITmfEvent data) {
-                // Called for each event
-                super.handleData(data);
-                if (!(data instanceof PcapEvent)) {
-                    return;
-                }
-                PcapEvent event = (PcapEvent) data;
-                for (TmfProtocol protocol : fBuilders.keySet()) {
-                    fBuilders.get(protocol).addEventToStream(event);
-                }
-
-            }
-        };
-
     }
 
     @Override
@@ -111,22 +91,49 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
         if (getTrace() == null) {
             return false;
         }
-        getTrace().sendRequest(fRequest);
+
+        ITmfEventRequest request = fRequest;
+        if ((request != null) && (!request.isCompleted())) {
+            request.cancel();
+        }
+
+        request = new TmfEventRequest(PcapEvent.class,
+                TmfTimeRange.ETERNITY, 0L, ITmfEventRequest.ALL_DATA,
+                ITmfEventRequest.ExecutionType.BACKGROUND) {
+
+            @Override
+            public void handleData(ITmfEvent data) {
+                // Called for each event
+                super.handleData(data);
+                if (!(data instanceof PcapEvent)) {
+                    return;
+                }
+                PcapEvent event = (PcapEvent) data;
+                for (TmfProtocol protocol : fBuilders.keySet()) {
+                    fBuilders.get(protocol).addEventToStream(event);
+                }
+
+            }
+        };
+        getTrace().sendRequest(request);
+        fRequest = request;
         try {
-            fRequest.waitForCompletion();
+            request.waitForCompletion();
         } catch (InterruptedException e) {
             // Request was canceled.
             return false;
         }
 
-        return !mon.isCanceled() && !fRequest.isCancelled() && !fRequest.isFailed();
+        return !mon.isCanceled() && !request.isCancelled() && !request.isFailed();
 
     }
 
     @Override
     protected void canceling() {
-        fRequest.cancel();
-
+        ITmfEventRequest req = fRequest;
+        if ((req != null) && (!req.isCompleted())) {
+            req.cancel();
+        }
     }
 
     /**
@@ -147,7 +154,11 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
      * @return Whether the analysis is finished or not.
      */
     public boolean isFinished() {
-        return fRequest.isCompleted();
+        ITmfEventRequest req = fRequest;
+        if (req == null) {
+            return false;
+        }
+        return req.isCompleted();
     }
 
 }
