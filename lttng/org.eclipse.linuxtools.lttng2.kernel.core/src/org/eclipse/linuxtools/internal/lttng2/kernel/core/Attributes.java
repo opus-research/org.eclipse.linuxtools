@@ -38,7 +38,6 @@ public interface Attributes {
 
     /* Sub-attributes of the Thread nodes */
     static final String PPID = "PPID";
-    static final String TGID = "TGID";
     //static final String STATUS = "Status"
     static final String EXEC_NAME = "Exec_name";
     static final String SYSTEM_CALL = "System_call";
