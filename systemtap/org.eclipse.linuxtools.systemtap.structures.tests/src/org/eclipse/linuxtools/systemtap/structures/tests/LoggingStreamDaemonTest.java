@@ -11,7 +11,10 @@
 
 package org.eclipse.linuxtools.systemtap.structures.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -58,15 +61,8 @@ public class LoggingStreamDaemonTest {
         assertTrue(f.exists());
         f.delete();
 
-		f = new File("/tmp/loggingstreamdaemon.test.dir/");
-		try {
-			f.mkdir();
-			assertFalse(daemon.saveLog(f));
-		} finally {
-			f.delete();
-		}
-		assertFalse(f.exists());
-		assertFalse(daemon.saveLog(f));
+        assertFalse(daemon.saveLog(new File("/root/")));
+        assertFalse(f.exists());
     }
 
     @Test

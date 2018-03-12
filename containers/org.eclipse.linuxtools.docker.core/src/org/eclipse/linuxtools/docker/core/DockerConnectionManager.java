@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,7 +32,7 @@ public class DockerConnectionManager {
 	private static DockerConnectionManager instance;
 
 	private List<IDockerConnection> connections;
-	private ListenerList<IDockerConnectionManagerListener> connectionManagerListeners;
+	private ListenerList connectionManagerListeners;
 
 	private IDockerConnectionSettingsFinder connectionSettingsFinder = new DefaultDockerConnectionSettingsFinder();
 	private IDockerConnectionStorageManager connectionStorageManager = new DefaultDockerConnectionStorageManager();
@@ -131,8 +131,7 @@ public class DockerConnectionManager {
 	public void addConnectionManagerListener(
 			IDockerConnectionManagerListener listener) {
 		if (connectionManagerListeners == null)
-			connectionManagerListeners = new ListenerList<>(
-					ListenerList.IDENTITY);
+			connectionManagerListeners = new ListenerList(ListenerList.IDENTITY);
 		connectionManagerListeners.add(listener);
 	}
 
@@ -154,8 +153,10 @@ public class DockerConnectionManager {
 	@Deprecated
 	public void notifyListeners(int type) {
 		if (connectionManagerListeners != null) {
-			for (IDockerConnectionManagerListener listener : connectionManagerListeners) {
-				listener.changeEvent(type);
+			Object[] listeners = connectionManagerListeners.getListeners();
+			for (int i = 0; i < listeners.length; ++i) {
+				((IDockerConnectionManagerListener) listeners[i])
+						.changeEvent(type);
 			}
 		}
 	}
@@ -172,15 +173,17 @@ public class DockerConnectionManager {
 	public void notifyListeners(final IDockerConnection connection,
 			final int type) {
 		if (connectionManagerListeners != null) {
-			for (IDockerConnectionManagerListener listener : connectionManagerListeners) {
-				if (listener instanceof IDockerConnectionManagerListener2) {
-					((IDockerConnectionManagerListener2) listener)
+			Object[] listeners = connectionManagerListeners.getListeners();
+			for (int i = 0; i < listeners.length; ++i) {
+				if (listeners[i] instanceof IDockerConnectionManagerListener2) {
+					((IDockerConnectionManagerListener2) listeners[i])
 							.changeEvent(connection, type);
 				} else {
 					// keeping the call to the old method for the listeners that
 					// are
 					// interested
-					listener.changeEvent(type);
+					((IDockerConnectionManagerListener) listeners[i])
+							.changeEvent(type);
 				}
 			}
 		}

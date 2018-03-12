@@ -12,7 +12,6 @@ package org.eclipse.linuxtools.internal.changelog.core.editors;
 
 import java.util.Map;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.TextAttribute;
@@ -167,9 +166,10 @@ public class GNUEditorConfiguration extends TextSourceViewerConfiguration implem
         }
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
-        Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
+    protected Map getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
+        Map targets = super.getHyperlinkDetectorTargets(sourceViewer);
         targets.put("org.eclipse.changelog.editor.target", parentEditor); //$NON-NLS-1$
         targets.put("org.eclipse.ui.DefaultTextEditor", parentEditor); //$NON-NLS-1$
         return targets;
