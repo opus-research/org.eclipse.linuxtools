@@ -64,8 +64,8 @@ public final class CtfTmfEventFactory {
 
         /* Handle the special case of lost events */
         if (eventDecl.getName().equals(CTFStrings.LOST_EVENT_NAME)) {
-            IDefinition nbLostEventsDef = eventDef.getFields().getDefinition(CTFStrings.LOST_EVENTS_FIELD);
-            IDefinition durationDef = eventDef.getFields().getDefinition(CTFStrings.LOST_EVENTS_DURATION);
+            IDefinition nbLostEventsDef = eventDef.getFieldDefinitions().getDefinition(CTFStrings.LOST_EVENTS_FIELD);
+            IDefinition durationDef = eventDef.getFieldDefinitions().getDefinition(CTFStrings.LOST_EVENTS_DURATION);
             if (!(nbLostEventsDef instanceof IntegerDefinition) || !(durationDef instanceof IntegerDefinition)) {
                 /*
                  * One or both of these fields doesn't exist, or is not of the
