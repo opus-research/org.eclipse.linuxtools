@@ -1,17 +1,16 @@
 /*******************************************************************************
- * Copyright (c) 2014-2015 Red Hat, Inc.
+ * Copyright (c) 2014 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Red Hat Inc. - initial API and implementation
+ *    Red Hat initial API and implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.view.annotatedsource;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -219,9 +218,8 @@ public final class GcovAnnotationModel implements IAnnotationModel {
                 } catch (CoreException e) {
                 }
             }
-            if (target == null) {
+            if (target == null)
                 return null;
-            }
         }
 
         try {
@@ -236,28 +234,19 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         } catch (IOException|CoreException|InterruptedException e) {
         }
 
-        IResource elementResource = element.getResource();
-        if (elementResource != null) {
-            IPath elementLocation = elementResource.getLocation();
-            if (elementLocation != null) {
-                for (SourceFile sf : sources) {
-                    IPath sfPath = new Path(sf.getName());
-                    IFile file = STLink2SourceSupport.getFileForPath(sfPath, cProject.getProject());
-                    if (file != null && elementLocation.equals(file.getLocation())) {
-                        return sf;
-                    }
-                }
+        for (SourceFile sf : sources) {
+            IPath sfPath = new Path(sf.getName());
+            IFile file = STLink2SourceSupport.getFileForPath(sfPath, cProject.getProject());
+            if (file != null && element.getResource().getLocation().equals(file.getLocation())) {
+                return sf;
             }
         }
 
-        URI elementURI = element.getLocationURI();
-        if (elementURI != null) {
-            IPath binFolder = target.removeLastSegments(1);
-            for (SourceFile sf : sources) {
-                String sfPath = Paths.get(binFolder.toOSString()).resolve(sf.getName()).normalize().toString();
-                if (sfPath.equals(elementURI.getPath())) {
-                    return sf;
-                }
+        IPath binFolder = target.removeLastSegments(1);
+        for (SourceFile sf : sources) {
+            String sfPath = Paths.get(binFolder.toOSString()).resolve(sf.getName()).normalize().toString();
+            if (sfPath.equals(element.getLocationURI().getPath())) {
+                return sf;
             }
         }
 
