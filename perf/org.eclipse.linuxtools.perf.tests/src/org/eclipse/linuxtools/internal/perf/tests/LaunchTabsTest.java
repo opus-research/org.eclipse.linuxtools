@@ -22,7 +22,6 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.PerfVersion;
 import org.eclipse.linuxtools.internal.perf.launch.PerfEventsTab;
 import org.eclipse.linuxtools.internal.perf.launch.PerfOptionsTab;
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
@@ -36,6 +35,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.Version;
 
 public class LaunchTabsTest extends AbstractTest {
     private ILaunchConfiguration config;
@@ -133,10 +133,11 @@ public class LaunchTabsTest extends AbstractTest {
         performApply(tab, wc);
         assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Kernel_SourceLineNumbers, true));
 
-        PerfVersion version = PerfCore.getPerfVersion(config);
+        Version version = PerfCore.getPerfVersion(config);
         Button meCheck = tab.getChkMultiplexEvents();
         if (meCheck.isEnabled()) {
-            assertTrue (version != null && new PerfVersion(2, 6, 35).isNewer(version));
+            assertTrue (version != null && new Version(2, 6, 35).compareTo(version) > 0);
+
             meCheck.setSelection(true);
             meCheck.notifyListeners(SWT.Selection, null);
             performApply(tab, wc);
@@ -146,7 +147,7 @@ public class LaunchTabsTest extends AbstractTest {
             performApply(tab, wc);
             assertEquals(false, config.getAttribute(PerfPlugin.ATTR_Multiplex, true));
         } else {
-            assertTrue (version == null || !new PerfVersion(2, 6, 35).isNewer(version));
+            assertTrue (version == null || new Version(2, 6, 35).compareTo(version) < 0);
         }
 
         Button msCheck = tab.getChkModuleSymbols();
