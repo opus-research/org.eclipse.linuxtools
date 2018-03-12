@@ -20,6 +20,7 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CheckBoxAssertion
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.RadioAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.TextAssertion;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotToolbarButton;
 import org.junit.After;
 import org.junit.Assert;
@@ -33,15 +34,21 @@ import org.junit.Test;
 public class NewDockerConnectionSWTBotTest extends BaseSWTBotTest {
 
 	private SWTBotToolbarButton addConnectionButton;
+	private SWTBotView dockerExplorerViewBot;
 
 	@ClassRule
 	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(); 
 	
-	@Override
 	@Before
-	public void setup() {
-		super.setup();
-		this.addConnectionButton = getAddConnectionButton();
+	public void lookupDockerExplorerView() throws Exception {
+		dockerExplorerViewBot = bot.viewById("org.eclipse.linuxtools.docker.ui.dockerExplorerView");
+		dockerExplorerViewBot.show();
+		bot.views().stream()
+				.filter(v -> v.getReference().getId().equals("org.eclipse.linuxtools.docker.ui.dockerContainersView")
+						|| v.getReference().getId().equals("org.eclipse.linuxtools.docker.ui.dockerImagesView"))
+				.forEach(v -> v.close());
+		dockerExplorerViewBot.setFocus();
+		this.addConnectionButton = dockerExplorerViewBot.toolbarButton("&Add Connection");
 	}
 
 	@After

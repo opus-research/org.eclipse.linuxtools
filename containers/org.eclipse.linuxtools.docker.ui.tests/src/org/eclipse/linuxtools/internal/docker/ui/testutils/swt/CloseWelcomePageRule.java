@@ -27,7 +27,7 @@ public class CloseWelcomePageRule extends ExternalResource {
 			final SWTWorkbenchBot bot = new SWTWorkbenchBot();
 			bot.views().stream().filter(v -> v.getReference().getTitle().equals("Welcome")).forEach(v -> v.close());
 			bot.perspectiveById("org.eclipse.linuxtools.docker.ui.perspective").activate();
-			bot.views().stream().map(v -> v.getViewReference().getId()).forEach(s -> System.err.println(s));
+			//bot.views().stream().map(v -> v.getViewReference().getId()).forEach(s -> System.err.println(s));
 			Thread.sleep(TimeUnit.SECONDS.toMillis(1));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
