@@ -184,8 +184,6 @@ public class DockerExplorerLabelProvider implements IStyledLabelProvider, ILabel
 			return styledString;
 		} else if (element instanceof IDockerImage) {
 			final IDockerImage dockerImage = (IDockerImage) element;
-			final String imageShortId = (dockerImage.id().length() > 12)
-					? dockerImage.id().substring(0, 12) : dockerImage.id();
 			final StringBuilder messageBuilder = new StringBuilder(
 					dockerImage.repo());
 			final int startTags = messageBuilder.length();
@@ -202,7 +200,8 @@ public class DockerExplorerLabelProvider implements IStyledLabelProvider, ILabel
 				}
 			}
 			final int startImageId = messageBuilder.length();
-			messageBuilder.append(" (").append(imageShortId).append(')');
+			messageBuilder.append(" (").append(dockerImage.shortId())
+					.append(')');
 			final String message = messageBuilder.toString();
 			final StyledString styledString = new StyledString(message);
 			// styled tags

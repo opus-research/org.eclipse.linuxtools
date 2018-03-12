@@ -30,6 +30,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+/**
+ * Command handler add a tag tag on an {@link IDockerImage}
+ */
 public class TagImageCommandHandler extends AbstractHandler {
 
 	private final static String TAG_IMAGE_JOB_TITLE = "ImageTagTitle.msg"; //$NON-NLS-1$
@@ -47,7 +50,7 @@ public class TagImageCommandHandler extends AbstractHandler {
 			return null;
 		}
 		final IDockerImage image = selectedImages.get(0);
-		final ImageTag wizard = new ImageTag();
+		final ImageTag wizard = new ImageTag(image.shortId());
 		final boolean tagImage = CommandUtils.openWizard(wizard,
 				HandlerUtil.getActiveShell(event));
 		if (tagImage) {

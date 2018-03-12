@@ -1078,8 +1078,14 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void tagImage(final String name, final String newTag) throws DockerException,
 			InterruptedException {
+		tagImage(name, newTag, false);
+	}
+
+	@Override
+	public void tagImage(final String name, final String newTag,
+			final boolean force) throws DockerException, InterruptedException {
 		try {
-			client.tag(name, newTag);
+			client.tag(name, newTag, force);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
