@@ -22,7 +22,6 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.PerfVersion;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
@@ -45,6 +44,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Version;
 
 public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
     private ILaunchConfiguration lastConfig;
@@ -65,7 +65,7 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
     private Composite top;
     private ScrolledComposite scrollTop;
 
-    private final PerfVersion multiplexEventsVersion = new PerfVersion (2, 6, 35);
+    protected final Version multiplexEventsVersion = new Version (2, 6, 35);
 
     @Override
     public Image getImage() {
@@ -301,13 +301,13 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
      * @param enable enablement of buttons
      */
     private void toggleButtonsEnablement(boolean enable) {
-    	PerfVersion version = PerfCore.getPerfVersion(lastConfig);
+    	Version version = PerfCore.getPerfVersion(lastConfig);
         txtKernelLocation.setEnabled(enable);
         chkRecordRealtime.setEnabled(enable);
         chkRecordVerbose.setEnabled(enable);
         chkSourceLineNumbers.setEnabled(enable);
         chkKernelSourceLineNumbers.setEnabled(enable);
-        if (version != null && multiplexEventsVersion.isNewer(version)) {
+        if (version != null && multiplexEventsVersion.compareTo(version) > 0) {
             chkMultiplexEvents.setEnabled(enable);
         } else {
             chkMultiplexEvents.setEnabled(false);
@@ -327,11 +327,11 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 
         // Keep track of the last configuration loaded
         lastConfig = config;
-        PerfVersion perfVersion = PerfCore.getPerfVersion(config);
+        Version perfVersion = PerfCore.getPerfVersion(config);
 
         try {
 
-            if (perfVersion != null && multiplexEventsVersion.isNewer(perfVersion)) {
+            if (perfVersion != null && multiplexEventsVersion.compareTo(perfVersion) > 0) {
                 chkMultiplexEvents.setSelection(config.getAttribute(PerfPlugin.ATTR_Multiplex, PerfPlugin.ATTR_Multiplex_default));
             }
 
@@ -359,9 +359,9 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
     @Override
     public void performApply(ILaunchConfigurationWorkingCopy wconfig) {
 
-        PerfVersion perfVersion = PerfCore.getPerfVersion(wconfig);
+        Version perfVersion = PerfCore.getPerfVersion(wconfig);
 
-        if (perfVersion != null && multiplexEventsVersion.isNewer(perfVersion)) {
+        if (perfVersion != null && multiplexEventsVersion.compareTo(perfVersion) > 0) {
             wconfig.setAttribute(PerfPlugin.ATTR_Multiplex, chkMultiplexEvents.getSelection());
         }
 
