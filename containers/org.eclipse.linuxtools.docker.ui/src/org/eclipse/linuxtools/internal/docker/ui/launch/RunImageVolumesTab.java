@@ -415,6 +415,9 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
+		if (model == null || configuration == null) {
+			return;
+		}
 		final List<DataVolumeModel> volumes = new ArrayList<>();
 		try {
 			final List<String> volumesList = configuration.getAttribute(

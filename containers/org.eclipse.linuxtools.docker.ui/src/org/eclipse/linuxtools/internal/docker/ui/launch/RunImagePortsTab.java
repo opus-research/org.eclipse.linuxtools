@@ -338,6 +338,9 @@ public class RunImagePortsTab extends AbstractLaunchConfigurationTab
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
+		if (model == null || configuration == null) {
+			return;
+		}
 		try {
 			// recycle the model
 			model.removeExposedPorts();

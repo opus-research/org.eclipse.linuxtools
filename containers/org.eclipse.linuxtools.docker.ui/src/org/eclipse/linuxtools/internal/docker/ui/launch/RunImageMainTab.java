@@ -488,13 +488,16 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		final IDockerConnection[] connections = DockerConnectionManager
-				.getInstance()
-				.getConnections();
+		if (model == null || configuration == null) {
+			return;
+		}
 		try {
+			final IDockerConnection defaultConnection = CommandUtils
+					.getCurrentConnection(null);
 			String connectionName = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
-					connections[0].getName());
+					defaultConnection != null ? defaultConnection.getName()
+							: "");
 			model.setSelectedConnectionName(connectionName);
 			String imageName = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.IMAGE_NAME, ""); //$NON-NLS-1$
@@ -540,6 +543,9 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
+		if (model == null || configuration == null) {
+			return;
+		}
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
 				model.getSelectedConnectionName());
@@ -578,6 +584,9 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public boolean isValid(ILaunchConfiguration launchConfig) {
+		if (model == null || launchConfig == null) {
+			return false;
+		}
 		try {
 			if (launchConfig.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,

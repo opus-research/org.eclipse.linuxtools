@@ -248,6 +248,9 @@ public class RunImageLinksTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(final ILaunchConfiguration configuration) {
+		if (model == null || configuration == null) {
+			return;
+		}
 		try {
 			// model needs to be recycled
 			model.removeLinks();
