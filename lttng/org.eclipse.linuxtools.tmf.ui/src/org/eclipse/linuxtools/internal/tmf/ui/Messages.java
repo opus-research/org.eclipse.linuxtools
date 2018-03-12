@@ -19,6 +19,9 @@ public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.ui.messages"; //$NON-NLS-1$
 
+    public static String ManageCustomParsersDialog_ConflictMessage;
+    public static String ManageCustomParsersDialog_ConflictRenameButtonLabel;
+    public static String ManageCustomParsersDialog_ConflictSkipButtonLabel;
     public static String ManageCustomParsersDialog_DeleteButtonLabel;
     public static String ManageCustomParsersDialog_DeleteConfirmation;
     public static String ManageCustomParsersDialog_DeleteParserDialogHeader;
@@ -29,16 +32,14 @@ public class Messages extends NLS {
     public static String ManageCustomParsersDialog_ImportButtonLabel;
     public static String ManageCustomParsersDialog_ImportParserSelection;
     public static String ManageCustomParsersDialog_NewButtonLabel;
-    public static String ManageCustomParsersDialog_ParseButtonLabel;
-    public static String ManageCustomParsersDialog_ParseError;
     public static String ManageCustomParsersDialog_TextButtonLabel;
-    public static String ManageCustomParsersDialog_TraceSelection;
 
     public static String TmfEventsTable_AddBookmarkActionText;
     public static String TmfEventsTable_AddBookmarkDialogMessage;
     public static String TmfEventsTable_AddBookmarkDialogTitle;
     public static String TmfEventsTable_ApplyPresetFilterMenuName;
     public static String TmfEventsTable_ClearFiltersActionText;
+    public static String TmfEventsTable_CollapseFilterMenuName;
     public static String TmfEventsTable_ContentColumnHeader;
     public static String TmfEventsTable_Export_to_text;
     public static String TmfEventsTable_FilterHint;
@@ -82,6 +83,11 @@ public class Messages extends NLS {
     public static String TmfTimeFilterDialog_UNCHECK_SUBTREE;
 
     public static String TmfTimeTipHandler_DURATION;
+    public static String TmfTimeTipHandler_LINK_SOURCE;
+    public static String TmfTimeTipHandler_LINK_SOURCE_TIME;
+    public static String TmfTimeTipHandler_LINK_TARGET;
+    public static String TmfTimeTipHandler_LINK_TARGET_TIME;
+    public static String TmfTimeTipHandler_LINK_TIME;
     public static String TmfTimeTipHandler_TRACE_DATE;
     public static String TmfTimeTipHandler_TRACE_EVENT_TIME;
     public static String TmfTimeTipHandler_TRACE_START_TIME;
@@ -114,6 +120,8 @@ public class Messages extends NLS {
     public static String TmfTimeGraphViewer_FollowArrowBackwardActionNameText;
     public static String TmfTimeGraphViewer_FollowArrowBackwardActionToolTipText;
 
+    public static String Utils_ClockCyclesUnit;
+
     public static String ColorsView_AddActionToolTipText;
     public static String ColorsView_BackgroundButtonText;
     public static String ColorsView_BackgroundDialogText;
@@ -138,13 +146,13 @@ public class Messages extends NLS {
     public static String CustomTxtParserInputWizardPage_appendWith;
     public static String CustomTxtParserInputWizardPage_capturedGroup;
     public static String CustomTxtParserInputWizardPage_cardinality;
+    public static String CustomTxtParserInputWizardPage_category;
     public static String CustomTxtParserInputWizardPage_desccriptionEdit;
     public static String CustomTxtParserInputWizardPage_descriptionNew;
     public static String CustomTxtParserInputWizardPage_format;
     public static String CustomTxtParserInputWizardPage_group;
     public static String CustomTxtParserInputWizardPage_highlightAll;
     public static String CustomTxtParserInputWizardPage_logType;
-    public static String CustomTxtParserInputWizardPage_matchingLineRoot;
     public static String CustomTxtParserInputWizardPage_matchingOtherLine;
     public static String CustomTxtParserInputWizardPage_matchingRootLine;
     public static String CustomTxtParserInputWizardPage_max;
@@ -178,25 +186,26 @@ public class Messages extends NLS {
     public static String CustomTxtParserOutputWizardPage_moveAfter;
     public static String CustomTxtParserOutputWizardPage_moveBefore;
     public static String CustomTxtParserOutputWizardPage_visible;
+    public static String CustomXmlParserInputWizardPage_emptyCategoryError;
     public static String CustomXmlParserInputWizardPage_emptyLogTypeError;
+    public static String CustomXmlParserInputWizardPage_invalidCategoryError;
+    public static String CustomXmlParserInputWizardPage_invalidLogTypeError;
     public static String CustomXmlParserInputWizardPage_duplicatelogTypeError;
     public static String CustomXmlParserInputWizardPage_noDocumentError;
     public static String CustomXmlParserInputWizardPage_missingLogEntryError;
     public static String CustomXmlParserInputWizardPage_missingTimestampFmtError;
-    public static String CustomXmlParserInputWizardPage_invalidTimestampFmtError;
-    public static String CustomXmlParserInputWizardPage_notimestamporAttributeError;
     public static String CustomXmlParserInputWizardPage_missingDocumentElementError;
-    public static String CustomXmlParserInputWizardPage_timestampFormatPrompt;
-    public static String CustomXmlParserInputWizardPage_timestampElementPrompt;
-    public static String CustomXmlParserInputWizardPage_missingInputElementNameError;
-    public static String CustomXmlParserInputWizardPage_attributePrompt;
-    public static String CustomXmlParserInputWizardPage_missingAttribute;
-    public static String CustomXmlParserInputWizardPage_duplicateAttributeError;
-    public static String CustomXmlParserInputWizardPage_missingTimestampInFmtError;
-    public static String CustomXmlParserInputWizardPage_invalidTimestampInFmtError;
-    public static String CustomXmlParserInputWizardPage_missingDataGroupNameError;
-    public static String CustomXmlParserInputWizardPage_missingElementNameError;
-    public static String CustomXmlParserInputWizardPage_duplicateElementNameError;
+    public static String CustomXmlParserInputWizardPage_noTimestampElementOrAttribute;
+    public static String CustomXmlParserInputWizardPage_elementMissingNameError;
+    public static String CustomXmlParserInputWizardPage_elementMissingInputNameError;
+    public static String CustomXmlParserInputWizardPage_elementMissingTimestampFmtError;
+    public static String CustomXmlParserInputWizardPage_elementInvalidTimestampFmtError;
+    public static String CustomXmlParserInputWizardPage_elementDuplicateNameError;
+    public static String CustomXmlParserInputWizardPage_attributeMissingNameError;
+    public static String CustomXmlParserInputWizardPage_attributeMissingInputNameError;
+    public static String CustomXmlParserInputWizardPage_attributeMissingTimestampFmtError;
+    public static String CustomXmlParserInputWizardPage_attributeInvalidTimestampFmtError;
+    public static String CustomXmlParserInputWizardPage_attributeDuplicateNameError;
     public static String CustomXmlParserInputWizardPage_addAttribute;
     public static String CustomXmlParserInputWizardPage_addChildElement;
     public static String CustomXmlParserInputWizardPage_addDocumentEleemnt;
@@ -205,6 +214,7 @@ public class Messages extends NLS {
     public static String CustomXmlParserInputWizardPage_append;
     public static String CustomXmlParserInputWizardPage_appendWith;
     public static String CustomXmlParserInputWizardPage_attibute;
+    public static String CustomXmlParserInputWizardPage_category;
     public static String CustomXmlParserInputWizardPage_descriptionEdit;
     public static String CustomXmlParserInputWizardPage_descriptionNew;
     public static String CustomXmlParserInputWizardPage_elementName;
