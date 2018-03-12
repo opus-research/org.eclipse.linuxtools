@@ -26,6 +26,7 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.lttng2.kernel.core.analysis.LttngKernelAnalysisModule;
 import org.eclipse.linuxtools.lttng2.kernel.core.cpuusage.LttngKernelCpuUsageAnalysis;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
+import org.eclipse.linuxtools.statesystem.core.StateSystemUtils;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
@@ -282,7 +283,7 @@ public class CpuUsageComposite extends AbstractTmfTreeViewer {
                     List<ITmfStateInterval> execNameIntervals;
                     try {
                         execNameQuark = kernelSs.getQuarkRelative(tidQuark, Attributes.EXEC_NAME);
-                        execNameIntervals = kernelSs.queryHistoryRange(execNameQuark, getStartTime(), getEndTime());
+                        execNameIntervals = StateSystemUtils.queryHistoryRange(kernelSs, execNameQuark, getStartTime(), getEndTime());
                     } catch (AttributeNotFoundException e) {
                         /* No information on this thread (yet?), skip it for now */
                         continue;
