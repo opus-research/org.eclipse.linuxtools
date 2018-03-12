@@ -83,14 +83,14 @@ public class DockerPreferencePage extends PreferencePage implements
 		GridLayoutFactory.fillDefaults().margins(0, 0).spacing(10, 2).applyTo(container);
 		refreshTimeField = new IntegerFieldEditor(
 				PreferenceConstants.REFRESH_TIME,
-				PreferenceMessages.getString(REFRESH_TIME_MSG), container);
+				Messages.getString(REFRESH_TIME_MSG), container);
 		refreshTimeField.setPreferenceStore(getPreferenceStore());
 		refreshTimeField
 				.setValidateStrategy(StringFieldEditor.VALIDATE_ON_KEY_STROKE);
 		refreshTimeField.setValidRange(5, 200);
 		refreshTimeField.setPage(this);
 		refreshTimeField
-				.setErrorMessage(PreferenceMessages.getString(INVALID_REFRESH_TIME_MSG));
+				.setErrorMessage(Messages.getString(INVALID_REFRESH_TIME_MSG));
 		refreshTimeField.showErrorMessage();
 		refreshTimeField.load();
 		// If the preference changes, alert the Refresh Manager

@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.docker.ui.preferences;
 
 import static org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants.AUTOLOG_ON_START;
-import static org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants.DOCKER_COMPOSE_INSTALLATION_DIRECTORY;
 import static org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants.DOCKER_MACHINE_INSTALLATION_DIRECTORY;
 import static org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants.LOG_TIMESTAMP;
 import static org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants.REFRESH_TIME;
@@ -38,16 +37,17 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		if (SystemUtils.isWindows()) {
 			store.setDefault(DOCKER_MACHINE_INSTALLATION_DIRECTORY,
 					"C:\\Program Files\\Docker Toolbox"); //$NON-NLS-1$
-			store.setDefault(DOCKER_COMPOSE_INSTALLATION_DIRECTORY,
-					"C:\\Program Files\\Docker Toolbox"); //$NON-NLS-1$
 			store.setDefault(VM_DRIVER_INSTALLATION_DIRECTORY,
 					"C:\\Program Files\\Oracle\\VirtualBox"); //$NON-NLS-1$
-		} else if (SystemUtils.isMac() || SystemUtils.isLinux()) {
+		} else if (SystemUtils.isMac()) {
 			store.setDefault(DOCKER_MACHINE_INSTALLATION_DIRECTORY,
 					"/usr/local/bin"); //$NON-NLS-1$
 			store.setDefault(VM_DRIVER_INSTALLATION_DIRECTORY,
 					"/usr/local/bin"); //$NON-NLS-1$
-			store.setDefault(DOCKER_COMPOSE_INSTALLATION_DIRECTORY,
+		} else if (SystemUtils.isLinux()) {
+			store.setDefault(DOCKER_MACHINE_INSTALLATION_DIRECTORY,
+					"/usr/local/bin"); //$NON-NLS-1$
+			store.setDefault(VM_DRIVER_INSTALLATION_DIRECTORY,
 					"/usr/local/bin"); //$NON-NLS-1$
 		}
 	}
