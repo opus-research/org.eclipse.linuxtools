@@ -5,21 +5,15 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            name="%DockerPreferencePage.name"
+            name="%PreferencesPage.name"
             class="org.eclipse.linuxtools.internal.docker.ui.preferences.DockerPreferencePage"
             id="org.eclipse.linuxtools.docker.ui.preferences.DockerPreferencePage">
       </page>
       <page
             category="org.eclipse.linuxtools.docker.ui.preferences.DockerPreferencePage"
             class="org.eclipse.linuxtools.internal.docker.ui.preferences.LoggingPreferencePage"
-            id="org.eclipse.linuxtools.docker.ui.preferences.LoggingPreferencePage"
-            name="%LoggingPreferencePage.name">
-      </page>
-      <page
-            category="org.eclipse.linuxtools.docker.ui.preferences.DockerPreferencePage"
-            class="org.eclipse.linuxtools.internal.docker.ui.preferences.DockerMachinePreferencePage"
-            id="org.eclipse.linuxtools.docker.ui.preferences.DockerMachinePreferencePage"
-            name="%DockerMachinePreferencePage.name">
+            id="org.eclipse.linuxtools.docker.ui.preferences.LoggingPage"
+            name="%LoggingPreferencesPage.name">
       </page>
    </extension>
    <extension
@@ -68,11 +62,6 @@
 					allowsPlatformContributions="true"
 					id="org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 			<insertionPoint name="group.run" separator="true"/>
-			<insertionPoint name="group.refresh" separator="true"/>
-			<insertionPoint name="group.edit" separator="true"/>
-			<insertionPoint name="group.logs" separator="true"/>
-			<insertionPoint name="group.tags" separator="true"/>
-			<insertionPoint name="group.showIn" separator="true"/>
 			</popupMenu>
             <options>
 				<property
@@ -185,6 +174,11 @@
 	        name="%command.removecontainers.name">
         </command>
 		<command
+	        description="%command.refreshcontainers.description"
+	        id="org.eclipse.linuxtools.docker.ui.commands.refreshContainers"
+	        name="%command.refreshcontainers.name">
+        </command>
+		<command
 	        description="%command.commitcontainer.description"
 	        id="org.eclipse.linuxtools.docker.ui.commands.commitContainer"
 	        name="%command.commitcontainer.name">
@@ -239,6 +233,11 @@
 	        name="%command.removeimages.name">
         </command>
 		<command
+	        description="%command.refreshimages.description"
+	        id="org.eclipse.linuxtools.docker.ui.commands.refreshImages"
+	        name="%command.refreshimages.name">
+        </command>
+		<command
 	        description="%command.showallimages.description"
 	        id="org.eclipse.linuxtools.docker.ui.commands.showAllImages"
 	        name="%command.showallimages.name">
@@ -254,20 +253,13 @@
 	        id="org.eclipse.linuxtools.docker.ui.commands.runImage"
 	        name="%command.runimage.name">
         </command>
-        <command
-            name="%command.showInWebBrowser.menu.name"
-            description="%command.showInWebBrowser.menu.description"
-            id="org.eclipse.linuxtools.docker.ui.commands.showInWebBrowser">
-      	</command>
-        <command
-            name="%command.showInSystemExplorer.menu.name"
-            description="%command.showInSystemExplorer.menu.description"
-            id="org.eclipse.linuxtools.docker.ui.commands.showInSystemExplorer">
-      	</command>
-		      
 	</extension>
     <extension
 		point="org.eclipse.ui.handlers">
+		<handler
+              commandId="org.eclipse.linuxtools.docker.ui.commands.refreshExplorerView"
+              class="org.eclipse.linuxtools.internal.docker.ui.commands.RefreshConnectionsCommandHandler">
+     	</handler>
      	<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.addConnection"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.AddConnectionCommandHandler">
@@ -429,8 +421,8 @@
      		</enabledWhen>
      	</handler>
 		<handler
-              commandId="org.eclipse.ui.file.refresh"
-              class="org.eclipse.linuxtools.internal.docker.ui.commands.RefreshCommandHandler">
+              commandId="org.eclipse.linuxtools.docker.ui.commands.refreshContainers"
+              class="org.eclipse.linuxtools.internal.docker.ui.commands.RefreshContainersCommandHandler">
      	</handler>
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.showAllContainers"
@@ -494,6 +486,10 @@
      		</enabledWhen>
       	</handler>
 		<handler
+              commandId="org.eclipse.linuxtools.docker.ui.commands.refreshImages"
+              class="org.eclipse.linuxtools.internal.docker.ui.commands.RefreshImagesCommandHandler">
+     	</handler>
+		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.showAllImages"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.ShowAllImagesCommandHandler">
      	</handler>
@@ -508,14 +504,6 @@
 	                  </iterate>
 	            </with>
      		</enabledWhen>
-     	</handler>
-		<handler
-              commandId="org.eclipse.linuxtools.docker.ui.commands.showInWebBrowser"
-              class="org.eclipse.linuxtools.internal.docker.ui.commands.ShowInWebBrowserCommandHandler">
-     	</handler>
-		<handler
-              commandId="org.eclipse.linuxtools.docker.ui.commands.showInSystemExplorer"
-              class="org.eclipse.linuxtools.internal.docker.ui.commands.ShowInSystemExplorerCommandHandler">
      	</handler>
      	
 	</extension>
@@ -540,6 +528,17 @@
 		
     <extension
         point="org.eclipse.ui.menus">
+		<!-- explorer view toolbar: refresh view -->
+		<menuContribution
+			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
+				<command
+					commandId="org.eclipse.linuxtools.docker.ui.commands.refreshExplorerView"
+					icon="icons/refresh_tab.gif"
+					id="org.eclipse.linuxtools.docker.ui.commands.refreshExplorerView"
+					style="push"
+					mnemonic="R">
+				</command>
+		</menuContribution>
 		<!-- explorer view toolbar: add connection -->
 		<menuContribution
 			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
@@ -565,7 +564,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: start containers -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.run">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 	  		<command
 	          commandId="org.eclipse.linuxtools.docker.ui.commands.startContainers"
 	          icon="icons/running.gif"
@@ -590,7 +589,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: pause containers -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.startContainers">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 	  			<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.pauseContainers"
 		          icon="icons/suspend.gif"
@@ -615,7 +614,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: unpause containers -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.pauseContainers">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 	  			<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.unpauseContainers"
 		          icon="icons/resume.gif"
@@ -640,7 +639,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: stop containers -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.unpauseContainers">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 	  			<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.stopContainers"
 		          icon="icons/stopped.gif"
@@ -665,7 +664,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: kill containers -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.stopContainers">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.killContainers"
 		          icon="icons/kill.gif"
@@ -690,7 +689,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: remove containers -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.edit">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeContainers"
 		          icon="icons/delete.gif"
@@ -715,7 +714,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: commit container -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.removeContainers">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.commitContainer"
 		          id="org.eclipse.linuxtools.docker.ui.commands.commitContainer"
@@ -739,7 +738,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: display container log -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.logs">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.displayContainerLog"
 		          id="org.eclipse.linuxtools.docker.ui.commands.displayContainerLog"
@@ -763,7 +762,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: remove container log -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.displayContainerLog">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeContainerLog"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeContainerLog"
@@ -785,37 +784,9 @@
 	            </visibleWhen>
 				</command>
 		</menuContribution>
-		<!-- explorer view context menu: refresh image -->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.refresh">
-				<command
-					commandId="org.eclipse.ui.file.refresh"
-					icon="icons/refresh_tab.gif"
-					id="org.eclipse.ui.file.refresh"
-					style="push"
-					mnemonic="F">
-				<visibleWhen>
-                   <with
-	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
-	                <iterate
-	                      ifEmpty="false">
-	                      <or>
-	                 <instanceof
-	                       value="org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProvider$DockerContainersCategory" />
-	                 <instanceof
-	                       value="org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProvider$DockerImagesCategory" />
-	                      </or>
-	                </iterate>
-	               </with>
-     			</visibleWhen>
-				</command>
-		</menuContribution>
 		<!-- explorer view context menu: pull image -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.edit">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.pullImage"
 		          icon="icons/pull.gif"
@@ -842,60 +813,9 @@
 	            </visibleWhen>
 				</command>
 		</menuContribution>
-		<!-- Docker Explorer View: run image -->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.run">
-	  		<command
-           commandId="org.eclipse.linuxtools.docker.ui.commands.runImage"
-           icon="icons/createcontainer.gif"
-           label="%command.runimage.label"
-           mnemonic="R"
-           style="push">
-	            <visibleWhen
-	               checkEnabled="false">
-	               <with
-	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
-	                <iterate
-	                      ifEmpty="false"
-	                      operator="and">
-	                 <instanceof
-	                       value="org.eclipse.linuxtools.docker.core.IDockerImage" />
-	                </iterate>
-	               </with>
-	         </visibleWhen>
-	      </command>
-		</menuContribution>
-		<!-- explorer view context menu: remove images -->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.edit">
-				<command
-		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeImages"
-		          icon="icons/delete.gif"
-		          id="org.eclipse.linuxtools.docker.ui.commands.removeImages"
-		          style="push">
-		          <visibleWhen
-	               checkEnabled="false">
-	               <with
-	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
-	                <iterate
-	                      ifEmpty="false"
-	                      operator="and">
-	                 <instanceof
-	                       value="org.eclipse.linuxtools.docker.core.IDockerImage" />
-	                </iterate>
-	               </with>
-	            </visibleWhen>
-				</command>
-		</menuContribution>
 		<!-- explorer view context menu: push image -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.removeImages">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.pushImage"
 		          icon="icons/push.gif"
@@ -920,7 +840,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: tag image -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.tags">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.tagImage"
 		          icon="icons/tag.gif"
@@ -945,7 +865,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: remove tag -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.tagImage">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeTag"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeTag"
@@ -967,47 +887,34 @@
 	            </visibleWhen>
 				</command>
 		</menuContribution>
-		<!-- explorer view context menu: Show In -->
+		<!-- explorer view context menu: remove images -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.showIn">
-			<menu
-	           id="org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu.showIn"
-	           label="%menu.showIn">
-			</menu>
-		</menuContribution>		
-		<!-- explorer view context menu: Show In>Web Browser (on container ports)-->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu.showIn">
-		     <command
-		           commandId="org.eclipse.linuxtools.docker.ui.commands.showInWebBrowser"
-		           style="push">
-			     <visibleWhen>
-		     		<with variable="selection">
-		     		   <count value="1"/>
-		                  <iterate ifEmpty="false">
-		                     <instanceof value="org.eclipse.linuxtools.docker.core.IDockerPortMapping"></instanceof>
-		                  </iterate>
-		            </with>
-	     		</visibleWhen>
-		     </command>
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
+				<command
+		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeImages"
+		          icon="icons/delete.gif"
+		          id="org.eclipse.linuxtools.docker.ui.commands.removeImages"
+		          style="push">
+		          <visibleWhen
+	               checkEnabled="false">
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="and">
+	                 <instanceof
+	                       value="org.eclipse.linuxtools.docker.core.IDockerImage" />
+	                </iterate>
+	               </with>
+	            </visibleWhen>
+				</command>
 		</menuContribution>
-		<!-- explorer view context menu: Show In>File System (on container volumes)-->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu.showIn">
-		     <command
-		           commandId="org.eclipse.linuxtools.docker.ui.commands.showInSystemExplorer"
-		           label="%command.showInSystemExplorer.menu.name"
-             	style="push">
-			     <visibleWhen>
-		     		<with variable="selection">
-		     		   <count value="1"/>
-		                  <iterate ifEmpty="false">
-		                     <instanceof value="org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProvider$DockerContainerVolume"></instanceof>
-		                  </iterate>
-		            </with>
-	     		</visibleWhen>
-		     </command>
-		</menuContribution>
+		
+		
+		
 		<!-- containers view toolbar: start containers -->
 		<menuContribution
 			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerContainersView">
@@ -1111,9 +1018,9 @@
 		<menuContribution
 			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerContainersView">
 				<command
-					commandId="org.eclipse.ui.file.refresh"
+					commandId="org.eclipse.linuxtools.docker.ui.commands.refreshContainers"
 					icon="icons/refresh_tab.gif"
-					id="org.eclipse.ui.file.refresh"
+					id="org.eclipse.linuxtools.docker.ui.commands.refreshContainers"
 					style="push"
 					mnemonic="R">
 				</command>
@@ -1220,9 +1127,9 @@
 		<menuContribution
 			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerImagesView">
 				<command
-					commandId="org.eclipse.ui.file.refresh"
+					commandId="org.eclipse.linuxtools.docker.ui.commands.refreshImages"
 					icon="icons/refresh_tab.gif"
-					id="org.eclipse.ui.file.refresh"
+					id="org.eclipse.linuxtools.docker.ui.commands.refreshImages"
 					style="push"
 					mnemonic="F">
 				</command>
@@ -1239,6 +1146,32 @@
 				</command>
 		</menuContribution>
 		
+		<!-- Docker Explorer View: run image -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.run">
+	  		<command
+           commandId="org.eclipse.linuxtools.docker.ui.commands.runImage"
+           icon="icons/createcontainer.gif"
+           label="%command.runimage.label"
+           mnemonic="R"
+           style="push">
+	            <visibleWhen
+	               checkEnabled="false">
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="and">
+	                 <instanceof
+	                       value="org.eclipse.linuxtools.docker.core.IDockerImage" />
+	                </iterate>
+	               </with>
+	         </visibleWhen>
+	      </command>
+		</menuContribution>		
 	</extension>
 	
     <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor">

@@ -230,20 +230,10 @@ public class ImageRun extends Wizard {
 		return config.build();
 	}
 
-	/**
-	 * Create a proper command list after handling quotation.
-	 * 
-	 * @param command
-	 *            the command as a single {@link String}
-	 * @return the command splitted in a list of ars or <code>null</code> if the
-	 *         input <code>command</code> was <code>null</code>.
-	 */
-	private List<String> getCmdList(final String command) {
-		if (command == null) {
-			return null;
-		}
-		final List<String> list = new ArrayList<>();
-		int length = command.length();
+	// Create a proper command list after handling quotation.
+	private List<String> getCmdList(String s) {
+		ArrayList<String> list = new ArrayList<>();
+		int length = s.length();
 		boolean insideQuote1 = false; // single-quote
 		boolean insideQuote2 = false; // double-quote
 		boolean escaped = false;
@@ -252,7 +242,7 @@ public class ImageRun extends Wizard {
 		// separated by white-space or are quoted. Ignore characters
 		// that have been escaped, including the escape character.
 		for (int i = 0; i < length; ++i) {
-			char c = command.charAt(i);
+			char c = s.charAt(i);
 			if (escaped) {
 				buffer.append(c);
 				escaped = false;
