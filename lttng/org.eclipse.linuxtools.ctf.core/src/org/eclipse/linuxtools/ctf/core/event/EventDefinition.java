@@ -19,7 +19,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.ICompositeDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.trace.CTFStreamInputReader;
@@ -58,16 +57,16 @@ public final class EventDefinition implements IDefinitionScope {
     /**
      * The event context structure definition.
      */
-    private final ICompositeDefinition fEventContext;
+    private final StructDefinition fEventContext;
 
-    private final ICompositeDefinition fStreamContext;
+    private final StructDefinition fStreamContext;
 
-    private final ICompositeDefinition fPacketContext;
+    private final StructDefinition fPacketContext;
 
     /**
      * The event fields structure definition.
      */
-    private final ICompositeDefinition fFields;
+    private final StructDefinition fFields;
 
     /**
      * The StreamInputReader that reads this event definition.
@@ -91,7 +90,7 @@ public final class EventDefinition implements IDefinitionScope {
      *            The event context
      * @param packetContext
      *            the packet context
-     * @param streamEventContext
+     * @param streamContext
      *            the stream context
      * @param fields
      *            The event fields
@@ -100,46 +99,17 @@ public final class EventDefinition implements IDefinitionScope {
     public EventDefinition(IEventDeclaration declaration,
             CTFStreamInputReader streamInputReader,
             long timestamp,
-            StructDefinition streamEventContext,
+            StructDefinition streamContext,
             StructDefinition eventContext,
             StructDefinition packetContext,
             StructDefinition fields) {
-        this(declaration, streamInputReader, timestamp, (ICompositeDefinition) streamEventContext, eventContext, packetContext, fields);
-    }
-
-    /**
-     * Constructs an event definition.
-     *
-     * @param declaration
-     *            The corresponding event declaration
-     * @param streamInputReader
-     *            The SIR from where this EventDef was read
-     * @param timestamp
-     *            event timestamp
-     * @param eventContext
-     *            The event context
-     * @param packetContext
-     *            the packet context
-     * @param streamEventContext
-     *            the stream context
-     * @param fields
-     *            The event fields
-     * @since 3.1
-     */
-    public EventDefinition(IEventDeclaration declaration,
-            CTFStreamInputReader streamInputReader,
-            long timestamp,
-            ICompositeDefinition streamEventContext,
-            ICompositeDefinition eventContext,
-            ICompositeDefinition packetContext,
-            ICompositeDefinition fields) {
         fDeclaration = declaration;
         fStreamInputReader = streamInputReader;
         fTimestamp = timestamp;
         fFields = fields;
         fEventContext = eventContext;
         fPacketContext = packetContext;
-        fStreamContext = streamEventContext;
+        fStreamContext = streamContext;
     }
 
     // ------------------------------------------------------------------------
@@ -178,10 +148,7 @@ public final class EventDefinition implements IDefinitionScope {
      * @return the fields of a definition in struct form. Can be null.
      */
     public StructDefinition getFields() {
-        if( fFields instanceof StructDefinition) {
-            return (StructDefinition)fFields;
-        }
-        return null;
+        return fFields;
     }
 
     /**
@@ -191,19 +158,15 @@ public final class EventDefinition implements IDefinitionScope {
      * @since 1.2
      */
     public StructDefinition getEventContext() {
-        if( fEventContext instanceof StructDefinition) {
-            return (StructDefinition) fEventContext;
-        }
-        return null;
+        return fEventContext;
     }
 
     /**
      * Gets the context of this event within a stream
      *
-     * @return the context
-     * @since 3.1
+     * @return the context in struct form
      */
-    public ICompositeDefinition getMergedContext() {
+    public StructDefinition getContext() {
 
         /* Most common case so far */
         if (fStreamContext == null) {
@@ -251,19 +214,6 @@ public final class EventDefinition implements IDefinitionScope {
                 fieldNames,
                 fieldValues.toArray(new Definition[fieldValues.size()]));
         return mergedContext;
-
-    }
-
-    /**
-     * Gets the context of this event within a stream
-     *
-     * @return the context in struct form
-     * @deprecated use @link {@link EventDefinition#getMergedContext()}
-     */
-    @Deprecated
-    public StructDefinition getContext() {
-        ICompositeDefinition mergedContext = getMergedContext();
-        return (StructDefinition) (mergedContext instanceof StructDefinition ? mergedContext : null);
     }
 
     /**
@@ -282,10 +232,7 @@ public final class EventDefinition implements IDefinitionScope {
      * @return the packet context
      */
     public StructDefinition getPacketContext() {
-        if (fPacketContext instanceof StructDefinition) {
-            return (StructDefinition) fPacketContext;
-        }
-        throw new UnsupportedOperationException("Context is not a structDefinition"); //$NON-NLS-1$
+        return fPacketContext;
     }
 
     /**
@@ -298,9 +245,7 @@ public final class EventDefinition implements IDefinitionScope {
     }
 
     /**
-     * Get the time stamp
-     *
-     * @return the time stamp
+     * @return the timestamp
      */
     public long getTimestamp() {
         return fTimestamp;
@@ -313,13 +258,12 @@ public final class EventDefinition implements IDefinitionScope {
     @Override
     public Definition lookupDefinition(String lookupPath) {
         if (lookupPath.equals("context")) { //$NON-NLS-1$
-            if( fEventContext instanceof Definition) {
-                return (Definition) fEventContext;
-            }
+            return fEventContext;
         } else if (lookupPath.equals("fields")) { //$NON-NLS-1$
-            return (Definition) fFields;
+            return fFields;
+        } else {
+            return null;
         }
-        return null;
     }
 
     @Override
