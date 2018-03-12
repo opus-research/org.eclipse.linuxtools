@@ -16,15 +16,13 @@ public interface IDockerContainerListener {
 
 	/**
 	 * Called when the list of {@link IDockerContainer} for the given
-	 * {@link IDockerConnection} changed (including when it was loaded for the
-	 * first time)
+	 * {@link IDockerConnection} changed
 	 * 
 	 * @param connection
 	 *            - the Docker connection
-	 * @param containers
-	 *            the new list of containers
+	 * @param list
+	 *            - the new list of {@link IDockerContainer}
 	 */
-	void listChanged(IDockerConnection connection,
-			List<IDockerContainer> containers);
+	void listChanged(IDockerConnection connection, List<IDockerContainer> list);
 
 }

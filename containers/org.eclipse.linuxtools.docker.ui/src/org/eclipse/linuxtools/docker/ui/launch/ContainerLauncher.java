@@ -101,13 +101,13 @@ public class ContainerLauncher {
 		final List<String> volumes = new ArrayList<>();
 		if (additionalDirs != null) {
 			for (String dir : additionalDirs) {
-				volumes.add(dir + ":" + dir + ":Z"); //$NON-NLS-1$ //$NON-NLS-2$
+				volumes.add(dir + ":" + dir); //$NON-NLS-1$
 			}
 		}
 		if (workingDir != null)
-			volumes.add(workingDir + ":" + workingDir + ":Z"); //$NON-NLS-1$ //$NON-NLS-2$
+			volumes.add(workingDir + ":" + workingDir); //$NON-NLS-1$
 		if (commandDir != null)
-			volumes.add(commandDir + ":" + commandDir + ":Z"); //$NON-NLS-1$ //$NON-NLS-2$
+			volumes.add(commandDir + ":" + commandDir); //$NON-NLS-1$
 
 		final List<String> cmdList = getCmdList(command);
 
@@ -228,10 +228,9 @@ public class ContainerLauncher {
 			@Override
 			public void run() {
 				// create the container
-				String containerId = null;
 				try {
-					containerId = ((DockerConnection) connection)
-							.createContainer(config, hostConfig, null);
+					String containerId = ((DockerConnection) connection)
+							.createContainer(config, hostConfig);
 					OutputStream stream = null;
 					RunConsole oldConsole = getConsole();
 					final RunConsole rc = RunConsole.findConsole(containerId,
@@ -315,15 +314,6 @@ public class ContainerLauncher {
 					}
 
 				} catch (final DockerException e) {
-					// error in creation, try and remove Container if possible
-					if (!keepContainer && containerId != null) {
-						try {
-							((DockerConnection) connection)
-									.removeContainer(containerId);
-						} catch (DockerException | InterruptedException e1) {
-							// ignore exception
-						}
-					}
 					Display.getDefault().syncExec(new Runnable() {
 
 						@Override

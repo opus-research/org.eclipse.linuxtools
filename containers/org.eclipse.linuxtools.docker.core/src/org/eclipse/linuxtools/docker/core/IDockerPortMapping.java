@@ -25,6 +25,4 @@ public interface IDockerPortMapping {
 
 	public String getIp();
 
-	public IDockerContainer getContainer();
-
 }
