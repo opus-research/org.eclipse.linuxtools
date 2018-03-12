@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.rpm.core.utils.BufferedProcessInputStream;
@@ -28,7 +29,7 @@ import org.osgi.framework.FrameworkUtil;
  */
 public class Createrepo {
 
-    /**
+    /*
      * Default commands that every execution will have.
      */
     private static final String[] DEFAULT_ARGUMENTS = {
@@ -60,8 +61,13 @@ public class Createrepo {
      * @param project The project.
      * @param commands A list of command switches to execute with the createrepo command.
      * @return The status of the execution.
+     * @throws CoreException Occurs when error trying to execute the command.
      */
-    public IStatus execute(final OutputStream os, CreaterepoProject project, List<String> commands) {
+    public IStatus execute(final OutputStream os, CreaterepoProject project, List<String> commands) throws CoreException {
+        IStatus available = checkIfAvailable();
+        if (!available.isOK()) {
+            return available;
+        }
         IStatus validVersion = isCorrectVersion();
         if (!validVersion.isOK()) {
             return validVersion;
@@ -78,10 +84,11 @@ public class Createrepo {
             os.write(commandString.getBytes());
             return Utils.runCommand(os, project.getProject(), commandSwitches.toArray(new String[commandSwitches.size()]));
         } catch (IOException e) {
-            return new Status(
+            IStatus status = new Status(
                     IStatus.ERROR,
                     FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
                     NLS.bind(Messages.Createrepo_errorExecuting, commandString), e);
+            throw new CoreException(status);
         }
     }
 
@@ -89,8 +96,9 @@ public class Createrepo {
      * Check if the createrepo command is available in the system.
      *
      * @return The status of whether or not createrepo was found.
+     * @throws CoreException Occurs when createrepo is not found or executing the command failed.
      */
-    public static IStatus checkIfAvailable() {
+    public static IStatus checkIfAvailable() throws CoreException {
         try {
             BufferedProcessInputStream bpis = Utils.runCommandToInputStream("which", ICreaterepoConstants.CREATEREPO_COMMAND); //$NON-NLS-1$
             // error executing "which createrepo", most likely due to it not being found
@@ -101,33 +109,36 @@ public class Createrepo {
             }
             return Status.OK_STATUS;
         } catch (IOException e) {
-            return new Status(
+            IStatus status = new Status(
                     IStatus.WARNING,
                     FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
                     Messages.Createrepo_errorTryingToFindCommand, e);
+            throw new CoreException(status);
         } catch (InterruptedException e) {
-            return new Status(
+            IStatus status = new Status(
                     IStatus.CANCEL,
                     FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
                     Messages.Createrepo_jobCancelled, e);
+            throw new CoreException(status);
         }
     }
 
     /**
      * Grab the version of the system's createrepo command and if it
-     * is >= 0.9.8 then program can continue on executing.
+     * is >= 0.9.8 and also has a yum version >= 3.2.23, then program
+     * can continue on executing.
      *
      * 0.9.8 = latest development release
+     *         requires: yum version >= 3.2.23
      *
      * @return True if version is supported, false otherwise.
+     * @throws CoreException Occurs when failure to get version number.
      */
-    public static IStatus isCorrectVersion() {
-        IStatus available = checkIfAvailable();
-        if (!available.isOK()) {
-            return available;
-        }
+    public static IStatus isCorrectVersion() throws CoreException {
         final String CREATEREPO_VALID_VERSION = "0.9.8"; //$NON-NLS-1$
+        final String YUM_VALID_VERSION = "3.2.23"; //$NON-NLS-1$
         String createrepoVersion = ICreaterepoConstants.EMPTY_STRING;
+        String yumVersion = ICreaterepoConstants.EMPTY_STRING;
         try {
             String repoOutput = Utils.runCommandToString(ICreaterepoConstants.CREATEREPO_COMMAND, "--version").trim(); //$NON-NLS-1$
             // createrepo --version output is like:
@@ -146,12 +157,39 @@ public class Createrepo {
                                 CREATEREPO_VALID_VERSION, createrepoVersion}),
                                 null);
             }
-            return Status.OK_STATUS;
+            String yumOutput = Utils.runCommandToString("yum", "--version").trim(); //$NON-NLS-1$ //$NON-NLS-2$
+            // yum --version output is like:
+            // x.x.x
+            //        blah...
+            //        blah...
+            String[] yumTemp = yumOutput.split("\n"); //$NON-NLS-1$
+            if (yumTemp.length > 0) {
+                yumVersion = yumTemp[0];
+            }
+            boolean yumValid = isGreaterOrEqual(yumVersion.split("\\."), YUM_VALID_VERSION.split("\\.")); //$NON-NLS-1$ //$NON-NLS-2$
+            if (yumValid) {
+                // return an OK status only if yum is valid version
+                return Status.OK_STATUS;
+            } else {
+                // return an error status otherwise stating the versions in the message
+                return new Status(
+                        IStatus.ERROR,
+                        FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
+                        NLS.bind(Messages.Createrepo_errorWrongVersionYum, new String[] {
+                                YUM_VALID_VERSION, yumVersion}), null);
+            }
         } catch (IOException e) {
-            return new Status(
+            IStatus status = new Status(
                     IStatus.CANCEL,
                     FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
                     Messages.Createrepo_errorCancelled, e);
+            throw new CoreException(status);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            IStatus status = new Status(
+                    IStatus.ERROR,
+                    FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
+                    NLS.bind(Messages.Createrepo_errorPasingVersion, new String[] {createrepoVersion, yumVersion}), e);
+            throw new CoreException(status);
         }
     }
 

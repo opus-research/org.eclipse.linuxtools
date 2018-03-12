@@ -1,5 +1,4 @@
 /*******************************************************************************
- * Copyright (c) 2009 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -75,6 +74,7 @@ public class RunScriptHandler extends AbstractHandler {
     /**
      * @since 2.0
      */
+    protected boolean continueRun = true;
     private RemoteScriptOptions remoteOptions = null;
     private IEditorPart targetEditor = null;
     private String fileName = null;
@@ -109,7 +109,7 @@ public class RunScriptHandler extends AbstractHandler {
      * @param option
      */
     public void addComandLineOptions(String option) {
-        cmdList.add(option);
+        this.cmdList.add(option);
     }
 
     /**
@@ -156,7 +156,6 @@ public class RunScriptHandler extends AbstractHandler {
     }
 
     private void executeAction(ExecutionEvent event) throws ExecutionException {
-        cmdList.clear();
         final boolean local = getRunLocal();
         findTargetEditor(event);
         findFilePath();
@@ -184,12 +183,14 @@ public class RunScriptHandler extends AbstractHandler {
                     }
                 }
                 final ScriptConsole console = ScriptConsole.getInstance(name);
-                if (!local) {
-                    console.run(script, envVars, remoteOptions, new StapErrorParser());
-                } else {
-                    console.runLocally(script, envVars, new StapErrorParser(), getProject());
+                synchronized (console) {
+                    if (!local) {
+                        console.run(script, envVars, remoteOptions, new StapErrorParser());
+                    } else {
+                        console.runLocally(script, envVars, new StapErrorParser(), getProject());
+                    }
+                    scriptConsoleInitialized(console);
                 }
-                scriptConsoleInitialized(console);
             }
         });
     }
@@ -238,7 +239,7 @@ public class RunScriptHandler extends AbstractHandler {
     }
 
     private boolean editorMatchesPath(IEditorInput input) {
-        return input instanceof IPathEditorInput && ((IPathEditorInput) (input)).getPath().equals(path);
+        return input instanceof IPathEditorInput && ((IPathEditorInput) (input)).getPath().equals(this.path);
     }
 
     /**
@@ -398,6 +399,7 @@ public class RunScriptHandler extends AbstractHandler {
         // Make sure script name only contains underscores and/or alphanumeric characters.
         if (!Pattern.matches("^[a-z0-9_A-Z]+$", //$NON-NLS-1$
                 getFileNameWithoutExtension(getFileName(fileName)))) {
+            continueRun = false;
             throw new ExecutionException(Messages.RunScriptHandler_InvalidScriptMessage);
         }
 
