@@ -144,7 +144,7 @@ public class RunImageCommandHandler extends AbstractHandler {
 					}
 					startContainerMonitor.done();
 					// create a launch configuration from the container
-					LaunchConfigurationUtils.createRunImageLaunchConfiguration(image,
+					LaunchConfigurationUtils.createLaunchConfiguration(image,
 							containerConfig,
 							hostConfig, containerName,
 							removeWhenExits);

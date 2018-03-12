@@ -165,10 +165,6 @@
               name="%command.removeconnection.label">
         </command>
 		<command
-              id="org.eclipse.linuxtools.docker.ui.commands.editConnection"
-              name="%command.editconnection.label">
-        </command>
-		<command
 	        description="%command.startcontainers.description"
 	        id="org.eclipse.linuxtools.docker.ui.commands.startContainers"
 	        name="%command.startcontainers.name">
@@ -294,25 +290,11 @@
 		point="org.eclipse.ui.handlers">
      	<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.addConnection"
-              class="org.eclipse.linuxtools.internal.docker.ui.commands.NewDockerConnectionCommandHandler">
+              class="org.eclipse.linuxtools.internal.docker.ui.commands.AddConnectionCommandHandler">
      	</handler>
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.RemoveConnectionCommandHandler">
-     		<enabledWhen>
-	     		<with
-	                variable="selection">
-	            <iterate ifEmpty="false">
-	               <instanceof
-	                     value="org.eclipse.linuxtools.docker.core.IDockerConnection">
-	               </instanceof>
-	            </iterate>
-	          </with>
-     		</enabledWhen>
-     	</handler>
-		<handler
-              commandId="org.eclipse.linuxtools.docker.ui.commands.editConnection"
-              class="org.eclipse.linuxtools.internal.docker.ui.commands.EditDockerConnectionCommandHandler">
      		<enabledWhen>
 	     		<with
 	                variable="selection">
@@ -659,6 +641,7 @@
 			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
+		          tooltip="%command.removeconnection.tooltip"
 		          disabledIcon="icons/delete_d.gif"
 		          icon="icons/delete.gif"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
@@ -666,16 +649,46 @@
 		          style="push">
 				</command>
 		</menuContribution>
-  <menuContribution
-        locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
-     <command
-           commandId="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
-           icon="icons/repository-synchronize-attributes.png"
-           id="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
-           mnemonic="R"
-           style="push">
-     </command>
-  </menuContribution>
+		<!-- explorer view context menu: remove connection -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=?after=group.edit">
+				<command
+		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
+		          disabledIcon="icons/delete_d.gif"
+		          icon="icons/delete.gif"
+		          id="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
+		          mnemonic="D"
+		          style="push">
+		          <visibleWhen
+	               checkEnabled="false">
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="or">
+	                      <or>
+			                 <instanceof
+			                       value="org.eclipse.linuxtools.docker.core.IDockerConnection" />
+	                      </or>
+	                </iterate>
+	               </with>
+	            </visibleWhen>
+				</command>
+		</menuContribution>
+		
+	    <menuContribution
+	        locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
+	       <command
+	           commandId="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
+	           icon="icons/repository-synchronize-attributes.png"
+	           id="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
+	           mnemonic="R"
+	           style="push">
+	       </command>
+	    </menuContribution>
 		<!-- explorer view context menu: Show In -->
 		<menuContribution
 			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.navigate">
@@ -691,25 +704,6 @@
 		           commandId="org.eclipse.linuxtools.docker.ui.commands.showInPropertiesView"
 		           label="%command.showInPropertiesView.menu.name"
 		           id="org.eclipse.linuxtools.docker.ui.showConnectionInPropertiesView"
-             	style="push">
-			     <visibleWhen>
-		     		<with variable="selection">
-		     		   <count value="1"/>
-		                  <iterate ifEmpty="false">
-		                     <instanceof value="org.eclipse.linuxtools.docker.core.IDockerConnection"></instanceof>
-		                  </iterate>
-		            </with>
-	     		</visibleWhen>
-		     </command>
-		</menuContribution>
-		<!-- explorer view context menu: Edit (on Connection)-->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.edit">
-		     <command
-		           commandId="org.eclipse.linuxtools.docker.ui.commands.editConnection"
-		           label="%command.editconnection.label"
-		           id="org.eclipse.linuxtools.docker.ui.commands.editConnection"
-		           icon="icons/text_edit.gif"
              	style="push">
 			     <visibleWhen>
 		     		<with variable="selection">
@@ -973,7 +967,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: pull image -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.edit">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.pullImage"
 		          icon="icons/pull.gif"
