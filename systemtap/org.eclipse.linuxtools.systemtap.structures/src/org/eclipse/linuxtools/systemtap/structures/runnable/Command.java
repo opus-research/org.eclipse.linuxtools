@@ -123,7 +123,7 @@ public class Command implements Runnable {
             t.start();
             started = true;
         } else {
-            stop();
+            cleanUpAfterStop();
             returnVal = Integer.MIN_VALUE;
             throw new CoreException(status);
         }
@@ -178,16 +178,23 @@ public class Command implements Runnable {
         inputGobbler.start();
         try {
             process.waitFor();
-        } catch (InterruptedException e) {}
-        stop();
+            cleanUpAfterStop();
+        } catch (InterruptedException e) {
+            // This thread was interrupted while waiting for
+            // the process to exit. Destroy the process just
+            // to make sure it exits.
+            stop();
+        }
     }
 
     /**
-     * Stops the process from running and stops the <code>StreamGobblers</code> from monitering
-     * the dead process and unregisters the StreamListener. Also wakes up any threads waiting
-     * on this command.
+     * Performs cleanup operations for when the process ends:
+     * Stops the <code>StreamGobblers</code> from monitering
+     * the dead process and unregisters the StreamListener.
+     * Also wakes up any threads waiting on this command.
+     * @since 3.1
      */
-    public synchronized void stop() {
+    protected synchronized void cleanUpAfterStop() {
         if (!stopped) {
             if (errorGobbler != null) {
                 errorGobbler.stop();
@@ -195,19 +202,19 @@ public class Command implements Runnable {
             if (inputGobbler != null) {
                 inputGobbler.stop();
             }
-            try {
-                if (process != null) {
-                    process.waitFor();
-                }
-            } catch (InterruptedException e) {
-                // This thread was interrupted while waiting for
-                // the process to exit. Destroy the process just
-                // to make sure it exits.
-                process.destroy();
-            }
             removeInputStreamListener(logger);
             stopped = true;
             notifyAll(); // Wake up threads waiting for this command to stop.
+        }
+    }
+
+    /**
+     * Stops the process from running and performs post-stop cleanup if necessary.
+     */
+    public synchronized void stop() {
+        if (!stopped && process != null) {
+            process.destroy();
+            cleanUpAfterStop();
         }
     }
 
@@ -311,12 +318,15 @@ public class Command implements Runnable {
     public synchronized void dispose() {
         if (!disposed) {
             stop();
-            disposed = true;
 
-            inputListeners.clear();
-            errorListeners.clear();
-
+            if (inputListeners != null) {
+                inputListeners.clear();
+            }
             inputListeners = null;
+
+            if (errorListeners != null) {
+                errorListeners.clear();
+            }
             errorListeners = null;
 
             if (inputGobbler != null) {
@@ -328,7 +338,10 @@ public class Command implements Runnable {
                 errorGobbler.dispose();
             }
             errorGobbler = null;
+
             logger.dispose();
+            process = null;
+            disposed = true;
         }
     }
 
