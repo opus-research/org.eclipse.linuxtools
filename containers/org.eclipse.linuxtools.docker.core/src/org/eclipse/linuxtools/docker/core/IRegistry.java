@@ -10,16 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
-import java.util.List;
-
 public interface IRegistry {
 
 	String getServerAddress();
-
-	public List<IDockerImageSearchResult> getImages(String term);
-
-	public List<IRepositoryTag> getTags(String repository);
-
-	public boolean isVersion2();
 
 }

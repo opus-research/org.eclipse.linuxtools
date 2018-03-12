@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -46,9 +45,7 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
-import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.docker.ui.Activator;
-import org.eclipse.linuxtools.internal.docker.core.RegistryInfo;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
@@ -78,7 +75,6 @@ public class ImageSearchPage extends WizardPage {
 
 	private final ImageSearchModel model;
 	private final DataBindingContext ctx = new DataBindingContext();
-	private IRegistry registry;
 
 	/**
 	 * Default constructor.
@@ -86,12 +82,11 @@ public class ImageSearchPage extends WizardPage {
 	 * @param model
 	 *            the model for this page
 	 */
-	public ImageSearchPage(final ImageSearchModel model, final IRegistry reg) {
+	public ImageSearchPage(final ImageSearchModel model) {
 		super("ImageSearchPage", //$NON-NLS-1$
 				WizardMessages.getString("ImageSearchPage.title"), //$NON-NLS-1$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
 		this.model = model;
-		this.registry = reg;
 	}
 
 	/**
@@ -286,15 +281,9 @@ public class ImageSearchPage extends WizardPage {
 					monitor -> {
 						monitor.beginTask(WizardMessages
 								.getString("ImageSearchPage.searchTask"), 1); //$NON-NLS-1$
-						final List<IDockerImageSearchResult> searchResults;
 						try {
-							List<String> dockerHubAliases = Arrays.asList(RegistryInfo.DOCKERHUB_REGISTRY_ALIASES);
-							if (dockerHubAliases.stream().anyMatch(a -> registry.getServerAddress().contains(a))) {
-								searchResults = ImageSearchPage.this.model
-										.getSelectedConnection().searchImages(term);
-							} else {
-								searchResults = registry.getImages(term);
-							}
+							final List<IDockerImageSearchResult> searchResults = ImageSearchPage.this.model
+									.getSelectedConnection().searchImages(term);
 							searchResultQueue.offer(searchResults);
 						} catch (DockerException e) {
 							Activator.log(e);
