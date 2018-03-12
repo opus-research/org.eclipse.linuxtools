@@ -64,11 +64,11 @@ public interface LTTngControlServiceConstants {
     /**
      * The lttng tools machine interface command.
      */
-    static final String CONTROL_COMMAND_MI = CONTROL_COMMAND + " --mi"; //$NON-NLS-1$
+    static final String CONTROL_COMMAND_MI = CONTROL_COMMAND + " --mi "; //$NON-NLS-1$
     /**
      * The lttng tools XML machine interface command.
      */
-    static final String CONTROL_COMMAND_MI_XML = CONTROL_COMMAND_MI + " xml"; //$NON-NLS-1$
+    static final String CONTROL_COMMAND_MI_XML = CONTROL_COMMAND_MI + " xml "; //$NON-NLS-1$
     /**
      * Command: lttng version.
      */
@@ -310,6 +310,11 @@ public interface LTTngControlServiceConstants {
      * Note: file for protocol is not considered as network trace since local consumer will be used.
      */
     static final Pattern TRACE_NETWORK_PATH_PATTERN = Pattern.compile("\\s*Trace\\s+path\\:\\s+(net|net4|net6|tcp|tcp6)\\:\\/\\/(.*)(\\:(\\d*)\\/(.*)\\[data\\:\\s+(\\d*)\\]){0,1}"); //$NON-NLS-1$
+    /**
+     * Pattern to match session path for network tracing
+     * Note: file for protocol is not considered as network trace since local consumer will be used.
+     */
+    static final Pattern TRACE_NETWORK_PATTERN = Pattern.compile("\\s*(net|net4|net6|tcp|tcp4|tcp6)\\:\\/\\/(.*)(\\:(\\d*)\\/(.*)\\[data\\:\\s+(\\d*)\\]){0,1}"); //$NON-NLS-1$
     /**
      * Sub-pattern to pattern TRACE_NETWORK_PATH_PATTERN to match file protocol
      */
