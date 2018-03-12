@@ -87,10 +87,8 @@ public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
         // The ConvexHull seems to be created on the fly in processMatch().
         for (int i = 0; i < traceArr.length; i++) {
             for (int j = i + 1; j < traceArr.length; j++) {
-                if (!traceArr[i].getHostId().equals(traceArr[j].getHostId())) {
-                    ConvexHull algo = new ConvexHull(traceArr[i].getHostId(), traceArr[j].getHostId());
-                    fSyncs.add(algo);
-                }
+                ConvexHull algo = new ConvexHull(traceArr[i].getHostId(), traceArr[j].getHostId());
+                fSyncs.add(algo);
             }
         }
     }
