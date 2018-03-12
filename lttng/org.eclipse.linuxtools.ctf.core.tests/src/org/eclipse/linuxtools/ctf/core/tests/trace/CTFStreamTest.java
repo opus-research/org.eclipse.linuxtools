@@ -127,7 +127,7 @@ public class CTFStreamTest {
      */
     @Test
     public void testGetEventContextDecl() {
-        assertNotNull(fixture.getEventContextDeclaration());
+        assertNotNull(fixture.getEventContextDecl());
     }
 
     /**

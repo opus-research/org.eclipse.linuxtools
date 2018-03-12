@@ -238,7 +238,7 @@ public class CtfTmfEvent extends TmfEvent
     private static CtfTmfEventField[] parseFields(@NonNull EventDefinition eventDef) {
         List<CtfTmfEventField> fields = new ArrayList<>();
 
-        ICompositeDefinition structFields = eventDef.getFieldDefinitions();
+        ICompositeDefinition structFields = eventDef.getFields();
         if (structFields != null) {
             if (structFields.getFieldNames() != null) {
                 for (String curFieldName : structFields.getFieldNames()) {
@@ -247,7 +247,7 @@ public class CtfTmfEvent extends TmfEvent
             }
         }
         /* Add context information as CtfTmfEventField */
-        ICompositeDefinition structContext = eventDef.getMergedContext();
+        ICompositeDefinition structContext = eventDef.getContext();
         if (structContext != null) {
             for (String contextName : structContext.getFieldNames()) {
                 /* Prefix field name */

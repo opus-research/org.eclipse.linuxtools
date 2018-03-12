@@ -17,7 +17,6 @@ import java.nio.ByteOrder;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.ICompositeDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
@@ -202,21 +201,9 @@ public class CTFStreamInputReader implements AutoCloseable {
      * Get the event context of the stream
      *
      * @return the event context declaration of the stream
-     * @deprecated use {@link CTFStreamInputReader#getStreamEventContextDeclaration()}
      */
-    @Deprecated
     public StructDeclaration getStreamEventContextDecl() {
         return getStreamInput().getStream().getEventContextDecl();
-    }
-
-    /**
-     * Get the event context
-     *
-     * @return the event context
-     * @since 3.1
-     */
-    public ICompositeDeclaration getStreamEventContextDeclaration() {
-        return getStreamInput().getStream().getEventContextDeclaration();
     }
 
     // ------------------------------------------------------------------------
