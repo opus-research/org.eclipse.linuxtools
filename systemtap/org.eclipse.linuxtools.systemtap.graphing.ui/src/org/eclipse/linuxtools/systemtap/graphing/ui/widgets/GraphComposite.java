@@ -32,6 +32,8 @@ import org.eclipse.swt.widgets.Display;
 
 /**
  * A Composite type to contain a Graph object.
+ * @author Henry Hughes
+ * @author Ryan Morse
  */
 public class GraphComposite extends Composite {
 
@@ -46,10 +48,6 @@ public class GraphComposite extends Composite {
     /**
      * The default constructor: creates an internal composite for the Graph to render on, asks GraphFactory
      * to create the graph from the given GraphData and DataSet, then initializes all buttons and listeners.
-     * @param parent Parent composite.
-     * @param style Style of the widget to create
-     * @param gd Graph information.
-     * @param ds Data set for the graph.
      */
     public GraphComposite(Composite parent, int style, GraphData gd, IDataSet ds) {
         super(parent, style);
@@ -126,7 +124,6 @@ public class GraphComposite extends Composite {
 
     /**
      * Returns the graph that is rendering to this composite.
-     * @return The AbstractChartBuilder to put data into.
      */
     public AbstractChartBuilder getCanvas() {
         return builder;
