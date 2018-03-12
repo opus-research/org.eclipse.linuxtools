@@ -115,7 +115,6 @@ public class CommandUtils {
 		}
 		return Collections.emptyList();
 	}
-
 	/**
 	 * @param activePart
 	 *            the active {@link IWorkbenchPart}
@@ -176,8 +175,7 @@ public class CommandUtils {
 		// console for the container id and get
 		// its stream.
 		if (autoLogOnStart) {
-			final RunConsole console = RunConsole.findConsole(container.id(),
-					RunConsole.DEFAULT_ID, container.name());
+			final RunConsole console = RunConsole.findConsole(container);
 			console.attachToConsole(connection);
 			console.clearConsole();
 			return console;
@@ -198,6 +196,25 @@ public class CommandUtils {
 	 */
 	public static boolean openWizard(final IWizard wizard, final Shell shell) {
 		final WizardDialog wizardDialog = new WizardDialog(shell, wizard);
+		wizardDialog.create();
+		return wizardDialog.open() == Window.OK;
+	}
+
+	/**
+	 * Opens the given {@link IWizard} and returns <code>true</code> if the user
+	 * finished the operation, <code>false</code> if he cancelled it.
+	 * 
+	 * @param wizard
+	 *            the wizard to open
+	 * @param shell
+	 *            the current {@link Shell}
+	 * @return <code>true</code> if the wizard completed, <code>false</code>
+	 *         otherwise.
+	 */
+	public static boolean openWizard(final IWizard wizard, final Shell shell,
+			final int width, final int height) {
+		final WizardDialog wizardDialog = new WizardDialog(shell, wizard);
+		wizardDialog.setPageSize(width, height);
 		wizardDialog.create();
 		return wizardDialog.open() == Window.OK;
 	}
