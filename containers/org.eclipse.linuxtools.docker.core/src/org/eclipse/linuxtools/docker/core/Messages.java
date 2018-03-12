@@ -23,7 +23,6 @@ public class Messages extends NLS {
 	public static String Exited_specifier;
 	public static String Running_specifier;
 	public static String Paused_specifier;
-	public static String Removal_In_Progress_specifier;
 	public static String Missing_Default_Settings;
 	public static String Missing_Settings;
 	public static String Retrieve_Default_Settings_Failure;
@@ -31,7 +30,6 @@ public class Messages extends NLS {
 	public static String Docker_Daemon_Ping_Failure;
 	public static String Retrieve_Docker_Certificates_Failure;
 	public static String List_Docker_Containers_Failure;
-	public static String List_Docker_Images_Failure;
 	public static String Docker_General_Info_Failure;
 	public static String Docker_No_Settings_Description_Script;
 	public static String Registry_Version_Mismatch;
