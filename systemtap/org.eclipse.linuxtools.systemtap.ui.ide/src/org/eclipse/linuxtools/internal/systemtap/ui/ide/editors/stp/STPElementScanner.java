@@ -35,8 +35,7 @@ public class STPElementScanner extends BufferedRuleBasedScanner {
             "while", "if", "delete", "#include", //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
             "function", "do", "print", "error", //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
             "log", "printd", "printdln", "println", //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
-			"sprint", "sprintf", "system", "warn", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			"continue", "try", "catch" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            "sprint", "sprintf", "system", "warn" }; //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
 
     /**
      *
