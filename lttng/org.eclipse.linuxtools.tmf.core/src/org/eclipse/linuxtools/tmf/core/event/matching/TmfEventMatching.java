@@ -25,6 +25,9 @@ import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 /**
  * Abstract class to extend to match certain type of events in a trace
  *
@@ -58,7 +61,7 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
 
     private static final Map<MatchingType, List<ITmfMatchEventDefinition>> fMatchDefinitions = new HashMap<>();
 
-    private final Map<ITmfTrace, ITmfMatchEventDefinition> fMatchMap = new HashMap<>();
+    private final Multimap<ITmfTrace, ITmfMatchEventDefinition> fMatchMap = HashMultimap.create();
 
     /**
      * Constructor with multiple traces and a match processing object
@@ -100,8 +103,28 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
      * @param trace
      *            The trace
      * @return The match event definition object
+     * @deprecated Multiple match definitions can be used for one trace, use
+     *             {@link #getEventDefinitions} instead. This method will return
+     *             the first match event definition available
      */
+    @Deprecated
     protected ITmfMatchEventDefinition getEventDefinition(ITmfTrace trace) {
+        Collection<ITmfMatchEventDefinition> collection = fMatchMap.get(trace);
+        if (collection.isEmpty()) {
+            return null;
+        }
+        return collection.iterator().next();
+    }
+
+    /**
+     * Returns the match event definitions corresponding to the trace
+     *
+     * @param trace
+     *            The trace
+     * @return The match event definition object
+     * @since 3.1
+     */
+    protected Collection<ITmfMatchEventDefinition> getEventDefinitions(ITmfTrace trace) {
         return fMatchMap.get(trace);
     }
 
@@ -120,7 +143,6 @@ public abstract class TmfEventMatching implements ITmfEventMatching {
             for (ITmfMatchEventDefinition def : deflist) {
                 if (def.canMatchTrace(trace)) {
                     fMatchMap.put(trace, def);
-                    break;
                 }
             }
         }
