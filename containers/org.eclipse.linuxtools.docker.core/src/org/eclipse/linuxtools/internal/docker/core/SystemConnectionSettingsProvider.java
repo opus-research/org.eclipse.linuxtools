@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.docker.core;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
@@ -27,7 +26,7 @@ public class SystemConnectionSettingsProvider implements IDockerConnectionSettin
 			TCPConnectionSettings tcp = new TCPConnectionSettings(dockerHostEnv, pathToCertificates);
 			return Arrays.asList(new IDockerConnectionSettings[] { tcp });
 		}
-		return Collections.emptyList();
+		return null;
 	}
 
 }

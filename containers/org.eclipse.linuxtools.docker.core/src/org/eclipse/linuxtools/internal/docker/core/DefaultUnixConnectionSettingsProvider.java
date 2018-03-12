@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.docker.core;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
@@ -42,7 +41,7 @@ public class DefaultUnixConnectionSettingsProvider implements IDockerConnectionS
 				// do nothing, just assume socket did not work.
 			}
 		}
-		return Collections.emptyList();
+		return null;
 	}
 
 }
