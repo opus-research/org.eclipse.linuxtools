@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
  * SWTBot tests for RepoFormEditor.
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class RepoFormEditorTest {
+public class CreaterepoRepoFormEditorTest {
 
     private static TestCreaterepoProject testProject;
     private static SWTWorkbenchBot bot;

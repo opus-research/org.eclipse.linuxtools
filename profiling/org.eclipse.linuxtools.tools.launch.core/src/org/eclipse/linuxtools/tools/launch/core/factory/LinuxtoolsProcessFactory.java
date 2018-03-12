@@ -61,7 +61,6 @@ public abstract class LinuxtoolsProcessFactory {
      * @param envp The list of new environment variables to use.
      * @param project If not <code>null</code>, only the environment of this project
      * will be updated.
-     * @return The new environment.
      */
     protected String[] updateEnvironment(String[] envp, IProject project) {
         String ltPath = LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project);
@@ -197,8 +196,7 @@ public abstract class LinuxtoolsProcessFactory {
 
     /**
      * Runs a command on the given host using the given
-     * credentials and waits for the process to finish executing, or until
-     * the executing thread is interrupted.
+     * credentials and waits for the process to finish executing.
      *
      * @param args The command to run, followed by a list of optional arguments.
      * @param out A stream for the command's standard output.
@@ -218,8 +216,7 @@ public abstract class LinuxtoolsProcessFactory {
 
     /**
      * Runs a command on the given host using the given
-     * credentials and waits for the process to finish executing, or until
-     * the executing thread is interrupted.
+     * credentials and waits for the process to finish executing.
      *
      * @param args The command to run, followed by a list of optional arguments.
      * @param out A stream for the command's standard output.

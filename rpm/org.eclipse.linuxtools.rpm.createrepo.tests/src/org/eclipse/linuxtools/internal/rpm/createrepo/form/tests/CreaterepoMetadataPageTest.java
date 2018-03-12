@@ -46,7 +46,7 @@ import org.osgi.service.prefs.BackingStoreException;
  * SWTBot tests for MetadataPage.
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class MetadataPageTest {
+public class CreaterepoMetadataPageTest {
 
     private static TestCreaterepoProject testProject;
     private static SWTWorkbenchBot bot;
