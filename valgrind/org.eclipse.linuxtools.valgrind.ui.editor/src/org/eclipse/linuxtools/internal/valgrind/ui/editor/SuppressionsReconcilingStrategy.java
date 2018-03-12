@@ -78,7 +78,12 @@ public class SuppressionsReconcilingStrategy implements IReconcilingStrategy,
         }
         monitor.done();
 
-        Display.getDefault().syncExec(() -> editor.updateFoldingStructure(positions.toArray(new Position[positions.size()])));
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                editor.updateFoldingStructure(positions.toArray(new Position[positions.size()]));
+            }
+        });
     }
 
     @Override

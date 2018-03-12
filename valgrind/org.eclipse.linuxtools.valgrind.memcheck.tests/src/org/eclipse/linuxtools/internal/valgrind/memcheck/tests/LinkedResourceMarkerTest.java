@@ -10,7 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.memcheck.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,7 +77,7 @@ public class LinkedResourceMarkerTest extends AbstractLinkedResourceMemcheckTest
     }
 
     private boolean isWorkspaceFrame(ValgrindStackFrame frame) {
-        ISourceLocator locator = frame.getSourceLocator();
+        ISourceLocator locator = frame.getLaunch().getSourceLocator();
         Object result = DebugUITools.lookupSource(frame.getFile(), locator)
                 .getSourceElement();
         return result != null && result instanceof IResource;

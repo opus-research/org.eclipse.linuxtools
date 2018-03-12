@@ -43,16 +43,19 @@ public class OpenVagrantfileCommandHandler extends BaseVMCommandHandler {
 
 	@Override
 	void executeInJob(IVagrantVM vm, IProgressMonitor monitor) {
-		Display.getDefault().asyncExec(() -> {
-			IWorkbenchPage activePage = Activator.getDefault().getWorkbench()
-					.getActiveWorkbenchWindow().getActivePage();
-			IPath vgFilePath = new Path(vm.directory().getAbsolutePath())
-					.append("Vagrantfile"); //$NON-NLS-1$
-			IFileStore file = EFS.getLocalFileSystem().getStore(vgFilePath);
-			try {
-				IDE.openEditorOnFileStore(activePage, file);
-			} catch (PartInitException e) {
-				Activator.log(e);
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbenchPage activePage = Activator.getDefault().getWorkbench()
+						.getActiveWorkbenchWindow().getActivePage();
+				IPath vgFilePath = new Path(vm.directory().getAbsolutePath())
+						.append("Vagrantfile"); //$NON-NLS-1$
+				IFileStore file = EFS.getLocalFileSystem().getStore(vgFilePath);
+				try {
+					IDE.openEditorOnFileStore(activePage, file);
+				} catch (PartInitException e) {
+					Activator.log(e);
+				}
 			}
 		});
 	}

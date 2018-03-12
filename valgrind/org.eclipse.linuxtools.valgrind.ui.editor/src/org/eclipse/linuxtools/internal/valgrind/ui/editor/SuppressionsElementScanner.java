@@ -22,6 +22,7 @@ import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.IWhitespaceDetector;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
 import org.eclipse.swt.SWT;
@@ -64,6 +65,11 @@ public class SuppressionsElementScanner extends BufferedRuleBasedScanner {
                 new SuppressionToolRule(tools, toolToken),
                 new SuppressionKindRule(kinds, suppKindToken),
                 new SuppressionToolRule(CONTEXTS, contextToken),
-                new WhitespaceRule(c -> Character.isWhitespace(c)) });
+                new WhitespaceRule(new IWhitespaceDetector() {
+                    @Override
+                    public boolean isWhitespace(char c) {
+                        return Character.isWhitespace(c);
+                    }
+                }) });
     }
 }
