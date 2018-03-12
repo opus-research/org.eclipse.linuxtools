@@ -19,8 +19,7 @@ import java.util.List;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -44,20 +43,17 @@ import org.eclipse.ui.IWorkbenchPart;
 public class CommandUtils {
 
 	/**
-	 * Refreshes (async) the {@link TableViewer} or {@link TreeViewer} in the
-	 * given {@link IWorkbenchPart}.
+	 * Refreshes (async) the {@link Viewer}.
 	 * 
-	 * @param activePart
-	 *            - active Workbench part
+	 * @param viewer
+	 *            - the {@link Viewer} to refresh
 	 */
-	public static void refresh(final IWorkbenchPart activePart) {
+	public static void refresh(final Viewer viewer) {
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override
 			public void run() {
-				if (activePart instanceof DockerContainersView) {
-					((DockerContainersView) activePart).getViewer().refresh();
-				} else if (activePart instanceof DockerImagesView) {
-					((DockerImagesView) activePart).getViewer().refresh();
+				if (viewer != null && !viewer.getControl().isDisposed()) {
+					viewer.refresh();
 				}
 			}
 		});
@@ -115,6 +111,7 @@ public class CommandUtils {
 		}
 		return Collections.emptyList();
 	}
+
 	/**
 	 * @param activePart
 	 *            the active {@link IWorkbenchPart}
@@ -175,7 +172,8 @@ public class CommandUtils {
 		// console for the container id and get
 		// its stream.
 		if (autoLogOnStart) {
-			final RunConsole console = RunConsole.findConsole(container);
+			final RunConsole console = RunConsole.findConsole(container.id(),
+					RunConsole.DEFAULT_ID, container.name());
 			console.attachToConsole(connection);
 			console.clearConsole();
 			return console;
@@ -196,25 +194,6 @@ public class CommandUtils {
 	 */
 	public static boolean openWizard(final IWizard wizard, final Shell shell) {
 		final WizardDialog wizardDialog = new WizardDialog(shell, wizard);
-		wizardDialog.create();
-		return wizardDialog.open() == Window.OK;
-	}
-
-	/**
-	 * Opens the given {@link IWizard} and returns <code>true</code> if the user
-	 * finished the operation, <code>false</code> if he cancelled it.
-	 * 
-	 * @param wizard
-	 *            the wizard to open
-	 * @param shell
-	 *            the current {@link Shell}
-	 * @return <code>true</code> if the wizard completed, <code>false</code>
-	 *         otherwise.
-	 */
-	public static boolean openWizard(final IWizard wizard, final Shell shell,
-			final int width, final int height) {
-		final WizardDialog wizardDialog = new WizardDialog(shell, wizard);
-		wizardDialog.setPageSize(width, height);
 		wizardDialog.create();
 		return wizardDialog.open() == Window.OK;
 	}

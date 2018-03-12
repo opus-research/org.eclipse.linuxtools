@@ -29,21 +29,21 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 	private final Long memorySwap;
 	private final Long cpuShares;
 	private final String cpuset;
-	private final boolean attachStdin;
-	private final boolean attachStdout;
-	private final boolean attachStderr;
+	private final Boolean attachStdin;
+	private final Boolean attachStdout;
+	private final Boolean attachStderr;
 	private final List<String> portSpecs;
 	private final Set<String> exposedPorts;
-	private final boolean tty;
-	private final boolean openStdin;
-	private final boolean stdinOnce;
+	private final Boolean tty;
+	private final Boolean openStdin;
+	private final Boolean stdinOnce;
 	private final List<String> env;
 	private final List<String> cmd;
 	private final String image;
 	private final Set<String> volumes;
 	private final String workingDir;
 	private final List<String> entrypoint;
-	private final boolean networkDisabled;
+	private final Boolean networkDisabled;
 	private final List<String> onBuild;
 
 	public DockerContainerConfig(final ContainerConfig containerConfig) {
@@ -54,28 +54,21 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		this.memorySwap = containerConfig.memorySwap();
 		this.cpuShares = containerConfig.cpuShares();
 		this.cpuset = containerConfig.cpuset();
-		this.attachStdin = containerConfig.attachStdin() != null
-				? containerConfig.attachStdin() : false;
-		this.attachStdout = containerConfig.attachStdout() != null
-				? containerConfig.attachStdout() : false;
-		this.attachStderr = containerConfig.attachStderr() != null
-				? containerConfig.attachStderr() : false;
+		this.attachStdin = containerConfig.attachStdin();
+		this.attachStdout = containerConfig.attachStdout();
+		this.attachStderr = containerConfig.attachStderr();
 		this.portSpecs = containerConfig.portSpecs();
 		this.exposedPorts = containerConfig.exposedPorts();
-		this.tty = containerConfig.tty() != null ? containerConfig.tty()
-				: false;
-		this.openStdin = containerConfig.openStdin() != null
-				? containerConfig.openStdin() : false;
-		this.stdinOnce = containerConfig.stdinOnce() != null
-				? containerConfig.stdinOnce() : false;
+		this.tty = containerConfig.tty();
+		this.openStdin = containerConfig.openStdin();
+		this.stdinOnce = containerConfig.stdinOnce();
 		this.env = containerConfig.env();
 		this.cmd = containerConfig.cmd();
 		this.image = containerConfig.image();
 		this.volumes = containerConfig.volumes();
 		this.workingDir = containerConfig.workingDir();
 		this.entrypoint = containerConfig.entrypoint();
-		this.networkDisabled = containerConfig.networkDisabled() != null
-				? containerConfig.networkDisabled() : false;
+		this.networkDisabled = containerConfig.networkDisabled();
 		this.onBuild = containerConfig.onBuild();
 	}
 
@@ -88,23 +81,20 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		this.cpuShares = builder.cpuShares;
 		this.cpuset = builder.cpuset;
 		this.attachStdin = builder.attachStdin;
-		this.attachStdout = builder.attachStdout != null ? builder.attachStdout
-				: false;
-		this.attachStderr = builder.attachStderr != null ? builder.attachStderr
-				: false;
+		this.attachStdout = builder.attachStdout;
+		this.attachStderr = builder.attachStderr;
 		this.portSpecs = builder.portSpecs;
 		this.exposedPorts = builder.exposedPorts;
-		this.tty = builder.tty != null ? builder.tty : false;
-		this.openStdin = builder.openStdin != null ? builder.openStdin : false;
-		this.stdinOnce = builder.stdinOnce != null ? builder.stdinOnce : false;
+		this.tty = builder.tty;
+		this.openStdin = builder.openStdin;
+		this.stdinOnce = builder.stdinOnce;
 		this.env = builder.env;
 		this.cmd = builder.cmd;
 		this.image = builder.image;
 		this.volumes = builder.volumes;
 		this.workingDir = builder.workingDir;
 		this.entrypoint = builder.entrypoint;
-		this.networkDisabled = builder.networkDisabled != null
-				? builder.networkDisabled : false;
+		this.networkDisabled = builder.networkDisabled;
 		this.onBuild = builder.onBuild;
 	}
 
@@ -144,17 +134,17 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 	}
 
 	@Override
-	public boolean attachStdin() {
+	public Boolean attachStdin() {
 		return attachStdin;
 	}
 
 	@Override
-	public boolean attachStdout() {
+	public Boolean attachStdout() {
 		return attachStdout;
 	}
 
 	@Override
-	public boolean attachStderr() {
+	public Boolean attachStderr() {
 		return attachStderr;
 	}
 
@@ -169,17 +159,17 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 	}
 
 	@Override
-	public boolean tty() {
+	public Boolean tty() {
 		return tty;
 	}
 
 	@Override
-	public boolean openStdin() {
+	public Boolean openStdin() {
 		return openStdin;
 	}
 
 	@Override
-	public boolean stdinOnce() {
+	public Boolean stdinOnce() {
 		return stdinOnce;
 	}
 
@@ -214,7 +204,7 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 	}
 
 	@Override
-	public boolean networkDisabled() {
+	public Boolean networkDisabled() {
 		return networkDisabled;
 	}
 
@@ -340,6 +330,7 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder portSpecs(final List<String> portSpecs) {
+
 			this.portSpecs = new ArrayList<>(portSpecs);
 			return this;
 		}
@@ -409,18 +400,12 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder cmd(final List<String> cmd) {
-			this.cmd = cmd;
+			this.cmd = new ArrayList<>(cmd);
 			return this;
 		}
 
 		public Builder cmd(final String... cmd) {
-			return cmd(Arrays.asList(cmd));
-		}
-
-		public Builder cmd(final String cmd) {
-			if (cmd != null && !cmd.isEmpty()) {
-				return cmd(cmd.split(" "));
-			}
+			this.cmd = Arrays.asList(cmd);
 			return this;
 		}
 
@@ -461,22 +446,12 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder entryPoint(final List<String> entrypoint) {
-			if (entrypoint != null && !entrypoint.isEmpty()) {
-				this.entrypoint = new ArrayList<>(entrypoint);
-			}
+			this.entrypoint = new ArrayList<>(entrypoint);
 			return this;
 		}
 
 		public Builder entryPoint(final String... entrypoint) {
-			return entryPoint(Arrays.asList(entrypoint));
-		}
-
-		public Builder entryPoint(final String entrypoint) {
-			if (entrypoint != null && !entrypoint.isEmpty()) {
-				return entryPoint(entrypoint.split(" "));
-			} else {
-				this.entrypoint = null;
-			}
+			this.entrypoint = Arrays.asList(entrypoint);
 			return this;
 		}
 
