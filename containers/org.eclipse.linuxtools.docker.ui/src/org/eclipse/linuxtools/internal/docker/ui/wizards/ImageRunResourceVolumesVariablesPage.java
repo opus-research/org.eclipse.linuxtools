@@ -356,6 +356,11 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 				dialog.create();
 				if (dialog.open() == IDialogConstants.OK_ID) {
 					model.getDataVolumes().add(dialog.getDataVolume());
+					// Select the volume by default if it has been added
+					// Resolves bug 474622
+					dataVolumesTableViewer.setChecked(dialog.getDataVolume(),
+							true);
+					model.getSelectedDataVolumes().add(dialog.getDataVolume());
 					dataVolumesTableViewer.refresh();
 				}
 			}
