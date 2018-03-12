@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2015 Intel Corporation and others
+ * Copyright (c) 2007, 2014 Intel Corporation and others
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -159,6 +159,44 @@ public class TimeGraphControl extends TimeGraphBaseControl
 
     private int fBorderWidth = 0;
     private int fHeaderHeight = 0;
+
+    private MouseScrollNotifier fMouseScrollNotifier;
+    private final Object fMouseScrollNotifierLock = new Object();
+
+    private class MouseScrollNotifier extends Thread {
+        private static final long DELAY = 400L;
+        private static final long POLLING_INTERVAL = 10L;
+        private long fLastScrollTime = Long.MAX_VALUE;
+
+        @Override
+        public void run() {
+            while ((System.currentTimeMillis() - fLastScrollTime) < DELAY) {
+                try {
+                    Thread.sleep(POLLING_INTERVAL);
+                } catch (Exception e) {
+                    return;
+                }
+            }
+            if (!isInterrupted()) {
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isDisposed()) {
+                            return;
+                        }
+                        fTimeProvider.notifyStartFinishTime();
+                    }
+                });
+            }
+            synchronized (fMouseScrollNotifierLock) {
+                fMouseScrollNotifier = null;
+            }
+        }
+
+        public void mouseScrolled() {
+            fLastScrollTime = System.currentTimeMillis();
+        }
+    }
 
     /**
      * Standard constructor
@@ -882,7 +920,14 @@ public class TimeGraphControl extends TimeGraphBaseControl
         long center = time0 + Math.round(((double) (xPos - nameSpace) / timeSpace * interval));
         long newTime0 = center - Math.round((double) newInterval * (center - time0) / interval);
         long newTime1 = newTime0 + newInterval;
-        fTimeProvider.setStartFinishTimeNotify(newTime0, newTime1);
+        fTimeProvider.setStartFinishTime(newTime0, newTime1);
+        synchronized (fMouseScrollNotifierLock) {
+            if (fMouseScrollNotifier == null) {
+                fMouseScrollNotifier = new MouseScrollNotifier();
+                fMouseScrollNotifier.start();
+            }
+            fMouseScrollNotifier.mouseScrolled();
+        }
     }
 
     /**
