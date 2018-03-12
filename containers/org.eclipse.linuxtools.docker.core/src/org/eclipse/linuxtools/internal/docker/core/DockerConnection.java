@@ -119,7 +119,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 
 		public Builder tcpHost(String tcpHost) {
-			if (tcpHost != null) {
+			if (tcpHost != null && !tcpHost.isEmpty()) {
 				if (!tcpHost.matches("\\w+://.*")) { //$NON-NLS-1$
 					tcpHost = "tcp://" + tcpHost; //$NON-NLS-1$
 				}
@@ -280,8 +280,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void ping() throws DockerException {
 		try {
-			if (client != null) {
-				client.ping();
+			if (this.client != null) {
+				this.client.ping();
 			} else {
 				throw new DockerException(Messages.Docker_Daemon_Ping_Failure);
 			}
@@ -294,7 +294,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void close() {
 		synchronized (clientLock) {
-			if (client != null) {
+			if (this.client != null) {
 				this.client.close();
 				this.client = null;
 			}
