@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>6.2.0-SNAPSHOT</version>
+    <version>6.1.1</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.releng</groupId>
@@ -45,7 +45,6 @@
   <modules>
     <module>org.eclipse.linuxtools.releng-site</module>
     <module>org.eclipse.linuxtools.docker-site</module>
-    <module>org.eclipse.linuxtools.mylyn-site</module>
     <module>org.eclipse.linuxtools.target</module>
   </modules>
 

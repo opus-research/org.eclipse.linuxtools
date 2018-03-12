@@ -22,6 +22,7 @@ import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.condition.ContainerIsDeployedCondition;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunResourceVolumesVariablesPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
+import org.eclipse.linuxtools.docker.reddeer.ui.BrowserView;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFactory;
@@ -30,9 +31,8 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionF
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.eclipse.condition.ConsoleHasNoChange;
-import org.eclipse.reddeer.eclipse.ui.browser.WebBrowserView;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.eclipse.condition.ConsoleHasNoChange;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +40,7 @@ import org.junit.Test;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
 /**
- *
+ * 
  * @author jkopriva@redhat.com
  * @contributor adietish@redhat.com
  */
@@ -66,12 +66,12 @@ public class VolumeMountTest extends AbstractImageBotTest {
 		DockerImagesTab imagesTab = openDockerImagesTab();
 		imagesTab.runImage(IMAGE_UHTTPD + ":" + IMAGE_TAG_LATEST);
 
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(imagesTab);
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.setPublishAllExposedPorts(true);
 		firstPage.next();
 
-		ImageRunResourceVolumesVariablesPage secondPage = new ImageRunResourceVolumesVariablesPage(firstPage);
+		ImageRunResourceVolumesVariablesPage secondPage = new ImageRunResourceVolumesVariablesPage();
 		String volumePath = (new File(VOLUME_PATH)).getCanonicalPath();
 		secondPage.addDataVolumeToHost(CONTAINER_PATH, volumePath);
 		secondPage.finish();
@@ -92,7 +92,7 @@ public class VolumeMountTest extends AbstractImageBotTest {
 	private String getIndexPageContent() throws IOException {
 		String containerIP = getContainerIP(CONTAINER_NAME);
 		String url = "http://" + containerIP + ":" + HOST_PORT + "/" + INDEX_PAGE;
-		WebBrowserView browserView = new WebBrowserView();
+		BrowserView browserView = new BrowserView();
 		browserView.open();
 		if (mockitoIsUsed()) {
 			browserView = MockUtils.getBrowserView(INDEX_PAGE_PATH, getResourceAsString(INDEX_PAGE_PATH));
@@ -113,7 +113,6 @@ public class VolumeMountTest extends AbstractImageBotTest {
 		MockDockerConnectionManager.configureConnectionManager(dockerConnection);
 	}
 
-	@Override
 	@After
 	public void after() {
 		deleteContainerIfExists(CONTAINER_NAME);

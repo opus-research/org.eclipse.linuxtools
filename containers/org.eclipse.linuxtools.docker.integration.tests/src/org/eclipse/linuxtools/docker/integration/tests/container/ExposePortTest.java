@@ -16,17 +16,17 @@ import java.io.IOException;
 import org.eclipse.linuxtools.docker.integration.tests.image.AbstractImageBotTest;
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
+import org.eclipse.linuxtools.docker.reddeer.ui.BrowserView;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
 import org.eclipse.linuxtools.docker.reddeer.utils.BrowserContentsCheck;
 import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.eclipse.condition.ConsoleHasNoChange;
-import org.eclipse.reddeer.eclipse.ui.browser.WebBrowserView;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.eclipse.condition.ConsoleHasNoChange;
 import org.junit.After;
 import org.junit.Test;
 
 /**
- *
+ * 
  * @author jkopriva@redhat.com
  *
  */
@@ -48,7 +48,7 @@ public class ExposePortTest extends AbstractImageBotTest {
 	}
 
 	private void assertPortIsAccessible(String exposedPort) {
-		WebBrowserView browserView = new WebBrowserView();
+		BrowserView browserView = new BrowserView();
 		browserView.open();
 		String url = createURL(":" + exposedPort);
 		if (!mockitoIsUsed()) {
@@ -58,7 +58,7 @@ public class ExposePortTest extends AbstractImageBotTest {
 
 	private void runContainer(String imageName, String imageTag, String containerName, DockerImagesTab imagesTab) {
 		imagesTab.runImage(imageName + ":" + imageTag);
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(imagesTab);
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
 		firstPage.setContainerName(containerName);
 		firstPage.setPublishAllExposedPorts(false);
 		firstPage.finish();
@@ -66,7 +66,6 @@ public class ExposePortTest extends AbstractImageBotTest {
 		new WaitWhile(new ConsoleHasNoChange());
 	}
 
-	@Override
 	@After
 	public void after() {
 		deleteContainerIfExists(CONTAINER_NAME);
