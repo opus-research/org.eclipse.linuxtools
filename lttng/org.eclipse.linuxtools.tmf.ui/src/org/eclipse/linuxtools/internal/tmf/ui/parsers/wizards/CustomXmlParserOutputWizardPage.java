@@ -22,7 +22,7 @@ import java.util.List;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomEventsTablePreview;
+import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomEventsTable;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition.OutputColumn;
@@ -60,7 +60,7 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
     private ScrolledComposite outputsScrolledComposite;
     private Composite outputsContainer;
     private Composite tableContainer;
-    private CustomEventsTablePreview previewTable;
+    private CustomEventsTable previewTable;
     private File tmpFile;
 
     /**
@@ -106,7 +106,7 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
         tableLayout.marginHeight = 0;
         tableLayout.marginWidth = 0;
         tableContainer.setLayout(tableLayout);
-        previewTable = new CustomEventsTablePreview(new CustomXmlTraceDefinition(), tableContainer, 0);
+        previewTable = new CustomEventsTable(new CustomXmlTraceDefinition(), tableContainer, 0);
         previewTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         if (wizard.definition != null) {
@@ -233,7 +233,7 @@ public class CustomXmlParserOutputWizardPage extends WizardPage {
             };
             trace.getIndexer().buildIndex(0, TmfTimeRange.ETERNITY, false);
             previewTable.dispose();
-            previewTable = new CustomEventsTablePreview(definition, tableContainer, CACHE_SIZE);
+            previewTable = new CustomEventsTable(definition, tableContainer, CACHE_SIZE);
             previewTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
             previewTable.setTrace(trace, true);
         } catch (final TmfTraceException e) {
