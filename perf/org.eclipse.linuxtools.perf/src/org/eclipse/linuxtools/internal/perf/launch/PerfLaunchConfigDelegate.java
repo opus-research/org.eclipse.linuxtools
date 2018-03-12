@@ -59,6 +59,7 @@ import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteConnection;
 import org.eclipse.linuxtools.profiling.launch.RemoteConnectionException;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyNatureMapping;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -99,11 +100,11 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
             if(binPath==null) {
             	CDebugUtils.verifyProgramPath( config );
             }
-            if (binPath.removeLastSegments(2).toPortableString().equals(EMPTY_STRING)) {
-            	workingDirPath=Path.fromPortableString(getWorkingDirectory(config).toURI().getPath());
-            } else {
-            	workingDirPath=Path.fromPortableString((binPath.removeLastSegments(2).toPortableString()) + IPath.SEPARATOR);
+            if (!binPath.isAbsolute()) {
+                URI uri = new URI(RemoteProxyManager.getInstance().getRemoteProjectLocation(project) + IPath.SEPARATOR + binPath);
+                binPath = Path.fromPortableString(uri.getPath());
             }
+            workingDirPath=Path.fromPortableString(getWorkingDirectory(config).toURI().getPath());
 
             PerfPlugin.getDefault().setWorkingDir(workingDirPath);
             if (config.getAttribute(PerfPlugin.ATTR_ShowStat,
@@ -112,7 +113,9 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
             } else {
                 String perfPathString = RuntimeProcessFactory.getFactory().whichCommand(PerfPlugin.PERF_COMMAND, project);
                 IFileStore workingDir;
-                URI workingDirURI = new URI(RemoteProxyManager.getInstance().getRemoteProjectLocation(project));
+                String scheme = new RemoteProxyNatureMapping().getSchemeFromNature(project);
+                scheme = (scheme == null) ? "file:" : scheme; //$NON-NLS-1$
+                URI workingDirURI = new URI(scheme + workingDirPath);
                 RemoteConnection workingDirRC = new RemoteConnection(workingDirURI);
                 IRemoteFileProxy workingDirRFP = workingDirRC.getRmtFileProxy();
                 workingDir = workingDirRFP.getResource(workingDirURI.getPath());
@@ -199,7 +202,7 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
 
                 URI perfDataURI = null;
                 IRemoteFileProxy proxy = null;
-                perfDataURI = new URI(RemoteProxyManager.getInstance().getRemoteProjectLocation(project) + IPath.SEPARATOR + PerfPlugin.PERF_DEFAULT_DATA);
+                perfDataURI = new URI(workingDirURI.toString() + IPath.SEPARATOR + PerfPlugin.PERF_DEFAULT_DATA);
                 proxy = RemoteProxyManager.getInstance().getFileProxy(perfDataURI);
                 IFileStore perfDataFileStore = proxy.getResource(perfDataURI.getPath());
                 IFileInfo info = perfDataFileStore.fetchInfo();
