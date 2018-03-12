@@ -72,6 +72,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
+import org.eclipse.linuxtools.internal.tmf.core.filter.TmfCollapseFilter;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.internal.tmf.ui.commands.ExportToTextCommandHandler;
@@ -265,7 +266,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     private SashForm fSashForm;
     private TmfRawEventViewer fRawViewer;
     private ITmfTrace fTrace;
-    private boolean fPackDone = false;
+    volatile private boolean fPackDone = false;
     private HeaderState fHeaderState = HeaderState.SEARCH;
     private long fSelectedRank = 0;
     private ITmfTimestamp fSelectedBeginTimestamp = null;
@@ -408,6 +409,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             fColumns.addAll(columns);
         }
 
+        TmfMarginColumn collapseCol = new TmfMarginColumn();
+        fColumns.add(0, collapseCol);
+
         // Create the UI columns in the table
         for (TmfEventTableColumn col : fColumns) {
             TableColumn column = fTable.newTableColumn(SWT.LEFT);
@@ -494,7 +498,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
 
                 final CachedEvent cachedEvent = fCache.getEvent(index);
                 if (cachedEvent != null) {
-                    setItemData(item, cachedEvent.event, cachedEvent.rank);
+                    setItemData(item, cachedEvent, cachedEvent.rank);
                     return;
                 }
 
@@ -819,9 +823,13 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 try {
                     HashMap<String, Object> parameters = new HashMap<>();
                     Command command = cmdService.getCommand(ExportToTextCommandHandler.COMMAND_ID);
-                    ParameterizedCommand cmd = ParameterizedCommand.generateCommand(command,parameters);
+                    ParameterizedCommand cmd = ParameterizedCommand.generateCommand(command, parameters);
+
                     IEvaluationContext context = handlerService.getCurrentState();
-                    context.addVariable(ExportToTextCommandHandler.TMF_EVENT_TABLE_COLUMNS_ID, fColumns);
+                    // Omit the margin column
+                    List<TmfEventTableColumn> exportColumns = fColumns.subList(1, fColumns.size());
+                    context.addVariable(ExportToTextCommandHandler.TMF_EVENT_TABLE_COLUMNS_ID, exportColumns);
+
                     handlerService.executeCommandInContext(cmd, null, context);
                 } catch (ExecutionException e) {
                     displayException(e);
@@ -942,6 +950,16 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         }
                     }
                 }
+
+                final IAction collapseAction = new Action(Messages.TmfEventsTable_CollapseFilterMenuName) {
+                    @Override
+                    public void run() {
+
+                        applyFilter(new TmfCollapseFilter());
+                    }
+                };
+                tablePopupMenu.add(collapseAction);
+                tablePopupMenu.add(new Separator());
 
                 tablePopupMenu.add(clearFiltersAction);
                 final ITmfFilterTreeNode[] savedFilters = FilterManager.getSavedFilters();
@@ -1140,7 +1158,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             txtKey = Key.FILTER_TXT;
         }
         item.setForeground(fGrayColor);
-        for (int i = 0; i < fTable.getColumns().length; i++) {
+        // Ignore collapse and image column
+        for (int i = 1; i < fTable.getColumns().length; i++) {
             final TableColumn column = fTable.getColumns()[i];
             final String filter = (String) column.getData(txtKey);
             if (filter == null) {
@@ -1166,14 +1185,14 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      *            The item to use as filter status row
      */
     protected void setFilterStatusRowItemData(final TableItem item) {
-        for (int i = 0; i < fTable.getColumns().length; i++) {
-            if (i == 0) {
+        for (int i = 1; i < fTable.getColumns().length; i++) {
+            if (i == 1) {
                 if ((fTrace == null) || (fFilterCheckCount == fTrace.getNbEvents())) {
                     item.setImage(FILTER_IMAGE);
                 } else {
                     item.setImage(STOP_IMAGE);
                 }
-                item.setText(0, fFilterMatchCount + "/" + fFilterCheckCount); //$NON-NLS-1$
+                item.setText(1, fFilterMatchCount + "/" + fFilterCheckCount); //$NON-NLS-1$
             } else {
                 item.setText(i, ""); //$NON-NLS-1$
             }
@@ -1503,6 +1522,10 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         }
         fireFilterApplied(null);
         updateStatusLine(null);
+
+        // Set original width
+        fTable.getColumns()[0].setWidth(0);
+        forcePackColumns();
     }
 
     /**
@@ -1543,13 +1566,20 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     if (request.isCancelled()) {
                         return;
                     }
+                    boolean refresh = false;
                     if (filter.matches(event)) {
                         final long rank = fFilterCheckCount;
                         final int index = (int) fFilterMatchCount;
                         fFilterMatchCount++;
                         fCache.storeEvent(event, rank, index);
-                        refreshTable();
-                    } else if ((fFilterCheckCount % 100) == 0) {
+                        refresh = true;
+                    } else {
+                        if (filter instanceof TmfCollapseFilter) {
+                            fCache.updateCollapsedEvent((int)fFilterMatchCount);
+                        }
+                    }
+
+                    if (refresh || (fFilterCheckCount % 100) == 0) {
                         refreshTable();
                     }
                     fFilterCheckCount++;
@@ -1600,6 +1630,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                             refreshTable();
                         }
                     }
+                    forcePackColumns();
                 }
             });
         }
@@ -1880,6 +1911,11 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fBoldFont = fResourceManager.createFont(FontDescriptor.createFrom(fTable.getFont()).setStyle(SWT.BOLD));
     }
 
+    private void forcePackColumns() {
+        fPackDone = false;
+        packColumns();
+    }
+
     /**
      * Pack the columns.
      */
@@ -1894,12 +1930,15 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         TableColumn tableColumns[] = fTable.getColumns();
         for (int i = 0; i < tableColumns.length; i++) {
             final TableColumn column = tableColumns[i];
+
             final int headerWidth = column.getWidth();
             column.pack();
             // Workaround for Linux which doesn't consider the image width of
             // search/filter row in TableColumn.pack() after having executed
             // TableItem.setImage((Image)null) for other rows than search/filter row.
-            if (isLinux && (i == 0)) {
+            boolean isCollapseFilter = fTable.getData(Key.FILTER_OBJ) instanceof TmfCollapseFilter;
+
+            if (isLinux && (i == 0) && isCollapseFilter) {
                 column.setWidth(column.getWidth() + SEARCH_IMAGE.getBounds().width);
             }
 
@@ -1924,6 +1963,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      * this method is called, the returned value won't be ordered correctly
      * anymore.
      */
+    @SuppressWarnings("null")
     private static String[] getItemStrings(List<TmfEventTableColumn> columns, ITmfEvent event) {
         if (event == null) {
             return EMPTY_STRING_ARRAY;
@@ -1931,7 +1971,13 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         synchronized (columns) {
             List<String> itemStrings = new ArrayList<>(columns.size());
             for (TmfEventTableColumn column : columns) {
-                itemStrings.add(column.getItemString(event));
+                ITmfEvent passedEvent = event;
+                if (!(column instanceof TmfMarginColumn) && (event instanceof CachedEvent)) {
+                    // Make sure that the event object from the trace is passed
+                    // to all columns but the TmfMarginColumn
+                    passedEvent = ((CachedEvent) event).event;
+                }
+                itemStrings.add(column.getItemString(passedEvent));
             }
             return itemStrings.toArray(new String[0]);
         }
@@ -2417,4 +2463,33 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fTable.refresh();
         fTable.redraw();
     }
+
+    /**
+    * Margin column for images and special text (e.g. collapse count)
+    */
+   private static final class TmfMarginColumn extends TmfEventTableColumn {
+
+       private static final @NonNull String HEADER = ""; //$NON-NLS-1$
+
+       /**
+        * Constructor
+        */
+       public TmfMarginColumn() {
+           super(HEADER);
+       }
+
+       @Override
+       public String getItemString(ITmfEvent event) {
+           if (!(event instanceof CachedEvent) || ((CachedEvent) event).repeatCount == 0) {
+               return EMPTY_STRING;
+           }
+           return "+" + ((CachedEvent) event).repeatCount; //$NON-NLS-1$
+       }
+
+       @Override
+       public String getFilterFieldId() {
+           return null;
+       }
+   }
+
 }
