@@ -227,7 +227,7 @@ public class NewDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldNotAllowNewConnectionWithDifferentNameAndSameTCPSettings() {
+	public void shouldNotAllowNewConnectionWithDifferentNameAndSameTCPSettings() throws IOException {
 		// given
 		MockDockerConnectionSettingsFinder.validTCPConnectionAvailable("Mock", "https://foo:1234", null);
 		// add an existing connection based on the settings above
@@ -262,7 +262,7 @@ public class NewDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldAllowNewConnectionWithDifferentNameAndTCPSettings() {
+	public void shouldAllowNewConnectionWithDifferentNameAndTCPSettings() throws IOException {
 		// given
 		MockDockerConnectionSettingsFinder.validTCPConnectionAvailable("Mock", "https://foo:1234", null);
 		// add an existing connection based on the settings above

@@ -77,7 +77,7 @@ public class ContainerCopyFromPage extends WizardPage {
 
 	private IImportStructureProvider structureProvider;
 
-	private boolean canBrowseContainer;
+	private boolean isRunning;
 
     // the visual selection widget group
     CheckboxTreeAndListGroup selectionGroup;
@@ -104,12 +104,10 @@ public class ContainerCopyFromPage extends WizardPage {
 	 *            container
 	 * @param containerName
 	 *            - name of container
-	 * @param canBrowseContainer
-	 *            - whether we can browse the Container's file system
 	 */
 	public ContainerCopyFromPage(FileSystemElement fileSystemElement,
 			IImportStructureProvider structureProvider, String containerName,
-			boolean canBrowseContainer) {
+			boolean isRunning) {
 		super(WizardMessages.getString(NAME));
 		setDescription(WizardMessages.getFormattedString(DESC,
 				containerName));
@@ -117,7 +115,7 @@ public class ContainerCopyFromPage extends WizardPage {
 		setImageDescriptor(SWTImagesFactory.DESC_WIZARD);
         root = fileSystemElement;
 		this.structureProvider = structureProvider;
-		this.canBrowseContainer = canBrowseContainer;
+		this.isRunning = isRunning;
     }
 
 
@@ -133,7 +131,7 @@ public class ContainerCopyFromPage extends WizardPage {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Iterator getValueIterator() {
-		if (canBrowseContainer) {
+		if (isRunning) {
 			return selectionGroup.getAllWhiteCheckedItems();
 		} else {
 			// We need to fake a collection of MinimizedFileSystemElement with
@@ -168,7 +166,7 @@ public class ContainerCopyFromPage extends WizardPage {
 		}
 
 		if (!error) {
-			if (canBrowseContainer) {
+			if (isRunning) {
 				if (selectionGroup.getCheckedElementCount() == 0) {
 					error = true;
 					setErrorMessage(
@@ -228,7 +226,7 @@ public class ContainerCopyFromPage extends WizardPage {
 
 		Composite selectionComposite = null;
 
-		if (canBrowseContainer) {
+		if (isRunning) {
 			selectionComposite = new Composite(composite, SWT.NULL);
 			GridLayout selectionLayout = new GridLayout();
 			selectionComposite.setLayout(selectionLayout);
@@ -261,7 +259,7 @@ public class ContainerCopyFromPage extends WizardPage {
 
 		}
 
-		if (canBrowseContainer) {
+		if (isRunning) {
 			WorkbenchViewerComparator comparator = new WorkbenchViewerComparator();
 			selectionGroup.setTreeComparator(comparator);
 			selectionGroup.setListComparator(comparator);
@@ -272,7 +270,7 @@ public class ContainerCopyFromPage extends WizardPage {
 		validate();
 		setPageComplete(false);
 
-		if (canBrowseContainer) {
+		if (isRunning) {
 			selectionGroup.aboutToOpen();
 		}
     }

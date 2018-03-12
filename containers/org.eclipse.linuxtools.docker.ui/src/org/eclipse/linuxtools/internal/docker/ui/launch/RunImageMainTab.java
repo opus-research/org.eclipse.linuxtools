@@ -55,7 +55,6 @@ import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.utils.IRunnableWithResult;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageNameValidator;
-import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunNetworkModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumesVariablesModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ExposedPortModel;
@@ -84,14 +83,11 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 	private final DataBindingContext dbc = new DataBindingContext();
 	private final ImageRunSelectionModel model;
 	private final ImageRunResourceVolumesVariablesModel volumesModel;
-	private final ImageRunNetworkModel networkModel;
 
 	public RunImageMainTab(ImageRunSelectionModel model,
-			ImageRunResourceVolumesVariablesModel volumesModel,
-			ImageRunNetworkModel networkModel) {
+			ImageRunResourceVolumesVariablesModel volumesModel) {
 		this.model = model;
 		this.volumesModel = volumesModel;
-		this.networkModel = networkModel;
 	}
 
 	public ImageRunSelectionModel getModel() {
@@ -243,8 +239,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		final Label containerNameLabel = new Label(container, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(imageSelectionLabel);
-		containerNameLabel.setText(WizardMessages
-				.getString("ImageRunSelectionPage.containerName")); //$NON-NLS-1$
+		containerNameLabel.setText("Name:"); //$NON-NLS-1$
 		final Text containerNameText = new Text(container, SWT.BORDER);
 		containerNameText.setToolTipText(WizardMessages
 				.getString("ImageRunSelectionPage.containerTooltip")); //$NON-NLS-1$
@@ -332,8 +327,6 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 
 	private IValueChangeListener onConnectionSelectionChange() {
 		return event -> {
-			// do this first as we might return and not reset connection
-			networkModel.setConnection(model.getSelectedConnection());
 			IDockerImage selectedImage = model.getSelectedImage();
 			// skip if the selected image does not exist in the local Docker
 			// host
@@ -597,7 +590,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 				return false;
 			String connectionName = launchConfig.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
-					""); //$NON-NLS-1$
+					"");
 			if (connectionName.isEmpty()) {
 				return false;
 			} else {
@@ -606,8 +599,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 						.getInstance().findConnection(connectionName);
 				if (connection == null || !connection.isOpen()) {
 					setErrorMessage(WizardMessages
-							.getFormattedString("ErrorInactiveConnection.msg", //$NON-NLS-1$
-									connectionName));
+							.getString("ErrorInactiveConnection.msg")); //$NON-NLS-1$
 					return false;
 				}
 			}

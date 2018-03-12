@@ -12,6 +12,8 @@
 package org.eclipse.linuxtools.internal.docker.ui.launch;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +38,7 @@ import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerConfig;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerConfig.Builder;
 import org.eclipse.linuxtools.internal.docker.core.DockerHostConfig;
+import org.eclipse.linuxtools.internal.docker.core.DockerPortBinding;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.RunImageCommandHandler;
 import org.eclipse.swt.graphics.Image;
@@ -90,20 +93,32 @@ public class RunDockerImageLaunchConfigurationDelegate
 
 	public IDockerHostConfig getDockerHostConfig(ILaunchConfiguration config)
 			throws CoreException {
+
 		final DockerHostConfig.Builder hostConfigBuilder = new DockerHostConfig.Builder();
 		if (config.getAttribute(
 				IRunDockerImageLaunchConfigurationConstants.PUBLISH_ALL_PORTS,
 				false)) {
 			hostConfigBuilder.publishAllPorts(true);
 		} else {
-			final List<String> serializedBindings = config.getAttribute(
+			final Map<String, List<IDockerPortBinding>> portBindings = new HashMap<>();
+			Map<String, String> ports = config.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.PUBLISHED_PORTS,
-					new ArrayList<String>());
-			final Map<String, List<IDockerPortBinding>> portBindings = LaunchConfigurationUtils
-					.deserializePortBindings(serializedBindings);
+					new HashMap<String, String>());
+			for (Map.Entry<String, String> entry : ports.entrySet()) {
+				String key = entry.getKey();
+				String entryValue = entry.getValue();
+
+				String[] portPairs = entryValue.split("\\s*,\\s*"); //$NON-NLS-1$
+
+				for (int i = 0; i < portPairs.length; i += 2) {
+					DockerPortBinding portBinding = new DockerPortBinding(
+							portPairs[i], portPairs[i + 1]);
+					portBindings.put(key,
+							Arrays.<IDockerPortBinding> asList(portBinding));
+				}
+			}
 			hostConfigBuilder.portBindings(portBindings);
 		}
-		
 		// container links
 		final List<String> links = config.getAttribute(
 				IRunDockerImageLaunchConfigurationConstants.LINKS,
@@ -111,10 +126,14 @@ public class RunDockerImageLaunchConfigurationDelegate
 		hostConfigBuilder.links(links);
 
 		// data volumes
-		final List<String> volumesFromList = config.getAttribute(IRunDockerImageLaunchConfigurationConstants.VOLUMES_FROM, new ArrayList<String>());
+		
+		List<String> volumesFromList = config.getAttribute(IRunDockerImageLaunchConfigurationConstants.VOLUMES_FROM, new ArrayList<String>());
 		hostConfigBuilder.volumesFrom(volumesFromList);
+		
 		final List<String> binds = new ArrayList<>();
-		final List<String> bindsList = config.getAttribute(IRunDockerImageLaunchConfigurationConstants.BINDS, new ArrayList<String>());
+		
+		List<String> bindsList = config.getAttribute(IRunDockerImageLaunchConfigurationConstants.BINDS, new ArrayList<String>());
+
 		for (String bindsListEntry : bindsList) {
 			String[] bindsEntryParms = bindsListEntry.split(":"); //$NON-NLS-1$
 			final StringBuilder bind = new StringBuilder();
@@ -129,17 +148,10 @@ public class RunDockerImageLaunchConfigurationDelegate
 		}
 		hostConfigBuilder.binds(binds);
 		
-		// run in privileged mode
-		final boolean privileged = config.getAttribute(
+		boolean privileged = config.getAttribute(
 				IRunDockerImageLaunchConfigurationConstants.PRIVILEGED,
 				false);
 		hostConfigBuilder.privileged(privileged);
-
-		final String networkMode = config.getAttribute(
-				IRunDockerImageLaunchConfigurationConstants.NETWORK_MODE, ""); //$NON-NLS-1$
-		if (!networkMode.isEmpty()) {
-			hostConfigBuilder.networkMode(networkMode);
-		}
 
 		return hostConfigBuilder.build();
 	}

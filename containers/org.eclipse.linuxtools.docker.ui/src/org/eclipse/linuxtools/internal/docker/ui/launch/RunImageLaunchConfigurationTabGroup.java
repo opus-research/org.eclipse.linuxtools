@@ -16,7 +16,6 @@ import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
-import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunNetworkModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumesVariablesModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel;
 
@@ -25,7 +24,6 @@ public class RunImageLaunchConfigurationTabGroup
 
 	private ImageRunSelectionModel runSelectionModel;
 	private ImageRunResourceVolumesVariablesModel runVolumesModel;
-	private ImageRunNetworkModel runNetworkModel;
 
 	public RunImageLaunchConfigurationTabGroup() {
 	}
@@ -38,19 +36,12 @@ public class RunImageLaunchConfigurationTabGroup
 		return runVolumesModel;
 	}
 
-	public ImageRunNetworkModel getRunNetworkModel() {
-		return runNetworkModel;
-	}
-
 	@Override
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
 		runSelectionModel = null;
 		runVolumesModel = null;
-		runNetworkModel = null;
 		if (DockerConnectionManager.getInstance().hasConnections()) {
 			runSelectionModel = new ImageRunSelectionModel(
-					CommandUtils.getCurrentConnection(null));
-			runNetworkModel = new ImageRunNetworkModel(
 					CommandUtils.getCurrentConnection(null));
 			try {
 				runVolumesModel = new ImageRunResourceVolumesVariablesModel(
@@ -60,12 +51,10 @@ public class RunImageLaunchConfigurationTabGroup
 			}
 		}
 		setTabs(new AbstractLaunchConfigurationTab[] {
-				new RunImageMainTab(runSelectionModel, runVolumesModel,
-						runNetworkModel),
+				new RunImageMainTab(runSelectionModel, runVolumesModel),
 				new RunImageVolumesTab(runVolumesModel),
 				new RunImagePortsTab(runSelectionModel),
 				new RunImageLinksTab(runSelectionModel),
-				new RunImageNetworkTab(runNetworkModel),
 				new RunImageEnvironmentTab(runVolumesModel),
 				new RunImageLabelsTab(runVolumesModel),
 				new RunImageResourcesTab(runVolumesModel),
