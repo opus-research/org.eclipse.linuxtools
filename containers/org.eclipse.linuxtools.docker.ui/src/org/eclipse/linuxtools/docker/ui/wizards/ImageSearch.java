@@ -15,7 +15,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
-import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageSearchModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageSearchPage;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageTagSelectionPage;
@@ -47,13 +46,13 @@ public class ImageSearch extends Wizard {
 	 * @param name
 	 *            the current image name or <code>null</code> if not applicable
 	 */
-	public ImageSearch(final IDockerConnection connection, final String name, final IRegistry reg) {
+	public ImageSearch(final IDockerConnection connection, final String name) {
 		setWindowTitle(WizardMessages.getString("ImageSearch.title")); //$NON-NLS-1$
         setNeedsProgressMonitor(true);
 		this.imageSearchModel = new ImageSearchModel(connection, name);
-		this.imageSearchPage = new ImageSearchPage(this.imageSearchModel, reg);
+		this.imageSearchPage = new ImageSearchPage(this.imageSearchModel);
 		this.imageTagSelectionPage = new ImageTagSelectionPage(
-				this.imageSearchModel, reg);
+				this.imageSearchModel);
 	}
 
 	@Override

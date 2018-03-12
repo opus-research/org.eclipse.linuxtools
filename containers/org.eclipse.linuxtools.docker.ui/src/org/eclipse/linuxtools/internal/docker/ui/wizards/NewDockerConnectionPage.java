@@ -49,7 +49,6 @@ import org.eclipse.linuxtools.docker.core.EnumDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
-import org.eclipse.linuxtools.internal.docker.core.DockerConnection.Builder;
 import org.eclipse.linuxtools.internal.docker.core.DockerMachine;
 import org.eclipse.linuxtools.internal.docker.core.TCPConnectionSettings;
 import org.eclipse.linuxtools.internal.docker.core.UnixSocketConnectionSettings;
@@ -94,10 +93,10 @@ public class NewDockerConnectionPage extends WizardPage {
 	 * Constructor.
 	 */
 	public NewDockerConnectionPage() {
-		super("NewDockerConnectionPage", //$NON-NLS-1$
-				WizardMessages.getString("NewDockerConnectionPage.title"), //$NON-NLS-1$
+		super("DockerConnectionPage", //$NON-NLS-1$
+				WizardMessages.getString("DockerConnectionPage.title"), //$NON-NLS-1$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
-		setMessage(WizardMessages.getString("NewDockerConnectionPage.msg")); //$NON-NLS-1$
+		setMessage(WizardMessages.getString("DockerConnectionPage.msg")); //$NON-NLS-1$
 		this.model = new NewDockerConnectionPageModel();
 		this.dbc = new DataBindingContext();
 	}
@@ -153,19 +152,19 @@ public class NewDockerConnectionPage extends WizardPage {
 		// Connection name
 		final Label connectionNameLabel = new Label(container, SWT.NONE);
 		connectionNameLabel.setText(
-				WizardMessages.getString("NewDockerConnectionPage.nameLabel")); //$NON-NLS-1$
+				WizardMessages.getString("DockerConnectionPage.nameLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.applyTo(connectionNameLabel);
 		final Text connectionNameText = new Text(container, SWT.BORDER);
 		connectionNameText.setToolTipText(WizardMessages
-				.getString("NewDockerConnectionPage.nameTooltip")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.nameTooltip")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(1, 1).applyTo(connectionNameText);
 
 		// the 'Search' button
 		final Button searchButton = new Button(container, SWT.NONE);
 		searchButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.searchButton")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.searchButton")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(1, 1)
 				.align(SWT.BEGINNING, SWT.CENTER).grab(false, false)
 				.applyTo(searchButton);
@@ -176,7 +175,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		final Button customConnectionSettingsButton = new Button(container,
 				SWT.CHECK);
 		customConnectionSettingsButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.customLabel")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.customLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).indent(0, 10).span(COLUMNS, 1)
 				.applyTo(customConnectionSettingsButton);
@@ -191,27 +190,27 @@ public class NewDockerConnectionPage extends WizardPage {
 		final Button unixSocketBindingModeButton = new Button(
 				customSettingsGroup, SWT.RADIO);
 		unixSocketBindingModeButton.setText(
-				WizardMessages.getString("NewDockerConnectionPage.unixSocket")); //$NON-NLS-1$
+				WizardMessages.getString("DockerConnectionPage.unixSocket")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).applyTo(unixSocketBindingModeButton);
 
 		final Label unixSocketPathLabel = new Label(customSettingsGroup,
 				SWT.NONE);
 		unixSocketPathLabel.setText(
-				WizardMessages.getString("NewDockerConnectionPage.location")); //$NON-NLS-1$
+				WizardMessages.getString("DockerConnectionPage.location")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.indent(INDENT, 0).applyTo(unixSocketPathLabel);
 		final Text unixSocketPathText = new Text(customSettingsGroup,
 				SWT.BORDER);
 		unixSocketPathText.setToolTipText(WizardMessages
-				.getString("NewDockerConnectionPage.unixPathTooltip")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.unixPathTooltip")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).applyTo(unixSocketPathText);
 
 		final Button unixSocketPathBrowseButton = new Button(
 				customSettingsGroup, SWT.BUTTON1);
 		unixSocketPathBrowseButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.browseButton")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.browseButton")); //$NON-NLS-1$
 		unixSocketPathBrowseButton
 				.addSelectionListener(onBrowseUnixSocketPath());
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
@@ -221,13 +220,13 @@ public class NewDockerConnectionPage extends WizardPage {
 		final Button tcpConnectionBindingModeButton = new Button(
 				customSettingsGroup, SWT.RADIO);
 		tcpConnectionBindingModeButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.tcpConnection")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.tcpConnection")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).applyTo(tcpConnectionBindingModeButton);
 
 		final Label tcpHostLabel = new Label(customSettingsGroup, SWT.NONE);
 		tcpHostLabel.setText(
-				WizardMessages.getString("NewDockerConnectionPage.hostLabel")); //$NON-NLS-1$
+				WizardMessages.getString("DockerConnectionPage.hostLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.indent(INDENT, 0).applyTo(tcpHostLabel);
 
@@ -237,15 +236,15 @@ public class NewDockerConnectionPage extends WizardPage {
 
 		final Button tcpAuthButton = new Button(customSettingsGroup, SWT.CHECK);
 		tcpAuthButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.tcpAuthButton")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.tcpAuthButton")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.indent(INDENT, 0).span(3, 1).applyTo(tcpAuthButton);
 
 		final Label tcpCertPathLabel = new Label(customSettingsGroup, SWT.NONE);
 		tcpCertPathLabel.setText(WizardMessages
-				.getString("NewDockerConnectionPage.tcpPathLabel")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.tcpPathLabel")); //$NON-NLS-1$
 		tcpCertPathLabel.setToolTipText(WizardMessages
-				.getString("NewDockerConnectionPage.tcpPathTooltip")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.tcpPathTooltip")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.indent(INDENT * 2, 0).applyTo(tcpCertPathLabel);
 		final Text tcpCertPathText = new Text(customSettingsGroup, SWT.BORDER);
@@ -254,7 +253,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		final Button tcpCertPathBrowseButton = new Button(customSettingsGroup,
 				SWT.BUTTON1);
 		tcpCertPathBrowseButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.browseButton")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.browseButton")); //$NON-NLS-1$
 		tcpCertPathBrowseButton.addSelectionListener(onBrowseTcpCertPath());
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.applyTo(tcpCertPathBrowseButton);
@@ -262,7 +261,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		// the 'test connection' button
 		final Button testConnectionButton = new Button(container, SWT.NONE);
 		testConnectionButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.testConnection")); //$NON-NLS-1$
+				.getString("DockerConnectionPage.testConnection")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(3, 1)
 				.align(SWT.END, SWT.CENTER).applyTo(testConnectionButton);
 		testConnectionButton
@@ -420,17 +419,19 @@ public class NewDockerConnectionPage extends WizardPage {
 					monitor -> {
 						monitor.beginTask(
 								WizardMessages.getString(
-										"NewDockerConnectionPage.retrieveTask"), //$NON-NLS-1$
+										"DockerConnectionPage.retrieveTask"), //$NON-NLS-1$
 								1);
-						final List<IDockerConnectionSettings> defaults = DockerConnectionManager
-								.getInstance().findConnectionSettings();
-						if (!defaults.isEmpty()) {
-							final IDockerConnectionSettings defaultConnectionSettings = defaults
-									.get(0);
+						final DockerConnectionManager dockerConnectionManager = DockerConnectionManager
+								.getInstance();
+						final IDockerConnectionSettings defaultConnectionSettings = dockerConnectionManager
+								.findDefaultConnectionSettings();
+						if (defaultConnectionSettings != null) {
+
 							model.setCustomSettings(!defaultConnectionSettings
 									.isSettingsResolved());
-							model.setConnectionName(
-									defaultConnectionSettings.getName());
+							model.setConnectionName(dockerConnectionManager
+									.resolveConnectionName(
+											defaultConnectionSettings));
 							switch (defaultConnectionSettings.getType()) {
 							case TCP_CONNECTION:
 								final TCPConnectionSettings tcpConnectionSettings = (TCPConnectionSettings) defaultConnectionSettings;
@@ -551,7 +552,7 @@ public class NewDockerConnectionPage extends WizardPage {
 					getWizard().getContainer().run(true, false,
 							monitor -> {
 								monitor.beginTask(WizardMessages.getString(
-										"NewDockerConnectionPage.pingTask"), //$NON-NLS-1$
+										"DockerConnectionPage.pingTask"), //$NON-NLS-1$
 										IProgressMonitor.UNKNOWN);
 								try {
 									final DockerConnection dockerConnection = getDockerConnection();
@@ -577,24 +578,24 @@ public class NewDockerConnectionPage extends WizardPage {
 			private void displaySuccessDialog() {
 				displayDialog(
 						WizardMessages
-								.getString("NewDockerConnectionPage.success"), //$NON-NLS-1$
+								.getString("DockerConnectionPage.success"), //$NON-NLS-1$
 						WizardMessages.getString(
-								"NewDockerConnectionPage.pingSuccess"), //$NON-NLS-1$
+								"DockerConnectionPage.pingSuccess"), //$NON-NLS-1$
 						SWT.ICON_INFORMATION,
 						new String[] { WizardMessages
-								.getString("NewDockerConnectionPage.ok") } //$NON-NLS-1$
+								.getString("DockerConnectionPage.ok") } //$NON-NLS-1$
 						);
 			}
 
 			private void displayErrorDialog() {
 				displayDialog(
 						WizardMessages
-								.getString("NewDockerConnectionPage.failure"), //$NON-NLS-1$
+								.getString("DockerConnectionPage.failure"), //$NON-NLS-1$
 						WizardMessages.getString(
-								"NewDockerConnectionPage.pingFailure"), //$NON-NLS-1$
+								"DockerConnectionPage.pingFailure"), //$NON-NLS-1$
 						SWT.ICON_ERROR,
 						new String[] { WizardMessages
-								.getString("NewDockerConnectionPage.ok") } //$NON-NLS-1$
+								.getString("DockerConnectionPage.ok") } //$NON-NLS-1$
 						);
 			}
 			
@@ -670,9 +671,9 @@ public class NewDockerConnectionPage extends WizardPage {
 					connPrompt.setContentProvider(new ConnectionSelectionContentProvider());
 					connPrompt.setLabelProvider(new ConnectionSelectionLabelProvider());
 					connPrompt.setTitle(WizardMessages.getString(
-							"NewDockerConnectionPage.searchDialog.title")); //$NON-NLS-1$
+							"DockerConnectionPage.searchDialog.title")); //$NON-NLS-1$
 					connPrompt.setMessage(WizardMessages.getString(
-							"NewDockerConnectionPage.searchDialog.message")); //$NON-NLS-1$
+							"DockerConnectionPage.searchDialog.message")); //$NON-NLS-1$
 					connPrompt.setInput(activeNames.toArray(new String[0]));
 					if (connPrompt.open() == 0 && connPrompt.getResult().length > 0) {
 						String name = ((String) connPrompt.getResult()[0]);
@@ -696,9 +697,9 @@ public class NewDockerConnectionPage extends WizardPage {
 					if (dmNames.length == 1) {
 						MessageDialog.openInformation(getShell(),
 								WizardMessages.getString(
-										"NewDockerConnectionPage.searchDialog.discovery.title"), //$NON-NLS-1$
+										"DockerConnectionPage.searchDialog.discovery.title"), //$NON-NLS-1$
 								WizardMessages.getFormattedString(
-										"NewDockerConnectionPage.searchDialog.discovery.innactive.single", //$NON-NLS-1$
+										"DockerConnectionPage.searchDialog.discovery.innactive.single", //$NON-NLS-1$
 										dmNames[0]));
 					} else if (dmNames.length > 1) {
 						final StringBuffer connections = new StringBuffer();
@@ -712,16 +713,16 @@ public class NewDockerConnectionPage extends WizardPage {
 						}
 						MessageDialog.openInformation(getShell(),
 								WizardMessages.getString(
-										"NewDockerConnectionPage.searchDialog.discovery.title"), //$NON-NLS-1$
+										"DockerConnectionPage.searchDialog.discovery.title"), //$NON-NLS-1$
 								WizardMessages.getFormattedString(
-										"NewDockerConnectionPage.searchDialog.discovery.innactive.multiple", //$NON-NLS-1$
+										"DockerConnectionPage.searchDialog.discovery.innactive.multiple", //$NON-NLS-1$
 										connections.toString()));
 					} else {
 						MessageDialog.openInformation(getShell(),
 								WizardMessages.getString(
-										"NewDockerConnectionPage.searchDialog.discovery.title"), //$NON-NLS-1$
+										"DockerConnectionPage.searchDialog.discovery.title"), //$NON-NLS-1$
 								WizardMessages.getString(
-										"NewDockerConnectionPage.searchDialog.discovery.empty")); //$NON-NLS-1$
+										"DockerConnectionPage.searchDialog.discovery.empty")); //$NON-NLS-1$
 					}
 				}
 			}
@@ -741,15 +742,13 @@ public class NewDockerConnectionPage extends WizardPage {
 		if (model.getBindingMode() == UNIX_SOCKET) {
 			return new DockerConnection.Builder()
 					.name(model.getConnectionName())
-					.unixSocket(model.getUnixSocketPath()).build();
+					.unixSocketConnection(new UnixSocketConnectionSettings(
+							model.getUnixSocketPath()));
 		} else {
-			final Builder tcpConnectionBuilder = new DockerConnection.Builder()
+			return new DockerConnection.Builder()
 					.name(model.getConnectionName())
-					.tcpHost(model.getTcpHost());
-			if (model.isTcpTLSVerify()) {
-				tcpConnectionBuilder.tcpCertPath(model.getTcpCertPath());
-			}
-			return tcpConnectionBuilder.build();
+					.tcpConnection(new TCPConnectionSettings(model.getTcpHost(),
+							model.getTcpCertPath()));
 		}
 	}
 
@@ -775,11 +774,11 @@ public class NewDockerConnectionPage extends WizardPage {
 					.getValue();
 			if (connectionName == null || connectionName.isEmpty()) {
 				return ValidationStatus.error(WizardMessages.getString(
-						"NewDockerConnectionPage.validation.missingConnectionName.msg")); //$NON-NLS-1$
+						"DockerConnectionPage.validation.missingConnectionName.msg")); //$NON-NLS-1$
 			} else if (DockerConnectionManager.getInstance()
 					.findConnection(connectionName) != null) {
 				return ValidationStatus.error(WizardMessages.getString(
-						"NewDockerConnectionPage.validation.duplicateConnectionName.msg")); //$NON-NLS-1$
+						"DockerConnectionPage.validation.duplicateConnectionName.msg")); //$NON-NLS-1$
 			}
 			return ValidationStatus.ok();
 		}
@@ -813,14 +812,14 @@ public class NewDockerConnectionPage extends WizardPage {
 			if (unixSocketBindingMode) {
 				if (unixSocketPath == null || unixSocketPath.isEmpty()) {
 					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.missingUnixSocket.msg")); //$NON-NLS-1$
+							"DockerConnectionPage.validation.missingUnixSocket.msg")); //$NON-NLS-1$
 				}
 				try {
 					final URI unixSocketURI = new URI(unixSocketPath);
 					if (unixSocketURI.getScheme() != null
 							&& !unixSocketURI.getScheme().equals("unix")) { //$NON-NLS-1$
 						return ValidationStatus.error(WizardMessages.getString(
-								"NewDockerConnectionPage.validation.invalidUnixSocketScheme.msg")); //$NON-NLS-1$
+								"DockerConnectionPage.validation.invalidUnixSocketScheme.msg")); //$NON-NLS-1$
 					}
 					if (unixSocketURI.getPath() != null) {
 						final File unixSocket = new File(
@@ -828,21 +827,21 @@ public class NewDockerConnectionPage extends WizardPage {
 						if (!unixSocket.exists()) {
 							return ValidationStatus
 									.error(WizardMessages.getString(
-											"NewDockerConnectionPage.validation.invalidUnixSocketPath.msg")); //$NON-NLS-1$
+											"DockerConnectionPage.validation.invalidUnixSocketPath.msg")); //$NON-NLS-1$
 						} else if (!unixSocket.canRead()
 								|| !unixSocket.canWrite()) {
 							return ValidationStatus
 									.error(WizardMessages.getString(
-											"NewDockerConnectionPage.validation.unreadableUnixSocket.msg")); //$NON-NLS-1$
+											"DockerConnectionPage.validation.unreadableUnixSocket.msg")); //$NON-NLS-1$
 						}
 					} else {
 						return ValidationStatus.error(WizardMessages.getString(
-								"NewDockerConnectionPage.validation.invalidUnixSocketPath.msg")); //$NON-NLS-1$
+								"DockerConnectionPage.validation.invalidUnixSocketPath.msg")); //$NON-NLS-1$
 
 					}
 				} catch (URISyntaxException e) {
 					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.invalidUnixSocketPath.msg")); //$NON-NLS-1$
+							"DockerConnectionPage.validation.invalidUnixSocketPath.msg")); //$NON-NLS-1$
 
 				}
 			}
@@ -878,7 +877,7 @@ public class NewDockerConnectionPage extends WizardPage {
 			if (tcpConnectionBindingMode) {
 				if (tcpHost == null || tcpHost.isEmpty()) {
 					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.missingTcpConnectionURI.msg")); //$NON-NLS-1$
+							"DockerConnectionPage.validation.missingTcpConnectionURI.msg")); //$NON-NLS-1$
 				}
 				try {
 					final URI uri = new URI(tcpHost);
@@ -890,20 +889,20 @@ public class NewDockerConnectionPage extends WizardPage {
 							&& !(scheme.equals("tcp") || scheme.equals("http") //$NON-NLS-1$ //$NON-NLS-2$
 									|| scheme.equals("https"))) { //$NON-NLS-1$
 						return ValidationStatus.error(WizardMessages.getString(
-								"NewDockerConnectionPage.validation.invalidTcpConnectionScheme.msg")); //$NON-NLS-1$
+								"DockerConnectionPage.validation.invalidTcpConnectionScheme.msg")); //$NON-NLS-1$
 					} else if (host == null) {
 						return ValidationStatus.error(WizardMessages.getString(
-								"NewDockerConnectionPage.validation.invalidTcpConnectionHost.msg")); //$NON-NLS-1$
+								"DockerConnectionPage.validation.invalidTcpConnectionHost.msg")); //$NON-NLS-1$
 
 					} else if (port == -1) {
 						return ValidationStatus.error(WizardMessages.getString(
-								"NewDockerConnectionPage.validation.invalidTcpConnectionPort.msg")); //$NON-NLS-1$
+								"DockerConnectionPage.validation.invalidTcpConnectionPort.msg")); //$NON-NLS-1$
 
 					}
 				} catch (URISyntaxException e) {
 					// URI is not valid
 					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.invalidTcpConnectionURI.msg")); //$NON-NLS-1$
+							"DockerConnectionPage.validation.invalidTcpConnectionURI.msg")); //$NON-NLS-1$
 				}
 			}
 			return ValidationStatus.ok();
@@ -944,15 +943,15 @@ public class NewDockerConnectionPage extends WizardPage {
 			if (tcpConnectionBindingMode && tcpTlsVerify) {
 				if (tcpCertPath == null || tcpCertPath.isEmpty()) {
 					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.missingTcpCertPath.msg")); //$NON-NLS-1$
+							"DockerConnectionPage.validation.missingTcpCertPath.msg")); //$NON-NLS-1$
 				}
 				final File tcpCert = new File(tcpCertPath);
 				if (!tcpCert.exists()) {
 					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.invalidTcpCertPath.msg")); //$NON-NLS-1$
+							"DockerConnectionPage.validation.invalidTcpCertPath.msg")); //$NON-NLS-1$
 				} else if (!tcpCert.canRead() || !tcpCert.canRead()) {
 					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.unreadableTcpCertPath.msg")); //$NON-NLS-1$
+							"DockerConnectionPage.validation.unreadableTcpCertPath.msg")); //$NON-NLS-1$
 				}
 			}
 			return ValidationStatus.ok();
