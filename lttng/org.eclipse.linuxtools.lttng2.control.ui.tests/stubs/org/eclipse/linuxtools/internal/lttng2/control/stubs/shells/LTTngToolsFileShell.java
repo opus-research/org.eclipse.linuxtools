@@ -183,7 +183,7 @@ public class LTTngToolsFileShell extends TestCommandShell {
                         } else if (OUTPUT_END_KEY.equals(strLine)) {
                             // Save output/result in command map
                             if (output != null) {
-                                commandMap.put(input, new CommandResult(result, output.toArray(new String[output.size()])));
+                                commandMap.put(input, new CommandResult(result, output.toArray(new String[output.size()]), null));
                             }
                             inOutput = false;
                         } else if (OUTPUT_KEY.equals(strLine)) {
@@ -247,9 +247,10 @@ public class LTTngToolsFileShell extends TestCommandShell {
 
         String[] output = new String[1];
         output[0] = String.valueOf("Command not found");
-        CommandResult result = new CommandResult(0, null);
+        CommandResult result = new CommandResult(0, null, null);
         // For verification of setters of class CommandResult
         result.setOutput(output);
+        result.setErrorOutput(output);
         result.setResult(1);
         return result;
    }
