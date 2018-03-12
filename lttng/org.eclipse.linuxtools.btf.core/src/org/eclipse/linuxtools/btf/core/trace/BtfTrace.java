@@ -38,6 +38,7 @@ import org.eclipse.linuxtools.tmf.core.io.BufferedRandomAccessFile;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceContext;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
@@ -57,7 +58,7 @@ import com.google.common.collect.ImmutableMap;
  *
  * @author Matthew Khouzam
  */
-public class BtfTrace extends TmfTrace implements ITmfPersistentlyIndexable, ITmfTraceProperties, AutoCloseable {
+public class BtfTrace extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable, ITmfTraceProperties, AutoCloseable {
 
     private static final String VERSION = "#version"; //$NON-NLS-1$
     private static final String CREATOR = "#creator"; //$NON-NLS-1$
@@ -386,7 +387,7 @@ public class BtfTrace extends TmfTrace implements ITmfPersistentlyIndexable, ITm
         ITmfEventField content = type.generateContent(event, sourceInstance, targetInstance);
 
         return new BtfEvent(this, rank,
-                fTsFormat.createTimestamp(getTimestampTransform().transform(timestamp + fTsOffset)),
+                fTsFormat.createTimestamp(timestamp + fTsOffset),
                 source,
                 type,
                 type.getDescription(),
