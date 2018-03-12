@@ -151,9 +151,8 @@ public class CopyFromContainerCommandHandler extends AbstractHandler {
 													ERROR_COPYING_FROM_CONTAINER,
 													proxy.getLink(),
 													container.name()),
-											e.getCause() != null
-													? e.getCause().getMessage()
-													: e.getMessage()));
+											e.getCause().getMessage()));
+							// for now
 						}
 					}
 				} catch (InterruptedException e) {
