@@ -184,7 +184,7 @@ public class GmonDecoder {
 
             try {
                 tag = stream.readByte();
-            } catch (EOFException e) {
+            } catch (EOFException _) {
                 break;
             }
             switch (tag) {

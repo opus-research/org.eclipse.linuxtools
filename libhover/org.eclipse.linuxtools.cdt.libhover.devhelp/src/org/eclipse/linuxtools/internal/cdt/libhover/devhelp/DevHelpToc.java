@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.cdt.libhover.devhelp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.filesystem.EFS;
@@ -59,7 +60,14 @@ public class DevHelpToc implements IToc {
             IFileSystem fs = EFS.getLocalFileSystem();
             IFileStore htmlDir = fs.getStore(devhelpLocation);
             IFileStore[] files = htmlDir.childStores(EFS.NONE, null);
-            Arrays.sort(files, (arg0, arg1) -> (arg0.getName().compareToIgnoreCase(arg1.getName())));
+            Arrays.sort(files, new Comparator<IFileStore>() {
+
+                @Override
+                public int compare(IFileStore arg0, IFileStore arg1) {
+                    return (arg0.getName().compareToIgnoreCase(arg1.getName()));
+                }
+
+            });
             for (IFileStore file: files) {
                 String name = file.fetchInfo().getName();
                 if (fs.getStore(
