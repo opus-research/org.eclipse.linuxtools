@@ -11,13 +11,12 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.testutils.swt;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.junit.rules.ExternalResource;
 
 /**
- * Closes the wizard(s) after each test, if the "Cancel" button is available
+ * Closes the wizard after each test, if the "Cancel" button is available
  */
 public class CloseWizardRule extends ExternalResource {
 
@@ -25,8 +24,8 @@ public class CloseWizardRule extends ExternalResource {
 	protected void after() {
 		final SWTWorkbenchBot bot = new SWTWorkbenchBot();
 		try {
-			while (bot.button(IDialogConstants.CANCEL_LABEL) != null) {
-				bot.button(IDialogConstants.CANCEL_LABEL).click();
+			if (bot.button("Cancel") != null) {
+				bot.button("Cancel").click();
 			}
 		} catch (WidgetNotFoundException e) {
 			// ignoring

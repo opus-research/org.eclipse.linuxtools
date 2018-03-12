@@ -34,6 +34,8 @@ import org.eclipse.linuxtools.internal.cdt.libhover.LibHoverLibrary;
 import org.eclipse.linuxtools.internal.cdt.libhover.devhelp.DevHelpPlugin;
 import org.eclipse.linuxtools.internal.cdt.libhover.devhelp.ParseDevHelp;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -126,10 +128,13 @@ public class LibHoverPreferencePage extends FieldEditorPreferencePage implements
         k.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
-                Display.getDefault().syncExec(() -> {
-				    if (generateButton != null)
-				        generateButton.setEnabled(true);
-				});
+                Display.getDefault().syncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (generateButton != null)
+                            generateButton.setEnabled(true);
+                    }
+                });
             }
         });
         k.schedule();
@@ -147,7 +152,12 @@ public class LibHoverPreferencePage extends FieldEditorPreferencePage implements
                 regenerate();
             }
         });
-        generateButton.addDisposeListener(event -> generateButton = null);
+        generateButton.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent event) {
+                generateButton = null;
+            }
+        });
         GridData gd = new GridData();
 
         gd.horizontalAlignment = GridData.FILL;
