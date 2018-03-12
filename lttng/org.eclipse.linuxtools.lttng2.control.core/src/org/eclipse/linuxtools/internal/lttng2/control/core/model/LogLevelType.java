@@ -11,12 +11,9 @@
  *********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.core.model;
 
-import java.security.InvalidParameterException;
 
 /**
- * <p>
  * Type of log Level enumeration.
- * </p>
  *
  * @author Bernd Hufmann
  */
@@ -29,7 +26,7 @@ public enum LogLevelType {
     LOGLEVEL("<=", "RANGE"), //$NON-NLS-1$ //$NON-NLS-2$
 
     /** all log level */
-    LOGLEVEL_ALL(":", "ALL"),  //$NON-NLS-1$//$NON-NLS-2$
+    LOGLEVEL_ALL("", "ALL"), //$NON-NLS-1$//$NON-NLS-2$
 
     /** single log level */
     LOGLEVEL_ONLY("==", "SINGLE"), //$NON-NLS-1$ //$NON-NLS-2$
@@ -43,14 +40,16 @@ public enum LogLevelType {
 
     /**
      * Private constructor
-     * @param name the name of state
+     *
+     * @param name
+     *            the name of state
      */
     private LogLevelType(String shortName, String miName) {
         fShortName = shortName;
         fMiName = miName;
     }
 
-     // ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
     /**
@@ -81,17 +80,21 @@ public enum LogLevelType {
     // ------------------------------------------------------------------------
     /**
      * Return the corresponding {@link LogLevelType} to String "name"
-     * @param name String to compare to retrieve the good LogLevelType
+     *
+     * @param name
+     *            String to compare to retrieve the good LogLevelType
      * @return the corresponding {@link LogLevelType}
      */
     public static LogLevelType valueOfString(String name) {
         if (name == null) {
-            throw new InvalidParameterException();
+            throw new IllegalArgumentException();
         }
         for (LogLevelType lltype : LogLevelType.values()) {
-            boolean isEqual = lltype.fShortName.equalsIgnoreCase(name) || lltype.fMiName.equalsIgnoreCase(name);
-            if (isEqual) {
-                return lltype;
+            if (!lltype.equals(LOGLEVEL_NONE)) {
+                boolean isEqual = lltype.fShortName.equalsIgnoreCase(name) || lltype.fMiName.equalsIgnoreCase(name);
+                if (isEqual) {
+                    return lltype;
+                }
             }
         }
 
