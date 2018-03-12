@@ -70,7 +70,7 @@ public class ConnectionInfoPropertySection extends BasePropertySection {
 					final IDockerConnectionInfo info = connection.getInfo();
 					Display.getDefault().asyncExec(() -> {
 						if (info != null && getTreeViewer() != null) {
-							getTreeViewer().setInput(connection);
+							getTreeViewer().setInput(info);
 							getTreeViewer().expandAll();
 						}
 					});
