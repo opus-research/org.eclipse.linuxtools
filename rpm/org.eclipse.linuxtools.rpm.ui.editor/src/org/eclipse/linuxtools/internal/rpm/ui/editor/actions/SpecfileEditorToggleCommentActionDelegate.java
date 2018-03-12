@@ -25,7 +25,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.ISpecfileSpecialSymbols;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 public class SpecfileEditorToggleCommentActionDelegate extends AbstractHandler {
@@ -37,14 +36,9 @@ public class SpecfileEditorToggleCommentActionDelegate extends AbstractHandler {
      */
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        IEditorPart editor = HandlerUtil.getActiveEditor(event);
-        if (!(editor instanceof SpecfileEditor)) {
-            return null;
-        }
-
-        SpecfileEditor specfileEditor = (SpecfileEditor) editor;
-        IDocument document = (IDocument) specfileEditor.getAdapter(IDocument.class);
-        ISelection currentSelection = specfileEditor.getSpecfileSourceViewer()
+        SpecfileEditor editor = (SpecfileEditor) HandlerUtil.getActiveEditor(event);
+        IDocument document = (IDocument) editor.getAdapter(IDocument.class);
+        ISelection currentSelection = editor.getSpecfileSourceViewer()
                 .getSelection();
         if (currentSelection instanceof ITextSelection) {
             ITextSelection selection = (ITextSelection) currentSelection;
@@ -70,7 +64,7 @@ public class SpecfileEditorToggleCommentActionDelegate extends AbstractHandler {
                         selection.getOffset() + selection.getLength(),
                         document.get().length()));
                 document.set(sb.toString());
-                specfileEditor.setHighlightRange(selection.getOffset(), selection
+                editor.setHighlightRange(selection.getOffset(), selection
                         .getLength(), true);
             } catch (BadLocationException e) {
                 SpecfileLog.logError(e);
