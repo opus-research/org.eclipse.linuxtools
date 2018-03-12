@@ -58,27 +58,34 @@ public class LinuxOpxmlProvider implements IOpxmlProvider {
 
     @Override
     public IRunnableWithProgress modelData(final String eventName, final String sessionName, final OpModelImage image) {
-        return monitor -> {
-            OpxmlRunner runner = new OpxmlRunner();
+        return new IRunnableWithProgress() {
+            @Override
+            public void run(IProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException {
+                OpxmlRunner runner = new OpxmlRunner();
 
-            String[] args = new String[] { OpxmlConstants.OPXML_MODELDATA,
-		    eventName, sessionName };
+                String[] args = new String[] { OpxmlConstants.OPXML_MODELDATA,
+                        eventName, sessionName };
 
-            ModelDataProcessor.CallData data = new ModelDataProcessor.CallData(
-		    image);
-            runner.run(args, data);
-         };
+                ModelDataProcessor.CallData data = new ModelDataProcessor.CallData(
+                        image);
+                runner.run(args, data);
+            }
+        };
     }
 
     @Override
     public IRunnableWithProgress checkEvents(final int ctr, final String event, final int um, final int[] eventValid) {
-        return monitor -> {
-		    OpxmlRunner runner = new OpxmlRunner();
-		    String[] args = new String[] { OpxmlConstants.CHECKEVENTS_TAG,
-		            Integer.toString(ctr), event, Integer.toString(um) };
+        return new IRunnableWithProgress() {
+            @Override
+            public void run(IProgressMonitor monitor) {
+                OpxmlRunner runner = new OpxmlRunner();
+                String[] args = new String[] { OpxmlConstants.CHECKEVENTS_TAG,
+                        Integer.toString(ctr), event, Integer.toString(um) };
 
-		    runner.run(args, eventValid);
-		};
+                runner.run(args, eventValid);
+            }
+        };
     }
 
     /**
@@ -87,13 +94,16 @@ public class LinuxOpxmlProvider implements IOpxmlProvider {
      */
     @Override
     public IRunnableWithProgress sessions(final ArrayList<OpModelSession> sessionList) {
-        return monitor -> {
-		    OpxmlRunner runner = new OpxmlRunner();
-		    String[] args = new String[] { OpxmlConstants.OPXML_SESSIONS, };
+        return new IRunnableWithProgress() {
+            @Override
+            public void run(IProgressMonitor monitor) {
+                OpxmlRunner runner = new OpxmlRunner();
+                String[] args = new String[] { OpxmlConstants.OPXML_SESSIONS, };
 
-		    SessionsProcessor.SessionInfo sinfo = new SessionsProcessor.SessionInfo(
-		            sessionList);
-		    runner.run(args, sinfo);
-		};
+                SessionsProcessor.SessionInfo sinfo = new SessionsProcessor.SessionInfo(
+                        sessionList);
+                runner.run(args, sinfo);
+            }
+        };
     }
 }

@@ -124,7 +124,12 @@ public abstract class AbstractSaveDataHandler extends BaseDataManipulator implem
         if (Display.getCurrent() != null) {
             MessageDialog.openError(Display.getCurrent().getActiveShell(), title, errorMsg);
         } else {
-            Display.getDefault().syncExec(() -> MessageDialog.openError(Display.getCurrent().getActiveShell(), title, errorMsg));
+            Display.getDefault().syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    MessageDialog.openError(Display.getCurrent().getActiveShell(), title, errorMsg);
+                }
+            });
         }
     }
 
