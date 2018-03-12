@@ -66,8 +66,7 @@ public class DockerExplorerView extends CommonNavigator implements
 	private Control connectionsPane;
 	private Control explanationsPane;
 	private PageBook pageBook;
-	private Map<IDockerConnection, ContainersRefresher> containersRefreshers = new HashMap<>();
-	private Map<IDockerConnection, ImagesRefresher> imagesRefreshers = new HashMap<>();
+	private Map<IDockerConnection, DockerContainersRefresher> containersRefreshers = new HashMap<>();
 
 	/** the search text widget. to filter containers and images. */
 	private Text search;
@@ -253,14 +252,9 @@ public class DockerExplorerView extends CommonNavigator implements
 		for (IDockerConnection connection : DockerConnectionManager
 				.getInstance().getConnections()) {
 			if (!containersRefreshers.containsKey(connection)) {
-				final ContainersRefresher refresher = new ContainersRefresher();
-				connection.addContainerListener(refresher);
-				containersRefreshers.put(connection, refresher);
-			}
-			if (!imagesRefreshers.containsKey(connection)) {
-				final ImagesRefresher refresher = new ImagesRefresher();
-				connection.addImageListener(refresher);
-				imagesRefreshers.put(connection, refresher);
+				final DockerContainersRefresher containerRefresher = new DockerContainersRefresher();
+				connection.addContainerListener(containerRefresher);
+				containersRefreshers.put(connection, containerRefresher);
 			}
 		}
 	}
@@ -269,54 +263,55 @@ public class DockerExplorerView extends CommonNavigator implements
 		for (IDockerConnection connection : DockerConnectionManager
 				.getInstance().getConnections()) {
 			if (containersRefreshers.containsKey(connection)) {
-				final ContainersRefresher refresher = containersRefreshers
+				final DockerContainersRefresher dockerContainersRefresher = containersRefreshers
 						.get(connection);
-				connection.removeContainerListener(refresher);
+				connection.removeContainerListener(dockerContainersRefresher);
 				containersRefreshers.remove(connection);
 			}
-			if (imagesRefreshers.containsKey(connection)) {
-				final ImagesRefresher refresher = imagesRefreshers
-						.get(connection);
-				connection.removeImageListener(refresher);
-				imagesRefreshers.remove(connection);
-			}
 		}
 	}
 
-	private void refresh(final IDockerConnection connection) {
-		Display.getDefault().asyncExec(new Runnable() {
+	class DockerContainersRefresher implements IDockerContainerListener {
+		@Override
+		public void listChanged(final IDockerConnection connection,
+				final List<IDockerContainer> list) {
+			Display.getDefault().asyncExec(new Runnable() {
 
-			@Override
-			public void run() {
-				// following is to force Container property testers
-				// to run again after list is updated. They won't do so by
-				// default.
-				final ISelection selection = getCommonViewer().getSelection();
-				getCommonViewer().refresh(connection, true);
-				if (selection != null) {
-					getCommonViewer().setSelection(selection, false);
+				@Override
+				public void run() {
+					// following is to force Container property testers
+					// to run again after list is updated. They won't do so by
+					// default.
+					final ISelection selection = getCommonViewer()
+							.getSelection();
+					if (selection != null) {
+						getCommonViewer().setSelection(selection, false);
+					}
+					getCommonViewer().refresh();
 				}
-			}
-		});
-	}
-
-	class ContainersRefresher implements IDockerContainerListener {
-
-		@Override
-		public void listChanged(final IDockerConnection connection,
-				final List<IDockerContainer> containers) {
-			refresh(connection);
+			});
 		}
 	}
 
-	class ImagesRefresher implements IDockerImageListener {
-
+	class DockerImagesRefresher implements IDockerImageListener {
 		@Override
 		public void listChanged(final IDockerConnection connection,
-				final List<IDockerImage> images) {
-			refresh(connection);
-		}
+				final List<IDockerImage> list) {
+			Display.getDefault().asyncExec(new Runnable() {
 
+				@Override
+				public void run() {
+					// following is to force Image property testers
+					// to run again after list is updated. They won't do so by
+					// default.
+					ISelection selection = getCommonViewer().getSelection();
+					if (selection != null) {
+						getCommonViewer().setSelection(selection, false);
+					}
+					getCommonViewer().refresh(connection, true);
+				}
+			});
+		}
 	}
 
 }
