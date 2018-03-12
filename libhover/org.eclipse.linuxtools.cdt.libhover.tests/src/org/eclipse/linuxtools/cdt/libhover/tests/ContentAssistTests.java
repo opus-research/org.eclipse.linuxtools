@@ -192,7 +192,6 @@ public class ContentAssistTests extends BaseUITestCase {
     }
 
     @Test
-    @Ignore
     public void testBug428037() throws Exception {
         StringWriter writer = new StringWriter();
         writer.write( "class Strategy {                             \n"); //$NON-NLS-1$
