@@ -61,7 +61,7 @@ public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
 
     private static final MathContext fMc = MathContext.DECIMAL128;
 
-    /** @Serial */
+    /** @serial */
     private final List<ConvexHull> fSyncs;
 
     private SyncSpanningTree fTree = null;
@@ -84,7 +84,7 @@ public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
     }
 
     @Override
-    public void init(Collection<? extends ITmfTrace> traces) {
+    public void init(Collection<ITmfTrace> traces) {
         ITmfTrace[] traceArr = traces.toArray(new ITmfTrace[traces.size()]);
         fSyncs.clear();
         /* Create a convex hull for all trace pairs */
