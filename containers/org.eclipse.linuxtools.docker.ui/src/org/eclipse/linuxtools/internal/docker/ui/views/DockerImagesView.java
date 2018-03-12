@@ -364,7 +364,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	
 	@Override
 	public void listChanged(final IDockerConnection connection,
-			final List<IDockerImage> containers) {
+			final List<IDockerImage> images) {
 		if (connection.getName().equals(connection.getName())) {
 			Display.getDefault().asyncExec(new Runnable() {
 				@Override
@@ -489,9 +489,8 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		}
 		int index = 0;
 		for (int i = 0; i < connections.length; ++i) {
-			if (currUri.equals(connections[i].getUri())) {
+			if (connections[i].getUri().equals(currUri))
 				index = i;
-			}
 		}
 		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
 			index = currIndex; // no change in connection displayed
