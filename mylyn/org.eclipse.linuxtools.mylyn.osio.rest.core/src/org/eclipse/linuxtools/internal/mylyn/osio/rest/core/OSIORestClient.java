@@ -109,7 +109,7 @@ public class OSIORestClient {
 
 	public OSIORestConfiguration getConfiguration(TaskRepository repository, IOperationMonitor monitor) {
 		try {
-			OSIORestConfiguration config = new OSIORestConfiguration(repository.getUrl(), userName);
+			OSIORestConfiguration config = new OSIORestConfiguration(repository.getUrl());
 			Map<String, Space> spaces = getSpaces(monitor);
 			for (Space space : spaces.values()) {
 				Map<String, WorkItemTypeData> workItemTypes = getSpaceWorkItemTypes(new NullOperationMonitor(), space);

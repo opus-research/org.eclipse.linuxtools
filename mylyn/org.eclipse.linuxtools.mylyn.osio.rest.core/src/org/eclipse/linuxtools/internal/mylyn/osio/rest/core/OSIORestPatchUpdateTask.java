@@ -234,7 +234,8 @@ public class OSIORestPatchUpdateTask extends OSIORestPatchRequest<TaskData> {
 				}
 			}
 			attribute = taskData.getRoot().getAttribute(taskSchema.ADD_LABEL.getKey());
-			List<String> labelAdditions = attribute.getValues();
+			String labelAddString = attribute.getValue();
+			String[] labelAdditions = labelAddString.split(",");
 			if (labelAdditions != null) {
 				for (String addition : labelAdditions) {
 					int index = labels.indexOf(addition);
