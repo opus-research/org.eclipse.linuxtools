@@ -25,7 +25,6 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     CTFCallsiteTest.class,
-    CTFEventDefinitionTest.class,
     CTFEventFieldTest.class
 })
 public class TestAll {
