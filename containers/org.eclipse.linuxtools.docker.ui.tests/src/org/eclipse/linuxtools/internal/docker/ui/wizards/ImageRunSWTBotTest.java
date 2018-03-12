@@ -95,7 +95,7 @@ public class ImageRunSWTBotTest {
 		// when opening the "Run Image..." wizard
 		final SWTBotTree dockerExplorerViewTreeBot = dockerExplorerViewBot.bot().tree();
 		dockerExplorerViewTreeBot.select(imageTreeItem);
-		dockerExplorerViewTreeBot.contextMenu("Run Image...").click();
+		dockerExplorerViewTreeBot.contextMenu("Run...").click();
 
 		// when use an existing container name
 		bot.textWithLabel(WizardMessages.getString("ImageRunSelectionPage.containerName")).setText("foo_bar");
@@ -120,7 +120,7 @@ public class ImageRunSWTBotTest {
 		// when opening the "Run Image..." wizard
 		final SWTBotTree dockerExplorerViewTreeBot = dockerExplorerViewBot.bot().tree();
 		dockerExplorerViewTreeBot.select(imageTreeItem);
-		dockerExplorerViewTreeBot.contextMenu("Run Image...").click();
+		dockerExplorerViewTreeBot.contextMenu("Run...").click();
 		
 		// when use an existing container name
 		bot.textWithLabel(WizardMessages.getString("ImageRunSelectionPage.containerName")).setText("foo_bar_baz");
@@ -157,7 +157,7 @@ public class ImageRunSWTBotTest {
 		final SWTBotTreeItem imagesTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test", "Images").expand();
 		// when select image and click on run to open the wizard
 		SWTUtils.getTreeItem(imagesTreeItem, "foo/bar").select();
-		dockerExplorerViewBot.bot().tree().contextMenu("Run Image...").click();
+		dockerExplorerViewBot.bot().tree().contextMenu("Run...").click();
 		bot.waitUntil(Conditions.shellIsActive("Run a Docker Image"), TimeUnit.SECONDS.toMillis(1)); //$NON-NLS-1$
 		// configure container
 		bot.text(0).setText(containerName);
