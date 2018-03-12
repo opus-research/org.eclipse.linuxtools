@@ -168,23 +168,17 @@ public interface IDockerConnection {
 
 	void tagImage(String name, String newTag) throws DockerException, InterruptedException;
 
+	String buildImage(IPath path, IDockerProgressHandler handler)
+			throws DockerException, InterruptedException;
+
 	String buildImage(IPath path, String name, IDockerProgressHandler handler)
 			throws DockerException, InterruptedException;
 
-	@Deprecated
-	String createContainer(IDockerContainerConfig c) throws DockerException,
-			InterruptedException;
-
-	@Deprecated
-	String createContainer(final IDockerContainerConfig c,
-			final String containerName) throws DockerException,
-			InterruptedException;
-
-	String createContainer(IDockerContainerConfig c, IDockerHostConfig hc)
+	String createContainer(IDockerContainerConfig c)
 			throws DockerException, InterruptedException;
 
 	public String createContainer(final IDockerContainerConfig config,
-			final IDockerHostConfig hc, final String containerName)
+			final String containerName)
 					throws DockerException, InterruptedException;
 
 	void stopContainer(String id) throws DockerException, InterruptedException;
@@ -202,7 +196,12 @@ public interface IDockerConnection {
 	void startContainer(String id, OutputStream stream)
 			throws DockerException, InterruptedException;
 
-	void startContainer(String id, String loggingId, OutputStream stream)
+	void startContainer(String id, IDockerHostConfig config,
+			OutputStream stream)
+			throws DockerException, InterruptedException;
+
+	void startContainer(String id, String loggingId, IDockerHostConfig config,
+			OutputStream stream)
 			throws DockerException, InterruptedException;
 
 	void commitContainer(String id, String repo, String tag, String comment,
