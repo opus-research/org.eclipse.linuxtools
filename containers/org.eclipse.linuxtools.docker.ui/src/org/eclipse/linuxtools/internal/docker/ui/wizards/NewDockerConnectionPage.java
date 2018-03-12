@@ -290,43 +290,35 @@ public class NewDockerConnectionPage extends WizardPage {
 				.addSelectionListener(onTestConnectionButtonSelection());
 
 		// observe
-		@SuppressWarnings("unchecked")
 		final IObservableValue<String> connectionNameModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.CONNECTION_NAME)
 				.observe(model);
-		@SuppressWarnings("unchecked")
 		final IObservableValue<Boolean> unixSocketBindingModeModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.UNIX_SOCKET_BINDING_MODE)
 				.observe(model);
-		@SuppressWarnings("unchecked")
 		final IObservableValue<String> unixSocketPathModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.UNIX_SOCKET_PATH)
 				.observe(model);
 
-		@SuppressWarnings("unchecked")
-		final IObservableValue<Boolean> customConnectionSettingsModelObservable = BeanProperties
+		final IObservableValue customConnectionSettingsModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.CUSTOM_SETTINGS)
 				.observe(model);
-		@SuppressWarnings("unchecked")
 		final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_CONNECTION_BINDING_MODE)
 				.observe(model);
-		@SuppressWarnings("unchecked")
 		final IObservableValue<String> tcpCertPathModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_CERT_PATH)
 				.observe(model);
-		@SuppressWarnings("unchecked")
 		final IObservableValue<Boolean> tcpTlsVerifyModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_TLS_VERIFY)
 				.observe(model);
-		@SuppressWarnings("unchecked")
 		final IObservableValue<String> tcpHostModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_HOST)
@@ -549,7 +541,7 @@ public class NewDockerConnectionPage extends WizardPage {
 				bindingModeSelectionControls);
 	}
 
-	private IValueChangeListener<Boolean> onCustomConnectionSettingsSelection(
+	private IValueChangeListener onCustomConnectionSettingsSelection(
 			final Control[] bindingModeSelectionControls,
 			final Control[] unixSocketControls, final Control[] tcpAuthControls,
 			final Control[] tcpConnectionControls) {
@@ -580,7 +572,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		};
 	}
 
-	private IValueChangeListener<Boolean> onTcpAuthSelection(
+	private IValueChangeListener onTcpAuthSelection(
 			final Control[] tcpAuthControls) {
 		return event -> setWidgetsEnabled(model.isCustomSettings()
 				&& model.isTcpConnectionBindingMode() && model.isTcpTLSVerify(),
@@ -613,7 +605,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		return new SelectionAdapter() {
 
 			@Override
-			public void widgetSelected(final SelectionEvent event) {
+			public void widgetSelected(SelectionEvent e) {
 				try {
 					getWizard().getContainer().run(true, false, monitor -> {
 						monitor.beginTask(WizardMessages.getString(
@@ -626,16 +618,12 @@ public class NewDockerConnectionPage extends WizardPage {
 							dockerConnection.close();
 							// ping succeeded
 							displaySuccessDialog();
-						} catch (DockerException e) {
-							// only log if there's an underlying cause, but not
-							// as an error
-							// because there's no need to report such problems
-							// in Eclipse.org AERI
-							if (e.getCause() != null) {
-								displayErrorDialog(e.getCause());
-							} else {
-								displayErrorDialog(e);
+						} catch (DockerException e1) {
+							// only log if there's an underlying cause.
+							if (e1.getCause() != null) {
+								Activator.log(e1);
 							}
+							displayErrorDialog();
 						}
 					});
 				} catch (InvocationTargetException | InterruptedException o_O) {
@@ -655,14 +643,12 @@ public class NewDockerConnectionPage extends WizardPage {
 				);
 			}
 
-			private void displayErrorDialog(final Throwable cause) {
+			private void displayErrorDialog() {
 				displayDialog(
 						WizardMessages
 								.getString("DockerConnectionPage.failure"), //$NON-NLS-1$
 						WizardMessages
-								.getFormattedString(
-										"DockerConnectionPage.pingFailure", //$NON-NLS-1$
-										cause.getMessage()),
+								.getString("DockerConnectionPage.pingFailure"), //$NON-NLS-1$
 						SWT.ICON_ERROR, new String[] { WizardMessages
 								.getString("DockerConnectionPage.ok") } //$NON-NLS-1$
 				);
