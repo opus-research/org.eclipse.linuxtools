@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.changelog.core.editors;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.TextAttribute;
@@ -27,7 +26,6 @@ import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.linuxtools.changelog.core.IEditorChangeLogContrib;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
@@ -42,13 +40,19 @@ public class GNUEditorConfiguration extends TextSourceViewerConfiguration implem
 
     public static final String CHANGELOG_PARTITIONING= "gnu_changelog_partitioning";  //$NON-NLS-1$
 
+    private GNUElementScanner scanner;
+
+    private ColorManager colorManager;
+
     private TextEditor parentEditor;
 
     /**
      * Prepares configuration.
      */
     public GNUEditorConfiguration() {
-	}
+        this.colorManager = new ColorManager();
+
+    }
 
     /**
      * Sets TextEditor that this configuration is going to be applied.
@@ -68,6 +72,15 @@ public class GNUEditorConfiguration extends TextSourceViewerConfiguration implem
         return new String[] { IDocument.DEFAULT_CONTENT_TYPE,
                   GNUPartitionScanner.CHANGELOG_EMAIL,
                   GNUPartitionScanner.CHANGELOG_SRC_ENTRY};
+    }
+
+    private GNUElementScanner getChangeLogFileScanner() {
+        if (scanner == null) {
+            scanner = new GNUElementScanner(colorManager);
+            scanner.setDefaultReturnToken(new Token(new TextAttribute(
+                    colorManager.getColor(IChangeLogColorConstants.TEXT))));
+        }
+        return scanner;
     }
 
     /**
@@ -117,19 +130,16 @@ public class GNUEditorConfiguration extends TextSourceViewerConfiguration implem
     public IPresentationReconciler getPresentationReconciler(
             ISourceViewer sourceViewer) {
         PresentationReconciler reconciler = new PresentationReconciler();
-        ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
-        GNUElementScanner scanner = new GNUElementScanner();
-        scanner.setDefaultReturnToken(new Token(new TextAttribute(
-        		colorRegistry.get(IChangeLogColorConstants.TEXT))));
-        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(scanner);
+
+        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(getChangeLogFileScanner());
         reconciler.setDamager(dr, GNUPartitionScanner.CHANGELOG_EMAIL);
         reconciler.setRepairer(dr, GNUPartitionScanner.CHANGELOG_EMAIL);
 
-        dr= new GNUFileEntryDamagerRepairer(scanner);
+        dr= new GNUFileEntryDamagerRepairer(getChangeLogFileScanner());
         reconciler.setDamager(dr, GNUPartitionScanner.CHANGELOG_SRC_ENTRY);
         reconciler.setRepairer(dr, GNUPartitionScanner.CHANGELOG_SRC_ENTRY);
 
-        dr= new MultilineRuleDamagerRepairer(scanner);
+        dr= new MultilineRuleDamagerRepairer(getChangeLogFileScanner());
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 

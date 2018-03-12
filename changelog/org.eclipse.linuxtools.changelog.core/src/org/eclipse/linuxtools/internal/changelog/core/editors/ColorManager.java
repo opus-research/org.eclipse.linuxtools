@@ -10,24 +10,36 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.changelog.core.editors;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
 
 /**
- * Color scheme to use for syntax highlighting.
+ * Manages color schemes. Actual color value is stored in
+ * IChangeLogColorConstants.
  *
  * @author klee (Kyu Lee)
  *
  */
-public interface IChangeLogColorConstants {
-    RGB FILE_NAME = new RGB(128, 0, 0);
+public class ColorManager {
 
-    RGB FUNC_NAME = new RGB(0, 128, 0);
+    protected Map<RGB, Color> fColorTable = new HashMap<>(10);
 
-    RGB TEXT = new RGB(0, 0, 0);
+    public void dispose() {
+        for (Color color: fColorTable.values()){
+            color.dispose();
+        }
+    }
 
-    RGB EMAIL = new RGB(0, 0, 128);
-
-    RGB DATE = new RGB(64, 64, 0);
-
-    RGB AUTHOR = new RGB(0, 64, 64);
+    public Color getColor(RGB rgb) {
+        Color color = fColorTable.get(rgb);
+        if (color == null) {
+            color = new Color(Display.getCurrent(), rgb);
+            fColorTable.put(rgb, color);
+        }
+        return color;
+    }
 }
