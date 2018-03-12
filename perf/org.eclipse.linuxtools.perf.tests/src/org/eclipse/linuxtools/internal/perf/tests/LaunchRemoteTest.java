@@ -30,6 +30,7 @@ import org.eclipse.linuxtools.profiling.tests.AbstractRemoteTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.osgi.framework.FrameworkUtil;
 
 public class LaunchRemoteTest extends AbstractRemoteTest {
 
@@ -39,12 +40,17 @@ public class LaunchRemoteTest extends AbstractRemoteTest {
     private ILaunchConfigurationWorkingCopy wc;
     private IProject project;
 
+    private final String CONNECTION_NAME = "localhost"; //$NON-NLS-1$
     private final String CONNECTION_DIR = "/tmp/eclipse-perf-ext_project_test/"; //$NON-NLS-1$
+    private final String EXTERNAL_PROJECT_PATH = "remotetools://"+ CONNECTION_NAME + CONNECTION_DIR; //$NON-NLS-1$
+    private final String PROJECT_NAME = "fibTest"; //$NON-NLS-1$
+    private final String SOURCE_FILE = "fib.cpp"; //$NON-NLS-1$
 
     @Before
     public void setUp() throws Exception {
         if ((!(AbstractRemoteTest.USERNAME.isEmpty()))) {
-            project = null;
+            project = createRemoteExternalProjectAndBuild(FrameworkUtil.getBundle(this.getClass()),
+                    PROJECT_NAME, EXTERNAL_PROJECT_PATH, SOURCE_FILE);
 
             config = createConfiguration(project);
             delegate = new PerfLaunchConfigDelegate();
