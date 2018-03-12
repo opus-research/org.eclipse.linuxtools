@@ -675,4 +675,65 @@ public class Utils {
         }
         return 0;
     }
+
+    /**
+     * Calculates the square of the distance between two points.
+     *
+     * @param x1
+     *            x-coordinate of point 1
+     * @param y1
+     *            y-coordinate of point 1
+     * @param x2
+     *            x-coordinate of point 2
+     * @param y2
+     *            y-coordinate of point 2
+     *
+     * @return the square of the distance in pixels^2
+     * @since 3.1
+     */
+    public static double distance2(int x1, int y1, int x2, int y2) {
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+        int d2 = dx * dx + dy * dy;
+        return d2;
+    }
+
+    /**
+     * Calculates the distance between a point and a line segment. If the point
+     * is in the perpendicular region between the segment points, return the
+     * distance between the point and its projection on the segment. Otherwise
+     * return the distance between the point and its closest segment point.
+     *
+     * @param px
+     *            x-coordinate of the point
+     * @param py
+     *            y-coordinate of the point
+     * @param x1
+     *            x-coordinate of segment point 1
+     * @param y1
+     *            y-coordinate of segment point 1
+     * @param x2
+     *            x-coordinate of segment point 2
+     * @param y2
+     *            y-coordinate of segment point 2
+     *
+     * @return the distance in pixels
+     * @since 3.1
+     */
+    public static double distance(int px, int py, int x1, int y1, int x2, int y2) {
+        double length2 = distance2(x1, y1, x2, y2);
+        if (length2 == 0) {
+            return Math.sqrt(distance2(px, py, x1, y1));
+        }
+        double t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / length2;
+        if (t <= 0.0) {
+            return Math.sqrt(distance2(px, py, x1, y1));
+        }
+        if (t >= 1.0) {
+            return Math.sqrt(distance2(px, py, x2, y2));
+        }
+        int x = (int) (x1 + t * (x2 - x1));
+        int y = (int) (y1 + t * (y2 - y1));
+        return Math.sqrt(distance2(px, py, x, y));
+    }
 }
