@@ -427,7 +427,8 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 
 	private static String[] call(String[] args, File vagrantDir,
 			Map<String, String> env) {
-		final String[] envp = EnvironmentsManager.convertEnvironment(env);
+		String[] envp = (env == null ? null
+				: EnvironmentsManager.convertEnvironment(env));
 
 		List<String> result = new ArrayList<>();
 		try {
