@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Collection;
 import java.util.ListIterator;
 
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
@@ -94,17 +93,6 @@ public class CTFStreamInputPacketIndexTest {
         entry.setContentSizeBits(1);
         entry.setTimestampEnd(1L);
         fixture.addEntry(entry);
-    }
-
-    /**
-     * Run the Collection<StreamInputPacketIndexEntry> getEntries() method test.
-     */
-    @Test
-    public void testGetEntries() {
-        Collection<StreamInputPacketIndexEntry> result = fixture.getEntries();
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
     }
 
     /**

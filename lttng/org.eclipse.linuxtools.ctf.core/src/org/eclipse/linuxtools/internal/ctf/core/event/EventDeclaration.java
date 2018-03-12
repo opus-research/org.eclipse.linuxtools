@@ -79,6 +79,8 @@ public class EventDeclaration implements IEventDeclaration {
     /** Map of this event type's custom CTF attributes */
     private final Map<String, String> fCustomAttributes = new HashMap<>();
 
+    private int fIntId = (int) UNSET_EVENT_ID;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -184,11 +186,21 @@ public class EventDeclaration implements IEventDeclaration {
      */
     public void setId(long id) {
         fId = id;
+        fIntId = (int) id;
     }
 
     @Override
     public Long getId() {
         return fId;
+    }
+
+    /**
+     * Faster get id assuming you have less than a billion event types
+     *
+     * @return the event id
+     */
+    public int id() {
+        return fIntId;
     }
 
     /**
