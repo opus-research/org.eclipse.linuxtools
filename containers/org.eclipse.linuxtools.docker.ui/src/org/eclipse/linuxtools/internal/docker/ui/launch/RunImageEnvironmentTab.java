@@ -259,8 +259,6 @@ public class RunImageEnvironmentTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		if (model == null)
-			return;
 		try {
 			model.removeEnvironmentVariables();
 			final List<String> environmentVariables = configuration
@@ -295,8 +293,6 @@ public class RunImageEnvironmentTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		if (model == null)
-			return;
 		ArrayList<String> envList = new ArrayList<>();
 		for (Object o : model.getEnvironmentVariables()) {
 			EnvironmentVariableModel m = (EnvironmentVariableModel) o;
