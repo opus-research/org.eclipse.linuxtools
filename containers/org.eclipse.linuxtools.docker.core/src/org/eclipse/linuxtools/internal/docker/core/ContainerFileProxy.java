@@ -41,9 +41,7 @@ public class ContainerFileProxy {
 	}
 
 	public String getLabel() {
-		if (name.isEmpty())
-			return "/"; //$NON-NLS-1$
-		return name;
+		return name + (isFolder() ? "/" : "");
 	}
 
 	public boolean isFolder() {

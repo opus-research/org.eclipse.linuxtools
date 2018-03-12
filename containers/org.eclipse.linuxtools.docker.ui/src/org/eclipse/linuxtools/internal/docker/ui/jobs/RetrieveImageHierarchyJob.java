@@ -73,12 +73,12 @@ public class RetrieveImageHierarchyJob extends Job {
 						.resolveImageHierarchy((IDockerImage) selectedElement);
 			} else {
 				Activator.log(new DockerException(JobMessages
-						.getFormattedString("RetrieveImageHierarchyJob.error", //$NON-NLS-1$
-								selectedElement.getClass().getName())));
+						.getString("RetrieveImageHierarchyJob.error"))); //$NON-NLS-1$
 			}
 		} finally {
 			monitor.done();
 		}
+
 		return Status.OK_STATUS;
 	}
 
