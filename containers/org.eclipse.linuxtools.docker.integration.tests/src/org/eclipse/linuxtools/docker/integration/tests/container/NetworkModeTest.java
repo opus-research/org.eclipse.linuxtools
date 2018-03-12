@@ -19,16 +19,15 @@ import org.eclipse.linuxtools.docker.reddeer.condition.ContainerIsDeployedCondit
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunNetworkPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunResourceVolumesVariablesPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
-import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
-import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.eclipse.ui.views.properties.PropertySheet;
+import org.jboss.reddeer.common.wait.WaitUntil;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.eclipse.ui.views.properties.PropertiesView;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,20 +59,18 @@ public class NetworkModeTest extends AbstractImageBotTest {
 		pullImage(IMAGE_NAME, IMAGE_TAG);
 		new WaitWhile(new JobIsRunning());
 		getConnection().getImage(IMAGE_NAME).run();
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.setAllocatePseudoTTY();
 		firstPage.setKeepSTDINOpen();
 		firstPage.next();
-		ImageRunResourceVolumesVariablesPage variablesPage = new ImageRunResourceVolumesVariablesPage(wizard);
+		ImageRunResourceVolumesVariablesPage variablesPage = new ImageRunResourceVolumesVariablesPage();
 		variablesPage.next();
 	}
 
 	@Test
 	public void testDefaultMode() {
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunNetworkPage networkPage = new ImageRunNetworkPage(wizard);
+		ImageRunNetworkPage networkPage = new ImageRunNetworkPage();
 		networkPage.setDefaultNetworkMode();
 		networkPage.finish();
 		checkNetworkMode(NETWORK_MODE_DEFAULT);
@@ -81,8 +78,7 @@ public class NetworkModeTest extends AbstractImageBotTest {
 	
 	@Test
 	public void testBridgeMode() {
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunNetworkPage networkPage = new ImageRunNetworkPage(wizard);
+		ImageRunNetworkPage networkPage = new ImageRunNetworkPage();
 		networkPage.setBridgeNetworkMode();
 		networkPage.finish();
 		checkNetworkMode(NETWORK_MODE_BRIDGE);
@@ -90,8 +86,7 @@ public class NetworkModeTest extends AbstractImageBotTest {
 	
 	@Test
 	public void testHostMode() {
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunNetworkPage networkPage = new ImageRunNetworkPage(wizard);
+		ImageRunNetworkPage networkPage = new ImageRunNetworkPage();
 		networkPage.setHostNetworkMode();
 		networkPage.finish();
 		checkNetworkMode(NETWORK_MODE_HOST);
@@ -99,8 +94,7 @@ public class NetworkModeTest extends AbstractImageBotTest {
 	
 	@Test
 	public void testNoneMode() {
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunNetworkPage networkPage = new ImageRunNetworkPage(wizard);
+		ImageRunNetworkPage networkPage = new ImageRunNetworkPage();
 		networkPage.setNoneNetworkMode();
 		networkPage.finish();
 		checkNetworkMode(NETWORK_MODE_NONE);
@@ -130,7 +124,7 @@ public class NetworkModeTest extends AbstractImageBotTest {
 			new WaitUntil(new ContainerIsDeployedCondition(CONTAINER_NAME, getConnection()));
 		}
 		new WaitWhile(new JobIsRunning());
-		PropertySheet propertiesView = openPropertiesTabForContainer("Inspect", CONTAINER_NAME);
+		PropertiesView propertiesView = openPropertiesTabForContainer("Inspect", CONTAINER_NAME);
 		String networkProp = propertiesView.getProperty("HostConfig", "NetworkMode").getPropertyValue();
 		assertTrue("Container is not running in " + networkMode + " network mode!", networkProp.equals(networkMode));
 	}

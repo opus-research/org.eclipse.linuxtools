@@ -19,21 +19,19 @@ import org.eclipse.linuxtools.docker.integration.tests.mock.MockDockerConnection
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.condition.ContainerIsDeployedCondition;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
-import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerTerminal;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
-import org.eclipse.reddeer.common.wait.TimePeriod;
-import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.eclipse.ui.console.ConsoleView;
-import org.eclipse.reddeer.swt.api.CTabItem;
-import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
-import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
+import org.jboss.reddeer.common.wait.TimePeriod;
+import org.jboss.reddeer.common.wait.WaitUntil;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.eclipse.ui.console.ConsoleView;
+import org.jboss.reddeer.swt.api.CTabItem;
+import org.jboss.reddeer.swt.impl.menu.ContextMenu;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,8 +58,7 @@ public class ContainerLogTest extends AbstractImageBotTest {
 		new WaitWhile(new JobIsRunning());
 		getConnection().refresh();
 		getConnection().getImage(IMAGE_NAME).run();
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.setAllocatePseudoTTY();
 		firstPage.setKeepSTDINOpen();
@@ -71,7 +68,7 @@ public class ContainerLogTest extends AbstractImageBotTest {
 			getConnection().refresh();
 			new WaitUntil(new ContainerIsDeployedCondition(CONTAINER_NAME, getConnection()));
 		}
-		new WaitWhile(new JobIsRunning(), TimePeriod.DEFAULT);
+		new WaitWhile(new JobIsRunning(), TimePeriod.NORMAL);
 	}
 
 	@Test
@@ -101,7 +98,7 @@ public class ContainerLogTest extends AbstractImageBotTest {
 	}
 	
 	private String getContainerLog() {
-		new ContextMenuItem("Display Log").select();
+		new ContextMenu("Display Log").select();
 		String consoleText;
 		if (mockitoIsUsed()) {
 			ConsoleView consoleView = new ConsoleView();

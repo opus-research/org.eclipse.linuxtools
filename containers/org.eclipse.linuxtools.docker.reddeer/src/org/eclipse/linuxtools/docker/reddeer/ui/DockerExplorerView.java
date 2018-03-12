@@ -17,16 +17,15 @@ import java.util.List;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionStorageManager;
-import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.DockerConnectionWizard;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.NewDockerConnectionPage;
 import org.eclipse.linuxtools.docker.reddeer.ui.resources.AuthenticationMethod;
 import org.eclipse.linuxtools.docker.reddeer.ui.resources.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionStorageManagerFactory;
-import org.eclipse.reddeer.core.exception.CoreLayerException;
-import org.eclipse.reddeer.jface.exception.JFaceLayerException;
-import org.eclipse.reddeer.jface.handler.TreeViewerHandler;
-import org.eclipse.reddeer.swt.api.TreeItem;
-import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
+import org.jboss.reddeer.core.exception.CoreLayerException;
+import org.jboss.reddeer.jface.exception.JFaceLayerException;
+import org.jboss.reddeer.jface.viewer.handler.TreeViewerHandler;
+import org.jboss.reddeer.swt.api.TreeItem;
+import org.jboss.reddeer.swt.impl.tree.DefaultTree;
 
 /**
  * 
@@ -98,8 +97,7 @@ public class DockerExplorerView extends WorkbenchView {
 	 */
 	public void createDockerConnectionSearch(String connectionName) {
 		activate();
-		DockerConnectionWizard wizard = new DockerConnectionWizard();
-		NewDockerConnectionPage connectionWizard = new NewDockerConnectionPage(wizard);
+		NewDockerConnectionPage connectionWizard = new NewDockerConnectionPage();
 		connectionWizard.open();
 		connectionWizard.search(connectionName);
 		connectionWizard.finish();
@@ -160,8 +158,7 @@ public class DockerExplorerView extends WorkbenchView {
 			String authentificationCertificatePath, String connectionName) {
 
 		activate();
-		DockerConnectionWizard wizard = new DockerConnectionWizard();
-		NewDockerConnectionPage connectionWizard = new NewDockerConnectionPage(wizard);
+		NewDockerConnectionPage connectionWizard = new NewDockerConnectionPage();
 		connectionWizard.open();
 		connectionWizard.setConnectionName(connectionName);
 		if (AuthenticationMethod.TCP_CONNECTION.equals(authMethod)) {
