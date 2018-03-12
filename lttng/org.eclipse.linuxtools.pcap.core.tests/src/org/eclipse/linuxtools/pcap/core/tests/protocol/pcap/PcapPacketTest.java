@@ -46,14 +46,14 @@ public class PcapPacketTest {
             "Frame", "36",
             "Frame Length", "75 bytes",
             "Capture Length", "75 bytes",
-            "Capture Time", "2005-07-04 09:33:52.829.277.000"
+            "Capture Time", "2005-07-04 05:33:52.829.277.000"
             );
 
     private static final String EXPECTED_TOSTRING;
     static {
         StringBuilder sb = new StringBuilder();
         sb.append("Packet Capture 36: 75 bytes on wire, 75 bytes captured.\n");
-        sb.append("Arrival time: 2005-07-04 09:33:52.829.277.000\n");
+        sb.append("Arrival time: 2005-07-04 05:33:52.829.277.000\n");
         sb.append("Ethernet II, Source: 00:e0:ed:01:6e:bd, Destination: 00:30:54:00:34:56, Type: Internet Protocol Version 4 (0x0800)\n");
         sb.append("Internet Protocol Version 4, Source: 192.168.1.2, Destination: 192.168.1.1\n");
         sb.append("Version: 4, Identification: 0x69aa, Header Length: 20 bytes, Total Length: 61 bytes\n");
