@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.internal.tracing.rcp.ui;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.util.OpenStrategy;
 import org.eclipse.linuxtools.internal.tracing.rcp.ui.cli.CliParser;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
@@ -109,6 +110,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         String traceToOpen = TracingRcpPlugin.getDefault().getCli().getArgument(CliParser.OPEN_FILE_LOCATION);
         if (traceToOpen != null) {
             try {
+                // This will make sure that the editor is active after start-up
+                OpenStrategy.setOpenMethod(OpenStrategy.DOUBLE_CLICK);
                 TmfTraceFolder destinationFolder = TmfProjectRegistry.getProject(project, true).getTracesFolder();
                 TmfOpenTraceHelper.openTraceFromPath(destinationFolder, traceToOpen, TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getShell());
             } catch (CoreException e) {
