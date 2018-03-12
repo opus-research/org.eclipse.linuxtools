@@ -24,9 +24,9 @@ public enum TraceEnablement {
     // Enum definition
     // ------------------------------------------------------------------------
     /** Tracing is disabled */
-    DISABLED("disabled"), //$NON-NLS-1$
+    DISABLED("disabled", "false"), //$NON-NLS-1$ //$NON-NLS-2$
     /** Tracing is enabled */
-    ENABLED("enabled"); //$NON-NLS-1$
+    ENABLED("enabled", "true"); //$NON-NLS-1$ //$NON-NLS-2$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -35,6 +35,7 @@ public enum TraceEnablement {
      * Name of enum
      */
     private final String fInName;
+    private final String fInMiName;
 
     // ------------------------------------------------------------------------
     // Constuctors
@@ -44,8 +45,9 @@ public enum TraceEnablement {
      * Private constructor
      * @param name the name of state
      */
-    private TraceEnablement(String name) {
+    private TraceEnablement(String name, String miName) {
         fInName = name;
+        fInMiName = miName;
     }
 
     // ------------------------------------------------------------------------
@@ -57,4 +59,29 @@ public enum TraceEnablement {
     public String getInName() {
         return fInName;
     }
+
+    /**
+     * @return state name
+     */
+    public String getInMiName() {
+        return fInMiName;
+    }
+
+    /**
+     * @param name name of the desired enum
+     * @return the corresponding {@link TraceEnablement} matching name
+     */
+    public static TraceEnablement valueOfString(String name){
+        if (name == null) {
+            throw new NullPointerException();
+        }
+        for (TraceEnablement enablementType : TraceEnablement.values()) {
+            boolean exist = enablementType.fInName.equalsIgnoreCase(name) || enablementType.fInMiName.equalsIgnoreCase(name);
+            if (exist) {
+               return enablementType;
+            }
+        }
+        throw new IllegalArgumentException();
+    }
+
 }
