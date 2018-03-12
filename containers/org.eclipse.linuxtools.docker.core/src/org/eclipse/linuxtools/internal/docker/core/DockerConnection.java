@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -513,7 +514,15 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				Activator.logErrorMessage(e.getMessage());
 				throw new InterruptedException();
 			} catch (Exception e) {
-				Activator.logErrorMessage(e.getMessage());
+				/*
+				 * Temporary workaround for BZ #477485
+				 * Remove when docker-client logs() uses noTimeoutClient.
+				 */
+				if (e.getCause() instanceof SocketTimeoutException) {
+					execute();
+				} else {
+					Activator.logErrorMessage(e.getMessage());
+				}
 			} finally {
 				follow = false;
 				copyClient.close(); // we are done with copyClient..dispose
