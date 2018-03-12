@@ -36,7 +36,7 @@ import org.junit.Test;
 import com.spotify.docker.client.DockerClient;
 
 /**
- *
+ * 
  */
 public class CommandUtilsSWTBotTest {
 
@@ -45,12 +45,11 @@ public class CommandUtilsSWTBotTest {
 	private DockerExplorerView dockerExplorerView;
 
 	@ClassRule
-	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(
-			CloseWelcomePageRule.DOCKER_PERSPECTIVE_ID);
-
+	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(); 
+	
 	@Rule
 	public ClearConnectionManagerRule clearConnectionManager = new ClearConnectionManagerRule();
-
+	
 	@Before
 	public void lookupDockerExplorerView() {
 		SWTUtils.asyncExec(() -> {
@@ -62,7 +61,7 @@ public class CommandUtilsSWTBotTest {
 				Assert.fail("Failed to open Docker Explorer view: " + e.getMessage());
 			}
 		});
-		dockerExplorerViewBot = SWTUtils.getSWTBotView(bot, "org.eclipse.linuxtools.docker.ui.dockerExplorerView");
+		dockerExplorerViewBot = bot.viewById("org.eclipse.linuxtools.docker.ui.dockerExplorerView");
 		dockerExplorerView = (DockerExplorerView) (dockerExplorerViewBot.getViewReference().getView(true));
 		bot.views().stream()
 				.filter(v -> v.getReference().getId().equals("org.eclipse.linuxtools.docker.ui.dockerContainersView")
@@ -115,7 +114,7 @@ public class CommandUtilsSWTBotTest {
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
-
+	
 	@Test
 	public void shouldRetrieveConnectionFromSelectedContainerLink() {
 		// given
@@ -132,7 +131,7 @@ public class CommandUtilsSWTBotTest {
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
-
+	
 	@Test
 	public void shouldRetrieveConnectionFromSelectedContainerVolumesCategory() {
 		// given
@@ -182,7 +181,7 @@ public class CommandUtilsSWTBotTest {
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
-
+	
 	@Test
 	public void shouldRetrieveConnectionFromSelectedContainerPort() {
 		// given
@@ -199,7 +198,7 @@ public class CommandUtilsSWTBotTest {
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
-
+	
 	@Test
 	public void shouldRetrieveConnectionFromSelectedImagesCategory() {
 		// given
@@ -213,7 +212,7 @@ public class CommandUtilsSWTBotTest {
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
-
+	
 	@Test
 	public void shouldRetrieveConnectionFromSelectedImage() {
 		// given

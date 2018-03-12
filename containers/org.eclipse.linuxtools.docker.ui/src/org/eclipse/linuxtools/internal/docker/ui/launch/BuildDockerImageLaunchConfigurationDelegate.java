@@ -38,6 +38,7 @@ import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.ui.Activator;
+import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.jobs.BuildDockerImageJob;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -68,8 +69,8 @@ public class BuildDockerImageLaunchConfigurationDelegate
 				.getAttribute(DOCKER_CONNECTION, (String) null);
 		final String repoName = configuration.getAttribute(REPO_NAME,
 				(String) null);
-		final IDockerConnection connection = DockerConnectionManager
-				.getInstance().getConnectionByName(connectionName);
+		final DockerConnection connection = (DockerConnection) getDockerConnection(
+				connectionName);
 		final Map<String, Object> buildOptions = new HashMap<>();
 		buildOptions.put(QUIET_BUILD,
 				configuration.getAttribute(QUIET_BUILD, false));
@@ -99,6 +100,24 @@ public class BuildDockerImageLaunchConfigurationDelegate
 			Activator.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 					e.getMessage(), e));
 		}
+	}
+
+	/**
+	 * Finds the {@link IDockerConnection} from the given name
+	 * 
+	 * @param connectionName
+	 *            the name of the connection to find
+	 * @return the {@link IDockerConnection} or <code>null</code> if none
+	 *         matched.
+	 */
+	private IDockerConnection getDockerConnection(final String connectionName) {
+		for (IDockerConnection connection : DockerConnectionManager
+				.getInstance().getConnections()) {
+			if (connection.getName().equals(connectionName)) {
+				return connection;
+			}
+		}
+		return null;
 	}
 
 }

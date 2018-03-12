@@ -63,8 +63,7 @@ public class DockerExplorerViewSWTBotTest {
 	private DockerExplorerView dockerExplorerView;
 
 	@ClassRule
-	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(
-			CloseWelcomePageRule.DOCKER_PERSPECTIVE_ID);
+	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule();
 
 	@Rule
 	public TestLoggerRule watcher = new TestLoggerRule();

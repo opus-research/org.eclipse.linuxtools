@@ -22,15 +22,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-/**
- * The {@link IWorkbenchPreferencePage} for the Docker Machine settings.
- */
 public class DockerMachinePreferencePage extends FieldEditorPreferencePage
 		implements IWorkbenchPreferencePage {
 
 	/**
 	 * The {@link DirectoryFieldEditor} to select the installation directory for
-	 * the {@code docker-machine} command.
+	 * the Docker-Machine command.
 	 */
 	private DirectoryFieldEditor dockerMachineInstallDir;
 
@@ -40,13 +37,10 @@ public class DockerMachinePreferencePage extends FieldEditorPreferencePage
 	 */
 	private DirectoryFieldEditor vmDriverInstallDir;
 
-	/**
-	 * Constructor.
-	 */
 	public DockerMachinePreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-		setDescription(PreferenceMessages.getString("DockerMachine.message")); //$NON-NLS-1$
+		setDescription(Messages.getString("DockerMachine.message")); //$NON-NLS-1$
 	}
 
 	@Override
@@ -58,7 +52,7 @@ public class DockerMachinePreferencePage extends FieldEditorPreferencePage
 		// installation directory for docker-machine
 		this.dockerMachineInstallDir = new CustomDirectoryFieldEditor(
 				PreferenceConstants.DOCKER_MACHINE_INSTALLATION_DIRECTORY,
-				PreferenceMessages.getString("DockerMachinePath.label"), //$NON-NLS-1$
+				Messages.getString("DockerMachinePath.label"), //$NON-NLS-1$
 				getFieldEditorParent()) {
 			@Override
 			protected boolean checkState() {
@@ -88,13 +82,13 @@ public class DockerMachinePreferencePage extends FieldEditorPreferencePage
 				.setValidateStrategy(StringFieldEditor.VALIDATE_ON_KEY_STROKE);
 		this.dockerMachineInstallDir.setPage(this);
 		this.dockerMachineInstallDir.setErrorMessage(
-				PreferenceMessages.getString("DockerMachinePath.invalid.label")); //$NON-NLS-1$
+				Messages.getString("DockerMachinePath.invalid.label")); //$NON-NLS-1$
 		this.dockerMachineInstallDir.showErrorMessage();
 		this.dockerMachineInstallDir.load();
 		// installation directory for underlying VM driver
 		this.vmDriverInstallDir = new CustomDirectoryFieldEditor(
 				PreferenceConstants.VM_DRIVER_INSTALLATION_DIRECTORY,
-				PreferenceMessages.getString("VMDriverPath.label"), //$NON-NLS-1$
+				Messages.getString("VMDriverPath.label"), //$NON-NLS-1$
 				getFieldEditorParent());
 		addField(this.vmDriverInstallDir);
 		this.vmDriverInstallDir.setPreferenceStore(getPreferenceStore());
@@ -102,7 +96,7 @@ public class DockerMachinePreferencePage extends FieldEditorPreferencePage
 		this.vmDriverInstallDir.setPage(this);
 		this.vmDriverInstallDir.setEmptyStringAllowed(true);
 		this.vmDriverInstallDir.setErrorMessage(
-				PreferenceMessages.getString("VMDriverPath.invalid.label")); //$NON-NLS-1$
+				Messages.getString("VMDriverPath.invalid.label")); //$NON-NLS-1$
 		this.vmDriverInstallDir.showErrorMessage();
 		this.vmDriverInstallDir
 				.setValidateStrategy(StringFieldEditor.VALIDATE_ON_KEY_STROKE);
