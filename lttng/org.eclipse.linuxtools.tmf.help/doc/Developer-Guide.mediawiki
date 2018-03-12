@@ -11,8 +11,7 @@ The framework can easily be extended to support more trace types. To make a new 
 * The trace reader
 * The trace context
 * The trace location
-* The ''org.eclipse.linuxtools.tmf.core.tracetype'' plug-in extension point
-* (Optional) The ''org.eclipse.linuxtools.tmf.ui.tracetypeui'' plug-in extension point
+* (Optional but recommended) The ''org.eclipse.linuxtools.tmf.ui.tracetype'' plug-in extension point
 
 The '''event type''' must implement an ''ITmfEvent'' or extend a class that implements an ''ITmfEvent''. Typically it will extend ''TmfEvent''. The event type must contain all the data of an event. The '''trace reader''' must be of an ''ITmfTrace'' type. The ''TmfTrace'' class will supply many background operations so that the reader only needs to implement certain functions. The '''trace context''' can be seen as the internals of an iterator. It is required by the trace reader to parse events as it iterates the trace and to keep track of its rank and location. It can have a timestamp, a rank, a file position, or any other element, it should be considered to be ephemeral. The '''trace location''' is an element that is cloned often to store checkpoints, it is generally persistent. It is used to rebuild a context, therefore, it needs to contain enough information to unambiguously point to one and only one event. Finally the ''tracetype'' plug-in extension associates a given trace, non-programmatically to a trace type for use in the UI.
 
@@ -73,23 +72,252 @@ It will need to implement:
 
 * parseEvent (read the next element in the trace)
 
-For reference, there is an example implementation of the Nexus Trace file in
-org.eclipse.linuxtools.tracing.examples.core.trace.nexus.NexusTrace.java.
+Here is an example implementation of the Nexus Trace file
 
-In this example, the '''validate''' function checks first checks if the file
-exists, then makes sure that it is really a file, and not a directory. Then we
-attempt to read the file header, to make sure that it is really a Nexus Trace.
-If that check passes, we return a TmfValidationStatus with a confidence of 20.
+<pre>/*******************************************************************************
+ * Copyright (c) 2013 Ericsson
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which
+ * accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Matthew Khouzam - Initial API and implementation
+ *******************************************************************************/
 
-Typically, TmfValidationStatus confidences should range from 1 to 100. 1 meaning
-"there is a very small chance that this trace is of this type", and 100 meaning
-"it is this type for sure, and cannot be anything else". At run-time, the
-auto-detection will pick the the type which returned the highest confidence. So
-checks of the type "does the file exist?" should not return a too high
-confidence.
+package com.example.nexuslite;
 
-Here we used a confidence of 20, to leave "room" for more specific trace types
-in the Nexus format that could be defined in TMF.
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.TmfLongLocation;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
+
+/**
+ * Nexus trace type
+ *
+ * @author Matthew Khouzam
+ */
+public class NexusTrace extends TmfTrace implements ITmfEventParser {
+
+    private static final int CHUNK_SIZE = 65536; // seems fast on MY system
+    private static final int EVENT_SIZE = 8; // according to spec
+
+    private TmfLongLocation fCurrentLocation;
+    private static final TmfLongLocation NULLLOCATION = new TmfLongLocation(
+            (Long) null);
+    private static final TmfContext NULLCONTEXT = new TmfContext(NULLLOCATION,
+            -1L);
+
+    private long fSize;
+    private long fOffset;
+    private File fFile;
+    private String[] fEventTypes;
+    private FileChannel fFileChannel;
+    private MappedByteBuffer fMappedByteBuffer;
+
+    @Override
+    public IStatus validate(@SuppressWarnings("unused") IProject project,
+            String path) {
+        File f = new File(path);
+        if (!f.exists()) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                    "File does not exist"); //$NON-NLS-1$
+        }
+        if (!f.isFile()) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, path
+                    + " is not a file"); //$NON-NLS-1$
+        }
+        String header = readHeader(f);
+        if (header.split(",", 64).length == 64) { //$NON-NLS-1$
+            return Status.OK_STATUS;
+        }
+        return new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                "File does not start as a CSV"); //$NON-NLS-1$
+    }
+
+    @Override
+    public ITmfLocation getCurrentLocation() {
+        return fCurrentLocation;
+    }
+
+    @Override
+    public void initTrace(IResource resource, String path,
+            Class<? extends ITmfEvent> type) throws TmfTraceException {
+        super.initTrace(resource, path, type);
+        fFile = new File(path);
+        fSize = fFile.length();
+        if (fSize == 0) {
+            throw new TmfTraceException("file is empty"); //$NON-NLS-1$
+        }
+        String header = readHeader(fFile);
+        if (header == null) {
+            throw new TmfTraceException("File does not start as a CSV"); //$NON-NLS-1$
+        }
+        fEventTypes = header.split(",", 64); // 64 values of types according to //$NON-NLS-1$
+                                             // the 'spec'
+        if (fEventTypes.length != 64) {
+            throw new TmfTraceException(
+                    "Trace header does not contain 64 event names"); //$NON-NLS-1$
+        }
+        if (getNbEvents() < 1) {
+            throw new TmfTraceException("Trace does not have any events"); //$NON-NLS-1$
+        }
+        try {
+            fFileChannel = new FileInputStream(fFile).getChannel();
+            seek(0);
+        } catch (FileNotFoundException e) {
+            throw new TmfTraceException(e.getMessage());
+        } catch (IOException e) {
+            throw new TmfTraceException(e.getMessage());
+        }
+    }
+
+    /**
+     * @return
+     */
+    private String readHeader(File file) {
+        String header = new String();
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new FileReader(file));
+            header = br.readLine();
+            br.close();
+        } catch (IOException e) {
+            return null;
+        }
+        fOffset = header.length() + 1;
+        setNbEvents((fSize - fOffset) / EVENT_SIZE);
+        return header;
+    }
+
+    @Override
+    public double getLocationRatio(ITmfLocation location) {
+        return ((TmfLongLocation) location).getLocationInfo().doubleValue()
+                / getNbEvents();
+    }
+
+    @Override
+    public ITmfContext seekEvent(ITmfLocation location) {
+        TmfLongLocation nl = (TmfLongLocation) location;
+        if (location == null) {
+            nl = new TmfLongLocation(0L);
+        }
+        try {
+            seek(nl.getLocationInfo());
+        } catch (IOException e) {
+            return NULLCONTEXT;
+        }
+        return new TmfContext(nl, nl.getLocationInfo());
+    }
+
+    @Override
+    public ITmfContext seekEvent(double ratio) {
+        long rank = (long) (ratio * getNbEvents());
+        try {
+            seek(rank);
+        } catch (IOException e) {
+            return NULLCONTEXT;
+        }
+        return new TmfContext(new TmfLongLocation(rank), rank);
+    }
+
+    private void seek(long rank) throws IOException {
+        final long position = fOffset + (rank * EVENT_SIZE);
+        int size = Math.min((int) (fFileChannel.size() - position), CHUNK_SIZE);
+        fMappedByteBuffer = fFileChannel.map(MapMode.READ_ONLY, position, size);
+    }
+
+    @Override
+    public ITmfEvent parseEvent(ITmfContext context) {
+        if ((context == null) || (context.getRank() == -1)) {
+            return null;
+        }
+        TmfEvent event = null;
+        long ts = -1;
+        int type = -1;
+        int payload = -1;
+        long pos = context.getRank();
+        if (pos < getNbEvents()) {
+            try {
+                // if we are approaching the limit size, move to a new window
+                if ((fMappedByteBuffer.position() + EVENT_SIZE) > fMappedByteBuffer
+                        .limit()) {
+                    seek(context.getRank());
+                }
+                /*
+                 * the trace format, is:
+                 *
+                 * - 32 bits for the time,
+                 * - 6 for the event type,
+                 * - 26 for the data.
+                 *
+                 * all the 0x00 stuff are masks.
+                 */
+
+                /*
+                 * it may be interesting to assume if the ts goes back in time,
+                 * it actually is rolling over we would need to keep the
+                 * previous timestamp for that, keep the high bits and increment
+                 * them if the next int ts read is lesser than the previous one
+                 */
+
+                ts = 0x00000000ffffffffL & fMappedByteBuffer.getInt();
+
+                long data = 0x00000000ffffffffL & fMappedByteBuffer.getInt();
+                type = (int) (data >> 26) & (0x03f); // first 6 bits
+                payload = (int) (data & 0x003FFFFFFL); // last 26 bits
+                // the time is in microseconds.
+                TmfTimestamp timestamp = new TmfTimestamp(ts, ITmfTimestamp.MICROSECOND_SCALE);
+                final String title = fEventTypes[type];
+                // put the value in a field
+                final TmfEventField tmfEventField = new TmfEventField(
+                        "value", payload, null); //$NON-NLS-1$
+                // the field must be in an array
+                final TmfEventField[] fields = new TmfEventField[1];
+                fields[0] = tmfEventField;
+                final TmfEventField content = new TmfEventField(
+                        ITmfEventField.ROOT_FIELD_ID, null, fields);
+                // set the current location
+
+                fCurrentLocation = new TmfLongLocation(pos);
+                // create the event
+                event = new TmfEvent(this, pos, timestamp, null,
+                        new TmfEventType(title, title, null), content, null);
+            } catch (IOException e) {
+                fCurrentLocation = new TmfLongLocation(-1L);
+            }
+        }
+        return event;
+    }
+}
+</pre>
+
+In this example the '''validate''' function checks if the file exists and is not a directory.
 
 The '''initTrace''' function will read the event names, and find where the data starts. After this, the number of events is known, and since each event is 8 bytes long according to the specs, the seek is then trivial.
 
@@ -99,11 +327,6 @@ The '''parseEvent''' method needs to parse and return the current event and stor
 
 The '''getNext''' method (in base class) will read the next event and update the context. It calls the '''parseEvent''' method to read the event and update the location. It does not need to be overridden and in this example it is not. The sequence of actions necessary are parse the next event from the trace, create an '''ITmfEvent''' with that data, update the current location, call '''updateAttributes''', update the context then return the event.
 
-Traces will typically implement an index, to make seeking faster. The index can
-be rebuilt every time the trace is opened. Alternatively, it can be saved to
-disk, to make future openings of the same trace quicker. To do so, the trace
-object can implement the '''ITmfPersistentlyIndexable''' interface.
-
 === Trace Context ===
 
 The trace context will be a '''TmfContext'''
@@ -112,14 +335,13 @@ The trace context will be a '''TmfContext'''
 
 The trace location will be a long, representing the rank in the file. The '''TmfLongLocation''' will be the used, once again, no code is required.
 
-=== The ''org.eclipse.linuxtools.tmf.core.tracetype'' and ''org.eclipse.linuxtools.tmf.ui.tracetypeui'' plug-in extension point ===
+=== (Optional but recommended) The ''org.eclipse.linuxtools.tmf.ui.tracetype'' plug-in extension point ===
 
-One should implement the ''tmf.core.tracetype'' extension in their own plug-in.
-In this example, the Nexus trace plug-in will be modified.
+One can implement the ''tracetype'' extension in their own plug-in. In this example, the ''com.example.nexuslite'' plug-in will be modified.
 
 The '''plugin.xml''' file in the ui plug-in needs to be updated if one wants users to access the given event type. It can be updated in the Eclipse plug-in editor.
 
-# In Extensions tab, add the '''org.eclipse.linuxtools.tmf.core.tracetype''' extension point.
+# In Extensions tab, add the '''org.eclipse.linuxtools.tmf.ui.tracetype''' extension point.
 [[Image:images/NTTExtension.png]]<br>
 [[Image:images/NTTTraceType.png]]<br>
 [[Image:images/NTTExtensionPoint.png]]<br>
@@ -138,14 +360,7 @@ The '''event type''' is the canonical path refering to the class of the events o
 
 The  '''category''' (optional) is the container in which this trace type will be stored.
 
-# (Optional) To also add UI-specific properties to your trace type, use the '''org.eclipse.linuxtools.tmf.ui.tracetypeui''' extension. To do that,
-'''right click''' on the extension then in the context menu, go to
-'''New >''', '''type'''.
-
-The '''tracetype''' here is the '''id''' of the
-''org.eclipse.linuxtools.tmf.core.tracetype'' mentioned above.
-
-The '''icon''' is the image to associate with that trace type.
+The '''icon''' (optional) is the image to associate with that trace type.
 
 In the end, the extension menu should look like this.
 
@@ -155,56 +370,27 @@ In the end, the extension menu should look like this.
 
 * Do not load the whole trace in RAM, it will limit the size of the trace that can be read.
 * Reuse as much code as possible, it makes the trace format much easier to maintain.
-* Use Eclipse's editor instead of editing the XML directly.
+* Use Eclipse's editor instead of editing the xml directly.
 * Do not forget Java supports only signed data types, there may be special care needed to handle unsigned data.
-* If the support for your trace has custom UI elements (like icons, views, etc.), split the core and UI parts in separate plugins, named identically except for a ''.core'' or ''.ui'' suffix.
-** Implement the ''tmf.core.tracetype'' extension in the core plugin, and the ''tmf.ui.tracetypeui'' extension in the UI plugin if applicable.
+* Keep all the code in the same plug-in as the ''tracetype'' if it makes sense from a design point of view. It will make integration easier.
 
 == Download the Code ==
 
-The described example is available in the
-org.eclipse.linuxtools.tracing.examples.(tests.)trace.nexus packages with a
-trace generator and a quick test case.
+The plug-in is available [http://wiki.eclipse.org/images/3/34/Com.example.nexuslite.zip here] with a trace generator and a quick test case.
 
 == Optional Trace Type Attributes ==
-
 After defining the trace type as described in the previous chapters it is possible to define optional attributes for the trace type.
 
 === Default Editor ===
-
-The '''defaultEditor''' attribute of the '''org.eclipse.tmf.ui.tracetypeui'''
-extension point allows for configuring the editor to use for displaying the
-events. If omitted, the ''TmfEventsEditor'' is used as default.
-
-To configure an editor, first add the '''defaultEditor''' attribute to the trace
-type in the extension definition. This can be done by selecting the trace type
-in the plug-in manifest editor. Then click the right mouse button and select
-'''New -> defaultEditor''' in the context sensitive menu. Then select the newly
-added attribute. Now you can specify the editor id to use on the right side of
-the manifest editor. For example, this attribute could be used to implement an
-extension of the class ''org.eclipse.ui.part.MultiPageEditor''. The first page
-could use the ''TmfEventsEditor''' to display the events in a table as usual and
-other pages can display other aspects of the trace.
+The attribute '''defaultEditor''' allows for configuring the editor to use for displaying the events. If omitted, the ''TmfEventsEditor'' is used as default. To configure an editor, first add the '''defaultEditor''' attribute to the trace type in the extension definition. This can be done by selecting the trace type in the plug-in manifest editor. Then click the right mouse button and select '''New -> defaultEditor''' in the context sensitive menu. Then select the newly added attribute. Now you can specify the editor id to use on the right side of the manifest editor. For example, this attribute could be used to implement an extension of the class ''org.eclipse.ui.part.MultiPageEditor''. The first page could use the ''TmfEventsEditor''' to display the events in a table as usual and other pages can display other aspects of the trace.
 
 === Events Table Type ===
+The attribute '''eventsTableType''' allows for configuring the events table class to use in the default events editor. If omitted, the default events table will be used. To configure a trace type specific events table, first add the '''eventsTableType''' attribute to the trace type in the extension definition. This can be done by selecting the trace type in the plug-in manifest editor. Then click the right mouse button and select '''New -> eventsTableType''' in the context sensitive menu. Then select the newly added attribute and click on ''class'' on the right side of the manifest editor. The new class wizard will open. The ''superclass'' field will be already filled with the class ''org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable''. Using this attribute a table with different columns than the default columns can be defined. See class org.eclipse.linuxtools.internal.lttng2.kernel.ui.viewers.events.Lttng2EventsTable for an example implementation.
 
-The  '''eventsTableType''' attribute of the '''org.eclipse.tmf.ui.tracetypeui'''
-extension point allows for configuring the events table class to use in the
-default events editor. If omitted, the default events table will be used.
+=== Statistics Viewer Type ===
+The attribute '''statisticsViewerType''' allows for defining trace type specific statistics. If omitted, only the default statistics will be displayed in the ''Statistics'' view (part of the ''Tracing'' view category). By default this view displays the total number of events and the number of events per event type for the whole trace and for the selected time range. To configure trace type specific statistics, first add the '''statisticsViewerType''' attribute to the trace type in the extension definition. This can be done by selecting the trace type in the plug-in manifest editor. Then click the right mouse button and select '''New -> statisticsViewerType''' in the context sensitive menu. Then select the newly added attribute and click on ''class'' on the right side of the manifest editor. The new class wizard will open. The ''superclass'' field will be already filled with the class ''org.eclipse.linuxtools.tmf.ui.viewers.statistics.TmfStatisticsViewer''. Now overwrite the relevant methods to provide the trace specific statistics. When executing the plug-in extension in Eclipse and opening the ''Statistics'' view the ''Statistics'' view  will show an additional tab beside the global tab that shows the default statistics. The new tab will display the trace specific statistics provided in the ''TmfStatisticsViewer'' sub-class implementation.
 
-To configure a trace type specific events table, first add the
-'''eventsTableType''' attribute to the trace type in the extension definition.
-This can be done by selecting the trace type in the plug-in manifest editor.
-Then click the right mouse button and select '''New -> eventsTableType''' in the
-context sensitive menu. Then select the newly added attribute and click on
-''class'' on the right side of the manifest editor. The new class wizard will
-open. The ''superclass'' field will be already filled with the class ''org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable''.
-
-By using this attribute, a table with different columns than the default columns
-can be defined. See the class org.eclipse.linuxtools.internal.lttng2.kernel.ui.viewers.events.Lttng2EventsTable
-for an example implementation.
-
-= View Tutorial =
+= View Tutorial  =
 
 This tutorial describes how to create a simple view using the TMF framework and the SWTChart library. SWTChart is a library based on SWT that can draw several types of charts including a line chart which we will use in this tutorial. We will create a view containing a line chart that displays time stamps on the X axis and the corresponding event values on the Y axis.
 
@@ -214,8 +400,6 @@ This tutorial will cover concepts like:
 * Signal handling (@TmfSignalHandler)
 * Data requests (TmfEventRequest)
 * SWTChart integration
-
-'''Note''': TMF 3.0.0 provides base implementations for generating SWTChart viewers and views. For more details please refer to chapter [[#TMF Built-in Views and Viewers]].
 
 === Prerequisites ===
 
@@ -548,33 +732,6 @@ The view is now ready but we need a proper trace to test it. For this example, a
 
 In summary, we have implemented a simple TMF view using the SWTChart library. We made use of signals and requests to populate the view at the appropriate time and we formated the time stamps nicely. We also made sure that the time stamp format is updated when the preferences change.
 
-== TMF Built-in Views and Viewers ==
-
-TMF provides base implementations for several types of views and viewers for generating custom X-Y-Charts, Time Graphs, or Trees. They are well integrated with various TMF features such as reading traces and time synchronization with other views. They also handle mouse events for navigating the trace and view, zooming or presenting detailed information at mouse position. The code can be found in the TMF UI plug-in ''org.eclipse.linuxtools.tmf.ui''. See below for a list of relevant java packages:
-
-* Generic
-** ''org.eclipse.linuxtools.tmf.ui.views'': Common TMF view base classes
-* X-Y-Chart
-** ''org.eclipse.linuxtools.tmf.ui.viewers.xycharts'': Common base classes for X-Y-Chart viewers based on SWTChart
-** ''org.eclipse.linuxtools.tmf.ui.viewers.xycharts.barcharts'': Base classes for bar charts
-** ''org.eclipse.linuxtools.tmf.ui.viewers.xycharts.linecharts'': Base classes for line charts
-* Time Graph View
-** ''org.eclipse.linuxtools.tmf.ui.widgets.timegraph'': Base classes for time graphs e.g. Gantt-charts
-* Tree Viewer
-** ''org.eclipse.linuxtools.tmf.ui.viewers.tree'': Base classes for TMF specific tree viewers
-
-Several features in TMF and the Eclipse LTTng integration are using this framework and can be used as example for further developments:
-* X-Y- Chart
-** ''org.eclipse.linuxtools.internal.lttng2.ust.ui.views.memusage.MemUsageView.java''
-** ''org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.cpuusage.CpuUsageView.java''
-** ''org.eclipse.linuxtools.tracing.examples.ui.views.histogram.NewHistogramView.java''
-* Time Graph View
-** ''org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow.ControlFlowView.java''
-** ''org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesView.java''
-* Tree Viewer
-** ''org.eclipse.linuxtools.tmf.ui.views.statesystem.TmfStateSystemExplorer.java''
-** ''org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.cpuusage.CpuUsageComposite.java''
-
 = Component Interaction =
 
 TMF provides a mechanism for different components to interact with each other using signals. The signals can carry information that is specific to each signal.
@@ -839,20 +996,6 @@ Sent by statistic providers when new statistics data has been processed.
 
 Received by statistics viewers and any component that needs to be notified of a statistics update.
 
-=== TmfPacketStreamSelected ===
-
-''Purpose''
-
-This signal is used to indicate that the user has selected a packet stream to analyze.
-
-''Senders''
-
-Sent by the Stream List View when the user selects a new packet stream.
-
-''Receivers''
-
-Received by views that analyze packet streams.
-
 == Debugging ==
 
 TMF has built-in Eclipse tracing support for the debugging of signal interaction between components. To enable it, open the '''Run/Debug Configuration...''' dialog, select a configuration, click the '''Tracing''' tab, select the plug-in '''org.eclipse.linuxtools.tmf.core''', and check the '''signal''' item.
@@ -879,7 +1022,7 @@ trace:
  20 s, sys_close, fd = 5
 
 Now let's say we want to implement an analysis module which will track the
-amount of bytes read and written to each file. Here, of course the sys_read is
+amount of bytes read and written to eachfile. Here, of course the sys_read is
 interesting. However, by just looking at that event, we have no information on
 which file is being read, only its fd (5) is known. To get the match
 fd5 = /home/user/myfile, we have to go back to the sys_open event which happens
@@ -3527,605 +3670,4 @@ System time (Elapsed time): The time between the start and the end of the execut
 
 Kernel time: Time spent in kernel mode
 
-Used Java Heap: It is the difference between the memory used at the beginning of the execution and at the end. This metric may be useful to calculate the overall size occupied by the data generated by the test run, by forcing a garbage collection before taking the metrics at the beginning and at the end of the execution. But it will not show the memory used throughout the execution. There can be a large standard deviation. The reason for this is  that when benchmarking methods that trigger tasks in different threads, like signals and/or analysis, these other threads might be in various states at each run of the test, which will impact the memory usage calculated. When using this metric, either make sure the method to test does not trigger external threads or make sure you wait for them to finish.
-
-= Network Tracing =
-
-== Adding a protocol ==
-
-Supporting a new network protocol in TMF is straightforward. Minimal effort is required to support new protocols. In this tutorial, the UDP protocol will be added to the list of supported protocols.
-
-=== Architecture ===
-
-All the TMF pcap-related code is divided in three projects (not considering the tests plugins):
-* '''org.eclipse.linuxtools.pcap.core''', which contains the parser that will read pcap files and constructs the different packets from a ByteBuffer. It also contains means to build packet streams, which are conversation (list of packets) between two endpoints. To add a protocol, almost all of the work will be in that project.
-* '''org.eclipse.linuxtools.tmf.pcap.core''', which contains TMF-specific concepts and act as a wrapper between TMF and the pcap parsing library. It only depends on org.eclipse.linuxtools.tmf.core and org.eclipse.pcap.core. To add a protocol, one file must be edited in this project.
-* '''org.eclipse.linuxtools.tmf.pcap.ui''', which contains all TMF pcap UI-specific concepts, such as the views and perspectives. No work is needed in that project.
-
-=== UDP Packet Structure ===
-
-The UDP is a transport-layer protocol that does not guarantee message delivery nor in-order message reception. A UDP packet (datagram) has the following [http://en.wikipedia.org/wiki/User_Datagram_Protocol#Packet_structure structure]:
-
-{| class="wikitable" style="margin: 0 auto; text-align: center;"
-|-
-! style="border-bottom:none; border-right:none;"| ''Offsets''
-! style="border-left:none;"| Octet
-! colspan="8" | 0
-! colspan="8" | 1
-! colspan="8" | 2
-! colspan="8" | 3
-|-
-! style="border-top: none" | Octet
-! <tt>Bit</tt>!!<tt>&nbsp;0</tt>!!<tt>&nbsp;1</tt>!!<tt>&nbsp;2</tt>!!<tt>&nbsp;3</tt>!!<tt>&nbsp;4</tt>!!<tt>&nbsp;5</tt>!!<tt>&nbsp;6</tt>!!<tt>&nbsp;7</tt>!!<tt>&nbsp;8</tt>!!<tt>&nbsp;9</tt>!!<tt>10</tt>!!<tt>11</tt>!!<tt>12</tt>!!<tt>13</tt>!!<tt>14</tt>!!<tt>15</tt>!!<tt>16</tt>!!<tt>17</tt>!!<tt>18</tt>!!<tt>19</tt>!!<tt>20</tt>!!<tt>21</tt>!!<tt>22</tt>!!<tt>23</tt>!!<tt>24</tt>!!<tt>25</tt>!!<tt>26</tt>!!<tt>27</tt>!!<tt>28</tt>!!<tt>29</tt>!!<tt>30</tt>!!<tt>31</tt>
-|-
-! 0
-!<tt> 0</tt>
-| colspan="16" style="background:#fdd;"| Source port || colspan="16"| Destination port
-|-
-! 4
-!<tt>32</tt>
-| colspan="16"| Length  || colspan="16" style="background:#fdd;"| Checksum
-|}
-
-Knowing that, we can define an UDPPacket class that contains those fields.
-
-=== Creating the UDPPacket ===
-
-First, in org.eclipse.linuxtools.pcap.core, create a new package named '''org.eclipse.linuxtools.pcap.core.protocol.name''' with name being the name of the new protocol. In our case name is udp so we create the package '''org.eclipse.linuxtools.pcap.core.protocol.udp'''. All our work is going in this package.
-
-In this package, we create a new class named UDPPacket that extends Packet. All new protocol must define a packet type that extends the abstract class Packet. We also add different fields:
-* ''Packet'' '''fChildPacket''', which is the packet encapsulated by this UDP packet, if it exists. This field will be initialized by findChildPacket().
-* ''ByteBuffer'' '''fPayload''', which is the payload of this packet. Basically, it is the UDP packet without its header.
-* ''int'' '''fSourcePort''', which is an unsigned 16-bits field, that contains the source port of the packet (see packet structure).
-* ''int'' '''fDestinationPort''', which is an unsigned 16-bits field, that contains the destination port of the packet (see packet structure).
-* ''int'' '''fTotalLength''', which is an unsigned 16-bits field, that contains the total length (header + payload) of the packet.
-* ''int'' '''fChecksum''', which is an unsigned 16-bits field, that contains a checksum to verify the integrity of the data.
-* ''UDPEndpoint'' '''fSourceEndpoint''', which contains the source endpoint of the UDPPacket. The UDPEndpoint class will be created later in this tutorial.
-* ''UDPEndpoint'' '''fDestinationEndpoint''', which contains the destination endpoint of the UDPPacket.
-* ''ImmutableMap<String, String>'' '''fFields''', which is a map that contains all the packet fields (see in data structure) which assign a field name with its value. Those values will be displayed on the UI.
-
-We also create the UDPPacket(PcapFile file, @Nullable Packet parent, ByteBuffer packet) constructor. The parameters are:
-* ''PcapFile'' '''file''', which is the pcap file to which this packet belongs.
-* ''Packet'' '''parent''', which is the packet encasulating this UDPPacket
-* ''ByteBuffer'' '''packet''', which is a ByteBuffer that contains all the data necessary to initialize the fields of this UDPPacket. We will retrieve bytes from it during object construction.
-
-The following class is obtained:
-
-<pre>
-package org.eclipse.linuxtools.pcap.core.protocol.udp;
-
-import java.nio.ByteBuffer;
-import java.util.Map;
-
-import org.eclipse.linuxtools.internal.pcap.core.endpoint.ProtocolEndpoint;
-import org.eclipse.linuxtools.internal.pcap.core.packet.BadPacketException;
-import org.eclipse.linuxtools.internal.pcap.core.packet.Packet;
-
-public class UDPPacket extends Packet {
-
-    private final @Nullable Packet fChildPacket;
-    private final @Nullable ByteBuffer fPayload;
-
-    private final int fSourcePort;
-    private final int fDestinationPort;
-    private final int fTotalLength;
-    private final int fChecksum;
-
-    private @Nullable UDPEndpoint fSourceEndpoint;
-    private @Nullable UDPEndpoint fDestinationEndpoint;
-
-    private @Nullable ImmutableMap<String, String> fFields;
-
-    /**
-     * Constructor of the UDP Packet class.
-     *
-     * @param file
-     *            The file that contains this packet.
-     * @param parent
-     *            The parent packet of this packet (the encapsulating packet).
-     * @param packet
-     *            The entire packet (header and payload).
-     * @throws BadPacketException
-     *             Thrown when the packet is erroneous.
-     */
-    public UDPPacket(PcapFile file, @Nullable Packet parent, ByteBuffer packet) throws BadPacketException {
-        super(file, parent, Protocol.UDP);
-        // TODO Auto-generated constructor stub
-    }
-
-
-    @Override
-    public Packet getChildPacket() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ByteBuffer getPayload() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean validate() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    protected Packet findChildPacket() throws BadPacketException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ProtocolEndpoint getSourceEndpoint() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ProtocolEndpoint getDestinationEndpoint() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Map<String, String> getFields() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getLocalSummaryString() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected String getSignificationString() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-}
-</pre>
-
-Now, we implement the constructor. It is done in four steps:
-* We initialize fSourceEndpoint, fDestinationEndpoint and fFields to null, since those are lazy-loaded. This allows faster construction of the packet and thus faster parsing.
-* We initialize fSourcePort, fDestinationPort, fTotalLength, fChecksum using ByteBuffer packet. Thanks to the packet data structure, we can simply retrieve packet.getShort() to get the value. Since there is no unsigned in Java, special care is taken to avoid negative number. We use the utility method ConversionHelper.unsignedShortToInt() to convert it to an integer, and initialize the fields.
-* Now that the header is parsed, we take the rest of the ByteBuffer packet to initialize the payload, if there is one. To do this, we simply generate a new ByteBuffer starting from the current position.
-* We initialize the field fChildPacket using the method findChildPacket()
-
-The following constructor is obtained:
-<pre>
-    public UDPPacket(PcapFile file, @Nullable Packet parent, ByteBuffer packet) throws BadPacketException {
-        super(file, parent, Protocol.UDP);
-
-        // The endpoints and fFields are lazy loaded. They are defined in the get*Endpoint()
-        // methods.
-        fSourceEndpoint = null;
-        fDestinationEndpoint = null;
-        fFields = null;
-
-        // Initialize the fields from the ByteBuffer
-        packet.order(ByteOrder.BIG_ENDIAN);
-        packet.position(0);
-
-        fSourcePort = ConversionHelper.unsignedShortToInt(packet.getShort());
-        fDestinationPort = ConversionHelper.unsignedShortToInt(packet.getShort());
-        fTotalLength = ConversionHelper.unsignedShortToInt(packet.getShort());
-        fChecksum = ConversionHelper.unsignedShortToInt(packet.getShort());
-
-        // Initialize the payload
-        if (packet.array().length - packet.position() > 0) {
-            byte[] array = new byte[packet.array().length - packet.position()];
-            packet.get(array);
-
-            ByteBuffer payload = ByteBuffer.wrap(array);
-            payload.order(ByteOrder.BIG_ENDIAN);
-            payload.position(0);
-            fPayload = payload;
-        } else {
-            fPayload = null;
-        }
-
-        // Find child
-        fChildPacket = findChildPacket();
-
-    }
-</pre>
-
-Then, we implement the following methods:
-* ''public Packet'' '''getChildPacket()''': simple getter of fChildPacket
-* ''public ByteBuffer'' '''getPayload()''': simple getter of fPayload
-* ''public boolean'' '''validate()''': method that checks if the packet is valid. In our case, the packet is valid if the retrieved checksum fChecksum and the real checksum (that we can compute using the fields and payload of UDPPacket) are the same.
-* ''protected Packet'' '''findChildPacket()''': method that create a new packet if a encapsulated protocol is found. For instance, based on the fDestinationPort, it could determine what the encapsulated protocol is and creates a new packet object.
-* ''public ProtocolEndpoint'' '''getSourceEndpoint()''': method that initializes and returns the source endpoint.
-* ''public ProtocolEndpoint'' '''getDestinationEndpoint()''': method that initializes and returns the destination endpoint.
-* ''public Map<String, String>'' '''getFields()''': method that initializes and returns the map containing the fields matched to their value.
-* ''public String'' '''getLocalSummaryString()''': method that returns a string summarizing the most important fields of the packet. There is no need to list all the fields, just the most important one. This will be displayed on UI.
-* ''protected String'' '''getSignificationString()''': method that returns a string describing the meaning of the packet. If there is no particular meaning, it is possible to return getLocalSummaryString().
-* public boolean'' '''equals(Object obj)''': Object's equals method.
-* public int'' '''hashCode()''': Object's hashCode method.
-
-We get the following code:
-<pre>
-    @Override
-    public @Nullable Packet getChildPacket() {
-        return fChildPacket;
-    }
-
-    @Override
-    public @Nullable ByteBuffer getPayload() {
-        return fPayload;
-    }
-
-    /**
-     * Getter method that returns the UDP Source Port.
-     *
-     * @return The source Port.
-     */
-    public int getSourcePort() {
-        return fSourcePort;
-    }
-
-    /**
-     * Getter method that returns the UDP Destination Port.
-     *
-     * @return The destination Port.
-     */
-    public int getDestinationPort() {
-        return fDestinationPort;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * See http://www.iana.org/assignments/service-names-port-numbers/service-
-     * names-port-numbers.xhtml or
-     * http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
-     */
-    @Override
-    protected @Nullable Packet findChildPacket() throws BadPacketException {
-        // When more protocols are implemented, we can simply do a switch on the fDestinationPort field to find the child packet.
-        // For instance, if the destination port is 80, then chances are the HTTP protocol is encapsulated. We can create a new HTTP
-        // packet (after some verification that it is indeed the HTTP protocol).
-        ByteBuffer payload = fPayload;
-        if (payload == null) {
-            return null;
-        }
-
-        return new UnknownPacket(getPcapFile(), this, payload);
-    }
-
-    @Override
-    public boolean validate() {
-        // Not yet implemented. ATM, we consider that all packets are valid.
-        // TODO Implement it. We can compute the real checksum and compare it to fChecksum.
-        return true;
-    }
-
-    @Override
-    public UDPEndpoint getSourceEndpoint() {
-        @Nullable
-        UDPEndpoint endpoint = fSourceEndpoint;
-        if (endpoint == null) {
-            endpoint = new UDPEndpoint(this, true);
-        }
-        fSourceEndpoint = endpoint;
-        return fSourceEndpoint;
-    }
-
-    @Override
-    public UDPEndpoint getDestinationEndpoint() {
-        @Nullable UDPEndpoint endpoint = fDestinationEndpoint;
-        if (endpoint == null) {
-            endpoint = new UDPEndpoint(this, false);
-        }
-        fDestinationEndpoint = endpoint;
-        return fDestinationEndpoint;
-    }
-
-    @Override
-    public Map<String, String> getFields() {
-        ImmutableMap<String, String> map = fFields;
-        if (map == null) {
-            @SuppressWarnings("null")
-            @NonNull ImmutableMap<String, String> newMap = ImmutableMap.<String, String> builder()
-                    .put("Source Port", String.valueOf(fSourcePort)) //$NON-NLS-1$
-                    .put("Destination Port", String.valueOf(fDestinationPort)) //$NON-NLS-1$
-                    .put("Length", String.valueOf(fTotalLength) + " bytes") //$NON-NLS-1$ //$NON-NLS-2$
-                    .put("Checksum", String.format("%s%04x", "0x", fChecksum)) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    .build();
-            fFields = newMap;
-            return newMap;
-        }
-        return map;
-    }
-
-    @Override
-    public String getLocalSummaryString() {
-        return "Src Port: " + fSourcePort + ", Dst Port: " + fDestinationPort; //$NON-NLS-1$ //$NON-NLS-2$
-    }
-
-    @Override
-    protected String getSignificationString() {
-        return "Source Port: " + fSourcePort + ", Destination Port: " + fDestinationPort; //$NON-NLS-1$ //$NON-NLS-2$
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + fChecksum;
-        final Packet child = fChildPacket;
-        if (child != null) {
-            result = prime * result + child.hashCode();
-        } else {
-            result = prime * result;
-        }
-        result = prime * result + fDestinationPort;
-        final ByteBuffer payload = fPayload;
-        if (payload != null) {
-            result = prime * result + payload.hashCode();
-        } else {
-            result = prime * result;
-        }
-        result = prime * result + fSourcePort;
-        result = prime * result + fTotalLength;
-        return result;
-    }
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        UDPPacket other = (UDPPacket) obj;
-        if (fChecksum != other.fChecksum) {
-            return false;
-        }
-        final Packet child = fChildPacket;
-        if (child != null) {
-            if (!child.equals(other.fChildPacket)) {
-                return false;
-            }
-        } else {
-            if (other.fChildPacket != null) {
-                return false;
-            }
-        }
-        if (fDestinationPort != other.fDestinationPort) {
-            return false;
-        }
-        final ByteBuffer payload = fPayload;
-        if (payload != null) {
-            if (!payload.equals(other.fPayload)) {
-                return false;
-            }
-        } else {
-            if (other.fPayload != null) {
-                return false;
-            }
-        }
-        if (fSourcePort != other.fSourcePort) {
-            return false;
-        }
-        if (fTotalLength != other.fTotalLength) {
-            return false;
-        }
-        return true;
-    }
-</pre>
-
-The UDPPacket class is implemented. We now have the define the UDPEndpoint.
-
-=== Creating the UDPEndpoint ===
-
-For the UDP protocol, an endpoint will be its source or its destination port, depending if it is the source endpoint or destination endpoint. Knowing that, we can create our UDPEndpoint class.
-
-We create in our package a new class named UDPEndpoint that extends ProtocolEndpoint. We also add a field: fPort, which contains the source or destination port. We finally add a constructor public ExampleEndpoint(Packet packet, boolean isSourceEndpoint):
-* ''Packet'' '''packet''': the packet to build the endpoint from.
-* ''boolean'' '''isSourceEndpoint''': whether the endpoint is the source endpoint or destination endpoint.
-
-We obtain the following unimplemented class:
-
-<pre>
-package org.eclipse.linuxtools.pcap.core.protocol.udp;
-
-import org.eclipse.linuxtools.internal.pcap.core.endpoint.ProtocolEndpoint;
-import org.eclipse.linuxtools.internal.pcap.core.packet.Packet;
-
-public class UDPEndpoint extends ProtocolEndpoint {
-
-    private final int fPort;
-
-    public UDPEndpoint(Packet packet, boolean isSourceEndpoint) {
-        super(packet, isSourceEndpoint);
-        // TODO Auto-generated constructor stub
-    }
-
-    @Override
-    public int hashCode() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-}
-</pre>
-
-For the constructor, we simply initialize fPort. If isSourceEndpoint is true, then we take packet.getSourcePort(), else we take packet.getDestinationPort().
-
-<pre>
-    /**
-     * Constructor of the {@link UDPEndpoint} class. It takes a packet to get
-     * its endpoint. Since every packet has two endpoints (source and
-     * destination), the isSourceEndpoint parameter is used to specify which
-     * endpoint to take.
-     *
-     * @param packet
-     *            The packet that contains the endpoints.
-     * @param isSourceEndpoint
-     *            Whether to take the source or the destination endpoint of the
-     *            packet.
-     */
-    public UDPEndpoint(UDPPacket packet, boolean isSourceEndpoint) {
-        super(packet, isSourceEndpoint);
-        fPort = isSourceEndpoint ? packet.getSourcePort() : packet.getDestinationPort();
-    }
-</pre>
-
-Then we implement the methods:
-* ''public int'' '''hashCode()''': method that returns an integer based on the fields value. In our case, it will return an integer depending on fPort, and the parent endpoint that we can retrieve with getParentEndpoint().
-* ''public boolean'' '''equals(Object obj)''': method that returns true if two objects are equals. In our case, two UDPEndpoints are equal if they both have the same fPort and have the same parent endpoint that we can retrieve with getParentEndpoint().
-* ''public String'' '''toString()''': method that returns a description of the UDPEndpoint as a string. In our case, it will be a concatenation of the string of the parent endpoint and fPort as a string.
-
-<pre>
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        ProtocolEndpoint endpoint = getParentEndpoint();
-        if (endpoint == null) {
-            result = 0;
-        } else {
-            result = endpoint.hashCode();
-        }
-        result = prime * result + fPort;
-        return result;
-    }
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof UDPEndpoint)) {
-            return false;
-        }
-
-        UDPEndpoint other = (UDPEndpoint) obj;
-
-        // Check on layer
-        boolean localEquals = (fPort == other.fPort);
-        if (!localEquals) {
-            return false;
-        }
-
-        // Check above layers.
-        ProtocolEndpoint endpoint = getParentEndpoint();
-        if (endpoint != null) {
-            return endpoint.equals(other.getParentEndpoint());
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        ProtocolEndpoint endpoint = getParentEndpoint();
-        if (endpoint == null) {
-            @SuppressWarnings("null")
-            @NonNull String ret = String.valueOf(fPort);
-            return ret;
-        }
-        return endpoint.toString() + '/' + fPort;
-    }
-</pre>
-
-=== Registering the UDP protocol ===
-
-The last step is to register the new protocol. There are three places where the protocol has to be registered. First, the parser has to know that a new protocol has been added. This is defined in the enum org.eclipse.linuxtools.pcap.core.protocol.PcapProtocol. Simply add the protocol name here, along with a few arguments:
-* ''String'' '''longname''', which is the long version of name of the protocol. In our case, it is "User Datagram Protocol".
-* ''String'' '''shortName''', which is the shortened name of the protocol. In our case, it is "UDP".
-* ''Layer'' '''layer''', which is the layer to which the protocol belongs in the OSI model. In our case, this is the layer 4.
-* ''boolean'' '''supportsStream''', which defines whether or not the protocol supports packet streams. In our case, this is set to true.
-
-Thus, the following line is added in the PcapProtocol enum:
-<pre>
-    UDP("User Datagram Protocol", "udp", Layer.LAYER_4, true),
-</pre>
-
-Also, TMF has to know about the new protocol. This is defined in org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfPcapProtocol. We simply add it, with a reference to the corresponding protocol in PcapProtocol. Thus, the following line is added in the TmfPcapProtocol enum:
-<pre>
-    UDP(PcapProtocol.UDP),
-</pre>
-
-You will also have to update the ''ProtocolConversion'' class to register the protocol in the switch statements. Thus, for UDP, we add:
-<pre>
-    case UDP:
-        return TmfPcapProtocol.UDP;
-</pre>
-and
-<pre>
-    case UDP:
-        return PcapProtocol.UDP;
-</pre>
-
-Finally, all the protocols that could be the parent of the new protocol (in our case, IPv4 and IPv6) have to be notified of the new protocol. This is done by modifying the findChildPacket() method of the packet class of those protocols. For instance, in IPv4Packet, we add a case in the switch statement of findChildPacket, if the Protocol number matches UDP's protocol number at the network layer:
-<pre>
-    @Override
-    protected @Nullable Packet findChildPacket() throws BadPacketException {
-        ByteBuffer payload = fPayload;
-        if (payload == null) {
-            return null;
-        }
-
-        switch (fIpDatagramProtocol) {
-        case IPProtocolNumberHelper.PROTOCOL_NUMBER_TCP:
-            return new TCPPacket(getPcapFile(), this, payload);
-        case IPProtocolNumberHelper.PROTOCOL_NUMBER_UDP:
-            return new UDPPacket(getPcapFile(), this, payload);
-        default:
-            return new UnknownPacket(getPcapFile(), this, payload);
-        }
-    }
-</pre>
-
-The new protocol has been added. Running TMF should work just fine, and the new protocol is now recognized.
-
-== Adding stream-based views ==
-
-To add a stream-based View, simply monitor the TmfPacketStreamSelectedSignal in your view. It contains the new stream that you can retrieve with signal.getStream(). You must then make an event request to the current trace to get the events, and use the stream to filter the events of interest. Therefore, you must also monitor TmfTraceOpenedSignal, TmfTraceClosedSignal and TmfTraceSelectedSignal. Examples of stream-based views include a view that represents the packets as a sequence diagram, or that shows the TCP connection state based on the packets SYN/ACK/FIN/RST flags. A (very very very early) draft of such a view can be found at https://git.eclipse.org/r/#/c/31054/.
-
-== TODO ==
-
-* Add more protocols. At the moment, only four protocols are supported. The following protocols would need to be implemented: ARP, SLL, WLAN, USB, IPv6, ICMP, ICMPv6, IGMP, IGMPv6, SCTP, DNS, FTP, HTTP, RTP, SIP, SSH and Telnet. Other VoIP protocols would be nice.
-* Add a network graph view. It would be useful to produce graphs that are meaningful to network engineers, and that they could use (for presentation purpose, for instance). We could use the XML-based analysis to do that!
-* Add a Stream Diagram view. This view would represent a stream as a Sequence Diagram. It would be updated when a TmfNewPacketStreamSignal is thrown. It would be easy to see the packet exchange and the time delta between each packet. Also, when a packet is selected in the Stream Diagram, it should be selected in the event table and its content should be shown in the Properties View. See https://git.eclipse.org/r/#/c/31054/ for a draft of such a view.
-* Make adding protocol more "plugin-ish", via extension points for instance. This would make it easier to support new protocols, without modifying the source code.
-* Control dumpcap directly from eclipse, similar to how LTTng is controlled in the Control View.
-* Support pcapng. See: http://www.winpcap.org/ntar/draft/PCAP-DumpFileFormat.html for the file format.
-* Add SWTBOT tests to org.eclipse.linuxtools.tmf.pcap.ui
-* Add a Raw Viewer, similar to Wireshark. We could use the “Show Raw” in the event editor to do that.
-* Externalize strings in org.eclipse.linuxtools.pcap.core. At the moment, all the strings are hardcoded. It would be good to externalize them all.
+Used Java Heap: It is the difference between the memory used at the beginning of the execution and at the end. This metric may be useful to calculate the overall size occupied by the data generated by the test run, by forcing a garbage collection before taking the metrics at the beginning and at the end of the execution. But it will not show the memory used throughout the execution.

@@ -75,7 +75,7 @@
             class="org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput"
             id="org.eclipse.linuxtools.lttng2.kernel.ui.views.cpuusage">
          <analysisId
-            id="org.eclipse.linuxtools.lttng2.kernel.core.cpuusage">
+               id="org.eclipse.linuxtools.lttng2.kernel.core.cpuusage">
          </analysisId>
       </output>
    </extension>
@@ -84,9 +84,9 @@
       <type
             icon="icons/obj16/garland16.png"
             tracetype="org.eclipse.linuxtools.lttng2.kernel.tracetype">
-         <eventTableColumns
-               class="org.eclipse.linuxtools.internal.lttng2.kernel.ui.viewers.events.LttngEventTableColumns">
-         </eventTableColumns>
+         <eventsTableType
+               class="org.eclipse.linuxtools.internal.lttng2.kernel.ui.viewers.events.LTTng2EventsTable">
+         </eventsTableType>
       </type>
    </extension>
 </plugin>

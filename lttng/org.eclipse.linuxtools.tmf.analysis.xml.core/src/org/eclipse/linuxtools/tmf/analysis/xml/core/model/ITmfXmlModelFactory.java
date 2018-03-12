@@ -109,16 +109,4 @@ public interface ITmfXmlModelFactory {
      */
     TmfXmlLocation createLocation(Element node, IXmlStateSystemContainer container);
 
-    /**
-     * Create a new XML value change for label
-     *
-     * @param node
-     *            The XML location element
-     * @param container
-     *            The state system container this value change belongs to
-     * @return The new XML value change
-     * @since 2.0
-     */
-    TmfXmlValueChange createValueChange(Element node, IXmlStateSystemContainer container);
-
 }

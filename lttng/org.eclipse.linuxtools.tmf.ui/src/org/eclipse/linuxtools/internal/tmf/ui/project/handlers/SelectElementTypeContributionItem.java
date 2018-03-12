@@ -13,14 +13,11 @@
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -59,6 +56,8 @@ public class SelectElementTypeContributionItem extends CompoundContributionItem 
     private static final String TYPE_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.type"; //$NON-NLS-1$
     private static final String ICON_PARAMETER = "org.eclipse.linuxtools.tmf.ui.commandparameter.select_trace_type.icon"; //$NON-NLS-1$
     private static final String SELECT_TRACE_TYPE_COMMAND_ID = "org.eclipse.linuxtools.tmf.ui.command.select_trace_type"; //$NON-NLS-1$
+    private static final String CUSTOM_TXT_CATEGORY = "Custom Text"; //$NON-NLS-1$
+    private static final String CUSTOM_XML_CATEGORY = "Custom XML"; //$NON-NLS-1$
     private static final String DEFAULT_TRACE_ICON_PATH = "icons/elcl16/trace.gif"; //$NON-NLS-1$
 
     @Override
@@ -145,28 +144,7 @@ public class SelectElementTypeContributionItem extends CompoundContributionItem 
             }
         }
 
-        Comparator<IContributionItem> comparator = new Comparator<IContributionItem>() {
-            @Override
-            public int compare(IContributionItem o1, IContributionItem o2) {
-                if (o1 instanceof MenuManager) {
-                    if (o2 instanceof MenuManager) {
-                        MenuManager m1 = (MenuManager) o1;
-                        MenuManager m2 = (MenuManager) o2;
-                        return m1.getMenuText().compareTo(m2.getMenuText());
-                    }
-                    return -1;
-                }
-                if (o2 instanceof MenuManager) {
-                    return 1;
-                }
-                CommandContributionItem c1 = (CommandContributionItem) o1;
-                CommandContributionItem c2 = (CommandContributionItem) o2;
-                return c1.getData().label.compareTo(c2.getData().label);
-            }
-        };
-
         if (forExperiments) {
-            Collections.sort(list, comparator);
             return list.toArray(new IContributionItem[list.size()]);
         }
 
@@ -174,47 +152,44 @@ public class SelectElementTypeContributionItem extends CompoundContributionItem 
          * Add the custom txt and xml trace type to the contribution items for
          * traces
          */
-        for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
+        CustomTxtTraceDefinition[] customTxtTraceDefinitions = CustomTxtTraceDefinition.loadAll();
+        if (customTxtTraceDefinitions.length > 0) {
+            ImageDescriptor icon = isSelectedCategory(customTxtTraceDefinitions, selectedTraceTypes) ? SELECTED_ICON : null;
+            MenuManager subMenu = new MenuManager(CUSTOM_TXT_CATEGORY, icon, null);
+            categoriesMap.put(CUSTOM_TXT_CATEGORY, subMenu);
+            list.add(subMenu);
+        }
+        CustomXmlTraceDefinition[] customXmlTraceDefinitions = CustomXmlTraceDefinition.loadAll();
+        if (customXmlTraceDefinitions.length > 0) {
+            ImageDescriptor icon = isSelectedCategory(customXmlTraceDefinitions, selectedTraceTypes) ? SELECTED_ICON : null;
+            MenuManager subMenu = new MenuManager(CUSTOM_XML_CATEGORY, icon, null);
+            categoriesMap.put(CUSTOM_XML_CATEGORY, subMenu);
+            list.add(subMenu);
+        }
+
+        // add the custom trace types
+        for (CustomTxtTraceDefinition def : customTxtTraceDefinitions) {
             String traceBundle = Activator.getDefault().getBundle().getSymbolicName();
-            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + ':' + def.categoryName + ':' + def.definitionName;
+            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + ':' + def.definitionName;
             String traceIcon = DEFAULT_TRACE_ICON_PATH;
             String label = def.definitionName;
             boolean selected = selectedTraceTypes.contains(traceTypeId);
-            MenuManager subMenu = getCategorySubMenu(list, categoriesMap, def.categoryName, selected);
+            MenuManager subMenu = categoriesMap.get(CUSTOM_TXT_CATEGORY);
 
             addContributionItem(list, traceBundle, traceTypeId, traceIcon, label, selected, subMenu);
         }
-        for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
+        for (CustomXmlTraceDefinition def : customXmlTraceDefinitions) {
             String traceBundle = Activator.getDefault().getBundle().getSymbolicName();
-            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + ':' + def.categoryName + ':' + def.definitionName;
+            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + ':' + def.definitionName;
             String traceIcon = DEFAULT_TRACE_ICON_PATH;
             String label = def.definitionName;
             boolean selected = selectedTraceTypes.contains(traceTypeId);
-            MenuManager subMenu = getCategorySubMenu(list, categoriesMap, def.categoryName, selected);
+            MenuManager subMenu = categoriesMap.get(CUSTOM_XML_CATEGORY);
 
             addContributionItem(list, traceBundle, traceTypeId, traceIcon, label, selected, subMenu);
         }
 
-        Collections.sort(list, comparator);
         return list.toArray(new IContributionItem[list.size()]);
-    }
-
-    private static MenuManager getCategorySubMenu(List<IContributionItem> list,
-            Map<String, MenuManager> categoriesMap, String categoryName, boolean selected) {
-        for (Entry<String, MenuManager> entry : categoriesMap.entrySet()) {
-            MenuManager subMenu = entry.getValue();
-            if (subMenu.getMenuText().equals(categoryName)) {
-                if (selected) {
-                    subMenu.setImageDescriptor(SELECTED_ICON);
-                }
-                return subMenu;
-            }
-        }
-        ImageDescriptor icon = selected ? SELECTED_ICON : null;
-        MenuManager subMenu = new MenuManager(categoryName, icon, null);
-        categoriesMap.put(categoryName, subMenu);
-        list.add(subMenu);
-        return subMenu;
     }
 
     private static void addContributionItem(List<IContributionItem> list,
@@ -262,6 +237,26 @@ public class SelectElementTypeContributionItem extends CompoundContributionItem 
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isSelectedCategory(CustomTxtTraceDefinition[] customTxtTraceDefinitions, Set<String> selectedTraceTypes) {
+        for (CustomTxtTraceDefinition def : customTxtTraceDefinitions) {
+            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + ':' + def.definitionName;
+            if (selectedTraceTypes.contains(traceTypeId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isSelectedCategory(CustomXmlTraceDefinition[] customXmlTraceDefinitions, Set<String> selectedTraceTypes) {
+        for (CustomXmlTraceDefinition def : customXmlTraceDefinitions) {
+            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + ':' + def.definitionName;
+            if (selectedTraceTypes.contains(traceTypeId)) {
+                return true;
             }
         }
         return false;

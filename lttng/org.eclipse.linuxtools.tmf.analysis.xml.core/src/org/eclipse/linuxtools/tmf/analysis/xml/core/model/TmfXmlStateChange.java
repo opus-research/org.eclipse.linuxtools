@@ -27,7 +27,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- * This Class implements State Change in the XML-defined state system
+ * This Class implement a State Change in the XML-defined state system
  *
  * <pre>
  *  example 1: Simple state change

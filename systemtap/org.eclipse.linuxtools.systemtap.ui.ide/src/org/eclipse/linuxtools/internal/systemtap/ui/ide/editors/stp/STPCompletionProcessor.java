@@ -367,12 +367,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
             return true;
         }
 
-        switch (c) {
-            case '.':
-            case '$':
-                return false;
-        }
-        return Pattern.matches("\\W", Character.toString(c)); //$NON-NLS-1$
+        return c != '.' && Pattern.matches("\\W", Character.toString(c)); //$NON-NLS-1$
     }
 
     public void waitForInitialization() {

@@ -179,7 +179,7 @@ public class SelectTraceTypeHandler extends AbstractHandler {
         if (traceTypeHelper == null) {
             return Status.CANCEL_STATUS;
         }
-        final IStatus validateTraceType = traceTypeHelper.validate(element.getResource().getLocation().toOSString());
+        final IStatus validateTraceType = traceTypeHelper.validate(element.getLocation().getPath());
         if (!validateTraceType.isOK()) {
             return validateTraceType;
         }

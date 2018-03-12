@@ -9,7 +9,6 @@
  * Contributors:
  *   Florian Wininger - Initial API and implementation
  *   Geneviève Bastien - Review of the initial implementation
- *   Naser Ezzati - Implement the postDrawEvent to put labels on the entries
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.analysis.xml.ui.views.timegraph;
@@ -30,8 +29,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProv
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
@@ -121,20 +118,10 @@ public class XmlPresentationProvider extends TimeGraphPresentationProvider {
 
     @Override
     public void postDrawEvent(ITimeEvent event, Rectangle bounds, GC gc) {
-        if (bounds.width <= gc.getFontMetrics().getAverageCharWidth()) {
-            return;
-        }
-        if (!(event instanceof TimeEvent)) {
-            return;
-        }
-        XmlEntry entry = (XmlEntry) event.getEntry();
-
-        String labelValue = entry.getLabel(event.getTime());
-        if (labelValue != null) {
-            gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_WHITE));
-            Utils.drawText(gc, labelValue, bounds.x, bounds.y - 2, bounds.width, true, true);
-        }
-
+        /*
+         * TODO Add the XML elements to support texts in intervals and implement
+         * this
+         */
     }
 
     @Override

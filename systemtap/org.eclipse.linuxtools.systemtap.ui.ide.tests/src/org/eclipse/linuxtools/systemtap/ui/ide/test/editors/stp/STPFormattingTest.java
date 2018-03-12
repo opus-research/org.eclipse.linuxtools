@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.systemtap.ui.ide.test.editors.stp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -23,9 +24,10 @@ import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPAutoEditStrategy;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPPartitionScanner;
 import org.eclipse.linuxtools.systemtap.ui.ide.test.editors.stp.AbstractAutoEditTest.AutoEditTester;
+import org.eclipse.linuxtools.systemtap.ui.tests.SystemtapTest;
 import org.junit.Test;
 
-public class STPFormattingTest {
+public class STPFormattingTest extends SystemtapTest{
 
     /**
      * A DocumentCommand with public constructor and exec method.
@@ -64,7 +66,7 @@ public class STPFormattingTest {
      * @param partitioning
      * @param owner may be null
      */
-    private static void setupDocumentPartitioner(IDocument document, String partitioning) {
+    private void setupDocumentPartitioner(IDocument document, String partitioning) {
         IDocumentPartitioner partitioner = new FastPartitioner(new STPPartitionScanner(), STPPartitionScanner.STP_PARTITION_TYPES);
         if (document instanceof IDocumentExtension3) {
             IDocumentExtension3 extension3= (IDocumentExtension3) document;
@@ -75,7 +77,7 @@ public class STPFormattingTest {
         partitioner.connect(document);
     }
 
-    private static AutoEditTester createAutoEditTester() {
+    private AutoEditTester createAutoEditTester() {
         IDocument doc = new Document();
         setupDocumentPartitioner(doc, STPPartitionScanner.STP_PARTITIONING);
         AutoEditTester tester = new AutoEditTester(doc, STPPartitionScanner.STP_PARTITIONING);
@@ -90,6 +92,7 @@ public class STPFormattingTest {
 
     @Test
     public void testEndProbeCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -105,6 +108,7 @@ public class STPFormattingTest {
 
     @Test
     public void testSquareBracketCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -155,6 +159,7 @@ public class STPFormattingTest {
         // Verify we don't add square brackets inside a char specifier
         tester.type("\na[3]='[");
 
+        System.out.println(tester.fDoc.get());
         assertEquals(3, tester.getCaretLine());
         assertEquals(8, tester.getCaretColumn());
         assertEquals("\ta[3]='[", tester.getLine());
@@ -163,6 +168,7 @@ public class STPFormattingTest {
 
     @Test
     public void testBracketCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -189,6 +195,7 @@ public class STPFormattingTest {
 
     @Test
     public void testQuoteCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -233,6 +240,7 @@ public class STPFormattingTest {
         // Verify we don't add quotes inside a char specifier
         tester.type("\na[3]='\"");
 
+        System.out.println(tester.fDoc.get());
         assertEquals(3, tester.getCaretLine());
         assertEquals(8, tester.getCaretColumn());
         assertEquals("\ta[3]='\"", tester.getLine());
@@ -241,6 +249,7 @@ public class STPFormattingTest {
 
     @Test
     public void testIfCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -269,6 +278,7 @@ public class STPFormattingTest {
 
     @Test
     public void testElseBracketCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -299,6 +309,7 @@ public class STPFormattingTest {
 
     @Test
     public void testForCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -320,6 +331,7 @@ public class STPFormattingTest {
 
     @Test
     public void testForBracketCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -342,6 +354,7 @@ public class STPFormattingTest {
 
     @Test
     public void testWhileCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -363,6 +376,7 @@ public class STPFormattingTest {
 
     @Test
     public void testWhileBracketCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");
@@ -385,6 +399,7 @@ public class STPFormattingTest {
 
     @Test
     public void testForeachBracketCompletion() throws BadLocationException {
+        assumeTrue(stapInstalled);
         AutoEditTester tester = createAutoEditTester();
 
         tester.type("probe end {\n");

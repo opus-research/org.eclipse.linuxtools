@@ -12,9 +12,6 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -31,6 +28,8 @@ import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+
+
 
 /**
  * This class is used for obtaining all probes and functions from the tapsets.
@@ -95,9 +94,8 @@ public final class TapsetLibrary {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
             String property = event.getProperty();
-            if (property.equals(IDEPreferenceConstants.P_TAPSETS)) {
-                applyTapsetChanges((String) event.getOldValue(), (String) event.getNewValue());
-            } else if (property.equals(PreferenceConstants.P_ENV.SYSTEMTAP_TAPSET.toPrefKey())
+            if (property.equals(IDEPreferenceConstants.P_TAPSETS)
+                    || property.equals(PreferenceConstants.P_ENV.SYSTEMTAP_TAPSET.toPrefKey())
                     || property.equals(IDEPreferenceConstants.P_REMOTE_PROBES)) {
                 runStapParser();
             } else if (property.equals(IDEPreferenceConstants.P_STORED_TREE)) {
@@ -157,22 +155,6 @@ public final class TapsetLibrary {
         probeParser.schedule();
     }
 
-    private static void applyTapsetChanges(String oldTapsets, String newTapsets) {
-        List<String> oldList = Arrays.asList(oldTapsets.split(File.pathSeparator));
-        List<String> newList = Arrays.asList(newTapsets.split(File.pathSeparator));
-        List<String> additions = new ArrayList<>(newList);
-        additions.removeAll(oldList);
-        additions.remove(""); //$NON-NLS-1$
-        List<String> deletions = new ArrayList<>(oldList);
-        deletions.removeAll(newList);
-        deletions.remove(""); //$NON-NLS-1$
-        String[] additionArray = additions.toArray(new String[additions.size()]);
-        String[] deletionArray = deletions.toArray(new String[deletions.size()]);
-        SharedParser.getInstance().clearTapsetContents();
-        probeParser.runUpdate(additionArray, deletionArray);
-        functionParser.runUpdate(additionArray, deletionArray);
-    }
-
     private static void clearTrees() {
         if (functionTree != null) {
             functionTree.dispose();
@@ -188,9 +170,9 @@ public final class TapsetLibrary {
      * This method will get all of the tree information from
      * the TreeSettings xml file.
      */
-    public static void readTreeFile() {
-        functionParser.setTree(TreeSettings.getFunctionTree());
-        probeParser.setTree(TreeSettings.getProbeTree());
+    private static void readTreeFile() {
+        functionTree = TreeSettings.getFunctionTree();
+        probeTree = TreeSettings.getProbeTree();
     }
 
     /**
