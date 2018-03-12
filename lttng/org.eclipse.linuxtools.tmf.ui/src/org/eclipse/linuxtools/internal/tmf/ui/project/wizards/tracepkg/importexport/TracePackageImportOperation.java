@@ -200,7 +200,7 @@ public class TracePackageImportOperation extends AbstractTracePackageOperation i
                         traceFilesElement = (TracePackageFilesElement) element;
                         setStatus(importTraceFiles(traceFilesElement, traceElement, progressMonitor));
 
-                    } else if (element instanceof TracePackageSupplFilesElement) {
+                    } else if (element instanceof TracePackageSupplFilesElement && element.isChecked()) {
                         TracePackageSupplFilesElement suppFilesElement = (TracePackageSupplFilesElement) element;
                         setStatus(importSupplFiles(suppFilesElement, traceElement, progressMonitor));
                     }
