@@ -82,7 +82,12 @@ public class OpenGCAction implements IEditorLauncher {
                 safeBinaryPath = binaryPath;
             }
 
-            PlatformUI.getWorkbench().getDisplay().syncExec(() -> displayCoverage(file, safeBinaryPath, pair.gcda, isCompleteCoverageResultWanted));
+            PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    displayCoverage(file, safeBinaryPath, pair.gcda, isCompleteCoverageResultWanted);
+                }
+            });
         }
     }
 
@@ -187,7 +192,7 @@ public class OpenGCAction implements IEditorLauncher {
                             IResource r = b[0].getResource();
                             return r.getLocation().toOSString();
                         }
-                    } catch (CModelException e) {
+                    } catch (CModelException _) {
                     }
                 }
             }

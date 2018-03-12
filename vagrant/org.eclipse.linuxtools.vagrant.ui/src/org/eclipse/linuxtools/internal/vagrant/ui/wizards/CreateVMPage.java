@@ -33,13 +33,12 @@ import org.eclipse.linuxtools.internal.vagrant.core.EnvironmentsManager;
 import org.eclipse.linuxtools.internal.vagrant.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
@@ -89,13 +88,12 @@ public class CreateVMPage extends WizardPage {
 
 	@Override
 	public void createControl(Composite parent) {
-		ScrolledComposite scrollTop = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
-		scrollTop.setExpandVertical(true);
-		scrollTop.setExpandHorizontal(true);
-
-		final Composite container = new Composite(scrollTop, SWT.NONE);
+		parent.setLayout(new GridLayout());
+		final Composite container = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(3).margins(6, 6)
 				.applyTo(container);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(1, 1)
+				.grab(true, false).applyTo(container);
 
 		// VM Name
 		final Label vmNameLabel = new Label(container, SWT.NONE);
@@ -110,7 +108,7 @@ public class CreateVMPage extends WizardPage {
 		vmNameText.setToolTipText(
 				WizardMessages.getString("CreateVMPage.name.tooltip")); //$NON-NLS-1$
 		// VM Name binding
-		final IObservableValue<String> vmmNameObservable = BeanProperties
+		final IObservableValue vmmNameObservable = BeanProperties
 				.value(CreateVMPageModel.class, CreateVMPageModel.VM_NAME)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(vmNameText),
@@ -129,7 +127,7 @@ public class CreateVMPage extends WizardPage {
 		boxRefText.setToolTipText(
 				WizardMessages.getString("CreateVMPage.boxRef.tooltip")); //$NON-NLS-1$
 		// Box Name binding
-		final IObservableValue<String> boxRefObservable = BeanProperties
+		final IObservableValue boxRefObservable = BeanProperties
 				.value(CreateVMPageModel.class, CreateVMPageModel.BOX_REF)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxRefText),
@@ -149,7 +147,7 @@ public class CreateVMPage extends WizardPage {
 				.setText(WizardMessages.getString("CreateVMPage.File.CheckBox")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).span(3, 1).applyTo(customVMFileButton);
-		final IObservableValue<String> customVMFileObservable = BeanProperties
+		final IObservableValue customVMFileObservable = BeanProperties
 				.value(CreateVMPageModel.class, CreateVMPageModel.V_FILE_MODE)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.selection().observe(customVMFileButton),
@@ -169,7 +167,7 @@ public class CreateVMPage extends WizardPage {
 				WizardMessages.getString("CreateVMPage.loc.tooltip")); //$NON-NLS-1$
 		boxLocText.setEnabled(false);
 		// Location binding
-		final IObservableValue<String> boxLocObservable = BeanProperties
+		final IObservableValue boxLocObservable = BeanProperties
 				.value(CreateVMPageModel.class, CreateVMPageModel.VM_FILE)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxLocText),
@@ -197,17 +195,12 @@ public class CreateVMPage extends WizardPage {
 				boxRefObservable, boxLocObservable));
 
 		advanced = new CreateVMAdvancedComposite(
-				container, scrollTop, model);
+				container, model);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(3, 1)
 				.grab(true, false).applyTo(advanced);
 
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
-
-		scrollTop.setContent(container);
-		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		scrollTop.setSize(point);
-		scrollTop.setMinSize(point);
 		setControl(container);
 	}
 
@@ -276,28 +269,26 @@ public class CreateVMPage extends WizardPage {
 
 	private class CreateVMValidationStatusProvider extends MultiValidator {
 
-		private IObservableValue<String> vmNameOb, boxRefOb, boxLocOb;
+		private IObservableValue vmNameOb, boxRefOb, boxLocOb;
 
-		public CreateVMValidationStatusProvider(
-				IObservableValue<String> vmNameOb,
-				IObservableValue<String> boxRefOb,
-				IObservableValue<String> boxLocOb) {
+		public CreateVMValidationStatusProvider(IObservableValue vmNameOb,
+				IObservableValue boxRefOb, IObservableValue boxLocOb) {
 			this.vmNameOb = vmNameOb;
 			this.boxRefOb = boxRefOb;
 			this.boxLocOb = boxLocOb;
 		}
 
 		@Override
-		public IObservableList<String> getTargets() {
+		public IObservableList getTargets() {
 			// Work around for NPE triggered by DialogPageSupport.dispose()
-			return new WritableList<>();
+			return new WritableList();
 		}
 
 		@Override
 		protected IStatus validate() {
-			String vmName = vmNameOb.getValue();
-			String boxRef = boxRefOb.getValue();
-			String boxLoc = boxLocOb.getValue();
+			String vmName = (String) vmNameOb.getValue();
+			String boxRef = (String) boxRefOb.getValue();
+			String boxLoc = (String) boxLocOb.getValue();
 			if (!model.getVFileMode()) {
 				if (vmName == null || vmName.isEmpty()) {
 					return ValidationStatus.error(WizardMessages

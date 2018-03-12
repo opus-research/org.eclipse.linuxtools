@@ -110,7 +110,12 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
                         //need to run this in the ui thread otherwise get SWT Exceptions
                         // based on concurrency issues
                         if (!OprofileProject.getProfilingBinary().equals(OprofileProject.OCOUNT_BINARY)) {
-                        	Display.getDefault().syncExec(() -> refreshOprofileView());
+                        	Display.getDefault().syncExec(new Runnable() {
+                        		@Override
+                        		public void run() {
+                        			refreshOprofileView();
+                        		}
+                        	});
                         }
                     }
                 }
