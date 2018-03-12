@@ -104,6 +104,9 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
         return plugin;
     }
 
+    /**
+     * @since 0.10
+     */
     public Version getValgrindVersion(IProject project) throws CoreException {
         Version valgrindVersion;
         try {
@@ -133,6 +136,9 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
         valgrindCommand = command;
     }
 
+    /**
+     * @since 0.10
+     */
     protected ValgrindCommand getValgrindCommand() {
         if (valgrindCommand == null) {
             valgrindCommand = new ValgrindCommand();

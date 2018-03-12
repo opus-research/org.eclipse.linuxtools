@@ -25,12 +25,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.remote.core.IRemoteConnection;
-import org.eclipse.remote.core.IRemoteFileService;
+import org.eclipse.remote.core.IRemoteFileManager;
 import org.eclipse.remote.core.IRemoteProcess;
 import org.eclipse.remote.core.IRemoteProcessBuilder;
-import org.eclipse.remote.core.IRemoteProcessService;
 import org.eclipse.remote.core.IRemoteResource;
+import org.eclipse.remote.core.IRemoteServices;
 import org.eclipse.remote.core.RemoteProcessAdapter;
+import org.eclipse.remote.core.RemoteServices;
 
 /**
  * @noextend This class is not intended to be subclassed by clients.
@@ -61,7 +62,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
         fShowCommand = false;
         try {
             if (project.hasNature(RDTProxyManager.SYNC_NATURE)) {
-                IRemoteResource remoteRes = project.getAdapter(IRemoteResource.class);
+                IRemoteResource remoteRes = (IRemoteResource)project.getAdapter(IRemoteResource.class);
                 uri = remoteRes.getActiveLocationURI();
             } else{
                 uri = project.getLocationURI();
@@ -119,14 +120,13 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
             // add platform specific arguments (shell invocation)
             fCommandArgs = constructCommandArray(commandPath.toOSString(), args);
             fShowCommand = true;
-            IRemoteConnection connection = RDTProxyManager.getConnection(uri);
-            IRemoteProcessService ps = connection.getService(IRemoteProcessService.class);
-            IRemoteProcessBuilder builder = ps.getProcessBuilder(Arrays.asList(fCommandArgs));
+            IRemoteServices services = RemoteServices.getRemoteServices(uri);
+            IRemoteConnection connection = services.getConnectionManager().getConnection(uri);
+            IRemoteFileManager fm = connection.getFileManager();
+            IRemoteProcessBuilder builder = connection.getProcessBuilder(Arrays.asList(fCommandArgs));
 
-            if (changeToDirectory != null) {
-                IRemoteFileService fm = connection.getService(IRemoteFileService.class);
+            if (changeToDirectory != null)
                 builder.directory(fm.getResource(changeToDirectory.toString()));
-            }
 
             Map<String,String> envMap = builder.environment();
 

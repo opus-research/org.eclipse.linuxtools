@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>4.0.0</version>
+    <version>3.2.0</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.releng</groupId>
@@ -44,7 +44,6 @@
 
   <modules>
     <module>org.eclipse.linuxtools.releng-site</module>
-    <module>org.eclipse.linuxtools.docker-site</module>
     <module>org.eclipse.linuxtools.target</module>
   </modules>
 

@@ -256,7 +256,7 @@ public class SpecStructureCreator extends StructureCreator {
         IFile file = null;
         if (input instanceof IResourceProvider) {
             IResource res = ((IResourceProvider)input).getResource();
-            file = res.getAdapter(IFile.class);
+            file = (IFile) res.getAdapter(IFile.class);
         }
 
         DocumentRangeNode rootNode = new StructureRootNode(document, input, this, adapter) {

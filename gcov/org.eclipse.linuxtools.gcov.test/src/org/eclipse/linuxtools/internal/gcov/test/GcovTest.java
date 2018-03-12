@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2015 STMicroelectronics and others.
+ * Copyright (c) 2011 STMicroelectronics.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
- *    Red Hat Inc. - ongoing maintenance
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.test;
 
@@ -69,7 +68,6 @@ public abstract class GcovTest extends AbstractTest {
 
     abstract protected String getTestProjectName();
     abstract protected String getBinName();
-    abstract protected boolean useDefaultBin();
     abstract protected boolean getTestProducedReference();
 
     @BeforeClass
@@ -140,18 +138,17 @@ public abstract class GcovTest extends AbstractTest {
 
     @Test
     public void testOpenGcovFileDetails() {
-        final String binPath = getBinPathOrDefault();
         for (String string : gcovFiles) {
-            testGcovFileDetails(string, binPath);
+            testGcovFileDetails(string);
         }
     }
 
-    private void testGcovFileDetails(final String filename, final String binPath) {
-        openGcovResult(project.getFile(filename), binPath, false);
-
+    private void testGcovFileDetails(final String filename) {
         display.syncExec(new Runnable() {
             @Override
             public void run() {
+                openGcovResult(project.getFile(filename), false);
+
                 final IWorkbenchPage page = window.getActivePage();
                 final IEditorPart editorPart = page.getActiveEditor();
                 final IFile openedFile = project.getFile(editorPart.getEditorInput().getName());
@@ -175,16 +172,14 @@ public abstract class GcovTest extends AbstractTest {
 
     @Test
     public void testOpenGcovSummary() {
-        final String binPath = getBinPathOrDefault();
-        final boolean testProducedReference = getTestProducedReference();
         for (String string : gcovFiles) {
-            testGcovSummary(string, binPath, testProducedReference);
+            testGcovSummary(string, getBinName(), getTestProducedReference());
         }
     }
 
-    private void testGcovSummary(final String filename, String binPath,
+    private void testGcovSummary(final String filename, String binName,
             final boolean testProducedReference) {
-        openGcovResult(project.getFile(filename), binPath, true);
+        openGcovResult(project.getFile(filename), true);
         IViewPart vp = window.getActivePage().findView("org.eclipse.linuxtools.gcov.view");
 
         // No IDs on toolbar items, so explicitly check each one for tooltip texts
@@ -240,12 +235,17 @@ public abstract class GcovTest extends AbstractTest {
 
         if (testProducedReference) {
             String ref = STJunitUtils.getAbsolutePath(FrameworkUtil.getBundle(GcovTest.class).getSymbolicName(), "csv/" + project.getName() + "/" + type + ".csv");
-            // STJunitUtils.compareIgnoreEOL(project.getLocation() + "/" + type + "-dump.csv", ref, false);
+            STJunitUtils.compareIgnoreEOL(project.getLocation() + "/" + type + "-dump.csv", ref, false);
         }
     }
 
-    private void openGcovResult(final IFile file, String binaryPath, final boolean isCompleteCoverageResultWanted) {
-        new OpenGCAction().autoOpen(file.getLocation(), binaryPath, isCompleteCoverageResultWanted);
+    private void openGcovResult(final IFile file, final boolean isCompleteCoverageResultWanted) {
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                new OpenGCAction().autoOpen(file.getLocation(), isCompleteCoverageResultWanted);
+            }
+        });
     }
 
     private class ProfileContextualLaunchAction extends ContextualLaunchAction {
@@ -301,9 +301,5 @@ public abstract class GcovTest extends AbstractTest {
 
     @Override
     protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
-    }
-
-    private String getBinPathOrDefault() {
-        return !useDefaultBin() ? project.getFile(getBinName()).getLocation().toOSString() : "";
     }
 }

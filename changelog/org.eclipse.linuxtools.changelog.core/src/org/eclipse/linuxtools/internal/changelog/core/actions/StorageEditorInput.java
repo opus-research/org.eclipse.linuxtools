@@ -98,8 +98,12 @@ public abstract class StorageEditorInput implements IStorageEditorInput {
         return getStorage().hashCode();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
+     */
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    @SuppressWarnings({ "rawtypes" })
+    public Object getAdapter(Class adapter) {
         return null;
     }
 

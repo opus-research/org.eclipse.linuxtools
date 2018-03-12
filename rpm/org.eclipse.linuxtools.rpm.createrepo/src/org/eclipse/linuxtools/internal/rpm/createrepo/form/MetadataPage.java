@@ -90,7 +90,7 @@ public class MetadataPage extends FormPage {
         toolkit.decorateFormHeading(form.getForm());
 
         // add the menuContribution from MANIFEST.MF to the form
-        IMenuService menuService = getSite().getService(IMenuService.class);
+        IMenuService menuService = (IMenuService) getSite().getService(IMenuService.class);
         menuService.populateContributionManager(toolbarManager, MENU_URI);
         toolbarManager.update(true);
 
@@ -357,7 +357,7 @@ public class MetadataPage extends FormPage {
         public void widgetSelected(SelectionEvent e) {
             addTag();
         }
-
+        
         @Override
         public void widgetDefaultSelected(SelectionEvent e) {
             addTag();

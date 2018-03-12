@@ -103,7 +103,7 @@ public class SpecfileEditorRPMBuildHandler extends AbstractHandler {
                 return (IResource) element;
             } else if (element instanceof IAdaptable) {
                 IAdaptable adaptable = (IAdaptable) element;
-                return adaptable.getAdapter(IResource.class);
+                return (IResource) adaptable.getAdapter(IResource.class);
             } else {
                 return null;
             }

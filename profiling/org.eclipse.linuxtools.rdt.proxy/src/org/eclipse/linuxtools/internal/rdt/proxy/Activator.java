@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -88,17 +87,4 @@ public class Activator extends AbstractUIPlugin {
     public static void log(int severity, String msg, Exception e) {
         getDefault().getLog().log(new Status(severity, PLUGIN_ID, IStatus.OK, msg, e));
     }
-
-    /**
-     * Get an OSGi service
-     *
-     * @param service the service class
-     * @return the Service implementation
-     */
-	public static <T> T getService(Class<T> service) {
-		BundleContext context = plugin.getBundle().getBundleContext();
-		ServiceReference<T> ref = context.getServiceReference(service);
-		return ref != null ? context.getService(ref) : null;
-	}
-
 }

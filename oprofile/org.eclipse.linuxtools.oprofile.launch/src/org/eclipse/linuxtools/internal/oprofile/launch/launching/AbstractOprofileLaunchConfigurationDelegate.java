@@ -74,12 +74,6 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
         options.setBinaryImage(exePath.toOSString());
         Oprofile.OprofileProject.setProfilingBinary(options.getOprofileComboText());
 
-        /*
-         * Parameters needed for the application under profiling
-         */
-        String appArgs[] = getProgramArgumentsArray(config);
-        String appEnv[] = getEnvironment(config);
-
         //if daemonEvents null or zero size, the default event will be used
         OprofileDaemonEvent[] daemonEvents = null;
         ArrayList<OprofileDaemonEvent> events = new ArrayList<>();
@@ -108,10 +102,11 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
         }
         Process process = null;
         if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
+            String arguments[] = getProgramArgumentsArray( config );
             IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(oprofileProject());
             IPath workingDirPath = new Path(oprofileWorkingDirURI(config).getPath());
             for(int i = 0; i < options.getExecutionsNumber(); i++){
-                process = launcher.execute(exePath, appArgs, appEnv , workingDirPath, monitor);
+                process = launcher.execute(exePath, arguments, getEnvironment(config), workingDirPath, monitor);
                 DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
                 try{
                     process.waitFor();
@@ -151,7 +146,7 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
             }
             eventsString = spec.toString();
 
-            ArrayList<String> argArray = new ArrayList<>(Arrays.asList(appArgs));
+            ArrayList<String> argArray = new ArrayList<>(Arrays.asList(getProgramArgumentsArray( config )));
             // Use remote file proxy to determine data folder since the project may be either local or remote
             IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(OprofileProject.getProject());
             IFileStore dataFolder = proxy.getResource(oprofileWorkingDirURI(config).getPath() + IPath.SEPARATOR + OPROFILE_DATA);
@@ -165,20 +160,14 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
             argArray.add(0, SESSION_DIR + oprofileWorkingDirURI(config).getPath() + IPath.SEPARATOR + OPROFILE_DATA);
             argArray.add(0, OprofileProject.OPERF_BINARY);
 
-            boolean appended = false;
             for(int i = 0; i < options.getExecutionsNumber(); i++){
-                /*
-                 * If profiling multiple times,
-                 * append oprofile results from 2nd execution on.
-                 */
-                if (!appended && i!=0) {
-                    argArray.add(1, APPEND);
-                    appended = true;
+                if (i!=0) {
+                    argArray.add(APPEND);
                 }
                 String[] arguments = new String[argArray.size()];
                 arguments = argArray.toArray(arguments);
                 try {
-                    process = RuntimeProcessFactory.getFactory().exec(arguments, appEnv , OprofileProject.getProject());
+                    process = RuntimeProcessFactory.getFactory().exec(arguments, OprofileProject.getProject());
                 } catch (IOException e1) {
                     process.destroy();
                     Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$

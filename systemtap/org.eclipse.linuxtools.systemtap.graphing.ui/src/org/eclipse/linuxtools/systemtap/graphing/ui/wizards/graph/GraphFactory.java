@@ -161,9 +161,6 @@ public final class GraphFactory {
     }
 
     /**
-     * @param comp Parent composite.
-     * @param style Style of widget to create.
-     * @return The newly created X axis control.
      * @since 3.0
      */
     public static final Composite createGraphXControl(GraphComposite comp, int style) {
@@ -175,9 +172,6 @@ public final class GraphFactory {
     }
 
     /**
-     * @param comp Parent composite.
-     * @param style Style of widget to create.
-     * @return The newly created Y axis control
      * @since 3.0
      */
     public static final Composite createGraphYControl(GraphComposite comp, int style) {

@@ -18,7 +18,6 @@ public final class Copier {
 
     /**
      * Returns a copy of the passed in ArrayList array object.
-     * @param <T> The list type.
      *
      * @param list The ArrayList array object to copy.
      *
@@ -29,16 +28,14 @@ public final class Copier {
         @SuppressWarnings("unchecked")
         List<T>[] list2 = new ArrayList[list.length];
 
-        for(int i=0; i<list2.length; i++) {
+        for(int i=0; i<list2.length; i++)
             list2[i] = copy(list[i]);
-        }
 
         return list2;
     }
 
     /**
      * Returns a copy of the passed in ArrayList object.
-     * @param <T> The list type.
      *
      * @param list The ArrayList object to copy.
      *

@@ -66,7 +66,8 @@ public class STCSourceNotFoundEditorInput implements IEditorInput {
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    @SuppressWarnings("rawtypes")
+    public Object getAdapter(Class adapter) {
         return null;
     }
 
