@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
+import org.eclipse.linuxtools.tmf.core.event.collapse.ITmfCollapsibleEvent;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -116,7 +117,7 @@ public class TmfCollapseFilterTest {
     // Helper Classes
     // ------------------------------------------------------------------------
 
-    private class CollapsibleEvent extends TmfEvent {
+    private class CollapsibleEvent extends TmfEvent implements ITmfCollapsibleEvent {
 
         private final boolean fIsCollapsible;
         CollapsibleEvent(boolean isCollapsible) {

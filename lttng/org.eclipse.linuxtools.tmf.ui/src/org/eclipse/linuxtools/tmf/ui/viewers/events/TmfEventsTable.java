@@ -80,6 +80,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.dialogs.MultiLineInputDialog;
 import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.collapse.ITmfCollapsibleEvent;
 import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfCallsite;
 import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfModelLookup;
 import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfSourceLookup;
@@ -100,6 +101,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsCache.CachedEvent;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
@@ -967,7 +969,20 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     }
                 }
 
-                if (!(fTable.getData(Key.FILTER_OBJ) instanceof TmfCollapseFilter)) {
+                // only show collapse filter if at least one trace can be collapsed
+                boolean isCollapsible = false;
+                if (fTrace != null) {
+                    ITmfTrace traces[] = TmfTraceManager.getTraceSet(fTrace);
+                    for (ITmfTrace trace : traces) {
+                        Class <? extends ITmfEvent> eventClass = trace.getEventType();
+                        isCollapsible = ITmfCollapsibleEvent.class.isAssignableFrom(eventClass);
+                        if (isCollapsible) {
+                            break;
+                        }
+                    }
+                }
+
+                if (isCollapsible && !(fTable.getData(Key.FILTER_OBJ) instanceof TmfCollapseFilter)) {
                     tablePopupMenu.add(collapseAction);
                     tablePopupMenu.add(new Separator());
                 }
