@@ -1,5 +1,4 @@
 /*******************************************************************************
- * Copyright (c) 2006 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,7 +14,6 @@ package org.eclipse.linuxtools.internal.systemtap.ui.consolelog.actions;
 import java.net.URL;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 
@@ -31,17 +29,8 @@ public abstract class ConsoleAction extends Action {
     protected ConsoleAction(ScriptConsole fConsole,
             URL imagePath,
             String text,
-            String toolTip) {
-        this(fConsole, imagePath, text, toolTip, IAction.AS_PUSH_BUTTON);
-    }
-
-    protected ConsoleAction(ScriptConsole fConsole,
-            URL imagePath,
-            String text,
-            String toolTip,
-            int style) {
-        super(null, style);
-        console = fConsole;
+            String toolTip){
+        this.console = fConsole;
 
         setImageDescriptor(ImageDescriptor.createFromURL(imagePath));
         setToolTipText(text);
