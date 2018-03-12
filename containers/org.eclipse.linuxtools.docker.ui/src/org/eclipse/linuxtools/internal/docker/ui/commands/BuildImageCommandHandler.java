@@ -87,10 +87,7 @@ public class BuildImageCommandHandler extends AbstractHandler {
 								@Override
 								public FileVisitResult visitFile(
 										java.nio.file.Path file,
-										BasicFileAttributes attrs) throws IOException {
-									if (!file.toFile().canRead()) {
-										throw new IOException();
-									}
+										BasicFileAttributes attrs) {
 									return FileVisitResult.CONTINUE;
 								}
 								@Override
