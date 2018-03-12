@@ -20,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.linuxtools.docker.core.Activator;
 import org.osgi.framework.Bundle;
 
 import com.spotify.docker.client.LogReader;
@@ -51,11 +50,6 @@ public class HttpHijackWorkaround {
 				"org.apache.http.conn.EofSensorInputStream",
 				"org.apache.http.impl.io.IdentityInputStream",
 				"org.apache.http.impl.io.SessionInputBufferImpl" };
-		final String [] bundles = new String[] {
-				"org.glassfish.jersey.core.jersey-common",
-				"org.apache.httpcomponents.httpcore",
-				"org.apache.httpcomponents.httpclient"
-		};
 
 		List<String[]> list = new LinkedList<>();
 		for (int i = 0; i < fields.length; i++) {
@@ -68,13 +62,12 @@ public class HttpHijackWorkaround {
 			list.add(new String[] { "java.net.SocketInputStream", "socket" });
 		}
 
-		Object res = getInternalField(stream, list, bundles);
+		Object res = getInternalField(stream, list);
 		if (res instanceof WritableByteChannel) {
 			return (WritableByteChannel) res;
 		} else if (res instanceof Socket) {
 			return Channels.newChannel(((Socket) res).getOutputStream());
 		} else {
-			// TODO: throw an exception and let callers handle it.
 			return null;
 		}
 	}
@@ -92,22 +85,22 @@ public class HttpHijackWorkaround {
 		for (int i = 0; i < fields.length; i++) {
 			list.add(new String[] { declared[i], fields[i] });
 		}
-		return (InputStream) getInternalField(stream, list, new String [0]);
+		return (InputStream) getInternalField(stream, list);
 	}
 
 	/*
 	 * Access arbitrarily nested internal fields.
 	 */
-	private static Object getInternalField (Object input, List<String []> set, String [] bundles) {
+	private static Object getInternalField (Object input, List<String []> set) {
 		Object curr = input;
 		try {
 			for (String [] e : set) {
-				Field f = loadClass(e[0], bundles).getDeclaredField(e[1]);
+				Field f = loadClass(e[0]).getDeclaredField(e[1]);
 				f.setAccessible(true);
 				curr = f.get(curr);
 			}
 		} catch (Exception e) {
-			Activator.log(e);
+			e.printStackTrace();
 		}
 		return curr;
 	}
@@ -116,19 +109,19 @@ public class HttpHijackWorkaround {
 	 * Avoid explicitly depending on certain classes that are requirements
 	 * of the docker-client library (com.spotify.docker.client).
 	 */
-	private static Class<?> loadClass(String key, String [] bundles) {
+	private static Class<?> loadClass(String key) {
+		Class<?> k;
 		try {
-			return Class.forName(key);
+			k = Class.forName(key);
 		} catch (ClassNotFoundException e) {
-			for (String bsName : bundles) {
-				Bundle b = Platform.getBundle(bsName);
-				try {
-					return b.loadClass(key);
-				} catch (ClassNotFoundException e1) {
-				}
+			Bundle b = Platform.getBundle("com.spotify.docker.client");
+			try {
+				k = b.loadClass(key);
+			} catch (ClassNotFoundException e1) {
+				k  = null;
 			}
 		}
-		return null;
+		return k;
 	}
 
 }

@@ -8,6 +8,7 @@
       <category name="Linux Tools"/>
    </feature>
    <!-- Orbit Dependencies -->
+   <!--
    <iu id="com.spotify.docker.client" version="0.0.0">
         <category name="Linux Tools"/>
    </iu>
@@ -110,6 +111,7 @@
    <iu id="org.apache.commons.compress" version="0.0.0">
         <category name="Linux Tools"/>
    </iu>
+   -->
    <category-def name="Linux Tools" label="Linux Tools">
       <description>
          Eclipse Linux Tools Docker
