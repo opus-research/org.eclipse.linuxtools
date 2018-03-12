@@ -19,6 +19,7 @@ import java.util.List;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.IWizard;
@@ -30,6 +31,8 @@ import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
 import org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerContainersView;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProvider.DockerImagesCategory;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -48,7 +51,7 @@ public class CommandUtils {
 	 * @param viewer
 	 *            - the {@link Viewer} to refresh
 	 */
-	public static void refresh(final Viewer viewer) {
+	public static void asyncRefresh(final Viewer viewer) {
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override
 			public void run() {
@@ -70,6 +73,19 @@ public class CommandUtils {
 			return ((DockerContainersView) activePart).getConnection();
 		} else if (activePart instanceof DockerImagesView) {
 			return ((DockerImagesView) activePart).getConnection();
+		} else if (activePart instanceof DockerExplorerView) {
+			final ITreeSelection selection = ((DockerExplorerView) activePart)
+					.getCommonViewer().getStructuredSelection();
+			final Object firstElement = selection.getFirstElement();
+			if (firstElement instanceof IDockerConnection) {
+				return (IDockerConnection) firstElement;
+			} else if (firstElement instanceof IDockerContainer) {
+				return ((IDockerContainer) firstElement).getConnection();
+			} else if (firstElement instanceof IDockerImage) {
+				return ((IDockerImage) firstElement).getConnection();
+			} else if (firstElement instanceof DockerImagesCategory) {
+				return ((DockerImagesCategory) firstElement).getConnection();
+			}
 		}
 		return null;
 	}
@@ -84,6 +100,10 @@ public class CommandUtils {
 	public static List<IDockerContainer> getSelectedContainers(final IWorkbenchPart activePart) {
 		if (activePart instanceof DockerContainersView) {
 			final ISelection selection = ((DockerContainersView) activePart).getSelection();
+			return getSelectedContainers(selection);
+		} else if (activePart instanceof DockerExplorerView) {
+			final ISelection selection = ((DockerExplorerView) activePart)
+					.getCommonViewer().getSelection();
 			return getSelectedContainers(selection);
 		}
 		return Collections.emptyList();
@@ -123,6 +143,10 @@ public class CommandUtils {
 		if (activePart instanceof DockerImagesView) {
 			final ISelection selection = ((DockerImagesView) activePart)
 					.getSelection();
+			return getSelectedImages(selection);
+		} else if (activePart instanceof DockerExplorerView) {
+			final ISelection selection = ((DockerExplorerView) activePart)
+					.getCommonViewer().getSelection();
 			return getSelectedImages(selection);
 		}
 		return Collections.emptyList();

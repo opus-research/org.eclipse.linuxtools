@@ -25,8 +25,6 @@ import org.eclipse.linuxtools.internal.rdt.proxy.RDTCommandLauncher;
 import org.eclipse.linuxtools.internal.rdt.proxy.RDTFileProxy;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
-import org.eclipse.linuxtools.profiling.launch.RemoteConnection;
-import org.eclipse.ptp.rdt.sync.core.RemoteLocation;
 import org.eclipse.ptp.rdt.sync.core.SyncConfig;
 
 @SuppressWarnings("restriction")
@@ -67,7 +65,7 @@ public class RemoteProxyManagerTest extends AbstractProxyTest {
 			fp = proxyManager.getFileProxy(URI.create("remotetools://MyConnection/path/to/file"));
 			fail("remotetools scheme should not be recognized");
 		} catch (CoreException e) {
-			assertTrue(true);
+			assertTrue(e.getMessage(), true);
 		}
 	}
 
@@ -80,14 +78,14 @@ public class RemoteProxyManagerTest extends AbstractProxyTest {
 			 */
 			cl = proxyManager.getLauncher(localProject.getLocationURI());
 			assertTrue("Should have returned a local launcher", cl instanceof LocalLauncher);
-			cl = proxyManager.getLauncher(localProject);
+			cl = proxyManager.getLauncher(localProject.getProject());
 			assertTrue("Should have returned a local launcher", cl instanceof LocalLauncher);
 			/*
 			 * Test launcher got for remote project and URI
 			 */
 			cl = proxyManager.getLauncher(URI.create("ssh://" + CONNECTION_NAME + "/path/to/file"));
 			assertTrue("Should have returned a remote file proxy", cl instanceof RDTCommandLauncher);
-			cl = proxyManager.getLauncher(syncProject);
+			cl = proxyManager.getLauncher(syncProject.getProject());
 			assertTrue("Should have returned a remote launcher", cl instanceof RDTCommandLauncher);
 		} catch (CoreException e) {
 			fail("Should have returned a launcher: " + e.getCause());
@@ -102,7 +100,7 @@ public class RemoteProxyManagerTest extends AbstractProxyTest {
 			cl = proxyManager.getLauncher(URI.create("remotetools://MyConnection/path/to/file"));
 			fail("remotetools scheme should not be recognized");
 		} catch (CoreException e) {
-			assertTrue(true);
+			assertTrue(e.getMessage(),true);
 		}
 	}
 
@@ -122,13 +120,13 @@ public class RemoteProxyManagerTest extends AbstractProxyTest {
 			actualOS = proxyManager.getOS(localProject.getLocationURI());
 			assertNotNull(actualOS);
 			assertTrue("Should have returned the OS name", !actualOS.isEmpty());
-			actualOS = proxyManager.getOS(localProject);
+			actualOS = proxyManager.getOS(localProject.getProject());
 			assertNotNull(actualOS);
 			assertTrue("Should have returned the OS name", !actualOS.isEmpty());
 			/*
 			 * Test got OS for remote URIs and project
 			 */
-			actualOS = proxyManager.getOS(syncProject);
+			actualOS = proxyManager.getOS(syncProject.getProject());
 			assertNotNull(actualOS);
 			assertTrue("Should have returned the OS name", !actualOS.isEmpty());
 		} catch (CoreException e) {
@@ -144,17 +142,17 @@ public class RemoteProxyManagerTest extends AbstractProxyTest {
 			actualOS = proxyManager.getOS(URI.create("remotetools://MyConnection/path/to/file"));
 			fail("remotetools scheme should not be recognized");
 		} catch (CoreException e) {
-			assertTrue(true);
+			assertTrue(e.getMessage(),true);
 		}
 	}
 
 	@Test
 	public void testGetRemoteProjectLocationOnSyncProj() {
 		try {
-			String actualLocation = proxyManager.getRemoteProjectLocation(syncProject);
-			SyncConfig config = getSyncConfig(syncProject);
+			String actualLocation = proxyManager.getRemoteProjectLocation(syncProject.getProject());
+			SyncConfig config = getSyncConfig(syncProject.getProject());
 			assertNotNull(config);
-			assertEquals(this.connection.getConnectionType().getScheme(), URI.create(actualLocation).getScheme());
+			assertEquals(connection.getConnectionType().getScheme(), URI.create(actualLocation).getScheme());
 			assertEquals(config.getConnectionName(), URI.create(actualLocation).getAuthority());
 			assertEquals(config.getLocation(),URI.create(actualLocation).getPath());
 		} catch (CoreException e) {

@@ -17,21 +17,21 @@ import org.eclipse.linuxtools.docker.core.EnumDockerStatus;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 
 /**
- * Filters out any {@link IDockerContainer} that is not in a running state.
+ * Filters out any {@link IDockerContainer} that is not in a running or paused
+ * state.
+ * 
  * @author xcoulon
  *
  */
 public class HideStoppedContainersViewerFilter extends ViewerFilter {
 
-	/**
-	 * @see org.eclipse.jface.viewers.ViewerFilter#select(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public boolean select(final Viewer viewer, final Object parentElement, final Object element) {
 		if(element instanceof IDockerContainer) {
 			final IDockerContainer container = (IDockerContainer) element;
 			final EnumDockerStatus containerStatus = EnumDockerStatus.fromStatusMessage(container.status());
-			if(containerStatus == EnumDockerStatus.RUNNING) {
+			if (containerStatus == EnumDockerStatus.RUNNING
+					|| containerStatus == EnumDockerStatus.PAUSED) {
 				return true;
 			}
 			return false;
