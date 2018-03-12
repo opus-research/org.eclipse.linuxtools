@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.internal.docker.ui.views;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -54,10 +56,23 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 	private final Object[] EMPTY = new Object[0];
 
+	private Map<IDockerConnection, Job> openRetryJobs = new HashMap<>();
+
 	private TreeViewer viewer;
 
 	@Override
 	public void dispose() {
+		for (Job job : openRetryJobs.values()) {
+			LoadingJob loadingJob = (LoadingJob) job;
+			IProgressMonitor monitor = loadingJob.getMonitor();
+			monitor.setCanceled(true);
+			job.cancel();
+			try {
+				job.join();
+			} catch (InterruptedException e) {
+				// ignore
+			}
+		}
 	}
 
 	@Override
@@ -87,6 +102,15 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			} else if (connection
 					.getState() == EnumDockerConnectionState.UNKNOWN) {
 				open(connection);
+				return new Object[] { new LoadingStub(connection) };
+			} else if (connection
+					.getState() == EnumDockerConnectionState.CLOSED) {
+				synchronized (openRetryJobs) {
+					Job job = openRetryJobs.get(connection);
+					if (job == null) {
+						openRetry(connection);
+					}
+				}
 				return new Object[] { new LoadingStub(connection) };
 			}
 			return new Object[0];
@@ -193,6 +217,74 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 	}
 
 	/**
+	 * Call the {@link IDockerConnection#open(boolean)} in a background job to
+	 * continually retry opening the connection and avoid blocking the UI.
+	 * 
+	 * @param connection
+	 *            the connection to open/ping
+	 */
+	private void openRetry(final IDockerConnection connection) {
+		final Job openRetryJob = new LoadingJob(
+				DVMessages.getFormattedString("PingJob2.msg", //$NON-NLS-1$
+						connection.getName(), connection.getUri()),
+				connection) {
+			@Override
+			protected IStatus run(final IProgressMonitor monitor) {
+				setMonitor(monitor);
+				long totalSleep = 0;
+				long sleepTime = 3000; // 3 second default
+				for (;;) {
+					try {
+						// check if Connection is removed or cancelled
+						if (monitor.isCanceled() || DockerConnectionManager
+								.getInstance()
+								.getConnectionByUri(
+										connection.getUri()) == null) {
+							synchronized (openRetryJobs) {
+								openRetryJobs.remove(connection);
+							}
+							return Status.CANCEL_STATUS;
+						}
+						connection.open(true);
+						connection.ping();
+						synchronized (openRetryJobs) {
+							openRetryJobs.remove(connection);
+						}
+						return Status.OK_STATUS;
+					} catch (DockerException e) {
+						// ignore
+					}
+					try {
+						Thread.sleep(sleepTime);
+						totalSleep += sleepTime;
+						// if we have tried for over 5 minutes, switch to the
+						// container refresh rate which defaults to 15 seconds.
+						// This should slow down the interference of connections
+						// we never use.
+						if (totalSleep > 300000) {
+							totalSleep = 0; // prevent a future overflow
+							sleepTime = Platform.getPreferencesService()
+									.getLong("org.eclipse.linuxtools.docker.ui", //$NON-NLS-1$
+											"containerRefreshTime", 15000, //$NON-NLS-1$
+											null);
+						}
+					} catch (InterruptedException e) {
+						synchronized (openRetryJobs) {
+							openRetryJobs.remove(connection);
+						}
+						return Status.CANCEL_STATUS;
+					}
+				}
+			}
+		};
+		synchronized (openRetryJobs) {
+			openRetryJobs.put(connection, openRetryJob);
+		}
+		openRetryJob.setSystem(true);
+		openRetryJob.schedule();
+	}
+
+	/**
 	 * Call the {@link IDockerConnection#getContainers(boolean)} in a background
 	 * job to avoid blocking the UI.
 	 * 
@@ -263,11 +355,24 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 	@Override
 	public boolean hasChildren(final Object element) {
-		return ((element instanceof IDockerConnection
-				&& (((IDockerConnection) element)
-						.getState() == EnumDockerConnectionState.ESTABLISHED
-						|| ((IDockerConnection) element)
-								.getState() == EnumDockerConnectionState.UNKNOWN))
+		// We want to automate enabling a connection.
+		// If the connection is closed (meaning we tried to open
+		// and failed), then kick off a retry job.
+		// Don't start a retry job if one is already running.
+		if (element instanceof IDockerConnection) {
+			IDockerConnection connection = (IDockerConnection) element;
+			if (connection
+					.getState() != EnumDockerConnectionState.ESTABLISHED) {
+				Job openRetryJob = null;
+				synchronized (openRetryJobs) {
+					openRetryJob = openRetryJobs.get(connection);
+				}
+				if (openRetryJob == null) {
+					openRetry(connection);
+				}
+			}
+		}
+		return (element instanceof IDockerConnection
 				|| element instanceof DockerContainersCategory
 				|| element instanceof DockerImagesCategory
 				|| element instanceof IDockerContainer
@@ -880,6 +985,8 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 	private abstract class LoadingJob extends Job {
 
+		private IProgressMonitor monitor;
+
 		public LoadingJob(final String name, final Object target) {
 			super(name);
 			this.addJobChangeListener(new JobChangeAdapter() {
@@ -889,6 +996,14 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 					refreshTarget(target);
 				}
 			});
+		}
+
+		public IProgressMonitor getMonitor() {
+			return monitor;
+		}
+
+		public void setMonitor(IProgressMonitor monitor) {
+			this.monitor = monitor;
 		}
 
 		@Override
@@ -907,7 +1022,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			// this piece of code must run in an async manner to avoid reentrant
 			// call while viewer is busy.
 			Display.getDefault().asyncExec(() -> {
-				if (viewer != null) {
+				if (viewer != null && !viewer.getControl().isDisposed()) {
 					final TreePath[] treePaths = viewer.getExpandedTreePaths();
 					viewer.refresh(target, true);
 					viewer.setExpandedTreePaths(treePaths);

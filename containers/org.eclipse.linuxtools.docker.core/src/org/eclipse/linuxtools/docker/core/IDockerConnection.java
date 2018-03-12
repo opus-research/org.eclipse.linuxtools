@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014, 2017 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,7 @@ import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager
 import org.eclipse.linuxtools.internal.docker.core.TCPConnectionSettings;
 import org.eclipse.linuxtools.internal.docker.core.UnixSocketConnectionSettings;
 
-import com.spotify.docker.client.DockerCertificateException;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
 
 public interface IDockerConnection {
 
@@ -310,15 +310,6 @@ public interface IDockerConnection {
 	String buildImage(IPath path, String name, IDockerProgressHandler handler)
 			throws DockerException, InterruptedException;
 
-	@Deprecated
-	String createContainer(IDockerContainerConfig c)
-			throws DockerException, InterruptedException;
-
-	@Deprecated
-	String createContainer(final IDockerContainerConfig c,
-			final String containerName)
-			throws DockerException, InterruptedException;
-
 	String createContainer(IDockerContainerConfig c, IDockerHostConfig hc)
 			throws DockerException, InterruptedException;
 
@@ -337,14 +328,6 @@ public interface IDockerConnection {
 
 	void removeContainer(String id)
 			throws DockerException, InterruptedException;
-
-	@Deprecated
-	void startContainer(String id, IDockerHostConfig config,
-			OutputStream stream) throws DockerException, InterruptedException;
-
-	@Deprecated
-	void startContainer(String id, String loggingId, IDockerHostConfig config,
-			OutputStream stream) throws DockerException, InterruptedException;
 
 	void startContainer(String id, OutputStream stream)
 			throws DockerException, InterruptedException;
@@ -418,41 +401,5 @@ public interface IDockerConnection {
 	 *         <code>false</code> otherwise.
 	 */
 	boolean setSettings(IDockerConnectionSettings settings);
-
-	/**
-	 * Wait for a Container to finish.
-	 * 
-	 * @param id
-	 *            the container to wait for
-	 * @return {@link IDockerContainerExit class}
-	 * @throws DockerException
-	 *             in case of underlying problem (server error)
-	 * @throws InterruptedException
-	 *             if the thread was interrupted
-	 * @since 3.0
-	 */
-	public IDockerContainerExit waitForContainer(String id)
-			throws DockerException, InterruptedException;
-
-	/**
-	 * Attach output streams to the Container log.
-	 * 
-	 * @param id
-	 *            id of container
-	 * @param out
-	 *            stdout stream to write to
-	 * @param err
-	 *            stderr stream to write to
-	 * @throws DockerException
-	 *             in case of underlying problem (server error)
-	 * @throws InterruptedException
-	 *             if the thread was interrupted
-	 * @throws IOException
-	 *             if an I/O exception occurs during attach
-	 * @since 3.0
-	 */
-	public void attachLog(final String id, final OutputStream out,
-			final OutputStream err)
-			throws DockerException, InterruptedException, IOException;
 
 }
