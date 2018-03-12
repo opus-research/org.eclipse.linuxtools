@@ -59,7 +59,7 @@ public final class Messages extends NLS {
     // Xml machine interface failures
     public static String TraceControl_MiInvalidNumberOfElementError;
     public static String TraceControl_MiInvalidProviderError;
-    public static String TraceControl_MiMissingRequiredError;
+    public static String TraceControl_MiMissingRequieredError;
 
     // Commands
     public static String TraceControl_ErrorTitle;
