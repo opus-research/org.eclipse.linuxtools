@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
-import org.eclipse.linuxtools.tmf.core.synchronization.TimestampTransformFactory;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 
@@ -28,7 +27,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
  * @author Geneviève Bastien
  * @since 3.0
  */
-public class TmfTimestampTransformLinear implements ITmfTimestampTransformInvertible {
+public class TmfTimestampTransformLinear implements ITmfTimestampTransform {
 
     /**
      * Generated serial UID
@@ -107,7 +106,7 @@ public class TmfTimestampTransformLinear implements ITmfTimestampTransformInvert
             TmfTimestampTransformLinear ttl = (TmfTimestampTransformLinear) composeWith;
             BigDecimal newAlpha = fAlpha.multiply(ttl.fAlpha, fMc);
             BigDecimal newBeta = fAlpha.multiply(ttl.fBeta, fMc).add(fBeta);
-            return TimestampTransformFactory.createLinear(newAlpha, newBeta);
+            return new TmfTimestampTransformLinear(newAlpha, newBeta);
         } else {
             /*
              * We do not know what to do with this kind of transform, just
@@ -140,11 +139,6 @@ public class TmfTimestampTransformLinear implements ITmfTimestampTransformInvert
         return "TmfTimestampLinear [ slope = " + fAlpha.toString() + //$NON-NLS-1$
                 ", offset = " + fBeta.toString() + //$NON-NLS-1$
                 " ]"; //$NON-NLS-1$
-    }
-
-    @Override
-    public ITmfTimestampTransform inverse() {
-        return TimestampTransformFactory.createLinear(BigDecimal.ONE.divide(fAlpha, fMc), BigDecimal.valueOf(-1).multiply(fBeta).divide(fAlpha, fMc));
     }
 
 }
