@@ -467,16 +467,16 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 
 	@Override
 	public void changeEvent(int type) {
-		String currUri = null;
+		String currName = null;
 		int currIndex = 0;
 		IDockerConnection[] connections = DockerConnectionManager.getInstance()
 				.getConnections();
 		if (connection != null) {
-			currUri = connection.getUri();
+			currName = connection.getName();
 		}
 		int index = 0;
 		for (int i = 0; i < connections.length; ++i) {
-			if (connections[i].getUri().equals(currUri))
+			if (connections[i].getName().equals(currName))
 				index = i;
 		}
 		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {

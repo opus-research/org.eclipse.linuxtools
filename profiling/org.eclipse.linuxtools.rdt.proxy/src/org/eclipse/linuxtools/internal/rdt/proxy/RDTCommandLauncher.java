@@ -104,6 +104,9 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
     }
 
 
+    /**
+     * @see org.eclipse.cdt.core.IRemoteCommandLauncher#execute(IPath, String[], String[], IPath, IProgressMonitor)
+     */
     @Override
     public Process execute(IPath commandPath, String[] args, String[] env, IPath changeToDirectory, IProgressMonitor monitor, PTY pty) {
         try {

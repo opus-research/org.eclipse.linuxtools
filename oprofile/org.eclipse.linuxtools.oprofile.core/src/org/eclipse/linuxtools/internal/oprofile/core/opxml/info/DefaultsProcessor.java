@@ -28,6 +28,9 @@ public class DefaultsProcessor extends XMLProcessor {
     public static final String DUMP_STATUS = "dump-status"; //$NON-NLS-1$
     protected HashMap<String,String> map = new HashMap<>();
 
+    /**
+     * @see org.eclipse.linuxtools.internal.oprofile.core.XMLProcessor#reset()
+     */
     @Override
     public void reset(Object callData) {
         map.clear();

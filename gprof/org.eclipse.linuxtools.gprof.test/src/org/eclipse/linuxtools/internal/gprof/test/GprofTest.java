@@ -64,7 +64,7 @@ public class GprofTest {
                     break;
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException _) {
         }
 
         for (File testDir : STJunitUtils.getTestDirs()) {
