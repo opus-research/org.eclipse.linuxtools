@@ -141,6 +141,7 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 
             this.configUtils = new ConfigUtils(config);
             IProject project = configUtils.getProject();
+            ValgrindUIPlugin.getDefault().setProfiledProject(project);
             URI exeURI = new URI(configUtils.getExecutablePath());
             RemoteConnection exeRC = new RemoteConnection(exeURI);
             monitor.worked(1);
@@ -192,6 +193,7 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 
             // create/empty local output directory
             IValgrindOutputDirectoryProvider provider = getPlugin().getOutputDirectoryProvider();
+            setOutputPath(config, provider.getOutputPath());
             IPath localOutputDir = null;
             try {
                 localOutputDir = provider.getOutputPath();

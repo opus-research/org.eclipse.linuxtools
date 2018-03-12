@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -33,9 +32,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
- * Utility class for all {@link IHandler} command handlers
- * @author xcoulon
- *
+ * Utility class for all {@link org.eclipse.core.commands.IHandler} command
+ * handlers
+ * 
  */
 public class CommandUtils {
 
@@ -46,12 +45,9 @@ public class CommandUtils {
 	 *            - the {@link Viewer} to refresh
 	 */
 	public static void asyncRefresh(final Viewer viewer) {
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				if (viewer != null && !viewer.getControl().isDisposed()) {
-					viewer.refresh();
-				}
+		Display.getDefault().asyncExec(() -> {
+			if (viewer != null && !viewer.getControl().isDisposed()) {
+				viewer.refresh();
 			}
 		});
 	}

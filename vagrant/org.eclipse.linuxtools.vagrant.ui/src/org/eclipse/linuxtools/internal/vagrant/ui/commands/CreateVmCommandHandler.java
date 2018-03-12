@@ -59,10 +59,10 @@ public class CreateVmCommandHandler extends BaseBoxesCommandHandler {
 				if (line.contains("config.vm.box")) {
 					String defLine = line.replaceAll("config.vm.box = \".*\"", "config.vm.define :" + box.getName());
 					String boxLine = line.replaceAll("config.vm.box = \".*\"", "config.vm.box = \"" + box.getName() + "\"");
-					bcontent.append(defLine + "\n");
-					bcontent.append(boxLine + "\n");
+					bcontent.append(defLine + '\n');
+					bcontent.append(boxLine + '\n');
 				} else {
-					bcontent.append(line + "\n");
+					bcontent.append(line + '\n');
 				}
 			}
 
@@ -70,10 +70,10 @@ public class CreateVmCommandHandler extends BaseBoxesCommandHandler {
 		} catch (IOException e) {
 		}
 
-		Process p = connection.up(vagrantDir);
-		BufferedReader buff = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		Process p = connection.up(vagrantDir, box.getProvider());
 		String line;
-		try {
+		try (BufferedReader buff = new BufferedReader(
+				new InputStreamReader(p.getInputStream()))) {
 			while ((line = buff.readLine()) != null) {
 				if (monitor.isCanceled()) {
 					p.destroy();

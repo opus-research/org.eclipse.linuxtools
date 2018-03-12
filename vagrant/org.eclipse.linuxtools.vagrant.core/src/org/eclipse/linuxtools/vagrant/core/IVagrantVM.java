@@ -14,21 +14,23 @@ import java.io.File;
 
 public interface IVagrantVM {
 
-	public String id();
+	String id();
 
-	public String name();
+	String name();
 
-	public String provider();
+	String provider();
 
-	public String state();
+	String state();
 
-	public String state_desc();
+	String state_desc();
 
-	public File directory();
+	File directory();
 
-	public String ip();
+	String ip();
 
-	public String user();
+	String user();
 
-	public String identityFile();
+	int port();
+
+	String identityFile();
 }

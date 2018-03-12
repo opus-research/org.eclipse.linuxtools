@@ -27,8 +27,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public class AddBoxCommandHandler extends AbstractHandler {
 
-	private final static String PULL_IMAGE_JOB_TITLE = "ImagePull.title"; //$NON-NLS-1$
-	private final static String PULL_IMAGE_JOB_TASK = "ImagePull.msg"; //$NON-NLS-1$
+	private static final String PULL_IMAGE_JOB_TITLE = "ImagePull.title"; //$NON-NLS-1$
+	private static final String PULL_IMAGE_JOB_TASK = "ImagePull.msg"; //$NON-NLS-1$
 	private static final String ERROR_PULLING_IMAGE = "ImagePullError.msg"; //$NON-NLS-1$
 
 	@Override
@@ -57,19 +57,12 @@ public class AddBoxCommandHandler extends AbstractHandler {
 					connection.addBox(boxName, boxLoc);
 					connection.getBoxes(true);
 				} catch (final VagrantException e) {
-					Display.getDefault().syncExec(new Runnable() {
-
-						@Override
-						public void run() {
-							MessageDialog.openError(
+					Display.getDefault()
+							.syncExec(() -> MessageDialog.openError(
 									Display.getCurrent().getActiveShell(),
 									DVMessages.getFormattedString(
 											ERROR_PULLING_IMAGE, boxName),
-									e.getMessage());
-
-						}
-
-					});
+							e.getMessage()));
 					// for now
 				} catch (InterruptedException e) {
 					// do nothing
