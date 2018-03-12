@@ -16,8 +16,9 @@ package org.eclipse.linuxtools.internal.oprofile.launch.launching;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -231,12 +232,6 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
             eventsString = spec.toString();
 
             ArrayList<String> argArray = new ArrayList<>(Arrays.asList(appArgs));
-            // Use remote file proxy to determine data folder since the project may be either local or remote
-            IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(OprofileProject.getProject());
-            IFileStore dataFolder = proxy.getResource(oprofileWorkingDirURI(config).getPath() + IPath.SEPARATOR + OPROFILE_DATA);
-            if(! dataFolder.fetchInfo().exists()) {
-                dataFolder.mkdir(EFS.SHALLOW, null);
-            }
             argArray.add(0, exePath.toOSString());
             if (events.size()>0) {
                 argArray.add(0,eventsString);
@@ -244,55 +239,50 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
             argArray.add(0, OUTPUT_FILE + oprofileWorkingDirURI(config).getPath() + IPath.SEPARATOR + OCOUNT_DATA);
             argArray.add(0, OprofileProject.OCOUNT_BINARY);
 
-            boolean appended = false;
-            for(int i = 0; i < options.getExecutionsNumber(); i++){
-                /*
-                 * If profiling multiple times,
-                 * append oprofile results from 2nd execution on.
-                 */
-                if (!appended && i!=0) {
-                    argArray.add(1, APPEND);
-                    appended = true;
-                }
-                String[] arguments = new String[argArray.size()];
-                arguments = argArray.toArray(arguments);
-                try {
-                    process = RuntimeProcessFactory.getFactory().exec(arguments, OprofileProject.getProject());
-                } catch (IOException e1) {
-                    process.destroy();
-                    Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
-                    throw new CoreException(status);
-                }
-                DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
-                try{
-                	process.waitFor();
-                	
-                	// Put the OCount data in a separate view
-                	StringBuffer buffer = new StringBuffer();
+            String[] arguments = new String[argArray.size()];
+            arguments = argArray.toArray(arguments);
+            try {
+                process = RuntimeProcessFactory.getFactory().exec(arguments, OprofileProject.getProject());
+            } catch (IOException e1) {
+                process.destroy();
+                Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
+                throw new CoreException(status);
+            }
+            DebugPlugin.newProcess( launch, process, renderProcessLabel( exePath.toOSString() ) );
+            try{
+                process.waitFor();
 
-                	try (BufferedReader reader = new BufferedReader(
-                			new FileReader(oprofileWorkingDirURI(config).getPath() + IPath.SEPARATOR + OCOUNT_DATA))) {
-                		String s = reader.readLine();
-                		String sep_char = ""; //$NON-NLS-1$
-                		while (s != null) {
-                			buffer.append(s);
-                			buffer.append(sep_char);
-                			sep_char = "\n"; //$NON-NLS-1$
-                			s = reader.readLine();
-                		}
-                		
-                		// Open the OCount View and display output from ocount
-                		final String text = buffer.toString();
-                       	Display.getDefault().syncExec(() -> refreshOcountView(text));
-                	} catch (IOException e) {
-                		// TODO Auto-generated catch block
-                		e.printStackTrace();
-                	}
-                } catch (InterruptedException e){
-                    process.destroy();
-                    Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
-                    throw new CoreException(status);
+                // Put the OCount data in a separate view
+                StringBuffer buffer = new StringBuffer();
+                // Use remote file proxy to operate resources since the project may be either local or remote
+                IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(OprofileProject.getProject());
+
+                IFileStore ocountDataStore = proxy.getResource(oprofileWorkingDirURI(config).getPath() +
+                        IPath.SEPARATOR + OCOUNT_DATA);
+                try (
+                    InputStream is = ocountDataStore.openInputStream(EFS.NONE, monitor);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is))
+                ) {
+                    String s = reader.readLine();
+                    String sep_char = ""; //$NON-NLS-1$
+                    while (s != null) {
+                        buffer.append(s);
+                        buffer.append(sep_char);
+                        sep_char = "\n"; //$NON-NLS-1$
+                        s = reader.readLine();
+                    }
+
+                    // Open the OCount View and display output from ocount
+                    final String text = buffer.toString();
+                    Display.getDefault().syncExec(() -> refreshOcountView(text));
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
+            } catch (InterruptedException e){
+                process.destroy();
+                Status status = new Status(IStatus.ERROR, OprofileLaunchPlugin.PLUGIN_ID, OprofileLaunchMessages.getString("oprofilelaunch.error.interrupted_error.status_message")); //$NON-NLS-1$
+                throw new CoreException(status);
             }
             return;
         }
@@ -330,17 +320,17 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
     // if it isn't already.
     protected void refreshOcountView(String text) {
         OcountView view = OprofileUiPlugin.getDefault().getOcountView();
-        if (view != null) {
-            view.setText(text);
-        } else {
+        if (view == null) {
             try {
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(OprofileUiPlugin.ID_OCOUNT_VIEW);
-      
             } catch (PartInitException e2) {
                 e2.printStackTrace();
+                return;
             }
-            OprofileUiPlugin.getDefault().getOcountView().setText(text);
+            view = OprofileUiPlugin.getDefault().getOcountView();
         }
+        view.setText(text);
+        view.refreshView();
     }
 
     /* all these functions exist to be overridden by the test class in order to allow launch testing */
