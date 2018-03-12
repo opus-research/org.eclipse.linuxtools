@@ -188,5 +188,4 @@ public abstract class TmfStateValue implements ITmfStateValue {
     public String unboxStr() {
         throw new StateValueTypeException(unboxErrMsg("String")); //$NON-NLS-1$
     }
-
 }
