@@ -25,7 +25,7 @@ public class DockerPortBinding implements IDockerPortBinding {
 	}
 
 	public DockerPortBinding(final String hostIp, final String hostPort) {
-		this.hostIp = (hostIp != null && !hostIp.isEmpty()) ? hostIp : null;
+		this.hostIp = hostIp;
 		this.hostPort = hostPort;
 	}
 
