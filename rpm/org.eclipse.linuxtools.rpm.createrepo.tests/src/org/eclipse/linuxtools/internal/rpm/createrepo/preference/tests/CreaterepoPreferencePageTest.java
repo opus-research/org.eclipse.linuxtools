@@ -231,7 +231,6 @@ public class CreaterepoPreferencePageTest {
         bot.menu(ICreaterepoTestConstants.WINDOW).menu(ICreaterepoTestConstants.PREFERENCES).click();
         SWTBotShell shell = bot.shell(ICreaterepoTestConstants.PREFERENCES);
         shell.activate();
-        bot.tree().expandNode(ICreaterepoTestConstants.CREATEREPO_PROJECT_CATEGORY);
         bot.tree().select(ICreaterepoTestConstants.CREATEREPO_CATEGORY);
     }
 
