@@ -785,8 +785,8 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(connectionNameModelObservable);
 			return targets;
 		}
@@ -820,8 +820,8 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(unixSocketPathModelObservable);
 			return targets;
 		}
@@ -886,8 +886,8 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(tcpHostModelObservable);
 			return targets;
 		}
@@ -949,8 +949,8 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(tcpCertPathModelObservable);
 			return targets;
 		}
