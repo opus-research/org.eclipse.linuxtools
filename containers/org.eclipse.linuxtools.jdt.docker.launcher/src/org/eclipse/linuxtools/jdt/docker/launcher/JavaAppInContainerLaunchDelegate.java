@@ -20,7 +20,6 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.ExecutionArguments;
-import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.osgi.util.NLS;
@@ -46,10 +45,7 @@ public class JavaAppInContainerLaunchDelegate extends AbstractJavaLaunchConfigur
 			monitor.subTask("Verifying launch attributes...");
 
 			String mainTypeName = verifyMainTypeName(configuration);
-			//TODO: Do this properly by registering our own VM Runner
-			// IVMRunner runner = getVMRunner(configuration, mode);
-			IVMInstall vm = verifyVMInstall(configuration);
-			ContainerVMRunner runner = new ContainerVMRunner(vm);
+			IVMRunner runner = getVMRunner(configuration, mode);
 
 			File workingDir = verifyWorkingDirectory(configuration);
 			String workingDirName = null;
