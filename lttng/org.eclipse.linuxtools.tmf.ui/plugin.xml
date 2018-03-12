@@ -458,30 +458,7 @@
                mnemonic="%command.copy.mnemonic"
                style="push">
             <visibleWhen
-                  checkEnabled="false">
-               <and>
-                  <with
-                        variable="activePart">
-                     <instanceof
-                           value="org.eclipse.ui.navigator.CommonNavigator">
-                     </instanceof>
-                  </with>
-                  <count
-                        value="1">
-                  </count>
-                  <iterate
-                        ifEmpty="false"
-                        operator="and">
-                     <or>
-                        <instanceof
-                              value="org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement">
-                        </instanceof>
-                        <instanceof
-                              value="org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement">
-                        </instanceof>
-                     </or>
-                  </iterate>
-               </and>
+                  checkEnabled="true">
             </visibleWhen>
          </command>
          <command
@@ -1006,7 +983,7 @@
             allPopups="false"
             locationURI="popup:org.eclipse.linuxtools.tmf.ui.views.filter?after=edit">
          <command
-               commandId="org.eclipse.ui.edit.paste"
+               commandId="org.eclipse.ui.edit.cut"
                style="push">
          </command>
       </menuContribution>
@@ -1022,7 +999,7 @@
             allPopups="false"
             locationURI="popup:org.eclipse.linuxtools.tmf.ui.views.filter?after=edit">
          <command
-               commandId="org.eclipse.ui.edit.cut"
+               commandId="org.eclipse.ui.edit.paste"
                style="push">
          </command>
       </menuContribution>
