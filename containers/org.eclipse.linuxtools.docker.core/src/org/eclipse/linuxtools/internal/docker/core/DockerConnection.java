@@ -163,6 +163,9 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	// private Set<String> printIds = new HashSet<String>();
 
+	// flag to indicate if the connection to the Docker daemon is active
+	private boolean active = false;
+
 	private List<IDockerContainer> containers;
 	private boolean containersLoaded = false;
 	private List<IDockerImage> images;
@@ -518,32 +521,44 @@ public class DockerConnection implements IDockerConnection, Closeable {
 						return dclist;
 					list = client.listContainers(
 							DockerClient.ListContainersParam.allContainers());
+					// confirm that the connection is (still) active.
+					this.active = true;
 				}
 			} catch (com.spotify.docker.client.DockerException
 					| InterruptedException e) {
-				throw new DockerException(
-						NLS.bind(
-						Messages.List_Docker_Containers_Failure,
-						this.getName()), e);
+				// log once if it was active before
+				if (active) {
+					this.active = false;
+					throw new DockerException(
+							NLS.bind(Messages.List_Docker_Containers_Failure,
+									this.getName()),
+							e);
+				}
 			}
 
 			// We have a list of containers. Now, we translate them to our own
 			// core format in case we decide to change the underlying engine
 			// in the future.
-			for (Container c : list) {
-				// For containers that have exited, make sure we aren't tracking
-				// them with a logging thread.
-				if (c.status().startsWith(Messages.Exited_specifier)) {
-					if (loggingThreads.containsKey(c.id())) {
-						loggingThreads.get(c.id()).requestStop();
-						loggingThreads.remove(c.id());
+			if (list != null) {
+				for (Container c : list) {
+					// For containers that have exited, make sure we aren't
+					// tracking
+					// them with a logging thread.
+					if (c.status().startsWith(Messages.Exited_specifier)) {
+						if (loggingThreads.containsKey(c.id())) {
+							loggingThreads.get(c.id()).requestStop();
+							loggingThreads.remove(c.id());
+						}
+					}
+					if (!c.status()
+							.equals(Messages.Removal_In_Progress_specifier)) {
+						dclist.add(new DockerContainer(this, c));
 					}
 				}
-				if (!c.status().equals(Messages.Removal_In_Progress_specifier)) {
-					dclist.add(new DockerContainer(this, c));
-				}
+				containers = dclist;
+			} else {
+				containers = Collections.emptyList();
 			}
-			containers = dclist;
 		}
 		// perform notification outside of containerLock so we don't have a View
 		// causing a deadlock
