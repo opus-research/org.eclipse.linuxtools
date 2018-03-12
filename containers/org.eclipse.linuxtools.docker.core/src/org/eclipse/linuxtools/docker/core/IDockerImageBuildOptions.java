@@ -18,21 +18,21 @@ package org.eclipse.linuxtools.docker.core;
 public interface IDockerImageBuildOptions {
 
 	/** name of the connection to use to build the Image. */
-	String DOCKER_CONNECTION = "dockerConnection"; //$NON-NLS-1$
+	public final static String DOCKER_CONNECTION = "dockerConnection"; //$NON-NLS-1$
 
 	/** repo and optionally tag of Image to build. */
-	String REPO_NAME = "repoName"; //$NON-NLS-1$
+	public final static String REPO_NAME = "repoName"; //$NON-NLS-1$
 
 	/** quiet build option. */
-	String QUIET_BUILD = "quietBuild"; //$NON-NLS-1$
+	public static final String QUIET_BUILD = "quietBuild"; //$NON-NLS-1$
 
 	/** no cache option. */
-	String NO_CACHE = "noCache"; //$NON-NLS-1$
+	public static final String NO_CACHE = "noCache"; //$NON-NLS-1$
 
 	/** remove intermediate containers option on successful build. */
-	String RM_INTERMEDIATE_CONTAINERS = "rm"; //$NON-NLS-1$
+	public static final String RM_INTERMEDIATE_CONTAINERS = "rm"; //$NON-NLS-1$
 
 	/** always remove intermediate containers option. */
-	String FORCE_RM_INTERMEDIATE_CONTAINERS = "forcerm"; //$NON-NLS-1$
+	public static final String FORCE_RM_INTERMEDIATE_CONTAINERS = "forcerm"; //$NON-NLS-1$
 
 }

@@ -12,14 +12,42 @@ package org.eclipse.linuxtools.docker.core;
 
 import java.util.Map;
 
+/**
+ * Docker Network Configuration
+ * 
+ * Needed to create a Docker Network
+ * 
+ * @author jjohnstn
+ *
+ */
 public interface IDockerNetworkConfig {
 
-	String name();
+	/**
+	 * Get name of network
+	 * 
+	 * @return name of network
+	 */
+	public String name();
 
-	String driver();
+	/**
+	 * Get network driver
+	 * 
+	 * @return network driver
+	 */
+	public String driver();
 
-	IDockerIpam ipam();
+	/**
+	 * Get IP address management info
+	 * 
+	 * @return ip address management info
+	 */
+	public IDockerIpam ipam();
 
-	Map<String, String> options();
+	/**
+	 * Get network options
+	 * 
+	 * @return Map of option names to option values
+	 */
+	public Map<String, String> options();
 
 }

@@ -10,14 +10,42 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
+/**
+ * Docker Authorization Config
+ * 
+ * Used to authorize actions for a registry
+ * 
+ * @author jjohnstn
+ *
+ */
 public interface IDockerAuthConfig {
 
-	char[] username();
+	/**
+	 * Get username
+	 * 
+	 * @return user name
+	 */
+	public char[] username();
 
-	char[] password();
+	/**
+	 * Get password
+	 * 
+	 * @return password
+	 */
+	public char[] password();
 
-	char[] email();
+	/**
+	 * Get email
+	 * 
+	 * @return email
+	 */
+	public char[] email();
 
-	char[] serverAddress();
+	/**
+	 * Get server address
+	 * 
+	 * @return server address
+	 */
+	public char[] serverAddress();
 
 }

@@ -10,16 +10,57 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
+/**
+ * IP Address Management Configuration
+ * 
+ * Used to create a docker client IPAM
+ * 
+ * @author jjohnstn
+ *
+ */
 public interface IDockerIpamConfig {
-	String subnet();
+	/**
+	 * Get subnet
+	 * 
+	 * @return String containing subnet
+	 */
+	public String subnet();
 
-	void subnet(final String subnet);
+	/**
+	 * Set subnet
+	 * 
+	 * @param subnet
+	 *            subnet string
+	 */
+	public void subnet(final String subnet);
 
-	String ipRange();
+	/**
+	 * Get ip range
+	 * 
+	 * @return String containing ip range
+	 */
+	public String ipRange();
 
-	void ipRange(final String ipRange);
+	/**
+	 * Set ip range
+	 * 
+	 * @param ipRange
+	 *            ip range string
+	 */
+	public void ipRange(final String ipRange);
 
-	String gateway();
+	/**
+	 * Get gateway
+	 * 
+	 * @return String containing gateway
+	 */
+	public String gateway();
 
-	void gateway(final String gateway);
+	/**
+	 * Set gateway
+	 * 
+	 * @param gateway
+	 *            string containing gateway
+	 */
+	public void gateway(final String gateway);
 }
