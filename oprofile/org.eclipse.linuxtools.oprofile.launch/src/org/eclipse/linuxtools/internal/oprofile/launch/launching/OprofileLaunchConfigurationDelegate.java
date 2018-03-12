@@ -36,12 +36,12 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
             // was chosen for the project
             Oprofile.OprofileProject.setProject(project);
 
-            if (!oprofileStatus()) {
-                OprofileCorePlugin.showErrorDialog("opcontrolProvider", null); //$NON-NLS-1$
-                return false;
-            }
-
             if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPCONTROL_BINARY)) {
+                if (!oprofileStatus()) {
+                    OprofileCorePlugin.showErrorDialog("opcontrolProvider", null); //$NON-NLS-1$
+                    return false;
+                }
+
                 //check if user has NOPASSWD sudo permission for opcontrol
                 //if the Linux Tools Path property was changed
                 if(!LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project).isEmpty()){
@@ -109,12 +109,14 @@ public class OprofileLaunchConfigurationDelegate extends AbstractOprofileLaunchC
 
                         //need to run this in the ui thread otherwise get SWT Exceptions
                         // based on concurrency issues
-                        Display.getDefault().syncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                refreshOprofileView();
-                            }
-                        });
+                        if (!OprofileProject.getProfilingBinary().equals(OprofileProject.OCOUNT_BINARY)) {
+                        	Display.getDefault().syncExec(new Runnable() {
+                        		@Override
+                        		public void run() {
+                        			refreshOprofileView();
+                        		}
+                        	});
+                        }
                     }
                 }
             } catch (OpcontrolException oe) {
