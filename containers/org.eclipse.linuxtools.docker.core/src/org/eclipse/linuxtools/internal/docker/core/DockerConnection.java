@@ -18,7 +18,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -120,7 +119,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 
 		public Builder tcpHost(String tcpHost) {
-			if (tcpHost != null && !tcpHost.isEmpty()) {
+			if (tcpHost != null) {
 				if (!tcpHost.matches("\\w+://.*")) { //$NON-NLS-1$
 					tcpHost = "tcp://" + tcpHost; //$NON-NLS-1$
 				}
@@ -281,8 +280,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void ping() throws DockerException {
 		try {
-			if (this.client != null) {
-				this.client.ping();
+			if (client != null) {
+				client.ping();
 			} else {
 				throw new DockerException(Messages.Docker_Daemon_Ping_Failure);
 			}
@@ -295,7 +294,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void close() {
 		synchronized (clientLock) {
-			if (this.client != null) {
+			if (client != null) {
 				this.client.close();
 				this.client = null;
 			}
@@ -378,20 +377,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 						list);
 			}
 		}
-	}
-
-	/**
-	 * @return an fixed-size list of all {@link IDockerContainerListener}
-	 */
-	// TODO: include in IDockerConnection API
-	public List<IDockerContainerListener> getContainerListeners() {
-		final IDockerContainerListener[] result = new IDockerContainerListener[this.containerListeners
-				.size()];
-		final Object[] listeners = containerListeners.getListeners();
-		for (int i = 0; i < listeners.length; i++) {
-			result[i] = (IDockerContainerListener) listeners[i];
-		}
-		return Arrays.asList(result);
 	}
 
 	public Job getActionJob(String id) {
@@ -693,20 +678,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				((IDockerImageListener) listeners[i]).listChanged(this, list);
 			}
 		}
-	}
-
-	/**
-	 * @return an fixed-size list of all {@link IDockerImageListener}
-	 */
-	// TODO: include in IDockerConnection API
-	public List<IDockerImageListener> getImageListeners() {
-		final IDockerImageListener[] result = new IDockerImageListener[this.imageListeners
-				.size()];
-		final Object[] listeners = imageListeners.getListeners();
-		for (int i = 0; i < listeners.length; i++) {
-			result[i] = (IDockerImageListener) listeners[i];
-		}
-		return Arrays.asList(result);
 	}
 
 	@Override

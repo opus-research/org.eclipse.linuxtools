@@ -12,10 +12,8 @@
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -108,27 +106,8 @@ public class DockerExplorerView extends CommonNavigator implements
 
 	@Override
 	public void dispose() {
-		// remove all ContainersRefresher instance registered on the Docker
-		// connections
-		for (Iterator<Entry<IDockerConnection, ContainersRefresher>> iterator = containersRefreshers
-				.entrySet().iterator(); iterator.hasNext();) {
-			final Entry<IDockerConnection, ContainersRefresher> entry = iterator
-					.next();
-			entry.getKey().removeContainerListener(entry.getValue());
-			iterator.remove();
-		}
-		// remove all ImagesRefresher instance registered on the Docker
-		// connections
-		for (Iterator<Entry<IDockerConnection, ImagesRefresher>> iterator = imagesRefreshers
-				.entrySet().iterator(); iterator.hasNext();) {
-			final Entry<IDockerConnection, ImagesRefresher> entry = iterator
-					.next();
-			entry.getKey().removeImageListener(entry.getValue());
-			iterator.remove();
-		}
 		DockerConnectionManager.getInstance().removeConnectionManagerListener(
 				this);
-
 		super.dispose();
 	}
 
@@ -347,9 +326,7 @@ public class DockerExplorerView extends CommonNavigator implements
 
 			@Override
 			public void run() {
-				if (getCommonViewer().getTree() != null
-						&& !getCommonViewer().getTree().isDisposed())
-					getCommonViewer().refresh(connection, true);
+				getCommonViewer().refresh(connection, true);
 			}
 		});
 	}
