@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,6 +9,7 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
+ *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -30,12 +32,9 @@ import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.IRemoteSys
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.RemoteSystemProxy;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.service.ILttngControlService;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.service.LTTngControlServiceFactory;
-import org.eclipse.rse.core.RSECorePlugin;
-import org.eclipse.rse.core.model.IHost;
-import org.eclipse.rse.core.model.IRSECallback;
-import org.eclipse.rse.core.model.ISystemRegistry;
-import org.eclipse.rse.core.subsystems.CommunicationsEvent;
-import org.eclipse.rse.core.subsystems.ICommunicationsListener;
+import org.eclipse.remote.core.IRemoteConnection;
+import org.eclipse.remote.core.IRemoteConnectionChangeEvent;
+import org.eclipse.remote.core.IRemoteConnectionChangeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -48,7 +47,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
  *
  * @author Bernd Hufmann
  */
-public class TargetNodeComponent extends TraceControlComponent implements ICommunicationsListener {
+public class TargetNodeComponent extends TraceControlComponent implements IRemoteConnectionChangeListener {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -78,19 +77,19 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     /**
      * The connection implementation.
      */
-    private IHost fHost = null;
+    private IRemoteConnection fHost = null;
     /**
      * The remote proxy implementation.
      */
     private IRemoteSystemProxy fRemoteProxy = null;
     /**
+     * Whether the listener on the remote proxy has been registerd.
+     */
+    private boolean fListening;
+    /**
      * The control service for LTTng specific commands.
      */
     private ILttngControlService fService = null;
-    /**
-     * The command shell for issuing commands.
-     */
-    private ICommandShell fShell = null;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -103,13 +102,13 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      * @param host - the host connection implementation
      * @param proxy - the remote proxy implementation
      */
-    public TargetNodeComponent(String name, ITraceControlComponent parent, IHost host, IRemoteSystemProxy proxy) {
+    public TargetNodeComponent(String name, ITraceControlComponent parent, IRemoteConnection host, IRemoteSystemProxy proxy) {
         super(name, parent);
         setImage(TARGET_NODE_CONNECTED_ICON_FILE);
         fDisconnectedImage = Activator.getDefault().loadIcon(TARGET_NODE_DISCONNECTED_ICON_FILE);
         fHost = host;
         fRemoteProxy = proxy;
-        setToolTip(fHost.getHostName());
+        setToolTip(fHost.getName());
     }
 
     /**
@@ -118,7 +117,7 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      * @param parent - the parent of the component
      * @param host - the host connection implementation
      */
-    public TargetNodeComponent(String name, ITraceControlComponent parent, IHost host) {
+    public TargetNodeComponent(String name, ITraceControlComponent parent, IRemoteConnection host) {
         this(name, parent, host, new RemoteSystemProxy(host));
     }
 
@@ -164,10 +163,10 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     }
 
     /**
-     * @return remote host name
+     * @return the remote connection associated with this node
      */
-    public String getHostName() {
-        return fHost.getHostName();
+    public IRemoteConnection getRemoteConnection() {
+        return fHost;
     }
 
     /**
@@ -175,21 +174,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      */
     public IRemoteSystemProxy getRemoteSystemProxy() {
         return fRemoteProxy;
-    }
-
-    /**
-     * @return port of IP connection (shell) to be used
-     */
-    public int getPort() {
-        return fRemoteProxy.getPort();
-    }
-
-    /**
-     * Sets the port of the IP connections of the shell
-     * @param port - the IP port to set
-     */
-    public void setPort(int port) {
-        fRemoteProxy.setPort(port);
     }
 
     /**
@@ -285,54 +269,61 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     // Operations
     // ------------------------------------------------------------------------
 
-   @Override
-   public void communicationsStateChange(CommunicationsEvent e) {
-       if (e.getState() == CommunicationsEvent.AFTER_DISCONNECT ||
-               e.getState() == CommunicationsEvent.CONNECTION_ERROR) {
-           handleDisconnected();
-       } if ((e.getState() == CommunicationsEvent.AFTER_CONNECT) && (fState != TargetNodeState.CONNECTING)) {
-           handleConnected();
-       }
-   }
+    @Override
+    public void connectionChanged(IRemoteConnectionChangeEvent e) {
+        if (fState == TargetNodeState.CONNECTING) {
+            return;
+        }
 
-   @Override
-   public boolean isPassiveCommunicationsListener() {
-       return true;
-   }
-
-   @Override
-   public void dispose() {
-       fRemoteProxy.removeCommunicationListener(this);
-   }
-
-   /**
-    * Method to connect this node component to the remote target node.
-    */
-   public void connect() {
-       if (fState == TargetNodeState.DISCONNECTED) {
-           try {
-               setTargetNodeState(TargetNodeState.CONNECTING);
-               fRemoteProxy.connect(new IRSECallback() {
-                   @Override
-                   public void done(IStatus status, Object result) {
-                       // Note: result might be null!
-                       if(status.isOK()) {
-                           handleConnected();
-                       } else {
-                           handleDisconnected();
-                       }
-                   }
-               });
-           } catch (Exception e) {
-               setTargetNodeState(TargetNodeState.DISCONNECTED);
-               Activator.getDefault().logError(Messages.TraceControl_ConnectionFailure + " (" + getName() + "). \n", e); //$NON-NLS-1$ //$NON-NLS-2$
-           }
-       }
+        switch (e.getType()) {
+        case IRemoteConnectionChangeEvent.CONNECTION_CLOSED:
+        case IRemoteConnectionChangeEvent.CONNECTION_ABORTED:
+            handleDisconnected();
+            break;
+        case IRemoteConnectionChangeEvent.CONNECTION_OPENED:
+            handleConnected();
+            break;
+        default:
+            break;
+        }
     }
 
-   /**
-    * Method to disconnect this node component to the remote target node.
-    */
+    @Override
+    public void dispose() {
+        fRemoteProxy.removeConnectionChangeListener(this);
+        fListening= false;
+    }
+
+    /**
+     * Method to connect this node component to the remote target node.
+     */
+    public void connect() {
+        if (fState == TargetNodeState.DISCONNECTED) {
+            try {
+                setTargetNodeState(TargetNodeState.CONNECTING);
+                Thread th= new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            fRemoteProxy.connect(new NullProgressMonitor());
+                            handleConnected();
+                        } catch (Exception e) {
+                            Activator.getDefault().logError(Messages.TraceControl_ConnectionFailure + " (" + getName() + "). \n", e); //$NON-NLS-1$ //$NON-NLS-2$
+                            handleDisconnected();
+                        }
+                    }
+                };
+                th.start();
+            } catch (Exception e) {
+                setTargetNodeState(TargetNodeState.DISCONNECTED);
+                Activator.getDefault().logError(Messages.TraceControl_ConnectionFailure + " (" + getName() + "). \n", e); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        }
+    }
+
+    /**
+     * Method to disconnect this node component to the remote target node.
+     */
     public void disconnect() {
         if (fState == TargetNodeState.CONNECTED) {
             try {
@@ -389,12 +380,7 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      * Deregisters host from registry.
      */
     public void deregister() {
-        ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
-        // Don't remove local host because it cannot be recreated by
-        // LTTng NewConnection Dialog
-        if (!fRemoteProxy.isLocal()) {
-            registry.deleteHost(fHost);
-        }
+        fRemoteProxy.dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -406,11 +392,14 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      * @throws ExecutionException
      */
     private ILttngControlService createControlService() throws ExecutionException {
-        if (fShell == null) {
-            fShell = fRemoteProxy.createCommandShell();
-            fRemoteProxy.addCommunicationListener(this);
+        if (fService == null) {
+            ICommandShell shell = fRemoteProxy.createCommandShell();
+            fService = LTTngControlServiceFactory.getInstance().getLttngControlService(shell);
+            if (!fListening) {
+                fRemoteProxy.addConnectionChangeListener(this);
+                fListening= true;
+            }
         }
-        fService = LTTngControlServiceFactory.getInstance().getLttngControlService(fShell);
         return fService;
     }
 
@@ -418,13 +407,16 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
      * Handles the connected event.
      */
     private void handleConnected() {
-        setTargetNodeState(TargetNodeState.CONNECTED);
         try {
             createControlService();
             getConfigurationFromNode();
+            // Set connected only after the control service has been created and the jobs for creating the
+            // sub-nodes are scheduled.
+            setTargetNodeState(TargetNodeState.CONNECTED);
         } catch (final ExecutionException e) {
             // Disconnect only if no control service, otherwise stay connected.
             if (getControlService() == null) {
+                fState = TargetNodeState.CONNECTED;
                 disconnect();
             }
 
@@ -449,7 +441,6 @@ public class TargetNodeComponent extends TraceControlComponent implements ICommu
     private void handleDisconnected() {
         removeAllChildren();
         setTargetNodeState(TargetNodeState.DISCONNECTED);
-        fShell = null;
         fService = null;
     }
 }
