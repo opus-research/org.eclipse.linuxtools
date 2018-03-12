@@ -38,8 +38,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 	private final List<String> dnsSearch;
 	private final List<String> volumesFrom;
 	private final String networkMode;
-	private final Long memory;
-	private final Long cpuShares;
 
 	public DockerHostConfig(final HostConfig hostConfig) {
 		this.binds = hostConfig.binds();
@@ -69,8 +67,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 		this.dnsSearch = hostConfig.dnsSearch();
 		this.volumesFrom = hostConfig.volumesFrom();
 		this.networkMode = hostConfig.networkMode();
-		this.memory = hostConfig.memory();
-		this.cpuShares = hostConfig.cpuShares();
 	}
 
 	private DockerHostConfig(final Builder builder) {
@@ -87,9 +83,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 		this.dnsSearch = builder.dnsSearch;
 		this.volumesFrom = builder.volumesFrom;
 		this.networkMode = builder.networkMode;
-		this.memory = builder.memory;
-		this.cpuShares = builder.cpuShares;
-
 	}
 
 	@Override
@@ -147,14 +140,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 		return networkMode;
 	}
 
-	public Long memory() {
-		return memory;
-	}
-
-	public Long cpuShares() {
-		return cpuShares;
-	}
-
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -172,8 +157,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 		private List<String> dnsSearch;
 		private List<String> volumesFrom;
 		private String networkMode;
-		private Long memory;
-		private Long cpuShares;
+
 
 		public Builder binds(final List<String> binds) {
 			this.binds = new ArrayList<>(binds);
@@ -194,6 +178,10 @@ public class DockerHostConfig implements IDockerHostConfig {
 			return this;
 		}
 
+		public String containerIDFile() {
+			return containerIDFile;
+		}
+
 		public Builder lxcConf(final List<IDockerConfParameter> lxcConf) {
 			this.lxcConf = new ArrayList<>(lxcConf);
 			return this;
@@ -204,15 +192,27 @@ public class DockerHostConfig implements IDockerHostConfig {
 			return this;
 		}
 
+		public List<IDockerConfParameter> lxcConf() {
+			return lxcConf;
+		}
+
 		public Builder privileged(final Boolean privileged) {
 			this.privileged = privileged;
 			return this;
+		}
+
+		public Boolean privileged() {
+			return privileged;
 		}
 
 		public Builder portBindings(
 				final Map<String, List<IDockerPortBinding>> portBindings) {
 			this.portBindings = portBindings;
 			return this;
+		}
+
+		public Map<String, List<IDockerPortBinding>> portBindings() {
+			return portBindings;
 		}
 
 		public Builder links(final List<String> links) {
@@ -225,9 +225,17 @@ public class DockerHostConfig implements IDockerHostConfig {
 			return this;
 		}
 
+		public List<String> links() {
+			return links;
+		}
+
 		public Builder publishAllPorts(final Boolean publishAllPorts) {
 			this.publishAllPorts = publishAllPorts;
 			return this;
+		}
+
+		public Boolean publishAllPorts() {
+			return publishAllPorts;
 		}
 
 		public Builder dns(final List<String> dns) {
@@ -240,6 +248,10 @@ public class DockerHostConfig implements IDockerHostConfig {
 			return this;
 		}
 
+		public List<String> dns() {
+			return dns;
+		}
+
 		public Builder dnsSearch(final List<String> dnsSearch) {
 			this.dnsSearch = new ArrayList<>(dnsSearch);
 			return this;
@@ -248,6 +260,10 @@ public class DockerHostConfig implements IDockerHostConfig {
 		public Builder dnsSearch(final String... dnsSearch) {
 			this.dnsSearch = Arrays.asList(dnsSearch);
 			return this;
+		}
+
+		public List<String> dnsSearch() {
+			return dnsSearch;
 		}
 
 		public Builder volumesFrom(final List<String> volumesFrom) {
@@ -260,19 +276,17 @@ public class DockerHostConfig implements IDockerHostConfig {
 			return this;
 		}
 
+		public List<String> volumesFrom() {
+			return volumesFrom;
+		}
+
 		public Builder networkMode(final String networkMode) {
 			this.networkMode = networkMode;
 			return this;
 		}
 
-		public Builder memory(final Long memory) {
-			this.memory = memory;
-			return this;
-		}
-		
-		public Builder cpuShares(final Long cpuShares) {
-			this.cpuShares = cpuShares;
-			return this;
+		public String networkMode() {
+			return networkMode;
 		}
 
 		public IDockerHostConfig build() {
