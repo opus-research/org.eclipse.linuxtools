@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
@@ -132,8 +131,8 @@ public class DockerExplorerViewSWTBotTest {
 
 	@Test
 	public void shouldDisplayExplanationPane() {
-		// when
-		ClearConnectionManagerRule.removeAllConnections(DockerConnectionManager.getInstance());
+		// given
+		DockerConnectionManagerUtils.configureConnectionManager();
 		// then
 		DockerExplorerViewAssertion.assertThat(dockerExplorerView).isEmpty();
 	}

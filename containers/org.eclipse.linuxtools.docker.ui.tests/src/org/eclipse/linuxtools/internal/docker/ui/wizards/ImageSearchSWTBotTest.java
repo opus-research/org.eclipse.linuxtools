@@ -126,18 +126,19 @@ public class ImageSearchSWTBotTest {
 	}
 
 	private void openPullWizard(final DockerClient client) {
-		// given
+		// given 
 		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
 		// expand the 'Images' node
+		SWTUtils.syncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
 		final SWTBotTreeItem imagesTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test", "Images");
 		// when opening the "Pull..." wizard
 		final SWTBotTree dockerExplorerViewTreeBot = dockerExplorerViewBot.bot().tree();
-		imagesTreeItem.select();
+		dockerExplorerViewTreeBot.select(imagesTreeItem);
 		dockerExplorerViewTreeBot.contextMenu("Pull...").click();
 	}
 
-	private void openSearchWizard() {
+	private void openSearchWizard() {	
 		// click on the "Search..." button
 		bot.button(WizardMessages.getString("ImagePull.search.label")).click();
 	}
