@@ -21,7 +21,7 @@ import org.eclipse.swtbot.swt.finder.widgets.AbstractSWTBot;
  */
 public abstract class AbstractSWTBotAssertion<Assertion extends AbstractSWTBotAssertion<Assertion, SWTWidget>, SWTWidget extends AbstractSWTBot<?>>
 		extends AbstractAssert<Assertion, SWTWidget> {
-
+	
 	protected AbstractSWTBotAssertion(final SWTWidget actual, final Class<Assertion> clazz) {
 		super(actual, clazz);
 	}
@@ -30,8 +30,7 @@ public abstract class AbstractSWTBotAssertion<Assertion extends AbstractSWTBotAs
 	public Assertion isEnabled() {
 		notNullValue();
 		if(!actual.isEnabled()) {
-			failWithMessage("Expected widget with text '%s (%s)' to be enabled but it was not", actual.getText(),
-					actual.getToolTipText());
+			failWithMessage("Expected checkbox with text '%s' to be enabled but it was not", actual.getText());
 		}
 		return (Assertion) this;
 	}
@@ -40,7 +39,7 @@ public abstract class AbstractSWTBotAssertion<Assertion extends AbstractSWTBotAs
 	public Assertion isNotEnabled() {
 		notNullValue();
 		if(actual.isEnabled()) {
-			failWithMessage("Expected widget with text '%s (%s)' to be disabled but it was not", actual.getText());
+			failWithMessage("Expected checkbox with text '%s' to be disabled but it was not", actual.getText());
 		}
 		return (Assertion) this;
 	}

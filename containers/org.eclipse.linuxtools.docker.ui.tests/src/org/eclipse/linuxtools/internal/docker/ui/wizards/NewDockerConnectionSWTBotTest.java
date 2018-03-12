@@ -14,12 +14,11 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 import java.io.File;
 import java.io.IOException;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CheckBoxAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseShellRule;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWizardRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.RadioAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTBotTreeItemAssertions;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTUtils;
@@ -56,11 +55,10 @@ public class NewDockerConnectionSWTBotTest {
 	private SWTBotView dockerExplorerViewBot;
 
 	@ClassRule
-	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(
-			CloseWelcomePageRule.DOCKER_PERSPECTIVE_ID);
+	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule();
 
 	@Rule
-	public CloseShellRule closeShell = new CloseShellRule(IDialogConstants.CANCEL_LABEL);
+	public CloseWizardRule closeWizard = new CloseWizardRule();
 
 	@Before
 	public void lookupDockerExplorerView() throws Exception {
