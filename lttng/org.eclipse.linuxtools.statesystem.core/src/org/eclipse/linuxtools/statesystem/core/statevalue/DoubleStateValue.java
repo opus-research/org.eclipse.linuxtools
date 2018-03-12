@@ -65,4 +65,38 @@ final class DoubleStateValue extends TmfStateValue {
     public double unboxDouble() {
         return value;
     }
+
+    @Override
+    public boolean compare(Object object, String comparisonOperator) {
+        if (!(object instanceof DoubleStateValue)) {
+            return false;
+        }
+        DoubleStateValue other = (DoubleStateValue) object;
+
+        boolean result = false;
+        switch (comparisonOperator) {
+        case "EQ": //$NON-NLS-1$
+             result = (Double.compare(this.value, other.value) == 0);
+             break;
+        case "NE": //$NON-NLS-1$
+            result = (Double.compare(this.value, other.value) != 0);
+            break;
+        case "GE": //$NON-NLS-1$
+            result = (Double.compare(this.value, other.value) >= 0);
+            break;
+        case "GT": //$NON-NLS-1$
+            result = (Double.compare(this.value, other.value) > 0);
+            break;
+        case "LE": //$NON-NLS-1$
+            result = (Double.compare(this.value, other.value) <= 0);
+            break;
+        case "LT": //$NON-NLS-1$
+            result = (Double.compare(this.value, other.value) < 0);
+            break;
+        default:
+            result = (Double.compare(this.value, other.value) == 0);
+            break;
+        }
+        return result;
+    }
 }
