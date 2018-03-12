@@ -44,7 +44,6 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
@@ -166,8 +165,7 @@ public class SelectTracesWizardPage extends WizardPage {
                     for (Object child : children) {
                         if (child instanceof TmfTraceElement) {
                             TmfTraceElement traceElement = (TmfTraceElement) child;
-                            String traceType = traceElement.getTraceType();
-                            if (traceType != null && TmfTraceType.getTraceType(traceType) != null) {
+                            if (traceElement.getTraceType() != null) {
                                 filteredChildren.add(traceElement);
                             }
                         } else if (child instanceof TmfTraceFolder) {
