@@ -81,7 +81,7 @@ public class RunImageCommandHandler extends AbstractHandler {
 		return null;
 	}
 
-	public static void runImage(final IDockerConnection connection,
+	private void runImage(final IDockerConnection connection,
 			final IDockerContainerConfig containerConfig,
 			final IDockerHostConfig hostConfig, final String containerName,
 			final boolean removeWhenExits) {
@@ -134,12 +134,9 @@ public class RunImageCommandHandler extends AbstractHandler {
 					if (console != null) {
 						// if we are auto-logging, show the console
 						console.showConsole();
-						((DockerConnection) connection).startContainer(
-								containerId, console.getOutputStream());
-					} else {
-						((DockerConnection) connection)
-								.startContainer(containerId, null);
 					}
+					((DockerConnection) connection).startContainer(containerId,
+							console.getOutputStream());
 					startContainerMonitor.done();
 				} catch (final DockerException | InterruptedException e) {
 					Display.getDefault().syncExec(new Runnable() {

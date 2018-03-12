@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.internal.vagrant.ui.wizards;
 
 import java.nio.file.Paths;
-import java.util.Map;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -21,20 +20,15 @@ import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.linuxtools.internal.vagrant.core.EnvironmentsManager;
 import org.eclipse.linuxtools.internal.vagrant.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -50,8 +44,6 @@ public class CreateVMPage extends WizardPage {
 	private final CreateVMPageModel model;
 	private final DataBindingContext dbc;
 
-	private CreateVMAdvancedComposite advanced;
-
 	public CreateVMPage(IVagrantBox box) {
 		super("createVMPage", //$NON-NLS-1$
 				WizardMessages.getString("CreateVM.label"), //$NON-NLS-1$
@@ -59,7 +51,7 @@ public class CreateVMPage extends WizardPage {
 		setMessage(WizardMessages.getString("CreateVM.desc")); //$NON-NLS-1$
 		this.model = new CreateVMPageModel();
 		if (box != null) {
-			this.model.setBoxRef(box.getName());
+			this.model.setBoxName(box.getName());
 		}
 		this.dbc = new DataBindingContext();
 	}
@@ -71,19 +63,15 @@ public class CreateVMPage extends WizardPage {
 	}
 
 	public String getVMName() {
-		return model.getVFileMode() ? null : this.model.getVMName();
+		return model.getBoxLocMode() ? null : this.model.getVMName();
 	}
 
-	public String getBoxReference() {
-		return model.getVFileMode() ? null : this.model.getBoxRef();
+	public String getBoxName() {
+		return model.getBoxLocMode() ? null : this.model.getBoxName();
 	}
 
 	public String getVMFile() {
-		return model.getVFileMode() ? this.model.getVMFile() : null;
-	}
-
-	public Map<String, String> getEnvironment() {
-		return model.getEnvironment();
+		return model.getBoxLocMode() ? this.model.getVMFile() : null;
 	}
 
 	@Override
@@ -115,31 +103,23 @@ public class CreateVMPage extends WizardPage {
 				vmmNameObservable);
 
 		// Box name
-		final Label boxRefLabel = new Label(container, SWT.NONE);
-		boxRefLabel
-				.setText(WizardMessages.getString("CreateVMPage.boxRef.label")); //$NON-NLS-1$
+		final Label boxNameLabel = new Label(container, SWT.NONE);
+		boxNameLabel
+				.setText(WizardMessages.getString("CreateVMPage.boxName.label")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(boxRefLabel);
+				.grab(false, false).applyTo(boxNameLabel);
 
-		final Text boxRefText = new Text(container, SWT.BORDER);
+		final Text boxNameText = new Text(container, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).applyTo(boxRefText);
-		boxRefText.setToolTipText(
-				WizardMessages.getString("CreateVMPage.boxRef.tooltip")); //$NON-NLS-1$
+				.grab(true, false).span(2, 1).applyTo(boxNameText);
+		boxNameText.setToolTipText(
+				WizardMessages.getString("CreateVMPage.boxName.tooltip")); //$NON-NLS-1$
 		// Box Name binding
-		final IObservableValue boxRefObservable = BeanProperties
-				.value(CreateVMPageModel.class, CreateVMPageModel.BOX_REF)
+		final IObservableValue boxNameObservable = BeanProperties
+				.value(CreateVMPageModel.class, CreateVMPageModel.BOX_NAME)
 				.observe(model);
-		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxRefText),
-				boxRefObservable);
-
-		// Box name search
-		final Button boxSearchButton = new Button(container, SWT.NONE);
-		boxSearchButton
-				.setText(WizardMessages.getString("CreateVMPage.search.label")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(boxSearchButton);
-		boxSearchButton.addSelectionListener(onSearchImage());
+		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxNameText),
+				boxNameObservable);
 
 		// VM File Checkbox
 		final Button customVMFileButton = new Button(container, SWT.CHECK);
@@ -148,7 +128,7 @@ public class CreateVMPage extends WizardPage {
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).span(3, 1).applyTo(customVMFileButton);
 		final IObservableValue customVMFileObservable = BeanProperties
-				.value(CreateVMPageModel.class, CreateVMPageModel.V_FILE_MODE)
+				.value(CreateVMPageModel.class, CreateVMPageModel.BOX_LOC_MODE)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.selection().observe(customVMFileButton),
 				customVMFileObservable);
@@ -172,32 +152,21 @@ public class CreateVMPage extends WizardPage {
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxLocText),
 				boxLocObservable);
-		boxLocText.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				vmFileChanged(boxLocText.getText());
-			}
-		});
 
-		// Vagrantfile search
-		final Button vgFilesearchButton = new Button(container, SWT.NONE);
-		vgFilesearchButton
+		// search
+		final Button searchButton = new Button(container, SWT.NONE);
+		searchButton
 				.setText(WizardMessages.getString("CreateVMPage.search.label")); //$NON-NLS-1$
-		vgFilesearchButton.setEnabled(false);
+		searchButton.setEnabled(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(vgFilesearchButton);
-		vgFilesearchButton.addSelectionListener(onSearchImage());
+				.grab(false, false).applyTo(searchButton);
+		searchButton.addSelectionListener(onSearchImage());
 
 		customVMFileButton.addSelectionListener(
-				onCheckCustomVMFile(vmNameText, boxRefText, boxLocText, vgFilesearchButton, boxSearchButton));
+				onCheckCustomVMFile(vmNameText, boxNameText, boxLocText, searchButton));
 
 		dbc.addValidationStatusProvider(new CreateVMValidationStatusProvider(vmmNameObservable,
-				boxRefObservable, boxLocObservable));
-
-		advanced = new CreateVMAdvancedComposite(
-				container, model);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(3, 1)
-				.grab(true, false).applyTo(advanced);
+				boxNameObservable, boxLocObservable));
 
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
@@ -205,8 +174,7 @@ public class CreateVMPage extends WizardPage {
 	}
 
 	private SelectionListener onCheckCustomVMFile(Text vmNameText,
-			Text boxRefText, Text boxLocText, Button searchButton,
-			Button boxSearchButton) {
+			Text boxNameText, Text boxLocText, Button searchButton) {
 		return new SelectionAdapter() {
 
 			@Override
@@ -215,18 +183,16 @@ public class CreateVMPage extends WizardPage {
 					Button bt = (Button) e.widget;
 					if (bt.getSelection()) {
 						vmNameText.setEnabled(false);
-						boxRefText.setEnabled(false);
-						boxSearchButton.setEnabled(false);
+						boxNameText.setEnabled(false);
 						searchButton.setEnabled(true);
 						boxLocText.setEnabled(true);
-						model.setVFileMode(true);
+						model.setBoxLocMode(true);
 					} else {
 						vmNameText.setEnabled(true);
-						boxRefText.setEnabled(true);
-						boxSearchButton.setEnabled(true);
+						boxNameText.setEnabled(true);
 						searchButton.setEnabled(false);
 						boxLocText.setEnabled(false);
-						model.setVFileMode(false);
+						model.setBoxLocMode(false);
 					}
 				}
 			}
@@ -246,35 +212,20 @@ public class CreateVMPage extends WizardPage {
 				FileDialog fd = new FileDialog(getShell());
 				String location = fd.open();
 				if (location != null && !location.isEmpty()) {
-					if (location.endsWith("box")) { //$NON-NLS-1$
-						model.setBoxRef(location);
-					} else {
-						model.setVMFile(location);
-						vmFileChanged(location);
-					}
+					model.setVMFile(location);
 				}
 			}
 		};
 	}
 
-	private void vmFileChanged(String vagrantFile) {
-		IPath folder = new Path(vagrantFile).removeLastSegments(1);
-		Map<String, String> existingEnv = EnvironmentsManager.getSingleton()
-				.getEnvironment(folder.toFile());
-		if (existingEnv != null) {
-			model.setEnvironment(existingEnv);
-			advanced.refresh();
-		}
-	}
-
 	public class CreateVMValidationStatusProvider extends MultiValidator {
 
-		private IObservableValue vmNameOb, boxRefOb, boxLocOb;
+		private IObservableValue vmNameOb, boxNameOb, boxLocOb;
 
 		public CreateVMValidationStatusProvider(IObservableValue vmNameOb,
-				IObservableValue boxRefOb, IObservableValue boxLocOb) {
+				IObservableValue boxNameOb, IObservableValue boxLocOb) {
 			this.vmNameOb = vmNameOb;
-			this.boxRefOb = boxRefOb;
+			this.boxNameOb = boxNameOb;
 			this.boxLocOb = boxLocOb;
 		}
 
@@ -287,15 +238,15 @@ public class CreateVMPage extends WizardPage {
 		@Override
 		protected IStatus validate() {
 			String vmName = (String) vmNameOb.getValue();
-			String boxRef = (String) boxRefOb.getValue();
+			String boxName = (String) boxNameOb.getValue();
 			String boxLoc = (String) boxLocOb.getValue();
-			if (!model.getVFileMode()) {
+			if (!model.getBoxLocMode()) {
 				if (vmName == null || vmName.isEmpty()) {
 					return ValidationStatus.error(WizardMessages
 							.getString("CreateVMPage.emptyVMName")); //$NON-NLS-1$
-				} else if (boxRef == null || boxRef.isEmpty()) {
+				} else if (boxName == null || boxName.isEmpty()) {
 					return ValidationStatus.error(WizardMessages
-							.getString("CreateVMPage.emptyBoxRef")); //$NON-NLS-1$
+							.getString("CreateVMPage.emptyBoxName")); //$NON-NLS-1$
 				}
 			} else {
 				if (boxLoc == null || boxLoc.isEmpty()) {

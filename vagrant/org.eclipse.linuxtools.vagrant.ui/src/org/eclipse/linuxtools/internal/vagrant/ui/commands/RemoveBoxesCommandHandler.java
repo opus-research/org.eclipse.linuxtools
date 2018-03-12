@@ -13,30 +13,30 @@ package org.eclipse.linuxtools.internal.vagrant.ui.commands;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.VagrantException;
-import org.eclipse.linuxtools.vagrant.core.VagrantService;
 
 public class RemoveBoxesCommandHandler extends BaseBoxesCommandHandler {
 
 	@Override
 	String getJobName(List<IVagrantBox> selectedImages) {
-		return Messages.RemoveBoxesCommandHandler_removing_title;
+		return "Removing Boxes...";
 	}
 
 	@Override
 	String getTaskName(IVagrantBox image) {
-		return Messages.RemoveBoxesCommandHandler_removing_msg + image.getName();
+		return "Removing " + image.getName();
 	}
 
 	@Override
 	void executeInJob(IVagrantBox image, IProgressMonitor monitor) {
-		IVagrantConnection connection = VagrantService.getInstance();
+		IVagrantConnection connection = VagrantConnection.getInstance();
 		try {
 			connection.removeBox(image.getName());
 		} catch (VagrantException | InterruptedException e) {
-			final String errorMessage = Messages.RemoveBoxesCommandHandler_error + image.getName();
+			final String errorMessage = "Error in deleting " + image.getName();
 				openError(errorMessage, e);
 		} finally {
 			// always get images as we sometimes get errors on intermediate

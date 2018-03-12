@@ -44,7 +44,6 @@
 
   <modules>
     <module>org.eclipse.linuxtools.man.core</module>
-    <module>org.eclipse.linuxtools.man.help</module>
     <module>org.eclipse.linuxtools.man-feature</module>
   </modules>
 

@@ -52,13 +52,8 @@ public class Activator extends Plugin {
 		Activator.getDefault().getLog().log(status);
 	}
 
-	public static void logErrorMessage(final String message) {
+	public static void logErrorMessage(String message) {
 		log(new Status(IStatus.ERROR, PLUGIN_ID, IStatus.ERROR, message, null));
-	}
-
-	public static void logErrorMessage(final String message,
-			final Throwable e) {
-		log(new Status(IStatus.ERROR, PLUGIN_ID, IStatus.ERROR, message, e));
 	}
 
 	public static void log(Throwable e) {

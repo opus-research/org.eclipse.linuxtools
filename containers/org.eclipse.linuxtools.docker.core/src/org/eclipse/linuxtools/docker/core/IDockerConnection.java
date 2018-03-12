@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.docker.core;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
@@ -180,18 +179,6 @@ public interface IDockerConnection {
 	
 	void pushImage(String name, IDockerProgressHandler handler) throws DockerException, InterruptedException;
 
-	/**
-	 * Adds a tag to an existing image
-	 * 
-	 * @param name
-	 *            the image id
-	 * @param newTag
-	 *            the new tag to add to the given image
-	 * @throws DockerException
-	 *             in case of underlying problem (server error)
-	 * @throws InterruptedException
-	 *             if the thread was interrupted
-	 */
 	void tagImage(String name, String newTag) throws DockerException, InterruptedException;
 
 	String buildImage(IPath path, IDockerProgressHandler handler)
@@ -211,28 +198,6 @@ public interface IDockerConnection {
 
 	String createContainer(IDockerContainerConfig c, IDockerHostConfig hc)
 			throws DockerException, InterruptedException;
-
-	/**
-	 * Builds an {@link IDockerImage}
-	 * 
-	 * @param path
-	 *            path to the build context
-	 * @param name
-	 *            optional name and tag of the image to build
-	 * @param handler
-	 *            progress handler
-	 * @param buildOptions
-	 *            build options
-	 * @return the id of the {@link IDockerImage} that was build
-	 * @throws DockerException
-	 *             if building image failed
-	 * @throws InterruptedException
-	 *             if the thread was interrupted
-	 */
-	String buildImage(final IPath path, final String name,
-			final IDockerProgressHandler handler,
-			final Map<String, Object> buildOptions)
-					throws DockerException, InterruptedException;
 
 	public String createContainer(final IDockerContainerConfig config,
 			final IDockerHostConfig hc, final String containerName)
@@ -275,18 +240,6 @@ public interface IDockerConnection {
 
 	void removeImage(String name) throws DockerException, InterruptedException;
 
-	/**
-	 * Removes the tagged image
-	 * 
-	 * @param tag
-	 *            the tagged image to remove. If the image has more tags they
-	 *            will be kept. If this is the only tag for the named image, it
-	 *            will be totally removed.
-	 * @throws DockerException
-	 *             in case of underlying problem (server error)
-	 * @throws InterruptedException
-	 *             if the thread was interrupted
-	 */
 	void removeTag(String tag) throws DockerException, InterruptedException;
 
 
