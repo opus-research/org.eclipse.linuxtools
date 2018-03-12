@@ -81,7 +81,8 @@ public enum TmfProtocol {
 
     private TmfProtocol() {
         @SuppressWarnings("null")
-        @NonNull String name = this.name();
+        @NonNull
+        String name = this.name();
         fName = Protocol.valueOf(name).getName();
         fShortName = Protocol.valueOf(name).getShortName();
         fLayer = Protocol.valueOf(name).getLayer();
@@ -131,6 +132,22 @@ public enum TmfProtocol {
      */
     public static List<TmfProtocol> getAllProtocols() {
         return new ArrayList<>(Arrays.asList(TmfProtocol.values()));
+    }
+
+    /**
+     * Get a {@link TmfProtocol} with a matching name to the {@link Protocol}
+     *
+     * @param protocol
+     *            The {@link Protocol} to match
+     * @return The TmfProtocol, Unknown if not found
+     */
+    public static TmfProtocol getProtocol(Protocol protocol) {
+        for (TmfProtocol prot : TmfProtocol.values()) {
+            if (prot.getName().equals(protocol.getName())) {
+                return prot;
+            }
+        }
+        return UNKNOWN;
     }
 
 }
