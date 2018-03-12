@@ -281,17 +281,11 @@ public class OSIORestClient {
 	
 	public RepositoryResponse postTaskData(TaskData taskData, Set<TaskAttribute> oldAttributes,
 			TaskRepository repository, IOperationMonitor monitor) throws OSIORestException {
-		TaskAttribute spaceIdAttribute = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().SPACE_ID.getKey());
-		String spaceId = spaceIdAttribute.getValue();
-		Space space = null;
+		TaskAttribute spaceAttribute = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().SPACE.getKey());
+		String spaceName = spaceAttribute.getValue();
 		if (taskData.isNew()) {
 			Map<String, Space> spaces = getCachedSpaces(new NullOperationMonitor());
-			for (Space s : spaces.values()) {
-				if (s.getId().equals(spaceId)) {
-					space = s;
-					break;
-				}
-			}
+			Space space = spaces.get(spaceName);
 			String id = null;
 			try {
 				id = new OSIORestPostNewTask(client, taskData, space, connector, repository).run(monitor);
@@ -316,20 +310,10 @@ public class OSIORestClient {
 				}
 			}
 			Map<String, Space> spaces = config.getSpaces();
-			for (Space s : spaces.values()) {
-				if (s.getId().equals(spaceId)) {
-					space = s;
-					break;
-				}
-			}
+			Space space = spaces.get(spaceName);
 			if (space == null) {
 				Map<String, Space> externalSpaces = config.getExternalSpaces();
-				for (Space s : externalSpaces.values()) {
-					if (s.getId().equals(spaceId)) {
-						space = s;
-						break;
-					}
-				}
+				space = externalSpaces.get(spaceName);
 			}
 			
 			TaskAttribute removeLinks = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().REMOVE_LINKS.getKey());
@@ -399,7 +383,6 @@ public class OSIORestClient {
 				// The easiest way is to use a namedspaces request that we know will give
 				// us a "ResourceMovedPermanently" error which will contain the URL of the
 				// real location of the workitem which contains the workitem uuid.
-				user = URLQueryEncoder.transform(user);
 				String query = "/namedspaces/" + user + "/" + spaceName + "/workitems/" + wiNumber; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				String wid = ""; //$NON-NLS-1$
 				try {
@@ -432,10 +415,9 @@ public class OSIORestClient {
 				config.addValidOperations(taskData);
 				collector.accept(taskData);
 			} catch (RuntimeException | CoreException e) {
-				// if the Throwable was wrapped in a RuntimeException in
+				// if the Throwable was warped in a RuntimeException in
 				// OSIORestGetTaskData.JSonTaskDataDeserializer.deserialize()
-				// we now remove the wrapper and throw an OSIORestException	
-				e.printStackTrace();
+				// we now remove the warper and throw a  OSIORestException
 				Throwable cause = e.getCause();
 				if (cause instanceof CoreException) {
 					throw new OSIORestException(cause);
