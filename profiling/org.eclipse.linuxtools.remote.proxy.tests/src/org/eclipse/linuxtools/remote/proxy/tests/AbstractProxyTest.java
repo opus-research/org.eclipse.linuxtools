@@ -126,8 +126,4 @@ public abstract class AbstractProxyTest extends AbstractRemoteTest {
 			assertNotNull(syncProject);
 		}
 	}
-
-	public static IRemoteConnection getConnection() {
-		return connection;
-	}
 }
