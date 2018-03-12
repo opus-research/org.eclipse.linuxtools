@@ -269,5 +269,6 @@ public interface IDockerConnection {
 	 */
 	void removeTag(String tag) throws DockerException, InterruptedException;
 
+	boolean isActive();
 
 }
