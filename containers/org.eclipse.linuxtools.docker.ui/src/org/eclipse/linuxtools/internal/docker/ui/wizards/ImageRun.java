@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.docker.core.DockerException;
@@ -153,12 +152,13 @@ public class ImageRun extends Wizard {
 
 			switch (dataVolume.getMountType()) {
 			case HOST_FILE_SYSTEM:
-				String bind = convertToUnixPath(dataVolume.getHostPathMount())
-						+ ':' + dataVolume.getContainerPath();
 				if (dataVolume.isReadOnly()) {
-					bind += ':' + "ro";
+					binds.add(dataVolume.getHostPathMount() + ':'
+							+ dataVolume.getContainerPath() + ':' + "ro");
+				} else {
+					binds.add(dataVolume.getHostPathMount() + ':'
+							+ dataVolume.getContainerPath());
 				}
-				binds.add(bind);
 				break;
 			case CONTAINER:
 				volumesFrom.add(dataVolume.getContainerMount());
@@ -172,19 +172,6 @@ public class ImageRun extends Wizard {
 		hostConfigBuilder.volumesFrom(volumesFrom);
 
 		return hostConfigBuilder.build();
-	}
-
-	private String convertToUnixPath(String path) {
-		String unixPath = path;
-
-		if (Platform.getOS() == Platform.OS_WIN32) {
-			unixPath = path.replaceAll("\\\\", "/").replaceFirst("\\:", "");
-			if (!unixPath.startsWith("/")) {
-				unixPath = '/' + unixPath;
-			}
-		}
-
-		return unixPath;
 	}
 
 	@SuppressWarnings("unchecked")
