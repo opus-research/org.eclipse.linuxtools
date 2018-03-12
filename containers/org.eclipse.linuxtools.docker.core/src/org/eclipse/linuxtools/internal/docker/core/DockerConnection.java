@@ -108,6 +108,7 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.ContainerExit;
 import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.ExecState;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.HostConfig.LxcConfParameter;
 import com.spotify.docker.client.messages.Image;
@@ -2060,53 +2061,64 @@ public class DockerConnection
 		List<ContainerFileProxy> childList = new ArrayList<>();
 		try {
 			DockerClient copyClient = getClientCopy();
+			System.out.println("exec create");
+			System.out.println("path is " + path);
 			final String execId = copyClient.execCreate(id,
 					new String[] { "/bin/sh", "-c", "ls -l -F -L -Q " + path }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					ExecCreateParam.attachStdout(),
-					ExecCreateParam.attachStderr());
+					ExecCreateParam.attachStderr(), ExecCreateParam.tty());
+			System.out.println("exec start");
 			final LogStream pty_stream = copyClient.execStart(execId);
 			try {
-				while (pty_stream.hasNext()) {
-					ByteBuffer b = pty_stream.next().content();
-					byte[] buffer = new byte[b.remaining()];
-					b.get(buffer);
-					String s = new String(buffer);
-					String[] lines = s.split("\\r?\\n"); //$NON-NLS-1$
-					for (String line : lines) {
-						if (line.trim().startsWith("total")) //$NON-NLS-1$
-							continue; // ignore the total line
-						String[] token = line.split("\\s+"); //$NON-NLS-1$
-						boolean isDirectory = token[0].startsWith("d"); //$NON-NLS-1$
-						boolean isLink = token[0].startsWith("l"); //$NON-NLS-1$
-						if (token.length > 8) {
-							// last token depends on whether we have a link or not
-							String link = null;
-							if (isLink) {
-								String linkname = token[token.length - 1];
-								if (linkname.endsWith("/")) { //$NON-NLS-1$
-									linkname = linkname.substring(0, linkname.length() - 1);
-									isDirectory = true;
+				ExecState state = copyClient.execInspect(execId);
+				do {
+					// Thread.sleep(500);
+					if (pty_stream.hasNext()) {
+						ByteBuffer b = pty_stream.next().content();
+						byte[] buffer = new byte[b.remaining()];
+						b.get(buffer);
+						String s = new String(buffer);
+						String[] lines = s.split("\\r?\\n"); //$NON-NLS-1$
+						for (String line : lines) {
+							System.out.println("line is " + line);
+							if (line.trim().startsWith("total")) //$NON-NLS-1$
+								continue; // ignore the total line
+							String[] token = line.split("\\s+"); //$NON-NLS-1$
+							boolean isDirectory = token[0].startsWith("d"); //$NON-NLS-1$
+							boolean isLink = token[0].startsWith("l"); //$NON-NLS-1$
+							if (token.length > 8) {
+								// last token depends on whether we have a link
+								// or not
+								String link = null;
+								if (isLink) {
+									String linkname = token[token.length - 1];
+									if (linkname.endsWith("/")) { //$NON-NLS-1$
+										linkname = linkname.substring(0,
+												linkname.length() - 1);
+										isDirectory = true;
+									}
+									IPath linkPath = new Path(path);
+									linkPath = linkPath.append(linkname);
+									link = linkPath.toString();
+									String name = token[token.length - 3];
+									childList.add(new ContainerFileProxy(path,
+											name, isDirectory, isLink, link));
+								} else {
+									String name = token[token.length - 1];
+									// remove quotes and any indicator char
+									name = name.substring(1, name.length()
+											- (name.endsWith("\"") ? 1 : 2));
+									childList.add(new ContainerFileProxy(path,
+											name, isDirectory));
 								}
-								IPath linkPath = new Path(path);
-								linkPath = linkPath.append(linkname);
-								link = linkPath.toString();
-								String name = token[token.length - 3];
-								childList.add(new ContainerFileProxy(path, name,
-										isDirectory, isLink, link));
-							} else {
-								String name = token[token.length - 1];
-								// remove quotes and any indicator char
-								name = name.substring(1, name.length()
-										- (name.endsWith("\"") ? 1 : 2));
-								childList.add(new ContainerFileProxy(path, name,
-										isDirectory));
 							}
 						}
+						state = copyClient.execInspect(execId);
 					}
-				}
+				} while (pty_stream.hasNext());
 			} finally {
-				if (pty_stream != null)
-					pty_stream.close();
+				// if (pty_stream != null)
+				// pty_stream.close();
 				if (copyClient != null)
 					copyClient.close();
 			}
