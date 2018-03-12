@@ -12,8 +12,10 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 
@@ -21,7 +23,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
-import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
 import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
@@ -30,6 +31,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -44,8 +46,13 @@ public class PartialStateSystemTest extends StateSystemTest {
     private File stateFile;
     private TestLttngKernelAnalysisModule module;
 
-    @Override
-    protected ITmfStateSystem initialize() {
+
+    /**
+     * Initialization
+     */
+    @Before
+    public void initialize() {
+        assumeTrue(testTrace.exists());
         stateFile = new File(TmfTraceManager.getSupplementaryFileDir(testTrace.getTrace()) + TEST_FILE_NAME);
         if (stateFile.exists()) {
             stateFile.delete();
@@ -59,20 +66,18 @@ public class PartialStateSystemTest extends StateSystemTest {
         }
         module.schedule();
         assertTrue(module.waitForCompletion());
-        return module.getStateSystem();
+        ssq = module.getStateSystem();
+
+        assertNotNull(ssq);
     }
 
     /**
      * Class clean-up
      */
     @After
-    public void cleanup() {
-        if (module != null) {
-            module.close();
-        }
-        if (stateFile != null) {
-            stateFile.delete();
-        }
+    public void tearDownClass() {
+        module.close();
+        stateFile.delete();
     }
 
     /**

@@ -10,19 +10,14 @@
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Added handling of streamed traces
  *   Marc-Andre Laperle - Use common method to get opened tmf projects
- *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views.dialogs;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -32,9 +27,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.messages.Messages;
@@ -42,12 +34,14 @@ import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TraceS
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.IRemoteSystemProxy;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTracesFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
-import org.eclipse.remote.core.IRemoteFileManager;
+import org.eclipse.rse.core.subsystems.RemoteChildrenContentsType;
+import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
+import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSystem;
+import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -58,8 +52,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.model.WorkbenchContentProvider;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 /**
  * <p>
@@ -190,7 +184,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
         try {
             createRemoteComposite();
-        } catch (CoreException e) {
+        } catch (SystemMessageException e) {
             createErrorComposite(parent, e.fillInStackTrace());
             return fDialogComposite;
         }
@@ -250,15 +244,15 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
             Object[] checked = fFolderViewer.getCheckedElements();
             for (int i = 0; i < checked.length; i++) {
-                IFileStore file = (IFileStore) checked[i];
-                if (!file.fetchInfo().isDirectory() && file.getName().equals(METADATA_FILE_NAME)) {
-                    IFileStore trace = file.getParent();
-                    IFileStore parent = trace.getParent();
+                IRemoteFile file = (IRemoteFile) checked[i];
+                if (!file.isDirectory() && file.getName().equals(METADATA_FILE_NAME)) {
+                    IRemoteFile trace = file.getParentRemoteFile();
+                    IRemoteFile parent = trace.getParentRemoteFile();
 
                     String path = fSession.isSnapshotSession() ? fSession.getSnapshotInfo().getSnapshotPath() : fSession.getSessionPath();
                     path = getUnifiedPath(path);
                     IPath sessionParentPath = new Path(path).removeLastSegments(1);
-                    IPath traceParentPath = new Path(parent.toURI().getPath());
+                    IPath traceParentPath = new Path(parent.getAbsolutePath());
 
                     IPath relativeTracePath = traceParentPath.makeRelativeTo(sessionParentPath);
 
@@ -309,40 +303,17 @@ public class ImportDialog extends Dialog implements IImportDialog {
      *
      * @author Bernd Hufmann
      */
-    public static class FolderContentProvider implements ITreeContentProvider {
+    public static class FolderContentProvider extends WorkbenchContentProvider {
         @Override
         public Object[] getChildren(Object o) {
-            try {
-                IFileStore store = (IFileStore) o;
-                if (store.fetchInfo().isDirectory()) {
-                    return store.childStores(EFS.NONE, new NullProgressMonitor());
+            if (o instanceof IRemoteFile) {
+                IRemoteFile element = (IRemoteFile) o;
+                // For our purpose, we need folders + files
+                if (!element.isDirectory()) {
+                    return new Object[0];
                 }
-            } catch (CoreException e) {
             }
-            return new Object[0];
-        }
-
-        @Override
-        public Object getParent(Object element) {
-            return ((IFileStore) element).getParent();
-        }
-
-        @Override
-        public void dispose() {
-        }
-
-        @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        }
-
-        @Override
-        public Object[] getElements(Object inputElement) {
-            return getChildren(inputElement);
-        }
-
-        @Override
-        public boolean hasChildren(Object element) {
-            return ((IFileStore) element).fetchInfo().isDirectory();
+            return super.getChildren(o);
         }
     }
 
@@ -371,7 +342,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
         errorText.setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
-    private void createRemoteComposite() throws CoreException {
+    private void createRemoteComposite() throws SystemMessageException{
         Group contextGroup = new Group(fDialogComposite, SWT.SHADOW_NONE);
         contextGroup.setText(Messages.TraceControl_ImportDialogTracesGroupName);
         GridLayout layout = new GridLayout(1, true);
@@ -380,10 +351,12 @@ public class ImportDialog extends Dialog implements IImportDialog {
 
         IRemoteSystemProxy proxy = fSession.getTargetNode().getRemoteSystemProxy();
 
-        IRemoteFileManager fsss = proxy.getFileServiceSubSystem();
+        IFileServiceSubSystem fsss = proxy.getFileServiceSubSystem();
 
         final String path = fSession.isSnapshotSession() ? fSession.getSnapshotInfo().getSnapshotPath() : fSession.getSessionPath();
-        final IFileStore remoteFolder = fsss.getResource(path);
+        final IRemoteFile remoteFolder = fsss.getRemoteFileObject(path, new NullProgressMonitor());
+        // make sure that remote directory is read and not cached
+        remoteFolder.markStale(true, true);
 
         fFolderViewer = new CheckboxTreeViewer(contextGroup, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         GridData data = new GridData(GridData.FILL_BOTH);
@@ -393,35 +366,22 @@ public class ImportDialog extends Dialog implements IImportDialog {
         tree.setToolTipText(Messages.TraceControl_ImportDialogTracesTooltip);
 
         fFolderViewer.setContentProvider(new FolderContentProvider());
-        fFolderViewer.setLabelProvider(new LabelProvider() {
-            @Override
-            public String getText(Object element) {
-                return ((IFileStore) element).getName();
-            }
-            @Override
-            public Image getImage(Object element) {
-                if (((IFileStore) element).fetchInfo().isDirectory()) {
-                    return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-                }
-                return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
-            }
-        });
+        fFolderViewer.setLabelProvider(new WorkbenchLabelProvider());
 
         fFolderViewer.addCheckStateListener(new ICheckStateListener() {
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 Object elem = event.getElement();
-                if (elem instanceof IFileStore) {
-                    IFileStore element = (IFileStore) elem;
-                    IFileInfo info = element.fetchInfo();
-                    if (!info.isDirectory()) {
+                if (elem instanceof IRemoteFile) {
+                    IRemoteFile element = (IRemoteFile) elem;
+                    if (!element.isDirectory()) {
                         // A trick to keep selection of a file in sync with the directory
-                        boolean p = fFolderViewer.getChecked((element.getParent()));
+                        boolean p = fFolderViewer.getChecked((element.getParentRemoteFile()));
                         fFolderViewer.setChecked(element, p);
                     } else {
                         fFolderViewer.setSubtreeChecked(event.getElement(), event.getChecked());
                         if (!event.getChecked()) {
-                            fFolderViewer.setChecked(element.getParent(), false);
+                            fFolderViewer.setChecked(element.getParentRemoteFile(), false);
                         }
                     }
                     updateOKButtonEnablement();
@@ -430,7 +390,7 @@ public class ImportDialog extends Dialog implements IImportDialog {
         });
         fFolderViewer.setInput(remoteFolder);
 
-        fFolderChildren = remoteFolder.childStores(EFS.NONE, new NullProgressMonitor());
+        fFolderChildren = remoteFolder.getContents(RemoteChildrenContentsType.getInstance());
         // children can be null if there the path doesn't exist. This happens when a trace
         // session hadn't been started and no output was created.
         setFolderChildrenChecked(true);

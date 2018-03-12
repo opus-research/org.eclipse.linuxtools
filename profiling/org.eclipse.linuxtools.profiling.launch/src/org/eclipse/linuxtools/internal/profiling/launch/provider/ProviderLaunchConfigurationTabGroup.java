@@ -59,7 +59,7 @@ public class ProviderLaunchConfigurationTabGroup extends
     /**
      * Set profiling type.
      *
-     * @param profilingType New profiling type.
+     * @param profilingType
      */
     private void setProfilingType(String profilingType) {
         type = profilingType;
@@ -68,7 +68,7 @@ public class ProviderLaunchConfigurationTabGroup extends
     /**
      * Set profiling type name to be displayed.
      *
-     * @param profilingTypeName New profiling type name.
+     * @param profilingTypeName
      */
     private void setProfilingTypeName(String profilingTypeName) {
         name = profilingTypeName;

@@ -127,9 +127,4 @@ public class TmfXmlEventHandler {
 
     }
 
-    @Override
-    public String toString() {
-        return "TmfXmlEventHandler: " + fName; //$NON-NLS-1$
-    }
-
 }

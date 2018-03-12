@@ -58,7 +58,6 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
      * The id is 5 bits
      */
     private static final int COMPACT_ID = 5;
-    private static final int COMPACT_ALIGN = 1;
     private static final int EXTENDED_VALUE = 31;
     /**
      * Full sized id is 32 bits
@@ -72,7 +71,6 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
      * Compact timestamp is 27 bits,
      */
     private static final int COMPACT_TS = 27;
-    private static final int COMPACT_TS_ALIGN = 1;
     /**
      * Maximum size = largest this header can be
      */
@@ -145,14 +143,9 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
             return false;
         }
         EnumDeclaration eId = (EnumDeclaration) iDeclaration;
-        final IntegerDeclaration containerType = eId.getContainerType();
-        if (containerType.getLength() != COMPACT_ID) {
+        if (eId.getContainerType().getLength() != COMPACT_ID) {
             return false;
         }
-        if (containerType.getAlignment() != COMPACT_ALIGN) {
-            return false;
-        }
-
         iDeclaration = declaration.getFields().get(V);
 
         if (!(iDeclaration instanceof VariantDeclaration)) {
@@ -181,7 +174,7 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
             return false;
         }
         IntegerDeclaration tsDec = (IntegerDeclaration) iDeclaration;
-        if (tsDec.getLength() != COMPACT_TS || tsDec.isSigned() || tsDec.getAlignment() != COMPACT_TS_ALIGN) {
+        if (tsDec.getLength() != COMPACT_TS || tsDec.isSigned()) {
             return false;
         }
         iDeclaration = vDec.getFields().get(EXTENDED);
@@ -189,9 +182,6 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
             return false;
         }
         StructDeclaration extendedDec = (StructDeclaration) iDeclaration;
-        if (extendedDec.getAlignment() != ALIGN) {
-            return false;
-        }
         if (!extendedDec.hasField(TIMESTAMP)) {
             return false;
         }

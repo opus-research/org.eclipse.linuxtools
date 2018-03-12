@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -174,47 +173,45 @@ public class SelectElementTypeContributionItem extends CompoundContributionItem 
          * Add the custom txt and xml trace type to the contribution items for
          * traces
          */
-        for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
+        CustomTxtTraceDefinition[] customTxtTraceDefinitions = CustomTxtTraceDefinition.loadAll();
+        if (customTxtTraceDefinitions.length > 0) {
+            ImageDescriptor icon = isSelectedCategory(customTxtTraceDefinitions, selectedTraceTypes) ? SELECTED_ICON : null;
+            MenuManager subMenu = new MenuManager(TmfTraceType.CUSTOM_TXT_CATEGORY, icon, null);
+            categoriesMap.put(TmfTraceType.CUSTOM_TXT_CATEGORY, subMenu);
+            list.add(subMenu);
+        }
+        CustomXmlTraceDefinition[] customXmlTraceDefinitions = CustomXmlTraceDefinition.loadAll();
+        if (customXmlTraceDefinitions.length > 0) {
+            ImageDescriptor icon = isSelectedCategory(customXmlTraceDefinitions, selectedTraceTypes) ? SELECTED_ICON : null;
+            MenuManager subMenu = new MenuManager(TmfTraceType.CUSTOM_XML_CATEGORY, icon, null);
+            categoriesMap.put(TmfTraceType.CUSTOM_XML_CATEGORY, subMenu);
+            list.add(subMenu);
+        }
+
+        // add the custom trace types
+        for (CustomTxtTraceDefinition def : customTxtTraceDefinitions) {
             String traceBundle = Activator.getDefault().getBundle().getSymbolicName();
-            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + ':' + def.categoryName + ':' + def.definitionName;
+            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + ':' + def.definitionName;
             String traceIcon = DEFAULT_TRACE_ICON_PATH;
             String label = def.definitionName;
             boolean selected = selectedTraceTypes.contains(traceTypeId);
-            MenuManager subMenu = getCategorySubMenu(list, categoriesMap, def.categoryName, selected);
+            MenuManager subMenu = categoriesMap.get(TmfTraceType.CUSTOM_TXT_CATEGORY);
 
             addContributionItem(list, traceBundle, traceTypeId, traceIcon, label, selected, subMenu);
         }
-        for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
+        for (CustomXmlTraceDefinition def : customXmlTraceDefinitions) {
             String traceBundle = Activator.getDefault().getBundle().getSymbolicName();
-            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + ':' + def.categoryName + ':' + def.definitionName;
+            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + ':' + def.definitionName;
             String traceIcon = DEFAULT_TRACE_ICON_PATH;
             String label = def.definitionName;
             boolean selected = selectedTraceTypes.contains(traceTypeId);
-            MenuManager subMenu = getCategorySubMenu(list, categoriesMap, def.categoryName, selected);
+            MenuManager subMenu = categoriesMap.get(TmfTraceType.CUSTOM_XML_CATEGORY);
 
             addContributionItem(list, traceBundle, traceTypeId, traceIcon, label, selected, subMenu);
         }
 
         Collections.sort(list, comparator);
         return list.toArray(new IContributionItem[list.size()]);
-    }
-
-    private static MenuManager getCategorySubMenu(List<IContributionItem> list,
-            Map<String, MenuManager> categoriesMap, String categoryName, boolean selected) {
-        for (Entry<String, MenuManager> entry : categoriesMap.entrySet()) {
-            MenuManager subMenu = entry.getValue();
-            if (subMenu.getMenuText().equals(categoryName)) {
-                if (selected) {
-                    subMenu.setImageDescriptor(SELECTED_ICON);
-                }
-                return subMenu;
-            }
-        }
-        ImageDescriptor icon = selected ? SELECTED_ICON : null;
-        MenuManager subMenu = new MenuManager(categoryName, icon, null);
-        categoriesMap.put(categoryName, subMenu);
-        list.add(subMenu);
-        return subMenu;
     }
 
     private static void addContributionItem(List<IContributionItem> list,
@@ -262,6 +259,26 @@ public class SelectElementTypeContributionItem extends CompoundContributionItem 
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isSelectedCategory(CustomTxtTraceDefinition[] customTxtTraceDefinitions, Set<String> selectedTraceTypes) {
+        for (CustomTxtTraceDefinition def : customTxtTraceDefinitions) {
+            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + ':' + def.definitionName;
+            if (selectedTraceTypes.contains(traceTypeId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isSelectedCategory(CustomXmlTraceDefinition[] customXmlTraceDefinitions, Set<String> selectedTraceTypes) {
+        for (CustomXmlTraceDefinition def : customXmlTraceDefinitions) {
+            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + ':' + def.definitionName;
+            if (selectedTraceTypes.contains(traceTypeId)) {
+                return true;
             }
         }
         return false;

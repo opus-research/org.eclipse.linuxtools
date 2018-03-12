@@ -9,24 +9,29 @@
  * Contributors:
  *   Bernd Hufmann               - Initial API and implementation
  *   Anna Dushistova(Montavista) - [382684] Allow reusing already defined connections that have Files and Shells subsystems
- *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views.handlers;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.ControlView;
-import org.eclipse.linuxtools.internal.lttng2.control.ui.views.Workaround_Bug449362;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.dialogs.INewConnectionDialog;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.dialogs.TraceControlDialogFactory;
+import org.eclipse.linuxtools.internal.lttng2.control.ui.views.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.ITraceControlComponent;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TargetNodeComponent;
-import org.eclipse.remote.core.IRemoteConnection;
-import org.eclipse.remote.core.IRemoteServices;
-import org.eclipse.remote.core.RemoteServices;
+import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.IRemoteSystemProxy;
+import org.eclipse.rse.core.IRSESystemType;
+import org.eclipse.rse.core.RSECorePlugin;
+import org.eclipse.rse.core.model.IHost;
+import org.eclipse.rse.core.model.ISystemRegistry;
+import org.eclipse.rse.core.subsystems.ISubSystem;
+import org.eclipse.rse.subsystems.files.core.servicesubsystem.IFileServiceSubSystem;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -34,29 +39,21 @@ import org.eclipse.ui.PlatformUI;
 
 /**
  * <p>
- * Command handler for creation of a new connection for trace control.
- * <br> By supplying arguments for the parameters with id {@link #PARAMETER_REMOTE_SERVICES_ID} and
- * {@link #PARAMETER_CONNECTION_NAME}, the caller can specify the remote connection that will
- * be added to the trace control. In case one of the optional arguments is not supplied, the handler
- * opens a dialog for selecting a remote connection.
+ * Command handler for creation new connection for trace control.
  * </p>
  *
  * @author Bernd Hufmann
  */
 public class NewConnectionHandler extends BaseControlViewHandler {
 
+    // ------------------------------------------------------------------------
+    // Constants
+    // ------------------------------------------------------------------------
+
     /**
-     * Id of the parameter for the remote services id.
-     * @see NewConnectionHandler
-     * @see IRemoteServices#getId()
+     * The trace control system type defined for LTTng version 2.0 and later.
      */
-    public static final String PARAMETER_REMOTE_SERVICES_ID = "org.eclipse.linuxtools.lttng2.control.ui.remoteServicesIdParameter"; //$NON-NLS-1$
-    /**
-     * Id of the parameter for the name of the remote connection.
-     * @see NewConnectionHandler
-     * @see IRemoteServices#getName()
-     */
-    public static final String PARAMETER_CONNECTION_NAME = "org.eclipse.linuxtools.lttng2.control.ui.connectionNameParameter"; //$NON-NLS-1$
+    public static final String TRACE_CONTROL_SYSTEM_TYPE = "org.eclipse.linuxtools.internal.lttng2.ui.control.systemType"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -76,17 +73,68 @@ public class NewConnectionHandler extends BaseControlViewHandler {
             return false;
         }
 
-        IRemoteConnection connection = getConnection(event.getParameters());
-        if (connection != null) {
+        ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
+
+        // get system type definition for LTTng 2.x connection
+        IRSESystemType sysType = RSECorePlugin.getTheCoreRegistry().getSystemTypeById(TRACE_CONTROL_SYSTEM_TYPE);
+
+        // get all hosts for this system type
+        IHost[] hosts = getSuitableHosts();
+
+        // Open dialog box for the node name and address
+        final INewConnectionDialog dialog = TraceControlDialogFactory.getInstance().getNewConnectionDialog();
+        dialog.setTraceControlParent(fRoot);
+        dialog.setHosts(hosts);
+        dialog.setPort(IRemoteSystemProxy.INVALID_PORT_NUMBER);
+
+        if (dialog.open() != Window.OK) {
+            return null;
+        }
+
+        String hostName = dialog.getConnectionName();
+        String hostAddress = dialog.getHostName();
+        int port = dialog.getPort();
+
+        // get the singleton RSE registry
+        IHost host = null;
+
+        for (int i = 0; i < hosts.length; i++) {
+            if (hosts[i].getAliasName().equals(hostName)) {
+                host = hosts[i];
+                break;
+            }
+        }
+
+        if (host == null) {
+            // if there's no host then we will create it
+            try {
+                // create the host object as an SSH Only connection
+                host = registry.createHost(
+                        sysType,       //System Type Name
+                        hostName,      //Connection name
+                        hostAddress,   //IP Address
+                        "Connection to Host"); //description //$NON-NLS-1$
+            }
+            catch (Exception e) {
+                MessageDialog.openError(window.getShell(),
+                        Messages.TraceControl_EclipseCommandFailure,
+                        Messages.TraceControl_NewNodeCreationFailure + " (" + hostName + ", " + hostAddress + ")" + ":\n" + e.toString());  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                return null;
+            }
+        }
+
+        if (host != null) {
             fLock.lock();
             try {
                 // successful creation of host
                 TargetNodeComponent node = null;
-                if (!fRoot.containsChild(connection.getName())) {
-                    node = new TargetNodeComponent(connection.getName(), fRoot, connection);
+                if (!fRoot.containsChild(hostName)) {
+                    node = new TargetNodeComponent(hostName, fRoot, host);
+                    node.setPort(port);
                     fRoot.addChild(node);
-                } else {
-                    node = (TargetNodeComponent)fRoot.getChild(connection.getName());
+                }
+                else {
+                    node = (TargetNodeComponent)fRoot.getChild(hostName);
                 }
 
                 node.connect();
@@ -97,29 +145,24 @@ public class NewConnectionHandler extends BaseControlViewHandler {
         return null;
     }
 
-    private static IRemoteConnection getConnection(Map<?,?> parameters) {
-        // First check whether arguments have been supplied
-        Object remoteServicesId = parameters.get(PARAMETER_REMOTE_SERVICES_ID);
-        Object connectionName = parameters.get(PARAMETER_CONNECTION_NAME);
-        if (remoteServicesId != null && connectionName != null) {
-            if (!Workaround_Bug449362.triggerRSEStartup(remoteServicesId.toString())) {
-                // Skip the connection in order to avoid an infinite loop
-            } else {
-                IRemoteServices rs = RemoteServices.getRemoteServices(remoteServicesId.toString());
-                if (rs != null) {
-                    return rs.getConnectionManager().getConnection(connectionName.toString());
+    private static IHost[] getSuitableHosts() {
+        // need shells and files
+        ArrayList<IHost> result = new ArrayList<>();
+        ArrayList<IHost> shellConnections = new ArrayList<>(
+                Arrays.asList(RSECorePlugin.getTheSystemRegistry()
+                        .getHostsBySubSystemConfigurationCategory("shells"))); //$NON-NLS-1$
+
+        for (IHost connection : shellConnections) {
+            ISubSystem[] subSystems = connection.getSubSystems();
+            for (int i = 0; i < subSystems.length; i++) {
+                if (subSystems[i] instanceof IFileServiceSubSystem) {
+                    result.add(connection);
+                    break;
                 }
             }
-            return null;
         }
 
-        // Without the arguments, open dialog box for the node name and address
-        final INewConnectionDialog dialog = TraceControlDialogFactory.getInstance().getNewConnectionDialog();
-        if (dialog.open() == Window.OK) {
-            return dialog.getConnection();
-        }
-
-        return null;
+        return result.toArray(new IHost[result.size()]);
     }
 
     @Override

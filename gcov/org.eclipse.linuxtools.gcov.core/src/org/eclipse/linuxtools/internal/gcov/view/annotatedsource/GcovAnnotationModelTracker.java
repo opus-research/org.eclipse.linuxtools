@@ -126,11 +126,7 @@ public final class GcovAnnotationModelTracker {
     }
 
     public void addProject (IProject project, IPath binary) {
-    	trackedProjects.put(project, binary);
-    }
-
-    public IProject[] getTrackedProjects() {
-    	return trackedProjects.keySet().toArray(new IProject[0]);
+        trackedProjects.put(project, binary);
     }
 
     public void dispose() {

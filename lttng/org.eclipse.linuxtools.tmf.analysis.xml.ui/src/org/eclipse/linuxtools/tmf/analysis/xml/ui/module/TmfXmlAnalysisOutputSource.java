@@ -21,7 +21,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.TmfXmlUiStrings;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.views.xychart.XmlXYView;
@@ -50,36 +49,24 @@ public class TmfXmlAnalysisOutputSource implements ITmfNewAnalysisModuleListener
 
     /**
      * Enum to match the name of a view's XML element to its view ID.
-     * @since 1.2
      */
-    public static enum ViewType {
-        /**
-         * Time graph view element
-         */
+    private static enum ViewType {
         TIME_GRAPH_VIEW(TmfXmlUiStrings.TIME_GRAPH_VIEW, XmlTimeGraphView.ID),
-        /**
-         * XY chart view element
-         */
         XY_VIEW(TmfXmlUiStrings.XY_VIEW, XmlXYView.ID);
 
-        private final @NonNull String fXmlElem;
+        private final String fXmlElem;
         private final String fViewId;
 
-        private ViewType(@NonNull String xmlElem, String viewId) {
+        private ViewType(String xmlElem, String viewId) {
             fXmlElem = xmlElem;
             fViewId = viewId;
         }
 
-        /**
-         * Get the XML element corresponding to this view type
-         *
-         * @return The XML element corresponding to this type
-         */
-        public @NonNull String getXmlElem() {
+        public String getXmlElem() {
             return fXmlElem;
         }
 
-        private String getViewId() {
+        public String getViewId() {
             return fViewId;
         }
     }
@@ -122,7 +109,7 @@ public class TmfXmlAnalysisOutputSource implements ITmfNewAnalysisModuleListener
                                 String analysisId = analysis.getAttribute(TmfXmlStrings.ID);
                                 if (analysisId.equals(module.getId())) {
                                     String viewId = viewType.getViewId();
-                                    IAnalysisOutput output = new TmfXmlViewOutput(viewId, viewType);
+                                    IAnalysisOutput output = new TmfXmlViewOutput(viewId);
                                     output.setOutputProperty(TmfXmlUiStrings.XML_OUTPUT_DATA, node.getAttribute(TmfXmlStrings.ID) + DATA_SEPARATOR + xmlFile.getAbsolutePath(), false);
                                     module.registerOutput(output);
                                 }
