@@ -30,7 +30,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
- * Base handler for commands on {@link IDockerImage}
+ * Command handler to kill all the selected {@link IDockerImage}
  * 
  * @author jjohnstn
  *
