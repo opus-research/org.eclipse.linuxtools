@@ -34,6 +34,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
+import org.eclipse.linuxtools.tmf.core.event.collapse.ITmfCollapsibleEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
@@ -118,6 +119,7 @@ public class TmfEventTest {
         assertNull("getType", event.getType());
         assertNull("getContent", event.getContent());
         assertNull("getReference", event.getReference());
+        assertFalse("isCollapsibleWith", ((ITmfCollapsibleEvent) event).isCollapsibleWith(event));
     }
 
     @Test
