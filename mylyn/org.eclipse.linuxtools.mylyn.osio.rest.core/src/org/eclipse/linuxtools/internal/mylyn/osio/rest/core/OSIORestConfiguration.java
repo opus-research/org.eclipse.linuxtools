@@ -51,6 +51,8 @@ public class OSIORestConfiguration implements Serializable {
 
 	private final String repositoryId;
 
+	private final String userName;
+	
 	private Map<String, Space> spaces;
 	
 	private Map<String, Space> externalSpaces = new TreeMap<>();
@@ -84,8 +86,9 @@ public class OSIORestConfiguration implements Serializable {
 	
 	private Map<String, List<String>> statusTransitions = new HashMap<>();
 
-	public OSIORestConfiguration(String repositoryId) {
+	public OSIORestConfiguration(String repositoryId, String userName) {
 		this.repositoryId = repositoryId;
+		this.userName = userName;
 		statusTransitions.put("", statusValues); //$NON-NLS-1$
 		statusTransitions.put(NEW, newStatusTransitions);
 		statusTransitions.put(OPEN, openStatusTransitions);
@@ -99,6 +102,10 @@ public class OSIORestConfiguration implements Serializable {
 	}
 
 
+	public String getUserName() {
+		return userName;
+	}
+	
 	public void setSpaces(Map<String, Space> spaces) {
 		Function<Space, String> getName = new Function<Space, String>() {
 			public String apply(Space item) {
@@ -118,10 +125,24 @@ public class OSIORestConfiguration implements Serializable {
 		return spaces;
 	}
 
-	public Space getSpaceWithName(String SpaceName) {
-		return spaces.get(SpaceName);
+	public Space getSpaceById(String spaceId) {
+		for (Space space : getSpaces().values()) {
+			if (space.getId().equals(spaceId)) {
+				return space;
+			}
+		}
+		for (Space space : getExternalSpaces().values()) {
+			if (space.getId().equals(spaceId)) {
+				return space;
+			}
+		}
+		return null;
 	}
 
+	public Space getSpaceWithName(String name) {
+		return getSpaces().get(name);
+	}
+	
 	public void updateInitialTaskData(TaskData data) throws CoreException {
 		setSpaceOptions(data, getSpaces());
 		updateSpaceOptions(data);
@@ -138,6 +159,12 @@ public class OSIORestConfiguration implements Serializable {
 						attribute.putOption(status,  status);
 					}
 				}
+			}
+			if (key.equals(OSIORestTaskSchema.getDefault().ASSIGNEES.getKey())) {
+				if (attribute.getOptions().isEmpty()) {
+					attribute.putOption(userName, userName);
+				}
+				continue;
 			}
 			if (!key.equals(SCHEMA.SPACE.getKey())) {
 				String configName = mapTaskAttributeKey2ConfigurationFields(key);
@@ -243,13 +270,13 @@ public class OSIORestConfiguration implements Serializable {
 		if (taskData == null) {
 			return false;
 		}
+		TaskAttribute attributeSpaceId = taskData.getRoot().getMappedAttribute(SCHEMA.SPACE_ID.getKey());
 		TaskAttribute attributeSpace = taskData.getRoot().getMappedAttribute(SCHEMA.SPACE.getKey());
-		if (attributeSpace == null) {
-			return false;
-		}
-		if (!attributeSpace.getValue().isEmpty()) {
-			Space actualSpace = getSpaceWithName(attributeSpace.getValue());
-
+		if (attributeSpaceId != null && !attributeSpaceId.getValue().isEmpty()) {
+			Space actualSpace = getSpaceById(attributeSpaceId.getValue());
+			if (actualSpace == null) {
+				return false;
+			}
 			TaskAttribute attributeWorkItemType = taskData.getRoot().getMappedAttribute(SCHEMA.WORKITEM_TYPE.getKey());
 			if (attributeWorkItemType != null) {
 				setAttributeOptionsForSpace(attributeWorkItemType, actualSpace);
@@ -281,7 +308,9 @@ public class OSIORestConfiguration implements Serializable {
 			SortedSet<String> users = new TreeSet<>();
 			Set<String> states = new LinkedHashSet<>();
 			for (Space space : getSpaces().values()) {
-				attributeSpace.putOption(space.getName(), space.getName());
+				if (attributeSpace != null) {
+					attributeSpace.putOption(space.getName(), space.getName());
+				}
 				if (space.getWorkItemTypes() != null) {
 					// assume first workItemType is representative of all with regards to states
 					if (!space.getWorkItemTypes().isEmpty()) {
@@ -325,6 +354,10 @@ public class OSIORestConfiguration implements Serializable {
 			TaskAttribute attributeState = taskData.getRoot().getMappedAttribute(SCHEMA.STATUS.getKey());
 			if (attributeState != null) {
 				setAllAttributeOptions(attributeState, states);
+			}
+			TaskAttribute attributeAssignees = taskData.getRoot().getMappedAttribute(SCHEMA.ASSIGNEES.getKey());
+			if (attributeAssignees != null && attributeAssignees.getOptions().size() == 0) {
+				attributeAssignees.putOption(userName,  userName);
 			}
 
 		}

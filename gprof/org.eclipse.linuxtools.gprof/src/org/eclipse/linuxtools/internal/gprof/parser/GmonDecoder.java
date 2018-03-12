@@ -62,7 +62,7 @@ public class GmonDecoder {
     private final IProject project;
 
     // for dump
-	private boolean shouldDump = false;
+    private boolean shouldDump = false;
 
     /**
      * Constructor
