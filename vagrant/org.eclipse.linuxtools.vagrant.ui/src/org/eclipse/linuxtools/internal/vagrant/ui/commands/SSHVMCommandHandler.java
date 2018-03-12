@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
@@ -24,7 +23,7 @@ import org.eclipse.tm.terminal.connector.ssh.launcher.SshLauncherDelegate;
 public class SSHVMCommandHandler extends BaseVMCommandHandler {
 
 	@Override
-	void executeInJob(final IVagrantVM vm, IProgressMonitor monitor) {
+	void executeInJob(final IVagrantVM vm) {
 		// org.eclipse.tm.terminal.connector.ssh.controls.SshWizardConfigurationPanel
 		Map<String, Object> properties = new HashMap<>();
 		properties.put("ssh.keep_alive", 300);

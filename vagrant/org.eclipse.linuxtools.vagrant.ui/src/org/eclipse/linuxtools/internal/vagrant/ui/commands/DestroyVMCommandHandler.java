@@ -14,7 +14,6 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.vagrant.core.Activator;
 import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
@@ -34,7 +33,7 @@ public class DestroyVMCommandHandler extends BaseVMCommandHandler {
 	}
 
 	@Override
-	void executeInJob(IVagrantVM vm, IProgressMonitor monitor) {
+	void executeInJob(IVagrantVM vm) {
 		IVagrantConnection connection = VagrantConnection.getInstance();
 		try {
 			connection.destroyVM(vm.id());

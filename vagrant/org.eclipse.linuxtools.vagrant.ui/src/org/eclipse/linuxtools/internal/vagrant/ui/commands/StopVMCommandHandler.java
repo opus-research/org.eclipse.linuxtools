@@ -12,7 +12,6 @@ package org.eclipse.linuxtools.internal.vagrant.ui.commands;
 
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
 import org.eclipse.linuxtools.internal.vagrant.ui.views.DVMessages;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
@@ -26,7 +25,7 @@ public class StopVMCommandHandler extends BaseVMCommandHandler {
 	private static final String CONTAINER_STOP_ERROR_MSG = "ContainerStopError.msg"; //$NON-NLS-1$
 
 	@Override
-	void executeInJob(final IVagrantVM vm, IProgressMonitor monitor) {
+	void executeInJob(final IVagrantVM vm) {
 		IVagrantConnection connection = VagrantConnection.getInstance();
 		try {
 			connection.haltVM(vm.id());
