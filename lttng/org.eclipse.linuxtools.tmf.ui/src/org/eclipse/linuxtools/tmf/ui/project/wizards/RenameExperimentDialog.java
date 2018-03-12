@@ -45,7 +45,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
-import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
  * Implementation of a dialog box to rename an experiment.
@@ -54,7 +53,7 @@ import org.eclipse.ui.dialogs.SelectionStatusDialog;
  * @version 1.0
  * @author Francois Chouinard
  */
-public class RenameExperimentDialog extends SelectionStatusDialog {
+public class RenameExperimentDialog extends AbstractSelectionDialog {
 
     // ------------------------------------------------------------------------
     // Members
@@ -168,16 +167,6 @@ public class RenameExperimentDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
-
-    @Override
-    protected void computeResult() {
-    }
-
-    @Override
-    public void create() {
-        super.create();
-        getButton(IDialogConstants.OK_ID).setEnabled(false);
-    }
 
     @Override
     protected void okPressed() {

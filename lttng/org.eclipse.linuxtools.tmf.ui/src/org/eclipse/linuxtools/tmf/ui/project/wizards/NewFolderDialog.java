@@ -40,13 +40,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
-import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
  * Implementation of new folder dialog that creates the folder element.
  * @since 3.0
  */
-public class NewFolderDialog extends SelectionStatusDialog {
+public class NewFolderDialog extends AbstractSelectionDialog {
 
     // ------------------------------------------------------------------------
     // Members
@@ -141,16 +140,6 @@ public class NewFolderDialog extends SelectionStatusDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
-
-    @Override
-    protected void computeResult() {
-    }
-
-    @Override
-    public void create() {
-        super.create();
-        getButton(IDialogConstants.OK_ID).setEnabled(false);
-    }
 
     @Override
     protected void okPressed() {
