@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
-import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.MB;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -192,11 +190,7 @@ public class ImageRun extends Wizard {
 		}
 		hostConfigBuilder.binds(binds);
 		hostConfigBuilder.volumesFrom(volumesFrom);
-		// memory constraints (in bytes)
-		if (resourcesModel.isEnableResourceLimitations()) {
-			hostConfigBuilder.memory(resourcesModel.getMemoryLimit() * MB);
-			hostConfigBuilder.cpuShares(resourcesModel.getCpuShareWeight());
-		}
+
 		return hostConfigBuilder.build();
 	}
 
@@ -236,9 +230,8 @@ public class ImageRun extends Wizard {
 				.tty(selectionModel.isAllocatePseudoTTY())
 				.openStdin(selectionModel.isInteractiveMode());
 		if (resourcesModel.isEnableResourceLimitations()) {
-			// memory limit must be converted from MB to bytes
-			config.memory(resourcesModel.getMemoryLimit() * MB);
-			config.cpuShares(resourcesModel.getCpuShareWeight());
+			config.memory(resourcesModel.getMemory());
+			config.cpuShares((long) resourcesModel.getCpuShareWeight());
 		}
 		// environment variables
 		final List<String> environmentVariables = new ArrayList<>();
