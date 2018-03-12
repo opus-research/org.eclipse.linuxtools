@@ -25,16 +25,16 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ClearConnectionMa
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerConnectionManagerUtils;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerImageHierarchyViewAssertion;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.MenuAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTUtils;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.TabDescriptorAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.TestLoggerRule;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTableItem;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.views.properties.PropertySheet;
-import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -91,6 +91,12 @@ public class DockerContainersViewSWTBotTest {
 		final SWTBotTableItem tableItem = SWTUtils.getListItem(dockerContainersViewBot.bot().table(), containerName);
 		assertThat(tableItem).isNotNull();
 		return tableItem.click().select();
+	}
+
+	private void selectContainersInTable(final String... items) {
+		final SWTBotTable table = dockerContainersViewBot.bot().table();
+		assertThat(table).isNotNull();
+		table.select(items);
 	}
 
 	@Test
@@ -160,24 +166,22 @@ public class DockerContainersViewSWTBotTest {
 	}
 
 	@Test
-	public void shouldShowSelectedContainerInPropertiesView() {
+	public void shouldProvideEnabledRestartOnMultipleContainers() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockContainerFactory.name("angry_bar").status("Stopped").build()).build();
+				.container(MockContainerFactory.name("gentle_foo").status("Running").build())
+				.container(MockContainerFactory.name("bold_eagle").status("Stopped").build())
+				.container(MockContainerFactory.name("angry_bar").status("Running").build()).build();
 		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client)
 				.withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		final PropertySheet propertySheet = SWTUtils
-				.syncExec(() -> SWTUtils.getView(bot, "org.eclipse.ui.views.PropertySheet", true));
-		this.dockerContainersView.setFocus();
-		// select the container in the table
-		selectContainerInTable("angry_bar");
-		// then the properties view should have a selected tab with container
-		// info
-		assertThat(propertySheet.getCurrentPage()).isInstanceOf(TabbedPropertySheetPage.class);
-		final TabbedPropertySheetPage currentPage = (TabbedPropertySheetPage) propertySheet.getCurrentPage();
-		TabDescriptorAssertion.assertThat(currentPage.getSelectedTab()).isNotNull()
-				.hasId("org.eclipse.linuxtools.docker.ui.properties.container.info");
+		// make sure the hierarchy view is closed.
+		SWTUtils.closeView(this.bot, DockerImageHierarchyView.VIEW_ID);
+		// open the context menu on one of the containers
+		selectContainersInTable("gentle_foo", "bold_eagle", "angry_bar");
+		final SWTBotMenu menuCommand = dockerContainersViewBot.bot().table().contextMenu("Restart");
+		// then
+		MenuAssertion.assertThat(menuCommand).isVisible().isEnabled();
 	}
 
 }
