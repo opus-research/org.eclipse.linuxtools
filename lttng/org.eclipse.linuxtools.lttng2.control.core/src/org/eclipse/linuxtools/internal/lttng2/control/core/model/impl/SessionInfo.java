@@ -185,6 +185,9 @@ public class SessionInfo extends TraceInfo implements ISessionInfo {
 
     @Override
     public boolean isStreamedTrace() {
+        if (isSnapshotSession()) {
+            return getSnapshotInfo().isStreamedSnapshot();
+        }
         return fIsStreamedTrace;
     }
 
