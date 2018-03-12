@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -17,9 +18,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
-import org.eclipse.linuxtools.internal.docker.core.RegistryAccountInfo;
-
-import com.spotify.docker.client.DockerCertificateException;
 
 public interface IDockerConnection {
 
@@ -191,19 +189,13 @@ public interface IDockerConnection {
 
 	void pullImage(String id, IDockerProgressHandler handler) throws DockerException, InterruptedException;
 
-	/**
-	 * @since 2.0
-	 */
-	void pullImage(String id, IRegistryAccount info, IDockerProgressHandler handler) throws DockerException, InterruptedException, DockerCertificateException;
+	void pullImage(String id, DockerAuthConfig authConfig,
+			IDockerProgressHandler handler)
+			throws DockerException, InterruptedException;
 
 	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException;
-
+	
 	void pushImage(String name, IDockerProgressHandler handler) throws DockerException, InterruptedException;
-
-	/**
-	 * @since 2.0
-	 */
-	void pushImage(String name, IRegistryAccount info, IDockerProgressHandler handler) throws DockerException, InterruptedException, DockerCertificateException;
 
 	/**
 	 * Adds a tag to an existing image
@@ -234,6 +226,24 @@ public interface IDockerConnection {
 	 */
 	InputStream copyContainer(String id, String path)
 			throws DockerException, InterruptedException;
+
+	/**
+	 * Copy a directory from the Host into a Container's file system.
+	 * 
+	 * @param directory
+	 *            the Host directory to copy to the Container
+	 * @param id
+	 *            the Container id
+	 * @param path
+	 *            the directory to place the Host files in the Container
+	 *
+	 * @throws DockerException
+	 *             in case of underlying problem
+	 * @throws InterruptedException
+	 *             if the thread was interrupted
+	 */
+	void copyToContainer(final String directory, String id, String path)
+			throws DockerException, InterruptedException, IOException;
 
 	/**
 	 * Determine if authorization is valid.
