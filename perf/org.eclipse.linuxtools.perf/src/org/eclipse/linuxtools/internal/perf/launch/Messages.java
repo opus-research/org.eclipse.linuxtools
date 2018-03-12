@@ -32,6 +32,7 @@ public class Messages extends NLS {
     public static String PerfOptionsTab_Loc_DNE;
     public static String PerfOptionsTab_Options;
     public static String PerfOptionsTab_Requires_LTE;
+    public static String PerfOptionsTab_EventsCantBeEmpty;
 
     static {
         // initialize resource bundle
