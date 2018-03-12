@@ -97,7 +97,8 @@ public class ImageRunResourceVolumesVariablesModel
 			if (selectedImage != null) {
 				this.imageInfo = selectedImage.getConnection()
 						.getImageInfo(selectedImage.id());
-				if (this.imageInfo.config().volumes() != null) {
+				if (this.imageInfo.config() != null
+						&& this.imageInfo.config().volumes() != null) {
 					for (String volume : this.imageInfo.config().volumes()) {
 						newDataVolumes.add(new DataVolumeModel(volume));
 					}
@@ -140,8 +141,8 @@ public class ImageRunResourceVolumesVariablesModel
 
 	public void setEnvironmentVariables(
 			final WritableList environmentVariables) {
-		firePropertyChange(ENVIRONMENT_VARIABLES, this.environmentVariables,
-				this.environmentVariables = environmentVariables);
+		this.environmentVariables.clear();
+		this.environmentVariables.addAll(environmentVariables);
 	}
 
 	public void removeEnvironmentVariable(
