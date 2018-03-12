@@ -18,6 +18,9 @@ import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -29,8 +32,6 @@ import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.Provider
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -62,6 +63,8 @@ public class PreferencesTest extends AbstractTest{
     private static final String PROFILING_PREFS_TYPE = "timing"; //$NON-NLS-1$
     private static final String[][] PROFILING_PREFS_INFO = {
             { "Coverage", "coverage" }, { "Memory", "memory" },{ "Timing", "timing" } };  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+
+    private static final Logger fLogger = Logger.getRootLogger();
 
     private static class NodeAvailableAndSelect extends DefaultCondition {
 
@@ -105,6 +108,7 @@ public class PreferencesTest extends AbstractTest{
     public static void setUpWorkbench() throws Exception {
         // Set up is based from from GcovTest{c,CPP}.
 
+        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         SWTWorkbenchBot bot = new SWTWorkbenchBot();
         try {
             bot.viewByTitle("Welcome").close(); //$NON-NLS-1$
@@ -286,27 +290,6 @@ public class PreferencesTest extends AbstractTest{
 
                 Button b = (Button) bot.widget(matcher); // the current selection
                 b.setSelection(false);
-            }
-        });
-    }
-
-    /**
-     * Click specfied menu item.
-     *
-     * @param menuItem
-     *            menu item to click
-     */
-    public static void click(final MenuItem menuItem) {
-        final Event event = new Event();
-        event.time = (int) System.currentTimeMillis();
-        event.widget = menuItem;
-        event.display = menuItem.getDisplay();
-        event.type = SWT.Selection;
-
-        UIThreadRunnable.asyncExec(menuItem.getDisplay(), new VoidResult() {
-            @Override
-            public void run() {
-                menuItem.notifyListeners(SWT.Selection, event);
             }
         });
     }
