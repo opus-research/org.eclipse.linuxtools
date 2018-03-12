@@ -11,41 +11,27 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
+import static org.eclipse.linuxtools.docker.core.EnumDockerConnectionSettings.TCP_CONNECTION;
 import static org.eclipse.linuxtools.docker.core.EnumDockerConnectionSettings.UNIX_SOCKET;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.beans.BeanProperties;
-import org.eclipse.core.databinding.observable.ChangeEvent;
-import org.eclipse.core.databinding.observable.IChangeListener;
-import org.eclipse.core.databinding.observable.list.IObservableList;
-import org.eclipse.core.databinding.observable.list.WritableList;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.observable.value.IValueChangeListener;
-import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
-import org.eclipse.core.databinding.validation.MultiValidator;
-import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
-import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.docker.core.DockerException;
+import org.eclipse.linuxtools.docker.core.EnumDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
-import org.eclipse.linuxtools.internal.docker.core.DockerConnection.Builder;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -60,41 +46,46 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * {@link WizardPage} to input the settings to connect to a Docker
- * engine/daemon.
+ * @author xcoulon
  *
  */
 public class NewDockerConnectionPage extends WizardPage {
 
-	private final DataBindingContext dbc;
-	private final NewDockerConnectionPageModel model;
+	private EnumDockerConnectionSettings bindingMode;
+	private String connectionName = null;
+	private String unixSocketPath = null;
+	private String tcpHost = null;
+	private boolean tcpTLSVerify = false;
+	private String tcpCertPath = null;
+	private Control[] bindingModeSelectionControls;
+	private Control[] unixSocketControls;
+	private Control[] tcpConnectionControls;
+	private Control[] tcpAuthControls;
+	private Text connectionNameText;
+	private Button customConnectionSettingsButton;
+	private Button unixSocketSelectionButton;
+	private Text unixSocketPathText;
+	private Button tcpConnectionSelectionButton;
+	private Text tcpHostText;
+	private Button tcpAuthButton;
+	private Text tcpCertPathText;
 
 	public NewDockerConnectionPage() {
 		super("NewDockerConnectionPage", //$NON-NLS-1$
-				WizardMessages.getString("NewDockerConnectionPage.title"), //$NON-NLS-1$
+				WizardMessages.getString("NewDockerConnectionPage.title"),
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
 		setMessage(WizardMessages.getString("NewDockerConnectionPage.msg")); //$NON-NLS-1$
-		this.model = new NewDockerConnectionPageModel();
-		this.dbc = new DataBindingContext();
 	}
 
 	@Override
 	public void createControl(final Composite parent) {
 		final Composite container = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(container);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
-				.applyTo(container);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).applyTo(container);
 		createConnectionSettingsContainer(container);
-		retrieveDefaultConnectionSettings();
 		setControl(container);
-	}
-
-	@Override
-	public void dispose() {
-		if (dbc != null) {
-			dbc.dispose();
-		}
-		super.dispose();
+		retrieveDefaultConnectionSettings();
+		setDefaultControlValues();
 	}
 
 	/**
@@ -109,215 +100,109 @@ public class NewDockerConnectionPage extends WizardPage {
 		final int COLUMNS = 3;
 		final int INDENT = 20;
 		final Composite container = new Composite(parent, SWT.NONE);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).span(1, 1)
-				.grab(true, false).applyTo(container);
-		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
-				.spacing(10, 2).applyTo(container);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).span(1, 1).grab(true, false).applyTo(container);
+		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6).spacing(10, 2).applyTo(container);
 
 		// Connection name
 		final Label connectionNameLabel = new Label(container, SWT.NONE);
 		connectionNameLabel.setText(
 				WizardMessages.getString("NewDockerConnectionPage.nameLabel")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.applyTo(connectionNameLabel);
-		final Text connectionNameText = new Text(container, SWT.BORDER);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(connectionNameLabel);
+		connectionNameText = new Text(container, SWT.BORDER);
 		connectionNameText.setToolTipText(WizardMessages
 				.getString("NewDockerConnectionPage.nameTooltip")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).span(2, 1).applyTo(connectionNameText);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).span(2, 1)
+				.applyTo(connectionNameText);
 
-		// custom settings checkbox
-		final Button customConnectionSettingsButton = new Button(container,
-				SWT.CHECK);
-		customConnectionSettingsButton
-				.setText("Use custom connection settings:");
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).indent(0, 10).span(COLUMNS, 1)
+		customConnectionSettingsButton = new Button(container, SWT.CHECK);
+		customConnectionSettingsButton.setText("Use custom connection settings:");
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).indent(0, 10).span(COLUMNS, 1)
 				.applyTo(customConnectionSettingsButton);
+		customConnectionSettingsButton.setSelection(false);
+
 		final Group customSettingsGroup = new Group(container, SWT.BORDER);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
-				.span(COLUMNS, 1).grab(true, false)
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).span(COLUMNS, 1).grab(true, false)
 				.applyTo(customSettingsGroup);
-		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
-				.spacing(10, 2).applyTo(customSettingsGroup);
+		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6).spacing(10, 2).applyTo(customSettingsGroup);
 
-		// Unix socket
-		final Button unixSocketBindingModeButton = new Button(
-				customSettingsGroup, SWT.RADIO);
-		unixSocketBindingModeButton.setText(
+		unixSocketSelectionButton = new Button(customSettingsGroup, SWT.RADIO);
+		unixSocketSelectionButton.setText(
 				WizardMessages.getString("NewDockerConnectionPage.unixSocket")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.span(COLUMNS, 1).applyTo(unixSocketBindingModeButton);
-
-		final Label unixSocketPathLabel = new Label(customSettingsGroup,
-				SWT.NONE);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(COLUMNS, 1).applyTo(unixSocketSelectionButton);
+		final Label unixSocketPathLabel = new Label(customSettingsGroup, SWT.NONE);
 		unixSocketPathLabel.setText(
 				WizardMessages.getString("NewDockerConnectionPage.location")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.indent(INDENT, 0).applyTo(unixSocketPathLabel);
-		final Text unixSocketPathText = new Text(customSettingsGroup,
-				SWT.BORDER);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).indent(INDENT, 0).applyTo(unixSocketPathLabel);
+		unixSocketPathText = new Text(customSettingsGroup, SWT.BORDER);
 		unixSocketPathText.setToolTipText(WizardMessages
 				.getString("NewDockerConnectionPage.unixPathTooltip")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).applyTo(unixSocketPathText);
-
-		final Button unixSocketPathBrowseButton = new Button(
-				customSettingsGroup, SWT.BUTTON1);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(unixSocketPathText);
+		final Button unixSocketPathBrowseButton = new Button(customSettingsGroup, SWT.BUTTON1);
 		unixSocketPathBrowseButton.setText(WizardMessages
 				.getString("NewDockerConnectionPage.browseButton")); //$NON-NLS-1$
 		unixSocketPathBrowseButton
 				.addSelectionListener(onBrowseUnixSocketPath());
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.applyTo(unixSocketPathBrowseButton);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(unixSocketPathBrowseButton);
 
-		// TCP connection
-		final Button tcpConnectionBindingModeButton = new Button(
-				customSettingsGroup, SWT.RADIO);
-		tcpConnectionBindingModeButton.setText(WizardMessages
+		tcpConnectionSelectionButton = new Button(customSettingsGroup, SWT.RADIO);
+		tcpConnectionSelectionButton.setText(WizardMessages
 				.getString("NewDockerConnectionPage.tcpConnection")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.span(COLUMNS, 1).applyTo(tcpConnectionBindingModeButton);
-
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(COLUMNS, 1)
+				.applyTo(tcpConnectionSelectionButton);
 		final Label tcpHostLabel = new Label(customSettingsGroup, SWT.NONE);
 		tcpHostLabel.setText(
 				WizardMessages.getString("NewDockerConnectionPage.hostLabel")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.indent(INDENT, 0).applyTo(tcpHostLabel);
-
-		final Text tcpHostText = new Text(customSettingsGroup, SWT.BORDER);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(2, 1)
-				.grab(true, false).applyTo(tcpHostText);
-
-		final Button tcpAuthButton = new Button(customSettingsGroup, SWT.CHECK);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).indent(INDENT, 0).applyTo(tcpHostLabel);
+		tcpHostText = new Text(customSettingsGroup, SWT.BORDER);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(2, 1).grab(true, false).applyTo(tcpHostText);
+		tcpAuthButton = new Button(customSettingsGroup, SWT.CHECK);
 		tcpAuthButton.setText(WizardMessages
 				.getString("NewDockerConnectionPage.tcpAuthButton")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.indent(INDENT, 0).span(3, 1).applyTo(tcpAuthButton);
-
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).indent(INDENT, 0).span(3, 1).applyTo(tcpAuthButton);
 		final Label tcpCertPathLabel = new Label(customSettingsGroup, SWT.NONE);
-		tcpCertPathLabel.setText(WizardMessages
-				.getString("NewDockerConnectionPage.tcpPathLabel")); //$NON-NLS-1$
+		tcpCertPathLabel.setText(
+				WizardMessages.getString("NewDockerConnectionPage.tcpPathLabel")); //$NON-NLS-1$
 		tcpCertPathLabel.setToolTipText(WizardMessages
 				.getString("NewDockerConnectionPage.tcpPathTooltip")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.indent(INDENT * 2, 0).applyTo(tcpCertPathLabel);
-		final Text tcpCertPathText = new Text(customSettingsGroup, SWT.BORDER);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).applyTo(tcpCertPathText);
-		final Button tcpCertPathBrowseButton = new Button(customSettingsGroup,
-				SWT.BUTTON1);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).indent(INDENT * 2, 0).applyTo(tcpCertPathLabel);
+		tcpCertPathText = new Text(customSettingsGroup, SWT.BORDER);
+		tcpCertPathText.setEnabled(false);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(tcpCertPathText);
+		final Button tcpCertPathBrowseButton = new Button(customSettingsGroup, SWT.BUTTON1);
 		tcpCertPathBrowseButton.setText(WizardMessages
 				.getString("NewDockerConnectionPage.browseButton")); //$NON-NLS-1$
-		tcpCertPathBrowseButton.addSelectionListener(onBrowseTcpCertPath());
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.applyTo(tcpCertPathBrowseButton);
+		tcpCertPathBrowseButton.addSelectionListener(onBrowseTcpCertPathFile());
+		tcpCertPathText.setEnabled(false);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(tcpCertPathBrowseButton);
 
 		// the 'test connection' button
 		final Button testConnectionButton = new Button(container, SWT.NONE);
 		testConnectionButton.setText(WizardMessages
 				.getString("NewDockerConnectionPage.testConnection")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.span(COLUMNS, 1).align(SWT.END, SWT.CENTER)
-				.applyTo(testConnectionButton);
-		testConnectionButton
-				.addSelectionListener(onTestConnectionButtonSelection());
-
-		// observe
-		final IObservableValue connectionNameObservable = WidgetProperties
-				.text(SWT.Modify).observe(connectionNameText);
-		final IObservableValue unixSocketBindingModeObservable = WidgetProperties
-				.selection().observe(unixSocketBindingModeButton);
-		final IObservableValue unixSocketPathObservable = WidgetProperties
-				.text(SWT.Modify).observe(unixSocketPathText);
-		final IObservableValue customConnectionSettingsObservable = WidgetProperties
-				.selection().observe(customConnectionSettingsButton);
-		final IObservableValue tcpConnectionBindingModeObservable = WidgetProperties
-				.selection().observe(tcpConnectionBindingModeButton);
-		final IObservableValue tcpCertPathObservable = WidgetProperties
-				.text(SWT.Modify).observe(tcpCertPathText);
-		final IObservableValue tcpTlsVerifyObservable = WidgetProperties
-				.selection().observe(tcpAuthButton);
-		final IObservableValue tcpHostObservable = WidgetProperties
-				.text(SWT.Modify).observe(tcpHostText);
-
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(COLUMNS, 1).align(SWT.END, SWT.CENTER).applyTo(testConnectionButton);
+		testConnectionButton.addSelectionListener(onTestConnectionButtonSelection());
+		
 		// group controls to easily enable/disable them
-		final Control[] bindingModeSelectionControls = new Control[] {
-				unixSocketBindingModeButton, tcpConnectionBindingModeButton };
-		final Control[] unixSocketControls = new Control[] { unixSocketPathText,
-				unixSocketPathLabel, unixSocketPathBrowseButton };
-		final Control[] tcpConnectionControls = new Control[] { tcpHostText,
-				tcpHostLabel, tcpAuthButton };
-		final Control[] tcpAuthControls = new Control[] { tcpCertPathText,
-				tcpCertPathLabel, tcpCertPathBrowseButton };
-		customConnectionSettingsObservable
-				.addValueChangeListener(onCustomConnectionSettingsSelection(
-						bindingModeSelectionControls, unixSocketControls,
-						tcpAuthControls, tcpConnectionControls));
-		unixSocketBindingModeObservable.addChangeListener(
-				onUnixSocketBindingSelection(unixSocketControls));
-		tcpConnectionBindingModeObservable.addChangeListener(
-				onTcpConnectionBindingSelection(tcpConnectionControls,
-						tcpAuthControls));
-		tcpTlsVerifyObservable
-				.addValueChangeListener(onTcpAuthSelection(tcpAuthControls));
+		bindingModeSelectionControls = new Control[] { unixSocketSelectionButton, tcpConnectionSelectionButton };
+		unixSocketControls = new Control[] { unixSocketPathText, unixSocketPathLabel, unixSocketPathBrowseButton };
+		tcpConnectionControls = new Control[] { tcpHostText, tcpHostLabel, tcpAuthButton };
+		tcpAuthControls = new Control[] { tcpCertPathText, tcpCertPathLabel, tcpCertPathBrowseButton };
 
-		// bind controls to model
-		dbc.bindValue(connectionNameObservable,
-				BeanProperties
-						.value(NewDockerConnectionPageModel.class,
-								NewDockerConnectionPageModel.CONNECTION_NAME)
-						.observe(model));
-		dbc.bindValue(customConnectionSettingsObservable,
-				BeanProperties
-						.value(NewDockerConnectionPageModel.class,
-								NewDockerConnectionPageModel.CUSTOM_SETTINGS)
-						.observe(model));
-		dbc.bindValue(unixSocketBindingModeObservable,
-				BeanProperties
-						.value(NewDockerConnectionPageModel.class,
-								NewDockerConnectionPageModel.UNIX_SOCKET_BINDING_MODE)
-						.observe(model));
-		dbc.bindValue(unixSocketPathObservable,
-				BeanProperties
-						.value(NewDockerConnectionPageModel.class,
-								NewDockerConnectionPageModel.UNIX_SOCKET_PATH)
-						.observe(model));
-		dbc.bindValue(tcpConnectionBindingModeObservable,
-				BeanProperties
-						.value(NewDockerConnectionPageModel.class,
-								NewDockerConnectionPageModel.TCP_CONNECTION_BINDING_MODE)
-						.observe(model));
-		dbc.bindValue(tcpHostObservable,
-				BeanProperties
-						.value(NewDockerConnectionPageModel.class,
-								NewDockerConnectionPageModel.TCP_HOST)
-						.observe(model));
-		dbc.bindValue(tcpTlsVerifyObservable,
-				BeanProperties
-						.value(NewDockerConnectionPageModel.class,
-								NewDockerConnectionPageModel.TCP_TLS_VERIFY)
-						.observe(model));
-		dbc.bindValue(tcpCertPathObservable,
-				BeanProperties
-						.value(NewDockerConnectionPageModel.class,
-								NewDockerConnectionPageModel.TCP_CERT_PATH)
-						.observe(model));
-		// other validations will be performed when the user changes the value
-		// only, not at the dialog opening
-		dbc.addValidationStatusProvider(new UnixSocketValidator(
-				unixSocketBindingModeObservable, unixSocketPathObservable));
-		dbc.addValidationStatusProvider(new TcpHostValidator(
-				tcpConnectionBindingModeObservable, tcpHostObservable));
-		dbc.addValidationStatusProvider(
-				new TcpCertificatesValidator(tcpConnectionBindingModeObservable,
-						tcpTlsVerifyObservable, tcpCertPathObservable));
-		// attach the Databinding context status to this wizard page.
-		WizardPageSupport.create(this, this.dbc);
-		// give focus to connectionName text at first
-		connectionNameText.setFocus();
+		// now use the control groups to bind events
+		customConnectionSettingsButton.addSelectionListener(onCustomConnectionSettingsSelection());
+		connectionNameText.addModifyListener(onConnectionNameModification());
+		unixSocketSelectionButton.addSelectionListener(onUnixSocketSelection());
+		unixSocketPathText.addModifyListener(onUnixSocketModification());
+		tcpConnectionSelectionButton.addSelectionListener(onTcpConnectionSelection());
+		tcpAuthButton.addSelectionListener(onTcpAuthSelection());
+		tcpHostText.addModifyListener(onTcpHostModification());
+		tcpCertPathText.addModifyListener(onTcpCertPathModification());
+
+		// by default, custom settings are disabled:
+		setWidgetsEnabled(false, bindingModeSelectionControls, unixSocketControls, tcpConnectionControls,
+				tcpAuthControls);
 	}
-
+	
 	private SelectionListener onBrowseUnixSocketPath() {
 		return new SelectionAdapter() {
 			@Override
@@ -325,14 +210,14 @@ public class NewDockerConnectionPage extends WizardPage {
 				final FileDialog fileDialog = new FileDialog(getShell());
 				final String selectedPath = fileDialog.open();
 				if (selectedPath != null) {
-					model.setUnixSocketPath(selectedPath);
+					unixSocketPathText.setText(selectedPath);
 				}
 
 			}
 		};
 	}
 
-	private SelectionListener onBrowseTcpCertPath() {
+	private SelectionListener onBrowseTcpCertPathFile() {
 		return new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -340,8 +225,9 @@ public class NewDockerConnectionPage extends WizardPage {
 						getShell());
 				final String selectedPath = directoryDialog.open();
 				if (selectedPath != null) {
-					model.setTcpCertPath(selectedPath);
+					tcpCertPathText.setText(selectedPath);
 				}
+
 			}
 		};
 	}
@@ -370,21 +256,19 @@ public class NewDockerConnectionPage extends WizardPage {
 									WizardMessages.getString(
 											"NewDockerConnectionPage.retrieveTask"), //$NON-NLS-1$
 									1);
-							try {
-								final DockerConnection.Defaults defaults = new DockerConnection.Defaults();
-								model.setBindingMode(defaults.getBindingMode());
-								model.setConnectionName(defaults.getName());
-								model.setUnixSocketPath(
-										defaults.getUnixSocketPath());
-								model.setTcpHost(defaults.getTcpHost());
-								model.setTcpTLSVerify(
-										defaults.getTcpTlsVerify());
-								model.setTcpCertPath(defaults.getTcpCertPath());
-								model.setConnectionName(defaults.getName());
-							} catch (DockerException e) {
-								Activator.log(e);
-							}
-
+					try {
+						final DockerConnection.Defaults defaults = new DockerConnection.Defaults();
+						NewDockerConnectionPage.this.bindingMode = defaults.getBindingMode();
+						NewDockerConnectionPage.this.connectionName = defaults.getName();
+						NewDockerConnectionPage.this.unixSocketPath = defaults.getUnixSocketPath();
+						NewDockerConnectionPage.this.tcpHost = defaults.getTcpHost();
+						NewDockerConnectionPage.this.tcpTLSVerify = defaults.getTcpTlsVerify();
+						NewDockerConnectionPage.this.tcpCertPath = defaults.getTcpCertPath();
+						NewDockerConnectionPage.this.connectionName = defaults.getName();
+					} catch (DockerException e) {
+						Activator.log(e);
+					}
+					
 					monitor.done();
 				}
 			});
@@ -395,78 +279,112 @@ public class NewDockerConnectionPage extends WizardPage {
 		
 	}
 
-	private IValueChangeListener onCustomConnectionSettingsSelection(
-			final Control[] bindingModeSelectionControls,
-			final Control[] unixSocketControls, final Control[] tcpAuthControls,
-			final Control[] tcpConnectionControls) {
+	private void setDefaultControlValues() {
+		// now that all widgets and their selectionAdapters are instantiated,
+		// let's set the values
+		if(this.connectionName != null) {
+			this.connectionNameText.setText(this.connectionName);
+		}
+		if (this.bindingMode == UNIX_SOCKET) {
+			unixSocketSelectionButton.setSelection(true);
+			if (this.unixSocketPath != null) {
+				unixSocketPathText.setText(this.unixSocketPath);
+			}
+		} else {
+			tcpConnectionSelectionButton.setSelection(true);
+			if (this.tcpHost != null) {
+				tcpHostText.setText(this.tcpHost);
+			}
+			if (this.tcpTLSVerify) {
+				setWidgetsEnabled(true, tcpAuthControls);
+				tcpAuthButton.setSelection(true);
+				tcpCertPathText.setEnabled(true);
+				if (this.tcpCertPath != null) {
+					tcpCertPathText.setText(this.tcpCertPath);
+				}
+			}
+			// disable other widgets
+			unixSocketSelectionButton.setSelection(false);
+		}
+		// disable widgets
+		setWidgetsEnabled(false, tcpConnectionControls, tcpAuthControls);
+		setWidgetsEnabled(false, unixSocketControls);
+		this.connectionNameText.setFocus();
+	}
 
-		return new IValueChangeListener() {
+	private SelectionAdapter onCustomConnectionSettingsSelection() {
+		return new SelectionAdapter() {
 			@Override
-			public void handleValueChange(final ValueChangeEvent event) {
-				final Boolean useCustomSettings = (Boolean) event
-						.getObservableValue().getValue();
-				setWidgetsEnabled(
-						useCustomSettings && model.isTcpConnectionBindingMode()
-								&& model.isTcpTLSVerify(),
-						tcpAuthControls);
-				setWidgetsEnabled(
-						useCustomSettings && model.isTcpConnectionBindingMode(),
-						tcpConnectionControls);
-				setWidgetsEnabled(
-						useCustomSettings && model.isUnixSocketBindingMode(),
-						unixSocketControls);
-				setWidgetsEnabled(useCustomSettings,
-						bindingModeSelectionControls);
+			public void widgetSelected(final SelectionEvent e) {
+				final Button targetButton = ((Button) e.widget);
+				if (targetButton.getSelection()) {
+					setWidgetsEnabled(true, bindingModeSelectionControls);
+					if (bindingMode == UNIX_SOCKET) {
+						setWidgetsEnabled(true, unixSocketControls);
+					} else {
+						if (tcpTLSVerify) {
+							setWidgetsEnabled(true, tcpAuthControls);
+						}
+						setWidgetsEnabled(true, tcpConnectionControls);
+					}
+				} else {
+					setWidgetsEnabled(false, unixSocketControls, tcpConnectionControls, tcpAuthControls);
+				}
 			}
 		};
 	}
 
-	private IChangeListener onUnixSocketBindingSelection(
-			final Control[] unixSocketControls) {
-		return new IChangeListener() {
+	private SelectionAdapter onUnixSocketSelection() {
+		return new SelectionAdapter() {
 			@Override
-			public void handleChange(final ChangeEvent event) {
-				setWidgetsEnabled(
-						model.isCustomSettings()
-								&& model.isUnixSocketBindingMode(),
-						unixSocketControls);
+			public void widgetSelected(final SelectionEvent e) {
+				final Button targetButton = ((Button) e.widget);
+				if (targetButton.getSelection()) {
+					bindingMode = UNIX_SOCKET;
+					setWidgetsEnabled(true, unixSocketControls);
+				} else {
+					setWidgetsEnabled(false, unixSocketControls);
+				}
 			}
 		};
 	}
 
-	private IChangeListener onTcpConnectionBindingSelection(
-			final Control[] tcpConnectionControls,
-			final Control[] tcpAuthControls) {
-		return new IChangeListener() {
+	private SelectionAdapter onTcpConnectionSelection() {
+		return new SelectionAdapter() {
 			@Override
-			public void handleChange(final ChangeEvent event) {
-				setWidgetsEnabled(model.isCustomSettings()
-						&& model.isTcpConnectionBindingMode()
-						&& model.isTcpTLSVerify(), tcpAuthControls);
-				// and give focus to the first given control (if applicable)
-				setWidgetsEnabled(
-						model.isCustomSettings()
-								&& model.isTcpConnectionBindingMode(),
-						tcpConnectionControls);
+			public void widgetSelected(final SelectionEvent e) {
+				final Button targetButton = ((Button) e.widget);
+				if (targetButton.getSelection()) {
+					bindingMode = TCP_CONNECTION;
+					if (tcpTLSVerify) {
+						setWidgetsEnabled(true, tcpAuthControls);
+					}
+					setWidgetsEnabled(true, tcpConnectionControls);
+				} else {
+					setWidgetsEnabled(false, tcpConnectionControls);
+					setWidgetsEnabled(false, tcpAuthControls);
+				}
 			}
 		};
 	}
 
-	private IValueChangeListener onTcpAuthSelection(
-			final Control[] tcpAuthControls) {
-		return new IValueChangeListener() {
-
+	private SelectionAdapter onTcpAuthSelection() {
+		return new SelectionAdapter() {
 			@Override
-			public void handleValueChange(final ValueChangeEvent event) {
-				setWidgetsEnabled(model.isCustomSettings()
-						&& model.isTcpConnectionBindingMode()
-						&& model.isTcpTLSVerify(), tcpAuthControls);
+			public void widgetSelected(final SelectionEvent e) {
+				final Button targetButton = ((Button) e.widget);
+				if (targetButton.getSelection()) {
+					tcpTLSVerify = true;
+					setWidgetsEnabled(true, tcpAuthControls);
+				} else {
+					tcpTLSVerify = false;
+					setWidgetsEnabled(false, tcpAuthControls);
+				}
 			}
 		};
 	}
 
-	private void setWidgetsEnabled(final boolean enabled,
-			final Control... controls) {
+	private void setWidgetsEnabled(final boolean enabled, final Control... controls) {
 		for (Control control : controls) {
 			control.setEnabled(enabled);
 		}
@@ -476,10 +394,53 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 	}
 
+	private void setWidgetsEnabled(final boolean enabled, final Control[]... controlGroups) {
+		for (Control[] controlGroup : controlGroups) {
+			for (Control control : controlGroup) {
+				control.setEnabled(enabled);
+			}
+		}
+	}
+
+	private ModifyListener onConnectionNameModification() {
+		return new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent evt) {
+				NewDockerConnectionPage.this.connectionName = ((Text) evt.widget).getText();
+			}
+		};
+	}
+
+	private ModifyListener onUnixSocketModification() {
+		return new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent evt) {
+				NewDockerConnectionPage.this.unixSocketPath = ((Text) evt.widget).getText();
+			}
+		};
+	}
+
+	private ModifyListener onTcpHostModification() {
+		return new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent evt) {
+				NewDockerConnectionPage.this.tcpHost = ((Text) evt.widget).getText();
+			}
+		};
+	}
+
+	private ModifyListener onTcpCertPathModification() {
+		return new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent evt) {
+				NewDockerConnectionPage.this.tcpCertPath = ((Text) evt.widget).getText();
+			}
+		};
+	}
+	
 	/**
-	 * Verifies that the given connection settings work by trying to connect to
-	 * the target Docker daemon
-	 * 
+	 * Verifies that the given connection settings work by trying to connect to the 
+	 * target Docker daemon
 	 * @return
 	 */
 	private SelectionListener onTestConnectionButtonSelection() {
@@ -555,169 +516,20 @@ public class NewDockerConnectionPage extends WizardPage {
 	}
 
 	/**
-	 * Opens a new {@link DockerConnection} using the settings of this
-	 * {@link NewDockerConnectionPage}.
-	 * 
+	 * Opens a new {@link DockerConnection} using the settings of this {@link NewDockerConnectionPage}.
 	 * @return
 	 * @throws DockerCertificateException
 	 */
 	protected DockerConnection getDockerConnection() {
-		if (model.getBindingMode() == UNIX_SOCKET) {
-			return new DockerConnection.Builder()
-					.name(model.getConnectionName())
-					.unixSocket(model.getUnixSocketPath()).build();
+		if(bindingMode == UNIX_SOCKET) {
+			return new DockerConnection.Builder().name(connectionName).unixSocket(unixSocketPath).build();
 		} else {
-			final Builder tcpConnectionBuilder = new DockerConnection.Builder()
-					.name(model.getConnectionName())
-					.tcpHost(model.getTcpHost());
-			if (model.isTcpTLSVerify()) {
-				tcpConnectionBuilder.tcpCertPath(model.getTcpCertPath());
-			}
-			return tcpConnectionBuilder.build();
-		}
-	}
-
-	private static class UnixSocketValidator extends MultiValidator {
-
-		private final IObservableValue unixSocketBindingModeModelObservable;
-		private final IObservableValue unixSocketPathModelObservable;
-
-		public UnixSocketValidator(
-				final IObservableValue unixSocketBindingModeModelObservable,
-				final IObservableValue unixSocketPathModelObservable) {
-			this.unixSocketBindingModeModelObservable = unixSocketBindingModeModelObservable;
-			this.unixSocketPathModelObservable = unixSocketPathModelObservable;
-		}
-
-		@Override
-		public IObservableList getTargets() {
-			WritableList targets = new WritableList();
-			targets.add(unixSocketPathModelObservable);
-			return targets;
-		}
-
-		@Override
-		protected IStatus validate() {
-			final Boolean unixSocketBindingMode = (Boolean) this.unixSocketBindingModeModelObservable
-					.getValue();
-			final String unixSocketPath = (String) this.unixSocketPathModelObservable
-					.getValue();
-			if (unixSocketBindingMode) {
-				if (unixSocketPath == null || unixSocketPath.isEmpty()) {
-					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.missingUnixSocket.msg")); //$NON-NLS-1$
-				}
-				final File unixSocket = new File(unixSocketPath);
-				if (!unixSocket.exists()) {
-					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.invalidUnixSocket.msg")); //$NON-NLS-1$
-				} else if (!unixSocket.canRead() || !unixSocket.canRead()) {
-					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.unreadableUnixSocket.msg")); //$NON-NLS-1$
-				}
-			}
-			return ValidationStatus.ok();
-		}
-
-	}
-
-	private static class TcpHostValidator extends MultiValidator {
-
-		private final IObservableValue tcpConnectionBindingModeModelObservable;
-		private final IObservableValue tcpHostModelObservable;
-
-		public TcpHostValidator(
-				final IObservableValue tcpConnectionBindingModeModelObservable,
-				final IObservableValue tcpHostModelObservable) {
-			this.tcpConnectionBindingModeModelObservable = tcpConnectionBindingModeModelObservable;
-			this.tcpHostModelObservable = tcpHostModelObservable;
-		}
-
-		@Override
-		public IObservableList getTargets() {
-			WritableList targets = new WritableList();
-			targets.add(tcpHostModelObservable);
-			return targets;
-		}
-
-		@Override
-		protected IStatus validate() {
-			final Boolean tcpConnectionBindingMode = (Boolean) this.tcpConnectionBindingModeModelObservable
-					.getValue();
-			final String tcpHost = (String) this.tcpHostModelObservable
-					.getValue();
-			if (tcpConnectionBindingMode) {
-				if (tcpHost == null || tcpHost.isEmpty()) {
-					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.missingTcpHost.msg")); //$NON-NLS-1$
-				} else if (!isValidTcpHost(tcpHost)) {
-					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.invalidTcpHost.msg")); //$NON-NLS-1$
-				}
-			}
-			return ValidationStatus.ok();
-		}
-
-		private boolean isValidTcpHost(final String tcpHost) {
-			try {
-				final URI uri = new URI(tcpHost);
-				final String scheme = uri.getScheme().toLowerCase();
-				return scheme.equals("tcp") || scheme.equals("http")
-						|| scheme.equals("https");
-			} catch (URISyntaxException e) {
-				// URI is not valid
-				return false;
+			if(tcpTLSVerify) {
+				return new DockerConnection.Builder().name(connectionName).tcpHost(tcpHost).tcpCertPath(tcpCertPath).build();
+			} else {
+				return new DockerConnection.Builder().name(connectionName).tcpHost(tcpHost).build();
 			}
 		}
-	}
-
-	private static class TcpCertificatesValidator extends MultiValidator {
-
-		private final IObservableValue tcpConnectionBindingModeModelObservable;
-		private final IObservableValue tcpTlsVerifyModelObservable;
-		private final IObservableValue tcpCertPathModelObservable;
-
-		public TcpCertificatesValidator(
-				final IObservableValue tcpConnectionBindingModeModelObservable,
-				final IObservableValue tcpTlsVerifyModelObservable,
-				final IObservableValue tcpCertPathModelObservable) {
-			this.tcpConnectionBindingModeModelObservable = tcpConnectionBindingModeModelObservable;
-			this.tcpTlsVerifyModelObservable = tcpTlsVerifyModelObservable;
-			this.tcpCertPathModelObservable = tcpCertPathModelObservable;
-		}
-
-		@Override
-		public IObservableList getTargets() {
-			WritableList targets = new WritableList();
-			targets.add(tcpCertPathModelObservable);
-			return targets;
-		}
-
-		@Override
-		protected IStatus validate() {
-			final Boolean tcpConnectionBindingMode = (Boolean) this.tcpConnectionBindingModeModelObservable
-					.getValue();
-			final Boolean tcpTlsVerify = (Boolean) this.tcpTlsVerifyModelObservable
-					.getValue();
-			final String tcpCertPath = (String) this.tcpCertPathModelObservable
-					.getValue();
-			if (tcpConnectionBindingMode && tcpTlsVerify) {
-				if (tcpCertPath == null || tcpCertPath.isEmpty()) {
-					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.missingTcpCertPath.msg")); //$NON-NLS-1$
-				}
-				final File tcpCert = new File(tcpCertPath);
-				if (!tcpCert.exists()) {
-					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.invalidTcpCertPath.msg")); //$NON-NLS-1$
-				} else if (!tcpCert.canRead() || !tcpCert.canRead()) {
-					return ValidationStatus.error(WizardMessages.getString(
-							"NewDockerConnectionPage.validation.unreadableTcpCertPath.msg")); //$NON-NLS-1$
-				}
-			}
-			return ValidationStatus.ok();
-		}
-
 	}
 
 }
