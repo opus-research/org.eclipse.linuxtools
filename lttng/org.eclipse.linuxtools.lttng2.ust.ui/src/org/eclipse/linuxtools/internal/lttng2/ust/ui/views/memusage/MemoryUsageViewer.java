@@ -150,10 +150,8 @@ public class MemoryUsageViewer extends TmfCommonXLineChartViewer {
                 }
                 updateDisplay();
             }
-        } catch (AttributeNotFoundException | StateValueTypeException e) {
+        } catch (AttributeNotFoundException | StateValueTypeException | StateSystemDisposedException e) {
             Activator.logError("Error updating the data of the Memory usage view", e); //$NON-NLS-1$
-        } catch (StateSystemDisposedException e) {
-            /* State system is closing down, no point continuing */
         }
     }
 
