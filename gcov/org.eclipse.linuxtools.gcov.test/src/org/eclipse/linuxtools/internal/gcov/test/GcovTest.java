@@ -52,7 +52,6 @@ import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
-import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
@@ -79,14 +78,7 @@ public abstract class GcovTest {
 
     public static SWTWorkbenchBot init(String projectName, String projectType)
             throws Exception {
-
-        if (!fLogger.getAllAppenders().hasMoreElements()) {
-            // First-time settings.
-            // (The nature of the test suite layout requires this init method to be called multiple times.)
-            SWTBotPreferences.TIMEOUT = 20000;
-            fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
-        }
-
+        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         bot = new SWTWorkbenchBot();
         testProjectName = projectName;
         testProjectType = projectType;
@@ -119,6 +111,7 @@ public abstract class GcovTest {
             workspace.setDescription(desc);
         }
 
+
         // define & repopulate project explorer
         projectExplorer = bot.viewByTitle(PROJECT_EXPLORER);
         createProject();
@@ -147,60 +140,6 @@ public abstract class GcovTest {
             }
         }
         bot.closeAllEditors();
-    }
-
-    /**
-     * Click an item from the main Eclipse menu, with a guarantee that the main
-     * shell will be in focus.
-     * @param items The names of each item in the path to the target item to click.
-     * For example, to click "File->New->Project...", the items would be "File",
-     * "New", and "Project...".
-     */
-    private static void clickMainMenu(String... items) {
-        if (items.length == 0) {
-            return;
-        }
-        mainShell.setFocus();
-        SWTBotMenu menu = bot.menu(items[0]);
-        for (int i = 1; i < items.length; i++) {
-            menu = menu.menu(items[i]);
-        }
-        menu.click();
-    }
-
-    private static class ExpandTreeAndSelect extends DefaultCondition {
-        private SWTBotTree tree;
-        private String[] nodes;
-
-        /**
-         * Attempt to expand a tree to reveal the provided node path, and select
-         * the final node in the path.
-         * @param tree The tree to expand.
-         * @param nodes The nodes to expand, the last of which will be selected.
-         */
-        private ExpandTreeAndSelect(SWTBotTree tree, String ...nodes) {
-            this.tree = tree;
-            this.nodes = new String[nodes.length];
-            System.arraycopy(nodes, 0, this.nodes, 0, nodes.length);
-        }
-
-        @Override
-        public boolean test() {
-            try {
-                return tree.expandNode(nodes).select() != null;
-            } catch (WidgetNotFoundException e) {
-                return false;
-            }
-        }
-
-        @Override
-        public String getFailureMessage() {
-            StringBuilder msg = new StringBuilder("Unable to expand tree (" + tree + ") to select tree item (");
-            for (String node : nodes) {
-                msg.append(node);
-            }
-            return msg.toString();
-        }
     }
 
     public static void cleanup(SWTWorkbenchBot bot) {
@@ -240,15 +179,20 @@ public abstract class GcovTest {
     }
 
     public static void createProject() {
-        clickMainMenu("File", "New", testProjectType);
+        mainShell.activate();
+        SWTBotMenu fileMenu = bot.menu("File");
+        SWTBotMenu newMenu = fileMenu.menu("New");
+        SWTBotMenu projectMenu = newMenu.menu(testProjectType);
+        projectMenu.click();
 
         SWTBotShell shell = bot.shell(testProjectType);
         shell.activate();
 
+        bot.tree().expandNode("Makefile project").select("Empty Project");
         bot.textWithLabel("Project name:").setText(testProjectName);
-        bot.waitUntil(new ExpandTreeAndSelect(bot.tree(), "Makefile project", "Empty Project"));
         bot.table().select("Linux GCC");
 
+        bot.button("Next >").click();
         bot.button("Finish").click();
         bot.waitUntil(Conditions.shellCloses(shell));
     }
