@@ -31,7 +31,6 @@ import org.junit.runners.Suite;
     org.eclipse.linuxtools.lttng2.kernel.ui.tests.AllTests.class,
     org.eclipse.linuxtools.lttng2.ust.core.tests.AllTests.class,
     org.eclipse.linuxtools.lttng2.ust.ui.tests.AllTests.class,
-    org.eclipse.linuxtools.pcap.core.tests.AllPcapCoreTests.class,
     org.eclipse.linuxtools.statesystem.core.tests.AllTests.class,
     org.eclipse.linuxtools.tmf.analysis.xml.core.tests.AllAnalysisXmlCoreTests.class,
     org.eclipse.linuxtools.tmf.analysis.xml.ui.tests.AllAnalysisXmlUiTests.class,
