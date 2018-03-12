@@ -121,14 +121,12 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		if (force || !isVMsLoaded()) {
 			String [] res = call(new String[] { "global-status" });
 			List<String> vmIDs = new LinkedList<>();
-			List<String> vmDirs = new LinkedList<>();
 			List<IVagrantVM> containers = new LinkedList<>();
 			Map<String, List<String>> sshConfig = new HashMap<>();
 			for (int i = 0; i < res.length; i++) {
 				String[] items = res[i].split("\\s+");
 				if (items.length == 5 && i >= 2) {
 					vmIDs.add(items[0]);
-					vmDirs.add(items[items.length - 1]);
 				}
 			}
 			if (!vmIDs.isEmpty()) {
@@ -166,11 +164,11 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 						if (sshConfig.isEmpty()) {
 							// VM exists but ssh is not configured
 							vm = new VagrantVM(vmIDs.get((i / 5)), name,
-									provider, state, state_desc, new File(vmDirs.get(i / 5)),
+									provider, state, state_desc, new File("/dev/null"),
 									null, null, 0, null);
 						} else {
 							vm = new VagrantVM(vmIDs.get((i / 5)), name,
-									provider, state, state_desc, new File(vmDirs.get(i / 5)),
+									provider, state, state_desc, new File("/dev/null"),
 									sshConfig.get(vmIDs.get((i / 5))).get(0),
 									sshConfig.get(vmIDs.get((i / 5))).get(1),
 									Integer.parseInt(sshConfig.get(vmIDs.get((i / 5))).get(2)),
@@ -295,12 +293,8 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 
 	@Override
 	public Process up(File vagrantDir, String provider) {
-		if (provider != null) {
-			return rtCall(new String[] { "up", "--provider", provider },
-					vagrantDir);
-		} else {
-			return rtCall(new String[] { "up" }, vagrantDir);
-		}
+		return rtCall(new String[] { "up", "--provider", provider },
+				vagrantDir);
 	}
 
 	@Override
