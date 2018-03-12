@@ -183,12 +183,16 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 			@Override
 			public String getText(final Object element) {
 				if (element instanceof IDockerImage) {
-					return ((IDockerImage) element).id();
+					final String imageId = ((IDockerImage) element).id();
+					if (imageId.length() > 12) {
+						return imageId.substring(0, 12);
+					}
+					return imageId;
 				}
 				return super.getText(element);
 			}
 		});
-		// 'Tags' column
+		// 'Repo/Tags' column
 		final TableViewerColumn tagsColumn = createColumn(DVMessages
 				.getString("TAGS")); //$NON-NLS-1$
 		setLayout(tagsColumn, tableLayout, 150);
@@ -196,19 +200,22 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 			@Override
 			public String getText(final Object element) {
 				if (element instanceof IDockerImage) {
-					final StringBuilder tags = new StringBuilder();
-					List<String> repoTags = new ArrayList<>();
-					repoTags.addAll(((IDockerImage) element).repoTags());
-					Collections.sort(repoTags);
-					for (Iterator<String> iterator = repoTags.iterator(); iterator
-							.hasNext();) {
-						final String tag = iterator.next();
-						tags.append(tag);
-						if (iterator.hasNext()) {
-							tags.append(System.getProperty("line.separator")); //$NON-NLS-1$
+					final IDockerImage image = (IDockerImage) element;
+					final StringBuilder messageBuilder = new StringBuilder(
+							image.repo());
+					if (!image.tags().isEmpty()) {
+						final List<String> tags = new ArrayList<>(image.tags());
+						Collections.sort(tags);
+						messageBuilder.append(": ");
+						for (Iterator<String> tagIterator = tags
+								.iterator(); tagIterator.hasNext();) {
+							messageBuilder.append(tagIterator.next());
+							if (tagIterator.hasNext()) {
+								messageBuilder.append(", ");
+							}
 						}
 					}
-					return tags.toString();
+					return messageBuilder.toString();
 				}
 				return super.getText(element);
 			}
