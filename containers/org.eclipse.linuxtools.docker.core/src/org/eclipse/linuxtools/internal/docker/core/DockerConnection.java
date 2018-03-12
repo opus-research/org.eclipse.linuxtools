@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -54,7 +55,6 @@ import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
 import org.eclipse.linuxtools.docker.core.IDockerContainerListener;
 import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
-import org.eclipse.linuxtools.docker.core.IDockerImageBuildOptions;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
 import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
@@ -514,7 +514,15 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				Activator.logErrorMessage(e.getMessage());
 				throw new InterruptedException();
 			} catch (Exception e) {
-				Activator.logErrorMessage(e.getMessage());
+				/*
+				 * Temporary workaround for BZ #477485
+				 * Remove when docker-client logs() uses noTimeoutClient.
+				 */
+				if (e.getCause() instanceof SocketTimeoutException) {
+					execute();
+				} else {
+					Activator.logErrorMessage(e.getMessage());
+				}
 			} finally {
 				follow = false;
 				copyClient.close(); // we are done with copyClient..dispose
@@ -854,63 +862,11 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 	}
 
-	@Override
-	public String buildImage(final IPath path, final String name,
-			final IDockerProgressHandler handler,
-			final Map<String, Object> buildOptions)
-					throws DockerException, InterruptedException {
-		try {
-			final DockerProgressHandler d = new DockerProgressHandler(handler);
-			final java.nio.file.Path p = FileSystems.getDefault()
-					.getPath(path.makeAbsolute().toOSString());
-			return client.build(p, name, d, getBuildParameters(buildOptions));
-		} catch (com.spotify.docker.client.DockerRequestException e) {
-			throw new DockerException(e.message());
-		} catch (com.spotify.docker.client.DockerException | IOException e) {
-			DockerException f = new DockerException(e);
-			throw f;
-		}
-	}
-
-	/**
-	 * Converts the given {@link Map} of build options into an array of
-	 * {@link BuildParameter} when the build options are set a value different from the default value.
-	 * 
-	 * @param buildOptions
-	 *            the build options
-	 * @return an array of relevant {@link BuildParameter}
-	 */
-	private BuildParameter[] getBuildParameters(
-			final Map<String, Object> buildOptions) {
-		final List<BuildParameter> buildParameters = new ArrayList<>();
-		for (Entry<String, Object> entry : buildOptions.entrySet()) {
-			final Object optionName = entry.getKey();
-			final Object optionValue = entry.getValue();
-
-			if (optionName.equals(IDockerImageBuildOptions.QUIET_BUILD)
-					&& optionValue.equals(true)) {
-				buildParameters.add(BuildParameter.QUIET);
-			} else if (optionName.equals(IDockerImageBuildOptions.NO_CACHE)
-					&& optionValue.equals(true)) {
-				buildParameters.add(BuildParameter.NO_CACHE);
-			} else if (optionName
-					.equals(IDockerImageBuildOptions.RM_INTERMEDIATE_CONTAINERS)
-					&& optionValue.equals(false)) {
-				buildParameters.add(BuildParameter.NO_RM);
-			} else if (optionName
-					.equals(IDockerImageBuildOptions.FORCE_RM_INTERMEDIATE_CONTAINERS)
-					&& optionValue.equals(true)) {
-				buildParameters.add(BuildParameter.FORCE_RM);
-			}
-		}
-		return buildParameters.toArray(new BuildParameter[0]);
-	}
-
 	public void save() {
 		// Currently we have to save all clouds instead of just this one
 		DockerConnectionManager.getInstance().saveConnections();
 	}
-	
+
 	@Override
 	@Deprecated
 	public String createContainer(IDockerContainerConfig c)
@@ -1024,8 +980,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			final ContainerCreation creation = client
 					.createContainer(builder.build(),
 					containerName);
-
-			final String id = creation != null ? creation.id() : null;
+			final String id = creation.id();
 			// force a refresh of the current containers to include the new one
 			listContainers();
 			return id;
