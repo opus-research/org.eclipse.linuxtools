@@ -24,7 +24,7 @@ import org.eclipse.ui.model.WorkbenchAdapter;
  * @author Marc-Andre Laperle
  */
 public abstract class TracePackageElement extends WorkbenchAdapter {
-    private List<TracePackageElement> fChildren;
+    private final List<TracePackageElement> fChildren;
     private TracePackageElement fParent;
     private boolean fEnabled;
     private boolean fChecked;
