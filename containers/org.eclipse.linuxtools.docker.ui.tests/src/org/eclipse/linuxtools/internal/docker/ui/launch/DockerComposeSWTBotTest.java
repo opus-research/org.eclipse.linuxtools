@@ -139,9 +139,13 @@ public class DockerComposeSWTBotTest {
 		Mockito.when(mockProcessLauncher.processBuilder(Matchers.anyString(),
 				Matchers.eq(DockerCompose.getDockerComposeCommandName()), CustomMatchers.arrayContains("stop"))
 				.workingDir(Matchers.anyString()).start()).thenReturn(mockDockerComposeStopProcess);
-		Mockito.when(mockDockerComposeStopProcess.waitFor()).then(invocation -> {
-			latch.countDown();
-			return 0;
+		Mockito.when(mockDockerComposeStopProcess.waitFor()).then(new Answer<Object>() {
+
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				latch.countDown();
+				return 0;
+			}
 		});
 	}
 
@@ -183,7 +187,7 @@ public class DockerComposeSWTBotTest {
 
 	@Test
 	@RunWithProject("foo")
-	public void shouldStartDockerComposeFromScratch() throws CoreException {
+	public void shouldStartDockerComposeFromScratch() throws CoreException, InterruptedException {
 		// given
 		final DockerClient client = MockDockerClientFactory.build();
 		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client)
@@ -229,7 +233,7 @@ public class DockerComposeSWTBotTest {
 
 	@Test
 	@RunWithProject("foo")
-	public void shouldStopDockerCompose() throws CoreException {
+	public void shouldStopDockerCompose() throws CoreException, InterruptedException {
 		// given
 		shouldStartDockerComposeFromScratch();
 		// when
@@ -246,7 +250,7 @@ public class DockerComposeSWTBotTest {
 
 	@Test
 	@RunWithProject("foo")
-	public void shouldRestartDockerCompose() throws InterruptedException, DockerException {
+	public void shouldRestartDockerCompose() throws CoreException, InterruptedException, DockerException {
 		// given
 		final DockerClient client = MockDockerClientFactory.build();
 		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client)
