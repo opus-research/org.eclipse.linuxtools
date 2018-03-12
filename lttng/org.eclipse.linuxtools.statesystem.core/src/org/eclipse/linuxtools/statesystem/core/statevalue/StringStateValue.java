@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.statesystem.core.statevalue;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
 
 /**
  * A state value containing a variable-sized string
@@ -66,33 +65,4 @@ final class StringStateValue extends TmfStateValue {
     public String unboxStr() {
         return value;
     }
-
-    @Override
-    public int compareTo(@Nullable ITmfStateValue object) {
-        if (object == null) {
-            throw new StateValueTypeException("A String state value cannot be compared to null."); //$NON-NLS-1$
-        }
-
-        switch (object.getType()) {
-        case DOUBLE:
-            throw new StateValueTypeException("A String state value cannot be compared to a Double state value."); //$NON-NLS-1$
-        case INTEGER:
-            throw new StateValueTypeException("A String state value cannot be compared to an Integer state value."); //$NON-NLS-1$
-        case LONG:
-            throw new StateValueTypeException("A String state value cannot be compared to a Long state value."); //$NON-NLS-1$
-        case NULL:
-            /*
-             * We assume that every string state value is greater than any null
-             * state values.
-             */
-            return 1;
-        case STRING:
-            StringStateValue other = (StringStateValue) object;
-            return value.compareTo(other.value);
-        default:
-            return 0;
-        }
-
-    }
-
 }
