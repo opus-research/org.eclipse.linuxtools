@@ -47,10 +47,10 @@ public class ImageSearchSWTBotTest {
 	@ClassRule
 	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule();
 
-	@Rule 
+	@Rule
 	public ClearConnectionManagerRule clearConnectionManager = new ClearConnectionManagerRule();
 
-	@Rule 
+	@Rule
 	public CloseWizardRule closeWizard = new CloseWizardRule();
 
 	@Before
@@ -62,26 +62,16 @@ public class ImageSearchSWTBotTest {
 	}
 
 	@Test
-	public void shouldTriggerSearchIfTermWasGiven() throws InterruptedException {
+	public void shouldTriggerSearchIfTermWasGiven() {
 		// given
 		final DockerClient client = MockDockerClientFactory.onSearch("foo", MockImageSearchResultFactory.name("foo").build())
 				.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
-		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		// expand the 'Images' node
-		SWTUtils.syncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
-		final SWTBotTreeItem imagesTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test", "Images");
-		
-		// when opening the "Pull..." wizard
-		final SWTBotTree dockerExplorerViewTreeBot = dockerExplorerViewBot.bot().tree();
-		dockerExplorerViewTreeBot.select(imagesTreeItem);
-		dockerExplorerViewTreeBot.contextMenu("Pull...").click();
-
-		// when specify a term
+		// when opening the pull wizard...
+		openPullWizard(client);
+		// ... and specifying a term...
 		bot.textWithLabel(WizardMessages.getString("ImagePull.name.label")).setText("foo");
-		
-		// when clicking on the "Search..." button
-		bot.button(WizardMessages.getString("ImagePull.search.label")).click();
+		// ... and then opening the search wizard
+		openSearchWizard();
 		// then the search should have been triggered and results should be available
 		assertThat(bot.table().rowCount()).isEqualTo(1);
 	}
@@ -91,21 +81,100 @@ public class ImageSearchSWTBotTest {
 		// given
 		final DockerClient client = MockDockerClientFactory.onSearch("foo", MockImageSearchResultFactory.name("foo").build())
 				.build();
+		// when opening the pull wizard...
+		openPullWizard(client);
+		// ... and directly opening the search wizard
+		openSearchWizard();
+		// then the search should have been triggered and results should be available
+		assertThat(bot.table().rowCount()).isEqualTo(0);
+	}
+
+	@Test
+	public void shouldReduceSearchResultsToExactGivenTerm() throws InterruptedException {
+		// given
+		final DockerClient client = MockDockerClientFactory
+				.onSearch("foo/bar", MockImageSearchResultFactory.name("foo/bar").build(),
+						MockImageSearchResultFactory.name("other/bar").build())
+				.build();
+		// when opening the pull wizard...
+		openPullWizard(client);
+		// ... and specifying a term...
+		bot.textWithLabel(WizardMessages.getString("ImagePull.name.label")).setText("foo/bar");
+		// ... and then opening the search wizard
+		openSearchWizard();
+		// then the search should have been triggered and a single result should be
+		// available
+		assertThat(bot.table().rowCount()).isEqualTo(1);
+	}
+
+	@Test
+	public void shouldShowAllSearchResultsForGivenTerm() throws InterruptedException {
+		// given
+		final DockerClient client = MockDockerClientFactory
+				.onSearch("bar", MockImageSearchResultFactory.name("foo/bar").build(),
+						MockImageSearchResultFactory.name("other/bar").build())
+				.build();
+		// when opening the pull wizard...
+		openPullWizard(client);
+		// ... and specifying a term...
+		bot.textWithLabel(WizardMessages.getString("ImagePull.name.label")).setText("bar");
+		// ... and then opening the search wizard
+		openSearchWizard();
+		// then the search should have been triggered and both results should be
+		// available
+		assertThat(bot.table().rowCount()).isEqualTo(2);
+	}
+
+	private void openPullWizard(final DockerClient client) {
+		// given 
 		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
 		// expand the 'Images' node
 		SWTUtils.syncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
 		final SWTBotTreeItem imagesTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test", "Images");
-		
+		// when opening the "Pull..." wizard
+		final SWTBotTree dockerExplorerViewTreeBot = dockerExplorerViewBot.bot().tree();
+		dockerExplorerViewTreeBot.select(imagesTreeItem);
+		dockerExplorerViewTreeBot.contextMenu("Pull...").click();
+	}
+
+	private void openSearchWizard() {	
+		// click on the "Search..." button
+		bot.button(WizardMessages.getString("ImagePull.search.label")).click();
+	}
+
+	@Test
+	public void shouldAllowForDefaultLatestTag() throws InterruptedException {
+		// given
+		final DockerClient client = MockDockerClientFactory
+				.onSearch("foo", MockImageSearchResultFactory.name("foo").build()).build();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
+		// expand the 'Images' node
+		SWTUtils.syncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
+		final SWTBotTreeItem imagesTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test", "Images");
+
 		// when opening the "Pull..." wizard
 		final SWTBotTree dockerExplorerViewTreeBot = dockerExplorerViewBot.bot().tree();
 		dockerExplorerViewTreeBot.select(imagesTreeItem);
 		dockerExplorerViewTreeBot.contextMenu("Pull...").click();
 
+		// when specifying a term
+		bot.textWithLabel(WizardMessages.getString("ImagePull.name.label")).setText("foo");
+
 		// when clicking on the "Search..." button
 		bot.button(WizardMessages.getString("ImagePull.search.label")).click();
-		// then the search should have been triggered and results should be available
-		assertThat(bot.table().rowCount()).isEqualTo(0);
+
+		// then the search should have been triggered and results should be
+		// available
+		assertThat(bot.table().rowCount()).isEqualTo(1);
+		assertThat(bot.button("Next >").isEnabled()).isTrue();
+		assertThat(bot.button("Finish").isEnabled()).isTrue();
+		bot.button("Finish").click();
+
+		// when back to Pull wizard, the Image name field should be filled
+		assertThat(bot.textWithLabel(WizardMessages.getString("ImagePull.name.label")).getText())
+				.isEqualTo("foo:latest");
 	}
 
 }
