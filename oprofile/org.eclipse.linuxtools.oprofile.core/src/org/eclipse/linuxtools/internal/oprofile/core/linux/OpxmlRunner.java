@@ -20,7 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -29,6 +29,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
@@ -41,6 +42,8 @@ import org.eclipse.linuxtools.internal.oprofile.core.opxml.checkevent.CheckEvent
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.info.InfoAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.modeldata.ModelDataAdapter;
 import org.eclipse.linuxtools.internal.oprofile.core.opxml.sessions.SessionManager;
+import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.osgi.util.NLS;
 import org.w3c.dom.Document;
@@ -117,7 +120,7 @@ public class OpxmlRunner {
                     FileReader fr = new FileReader(file);
                     reader.parse(new InputSource(fr));
                 }else{
-                    throw new RuntimeException("Unrecognized argument encountered");
+                    throw new RuntimeException("Unrecognized argument encountered"); //$NON-NLS-1$
                 }
             }else{
                 // always regenerate the 'current' session file
@@ -144,9 +147,9 @@ public class OpxmlRunner {
     }
 
     private File saveOpxmlToFile(BufferedReader bi, String [] args) {
-        String fileName = "";
-        for (int i = 0; i < args.length; i++){
-            fileName += args[i];
+        String fileName = ""; //$NON-NLS-1$
+        for (String arg: args){
+            fileName += arg;
         }
         File file = new File(SessionManager.OPXML_PREFIX + fileName);
         String line;
@@ -154,7 +157,7 @@ public class OpxmlRunner {
             file.createNewFile();
             BufferedWriter bw = new BufferedWriter(new FileWriter(file));
             while ((line = bi.readLine()) != null){
-                bw.write(line + "\n");
+                bw.write(line + "\n"); //$NON-NLS-1$
             }
             bi.close();
             bw.close();
@@ -165,7 +168,7 @@ public class OpxmlRunner {
     }
 
     private File constructFile(String [] args){
-        String fileName = "";
+        String fileName = ""; //$NON-NLS-1$
         for (int i = 0; i < args.length; i++){
             fileName += args[i];
         }
@@ -212,7 +215,7 @@ public class OpxmlRunner {
     private String[] getEventNames (){
         String [] ret = null;
         try {
-            String cmd[] = {"-X", "-d"};
+            String cmd[] = {"-X", "-d"}; //$NON-NLS-1$ //$NON-NLS-2$
             InputStream is = runOpReport(cmd);
 
             if (is != null){
@@ -267,8 +270,21 @@ public class OpxmlRunner {
 
         ArrayList<String> cmd = new ArrayList<>();
         cmd.add("opreport"); //$NON-NLS-1$
-        if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY))
-            cmd.add(1,"--session-dir=" + Oprofile.OprofileProject.getProject().getLocationURI().getPath() + IPath.SEPARATOR + "oprofile_data"); //$NON-NLS-1$ //$NON-NLS-2$
+        if (OprofileProject.getProfilingBinary().equals(OprofileProject.OPERF_BINARY)) {
+            /* The session-dir parameter is relative to project's working dir, which might be
+             * local or remote. So it should use the proxy manager to determine working dir.
+             */
+            String workingDir=""; //$NON-NLS-1$
+            RemoteProxyManager proxy = RemoteProxyManager.getInstance();
+            try {
+                IRemoteFileProxy rfile = proxy.getFileProxy(Oprofile.OprofileProject.getProject());
+                workingDir = rfile.getWorkingDir().getPath();
+            } catch (CoreException e) {
+                e.printStackTrace();
+                return null;
+            }
+            cmd.add(1,"--session-dir=" + workingDir + IPath.SEPARATOR + "oprofile_data"); //$NON-NLS-1$ //$NON-NLS-2$
+        }
         Collections.addAll(cmd, args);
         Process p = null;
         try {
@@ -311,12 +327,7 @@ public class OpxmlRunner {
 
             if (p.waitFor() == 0) {
                 // convert the string to inputstream to pass to builder.parse
-                try {
-                    return new ByteArrayInputStream(output.toString().getBytes(
-                            "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                return new ByteArrayInputStream(output.toString().getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e1) {
             e1.printStackTrace();
