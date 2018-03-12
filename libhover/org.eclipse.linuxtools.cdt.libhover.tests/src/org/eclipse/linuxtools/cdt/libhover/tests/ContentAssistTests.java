@@ -191,7 +191,7 @@ public class ContentAssistTests extends BaseUITestCase {
         assertEquals( "veryLongName : int", results[0].getDisplayString() ); //$NON-NLS-1$
     }
 
-    @Test
+    @Test @Ignore
     public void testBug428037() throws Exception {
         StringWriter writer = new StringWriter();
         writer.write( "class Strategy {                             \n"); //$NON-NLS-1$
