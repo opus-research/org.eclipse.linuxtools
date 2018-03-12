@@ -41,6 +41,7 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
+import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
@@ -510,7 +511,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
 
         if (fPacketHeaderDecl != null) {
             /* Read the packet header */
-            fPacketHeaderDef = fPacketHeaderDecl.createDefinition(null, LexicalScope.PACKET_HEADER.toString(), streamBitBuffer);
+            fPacketHeaderDef = fPacketHeaderDecl.createDefinition(this, LexicalScope.PACKET_HEADER, streamBitBuffer);
 
             /* Check the magic number */
             IntegerDefinition magicDef = (IntegerDefinition) fPacketHeaderDef.lookupDefinition("magic"); //$NON-NLS-1$
@@ -520,7 +521,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
             }
 
             /* Check UUID */
-            Definition lookupDefinition = fPacketHeaderDef.lookupDefinition("uuid"); //$NON-NLS-1$
+            IDefinition lookupDefinition = fPacketHeaderDef.lookupDefinition("uuid"); //$NON-NLS-1$
             ArrayDefinition uuidDef = (ArrayDefinition) lookupDefinition;
             if (uuidDef != null) {
                 UUID otheruuid = Utils.getUUIDfromDefinition(uuidDef);
@@ -531,7 +532,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
             }
 
             /* Read the stream ID */
-            Definition streamIDDef = fPacketHeaderDef.lookupDefinition("stream_id"); //$NON-NLS-1$
+            IDefinition streamIDDef = fPacketHeaderDef.lookupDefinition("stream_id"); //$NON-NLS-1$
 
             if (streamIDDef instanceof IntegerDefinition) { // this doubles as a
                                                             // null check
