@@ -19,8 +19,7 @@ import org.junit.runners.Suite;
  * Test suite for UI on the PCAP parser and networking perspective
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({
-    NetworkPerspectiveChecker.class
-})
+@Suite.SuiteClasses({})
 public class AllTests {
+
 }
