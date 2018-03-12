@@ -265,9 +265,11 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
             final IFile bookmarksFile = bookmarksFolder.getFile(BOOKMARKS_HIDDEN_FILE);
             if (!bookmarksFile.exists()) {
                 final InputStream source = new ByteArrayInputStream(new byte[0]);
-                bookmarksFile.create(source, IResource.FORCE | IResource.HIDDEN, null);
+                bookmarksFile.create(source, true, null);
             }
-            file.createLink(bookmarksFile.getLocation(), IResource.REPLACE | IResource.HIDDEN, null);
+            bookmarksFile.setHidden(true);
+            file.createLink(bookmarksFile.getLocation(), IResource.REPLACE, null);
+            file.setHidden(true);
             file.setPersistentProperty(TmfCommonConstants.TRACETYPE, traceType);
         }
         return file;
