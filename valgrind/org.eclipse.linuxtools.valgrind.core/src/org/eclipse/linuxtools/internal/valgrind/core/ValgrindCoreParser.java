@@ -7,6 +7,7 @@
  *
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
+ *    Alena Laskavaia - Bug 482947 - Valgrind Message API's: get rid of launch dependency
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.core;
 
@@ -18,11 +19,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IPersistableSourceLocator;
+import org.eclipse.debug.core.model.ISourceLocator;
+import org.eclipse.debug.core.sourcelookup.IPersistableSourceLocator2;
+import org.eclipse.debug.core.sourcelookup.ISourceLookupDirector;
 import org.eclipse.linuxtools.valgrind.core.CommandLineConstants;
 import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 import org.eclipse.linuxtools.valgrind.core.ValgrindParserUtils;
 
+/**
+ * Parser for paring valgrind generic output into array of hierarchical messages
+ */
 public class ValgrindCoreParser {
     private static final String AT = "at"; //$NON-NLS-1$
     private static final String BY = "by"; //$NON-NLS-1$
@@ -30,9 +41,24 @@ public class ValgrindCoreParser {
     private List<IValgrindMessage> messages;
     private int pid;
     private ILaunch launch;
+    private ISourceLocator locator;
 
-    public ValgrindCoreParser(File inputFile, ILaunch launch) throws IOException {
+    /**
+     * When using this method make sure locator passed to this method can
+     * outlive disposal of launch object if it was derived from it, use
+     * {@link #copyLaunchSourceLocator(ILaunch)} if needed
+     *
+     * @param inputFile
+     *            - file to parse
+     * @param launch
+     *            - launch object, can be null
+     * @param locator
+     *            - source locator
+     * @throws IOException if file is not found or error reading it
+     */
+    public ValgrindCoreParser(File inputFile, ILaunch launch, ISourceLocator locator) throws IOException {
         this.launch = launch;
+        this.locator = locator;
         // keep track of nested messages and their corresponding indents
         Stack<IValgrindMessage> messageStack = new Stack<>();
         Stack<Integer> indentStack = new Stack<>();
@@ -66,14 +92,13 @@ public class ValgrindCoreParser {
                         messageStack.push(message);
                         indentStack.clear();
                         indentStack.push(indent);
-                    }
-                    else if (indent > 1) {
+                    } else if (indent > 1) {
                         /**
                          * We assume that an indented child message has a
                          * parent, but this may not be the case.
                          * See BZ #360225
                          */
-                        if (indentStack.isEmpty()){
+                        if (indentStack.isEmpty()) {
                             // pretend this is a top level message
                             IValgrindMessage message = getMessage(null, line);
                             messages.add(message);
@@ -81,7 +106,7 @@ public class ValgrindCoreParser {
                             messageStack.push(message);
                             indentStack.clear();
                             indentStack.push(1);
-                        }else{
+                        } else {
                             // find this message's parent
                             while (indent <= indentStack.peek()) {
                                 messageStack.pop();
@@ -102,12 +127,62 @@ public class ValgrindCoreParser {
             Object[] parsed = ValgrindParserUtils.parseFilename(line);
             String filename = (String) parsed[0];
             int lineNo = (Integer) parsed[1];
-            return new ValgrindStackFrame(message, line, launch, filename, lineNo);
+            return new ValgrindStackFrame(message, line, launch, locator, filename, lineNo);
         }
         return new ValgrindError(message, line, launch, pid);
     }
 
+    /**
+     * Return messages from paring
+     * @return all parsed messages
+     *
+     */
     public IValgrindMessage[] getMessages() {
         return messages.toArray(new IValgrindMessage[messages.size()]);
+    }
+
+    /**
+     * Constructor
+     * @param inputFile - file to parse
+     * @param launch - launch object can be null
+     * @throws IOException if cannot open file
+     */
+    public ValgrindCoreParser(File inputFile, ILaunch launch) throws IOException {
+        this(inputFile, launch, copyLaunchSourceLocator(launch));
+    }
+
+    /**
+     * Return a safe source locator from launch object which won't be disposed if launch object is disposed
+     * @param launch - launch object
+     * @return source locator
+     *
+     */
+    public static ISourceLocator copyLaunchSourceLocator(ILaunch launch) {
+        if (launch == null)
+            return null;
+        ISourceLocator sourceLocator = launch.getSourceLocator();
+        ILaunchConfiguration launchConfiguration = launch.getLaunchConfiguration();
+        // sourceLocator from launch object will be disposed when launch is
+        // gone,
+        // since we want to use it later we need to create a copy of it
+        if (sourceLocator instanceof ISourceLookupDirector) {
+            try {
+                ISourceLookupDirector director = (ISourceLookupDirector) sourceLocator;
+
+                String id = director.getId();
+                String memento = director.getMemento();
+                IPersistableSourceLocator sourceLocatorCopy = DebugPlugin.getDefault().getLaunchManager()
+                        .newSourceLocator(id);
+                if (sourceLocatorCopy instanceof IPersistableSourceLocator2) {
+                    ((IPersistableSourceLocator2) sourceLocatorCopy).initializeFromMemento(memento,
+                            launchConfiguration);
+                } else
+                    sourceLocatorCopy.initializeFromMemento(memento);
+                return sourceLocatorCopy;
+            } catch (CoreException e) {
+                // ignore
+            }
+        }
+        return sourceLocator;
     }
 }
