@@ -81,7 +81,7 @@ public class ContainerLinkDialog extends Dialog {
 	protected void configureShell(final Shell shell) {
 		super.configureShell(shell);
 		setShellStyle(getShellStyle() | SWT.RESIZE);
-		shell.setText(WizardMessages.getString("ContainerLinkDialog.title")); //$NON-NLS-1$
+		shell.setText("Container Linking");
 	}
 
 	@Override
@@ -113,13 +113,11 @@ public class ContainerLinkDialog extends Dialog {
 				.applyTo(container);
 		final Label explanationLabel = new Label(container, SWT.NONE);
 		explanationLabel
-.setText(WizardMessages
-				.getString("ContainerLinkDialog.explanationLabel")); //$NON-NLS-1$
+				.setText("Select a container to link and give it an alias:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(false, false).applyTo(explanationLabel);
 		final Label containerLabel = new Label(container, SWT.NONE);
-		containerLabel.setText(
-				WizardMessages.getString("ContainerLinkDialog.containerLabel")); //$NON-NLS-1$
+		containerLabel.setText("Container:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(containerLabel);
 		final Combo containerSelectionCombo = new Combo(container, SWT.NONE);
@@ -146,8 +144,7 @@ public class ContainerLinkDialog extends Dialog {
 						containerSelectionCombo),
 				null, null);
 		final Label aliasLabel = new Label(container, SWT.NONE);
-		aliasLabel.setText(
-				WizardMessages.getString("ContainerLinkDialog.aliasLabel")); //$NON-NLS-1$
+		aliasLabel.setText("Alias:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(aliasLabel);
 		final Text containerAliasText = new Text(container, SWT.BORDER);
@@ -175,18 +172,19 @@ public class ContainerLinkDialog extends Dialog {
 								ContainerLinkDialogModel.CONTAINER_ALIAS)
 						.observe(model));
 		containerNameObservable.addValueChangeListener(
-onContainerLinkSettingsChanged());
+				onContainerLinkSettingsChanged(errorMessageLabel));
 		containerAliasObservable.addValueChangeListener(
-onContainerLinkSettingsChanged());
+				onContainerLinkSettingsChanged(errorMessageLabel));
 		return container;
 	}
 
-	private IValueChangeListener onContainerLinkSettingsChanged() {
+	private IValueChangeListener onContainerLinkSettingsChanged(
+			final Label errorMessageLabel) {
 		return new IValueChangeListener() {
 
 			@Override
 			public void handleValueChange(ValueChangeEvent event) {
-				validateInput();
+				validateInput(errorMessageLabel);
 			}
 		};
 	}
@@ -213,7 +211,7 @@ onContainerLinkSettingsChanged());
 			@Override
 			public IContentProposal[] getProposals(final String contents,
 					final int position) {
-				final List<IContentProposal> proposals = new ArrayList<>();
+				final List<IContentProposal> proposals = new ArrayList<IContentProposal>();
 				for (String containerName : containerSelectionCombo
 						.getItems()) {
 					if (containerName.contains(contents)) {
@@ -226,7 +224,7 @@ onContainerLinkSettingsChanged());
 		};
 	}
 
-	private void validateInput() {
+	private void validateInput(final Label errorMessageLabel) {
 		final String selectedContainerName = model.getContainerName();
 		final Object[] containerNames = model.getContainerNames().toArray();
 		final String containerAlias = model.getContainerAlias();
@@ -249,9 +247,9 @@ onContainerLinkSettingsChanged());
 
 	class ContainerLinkDialogModel extends BaseDatabindingModel {
 
-		public static final String CONTAINER_NAME = "containerName"; //$NON-NLS-1$
+		public static final String CONTAINER_NAME = "containerName";
 
-		public static final String CONTAINER_ALIAS = "containerAlias"; //$NON-NLS-1$
+		public static final String CONTAINER_ALIAS = "containerAlias";
 
 		private String containerName;
 

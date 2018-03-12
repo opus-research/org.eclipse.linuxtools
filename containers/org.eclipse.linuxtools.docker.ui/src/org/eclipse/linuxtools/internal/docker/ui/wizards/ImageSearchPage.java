@@ -78,10 +78,9 @@ public class ImageSearchPage extends WizardPage {
 	 * Default constructor.
 	 */
 	public ImageSearchPage(final ImageSearchModel model) {
-		super("ImageSearchPage", //$NON-NLS-1$
-				WizardMessages.getString("ImageSearchPage.title"), //$NON-NLS-1$
+		super("ImageSearchPage", "Search the Docker Registry for images", //$NON-NLS-1$ //$NON-NLS-2$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
-		setMessage(WizardMessages.getString("ImageSearchPage.title")); //$NON-NLS-1$
+		setMessage("Search the Docker Registry for images"); //$NON-NLS-1$
 		this.model = model;
 	}
 
@@ -101,8 +100,7 @@ public class ImageSearchPage extends WizardPage {
 				.spacing(10, 2).applyTo(container);
 		// search text
 		final Label searchImageLabel = new Label(container, SWT.NONE);
-		searchImageLabel.setText(
-				WizardMessages.getString("ImageSearchPage.imageLabel")); //$NON-NLS-1$
+		searchImageLabel.setText("Image:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(searchImageLabel);
 		final Text searchImageText = new Text(container,
@@ -112,16 +110,14 @@ public class ImageSearchPage extends WizardPage {
 		searchImageText.addKeyListener(onKeyPressed());
 		searchImageText.addTraverseListener(onSearchImageTextTraverse());
 		searchImageButton = new Button(container, SWT.NONE);
-		searchImageButton
-				.setText(WizardMessages.getString("ImageSearchPage.search")); //$NON-NLS-1$
+		searchImageButton.setText("Search");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(searchImageButton);
 		searchImageButton.addSelectionListener(onSearchImageButtonSelected());
 		searchImageButton.setEnabled(!searchImageText.getText().isEmpty());
 		// result table
 		final Label searchResultLabel = new Label(container, SWT.NONE);
-		searchResultLabel.setText(
-				WizardMessages.getString("ImageSearchPage.searchResultLabel")); //$NON-NLS-1$
+		searchResultLabel.setText("Matching images");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(COLUMNS, 1).applyTo(searchResultLabel);
 		final Table table = new Table(container,
@@ -129,23 +125,15 @@ public class ImageSearchPage extends WizardPage {
 		final TableViewer searchResultTableViewer = new TableViewer(table);
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
-		addTableViewerColum(searchResultTableViewer,
-				WizardMessages.getString("ImageSearchPage.nameColumn"), //$NON-NLS-1$
-				SWT.NONE,
+		addTableViewerColum(searchResultTableViewer, "Name", SWT.NONE, //$NON-NLS-1$
 				SWT.RIGHT, 290, new ImageNameColumnLabelProvider());
-		addTableViewerColum(searchResultTableViewer,
-				WizardMessages.getString("ImageSearchPage.starsColumn"), //$NON-NLS-1$
-				SWT.NONE,
+		addTableViewerColum(searchResultTableViewer, "Stars", SWT.NONE, //$NON-NLS-1$
 				SWT.RIGHT,
 				70, new ImageStarsColumnLabelProvider());
-		addTableViewerColum(searchResultTableViewer,
-				WizardMessages.getString("ImageSearchPage.officialColumn"), //$NON-NLS-1$
-				SWT.NONE,
+		addTableViewerColum(searchResultTableViewer, "Official", SWT.NONE, //$NON-NLS-1$
 				SWT.CENTER,
 				70, new ImageOfficialColumnLabelProvider());
-		addTableViewerColum(searchResultTableViewer,
-				WizardMessages.getString("ImageSearchPage.automatedColumn"), //$NON-NLS-1$
-				SWT.NONE,
+		addTableViewerColum(searchResultTableViewer, "Automated", SWT.NONE, //$NON-NLS-1$
 				SWT.CENTER,
 				70, new ImageAutomatedColumnLabelProvider());
 		searchResultTableViewer
@@ -157,7 +145,7 @@ public class ImageSearchPage extends WizardPage {
 		// description text area
 		final Group selectedImageDescriptionGroup = new Group(container,
 				SWT.BORDER);
-		selectedImageDescriptionGroup.setText(WizardMessages.getString("ImageSearchPage.descriptionGroup")); //$NON-NLS-1$
+		selectedImageDescriptionGroup.setText("Description");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, true).span(COLUMNS, 1)
 				.applyTo(selectedImageDescriptionGroup);
@@ -210,7 +198,7 @@ public class ImageSearchPage extends WizardPage {
 						.observe(model));
 		// observe the viewer selection to update the description label
 		final IObservableValue observableSelectedImageDescription = PojoProperties
-				.value("description", String.class) // $NON-NLS-1$
+				.value("description", String.class)
 				.observeDetail(ViewerProperties.singleSelection()
 						.observe(searchResultTableViewer));
 		ctx.bindValue(WidgetProperties.text().observe(selectedImageDescription),
@@ -280,17 +268,15 @@ public class ImageSearchPage extends WizardPage {
 			ImageSearchPage.this.getContainer().run(true, true,
 					new IRunnableWithProgress() {
 						@Override
-						public void run(IProgressMonitor monitor) {
-							monitor.beginTask(WizardMessages.getString(
-									"ImageSearchPage.searchTask"), 1); //$NON-NLS-1$
+						public void run(IProgressMonitor monitor)
+								throws InvocationTargetException,
+								InterruptedException {
+							monitor.beginTask("Searching...", 1);
 							try {
 								final List<IDockerImageSearchResult> searchResults = ImageSearchPage.this.model
 										.getSelectedConnection()
 										.searchImages(term);
-								monitor.beginTask(
-										WizardMessages.getString(
-												"ImageSearchPage.searchTask"), //$NON-NLS-1$
-										1);
+								monitor.beginTask("Searching...", 1);
 								searchResultQueue.offer(searchResults);
 							} catch (DockerException e) {
 								Activator.log(e);
@@ -310,20 +296,15 @@ public class ImageSearchPage extends WizardPage {
 			});
 			// display a warning in the title area if the search result is empty
 			if (searchResult.isEmpty()) {
-				this.setMessage(
-						WizardMessages
-								.getString("ImageSearchPage.noImageWarning"), //$NON-NLS-1$
+				this.setMessage("No image matched the specified term.",
 						WARNING);
 			} else if (searchResult.size() == 1) {
-				this.setMessage(
-						WizardMessages
-								.getString("ImageSearchPage.oneImageMatched"), //$NON-NLS-1$
+				this.setMessage("1 image matched the specified term.",
 						INFORMATION);
 			} else {
 				this.setMessage(
-						WizardMessages.getFormattedString(
-								"ImageSearchPage.imagesMatched", //$NON-NLS-1$
-								Integer.toString(searchResult.size())),
+						searchResult.size()
+								+ " images matched the specified term.",
 						INFORMATION);
 			}
 		} catch (InvocationTargetException | InterruptedException e) {
