@@ -934,6 +934,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 						&& !intermediateImage;
 				// return one IDockerImage per raw image
 				final List<String> repoTags = rawImage.repoTags() != null
+						&& rawImage.repoTags().size() > 0
 						? new ArrayList<>(rawImage.repoTags())
 						: Arrays.asList("<none>:<none>"); //$NON-NLS-1$
 				Collections.sort(repoTags);
