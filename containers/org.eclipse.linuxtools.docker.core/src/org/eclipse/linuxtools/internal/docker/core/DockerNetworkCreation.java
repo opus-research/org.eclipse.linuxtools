@@ -10,19 +10,28 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.core;
 
-import org.eclipse.linuxtools.docker.core.IRegistry;
+import org.eclipse.linuxtools.docker.core.IDockerNetworkCreation;
 
-public class RegistryInfo implements IRegistry {
+import com.spotify.docker.client.messages.NetworkCreation;
 
-	private String serverAddress;
+public class DockerNetworkCreation implements IDockerNetworkCreation {
 
-	public RegistryInfo(String serverAddress) {
-		this.serverAddress = serverAddress;
+	private String id;
+	private String warnings;
+
+	public DockerNetworkCreation(NetworkCreation creation) {
+		this.id = creation.id();
+		this.warnings = creation.warnings();
 	}
 
 	@Override
-	public String getServerAddress() {
-		return serverAddress;
+	public String id() {
+		return id;
+	}
+
+	@Override
+	public String warnings() {
+		return warnings;
 	}
 
 }

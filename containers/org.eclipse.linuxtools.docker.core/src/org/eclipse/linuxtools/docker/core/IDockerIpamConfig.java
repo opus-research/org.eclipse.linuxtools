@@ -10,8 +10,16 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
-public interface IRegistry {
+public interface IDockerIpamConfig {
+	public String subnet();
 
-	public String getServerAddress();
+	public void subnet(final String subnet);
 
+	public String ipRange();
+
+	public void ipRange(final String ipRange);
+
+	public String gateway();
+
+	public void gateway(final String gateway);
 }

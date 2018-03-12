@@ -10,12 +10,22 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
-public interface IRegistryAccount extends IRegistry {
+import java.util.Map;
 
-	public String getUsername();
+public interface IDockerNetwork {
 
-	public String getEmail();
+	public String name();
 
-	public char[] getPassword();
+	public String id();
+
+	public String scope();
+
+	public String driver();
+
+	public Map<String, String> options();
+
+	public Map<String, IDockerNetworkContainer> containers();
+
+	public IDockerIpam ipam();
 
 }
