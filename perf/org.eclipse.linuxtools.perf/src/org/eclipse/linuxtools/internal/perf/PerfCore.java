@@ -624,12 +624,7 @@ public class PerfCore {
                     } else {
                         int lineNum = -1;
                         try {
-                            /*
-                             *  May not have line number when parsing a line like "100.00 [vdso][7ffce9fdbda0]"
-                             */
-                             if( items.length > 1) {
-                                 lineNum = Integer.parseInt(items[1]);
-                             }
+                            lineNum = Integer.parseInt(items[1]);
                         } catch (NumberFormatException e) {
                             // leave line number as -1
                         }
