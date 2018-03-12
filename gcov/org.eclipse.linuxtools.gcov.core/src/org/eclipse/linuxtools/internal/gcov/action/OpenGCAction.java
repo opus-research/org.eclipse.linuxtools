@@ -10,29 +10,20 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.action;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.IBinary;
 import org.eclipse.cdt.core.model.ICProject;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
-import org.eclipse.linuxtools.internal.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.dialog.OpenGCDialog;
 import org.eclipse.linuxtools.internal.gcov.view.CovView;
 import org.eclipse.linuxtools.internal.gcov.view.annotatedsource.GcovAnnotationModelTracker;
@@ -70,11 +61,6 @@ public class OpenGCAction implements IEditorLauncher {
         }
     }
 
-    private boolean exists(String binaryFile) {
-        File f = new File(binaryFile);
-        return f.isFile();
-    }
-
     @Override
     public void open(IPath file) {
         Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
@@ -105,17 +91,7 @@ public class OpenGCAction implements IEditorLauncher {
             return;
         }
 
-        IDialogSettings ds = Activator.getDefault().getDialogSettings();
-        IDialogSettings defaultMapping = ds.getSection(OpenGCDialog.class.getName());
-        if (defaultMapping == null) {
-            defaultMapping = ds.addNewSection(OpenGCDialog.class.getName());
-        }
-        String defaultBinary = defaultMapping.get(file.toOSString());
-        if (defaultBinary == null || defaultBinary.isEmpty() || !exists(defaultBinary)) {
-            defaultBinary = getDefaultBinary(file);
-        }
-
-        OpenGCDialog d = new OpenGCDialog(shell, defaultBinary, file);
+        OpenGCDialog d = new OpenGCDialog(shell, getDefaultBinary(file), file);
         if (d.open() != Window.OK) {
             return;
         }
@@ -132,46 +108,12 @@ public class OpenGCAction implements IEditorLauncher {
         }
     }
 
-    private String getDefaultBinaryFromUserPref(IProject project, IFile infoFile) throws IOException, CoreException {
-        if (infoFile.exists()) {
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(infoFile.getContents(true)))) {
-                String line;
-                while ((line = br.readLine())!= null){
-                    String[] tab = line.split("="); //$NON-NLS-1$
-                    if (tab.length > 1){
-                        String name = tab[0].trim();
-                        String value = tab[1].trim();
-                        if (name.equals("Program Name")){ //$NON-NLS-1$
-                            if (project != null){
-                                IFile ifile = project.getFile(value);
-                                if (ifile.exists()) {
-                                    return ifile.getLocation().toString();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     private String getDefaultBinary(IPath file) {
         IProject project = null;
         IFile c = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(file);
         if (c != null) {
             project = c.getProject();
             if (project != null && project.exists()) {
-                IContainer folder = c.getParent();
-                IFile infoFile = folder.getFile(new Path("AnalysisInfo.txt")); //$NON-NLS-1$
-                try {
-                    String defaultBinaryFromUserPref = getDefaultBinaryFromUserPref(project, infoFile);
-                    if (defaultBinaryFromUserPref != null) {
-                        return defaultBinaryFromUserPref;
-                    }
-                } catch (IOException|CoreException ex) {
-                    // do nothing here.
-                }
                 ICProject cproject = CoreModel.getDefault().create(project);
                 if (cproject != null) {
                     try {
