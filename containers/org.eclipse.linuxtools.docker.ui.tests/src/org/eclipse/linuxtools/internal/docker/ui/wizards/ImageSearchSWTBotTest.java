@@ -77,7 +77,7 @@ public class ImageSearchSWTBotTest {
 	}
 
 	@Test
-	public void shouldNotTriggerSearchIfNoTermWasGiven() {
+	public void shouldNotTriggerSearchIfNoTermWasGiven() throws InterruptedException {
 		// given
 		final DockerClient client = MockDockerClientFactory.onSearch("foo", MockImageSearchResultFactory.name("foo").build())
 				.build();
@@ -90,7 +90,7 @@ public class ImageSearchSWTBotTest {
 	}
 
 	@Test
-	public void shouldReduceSearchResultsToExactGivenTerm() {
+	public void shouldReduceSearchResultsToExactGivenTerm() throws InterruptedException {
 		// given
 		final DockerClient client = MockDockerClientFactory
 				.onSearch("foo/bar", MockImageSearchResultFactory.name("foo/bar").build(),
@@ -108,7 +108,7 @@ public class ImageSearchSWTBotTest {
 	}
 
 	@Test
-	public void shouldShowAllSearchResultsForGivenTerm() {
+	public void shouldShowAllSearchResultsForGivenTerm() throws InterruptedException {
 		// given
 		final DockerClient client = MockDockerClientFactory
 				.onSearch("bar", MockImageSearchResultFactory.name("foo/bar").build(),
@@ -144,7 +144,7 @@ public class ImageSearchSWTBotTest {
 	}
 
 	@Test
-	public void shouldAllowForDefaultLatestTag() {
+	public void shouldAllowForDefaultLatestTag() throws InterruptedException {
 		// given
 		final DockerClient client = MockDockerClientFactory
 				.onSearch("foo", MockImageSearchResultFactory.name("foo").build()).build();
