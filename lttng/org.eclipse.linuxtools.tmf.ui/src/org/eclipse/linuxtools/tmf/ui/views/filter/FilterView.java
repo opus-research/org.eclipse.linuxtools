@@ -198,13 +198,6 @@ public class FilterView extends TmfView {
     }
 
     /**
-     * @return whether the tree is in focus or not
-     */
-    boolean isTreeInFocus() {
-        return fViewer.isTreeInFocus();
-    }
-
-    /**
      * Builds the menu toolbar
      */
     private void contributeToActionBars() {

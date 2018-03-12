@@ -78,8 +78,7 @@ public class PasteHandler extends AbstractHandler {
             sel = v.getFilterRoot();
         }
         ITmfFilterTreeNode objectToPaste = FilterEditUtils.getTransferredTreeNode();
-        if (v.isTreeInFocus() &&
-                objectToPaste != null &&
+        if (objectToPaste != null &&
                 (sel.getValidChildren().contains(objectToPaste.getNodeName())
                 || TmfFilterNode.NODE_NAME.equals(objectToPaste.getNodeName()))) {
             return true;
