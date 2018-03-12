@@ -26,7 +26,8 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
  */
 public final class StructDeclarationFlattener {
 
-    private StructDeclarationFlattener() {}
+    private StructDeclarationFlattener() {
+    }
 
     /**
      * Flatten a {@link StructDeclaration}, if it can be (which means if it
@@ -56,6 +57,9 @@ public final class StructDeclarationFlattener {
      */
     private static boolean canBeFlattened(@NonNull StructDeclaration sd) {
         for (String field : sd.getFieldsList()) {
+            if (field == null) {
+                throw new IllegalStateException("Cannot have a null fieldname"); //$NON-NLS-1$
+            }
             IDeclaration dec = sd.getField(field);
             if (!isFixedSize(dec)) {
                 return false;
@@ -81,6 +85,9 @@ public final class StructDeclarationFlattener {
     private static StructDeclaration newFlattenedStruct(@NonNull StructDeclaration sd) {
         StructDeclaration flatStruct = new StructDeclaration(sd.getAlignment());
         for (String name : sd.getFieldsList()) {
+            if (name == null) {
+                throw new IllegalStateException("Cannot have a null fieldname"); //$NON-NLS-1$
+            }
             depthFirstAdd(name, flatStruct, sd.getField(name));
         }
         return flatStruct;
@@ -104,6 +111,9 @@ public final class StructDeclarationFlattener {
         } else if (dec instanceof StructDeclaration) {
             StructDeclaration sDec = ((StructDeclaration) dec);
             for (String name : sDec.getFieldsList()) {
+                if( name == null){
+                    throw new IllegalStateException("Cannot have a null fieldname"); //$NON-NLS-1$
+                }
                 depthFirstAdd(path + '.' + name, flatStruct, sDec.getField(name));
             }
         }

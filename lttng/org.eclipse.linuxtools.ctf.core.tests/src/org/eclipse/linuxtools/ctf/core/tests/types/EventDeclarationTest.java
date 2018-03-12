@@ -326,8 +326,8 @@ public class EventDeclarationTest {
             assertNotNull(ed);
             assertNotNull(ed.getScopePath());
             assertNotNull(ed.getDeclaration());
-            assertNotNull(ed.getFields());
-            assertNull(ed.getContext());
+            assertNotNull(ed.getFieldDefinitions());
+            assertNull(ed.getMergedContext());
             assertNotNull(ed.getPacketContext());
             assertNotNull(ed.getCPU());
             assertNotNull(ed.getStreamInputReader());
