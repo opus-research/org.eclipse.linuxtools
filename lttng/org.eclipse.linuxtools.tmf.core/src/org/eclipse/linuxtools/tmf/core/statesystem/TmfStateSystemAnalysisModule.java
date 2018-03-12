@@ -63,10 +63,10 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
 
     private final CountDownLatch fInitialized = new CountDownLatch(1);
 
-    @Nullable private ITmfStateSystemBuilder fStateSystem;
-    @Nullable private ITmfStateProvider fStateProvider;
-    @Nullable private IStateHistoryBackend fHtBackend;
-    @Nullable private ITmfEventRequest fRequest;
+    private @Nullable ITmfStateSystemBuilder fStateSystem;
+    private @Nullable ITmfStateProvider fStateProvider;
+    private @Nullable IStateHistoryBackend fHtBackend;
+    private @Nullable ITmfEventRequest fRequest;
 
     /**
      * State system backend types
@@ -217,10 +217,28 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
 
     @Override
     public void dispose() {
+        /* We may have a request running, we have to cancel it if so */
+        canceling();
+
         super.dispose();
+
+        /*
+         * Dispose the references we hold, in case it was not done properly
+         * already (if we got cancelled just as we were finishing, for example).
+         */
+        if (fStateProvider != null) {
+            fStateProvider.dispose();
+        }
         if (fStateSystem != null) {
             fStateSystem.dispose();
         }
+        if (fHtBackend != null) {
+            fHtBackend.dispose();
+        }
+
+        fStateProvider = null;
+        fStateSystem = null;
+        fHtBackend = null;
     }
 
     // ------------------------------------------------------------------------
