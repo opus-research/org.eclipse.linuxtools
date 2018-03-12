@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2014 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import java.util.List;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
@@ -50,7 +51,14 @@ public class ImageRemovePage extends WizardPage {
 		return images;
 	}
 
-	private ModifyListener Listener = e -> validate();
+	private ModifyListener Listener = new ModifyListener() {
+
+		@Override
+		public void modifyText(ModifyEvent e) {
+			// TODO Auto-generated method stub
+			validate();
+		}
+	};
 
 	private void validate() {
 		boolean complete = true;

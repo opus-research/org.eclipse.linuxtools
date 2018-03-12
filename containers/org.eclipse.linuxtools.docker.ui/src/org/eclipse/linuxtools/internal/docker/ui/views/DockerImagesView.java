@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,6 +38,7 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -317,7 +318,13 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	 * @return
 	 */
 	private ModifyListener onSearch() {
-		return e -> DockerImagesView.this.viewer.refresh();
+		return new ModifyListener() {
+			
+			@Override
+			public void modifyText(final ModifyEvent e) {
+				DockerImagesView.this.viewer.refresh();
+			}
+		};
 	}
 	
 	/**
@@ -362,12 +369,15 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	public void listChanged(final IDockerConnection connection,
 			final List<IDockerImage> images) {
 		if (connection.getName().equals(connection.getName())) {
-			Display.getDefault().asyncExec(() -> {
-				if (DockerImagesView.this.viewer != null
-						&& !DockerImagesView.this.viewer.getTable()
-								.isDisposed()) {
-					DockerImagesView.this.viewer.refresh();
-					refreshViewTitle();
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					if (DockerImagesView.this.viewer != null
+							&& !DockerImagesView.this.viewer.getTable()
+									.isDisposed()) {
+						DockerImagesView.this.viewer.refresh();
+						refreshViewTitle();
+					}
 				}
 			});
 		}

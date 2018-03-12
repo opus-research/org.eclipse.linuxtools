@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,6 +31,7 @@ import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.beans.IBeanValueProperty;
+import org.eclipse.core.databinding.observable.ChangeEvent;
 import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.map.IObservableMap;
@@ -49,6 +50,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -317,7 +319,14 @@ image);
 
 	private IChangeListener onEnableResourceLimitation(
 			final Composite container) {
-		return event -> toggleResourceLimitationControls(container);
+		return new IChangeListener() {
+
+			@Override
+			public void handleChange(ChangeEvent event) {
+				toggleResourceLimitationControls(container);
+
+			}
+		};
 	}
 
 	private void toggleResourceLimitationControls(Composite container) {
@@ -486,12 +495,17 @@ image);
 
 	private ISelectionChangedListener onSelectionChanged(
 			final Button... targetButtons) {
-		return e -> {
-			if (e.getSelection().isEmpty()) {
-				setControlsEnabled(targetButtons, false);
-			} else {
-				setControlsEnabled(targetButtons, true);
+		return new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(final SelectionChangedEvent e) {
+				if (e.getSelection().isEmpty()) {
+					setControlsEnabled(targetButtons, false);
+				} else {
+					setControlsEnabled(targetButtons, true);
+				}
 			}
+
 		};
 	}
 
