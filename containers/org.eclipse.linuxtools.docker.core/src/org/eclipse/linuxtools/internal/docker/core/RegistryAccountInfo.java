@@ -47,7 +47,7 @@ public class RegistryAccountInfo extends RegistryInfo
 		char[] password = null;
 		ISecurePreferences preferences = SecurePreferencesFactory.getDefault();
 		ISecurePreferences dockerNode = preferences.node("org.eclipse.linuxtools.docker.ui.accounts"); //$NON-NLS-1$
-		String key = getServerAddress() + "," + getUsername() + "," + getEmail();
+		String key = getServerAddress() + "_" + getUsername() + "_" + getEmail();
 		try {
 			password = dockerNode.get(key, null).toCharArray();
 		} catch (StorageException e) {
