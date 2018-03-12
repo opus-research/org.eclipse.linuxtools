@@ -144,7 +144,7 @@ public class CovView extends AbstractSTDataView {
         view.label.getParent().layout(true);
     }
 
-    public static void displayCovDetailedResult(String binaryPath, String gcda) {
+    public static void displayCovDetailedResult(String binaryPath, String gcdaFile) {
         try {
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
             IFile binary = root.getFileForLocation(new Path(binaryPath));
@@ -156,8 +156,8 @@ public class CovView extends AbstractSTDataView {
             // parse and process coverage data
             CovManager cvrgeMnger = new CovManager(binaryPath, project);
             List<String> gcdaPaths = new LinkedList<>();
-            gcdaPaths.add(gcda);
-            cvrgeMnger.processCovFiles(gcdaPaths, gcda);
+            gcdaPaths.add(gcdaFile);
+            cvrgeMnger.processCovFiles(gcdaPaths, gcdaFile);
             // generate model for view
             cvrgeMnger.fillGcovView();
 
@@ -174,9 +174,8 @@ public class CovView extends AbstractSTDataView {
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
             IFile binary = root.getFileForLocation(new Path(binaryPath));
             IProject project = null;
-            if (binary != null) {
+            if (binary != null)
                 project = binary.getProject();
-            }
 
             // parse and process coverage data
             CovManager cvrgeMnger = new CovManager(binaryPath, project);
@@ -218,7 +217,6 @@ public class CovView extends AbstractSTDataView {
     /**
      * Used by Test engine and OpenSerAction
      * @param cvrgeMnger
-     * @throws PartInitException
      */
     private static CovView displayCovResults(CovManager cvrgeMnger, String timestamp) throws PartInitException {
         // load an Eclipse view

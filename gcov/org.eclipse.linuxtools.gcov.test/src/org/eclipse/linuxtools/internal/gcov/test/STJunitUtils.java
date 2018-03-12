@@ -44,7 +44,11 @@ public class STJunitUtils {
         String message = "Comparing ref file (" + refFile + ") and dump file ("
                 + dumpFile + ")";
         try {
-            assertEquals(message, readFile(refFile), readFile(dumpFile));
+            String refOut = readFile(refFile);
+            String dumpOut = readFile(dumpFile);
+            System.err.println("--ref: " + refFile + "--\n" + refOut);
+            System.err.println("--dump: " + dumpFile + "--\n" + dumpOut);
+            assertEquals(message, refOut, dumpOut);
 
             // delete dump only for successful tests
             if (deleteDumpFileIfOk) {
