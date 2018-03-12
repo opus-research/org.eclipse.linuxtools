@@ -22,6 +22,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -73,7 +75,12 @@ public class StapNewWizardPage extends WizardPage {
         fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         fileText.setLayoutData(gd);
-        fileText.addModifyListener(e -> dialogChanged());
+        fileText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                dialogChanged();
+            }
+        });
         new Label(container, SWT.NULL); // XXX just create a new layout with different width
 
         label = new Label(container, SWT.NULL);
@@ -82,7 +89,12 @@ public class StapNewWizardPage extends WizardPage {
         containerText = new Text(container, SWT.BORDER | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         containerText.setLayoutData(gd);
-        containerText.addModifyListener(e -> dialogChanged());
+        containerText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                dialogChanged();
+            }
+        });
 
         Button button = new Button(container, SWT.PUSH);
         button.setText(resourceBundle.getString("StapNewWizardPage.Browse")); //$NON-NLS-1$
