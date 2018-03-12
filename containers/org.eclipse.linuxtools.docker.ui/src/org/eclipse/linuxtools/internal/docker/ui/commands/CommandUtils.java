@@ -83,15 +83,11 @@ public class CommandUtils {
 		} else if (activePart instanceof DockerImagesView) {
 			return ((DockerImagesView) activePart).getConnection();
 		} else {
-			// fall back to first active connection in list if one exists
+			// fall back to first connection in list if one exists
 			IDockerConnection connections[] = DockerConnectionManager
 					.getInstance().getConnections();
-			if (connections != null && connections.length > 0) {
-				for (int i = 0; i < connections.length; ++i) {
-					if (connections[i].isActive())
-						return connections[i];
-				}
-			}
+			if (connections != null && connections.length > 0)
+				return connections[0];
 		}
 		return null;
 	}
