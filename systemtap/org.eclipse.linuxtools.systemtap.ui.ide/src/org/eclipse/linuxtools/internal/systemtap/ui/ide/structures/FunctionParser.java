@@ -84,9 +84,8 @@ public final class FunctionParser extends TreeTapsetParser {
         }
 
         String tapsetContents = SharedParser.getInstance().getTapsetContents();
-        if (tapsetContents == null) {
-            // Functions are only drawn from the tapset dump, so exit if it's empty.
-            return true;
+        if (tapsetContents == null || tapsetContents.isEmpty()) {
+            return false;
         }
 
         boolean canceled = false;

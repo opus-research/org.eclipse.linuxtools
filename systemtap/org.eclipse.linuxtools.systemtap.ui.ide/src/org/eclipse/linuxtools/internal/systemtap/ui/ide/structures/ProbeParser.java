@@ -124,7 +124,7 @@ public final class ProbeParser extends TreeTapsetParser {
         }
 
         String probeDump = runStap(new String[]{"-L"}, "**", false); //$NON-NLS-1$ //$NON-NLS-2$
-        if (probeDump == null) {
+        if (probeDump == null || probeDump.isEmpty()) {
             return false;
         }
 
@@ -133,7 +133,7 @@ public final class ProbeParser extends TreeTapsetParser {
             TreeNode group = null;
             while (st.hasNextLine()) {
                 if (monitor.isCanceled()) {
-                    canceled = false;
+                    canceled = true;
                     break;
                 }
                 String tokenString = st.nextLine();
