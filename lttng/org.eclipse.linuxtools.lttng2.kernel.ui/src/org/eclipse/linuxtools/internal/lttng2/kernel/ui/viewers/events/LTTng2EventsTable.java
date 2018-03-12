@@ -14,10 +14,10 @@ package org.eclipse.linuxtools.internal.lttng2.kernel.ui.viewers.events;
 
 import java.util.Collection;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventTableColumn;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import com.google.common.collect.ImmutableList;
@@ -31,31 +31,17 @@ public class LTTng2EventsTable extends TmfEventsTable {
     // Column definition
     // ------------------------------------------------------------------------
 
-    @SuppressWarnings("null")
-    private static final @NonNull String CHANNEL_HEADER = Messages.EventsTable_channelColumn;
-
     private static final Collection<TmfEventTableColumn> LTTNG_COLUMNS =
-            ImmutableList.<TmfEventTableColumn> of(
-                    TmfEventTableColumn.BaseColumns.TIMESTAMP,
-                    new LttngChannelColumn(),
-                    TmfEventTableColumn.BaseColumns.EVENT_TYPE,
-                    TmfEventTableColumn.BaseColumns.CONTENTS);
+            ImmutableList.<TmfEventTableColumn> of(new LttngChannelColumn());
 
     private static class LttngChannelColumn extends TmfEventTableColumn {
-
         public LttngChannelColumn() {
-            super(CHANNEL_HEADER);
+            super(Messages.EventsTable_channelColumn, 120, SWT.LEFT);
         }
-
         @Override
         public String getItemString(ITmfEvent event) {
             String ret = event.getReference();
             return (ret == null ? EMPTY_STRING : ret);
-        }
-
-        @Override
-        public String getFilterFieldId() {
-            return ITmfEvent.EVENT_FIELD_REFERENCE;
         }
     }
 

@@ -15,8 +15,8 @@ package org.eclipse.linuxtools.tmf.ui.tests.experiment.type;
 import java.util.Collection;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventTableColumn;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
 import org.eclipse.swt.widgets.Composite;
 
 import com.google.common.collect.ImmutableList;
@@ -36,20 +36,13 @@ public class TmfEventsTableExperimentStub extends TmfEventsTable {
             ImmutableList.<TmfEventTableColumn> of(new SourceTraceColumn());
 
     private static class SourceTraceColumn extends TmfEventTableColumn {
-
         public SourceTraceColumn() {
             super("Trace");
         }
-
         @Override
         public String getItemString(ITmfEvent event) {
             String ret = event.getTrace().getName();
             return (ret == null ? EMPTY_STRING : ret);
-        }
-
-        @Override
-        public String getFilterFieldId() {
-            return null;
         }
     }
 

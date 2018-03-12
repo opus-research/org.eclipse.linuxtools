@@ -17,9 +17,11 @@ import java.util.Collection;
 
 import org.eclipse.linuxtools.btf.core.trace.BtfColumnNames;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventTableColumn;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableFieldColumn;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import com.google.common.collect.ImmutableList;
@@ -36,23 +38,17 @@ public class BtfEventViewer extends TmfEventsTable {
     // ------------------------------------------------------------------------
 
     private static final Collection<TmfEventTableColumn> BTF_COLUMNS = ImmutableList.of(
-            TmfEventTableColumn.BaseColumns.TIMESTAMP,
             new BtfSourceColumn(),
             new BtfSourceInstanceColumn(),
-            TmfEventTableColumn.BaseColumns.EVENT_TYPE,
             new BtfTargetColumn(),
             new BtfTargetInstanceColumn(),
             new BtfEventColumn(),
             new BtfNotesColumn()
             );
 
-    /**
-     * The "source" column, whose value comes from {@link ITmfEvent#getSource()}
-     */
     private static class BtfSourceColumn extends TmfEventTableColumn {
-
         public BtfSourceColumn() {
-            super(BtfColumnNames.SOURCE.toString(), null);
+            super(BtfColumnNames.SOURCE.toString(), 120, SWT.LEFT);
         }
 
         @Override
@@ -60,31 +56,27 @@ public class BtfEventViewer extends TmfEventsTable {
             String ret = event.getSource();
             return (ret == null ? EMPTY_STRING : ret);
         }
+    }
+
+    private static class BtfSourceInstanceColumn extends TmfEventTableColumn {
+        public BtfSourceInstanceColumn() {
+            super(BtfColumnNames.SOURCE_INSTANCE.toString(), 100, SWT.LEFT);
+        }
 
         @Override
-        public String getFilterFieldId() {
-            return ITmfEvent.EVENT_FIELD_SOURCE;
+        public String getItemString(ITmfEvent event) {
+            ITmfEventField field = event.getContent().getField(BtfColumnNames.SOURCE_INSTANCE.toString());
+            if (field == null) {
+                return EMPTY_STRING;
+            }
+            String ret = field.toString();
+            return (ret == null ? EMPTY_STRING : ret);
         }
     }
 
-    /**
-     * The "source instance" column, whose value comes from the field of the
-     * same name.
-     */
-    private static class BtfSourceInstanceColumn extends TmfEventTableFieldColumn {
-        public BtfSourceInstanceColumn() {
-            super(BtfColumnNames.SOURCE_INSTANCE.toString());
-        }
-    }
-
-    /**
-     * The "target" column, taking its value from
-     * {@link ITmfEvent#getReference()}.
-     */
     private static class BtfTargetColumn extends TmfEventTableColumn {
-
         public BtfTargetColumn() {
-            super(BtfColumnNames.TARGET.toString());
+            super(BtfColumnNames.TARGET.toString(), 90, SWT.LEFT);
         }
 
         @Override
@@ -92,39 +84,57 @@ public class BtfEventViewer extends TmfEventsTable {
             String ret = event.getReference();
             return (ret == null ? EMPTY_STRING : ret);
         }
+    }
+
+    private static class BtfTargetInstanceColumn extends TmfEventTableColumn {
+        public BtfTargetInstanceColumn() {
+            super(BtfColumnNames.TARGET_INSTANCE.toString(), 100, SWT.LEFT);
+        }
 
         @Override
-        public String getFilterFieldId() {
-            return ITmfEvent.EVENT_FIELD_REFERENCE;
+        public String getItemString(ITmfEvent event) {
+            ITmfEventField field = event.getContent().getField(BtfColumnNames.TARGET_INSTANCE.toString());
+            if (field == null) {
+                return EMPTY_STRING;
+            }
+            String ret = field.toString();
+            return (ret == null ? EMPTY_STRING : ret);
         }
     }
 
-    /**
-     * The "target instance" column, whose value comes from the field of the
-     * same name.
-     */
-    private static class BtfTargetInstanceColumn extends TmfEventTableFieldColumn {
-        public BtfTargetInstanceColumn() {
-            super(BtfColumnNames.TARGET_INSTANCE.toString());
-        }
-    }
-
-    /**
-     * The "event" column, whose value comes from the field of the same name.
-     */
-    private static class BtfEventColumn extends TmfEventTableFieldColumn {
+    private static class BtfEventColumn extends TmfEventTableColumn {
         public BtfEventColumn() {
-            super(BtfColumnNames.EVENT.toString());
+            super(BtfColumnNames.EVENT.toString(), 110, SWT.LEFT);
+        }
+
+        @Override
+        public String getItemString(ITmfEvent event) {
+            ITmfEventField field = event.getContent().getField(BtfColumnNames.EVENT.toString());
+            if (field == null) {
+                return EMPTY_STRING;
+            }
+            String ret = field.toString();
+            return (ret == null ? EMPTY_STRING : ret);
         }
     }
 
-    /**
-     * The "notes" column, whose value comes from the field of the same name, if
-     * present.
-     */
-    private static class BtfNotesColumn extends TmfEventTableFieldColumn {
+    private static class BtfNotesColumn extends TmfEventTableColumn {
+
+        private static final TmfEventField NULL_NOTE_FIELD =
+                new TmfEventField(BtfColumnNames.NOTES.toString(), null, null);
+
         public BtfNotesColumn() {
-            super(BtfColumnNames.NOTES.toString());
+            super(BtfColumnNames.NOTES.toString(), 100, SWT.LEFT);
+        }
+
+        @Override
+        public String getItemString(ITmfEvent event) {
+            ITmfEventField notesField = event.getContent().getField(BtfColumnNames.NOTES.toString());
+            if (notesField == null) {
+                notesField = NULL_NOTE_FIELD;
+            }
+            String ret = notesField.toString();
+            return (ret == null ? EMPTY_STRING : ret);
         }
     }
 

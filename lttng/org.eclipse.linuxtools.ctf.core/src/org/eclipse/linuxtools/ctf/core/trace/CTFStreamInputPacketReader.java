@@ -461,10 +461,10 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
 
     @Override
     public Definition lookupDefinition(String lookupPath) {
-        if (lookupPath.equals(LexicalScope.STREAM_PACKET_CONTEXT.toString())) {
+        if (lookupPath.equals(LexicalScope.STREAM_PACKET_CONTEXT)) {
             return fCurrentStreamPacketContextDef;
         }
-        if (lookupPath.equals(LexicalScope.TRACE_PACKET_HEADER.toString())) {
+        if (lookupPath.equals(LexicalScope.TRACE_PACKET_HEADER)) {
             return fCurrentTracePacketHeaderDef;
         }
         return null;

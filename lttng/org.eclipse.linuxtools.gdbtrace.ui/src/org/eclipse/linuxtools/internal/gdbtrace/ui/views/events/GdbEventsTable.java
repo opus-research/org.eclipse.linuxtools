@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.linuxtools.internal.gdbtrace.core.event.GdbTraceEvent;
@@ -29,10 +30,8 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventTableColumn;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableFieldColumn;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TableItem;
 
@@ -54,33 +53,48 @@ public class GdbEventsTable extends TmfEventsTable {
             new GdbFileColumn()
             );
 
-    private static class GdbTraceFrameColumn extends TmfEventTableFieldColumn {
+    private static class GdbTraceFrameColumn extends TmfEventTableColumn {
         public GdbTraceFrameColumn() {
             super(GdbTraceEventContent.TRACE_FRAME);
         }
+        @Override
+        public String getItemString(ITmfEvent event) {
+            if (event instanceof GdbTraceEvent) {
+                GdbTraceEvent gdbEvent = (GdbTraceEvent) event;
+                GdbTraceEventContent content = gdbEvent.getContent();
+                @SuppressWarnings("null")
+                @NonNull String ret = String.valueOf(content.getFrameNumber());
+                return ret;
+            }
+            return EMPTY_STRING;
+        }
     }
 
-    private static class GdbTracepointColumn extends TmfEventTableFieldColumn {
+    private static class GdbTracepointColumn extends TmfEventTableColumn {
         public GdbTracepointColumn() {
             super(GdbTraceEventContent.TRACEPOINT);
+        }
+        @Override
+        public String getItemString(ITmfEvent event) {
+            if (event instanceof GdbTraceEvent) {
+                GdbTraceEvent gdbEvent = (GdbTraceEvent) event;
+                GdbTraceEventContent content = gdbEvent.getContent();
+                @SuppressWarnings("null")
+                @NonNull String ret = String.valueOf(content.getTracepointNumber());
+                return ret;
+            }
+            return EMPTY_STRING;
         }
     }
 
     private static class GdbFileColumn extends TmfEventTableColumn {
-
         public GdbFileColumn() {
             super("File"); //$NON-NLS-1$
         }
-
         @Override
         public String getItemString(ITmfEvent event) {
             String ret = event.getReference();
             return (ret == null ? EMPTY_STRING : ret);
-        }
-
-        @Override
-        public String getFilterFieldId() {
-            return ITmfEvent.EVENT_FIELD_REFERENCE;
         }
     }
 
@@ -105,9 +119,9 @@ public class GdbEventsTable extends TmfEventsTable {
      */
     public GdbEventsTable(Composite parent, int cacheSize) {
         super(parent, cacheSize, GDB_COLUMNS);
-        // Set the alignment of the first two columns
-        fTable.getColumns()[0].setAlignment(SWT.RIGHT);
-        fTable.getColumns()[1].setAlignment(SWT.RIGHT);
+        // Set search field ids for event filter
+        fTable.getColumns()[2].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_REFERENCE);
+        fTable.getColumns()[3].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_CONTENT);
 
         // Synchronize currently selected frame in GDB with table selection
         addSelectionChangedListener(new ISelectionChangedListener() {

@@ -14,18 +14,17 @@
 package org.eclipse.linuxtools.internal.tmf.ui.parsers.custom;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomEvent;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition.OutputColumn;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventTableColumn;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * Events table for custom text parsers.
@@ -40,35 +39,31 @@ public class CustomEventsTable extends TmfEventsTable {
      */
     private static final class CustomEventTableColumn extends TmfEventTableColumn {
 
-        private final int fIndex;
+        private final int fId;
 
         /**
          * Constructor
          *
          * @param name
          *            The name (title) of this column
-         * @param idx
-         *            The index of this column, which should be the index of the
-         *            field in the event's content to display.
+         * @param id
+         *            The ID of this column. The event fields with this ID will
+         *            be displayed in this column's cell.
          */
-        public CustomEventTableColumn(@NonNull String name, int idx) {
-            super(name);
-            fIndex = idx;
+        public CustomEventTableColumn(String name, int id) {
+            super(name, 0 , SWT.LEFT);
+            fId = id;
         }
 
         @Override
         public String getItemString(ITmfEvent event) {
             if (event instanceof CustomEvent) {
-                String ret = ((CustomEvent) event).getEventString(fIndex);
+                String ret = ((CustomEvent) event).getEventString(fId);
                 return (ret == null ? EMPTY_STRING : ret);
             }
             return EMPTY_STRING;
         }
 
-        @Override
-        public String getFilterFieldId() {
-            return getHeaderName();
-        }
     }
 
     /**
@@ -86,14 +81,11 @@ public class CustomEventsTable extends TmfEventsTable {
     }
 
     private static Collection<CustomEventTableColumn> generateColumns(CustomTraceDefinition definition) {
-        ImmutableList.Builder<CustomEventTableColumn> builder = new ImmutableList.Builder<>();
+        List<CustomEventTableColumn> columns = new LinkedList<>();
         List<OutputColumn> outputs = definition.outputs;
         for (int i = 0; i < outputs.size(); i++) {
-            String name = outputs.get(i).name;
-            if (name != null) {
-                builder.add(new CustomEventTableColumn(name, i));
-            }
+            columns.add(new CustomEventTableColumn(outputs.get(i).name, i));
         }
-        return builder.build();
+        return columns;
     }
 }

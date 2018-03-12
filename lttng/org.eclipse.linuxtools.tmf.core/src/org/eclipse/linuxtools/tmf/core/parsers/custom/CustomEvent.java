@@ -182,8 +182,8 @@ public class CustomEvent extends TmfEvent {
      * Get the contents of an event table cell for this event's row.
      *
      * @param index
-     *            The ID/index of the field to display. This corresponds to the
-     *            index in the event content.
+     *            The ID/index of the field to display. This does NOT
+     *            necessarily means the position of the column in the table!
      * @return The String to display in the cell
      * @since 3.1
      */
@@ -191,10 +191,6 @@ public class CustomEvent extends TmfEvent {
         if (fData != null) {
             processData();
         }
-        if (index < 0 || index >= fColumnData.length) {
-            return ""; //$NON-NLS-1$
-        }
-
         return fColumnData[index].getValue().toString();
     }
 

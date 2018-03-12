@@ -65,12 +65,6 @@
       </modules>
   </profile>
   <profile>
-    <id>performance</id>
-    <modules>
-      <module>org.eclipse.linuxtools.lttng.alltests</module>
-    </modules>
-  </profile>
-  <profile>
     <id>macosx</id>
     <activation>
       <os>
@@ -124,10 +118,6 @@
     <module>org.eclipse.linuxtools.tmf.ctf.core</module>
     <module>org.eclipse.linuxtools.tmf.ctf.core.tests</module>
     <module>org.eclipse.linuxtools.tmf.ctf.ui.swtbot.tests</module>
-
-    <module>org.eclipse.linuxtools.tmf.pcap.core</module>
-    <module>org.eclipse.linuxtools.tmf.pcap.core.tests</module>
-    <module>org.eclipse.linuxtools.tmf.pcap.ui</module>
 
     <module>org.eclipse.linuxtools.tmf.analysis.xml.core</module>
     <module>org.eclipse.linuxtools.tmf.analysis.xml.core.tests</module>
