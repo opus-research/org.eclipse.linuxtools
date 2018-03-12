@@ -1888,7 +1888,7 @@ public class DockerConnection
 			final boolean isOpenStdin = info.config().openStdin();
 
 			if (isTtyEnabled) {
-				openTerminal(pty_stream, info.name());
+				openTerminal(pty_stream, info.name(), false);
 			}
 
 			// Data from the given input stream
@@ -1945,13 +1945,33 @@ public class DockerConnection
 					DockerClient.ExecStartParameter.DETACH);
 			fname.set(ExecStartParameter.DETACH, realValue);
 			final IDockerContainerInfo info = getContainerInfo(id);
-			openTerminal(pty_stream, info.name());
+			openTerminal(pty_stream, info.name() + " [shell]", true); //$NON-NLS-1$
 		} catch (Exception e) {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
 	}
 
-	private void openTerminal(LogStream pty_stream, String name) throws DockerException {
+	private class OnTerminalClose implements ITerminalService.Done {
+		private Map<String, Object> properties;
+
+		public OnTerminalClose(Map<String, Object> properties) {
+			this.properties = properties;
+		}
+
+		@Override
+		public void done(IStatus arg0) {
+			ITerminalService service = TerminalServiceFactory.getService();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// do nothing
+			}
+			service.openConsole(properties, null);
+		}
+	}
+
+	private void openTerminal(LogStream pty_stream, String name,
+			boolean force_new) throws DockerException {
 		try {
 			OutputStream tout = noBlockingOutputStream(HttpHijackWorkaround.getOutputStream(pty_stream, getUri()));
 			InputStream tin = HttpHijackWorkaround.getInputStream(pty_stream);
@@ -1973,7 +1993,11 @@ public class DockerConnection
 			 */
 			properties.put("PREVENT_JVM_GC_FINALIZE", pty_stream);
 			ITerminalService service = TerminalServiceFactory.getService();
-			service.openConsole(properties, null);
+			if (!force_new)
+				service.closeConsole(properties,
+						new OnTerminalClose(properties));
+			else
+				service.openConsole(properties, null);
 		} catch (Exception e) {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
