@@ -34,7 +34,6 @@ import java.util.Set;
 import javax.ws.rs.ProcessingException;
 
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
@@ -49,7 +48,6 @@ import org.eclipse.linuxtools.docker.core.Activator;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerContainerNotFoundException;
 import org.eclipse.linuxtools.docker.core.DockerException;
-import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConfParameter;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
@@ -174,8 +172,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	private List<IDockerContainer> containers;
 	// containers indexed by id
 	private Map<String, IDockerContainer> containersById;
-	// flag to indicate if the state of the connection to the Docker daemon
-	private EnumDockerConnectionState state = EnumDockerConnectionState.UNKNOWN;
+	// flag to indicate if the connection to the Docker daemon is active
+	private boolean active = true;
 	private boolean containersLoaded = false;
 	private List<IDockerImage> images;
 	private boolean imagesLoaded = false;
@@ -232,8 +230,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public boolean isOpen() {
-		return this.client != null
-				&& this.state == EnumDockerConnectionState.ESTABLISHED;
+		return this.client != null;
 	}
 
 	@Override
@@ -256,12 +253,10 @@ public class DockerConnection implements IDockerConnection, Closeable {
 					}
 				} catch (DockerCertificateException e) {
 					throw new DockerException(NLS
-							.bind(Messages.Open_Connection_Failure, this.name,
-									this.getUri()));
+							.bind(Messages.Open_Connection_Failure, this.name));
 				}
+
 			}
-			// then try to ping the Docker daemon to verify the connection
-			ping();
 		}
 	}
 
@@ -285,29 +280,26 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public EnumDockerConnectionState getState() {
-		return this.state;
+	public boolean isActive() {
+		return active;
 	}
 
-	public void setState(final EnumDockerConnectionState state) {
-		this.state = state;
-		switch (state) {
-		case UNKNOWN:
-		case CLOSED:
-			this.images = Collections.emptyList();
-			this.containers = Collections.emptyList();
-			this.imagesLoaded = true;
-			this.containersLoaded = true;
-			notifyContainerListeners(this.containers);
-			notifyImageListeners(this.images);
-			break;
-		case ESTABLISHED:
-			this.getContainers(true);
-			this.getImages(true);
-			notifyContainerListeners(this.containers);
-			notifyImageListeners(this.images);
-			break;
-		}
+	public void setInactive() {
+		active = false;
+		images = Collections.emptyList();
+		containers = Collections.emptyList();
+		imagesLoaded = true;
+		containersLoaded = true;
+		notifyContainerListeners(containers);
+		notifyImageListeners(images);
+	}
+
+	public void setActive() {
+		active = true;
+		getContainers(true);
+		getImages(true);
+		notifyContainerListeners(containers);
+		notifyImageListeners(images);
 	}
 
 	@Override
@@ -318,10 +310,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			} else {
 				throw new DockerException(Messages.Docker_Daemon_Ping_Failure);
 			}
-			setState(EnumDockerConnectionState.ESTABLISHED);
 		} catch (com.spotify.docker.client.DockerException
 				| InterruptedException e) {
-			setState(EnumDockerConnectionState.CLOSED);
 			throw new DockerException(Messages.Docker_Daemon_Ping_Failure, e);
 		}
 	}
@@ -333,7 +323,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				this.client.close();
 				this.client = null;
 			}
-			setState(EnumDockerConnectionState.CLOSED);
 		}
 	}
 
@@ -391,29 +380,17 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			// while switching the connection settings.
 			synchronized (clientLock) {
 				this.connectionSettings = connectionSettings;
-				if (this.client != null) {
-					this.client.close();
-				}
-				this.state = EnumDockerConnectionState.UNKNOWN;
+				this.client.close();
 				this.client = null;
-				new Job(NLS.bind(Messages.Open_Connection, this.getUri())) {
-
-					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						try {
-							open(true);
-							ping();
-						} catch (DockerException e) {
-							Activator.logErrorMessage(
-									Messages.Docker_Daemon_Ping_Failure, e);
-							return Status.CANCEL_STATUS;
-						}
-						return Status.OK_STATUS;
-					}
-				};
+				try {
+					// no need to register again
+					open(false);
+				} catch (DockerException e) {
+					Activator.log(e);
+				}
 			}
-			// getContainers(true);
-			// getImages(true);
+			getContainers(true);
+			getImages(true);
 			return true;
 		}
 		return false;
@@ -463,8 +440,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		try {
 			return dockerClientFactory.getClient(this.connectionSettings);
 		} catch (DockerCertificateException e) {
-			throw new DockerException(NLS.bind(Messages.Open_Connection_Failure,
-					this.name, this.getUri()));
+			throw new DockerException(
+					NLS.bind(Messages.Open_Connection_Failure, this.name));
 		}
 	}
 
@@ -528,17 +505,10 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public List<IDockerContainer> getContainers(final boolean force) {
-		if (this.state == EnumDockerConnectionState.CLOSED) {
+		if (!isActive()) {
 			return Collections.emptyList();
-		} else if (this.state == EnumDockerConnectionState.UNKNOWN) {
-			try {
-				open(true);
-				getContainers(force);
-			} catch (DockerException e) {
-				Activator.log(e);
-			}
-
-		} else if (!isContainersLoaded() || force) {
+		}
+		if (!isContainersLoaded() || force) {
 			try {
 				return listContainers();
 			} catch (DockerException e) {
@@ -652,6 +622,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				}
 				nativeContainers.addAll(client.listContainers(
 						DockerClient.ListContainersParam.allContainers()));
+				this.active = true;
 			}
 			// We have a list of containers. Now, we translate them to our own
 			// core format in case we decide to change the underlying engine
@@ -689,10 +660,10 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			}
 		} catch (com.spotify.docker.client.DockerException
 				| InterruptedException e) {
-			if (isOpen() && e.getCause() != null
+			if (active && e.getCause() != null
 					&& e.getCause().getCause() != null
 					&& e.getCause().getCause() instanceof ProcessingException) {
-				close();
+				setInactive();
 			} else {
 				throw new DockerException(e.getMessage());
 			}
@@ -846,16 +817,10 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		synchronized (imageLock) {
 			latestImages = this.images;
 		}
-		if (this.state == EnumDockerConnectionState.CLOSED) {
+		if (!isActive()) {
 			return Collections.emptyList();
-		} else if (this.state == EnumDockerConnectionState.UNKNOWN) {
-			try {
-				open(true);
-				getImages(force);
-			} catch (DockerException e) {
-				Activator.log(e);
-			}
-		} else if (!isImagesLoaded() || force) {
+		}
+		if (!isImagesLoaded() || force) {
 			try {
 				latestImages = listImages();
 			} catch (DockerException e) {
@@ -894,10 +859,10 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				throw new DockerException(e.message());
 			} catch (com.spotify.docker.client.DockerException
 					| InterruptedException e) {
-				if (isOpen() && e.getCause() != null
+				if (active && e.getCause() != null
 						&& e.getCause().getCause() != null
 						&& e.getCause().getCause() instanceof ProcessingException) {
-					close();
+					setInactive();
 				} else {
 					throw new DockerException(e.getMessage());
 				}
@@ -1186,19 +1151,14 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	/**
 	 * Converts the given {@link Map} of build options into an array of
-	 * {@link BuildParameter} when the build options are set a value different
-	 * from the default value.
+	 * {@link BuildParameter} when the build options are set a value different from the default value.
 	 * 
 	 * @param buildOptions
 	 *            the build options
-	 * @return an array of relevant {@link BuildParameter}, an empty array if
-	 *         the given {@code buildOptions} is empty or <code>null</code>.
+	 * @return an array of relevant {@link BuildParameter}
 	 */
 	private BuildParam[] getBuildParameters(
 			final Map<String, Object> buildOptions) {
-		if (buildOptions == null) {
-			return new BuildParam[0];
-		}
 		final List<BuildParam> buildParameters = new ArrayList<>();
 		for (Entry<String, Object> entry : buildOptions.entrySet()) {
 			final Object optionName = entry.getKey();

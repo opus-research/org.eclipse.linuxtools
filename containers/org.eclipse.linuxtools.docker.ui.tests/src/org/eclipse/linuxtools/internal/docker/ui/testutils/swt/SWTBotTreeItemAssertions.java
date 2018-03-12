@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.internal.docker.ui.testutils.swt;
 import static org.hamcrest.Matchers.notNullValue;
 
 import org.assertj.core.api.Assertions;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 
 /**
@@ -49,10 +48,8 @@ public class SWTBotTreeItemAssertions extends AbstractSWTBotAssertion<SWTBotTree
 			failWithMessage("Expected tree item %s to be have %s items but it had %s.", actual.getText(), expectedCount, actual.getItems().length);
 		}
 		for (SWTBotTreeItem swtBotTreeItem : actual.getItems()) {
-			final String treeItemText = SWTUtils.syncExec(() -> swtBotTreeItem.getText());
-			final Image treeItemWidgetImage = SWTUtils.syncExec(() -> swtBotTreeItem.widget.getImage());
-			Assertions.assertThat(treeItemText).isNotNull();
-			Assertions.assertThat(treeItemWidgetImage).isNotNull();
+			Assertions.assertThat(swtBotTreeItem.getText()).isNotNull();
+			Assertions.assertThat(swtBotTreeItem.widget.getImage()).isNotNull();
 		}
 		return this;
 	}
