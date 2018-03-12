@@ -88,7 +88,7 @@ public class ArrayDefinition2Test {
 
     private ArrayDefinition setUpDeclaration(IDeclaration decl,
             @NonNull List<Definition> defs) {
-        CompoundDeclaration ad = new ArrayDeclaration(0, decl);
+        ArrayDeclaration ad = new ArrayDeclaration(0, decl);
         ArrayDefinition temp = new ArrayDefinition(ad, this.trace, "Testx", defs);
         return temp;
     }
@@ -122,7 +122,7 @@ public class ArrayDefinition2Test {
      */
     @Test
     public void testArrayDefinition_baseDeclaration() {
-        CompoundDeclaration declaration = (CompoundDeclaration) charArrayFixture.getDeclaration();
+        ArrayDeclaration declaration = (ArrayDeclaration) charArrayFixture.getDeclaration();
         String fieldName = "";
 
         @SuppressWarnings("null")
@@ -136,7 +136,7 @@ public class ArrayDefinition2Test {
      */
     @Test
     public void testArrayDefinition_newDeclaration() {
-        CompoundDeclaration declaration = new ArrayDeclaration(0,
+        ArrayDeclaration declaration = new ArrayDeclaration(0,
                 new StringDeclaration());
         IDefinitionScope definitionScope = getDefinitionScope();
 
@@ -151,7 +151,7 @@ public class ArrayDefinition2Test {
      */
     @Test
     public void testGetDeclaration() {
-        CompoundDeclaration result = (CompoundDeclaration) charArrayFixture.getDeclaration();
+        ArrayDeclaration result = (ArrayDeclaration) charArrayFixture.getDeclaration();
 
         assertNotNull(result);
     }
