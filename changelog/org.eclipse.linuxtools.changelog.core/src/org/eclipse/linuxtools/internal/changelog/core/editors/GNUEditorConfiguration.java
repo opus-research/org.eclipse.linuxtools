@@ -13,15 +13,21 @@ package org.eclipse.linuxtools.internal.changelog.core.editors;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.formatter.ContentFormatter;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
+import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.FastPartitioner;
+import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.linuxtools.changelog.core.IEditorChangeLogContrib;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
@@ -108,9 +114,27 @@ public class GNUEditorConfiguration extends TextSourceViewerConfiguration implem
      * @return reconciler for GNU format changelog.
      */
     @Override
-	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
-		return new GNUPresentationReconciler();
-	}
+    public IPresentationReconciler getPresentationReconciler(
+            ISourceViewer sourceViewer) {
+        PresentationReconciler reconciler = new PresentationReconciler();
+        ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+        GNUElementScanner scanner = new GNUElementScanner();
+        scanner.setDefaultReturnToken(new Token(new TextAttribute(
+        		colorRegistry.get(IChangeLogColorConstants.TEXT))));
+        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(scanner);
+        reconciler.setDamager(dr, GNUPartitionScanner.CHANGELOG_EMAIL);
+        reconciler.setRepairer(dr, GNUPartitionScanner.CHANGELOG_EMAIL);
+
+        dr= new GNUFileEntryDamagerRepairer(scanner);
+        reconciler.setDamager(dr, GNUPartitionScanner.CHANGELOG_SRC_ENTRY);
+        reconciler.setRepairer(dr, GNUPartitionScanner.CHANGELOG_SRC_ENTRY);
+
+        dr= new MultilineRuleDamagerRepairer(scanner);
+        reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
+        reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
+
+        return reconciler;
+    }
 
     /**
      * Perform documentation setup to set up partitioning.
