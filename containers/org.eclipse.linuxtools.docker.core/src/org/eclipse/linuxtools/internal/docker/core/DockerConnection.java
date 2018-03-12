@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -174,8 +174,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	private List<IDockerImage> images;
 	private boolean imagesLoaded = false;
 
-	ListenerList containerListeners;
-	ListenerList imageListeners;
+	ListenerList<IDockerContainerListener> containerListeners;
+	ListenerList<IDockerImageListener> imageListeners;
 
 	/**
 	 * Constructor for a unix socket based connection
@@ -335,17 +335,15 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public void addContainerListener(IDockerContainerListener listener) {
-		if (containerListeners == null) {
-			containerListeners = new ListenerList(ListenerList.IDENTITY);
-		}
+		if (containerListeners == null)
+			containerListeners = new ListenerList<>(ListenerList.IDENTITY);
 		containerListeners.add(listener);
 	}
 
 	@Override
 	public void removeContainerListener(IDockerContainerListener listener) {
-		if (containerListeners != null) {
+		if (containerListeners != null)
 			containerListeners.remove(listener);
-		}
 	}
 
 	/**
@@ -373,11 +371,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	// accordingly.
 	public void notifyContainerListeners(List<IDockerContainer> list) {
 		if (containerListeners != null) {
-			Object[] listeners = containerListeners.getListeners();
-			for (int i = 0; i < listeners.length; ++i) {
-				((IDockerContainerListener) listeners[i])
-						.listChanged(this,
-						list);
+			for (IDockerContainerListener listener : containerListeners) {
+				listener.listChanged(this, list);
 			}
 		}
 	}
@@ -387,9 +382,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	 */
 	// TODO: include in IDockerConnection API
 	public List<IDockerContainerListener> getContainerListeners() {
-		if (this.containerListeners == null) {
-			return Collections.emptyList();
-		}
 		final IDockerContainerListener[] result = new IDockerContainerListener[this.containerListeners
 				.size()];
 		final Object[] listeners = containerListeners.getListeners();
@@ -680,24 +672,21 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public void addImageListener(IDockerImageListener listener) {
-		if (imageListeners == null) {
-			imageListeners = new ListenerList(ListenerList.IDENTITY);
-		}
+		if (imageListeners == null)
+			imageListeners = new ListenerList<>(ListenerList.IDENTITY);
 		imageListeners.add(listener);
 	}
 
 	@Override
 	public void removeImageListener(IDockerImageListener listener) {
-		if (imageListeners != null) {
+		if (imageListeners != null)
 			imageListeners.remove(listener);
-		}
 	}
 
 	public void notifyImageListeners(List<IDockerImage> list) {
 		if (imageListeners != null) {
-			Object[] listeners = imageListeners.getListeners();
-			for (int i = 0; i < listeners.length; ++i) {
-				((IDockerImageListener) listeners[i]).listChanged(this, list);
+			for (IDockerImageListener listener : imageListeners) {
+				listener.listChanged(this, list);
 			}
 		}
 	}
@@ -707,9 +696,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	 */
 	// TODO: include in IDockerConnection API
 	public List<IDockerImageListener> getImageListeners() {
-		if (this.imageListeners == null) {
-			return Collections.emptyList();
-		}
 		final IDockerImageListener[] result = new IDockerImageListener[this.imageListeners
 				.size()];
 		final Object[] listeners = imageListeners.getListeners();
