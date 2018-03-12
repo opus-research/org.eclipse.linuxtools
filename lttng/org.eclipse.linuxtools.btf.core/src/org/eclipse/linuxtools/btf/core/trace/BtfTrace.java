@@ -207,7 +207,7 @@ public class BtfTrace extends TmfTrace implements ITmfEventParser, ITmfPersisten
             fFileInput = new RandomAccessFile(fFile, "r"); //$NON-NLS-1$
             parseHeader(fFileInput);
         } catch (IOException e) {
-            throw new TmfTraceException(e.getMessage(), e);
+            // won't happen
         }
 
     }
