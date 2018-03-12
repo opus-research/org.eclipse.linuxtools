@@ -211,6 +211,13 @@ public class DockerContainersView extends ViewPart implements
 		service.refreshElements(FILTER_CONTAINERS_COMMAND_ID, null);
 		DockerConnectionManager.getInstance()
 				.addConnectionManagerListener(this);
+		// On startup, this view might get set up after the Docker Explorer View
+		// and so we won't get the notification when it chooses the connection.
+		// Find out if it has a selection and set our connection appropriately.
+		ISelection selection = getSite().getWorkbenchWindow()
+				.getSelectionService().getSelection(DockerExplorerView.VIEW_ID);
+		if (selection != null)
+			selectionChanged(null, selection);
 	}
 	
 	private void createTableViewer(final Composite container) {
@@ -278,7 +285,7 @@ public class DockerContainersView extends ViewPart implements
 			@Override
 			public String getText(final Object element) {
 				if (element instanceof IDockerContainer) {
-					return LabelUtils.toCreatedDate(((IDockerContainer)element).created());
+					return LabelProviderUtils.toCreatedDate(((IDockerContainer)element).created());
 				}
 				return super.getText(element);
 			}
@@ -306,7 +313,7 @@ public class DockerContainersView extends ViewPart implements
 					for (Iterator<IDockerPortMapping> iterator = ((IDockerContainer) element)
 							.ports().iterator(); iterator.hasNext();) {
 						final IDockerPortMapping portMapping = iterator.next();
-						ports.append(LabelUtils.containerPortMappingToString(portMapping));
+						ports.append(LabelProviderUtils.containerPortMappingToString(portMapping));
 						if(iterator.hasNext()) {
 							ports.append(", ");
 						}

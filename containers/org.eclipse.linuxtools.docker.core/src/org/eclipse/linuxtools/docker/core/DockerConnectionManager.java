@@ -69,9 +69,7 @@ public class DockerConnectionManager {
 				conn = new DockerConnection.Builder().name(tsetting.getName())
 						.tcpConnection(tsetting);
 			}
-			// add the connection but do not notify the listeners to avoid
-			// flickering on the Docker Explorer view for each entry
-			addConnection(conn, false);
+			addConnection(conn);
 		}
 	}
 
@@ -114,37 +112,12 @@ public class DockerConnectionManager {
 		return null;
 	}
 
-	/**
-	 * Adds the given connection and notifies all registered
-	 * {@link IDockerConnectionManagerListener}
-	 * 
-	 * @param dockerConnection
-	 *            the connection to add
-	 */
 	public void addConnection(final IDockerConnection dockerConnection) {
-		addConnection(dockerConnection, true);
-	}
-
-	/**
-	 * Adds the given connection and notifies optionally all registered
-	 * {@link IDockerConnectionManagerListener}
-	 * 
-	 * @param dockerConnection
-	 *            the connection to add
-	 * @param notifyListeners
-	 *            flag to indicate if registered
-	 *            {@link IDockerConnectionManagerListener} should be notified
-	 *            about the {@link IDockerConnection} addition.
-	 */
-	public void addConnection(final IDockerConnection dockerConnection,
-			final boolean notifyListeners) {
 		if (!connections.contains(dockerConnection)) {
 			connections.add(dockerConnection);
 			saveConnections();
-			if (notifyListeners) {
-				notifyListeners(dockerConnection,
-						IDockerConnectionManagerListener.ADD_EVENT);
-			}
+			notifyListeners(dockerConnection,
+					IDockerConnectionManagerListener.ADD_EVENT);
 		}
 	}
 
