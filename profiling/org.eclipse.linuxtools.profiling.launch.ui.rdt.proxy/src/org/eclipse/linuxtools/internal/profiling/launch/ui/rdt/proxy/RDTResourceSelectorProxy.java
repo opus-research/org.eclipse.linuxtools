@@ -17,11 +17,13 @@ import java.net.URISyntaxException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.profiling.launch.ui.IRemoteResourceSelectorProxy;
 import org.eclipse.remote.core.IRemoteConnection;
-import org.eclipse.remote.core.IRemoteConnectionType;
-import org.eclipse.remote.core.IRemoteFileService;
-import org.eclipse.remote.core.IRemoteServicesManager;
+import org.eclipse.remote.core.IRemoteFileManager;
+import org.eclipse.remote.core.IRemoteServices;
+import org.eclipse.remote.core.RemoteServices;
 import org.eclipse.remote.ui.IRemoteUIConstants;
-import org.eclipse.remote.ui.IRemoteUIFileService;
+import org.eclipse.remote.ui.IRemoteUIFileManager;
+import org.eclipse.remote.ui.IRemoteUIServices;
+import org.eclipse.remote.ui.RemoteUIServices;
 import org.eclipse.swt.widgets.Shell;
 
 public class RDTResourceSelectorProxy implements IRemoteResourceSelectorProxy {
@@ -38,7 +40,7 @@ public class RDTResourceSelectorProxy implements IRemoteResourceSelectorProxy {
     }
 
     private URI selectResource(String scheme, String initialPath, String prompt, Shell shell, ResourceType resourceType) {
-        IRemoteUIFileService uiFileService;
+        IRemoteUIFileManager uiFileManager;
         boolean schemeSwitch = false;
         URI uri;
         try {
@@ -51,25 +53,25 @@ public class RDTResourceSelectorProxy implements IRemoteResourceSelectorProxy {
             uri = getEmptyPathURI(scheme);
             schemeSwitch = true;
         }
-
-        IRemoteServicesManager sm = Activator.getService(IRemoteServicesManager.class);
-        IRemoteConnectionType ct = sm.getConnectionType(uri);
-        IRemoteConnection connection = ct.getConnection(uri);
-        IRemoteFileService fileService = connection.getService(IRemoteFileService.class);
-
         // If the user is switching schemes, start with an empty host and path
-        uiFileService = ct.getService(IRemoteUIFileService.class);
-        uiFileService.showConnections(true);
+        IRemoteServices services = RemoteServices.getRemoteServices(uri);
+
+        IRemoteUIServices uiServices = RemoteUIServices.getRemoteUIServices(services);
+
+        uiFileManager = uiServices.getUIFileManager();
+        uiFileManager.showConnections(true);
+        IRemoteConnection connection = null;
         if (!schemeSwitch) {
-            uiFileService.setConnection(connection);
+            connection = services.getConnectionManager().getConnection(uri);
+            uiFileManager.setConnection(connection);
         }
         String selectedPath = null;
         switch (resourceType) {
         case FILE:
-            selectedPath = uiFileService.browseFile(shell, prompt, uri.getPath(), IRemoteUIConstants.NONE);
+            selectedPath = uiFileManager.browseFile(shell, prompt, uri.getPath(), IRemoteUIConstants.NONE);
             break;
         case DIRECTORY:
-            selectedPath = uiFileService.browseDirectory(shell, prompt, uri.getPath(), IRemoteUIConstants.NONE);
+            selectedPath = uiFileManager.browseDirectory(shell, prompt, uri.getPath(), IRemoteUIConstants.NONE);
             break;
         default:
             Activator.log(IStatus.ERROR, Messages.RDTResourceSelectorProxy_unsupported_resourceType + resourceType);
@@ -77,9 +79,9 @@ public class RDTResourceSelectorProxy implements IRemoteResourceSelectorProxy {
         }
         URI selectedURI = null;
         if (selectedPath != null) {
-            connection = uiFileService.getConnection();
-            fileService = connection.getService(IRemoteFileService.class);
-            selectedURI = fileService.toURI(selectedPath);
+            connection = uiFileManager.getConnection();
+            IRemoteFileManager remoteFileManager = connection.getFileManager();
+            selectedURI = remoteFileManager.toURI(selectedPath);
         }
         return selectedURI;
     }
