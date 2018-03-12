@@ -1040,24 +1040,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public IDockerProgressHandler getDefaultBuildImageProgressHandler(
-			String image, int lines) {
-		return new DefaultImageBuildProgressHandler(this, image, lines);
-	}
-
-	@Override
-	public IDockerProgressHandler getDefaultPullImageProgressHandler(
-			String image) {
-		return new DefaultImagePullProgressHandler(this, image);
-	}
-
-	@Override
-	public IDockerProgressHandler getDefaultPushImageProgressHandler(
-			String image) {
-		return new DefaultImagePushProgressHandler(this, image);
-	}
-
-	@Override
 	public void pullImage(final String id, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
 		try {
