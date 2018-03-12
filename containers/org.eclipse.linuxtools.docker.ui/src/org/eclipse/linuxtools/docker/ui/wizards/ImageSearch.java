@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.docker.ui.wizards;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageSearchModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageSearchPage;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageTagSelectionPage;
@@ -62,7 +63,7 @@ public class ImageSearch extends Wizard {
 
 	@Override
 	public boolean canFinish() {
-		return this.imageTagSelectionPage.isPageComplete();
+		return this.imageSearchPage.isPageComplete();
 	}
 
 	@Override
@@ -70,9 +71,16 @@ public class ImageSearch extends Wizard {
 		return true;
 	}
 
+	/**
+	 * @return the selected docker Image as a {@link String} concatenation of
+	 *         the name and tag.
+	 */
 	public String getSelectedImage() {
 		return this.imageSearchPage.getSelectedImage().getName() + ":"
-				+ this.imageTagSelectionPage.getSelectedImageTag().getName();
+				+ (this.imageTagSelectionPage.getSelectedImageTag() != null
+						? this.imageTagSelectionPage.getSelectedImageTag()
+								.getName()
+						: IDockerImage.TAG_LATEST);
 	}
 
 }
