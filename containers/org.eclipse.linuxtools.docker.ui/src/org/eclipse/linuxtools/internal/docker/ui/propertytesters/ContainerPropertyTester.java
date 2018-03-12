@@ -45,13 +45,7 @@ public class ContainerPropertyTester extends PropertyTester {
 	@Override
 	public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
 		if (receiver instanceof IDockerContainer) {
-			final IDockerContainer oldContainer = (IDockerContainer) receiver;
-			/*
-			 * The 'receiver' is not updated if the selection remains unchanged
-			 * but a context menu command may have modified container state
-			 * requiring a change in menu items.
-			 */
-			final IDockerContainer container = oldContainer.getConnection().getContainer(oldContainer.id());
+			final IDockerContainer container = (IDockerContainer) receiver;
 			switch (property) {
 			case IS_RUNNING:
 				return checkIfStateMatchesExpectation(container, EnumDockerStatus.RUNNING, expectedValue);
