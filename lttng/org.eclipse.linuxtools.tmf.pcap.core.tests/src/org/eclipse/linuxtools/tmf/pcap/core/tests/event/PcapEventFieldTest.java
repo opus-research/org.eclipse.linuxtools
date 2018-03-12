@@ -117,7 +117,8 @@ public class PcapEventFieldTest {
 
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        try (PcapFile dummy = new PcapFile(trace.getPath())) {
+        String file = trace.getPath();
+        try (PcapFile dummy = new PcapFile(file)) {
             IPv4Packet packet = new IPv4Packet(dummy, null, bb);
             ITmfEventField[] fieldArray = generatePacketFields(packet);
             fRegularField = new PcapEventField("Regular Field", EMPTY_STRING, fieldArray, packet);

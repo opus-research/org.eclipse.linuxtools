@@ -51,7 +51,8 @@ public class PcapFileReadTest {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_UDP;
         assumeTrue(trace.exists());
 
-        try (PcapFile file = new PcapFile(trace.getPath());) {
+        String path = trace.getPath();
+        try (PcapFile file = new PcapFile(path);) {
 
             PcapPacket packet = file.parseNextPacket();
             if (packet == null) {
