@@ -15,7 +15,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -30,10 +29,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.debug.core.DebugPlugin;
@@ -50,8 +47,8 @@ import org.osgi.framework.Version;
 
 public class VagrantConnection implements IVagrantConnection, Closeable {
 
-	private static final String JSCH_ID = "org.eclipse.jsch.core"; //$NON-NLS-1$
-	private static final String KEY = "PRIVATEKEY"; //$NON-NLS-1$
+	private static final String JSCH_ID = "org.eclipse.jsch.core";
+	private static final String KEY = "PRIVATEKEY";
 	private static final String VG = "vagrant"; //$NON-NLS-1$
 	private final Object imageLock = new Object();
 	private final Object containerLock = new Object();
@@ -130,12 +127,12 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	}
 
 	protected void refreshVMs() {
-		String[] res = call(new String[] { "global-status" }); //$NON-NLS-1$
+		String[] res = call(new String[] { "global-status" });
 		List<String> vmIDs = new LinkedList<>();
 		List<String> vmDirs = new LinkedList<>();
 		final List<IVagrantVM> containers = new LinkedList<>();
 		for (int i = 0; i < res.length; i++) {
-			String[] items = res[i].split("\\s+"); //$NON-NLS-1$
+			String[] items = res[i].split("\\s+");
 			if (items.length == 5 && i >= 2) {
 				vmIDs.add(items[0]);
 				vmDirs.add(items[items.length - 1]);
@@ -152,7 +149,7 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 			while (vmIterator.hasNext()) {
 				final String vmid = vmIterator.next();
 				final String vmDir = vmDirIterator.next();
-				new Thread("Checking ssh-config for vm " + vmid) { //$NON-NLS-1$
+				new Thread("Checking ssh-config for vm " + vmid) {
 					@Override
 					public void run() {
 						try {
@@ -194,7 +191,7 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 				.getEnvironment(new File(vmDir));
 
 		List<String> args = new LinkedList<>(
-				Arrays.asList(new String[] { "ssh-config" })); //$NON-NLS-1$
+				Arrays.asList(new String[] { "ssh-config" }));
 		args.add(vmid);
 
 		List<String> sshConfig = null;
@@ -202,13 +199,13 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		// Run and handle ssh-config for this vm
 		String[] res = call(args.toArray(new String[0]), new File(vmDir), env);
 		for (int i = 0; i < res.length; i++) {
-			String[] items = res[i].trim().split(" "); //$NON-NLS-1$
-			if (items[0].equals("HostName")) { //$NON-NLS-1$
+			String[] items = res[i].trim().split(" ");
+			if (items[0].equals("HostName")) {
 				List<String> tmp = new ArrayList<>();
 				tmp.add(items[1]);
 				sshConfig = tmp;
-			} else if (items[0].equals("User") || items[0].equals("Port") //$NON-NLS-1$ //$NON-NLS-2$
-					|| items[0].equals("IdentityFile")) { //$NON-NLS-1$
+			} else if (items[0].equals("User") || items[0].equals("Port")
+					|| items[0].equals("IdentityFile")) {
 				sshConfig.add(items[1]);
 			}
 		}
@@ -216,19 +213,19 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		// Run and handle status for this vm
 		VagrantVM vm = null;
 		args = new LinkedList<>(
-				Arrays.asList(new String[] { "--machine-readable", "status" })); //$NON-NLS-1$ //$NON-NLS-2$
+				Arrays.asList(new String[] { "--machine-readable", "status" }));
 		args.add(vmid);
 		res = call(args.toArray(new String[0]), new File(vmDir), env);
 		String name, provider, state, state_desc;
-		name = provider = state = state_desc = ""; //$NON-NLS-1$
+		name = provider = state = state_desc = "";
 		for (int i = 0; i < res.length; i++) {
-			String[] items = res[i].split(","); //$NON-NLS-1$
-			if (items[2].equals("provider-name")) { //$NON-NLS-1$
+			String[] items = res[i].split(",");
+			if (items[2].equals("provider-name")) {
 				name = items[1];
 				provider = items[3];
-			} else if (items[2].equals("state")) { //$NON-NLS-1$
+			} else if (items[2].equals("state")) {
 				state = items[3];
-			} else if (items[2].equals("state-human-long")) { //$NON-NLS-1$
+			} else if (items[2].equals("state-human-long")) {
 				state_desc = items[3];
 				if (sshConfig == null || sshConfig.isEmpty()) {
 					// VM exists but ssh is not configured
@@ -252,25 +249,25 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	 */
 	private void removeKeysFromInnactiveVMs() {
 		// org.eclipse.jsch.internal.core.IConstants.KEY_PRIVATEKEY
-		String newKeys = ""; //$NON-NLS-1$
-		String keys = InstanceScope.INSTANCE.getNode(JSCH_ID).get(KEY, ""); //$NON-NLS-1$
+		String newKeys = "";
+		String keys = InstanceScope.INSTANCE.getNode(JSCH_ID).get(KEY, "");
 		if (keys.isEmpty()) {
-			keys = DefaultScope.INSTANCE.getNode(JSCH_ID).get(KEY, ""); //$NON-NLS-1$
+			keys = DefaultScope.INSTANCE.getNode(JSCH_ID).get(KEY, "");
 		}
 		boolean vmFound = false;
-		for (String key : keys.split(",")) { //$NON-NLS-1$
+		for (String key : keys.split(",")) {
 			for (IVagrantVM vm : vms) {
 				if (key.equals(vm.identityFile())) {
 					vmFound = true;
 					if (!EnumVMStatus.RUNNING.equals(EnumVMStatus.fromStatusMessage(vm.state()))) {
-						newKeys = keys.replaceAll("(,)?" + key + "(,)?", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+						newKeys = keys.replaceAll("(,)?" + key + "(,)?", "");
 						removeFromTrackedKeys(key);
 						break;
 					}
 				}
 			}
 			if (!vmFound && isTrackedKey(key)) {
-				newKeys = keys.replaceAll("(,)?" + key + "(,)?", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				newKeys = keys.replaceAll("(,)?" + key + "(,)?", "");
 				removeFromTrackedKeys(key);
 			}
 		}
@@ -315,23 +312,23 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	@Override
 	public List<IVagrantBox> getBoxes(boolean force) {
 		if (force || !isBoxesLoaded()) {
-			String [] res = call(new String[] { "--machine-readable", "box", "list" }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			String [] res = call(new String[] { "--machine-readable", "box", "list" });
 			List<IVagrantBox> images = new LinkedList<>();
-			String name = ""; //$NON-NLS-1$
-			String provider = ""; //$NON-NLS-1$
-			String version = "0"; //$NON-NLS-1$
+			String name = "";
+			String provider = "";
+			String version = "0";
 			for (int i = 0; i < res.length; i++) {
-				String[] items = res[i].split(","); //$NON-NLS-1$
-				if (items[2].equals("box-name")) { //$NON-NLS-1$
+				String[] items = res[i].split(",");
+				if (items[2].equals("box-name")) {
 					name = items[3];
-				} else if (items[2].equals("box-provider")) { //$NON-NLS-1$
+				} else if (items[2].equals("box-provider")) {
 					provider = items[3];
-				} else if (items[2].equals("box-version")) { //$NON-NLS-1$
+				} else if (items[2].equals("box-version")) {
 					version = items[3];
 					images.add(new VagrantBox(name, provider, Version.parseVersion(version)));
-					name = ""; //$NON-NLS-1$
-					provider = ""; //$NON-NLS-1$
-					version = "0"; //$NON-NLS-1$
+					name = "";
+					provider = "";
+					version = "0";
 				}
 			}
 			this.boxesLoaded = true;
@@ -345,7 +342,7 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 
 	@Override
 	public void init(File vagrantDir) {
-		call(new String [] {"init"}, vagrantDir); //$NON-NLS-1$
+		call(new String [] {"init"}, vagrantDir);
 	}
 
 	@Override
@@ -358,28 +355,28 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	private void up(File vagrantDir, String provider,
 			Map<String, String> environment) {
 		if (provider != null) {
-			rtCall(new String[] { "up", "--provider", provider }, //$NON-NLS-1$ //$NON-NLS-2$
+			rtCall(new String[] { "up", "--provider", provider },
 					vagrantDir, environment);
 		} else {
-			rtCall(new String[] { "up" }, vagrantDir, environment); //$NON-NLS-1$
+			rtCall(new String[] { "up" }, vagrantDir, environment);
 		}
 	}
 
 	@Override
 	public void addBox(String name, String location) {
-		call(new String [] {"--machine-readable", "box", "add", name, location}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		call(new String [] {"--machine-readable", "box", "add", name, location});
 	}
 
 	@Override
 	public void destroyVM(IVagrantVM vm) {
-		call(new String[] { "destroy", "-f", vm.id() }, vm.directory(), //$NON-NLS-1$ //$NON-NLS-2$
+		call(new String[] { "destroy", "-f", vm.id() }, vm.directory(),
 				EnvironmentsManager.getSingleton()
 						.getEnvironment(vm.directory()));
 	}
 
 	@Override
 	public void haltVM(IVagrantVM vm) {
-		call(new String[] { "--machine-readable", "halt", vm.id() }, //$NON-NLS-1$ //$NON-NLS-2$
+		call(new String[] { "--machine-readable", "halt", vm.id() },
 				vm.directory(), EnvironmentsManager.getSingleton()
 						.getEnvironment(vm.directory()));
 	}
@@ -392,12 +389,12 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 
 	@Override
 	public void removeBox(String name) {
-		call(new String[] { "--machine-readable", "box", "remove", name }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		call(new String[] { "--machine-readable", "box", "remove", name });
 	}
 
 	@Override
 	public String getName() {
-		return Messages.VagrantConnection_sys_vagrant_conn;
+		return "System Vagrant Connection";
 	}
 
 	private static String[] call(String[] args) {
@@ -416,12 +413,7 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		List<String> result = new ArrayList<>();
 		try {
 			List<String> cmd = new ArrayList<>();
-			if (Platform.getOS().equals(Platform.OS_LINUX)
-					&& getLocalVagrantPath() != null) {
-				cmd.add(getLocalVagrantPath());
-			} else {
-				cmd.add(VG);
-			}
+			cmd.add(VG);
 			cmd.addAll(Arrays.asList(args));
 			Process p = Runtime.getRuntime().exec(cmd.toArray(new String[0]),
 					envp, vagrantDir);
@@ -456,14 +448,8 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType type = manager.getLaunchConfigurationType(EXTERNAL_TOOLS);
 		try {
-			String vagrantPath = null;
-			if (Platform.getOS().equals(Platform.OS_LINUX)) {
-				vagrantPath = getLocalVagrantPath();
-			}
-			if (vagrantPath == null) {
-				// TODO: worth handling 'vagrant' (not on PATH) as an alias ?
-				vagrantPath = findVagrantPath();
-			}
+			// TODO: worth handling 'vagrant' (not on PATH) as an alias ?
+			String vagrantPath = findVagrantPath();
 			ILaunchConfigurationWorkingCopy wc = type.newInstance(null, VG);
 			wc.setAttribute(ATTR_LOCATION, vagrantPath);
 			wc.setAttribute(ATTR_TOOL_ARGUMENTS, arguments);
@@ -492,31 +478,6 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 					return vgPath.toString();
 				}
 			}
-		}
-		return null;
-	}
-
-	/**
-	 * Get the path to a locally provided wrapper script for 'vagrant'. On some
-	 * systems, 'vagrant' might have strict access controls that mandate
-	 * elevated privileges. This can result in the user needing to authenticate
-	 * for every single command (possibly for things like status/ssh-config that
-	 * are called frequently).
-	 *
-	 * @return the String path to the local 'vagrant' wrapper script or null if
-	 *         none could be located.
-	 */
-	private static String getLocalVagrantPath() {
-		try {
-			URL vgurl = VagrantConnection.class.getResource("/resources/vagrant"); // $NON-NLS-1$
-			if (vgurl != null) {
-				URL rurl = FileLocator.resolve(vgurl);
-				File lvg = new File(rurl.getPath());
-				if (lvg.exists()) {
-					return lvg.getCanonicalPath();
-				}
-			}
-		} catch (IOException e) {
 		}
 		return null;
 	}
