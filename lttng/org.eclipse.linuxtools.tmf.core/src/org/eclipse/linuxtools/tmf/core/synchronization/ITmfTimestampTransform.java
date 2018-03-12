@@ -38,7 +38,7 @@ public interface ITmfTimestampTransform extends Serializable {
      * Transforms a timestamp value
      *
      * @param timestamp
-     *            The timestamp to transform in nanoseconds
+     *            The timestamp to transform
      * @return the transformed value
      */
     long transform(long timestamp);

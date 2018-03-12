@@ -180,8 +180,6 @@ public class TestCustomTxtWizard {
         fBot.button("Close").click();
         xmlPart = extractTestXml(xmlFile, PROJECT_NAME);
         assertEquals("", xmlPart);
-
-        SWTBotUtil.deleteProject(PROJECT_NAME, fBot);
     }
 
     /**
@@ -281,8 +279,6 @@ public class TestCustomTxtWizard {
         fBot.button("Close").click();
         xmlPart = extractTestXml(xmlFile, PROJECT_NAME);
         assertEquals("", xmlPart);
-
-        SWTBotUtil.deleteProject(PROJECT_NAME, fBot);
     }
 
     private static String extractTestXml(File xmlFile, String definitionName) throws IOException, FileNotFoundException {

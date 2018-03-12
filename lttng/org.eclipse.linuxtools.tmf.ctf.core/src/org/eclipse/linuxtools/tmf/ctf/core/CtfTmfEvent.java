@@ -247,7 +247,7 @@ public class CtfTmfEvent extends TmfEvent
             }
         }
         /* Add context information as CtfTmfEventField */
-        ICompositeDefinition structContext = eventDef.getContext();
+        ICompositeDefinition structContext = eventDef.getMergedContext();
         if (structContext != null) {
             for (String contextName : structContext.getFieldNames()) {
                 /* Prefix field name */
