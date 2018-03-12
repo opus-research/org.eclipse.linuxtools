@@ -10,11 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.list.WritableList;
@@ -27,6 +23,8 @@ import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingMode
 
 /**
  * Databinding model for the {@link ImageRunResourceVolumesVariablesPage}
+ *
+ * @author xcoulon
  *
  */
 public class ImageRunResourceVolumesVariablesModel
@@ -83,12 +81,6 @@ public class ImageRunResourceVolumesVariablesModel
 		this.info = connection.getInfo();
 	}
 
-	public ImageRunResourceVolumesVariablesModel(
-			final IDockerImage selectedImage) throws DockerException {
-		this(selectedImage.getConnection());
-		this.selectedImage = selectedImage;
-	}
-
 	public IDockerConnection getConnection() {
 		return connection;
 	}
@@ -99,29 +91,21 @@ public class ImageRunResourceVolumesVariablesModel
 	 * @param selectedImage
 	 */
 	public void setSelectedImage(final IDockerImage selectedImage) {
-		if (this.selectedImage == null
-				|| !this.selectedImage.equals(selectedImage)) {
+		if (this.selectedImage != selectedImage) {
 			this.selectedImage = selectedImage;
+			final WritableList newDataVolumes = new WritableList();
 			if (selectedImage != null) {
 				this.imageInfo = selectedImage.getConnection()
 						.getImageInfo(selectedImage.id());
 				if (this.imageInfo.config() != null
 						&& this.imageInfo.config().volumes() != null) {
-					final List<DataVolumeModel> volumes = new ArrayList<>();
 					for (String volume : this.imageInfo.config().volumes()) {
-						volumes.add(new DataVolumeModel(volume));
+						newDataVolumes.add(new DataVolumeModel(volume));
 					}
-					setDataVolumes(volumes);
 				}
-			} else {
-				setDataVolumes(Collections.<DataVolumeModel> emptyList());
 			}
+			setDataVolumes(newDataVolumes);
 		}
-
-	}
-
-	public IDockerImage getSelectedImage() {
-		return selectedImage;
 	}
 
 	public IDockerImageInfo getSelectedImageInfo() {
@@ -132,11 +116,9 @@ public class ImageRunResourceVolumesVariablesModel
 		return dataVolumes;
 	}
 
-	public void setDataVolumes(final Collection<DataVolumeModel> volumes) {
+	public void setDataVolumes(final WritableList dataVolumes) {
 		this.dataVolumes.clear();
-		if (volumes != null) {
-			this.dataVolumes.addAll(volumes);
-		}
+		this.dataVolumes.addAll(dataVolumes);
 	}
 
 	public void removeDataVolume(final DataVolumeModel dataVolume) {
@@ -158,21 +140,6 @@ public class ImageRunResourceVolumesVariablesModel
 	}
 
 	public void setEnvironmentVariables(
-			final List<String> environmentVariables) {
-		this.environmentVariables.clear();
-		if (environmentVariables != null) {
-			for (String envVariable : environmentVariables) {
-				// pattern is "<name>=<value>"
-				final String[] items = envVariable.split("=");
-				if (items.length == 2) {
-					this.environmentVariables.add(
-							new EnvironmentVariableModel(items[0], items[1]));
-				}
-			}
-		}
-	}
-
-	public void setEnvironmentVariables(
 			final WritableList environmentVariables) {
 		firePropertyChange(ENVIRONMENT_VARIABLES, this.environmentVariables,
 				this.environmentVariables = environmentVariables);
@@ -186,6 +153,7 @@ public class ImageRunResourceVolumesVariablesModel
 	public void removeEnvironmentVariables() {
 		this.environmentVariables.clear();
 	}
+
 	public void removeEnvironmentVariable(
 			final EnvironmentVariableModel variable) {
 		this.environmentVariables.remove(variable);
