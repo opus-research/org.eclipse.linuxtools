@@ -30,6 +30,8 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import com.spotify.docker.client.DockerCertificateException;
+
 /**
  * Command handler to push a given image to the registry
  */
@@ -99,7 +101,7 @@ public class PushImageCommandHandler extends AbstractHandler {
 								new ImagePushProgressHandler(connection,
 										tmpRegistryTag));
 					}
-				} catch (final DockerException e) {
+				} catch (final DockerException | DockerCertificateException e) {
 					Display.getDefault().syncExec(() -> MessageDialog.openError(
 							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 									.getShell(),

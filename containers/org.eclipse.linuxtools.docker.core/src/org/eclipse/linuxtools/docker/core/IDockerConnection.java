@@ -238,7 +238,7 @@ public interface IDockerConnection {
 	 */
 	void pushImage(String name, IRegistryAccount info,
 			IDockerProgressHandler handler) throws DockerException,
-			InterruptedException;
+			InterruptedException, DockerCertificateException;
 
 	/**
 	 * Adds a tag to an existing image
