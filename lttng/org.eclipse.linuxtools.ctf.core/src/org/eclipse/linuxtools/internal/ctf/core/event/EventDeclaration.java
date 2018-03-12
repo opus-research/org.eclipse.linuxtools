@@ -64,7 +64,7 @@ public class EventDeclaration implements IEventDeclaration {
     /**
      * Event id (can be null if only event in the stream).
      */
-    private Integer fId = (int) UNSET_EVENT_ID;
+    private Long fId = UNSET_EVENT_ID;
 
     /**
      * Stream to which belongs this event.
@@ -78,8 +78,6 @@ public class EventDeclaration implements IEventDeclaration {
 
     /** Map of this event type's custom CTF attributes */
     private final Map<String, String> fCustomAttributes = new HashMap<>();
-
-    private int fIntId = (int) UNSET_EVENT_ID;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -124,7 +122,7 @@ public class EventDeclaration implements IEventDeclaration {
         String[] fieldNames = new String[] { CTFStrings.LOST_EVENTS_FIELD, CTFStrings.LOST_EVENTS_DURATION };
         Declaration[] fieldDeclarations = new Declaration[] { IntegerDeclaration.UINT_32B_DECL, IntegerDeclaration.UINT_64B_DECL };
         lostEvent.fFields = new StructDeclaration(fieldNames, fieldDeclarations);
-        lostEvent.fId = (int) LOST_EVENT_ID;
+        lostEvent.fId = LOST_EVENT_ID;
         lostEvent.fName = CTFStrings.LOST_EVENT_NAME;
         return lostEvent;
     }
@@ -185,25 +183,12 @@ public class EventDeclaration implements IEventDeclaration {
      *            the id
      */
     public void setId(long id) {
-        if (id < 0 || id > Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("id out of range"); //$NON-NLS-1$
-        }
-        fId = Integer.valueOf((int) id);
-        fIntId = (int) id;
+        fId = id;
     }
 
     @Override
     public Long getId() {
-        return Long.valueOf(fId);
-    }
-
-    /**
-     * Faster get id assuming you have less than a billion event types
-     *
-     * @return the event id
-     */
-    public int id() {
-        return fIntId;
+        return fId;
     }
 
     /**
