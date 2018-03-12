@@ -176,9 +176,7 @@ public final class TmfTraceType {
      *            The trace type ID
      * @return The corresponding TraceTypeHelper, or null if there is none for
      *         the specified ID
-     * @deprecated Use {@link #getTraceType(String)}
      */
-    @Deprecated
     public static TraceTypeHelper getTraceTypeHelper(String id) {
         return TRACE_TYPES.get(id);
     }
@@ -289,17 +287,17 @@ public final class TmfTraceType {
     private static void populateCustomTraceTypes() {
         // add the custom trace types
         for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + def.categoryName + SEPARATOR + def.definitionName;
+            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
             ITmfTrace trace = new CustomTxtTrace(def);
-            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, def.categoryName, def.definitionName, trace, false, TraceElementType.TRACE);
+            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_TXT_CATEGORY, def.definitionName, trace, false, TraceElementType.TRACE);
             TRACE_TYPES.put(traceTypeId, tt);
             // Deregister trace as signal handler because it is only used for validation
             TmfSignalManager.deregister(trace);
         }
         for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + def.categoryName + SEPARATOR + def.definitionName;
+            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + def.definitionName;
             ITmfTrace trace = new CustomXmlTrace(def);
-            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, def.categoryName, def.definitionName, trace, false, TraceElementType.TRACE);
+            TraceTypeHelper tt = new TraceTypeHelper(traceTypeId, CUSTOM_XML_CATEGORY, def.definitionName, trace, false, TraceElementType.TRACE);
             TRACE_TYPES.put(traceTypeId, tt);
             // Deregister trace as signal handler because it is only used for validation
             TmfSignalManager.deregister(trace);
@@ -313,40 +311,19 @@ public final class TmfTraceType {
      *            The custom parser category
      * @param definitionName
      *            The custom parser definition name to add or replace
-     * @deprecated Use {@link #addCustomTraceType(Class, String, String)}
      */
-    @Deprecated
     public static void addCustomTraceType(String category, String definitionName) {
-        if (category.equals(CUSTOM_TXT_CATEGORY)) {
-            addCustomTraceType(CustomTxtTrace.class, category, definitionName);
-        } else if (category.equals(CUSTOM_XML_CATEGORY)) {
-            addCustomTraceType(CustomXmlTrace.class, category, definitionName);
-        }
-    }
-
-    /**
-     * Add or replace a custom trace type
-     *
-     * @param traceClass
-     *            The custom trace class, either {@link CustomTxtTrace} or
-     *            {@link CustomXmlTrace}
-     * @param category
-     *            The custom parser category
-     * @param definitionName
-     *            The custom parser definition name to add or replace
-     */
-    public static void addCustomTraceType(Class<? extends ITmfTrace> traceClass, String category, String definitionName) {
         String traceTypeId = null;
         ITmfTrace trace = null;
 
-        if (traceClass.equals(CustomTxtTrace.class)) {
-            traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + category + SEPARATOR + definitionName;
+        if (category.equals(CUSTOM_TXT_CATEGORY)) {
+            traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + definitionName;
             CustomTxtTraceDefinition def = CustomTxtTraceDefinition.load(category, definitionName);
             if (def != null) {
                 trace = new CustomTxtTrace(def);
             }
-        } else if (traceClass.equals(CustomXmlTrace.class)) {
-            traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + category + SEPARATOR + definitionName;
+        } else if (category.equals(CUSTOM_XML_CATEGORY)) {
+            traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + definitionName;
             CustomXmlTraceDefinition def = CustomXmlTraceDefinition.load(category, definitionName);
             if (def != null) {
                 trace = new CustomXmlTrace(def);
@@ -372,33 +349,20 @@ public final class TmfTraceType {
      *            The custom parser category
      * @param definitionName
      *            The custom parser definition name to add or replace
-     * @deprecated Use {@link #removeCustomTraceType(Class, String, String)}
      */
-    @Deprecated
     public static void removeCustomTraceType(String category, String definitionName) {
         if (category.equals(CUSTOM_TXT_CATEGORY)) {
-            removeCustomTraceType(CustomTxtTrace.class, category, definitionName);
+            String traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + definitionName;
+            TraceTypeHelper helper = TRACE_TYPES.remove(traceTypeId);
+            if (helper != null) {
+                helper.getTrace().dispose();
+            }
         } else if (category.equals(CUSTOM_XML_CATEGORY)) {
-            removeCustomTraceType(CustomXmlTrace.class, category, definitionName);
-        }
-    }
-
-    /**
-     * Remove a custom trace type
-     *
-     * @param traceClass
-     *            The custom trace class, either {@link CustomTxtTrace} or
-     *            {@link CustomXmlTrace}
-     * @param category
-     *            The custom parser category
-     * @param definitionName
-     *            The custom parser definition name to add or replace
-     */
-    public static void removeCustomTraceType(Class<? extends ITmfTrace> traceClass, String category, String definitionName) {
-        String traceTypeId = traceClass.getCanonicalName() + SEPARATOR + category + SEPARATOR + definitionName;
-        TraceTypeHelper helper = TRACE_TYPES.remove(traceTypeId);
-        if (helper != null) {
-            helper.getTrace().dispose();
+            String traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + definitionName;
+            TraceTypeHelper helper = TRACE_TYPES.remove(traceTypeId);
+            if (helper != null) {
+                helper.getTrace().dispose();
+            }
         }
     }
 
@@ -597,15 +561,22 @@ public final class TmfTraceType {
      * @param traceType
      *            The trace type in human form (category:name)
      * @return the trace type ID or null if the trace is not a custom one
-     * @deprecated Use {@link #getTraceTypeId(String, String)}
      */
-    @Deprecated
     public static String getCustomTraceTypeId(String traceType) {
+        String traceTypeId = null;
+
+        // do custom trace stuff here
         String traceTypeToken[] = traceType.split(":", 2); //$NON-NLS-1$
         if (traceTypeToken.length == 2) {
-            return getTraceTypeId(traceTypeToken[0], traceTypeToken[1]);
+            final boolean startsWithTxt = traceType.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY);
+            final boolean startsWithXML = traceType.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY);
+            if (startsWithTxt) {
+                traceTypeId = CustomTxtTrace.class.getCanonicalName() + SEPARATOR + traceTypeToken[1];
+            } else if (startsWithXML) {
+                traceTypeId = CustomXmlTrace.class.getCanonicalName() + SEPARATOR + traceTypeToken[1];
+            }
         }
-        return null;
+        return traceTypeId;
     }
 
     /**
@@ -615,16 +586,11 @@ public final class TmfTraceType {
      * @param traceType
      *            the trace type in human form (category:name)
      * @return true if the trace is a custom type
-     * @deprecated Use {@link #getTraceTypeId(String, String)} and check prefix
      */
-    @Deprecated
     public static boolean isCustomTrace(String traceType) {
-        String traceTypeId = getCustomTraceTypeId(traceType);
-        if (traceTypeId != null) {
-            return traceTypeId.startsWith(CustomTxtTrace.class.getCanonicalName() + SEPARATOR) ||
-                    traceTypeId.startsWith(CustomXmlTrace.class.getCanonicalName() + SEPARATOR);
-        }
-        return false;
+        final boolean startsWithTxt = traceType.startsWith(TmfTraceType.CUSTOM_TXT_CATEGORY);
+        final boolean startsWithXML = traceType.startsWith(TmfTraceType.CUSTOM_XML_CATEGORY);
+        return (startsWithTxt || startsWithXML);
     }
 
     /**

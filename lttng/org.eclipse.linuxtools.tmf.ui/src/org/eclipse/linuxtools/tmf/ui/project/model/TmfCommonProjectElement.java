@@ -180,26 +180,12 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
     }
 
     /**
-     * Refreshes the trace type field by reading the trace type persistent
-     * property of the resource.
+     * Refreshes the trace type filed by reading the trace type persistent
+     * property of the resource referenece.
      */
     public void refreshTraceType() {
         try {
             fTraceTypeId = getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE);
-            // Fix custom trace type id with old class name or without category name for backward compatibility
-            if (fTraceTypeId != null) {
-                int index = fTraceTypeId.lastIndexOf(':');
-                if (index == -1) {
-                    return;
-                }
-                if (fTraceTypeId.contains(CustomTxtTrace.class.getSimpleName() + ':') && fTraceTypeId.indexOf(':') == index) {
-                    fTraceTypeId = CustomTxtTrace.class.getCanonicalName() + ':' +
-                            TmfTraceType.CUSTOM_TXT_CATEGORY + fTraceTypeId.substring(index);
-                } else if (fTraceTypeId.contains(CustomXmlTrace.class.getSimpleName() + ':') && fTraceTypeId.indexOf(':') == index) {
-                    fTraceTypeId = CustomXmlTrace.class.getCanonicalName() + ':' +
-                            TmfTraceType.CUSTOM_XML_CATEGORY + fTraceTypeId.substring(index);
-                }
-            }
         } catch (CoreException e) {
             Activator.getDefault().logError(NLS.bind(Messages.TmfCommonProjectElement_ErrorRefreshingProperty, getName()), e);
         }
