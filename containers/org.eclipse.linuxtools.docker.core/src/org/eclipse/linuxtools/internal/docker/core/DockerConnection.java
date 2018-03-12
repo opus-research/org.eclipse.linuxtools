@@ -18,7 +18,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -377,20 +376,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 	}
 
-	/**
-	 * @return an fixed-size list of all {@link IDockerContainerListener}
-	 */
-	// TODO: include in IDockerConnection API
-	public List<IDockerContainerListener> getContainerListeners() {
-		final IDockerContainerListener[] result = new IDockerContainerListener[this.containerListeners
-				.size()];
-		final Object[] listeners = containerListeners.getListeners();
-		for (int i = 0; i < listeners.length; i++) {
-			result[i] = (IDockerContainerListener) listeners[i];
-		}
-		return Arrays.asList(result);
-	}
-
 	public Job getActionJob(String id) {
 		synchronized (actionLock) {
 			Job j = null;
@@ -689,20 +674,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 	}
 
-	/**
-	 * @return an fixed-size list of all {@link IDockerImageListener}
-	 */
-	// TODO: include in IDockerConnection API
-	public List<IDockerImageListener> getImageListeners() {
-		final IDockerImageListener[] result = new IDockerImageListener[this.imageListeners
-				.size()];
-		final Object[] listeners = imageListeners.getListeners();
-		for (int i = 0; i < listeners.length; i++) {
-			result[i] = (IDockerImageListener) listeners[i];
-		}
-		return Arrays.asList(result);
-	}
-
 	@Override
 	public List<IDockerImage> getImages() {
 		return getImages(false);
@@ -838,25 +809,21 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			throw f;
 		}
 	}
-
+	
 	@Override
 	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException {
 		try {
 			final List<ImageSearchResult> searchResults = client.searchImages(term);
 			final List<IDockerImageSearchResult> results = new ArrayList<>();
 			for(ImageSearchResult r : searchResults) {
-				if (r.getName().contains(term)) {
-					results.add(new DockerImageSearchResult(r.getDescription(),
-							r.isOfficial(), r.isAutomated(), r.getName(),
-							r.getStarCount()));
-				}
+				results.add(new DockerImageSearchResult(r.getDescription(), r.isOfficial(), r.isAutomated(), r.getName(), r.getStarCount()));
 			}
 			return results;
 		} catch (com.spotify.docker.client.DockerException | InterruptedException e) {
 			throw new DockerException(e);
 		}
 	}
-
+	
 	@Override
 	public void pushImage(final String name, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
