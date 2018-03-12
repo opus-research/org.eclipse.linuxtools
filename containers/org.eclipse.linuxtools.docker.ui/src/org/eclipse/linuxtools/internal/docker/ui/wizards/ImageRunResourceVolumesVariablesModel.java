@@ -197,14 +197,11 @@ public class ImageRunResourceVolumesVariablesModel
 	}
 
 	/**
-	 * @return the total memory of the Docker daemon, in MB, or <code>-1</code>
-	 *         if the data is not available.
+	 * @return the total memory of the Docker daemon, in MB
+	 * @throws DockerException
 	 */
 	public int getTotalMemory() {
-		if (this.info != null) {
-			return (int) (this.info.getTotalMemory() / MB);
-		}
-		return -1;
+		return (int) (this.info.getTotalMemory() / MB);
 	}
 
 	public boolean isEnableResourceLimitations() {
