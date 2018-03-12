@@ -16,10 +16,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystems;
@@ -192,7 +188,6 @@ public class DockerConnection
 	private boolean containersLoaded = false;
 	private List<IDockerImage> images;
 	private boolean imagesLoaded = false;
-	private Boolean isLocalConnection;
 
 	ListenerList<IDockerContainerListener> containerListeners;
 	ListenerList<IDockerImageListener> imageListeners;
@@ -1870,36 +1865,6 @@ public class DockerConnection
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
 		return stream;
-	}
-
-	public boolean isLocal() {
-		if (isLocalConnection != null)
-			return isLocalConnection.booleanValue();
-		isLocalConnection = new Boolean(false);
-		if (connectionSettings
-				.getType() == BindingType.UNIX_SOCKET_CONNECTION) {
-			isLocalConnection = new Boolean(true);
-		} else if (connectionSettings.getType() == BindingType.TCP_CONNECTION) {
-			TCPConnectionSettings settings = (TCPConnectionSettings) connectionSettings;
-			try {
-				InetAddress addr = InetAddress.getByName(settings.getAddr());
-				if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
-					isLocalConnection = new Boolean(true);
-				} else {
-					// Check if the address is defined on any interface
-					try {
-						isLocalConnection = new Boolean(NetworkInterface
-								.getByInetAddress(addr) != null);
-					} catch (SocketException e) {
-						isLocalConnection = new Boolean(false);
-					}
-				}
-			} catch (UnknownHostException e) {
-				// should not happen
-				Activator.log(e);
-			}
-		}
-		return isLocalConnection.booleanValue();
 	}
 
 	@Override
