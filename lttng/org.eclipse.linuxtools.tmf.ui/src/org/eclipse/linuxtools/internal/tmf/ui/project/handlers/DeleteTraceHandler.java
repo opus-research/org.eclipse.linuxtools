@@ -10,7 +10,6 @@
  *   Francois Chouinard - Initial API and implementation
  *   Patrick Tasse - Close editors to release resources
  *   Geneviève Bastien - Moved the delete code to element model's classes
- *   Marc-Andre Laperle - Merged DeleteTraceHandler and DeleteFolderHandler
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.project.handlers;
@@ -21,8 +20,6 @@ import java.util.Iterator;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -34,12 +31,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTracesFolder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
@@ -48,13 +42,12 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
- * An handler for deletion of both traces and trace folders. It allows mixing
- * both types of elements.
+ * <b><u>DeleteTraceHandler</u></b>
+ * <p>
  */
-public class DeleteTraceFolderElementHandler extends AbstractHandler {
+public class DeleteTraceHandler extends AbstractHandler {
 
     private TreeSelection fSelection = null;
 
@@ -83,20 +76,20 @@ public class DeleteTraceFolderElementHandler extends AbstractHandler {
         }
         ISelection selection = selectionProvider.getSelection();
 
-        // Make sure selection contains only traces and trace folders
+        // Make sure selection contains only traces
         fSelection = null;
         if (selection instanceof TreeSelection) {
             fSelection = (TreeSelection) selection;
             Iterator<Object> iterator = fSelection.iterator();
             while (iterator.hasNext()) {
                 Object element = iterator.next();
-                if (!(element instanceof TmfTraceElement) && !(element instanceof TmfTraceFolder)) {
+                if (!(element instanceof TmfTraceElement)) {
                     return false;
                 }
             }
         }
 
-        // If we get here, either nothing is selected or everything is a trace or folder
+        // If we get here, either nothing is selected or everything is a trace
         return !selection.isEmpty();
     }
 
@@ -113,18 +106,11 @@ public class DeleteTraceFolderElementHandler extends AbstractHandler {
             return null;
         }
 
-        // Get the selection
-        ISelection selection = HandlerUtil.getCurrentSelection(event);
-        if (!(selection instanceof IStructuredSelection)) {
-            return null;
-        }
-        final boolean isTracesFolder = isOnlyOneTracesFoldersSelected(selection);
-
         // Confirm the operation
         Shell shell = window.getShell();
         MessageBox confirmOperation = new MessageBox(shell, SWT.ICON_QUESTION | SWT.CANCEL | SWT.OK);
-        confirmOperation.setText(isTracesFolder ? Messages.ClearDialog_Title : Messages.DeleteDialog_Title);
-        confirmOperation.setMessage(getMessage(isTracesFolder, selection));
+        confirmOperation.setText(Messages.DeleteDialog_Title);
+        confirmOperation.setMessage(Messages.DeleteTraceHandler_Message);
         if (confirmOperation.open() != SWT.OK) {
             return null;
         }
@@ -132,7 +118,7 @@ public class DeleteTraceFolderElementHandler extends AbstractHandler {
         final Iterator<Object> iterator = fSelection.iterator();
         final int nbTraces = fSelection.size();
 
-        DeleteOperation operation = new DeleteOperation() {
+        SelectTraceOperation operation = new SelectTraceOperation() {
             @Override
             public void execute(IProgressMonitor monitor) throws CoreException {
                 SubMonitor subMonitor = SubMonitor.convert(monitor, nbTraces);
@@ -144,9 +130,6 @@ public class DeleteTraceFolderElementHandler extends AbstractHandler {
                     Object element = iterator.next();
                     if (element instanceof TmfTraceElement) {
                         final TmfTraceElement trace = (TmfTraceElement) element;
-                        if (!trace.getResource().exists()) {
-                            continue;
-                        }
                         subMonitor.setTaskName(Messages.DeleteTraceHandler_TaskName + " " + trace.getElementPath()); //$NON-NLS-1$
                         try {
                             trace.delete(null);
@@ -161,47 +144,6 @@ public class DeleteTraceFolderElementHandler extends AbstractHandler {
                                 }
                             });
                             Activator.getDefault().logError("Error deleting trace: " + trace.getName(), e); //$NON-NLS-1$
-                        }
-                    } else if (element instanceof TmfTraceFolder) {
-                        final TmfTraceFolder folder = (TmfTraceFolder) element;
-                        final IResource resource = folder.getResource();
-                        if (!resource.exists()) {
-                            continue;
-                        }
-
-                        try {
-                            // delete all traces under this folder
-                            for (TmfTraceElement traceElement : folder.getTraces()) {
-                                traceElement.delete(null);
-                            }
-
-                            // Finally, delete the folder. For the Traces
-                            // folder, we only delete the children since the
-                            // folder should always be there.
-                            if (folder instanceof TmfTracesFolder) {
-                                resource.accept(new IResourceVisitor() {
-                                    @Override
-                                    public boolean visit(IResource visitedResource) throws CoreException {
-                                        if (visitedResource != resource) {
-                                            visitedResource.delete(true, null);
-                                        }
-                                        return true;
-                                    }
-                                }, IResource.DEPTH_ONE, 0);
-                            } else {
-                                resource.delete(true, monitor);
-                            }
-                        } catch (final CoreException e) {
-                            Display.getDefault().asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    final MessageBox mb = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-                                    mb.setText(isTracesFolder ? Messages.DeleteFolderHandlerClear_Error : Messages.DeleteFolderHandler_Error + ' ' + folder.getName());
-                                    mb.setMessage(e.getMessage());
-                                    mb.open();
-                                }
-                            });
-                            Activator.getDefault().logError("Error deleting folder: " + folder.getName(), e); //$NON-NLS-1$
                         }
                     }
                     subMonitor.setTaskName(""); //$NON-NLS-1$
@@ -221,39 +163,7 @@ public class DeleteTraceFolderElementHandler extends AbstractHandler {
         return null;
     }
 
-    private static String getMessage(final boolean isTracesFolder, ISelection selection) {
-        if (isTracesFolder) {
-            return Messages.DeleteFolderHandlerClear_Message;
-        }
-
-        @SuppressWarnings("rawtypes")
-        Iterator iterator = ((IStructuredSelection) selection).iterator();
-        int i = 0;
-        while (iterator.hasNext()) {
-            if (!(iterator.next() instanceof TmfTraceFolder)) {
-                i++;
-            }
-        }
-
-        if (i == 0) {
-            return Messages.DeleteFolderHandler_Message;
-        }
-
-        return Messages.DeleteTraceHandler_Message;
-    }
-
-    private static boolean isOnlyOneTracesFoldersSelected(ISelection selection) {
-        @SuppressWarnings("rawtypes")
-        Iterator iterator = ((IStructuredSelection) selection).iterator();
-        while (iterator.hasNext()) {
-            if (!(iterator.next() instanceof TmfTracesFolder)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private abstract class DeleteOperation implements IRunnableWithProgress {
+    private abstract class SelectTraceOperation implements IRunnableWithProgress {
         @Override
         public synchronized final void run(IProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException {
