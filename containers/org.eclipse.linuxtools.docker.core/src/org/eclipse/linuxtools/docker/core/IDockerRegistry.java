@@ -14,18 +14,20 @@ package org.eclipse.linuxtools.docker.core;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import com.spotify.docker.client.DockerRequestException;
+
 /**
  * An interface for Docker registries.
  */
 public interface IDockerRegistry {
 
 	/**
-	 * @return the {@link List} of available {@link IDockerImageSearchResult}
+	 * @return the {@link List} of available {@link IDockerImageTagSearchResult}
 	 *         for the given repository on this IDockerRegistry.
 	 * @param repository
 	 *            the image repository
 	 * @throws InterruptedException
-	 * @throws DockerException
+	 * @throws DockerRequestException
 	 * @throws ExecutionException
 	 */
 	List<IRepositoryTag> getTags(String repository)
