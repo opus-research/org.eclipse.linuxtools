@@ -16,7 +16,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.eclipse.mylyn.commons.repositories.http.core.CommonHttpClient;
 
-@SuppressWarnings("restriction")
 public abstract class OSIORestPostRequest<T> extends OSIORestRequest<T> {
 
 	public OSIORestPostRequest(CommonHttpClient client, String urlSuffix, boolean authenticationRequired) {

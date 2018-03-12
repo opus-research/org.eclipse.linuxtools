@@ -55,12 +55,6 @@ public class Messages extends NLS {
 	public static String OSIORestSearchQueryPage_WorkitemTypeLabel;
 	
 	public static String OSIORestQuery_AssigneesLabel;
-	
-	public static String OSIORestQuery_SpecifyOneField;
-	
-	public static String OSIORestQuery_EnterValidURL;
-	
-	public static String OSIORestQuery_EnterValue;
 
 	static {
 		// initialize resource bundle

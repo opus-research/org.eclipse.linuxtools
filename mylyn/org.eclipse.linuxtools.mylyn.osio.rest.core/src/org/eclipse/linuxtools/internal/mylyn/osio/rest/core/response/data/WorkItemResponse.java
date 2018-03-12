@@ -12,7 +12,7 @@ package org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data;
 
 import java.util.Map;
 
-public class WorkItemResponse implements IdNamed {
+public class WorkItemResponse {
 	
 	private String type;
 	
@@ -23,10 +23,6 @@ public class WorkItemResponse implements IdNamed {
 	private WorkItemRelationships relationships;
 	
 	private GenericLinksForWorkItem links;
-	
-	public String getName() {
-		return (String)attributes.get("system.title"); //$NON-NLS-1$
-	}
 	
 	public String getType() {
 		return type;
