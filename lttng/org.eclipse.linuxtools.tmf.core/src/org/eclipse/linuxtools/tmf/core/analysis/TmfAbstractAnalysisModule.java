@@ -104,9 +104,7 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
         if (trace == null) {
             throw new TmfAnalysisException(Messages.TmfAbstractAnalysisModule_NullTrace);
         }
-
-        ITmfTrace prevTrace = getTrace();
-        if (prevTrace != null) {
+        if (fTrace != null) {
             throw new TmfAnalysisException(NLS.bind(Messages.TmfAbstractAnalysisModule_TraceSetMoreThanOnce, getName()));
         }
 
@@ -115,12 +113,9 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
             throw new TmfAnalysisException(NLS.bind(Messages.TmfAbstractAnalysisModule_AnalysisCannotExecute, getName()));
         }
 
-        synchronized (syncObj) {
-            fTrace = trace;
-        }
-
+        fTrace = trace;
         /* Get the parameter providers for this trace */
-        fParameterProviders = TmfAnalysisManager.getParameterProviders(this, trace);
+        fParameterProviders = TmfAnalysisManager.getParameterProviders(this, fTrace);
         for (IAnalysisParameterProvider provider : fParameterProviders) {
             provider.registerModule(this);
         }
@@ -134,9 +129,7 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
      * @return The trace
      */
     protected ITmfTrace getTrace() {
-        synchronized (syncObj) {
-            return fTrace;
-        }
+        return fTrace;
     }
 
     @Override
@@ -182,8 +175,7 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     public Object getParameter(String name) {
         Object paramValue = fParameters.get(name);
         /* The parameter is not set, maybe it can be provided by someone else */
-        ITmfTrace trace = getTrace();
-        if ((paramValue == null) && (trace != null)) {
+        if ((paramValue == null) && (fTrace != null)) {
             for (IAnalysisParameterProvider provider : fParameterProviders) {
                 paramValue = provider.getParameter(name);
                 if (paramValue != null) {
@@ -301,7 +293,7 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
                     broadcast(new TmfStartAnalysisSignal(TmfAbstractAnalysisModule.this, TmfAbstractAnalysisModule.this));
                     fAnalysisCancelled = !executeAnalysis(monitor);
                 } catch (TmfAnalysisException e) {
-                    Activator.logError("Error executing analysis with trace " + trace.getName(), e); //$NON-NLS-1$
+                    Activator.logError("Error executing analysis with trace " + getTrace().getName(), e); //$NON-NLS-1$
                 } finally {
                     synchronized (syncObj) {
                         monitor.done();
@@ -328,7 +320,7 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
 
     @Override
     public IStatus schedule() {
-        final ITmfTrace trace = getTrace();
+        final ITmfTrace trace = fTrace;
         if (trace == null) {
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, String.format("No trace specified for analysis %s", getName())); //$NON-NLS-1$
         }
@@ -383,11 +375,9 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
     @TmfSignalHandler
     public void traceClosed(TmfTraceClosedSignal signal) {
         /* Is the closing trace the one that was requested? */
-        synchronized (syncObj) {
-            if (signal.getTrace() == fTrace) {
-                cancel();
-                fTrace = null;
-            }
+        if (signal.getTrace() == fTrace) {
+            cancel();
+            fTrace = null;
         }
     }
 
@@ -404,8 +394,7 @@ public abstract class TmfAbstractAnalysisModule extends TmfComponent implements 
          * Since some parameter providers may handle many traces, we need to
          * register the current trace to it
          */
-        ITmfTrace trace = getTrace();
-        if (signal.getTrace() == trace) {
+        if (signal.getTrace() == fTrace) {
             for (IAnalysisParameterProvider provider : fParameterProviders) {
                 provider.registerModule(this);
             }
