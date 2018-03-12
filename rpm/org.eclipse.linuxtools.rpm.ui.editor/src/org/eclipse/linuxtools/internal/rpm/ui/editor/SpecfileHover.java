@@ -40,6 +40,10 @@ public class SpecfileHover implements ITextHover, ITextHoverExtension {
 		}
 
 		Specfile spec = new SpecfileParser().parse(textViewer.getDocument());
+		if (spec == null) {
+			return null;
+		}
+
 		String currentSelection;
 		try {
 			currentSelection = textViewer.getDocument().get(hoverRegion.getOffset() + 1, hoverRegion.getLength() - 1);
