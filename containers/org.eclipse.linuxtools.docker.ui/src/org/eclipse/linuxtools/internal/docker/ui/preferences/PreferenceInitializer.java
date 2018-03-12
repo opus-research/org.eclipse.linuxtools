@@ -23,7 +23,12 @@ import org.eclipse.linuxtools.docker.ui.Activator;
  */
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#
+	 * initializeDefaultPreferences()
+	 */
 	public void initializeDefaultPreferences() {
 		final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		store.setDefault(REFRESH_TIME, 15);
