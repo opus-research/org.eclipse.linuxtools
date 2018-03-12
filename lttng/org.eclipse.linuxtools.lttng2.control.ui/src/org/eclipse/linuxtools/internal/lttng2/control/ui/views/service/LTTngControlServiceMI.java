@@ -252,7 +252,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 NodeList rawDomains = rawInfo.getChildNodes();
                 IDomainInfo domain = null;
                 for (int j = 0; j < rawDomains.getLength(); j++) {
-                    if (rawDomains.item(i).getNodeName().equalsIgnoreCase(MIStrings.DOMAIN)) {
+                    if (rawDomains.item(j).getNodeName().equalsIgnoreCase(MIStrings.DOMAIN)) {
                         domain = parseDomain(rawDomains.item(j));
                         sessionInfo.addDomain(domain);
                     }
