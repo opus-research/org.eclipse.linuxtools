@@ -15,21 +15,22 @@ import org.eclipse.jface.wizard.Wizard;
 public class ImageTag extends Wizard {
 
 	private ImageTagPage mainPage;
+	private String tag;
+	private String image;
 
-	public ImageTag() {
+	public ImageTag(String image) {
 		super();
+		this.image = image;
 	}
 
 	public String getTag() {
-		if (this.mainPage != null) {
-			return this.mainPage.getTag();
-		}
-		return null;
+		return tag;
 	}
 
 	@Override
 	public void addPages() {
-		this.mainPage = new ImageTagPage();
+		// TODO Auto-generated method stub
+		mainPage = new ImageTagPage(image);
 		addPage(mainPage);
 	}
 
@@ -40,6 +41,8 @@ public class ImageTag extends Wizard {
 
 	@Override
 	public boolean performFinish() {
+		tag = mainPage.getTag();
+
 		return true;
 	}
 
