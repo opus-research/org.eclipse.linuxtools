@@ -897,6 +897,27 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
+	public void pullImage(final String id, final DockerAuthConfig config,
+			final IDockerProgressHandler handler)
+			throws DockerException, InterruptedException {
+		try {
+			AuthConfig authConfig = AuthConfig.builder()
+					.username(new String(config.username()))
+					.password(new String(config.password()))
+					.email(new String(config.email()))
+					.serverAddress(new String(config.serverAddress())).build();
+			DockerProgressHandler d = new DockerProgressHandler(handler);
+			client.pull(id, authConfig, d);
+			listImages();
+		} catch (com.spotify.docker.client.DockerRequestException e) {
+			throw new DockerException(e.message());
+		} catch (com.spotify.docker.client.DockerException e) {
+			DockerException f = new DockerException(e);
+			throw f;
+		}
+	}
+
+	@Override
 	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException {
 		try {
 			final List<ImageSearchResult> searchResults = client.searchImages(term);
@@ -1484,7 +1505,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public InputStream copyContainer(String id, String path)
+	public InputStream copyContainer(final String id, final String path)
 			throws DockerException, InterruptedException {
 		InputStream stream;
 		try {
@@ -1493,6 +1514,21 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
 		return stream;
+	}
+
+	@Override
+	public void copyToContainer(final String directory, final String id,
+			final String path)
+			throws DockerException, InterruptedException, IOException {
+		try {
+			DockerClient copy = getClientCopy();
+			java.nio.file.Path dirPath = FileSystems.getDefault()
+					.getPath(directory);
+			copy.copyToContainer(dirPath, id, path);
+			copy.close(); /* dispose of client copy now that we are done */
+		} catch (com.spotify.docker.client.DockerException e) {
+			throw new DockerException(e.getMessage(), e.getCause());
+		}
 	}
 
 	@Override
