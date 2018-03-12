@@ -1,13 +1,13 @@
 /****************************************************************
- * Copyright (c) 2006-2015 IBM Corporation and others.
+ * Copyright (c) 2006-2013 IBM Corp.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Red Hat Inc. - ongoing maintenance
+ *     IBM - initial API and implementation
+ *
  ****************************************************************
  */
 package org.eclipse.linuxtools.systemtap.graphing.ui.charts;
@@ -34,7 +34,8 @@ import org.swtchart.Chart;
 import org.swtchart.ITitle;
 
 /**
- * A {@link Composite} that provides the common members and the framework to build one chart.
+ * Provides the common members and the framework to build one chart.
+ *
  * @author Qi Liang
  */
 public abstract class AbstractChartBuilder extends Composite implements IUpdateListener {
@@ -131,11 +132,7 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
     private IPropertyChangeListener propertyChangeListener;
 
     /**
-     * Constructs a chart builder and associates it to one data set.
-     * @param adapter An {@link IAdapter} for reading from the chart's data set.
-     * @param parent The parent {@link Composite} that will contain this chart builder.
-     * @param style The style of the chart to construct.
-     * @param title The title of the chart to construct.
+     * Constructs one chart builder and associate it to one data set.
      */
     public AbstractChartBuilder(IAdapter adapter, Composite parent, int style, String title) {
         super(parent, style);
@@ -261,7 +258,6 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
     }
 
     /**
-     * @param scale The desired vertical scale of the chart.
      * @since 3.0
      */
     public void setScaleY(double scale) {
@@ -284,7 +280,6 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
     }
 
     /**
-     * @param scroll The desired horizontal scroll of the chart.
      * @since 3.0
      */
     public void setScroll(double scroll) {
@@ -307,7 +302,6 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
     }
 
     /**
-     * @param scroll The desired vertical scroll of the chart.
      * @since 3.0
      */
     public void setScrollY(double scroll) {
@@ -330,10 +324,6 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
     }
 
     /**
-     * Converts a value into its {@link Double} equivalent.
-     * @param o The object to convert to a {@link Double}.
-     * @return The object in the form of a {@link Double}. May be <code>null</code>
-     * if conversion is not possible, or if the object was null in the first place.
      * @since 3.0
      */
     protected Double getDoubleOrNullValue(Object o) {
@@ -361,7 +351,6 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
     }
 
     /**
-     * @param l A {@link IUpdateListener} to register with this chart.
      * @since 3.0
      */
     public void addUpdateListener(IUpdateListener l) {
@@ -369,10 +358,6 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
     }
 
     /**
-     * @param l A previously-registered {@link IUpdateListener} to remove.
-     * @return <code>true</code> if the listener was removed,
-     * <code>false</code> otherwise (such as when the provided
-     * listener was not already registered).
      * @since 3.0
      */
     public boolean removeUpdateListener(IUpdateListener l) {
@@ -394,9 +379,8 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
     }
 
     /**
-     * Given an array of label name strings, returns a new array in which all duplicate labels
+     * Given an array of label strings, returns a new array in which all duplicate labels
      * have been given unique names.
-     * @param labels An array of label names.
      * @return A new array containing unique label names.
      * @since 3.0
      */
