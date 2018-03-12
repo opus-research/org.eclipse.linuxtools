@@ -37,7 +37,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 	private final List<String> dns;
 	private final List<String> dnsSearch;
 	private final List<String> volumesFrom;
-	private final List<String> securityOpt;
 	private final String networkMode;
 	private final Long memory;
 	private final Long cpuShares;
@@ -72,7 +71,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 		this.networkMode = hostConfig.networkMode();
 		this.memory = hostConfig.memory();
 		this.cpuShares = hostConfig.cpuShares();
-		this.securityOpt = hostConfig.securityOpt();
 	}
 
 	private DockerHostConfig(final Builder builder) {
@@ -91,7 +89,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 		this.networkMode = builder.networkMode;
 		this.memory = builder.memory;
 		this.cpuShares = builder.cpuShares;
-		this.securityOpt = builder.securityOpt;
 
 	}
 
@@ -146,11 +143,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 	}
 
 	@Override
-	public List<String> securityOpt() {
-		return securityOpt;
-	}
-
-	@Override
 	public String networkMode() {
 		return networkMode;
 	}
@@ -179,7 +171,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 		private List<String> dns;
 		private List<String> dnsSearch;
 		private List<String> volumesFrom;
-		private List<String> securityOpt;
 		private String networkMode;
 		private Long memory;
 		private Long cpuShares;
@@ -266,16 +257,6 @@ public class DockerHostConfig implements IDockerHostConfig {
 
 		public Builder volumesFrom(final String... volumesFrom) {
 			this.volumesFrom = Arrays.asList(volumesFrom);
-			return this;
-		}
-
-		public Builder securityOpt(final List<String> securityOpt) {
-			this.securityOpt = new ArrayList<>(securityOpt);
-			return this;
-		}
-
-		public Builder securityOpt(final String... securityOpt) {
-			this.securityOpt = Arrays.asList(securityOpt);
 			return this;
 		}
 
