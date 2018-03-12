@@ -66,7 +66,7 @@ public class DockerExplorerLabelProvider implements IStyledLabelProvider, ILabel
 	@Override
 	public Image getImage(final Object element) {
 		if(element instanceof IDockerConnection) {
-			if (((IDockerConnection) element).isOpen()) {
+			if (((IDockerConnection) element).isActive()) {
 				return SWTImagesFactory.DESC_REPOSITORY_MIDDLE.createImage();
 			} else {
 				return SWTImagesFactory.DESC_REPOSITORY_MIDDLED.createImage();
