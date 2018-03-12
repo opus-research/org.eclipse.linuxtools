@@ -17,6 +17,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -262,6 +263,14 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 break;
             }
         }
+
+        if (!sessionInfo.isSnapshotSession()) {
+            Matcher matcher = LTTngControlServiceConstants.TRACE_NETWORK_PATTERN.matcher(sessionInfo.getSessionPath());
+            if (matcher.matches()) {
+                sessionInfo.setStreamedTrace(true);
+            }
+        }
+
 
         // Fetch the snapshot info
         if (sessionInfo.isSnapshotSession()) {
