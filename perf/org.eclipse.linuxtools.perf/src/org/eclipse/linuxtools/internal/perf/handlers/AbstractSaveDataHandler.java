@@ -120,18 +120,10 @@ public abstract class AbstractSaveDataHandler extends BaseDataManipulator implem
      * Open error dialog informing user of saving failure.
      * @param filename
      */
-	public void openErroDialog(final String title, String pattern, String arg) {
-		final String errorMsg = MessageFormat.format(pattern, new Object[] { arg });
-		try {
-			MessageDialog.openError(Display.getCurrent().getActiveShell(), title, errorMsg);
-		} catch (NullPointerException e) {
-			Display.getDefault().syncExec(new Runnable() {
-				@Override
-				public void run() {
-					MessageDialog.openError(Display.getCurrent().getActiveShell(), title, errorMsg);
-				}
-			});
-		}
+    public void openErroDialog(String title, String pattern, String arg) {
+        String errorMsg = MessageFormat.format(pattern, new Object[] { arg });
+        MessageDialog.openError(Display.getCurrent().getActiveShell(), title,
+                errorMsg);
     }
 
     /**
