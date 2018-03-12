@@ -84,10 +84,7 @@ public class ContainerInspectPropertySection extends BasePropertySection {
 			protected IStatus run(final IProgressMonitor monitor) {
 				monitor.beginTask(
 						DVMessages.getString(PropertiesLoadingContainerInfo), 1);
-				final IDockerContainerInfo containerInfo = connection.getContainerInfo(container.id());
-				if (containerInfo != null) {
-					result.add(containerInfo);
-				}
+				result.add(connection.getContainerInfo(container.id()));
 				monitor.done();
 				return Status.OK_STATUS;
 			}
