@@ -100,14 +100,9 @@ public class DockerPreferencePage extends PreferencePage implements
 					@Override
 					public void propertyChange(PropertyChangeEvent event) {
 						if (event.getSource().equals(refreshTimeField)) {
-							if (refreshTimeField.isValid()) {
-								DockerContainerRefreshManager.getInstance()
-									.setRefreshTime(refreshTimeField.getIntValue());
-								setErrorMessage(null);
-							} else {
-								setErrorMessage(refreshTimeField.getErrorMessage());
-							}
-							setValid(refreshTimeField.isValid());
+							DockerContainerRefreshManager.getInstance()
+									.setRefreshTime(
+											refreshTimeField.getIntValue());
 						}
 					}
 				});
