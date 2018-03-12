@@ -45,11 +45,11 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.linuxtools.docker.core.Activator;
+import org.eclipse.linuxtools.docker.core.DockerAuthConfig;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerContainerNotFoundException;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
-import org.eclipse.linuxtools.docker.core.IDockerAuthConfig;
 import org.eclipse.linuxtools.docker.core.IDockerConfParameter;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionInfo;
@@ -64,15 +64,10 @@ import org.eclipse.linuxtools.docker.core.IDockerImageBuildOptions;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
 import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
-import org.eclipse.linuxtools.docker.core.IDockerIpamConfig;
-import org.eclipse.linuxtools.docker.core.IDockerNetwork;
-import org.eclipse.linuxtools.docker.core.IDockerNetworkConfig;
-import org.eclipse.linuxtools.docker.core.IDockerNetworkCreation;
 import org.eclipse.linuxtools.docker.core.IDockerPortBinding;
 import org.eclipse.linuxtools.docker.core.IDockerProgressHandler;
 import org.eclipse.linuxtools.docker.core.IDockerVersion;
 import org.eclipse.linuxtools.docker.core.ILogger;
-import org.eclipse.linuxtools.docker.core.IRegistryAccount;
 import org.eclipse.linuxtools.docker.core.Messages;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.tm.terminal.view.core.TerminalServiceFactory;
@@ -100,9 +95,6 @@ import com.spotify.docker.client.messages.Image;
 import com.spotify.docker.client.messages.ImageInfo;
 import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
-import com.spotify.docker.client.messages.Ipam;
-import com.spotify.docker.client.messages.Network;
-import com.spotify.docker.client.messages.NetworkConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
 
@@ -905,42 +897,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public void pullImage(final String id, final DockerAuthConfig config,
-			final IDockerProgressHandler handler)
-			throws DockerException, InterruptedException {
-		try {
-			AuthConfig authConfig = AuthConfig.builder()
-					.username(new String(config.username()))
-					.password(new String(config.password()))
-					.email(new String(config.email()))
-					.serverAddress(new String(config.serverAddress())).build();
-			DockerProgressHandler d = new DockerProgressHandler(handler);
-			client.pull(id, authConfig, d);
-		} catch (com.spotify.docker.client.DockerRequestException e) {
-			throw new DockerException(e.message());
-		} catch (com.spotify.docker.client.DockerException e) {
-			DockerException f = new DockerException(e);
-			throw f;
-		}
-	}
-
-	@Override
-	public void pullImage(final String id, final IRegistryAccount info, final IDockerProgressHandler handler)
-			throws DockerException, InterruptedException, DockerCertificateException {
-		try {
-			DockerClient client = dockerClientFactory.getClient(null, getUri(), getTcpCertPath(), info);
-			DockerProgressHandler d = new DockerProgressHandler(handler);
-			client.pull(id, d);
-			listImages();
-		} catch (com.spotify.docker.client.DockerRequestException e) {
-			throw new DockerException(e.message());
-		} catch (com.spotify.docker.client.DockerException e) {
-			DockerException f = new DockerException(e);
-			throw f;
-		}
-	}
-
-	@Override
 	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException {
 		try {
 			final List<ImageSearchResult> searchResults = client.searchImages(term);
@@ -962,21 +918,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	public void pushImage(final String name, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
 		try {
-			DockerProgressHandler d = new DockerProgressHandler(handler);
-			client.push(name, d);
-		} catch (com.spotify.docker.client.DockerRequestException e) {
-			throw new DockerException(e.message());
-		} catch (com.spotify.docker.client.DockerException e) {
-			DockerException f = new DockerException(e);
-			throw f;
-		}
-	}
-
-	@Override
-	public void pushImage(final String name, final IRegistryAccount info, final IDockerProgressHandler handler)
-			throws DockerException, InterruptedException, DockerCertificateException {
-		try {
-			DockerClient client = dockerClientFactory.getClient(null, getUri(), getTcpCertPath(), info);
 			DockerProgressHandler d = new DockerProgressHandler(handler);
 			client.push(name, d);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
@@ -1543,7 +1484,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public InputStream copyContainer(final String id, final String path)
+	public InputStream copyContainer(String id, String path)
 			throws DockerException, InterruptedException {
 		InputStream stream;
 		try {
@@ -1555,25 +1496,9 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public void copyToContainer(final String directory, final String id,
-			final String path)
-			throws DockerException, InterruptedException, IOException {
-		try {
-			DockerClient copy = getClientCopy();
-			java.nio.file.Path dirPath = FileSystems.getDefault()
-					.getPath(directory);
-			copy.copyToContainer(dirPath, id, path);
-			copy.close(); /* dispose of client copy now that we are done */
-		} catch (com.spotify.docker.client.DockerException e) {
-			throw new DockerException(e.getMessage(), e.getCause());
-		}
-	}
-
-	@Override
-	public int auth(IDockerAuthConfig cfg)
+	public int auth(DockerAuthConfig config)
 			throws DockerException, InterruptedException {
 		try {
-			DockerAuthConfig config = (DockerAuthConfig) cfg;
 			AuthConfig authConfig = AuthConfig.builder()
 					.username(new String(config.username()))
 					.password(new String(config.password()))
@@ -1834,90 +1759,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				out.close();
 			}
 		};
-	}
-
-	@Override
-	public IDockerNetworkCreation createNetwork(IDockerNetworkConfig cfg)
-			throws DockerException, InterruptedException {
-		try {
-			Ipam.Builder ipamBuilder = Ipam.builder()
-					.driver(cfg.ipam().driver());
-			List<IDockerIpamConfig> ipamCfgs = cfg.ipam().config();
-			for (IDockerIpamConfig ipamCfg : ipamCfgs) {
-				ipamBuilder = ipamBuilder.config(ipamCfg.subnet(),
-						ipamCfg.ipRange(), ipamCfg.gateway());
-			}
-			Ipam ipam = ipamBuilder.build();
-			NetworkConfig.Builder networkConfigBuilder = NetworkConfig.builder()
-					.name(cfg.name()).driver(cfg.driver()).ipam(ipam);
-			Map<String, String> cfgOptions = cfg.options();
-			for (Entry<String, String> entry : cfgOptions.entrySet()) {
-				networkConfigBuilder.option(entry.getKey(), entry.getValue());
-			}
-			NetworkConfig networkConfig = networkConfigBuilder.build();
-			com.spotify.docker.client.messages.NetworkCreation creation = client
-					.createNetwork(networkConfig);
-			return new DockerNetworkCreation(creation);
-
-		} catch (com.spotify.docker.client.DockerException e) {
-			throw new DockerException(e.getMessage(), e.getCause());
-		}
-	}
-
-	@Override
-	public IDockerNetwork inspectNetwork(String networkId)
-			throws DockerException, InterruptedException {
-		try {
-			Network n = client.inspectNetwork(networkId);
-			return new DockerNetwork(n);
-		} catch (com.spotify.docker.client.DockerException e) {
-			throw new DockerException(e.getMessage(), e.getCause());
-		}
-	}
-
-	@Override
-	public List<IDockerNetwork> listNetworks()
-			throws DockerException, InterruptedException {
-		try {
-			List<Network> networkList = client.listNetworks();
-			ArrayList<IDockerNetwork> networks = new ArrayList<>();
-			for (Network n : networkList) {
-				networks.add(new DockerNetwork(n));
-			}
-			return networks;
-		} catch (com.spotify.docker.client.DockerException e) {
-			throw new DockerException(e.getMessage(), e.getCause());
-		}
-	}
-
-	@Override
-	public void removeNetwork(String networkId)
-			throws DockerException, InterruptedException {
-		try {
-			client.removeNetwork(networkId);
-		} catch (com.spotify.docker.client.DockerException e) {
-			throw new DockerException(e.getMessage(), e.getCause());
-		}
-	}
-
-	@Override
-	public void connectNetwork(String id, String networkId)
-			throws DockerException, InterruptedException {
-		try {
-			client.connectToNetwork(id, networkId);
-		} catch (com.spotify.docker.client.DockerException e) {
-			throw new DockerException(e.getMessage(), e.getCause());
-		}
-	}
-
-	@Override
-	public void disconnectNetwork(String id, String networkId)
-			throws DockerException, InterruptedException {
-		try {
-			client.disconnectFromNetwork(id, networkId);
-		} catch (com.spotify.docker.client.DockerException e) {
-			throw new DockerException(e.getMessage(), e.getCause());
-		}
 	}
 
 }
