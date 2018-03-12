@@ -34,6 +34,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
@@ -50,7 +51,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
  * @author Matthew Khouzam
  */
 @SuppressWarnings("restriction")
-public class GdbTrace extends TmfTrace {
+public class GdbTrace extends TmfTrace implements ITmfEventParser {
 
     // ------------------------------------------------------------------------
     // Constants
