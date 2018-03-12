@@ -106,7 +106,7 @@
     <module>org.eclipse.linuxtools.ctf.parser</module>
     <module>org.eclipse.linuxtools.ctf.parser.tests</module>
 
-    <module>org.eclipse.linuxtools.pcap.core</module>
+	  <module>org.eclipse.linuxtools.pcap.core</module>
     <module>org.eclipse.linuxtools.pcap.core.tests</module>
 
     <module>org.eclipse.linuxtools.statesystem.core</module>
@@ -125,6 +125,7 @@
     <module>org.eclipse.linuxtools.tmf.ctf.core.tests</module>
     <module>org.eclipse.linuxtools.tmf.ctf.ui.swtbot.tests</module>
 
+    <module>org.eclipse.linuxtools.tmf.pcap</module>
     <module>org.eclipse.linuxtools.tmf.pcap.core</module>
     <module>org.eclipse.linuxtools.tmf.pcap.core.tests</module>
     <module>org.eclipse.linuxtools.tmf.pcap.ui</module>

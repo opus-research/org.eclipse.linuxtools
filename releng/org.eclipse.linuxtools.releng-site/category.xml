@@ -64,6 +64,9 @@
    <feature url="features/org.eclipse.linuxtools.lttng2.ust_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng2.ust" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
+   <feature url="features/org.eclipse.linuxtools.tmf.pcap_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.tmf.pcap" version="0.0.0">
+      <category name="Linux Tools"/>
+   </feature>
    <feature url="features/org.eclipse.linuxtools.perf_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.perf.feature" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
@@ -82,16 +85,6 @@
    <feature url="features/org.eclipse.linuxtools.gdbtrace_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.gdbtrace" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
-   <!-- Orbit Dependencies -->
-   <iu id="org.swtchart" version="0.0.0">
-      <category name="Linux Tools"/>
-   </iu>
-   <iu id="org.cyberneko.html" version="0.0.0">
-      <category name="Linux Tools"/>
-   </iu>
-   <iu id="org.apache.xerces" version="0.0.0">
-      <category name="Linux Tools"/>
-   </iu>
    <feature url="features/org.eclipse.linuxtools.tracing.rcp_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.tracing.rcp" version="0.0.0">
       <category name="Linux Tools LTTng RCP"/>
    </feature>
@@ -153,6 +146,9 @@
       <category name="Linux Tools Sources"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.lttng2.ust.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.lttng2.ust.source" version="0.0.0">
+      <category name="Linux Tools Sources"/>
+   </feature>
+   <feature url="features/org.eclipse.linuxtools.tmf.pcap.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.tmf.pcap.source" version="0.0.0">
       <category name="Linux Tools Sources"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.gcov.source_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.gcov.source" version="0.0.0">
