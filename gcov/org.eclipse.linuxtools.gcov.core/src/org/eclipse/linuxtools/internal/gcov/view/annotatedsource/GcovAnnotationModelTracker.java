@@ -129,11 +129,6 @@ public final class GcovAnnotationModelTracker {
         trackedProjects.put(project, binary);
     }
 
-    public IProject[] getTrackedProjects() {
-    	IProject[] projects = new IProject[trackedProjects.keySet().size()];
-    	return trackedProjects.keySet().toArray(projects);
-    }
-
     public void dispose() {
         workbench.removeWindowListener(windowListener);
         for (IWorkbenchWindow w : workbench.getWorkbenchWindows()) {
