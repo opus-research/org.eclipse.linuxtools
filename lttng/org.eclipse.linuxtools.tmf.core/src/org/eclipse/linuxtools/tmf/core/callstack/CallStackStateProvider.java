@@ -53,8 +53,7 @@ import org.eclipse.osgi.util.NLS;
  *</pre>
  * where:
  * <br>
- * (Thread n) is an attribute whose name is the display name of the thread.
- * Optionally, its value is a long representing the thread id, used for sorting.
+ * (Thread n) is an attribute whose name is the name of the thread
  * <br>
  * CallStack is a stack-attribute whose pushed values are either a string,
  * int or long representing the function name or address in the call stack.
@@ -98,14 +97,9 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
             if (functionEntryName != null) {
                 long timestamp = event.getTimestamp().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue();
                 String thread = getThreadName(event);
-                int threadQuark = ss.getQuarkAbsoluteAndAdd(THREADS, thread);
-                Long threadId = getThreadId(event);
-                if (threadId != null) {
-                    ss.updateOngoingState(TmfStateValue.newValueLong(threadId), threadQuark);
-                }
-                int callStackQuark = ss.getQuarkRelativeAndAdd(threadQuark, CALL_STACK);
+                int quark = ss.getQuarkAbsoluteAndAdd(THREADS, thread, CALL_STACK);
                 ITmfStateValue value = TmfStateValue.newValueString(functionEntryName);
-                ss.pushAttribute(timestamp, value, callStackQuark);
+                ss.pushAttribute(timestamp, value, quark);
                 return;
             }
 
@@ -183,16 +177,4 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
      * @since 3.0
      */
     protected abstract String getThreadName(ITmfEvent event);
-
-    /**
-     * Return the thread id of a function entry event.
-     *
-     * @param event
-     *            The event
-     * @return The thread id, or null if undefined
-     * @since 3.1
-     */
-    protected Long getThreadId(ITmfEvent event) {
-        return null;
-    }
 }
