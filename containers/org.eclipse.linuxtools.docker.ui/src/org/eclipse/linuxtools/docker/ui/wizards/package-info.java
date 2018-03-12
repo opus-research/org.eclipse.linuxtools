@@ -9,24 +9,7 @@
  *     Red Hat - Initial Contribution
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.docker.ui.wizards;
-
-import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingModel;
-
 /**
- * 
+ * Package for exposed/public wizards
  */
-public class ImagePullPageModel extends BaseDatabindingModel {
-
-	public static final String IMAGE_NAME = "imageName";
-
-	private String imageName;
-
-	public String getImageName() {
-		return imageName;
-	}
-
-	public void setImageName(final String imageName) {
-		firePropertyChange(IMAGE_NAME, this.imageName, this.imageName = imageName);
-	}
-}
+package org.eclipse.linuxtools.docker.ui.wizards;
