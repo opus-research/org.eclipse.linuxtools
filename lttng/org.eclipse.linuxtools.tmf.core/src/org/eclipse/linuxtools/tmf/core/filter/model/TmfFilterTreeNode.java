@@ -9,7 +9,6 @@
  * Contributors:
  *   Yuriy Vashchuk (yvashchuk@gmail.com) - Initial API and implementation
  *   Patrick Tasse - Refactoring
- *   Vincent Perot - Add subfield filtering
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.filter.model;
@@ -30,10 +29,6 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
  */
 public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable {
 
-    private static final char SLASH = '/';
-    private static final char BACKSLASH = '\\';
-    private static final String EMPTY_STRING = ""; //$NON-NLS-1$
-
     private static final String[] VALID_CHILDREN = {
             TmfFilterEventTypeNode.NODE_NAME,
             TmfFilterAndNode.NODE_NAME,
@@ -46,9 +41,6 @@ public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable
 
     private ITmfFilterTreeNode parent = null;
     private ArrayList<ITmfFilterTreeNode> children = new ArrayList<>();
-
-    private String fPathAsString = null;
-    private String[] fPathAsArray = null;
 
     /**
      * @param parent
@@ -149,80 +141,12 @@ public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable
             value = event.getReference();
         }
         else {
-            if (field == null) {
-                return null;
-            }
-            ITmfEventField eventField;
-            if (field.equals(EMPTY_STRING) || field.charAt(0) != SLASH) {
-                eventField = event.getContent().getField(field);
-            } else {
-                String[] array = getPathArray(field);
-                eventField = event.getContent().getSubField(array);
-            }
-
+            ITmfEventField eventField = event.getContent().getField(field);
             if (eventField != null) {
                 value = eventField.getValue();
             }
         }
         return value;
-    }
-
-    private String[] getPathArray(String field) {
-
-        // Check if last request was not the same string.
-        if (field.equals(fPathAsString)) {
-            return fPathAsArray;
-        }
-
-        // Generate the new path array
-        StringBuilder sb = new StringBuilder();
-        List<String> list = new ArrayList<>();
-
-        // We start at 1 since the first character is a slash that we want to
-        // ignore.
-        for (int i = 1; i < field.length(); i++) {
-            char charAt = field.charAt(i);
-            if (charAt == SLASH) {
-                // char is slash. Cut here.
-                list.add(sb.toString());
-                sb = new StringBuilder();
-            } else if (charAt == BACKSLASH) {
-                if (i != field.length() - 1) {
-                    // Not last character
-                    char nextChar = field.charAt(++i);
-                    if (nextChar == SLASH) {
-                        // Non interpreted slash. Add slash to sb.
-                        sb.append(SLASH);
-                    } else {
-                        // Real backslash in string. Add it to sb and reposition
-                        // index.
-                        sb.append(BACKSLASH);
-                        i--;
-                    }
-                } else {
-                    // Last char and is a backslash. This is a real backslash.
-                    sb.append(BACKSLASH);
-                }
-            } else {
-                // Any other character. Add.
-                sb.append(charAt);
-            }
-        }
-
-        // Last block. add it to list if not empty.
-        if (sb.toString() != null && sb.toString() != EMPTY_STRING ) {
-            list.add(sb.toString());
-        }
-
-        // Transform to array
-        String[] array = new String[list.size()];
-        list.toArray(array);
-
-        // Save new values
-        fPathAsString = field;
-        fPathAsArray = array;
-
-        return array;
     }
 
     @Override
