@@ -235,6 +235,10 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         if (fHtBackend != null) {
             fHtBackend.dispose();
         }
+
+        fStateProvider = null;
+        fStateSystem = null;
+        fHtBackend = null;
     }
 
     // ------------------------------------------------------------------------
