@@ -105,7 +105,7 @@ public class CTFTraceReader implements AutoCloseable {
          */
         fStartTime = 0;
         if (hasMoreEvents()) {
-            fStartTime = fPrio.peek().getCurrentEvent().getTimestamp();
+            fStartTime = getTopStream().getCurrentEvent().getTimestamp();
             setEndTime(fStartTime);
         }
     }
@@ -520,7 +520,7 @@ public class CTFTraceReader implements AutoCloseable {
      *
      */
     public boolean isLive() {
-        return fPrio.peek().isLive();
+        return getTopStream().isLive();
     }
 
     @Override
