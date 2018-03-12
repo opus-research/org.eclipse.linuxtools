@@ -44,11 +44,7 @@ public class NewDockerConnection extends Wizard {
 	@Override
 	public boolean performFinish() {
 		dockerConnection = wizardPage.getDockerConnection();
-		// add the connection and notify the listeners, so that the Docker
-		// Explorer view can set the selection on
-		// this new entry
-		DockerConnectionManager.getInstance().addConnection(dockerConnection,
-				true);
+		DockerConnectionManager.getInstance().addConnection(dockerConnection);
 		return true;
 	}
 	

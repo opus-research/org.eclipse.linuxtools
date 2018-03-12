@@ -17,14 +17,14 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.docker.core.IRegistryAccount;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
+import org.eclipse.linuxtools.internal.docker.core.DefaultImagePullProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
-import org.eclipse.linuxtools.internal.docker.ui.views.ImagePullProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImagePull;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
@@ -63,17 +63,15 @@ public class PullImageCommandHandler extends AbstractHandler {
 			final boolean pullImage = CommandUtils.openWizard(wizard,
 					HandlerUtil.getActiveShell(event));
 			if (pullImage) {
-				performPullImage(connection, wizard.getSelectedImageName(),
-						// TODO: remove cast once AbstractRegistry methods are
-						// part of the IRegistry interface
-						(AbstractRegistry) wizard.getSelectedRegistryAccount());
+				performPullImage(connection, wizard.getImageName(),
+						wizard.getRegistry());
 			}
 		}
 		return null;
 	}
 
 	private void performPullImage(final IDockerConnection connection,
-			final String imageName, final AbstractRegistry registry) {
+			final String imageName, final IRegistry registry) {
 		final Job pullImageJob = new Job(DVMessages
 				.getFormattedString(PULL_IMAGE_JOB_TITLE, imageName)) {
 
@@ -84,21 +82,20 @@ public class PullImageCommandHandler extends AbstractHandler {
 				// pull the image and let the progress
 				// handler refresh the images when done
 				try {
-					if (registry == null || registry.isDockerHubRegistry()) {
+					if (registry == null) {
 						((DockerConnection) connection).pullImage(imageName,
-								new ImagePullProgressHandler(connection,
+								new DefaultImagePullProgressHandler(connection,
 										imageName));
 					} else {
-						String fullImageName = registry.getServerHost() + '/'
-								+ imageName;
+						String fullImageName = registry.getServerAddress() + '/' + imageName;
 						if (registry instanceof IRegistryAccount) {
 							IRegistryAccount account = (IRegistryAccount) registry;
 							((DockerConnection) connection).pullImage(fullImageName,
-									account, new ImagePullProgressHandler(
+									account, new DefaultImagePullProgressHandler(
 											connection, fullImageName));
 						} else {
 							((DockerConnection) connection).pullImage(fullImageName,
-									new ImagePullProgressHandler(connection,
+									new DefaultImagePullProgressHandler(connection,
 											fullImageName));
 						}
 					}

@@ -54,6 +54,7 @@ import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConfParameter;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerConnection2;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionInfo;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings.BindingType;
@@ -118,7 +119,8 @@ import com.spotify.docker.client.messages.Version;
  * 
  *
  */
-public class DockerConnection implements IDockerConnection, Closeable {
+public class DockerConnection
+		implements IDockerConnection, IDockerConnection2, Closeable {
 
 	// Builder allowing different binding modes (unix socket vs TCP connection)
 	public static class Builder {
@@ -1040,6 +1042,24 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
+	public IDockerProgressHandler getDefaultBuildImageProgressHandler(
+			String image, int lines) {
+		return new DefaultImageBuildProgressHandler(this, image, lines);
+	}
+
+	@Override
+	public IDockerProgressHandler getDefaultPullImageProgressHandler(
+			String image) {
+		return new DefaultImagePullProgressHandler(this, image);
+	}
+
+	@Override
+	public IDockerProgressHandler getDefaultPushImageProgressHandler(
+			String image) {
+		return new DefaultImagePushProgressHandler(this, image);
+	}
+
+	@Override
 	public void pullImage(final String id, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
 		try {
@@ -1149,30 +1169,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void tagImage(final String name, final String newTag) throws DockerException,
 			InterruptedException {
-		tagImage(name, newTag, false);
-	}
-
-	/**
-	 * Adds a tag to an existing image while specifying the <code>force</code>
-	 * flag.
-	 * 
-	 * @param name
-	 *            the image id
-	 * @param newTag
-	 *            the new tag to add to the given image
-	 * @param force
-	 *            the {@code force} flag to force the operation if
-	 *            <code>true</code>.
-	 * @throws DockerException
-	 *             in case of underlying problem (server error)
-	 * @throws InterruptedException
-	 *             if the thread was interrupted
-	 */
-	// TODO: add to the API in version 3.0.0
-	public void tagImage(final String name, final String newTag,
-			final boolean force) throws DockerException, InterruptedException {
 		try {
-			client.tag(name, newTag, force);
+			client.tag(name, newTag);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
@@ -1762,8 +1760,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		try {
 			AuthConfig authConfig = AuthConfig.builder()
 					.username(new String(cfg.getUsername()))
-					.password(cfg.getPassword() != null
-							? new String(cfg.getPassword()) : null)
+					.password(new String(cfg.getPassword()))
 					.email(new String(cfg.getEmail()))
 					.serverAddress(new String(cfg.getServerAddress())).build();
 			return client.auth(authConfig);
