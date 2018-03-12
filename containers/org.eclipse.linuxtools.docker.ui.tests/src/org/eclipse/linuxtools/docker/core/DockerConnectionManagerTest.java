@@ -42,7 +42,7 @@ public class DockerConnectionManagerTest {
 	public void shouldRegisterConnectionOnRefreshContainersManager() {
 		// given
 		final DockerClient client = MockDockerClientFactory.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
 		dockerConnectionManager
 				.setConnectionStorageManager(MockDockerConnectionStorageManagerFactory.providing(dockerConnection));
 		SWTUtils.syncExec(() -> dockerConnectionManager.reloadConnections());
@@ -56,7 +56,7 @@ public class DockerConnectionManagerTest {
 	public void shouldUnregisterConnectionOnRefreshContainersManager() {
 		// given
 		final DockerClient client = MockDockerClientFactory.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
 		dockerConnectionManager
 				.setConnectionStorageManager(MockDockerConnectionStorageManagerFactory.providing(dockerConnection));
 		SWTUtils.syncExec(() -> dockerConnectionManager.reloadConnections());
