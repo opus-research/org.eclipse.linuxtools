@@ -218,9 +218,6 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
         return clone;
     }
 
-    // FIXME Number does not implements hashCode and equals which is bad. It
-    // might declare two filter equals even if they have different pattern.
-    // ATM, this is really not an issue.
     @Override
     public int hashCode() {
         final int prime = 31;
