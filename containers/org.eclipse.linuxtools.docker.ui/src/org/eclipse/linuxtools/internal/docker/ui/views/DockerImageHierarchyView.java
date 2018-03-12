@@ -90,7 +90,7 @@ public class DockerImageHierarchyView extends CommonNavigator
 		final Composite container = form.getBody();
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(5, 5)
 				.applyTo(container);
-		final Label label = new Label(container, SWT.WRAP);
+		final Label label = new Label(container, SWT.NONE);
 		label.setText(
 				DVMessages.getString("DockerHierarchyViewNoImageSelected.msg")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.FILL)
