@@ -62,7 +62,7 @@ public class ImagePullPatternTest {
 	
 	
 	@Test
-	public void verifyData() {
+	public void verifyData() throws Exception {
 		final IStatus status = new ImagePullPage.ImageNameValidator().validate(imageName);
 		// then
 		Assert.assertEquals(expectedSeverity, status.getSeverity());
