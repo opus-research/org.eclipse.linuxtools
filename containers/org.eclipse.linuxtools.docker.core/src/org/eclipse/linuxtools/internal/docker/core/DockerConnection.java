@@ -1054,7 +1054,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		try {
 			DockerProgressHandler d = new DockerProgressHandler(handler);
 			client.pull(id, d);
-			listImages();
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
