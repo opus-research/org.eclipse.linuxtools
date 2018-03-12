@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+import org.eclipse.core.runtime.Platform;
+
 /**
  * A common utility for mapping a ByteBuffer safely to work around a bug on
  * Windows which prevents deleting a file after it was mapped. On Windows, the
@@ -25,8 +27,6 @@ import java.nio.channels.FileChannel;
  * http://bugs.java.com/view_bug.do?bug_id=4715154
  */
 public class SafeMappedByteBuffer {
-
-    private static final boolean IS_WIN32 = System.getProperty("os.name").startsWith("Windows");  //$NON-NLS-1$//$NON-NLS-2$
 
     /**
      * Maps a region of this channel's file directly into memory. On Windows,
@@ -46,7 +46,7 @@ public class SafeMappedByteBuffer {
      */
     public static ByteBuffer map(FileChannel fc, FileChannel.MapMode mode, long position, long size) throws IOException {
         ByteBuffer byteBuffer;
-        if (IS_WIN32) {
+        if (Platform.OS_WIN32.equals(Platform.getOS())) {
             byteBuffer = ByteBuffer.allocate((int) size);
             fc.read(byteBuffer, position);
         } else {
