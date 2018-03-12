@@ -42,7 +42,7 @@ public class StreamListAnalysisTest {
     public void constructorTest() {
         try (StreamListAnalysis analysis = new StreamListAnalysis();) {
             analysis.setId(StreamListAnalysis.ID);
-            for (TmfPcapProtocol protocol : TmfPcapProtocol.values()) {
+            for (TmfPcapProtocol protocol : TmfPcapProtocol.getAllProtocols()) {
                 if (protocol.supportsStream()) {
                     assertNotNull(analysis.getBuilder(protocol));
                 }

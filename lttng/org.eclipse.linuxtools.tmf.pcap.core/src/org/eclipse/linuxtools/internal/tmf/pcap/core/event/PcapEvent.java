@@ -13,7 +13,7 @@
 package org.eclipse.linuxtools.internal.tmf.pcap.core.event;
 
 import java.nio.ByteBuffer;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,11 +50,7 @@ public class PcapEvent extends TmfEvent {
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
     private final Packet fPacket;
-
-    /**
-     * Lazy-loaded field representing all the protocols in this event
-     */
-    private transient @Nullable Collection<TmfPcapProtocol> fProtocols;
+    private @Nullable List<TmfPcapProtocol> fList;
 
     /**
      * Full constructor.
@@ -171,15 +167,15 @@ public class PcapEvent extends TmfEvent {
     }
 
     /**
-     * Method that returns all the protocols in this PcapEvent.
+     * Method that returns a list of all the protocols in this PcapEvent.
      *
      * @return A list containing all the TmfProtocol.
      */
-    public Collection<TmfPcapProtocol> getProtocols() {
-        if (fProtocols != null) {
-            return fProtocols;
+    public List<TmfPcapProtocol> getProtocols() {
+        if (fList != null) {
+            return fList;
         }
-        ImmutableList.Builder<TmfPcapProtocol> builder = new ImmutableList.Builder<>();
+        List<TmfPcapProtocol> list = new ArrayList<>();
         Packet packet = fPacket;
 
         // Go to start.
@@ -190,21 +186,21 @@ public class PcapEvent extends TmfEvent {
         if (packet == null) {
             @SuppressWarnings("null")
             @NonNull List<TmfPcapProtocol> emptyList = Collections.EMPTY_LIST;
-            fProtocols = emptyList;
-            return fProtocols;
+            fList = emptyList;
+            return fList;
         }
         // Go through all the packets and add them to list.
-        builder.add(ProtocolConversion.wrap(packet.getProtocol()));
+        list.add(ProtocolConversion.wrap(packet.getProtocol()));
         while (packet != null && packet.getChildPacket() != null) {
             packet = packet.getChildPacket();
             if (packet != null) {
-                builder.add(ProtocolConversion.wrap(packet.getProtocol()));
+                list.add(ProtocolConversion.wrap(packet.getProtocol()));
             }
         }
 
         @SuppressWarnings("null")
-        @NonNull ImmutableList<TmfPcapProtocol> immutableList = builder.build();
-        fProtocols = immutableList;
+        @NonNull ImmutableList<TmfPcapProtocol> immutableList = ImmutableList.copyOf(list);
+        fList = immutableList;
         return immutableList;
     }
 

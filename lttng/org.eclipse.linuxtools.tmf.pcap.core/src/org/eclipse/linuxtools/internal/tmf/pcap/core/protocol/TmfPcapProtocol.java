@@ -12,6 +12,11 @@
 
 package org.eclipse.linuxtools.internal.tmf.pcap.core.protocol;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
 
 /**
@@ -29,7 +34,7 @@ public enum TmfPcapProtocol {
      * The Pcap Protocol is not a real protocol but is used as an helper to
      * generate Pcap packets.
      */
-    PCAP(PcapProtocol.PCAP),
+    PCAP,
 
     // Layer 1
     // Should always be empty.
@@ -38,23 +43,23 @@ public enum TmfPcapProtocol {
     /**
      * The description of the Ethernet II Protocol.
      */
-    ETHERNET_II(PcapProtocol.ETHERNET_II),
+    ETHERNET_II,
 
     // Layer 3
     /**
      * The description of the Internet Protocol Version 4.
      */
-    IPV4(PcapProtocol.IPV4),
+    IPV4,
 
     // Layer 4
     /**
      * The description of the Transmission Control Protocol.
      */
-    TCP(PcapProtocol.TCP),
+    TCP,
     /**
      * The description of the User Datagram Protocol.
      */
-    UDP(PcapProtocol.UDP),
+    UDP,
 
     // Layer 5
 
@@ -67,16 +72,20 @@ public enum TmfPcapProtocol {
      * a "payload packet". This is considered to be on layer 7 since its always
      * the most encapsulated packet if present.
      */
-    UNKNOWN(PcapProtocol.UNKNOWN);
+    UNKNOWN;
 
     private final String fName;
     private final String fShortName;
+    private final int fLayer;
     private final boolean fSupportsStream;
 
-    private TmfPcapProtocol(PcapProtocol pcapProto) {
-        fName = pcapProto.getName();
-        fShortName = pcapProto.getShortName();
-        fSupportsStream = pcapProto.supportsStream();
+    private TmfPcapProtocol() {
+        @SuppressWarnings("null")
+        @NonNull String name = this.name();
+        fName = PcapProtocol.valueOf(name).getName();
+        fShortName = PcapProtocol.valueOf(name).getShortName();
+        fLayer = PcapProtocol.valueOf(name).getLayer();
+        fSupportsStream = PcapProtocol.valueOf(name).supportsStream();
     }
 
     /**
@@ -98,12 +107,30 @@ public enum TmfPcapProtocol {
     }
 
     /**
+     * Getter method for the OSI layer of the protocol.
+     *
+     * @return The layer of the protocol.
+     */
+    public int getLayer() {
+        return fLayer;
+    }
+
+    /**
      * Getter method that indicates if the protocol supports streams.
      *
      * @return Whether the protocol supports streams or not.
      */
     public boolean supportsStream() {
         return fSupportsStream;
+    }
+
+    /**
+     * Method that returns all the protocol defined.
+     *
+     * @return A list containing all the protocols.
+     */
+    public static List<TmfPcapProtocol> getAllProtocols() {
+        return new ArrayList<>(Arrays.asList(TmfPcapProtocol.values()));
     }
 
 }

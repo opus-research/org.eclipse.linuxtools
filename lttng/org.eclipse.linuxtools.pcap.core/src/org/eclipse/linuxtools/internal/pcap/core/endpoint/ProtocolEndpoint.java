@@ -51,7 +51,7 @@ public abstract class ProtocolEndpoint {
      *            packet.
      */
     public ProtocolEndpoint(Packet packet, boolean isSourceEndpoint) {
-        Packet parentPacket = packet.getParentPacket();
+        @Nullable Packet parentPacket = packet.getParentPacket();
         if (parentPacket == null) {
             fParentEndpoint = null;
         } else {

@@ -180,7 +180,8 @@ public abstract class Packet {
      * @return The most encapsulated packet.
      */
     public Packet getMostEcapsulatedPacket() {
-        @NonNull Packet packet = this;
+        @NonNull
+        Packet packet = this;
         while (packet.getProtocol() != PcapProtocol.UNKNOWN) {
             Packet childPacket = packet.getChildPacket();
             if (childPacket == null || childPacket.getProtocol() == PcapProtocol.UNKNOWN) {
