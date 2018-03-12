@@ -94,7 +94,8 @@ public class CachegrindLaunchDelegate implements IValgrindLaunchDelegate {
     }
 
     @Override
-    public void initializeView(IValgrindToolView view, String contentDescription, IProgressMonitor monitor) {
+    public void initializeView(IValgrindToolView view, String contentDescription, IProgressMonitor monitor)
+            throws CoreException {
         if (outputs != null && view instanceof CachegrindViewPart) {
             ((CachegrindViewPart) view).setOutputs(outputs);
         }
