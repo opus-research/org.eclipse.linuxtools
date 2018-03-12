@@ -394,6 +394,7 @@ public class STSymbolManager {
         if (defaultparser == null) {
             try {
                 defaultparser = CCorePlugin.getDefault().getDefaultBinaryParser();
+                System.out.println("defaultparser is " + defaultparser);
             } catch (CoreException e) {
                 Activator.getDefault().getLog().log(e.getStatus());
             }
@@ -402,6 +403,7 @@ public class STSymbolManager {
             parsers.add(defaultparser);
         }
         IBinaryObject ret = buildBinaryObject(path, parsers);
+        System.out.println("ret is " + ret);
         if (ret == null) { // trying all BinaryParsers...
             parsers.clear();
             IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(CCorePlugin.PLUGIN_ID,
@@ -421,7 +423,9 @@ public class STSymbolManager {
                     }
                 }
             }
+            System.out.println("parsers length is " + parsers.size());
             ret = buildBinaryObject(path, parsers);
+            System.out.println("ret is " + ret);
         }
         return ret;
     }
