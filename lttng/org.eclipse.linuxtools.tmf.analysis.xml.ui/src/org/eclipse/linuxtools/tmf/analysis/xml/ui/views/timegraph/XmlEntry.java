@@ -21,10 +21,14 @@ import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.TmfXmlUiStrings;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.ITmfXmlModelFactory;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.ITmfXmlStateAttribute;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.TmfXmlLocation;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.model.TmfXmlValueChange;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.readonly.TmfXmlReadOnlyModelFactory;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.IXmlStateSystemContainer;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
@@ -57,6 +61,7 @@ public class XmlEntry extends TimeGraphEntry implements IXmlStateSystemContainer
     private final String fId;
     private final @NonNull ITmfStateSystem fSs;
     private final Element fElement;
+    private final TmfXmlValueChange fValuechange;
 
     /**
      * Constructor
@@ -67,6 +72,8 @@ public class XmlEntry extends TimeGraphEntry implements IXmlStateSystemContainer
      *            The quark containing the value to display. It was needed by
      *            the caller to get the start and end time of this entry, so we
      *            receive it as parameter from him.
+     * @param valueChange
+     *            The conditions for extracting the label
      * @param trace
      *            The trace on which we are working (FIXME: is this parameter
      *            useful?)
@@ -88,8 +95,9 @@ public class XmlEntry extends TimeGraphEntry implements IXmlStateSystemContainer
      *            The XML element describing this entry. This element will be
      *            used to determine, if available, the parent, ID, name and
      *            other display option of this entry
+     * @since 2.0
      */
-    public XmlEntry(int baseQuark, int displayQuark, ITmfTrace trace, String name, long startTime, long endTime, EntryDisplayType type, @NonNull ITmfStateSystem ss, Element entryElement) {
+    public XmlEntry(int baseQuark, int displayQuark, TmfXmlValueChange valueChange, ITmfTrace trace, String name, long startTime, long endTime, EntryDisplayType type, @NonNull ITmfStateSystem ss, Element entryElement) {
         super(name, startTime, endTime);
         fTrace = trace;
         fType = type;
@@ -97,6 +105,7 @@ public class XmlEntry extends TimeGraphEntry implements IXmlStateSystemContainer
         fDisplayQuark = displayQuark;
         fSs = ss;
         fElement = entryElement;
+        fValuechange = valueChange;
 
         /* Get the parent if specified */
         List<Element> elements = XmlUtils.getChildElements(fElement, TmfXmlUiStrings.PARENT_ELEMENT);
@@ -147,6 +156,7 @@ public class XmlEntry extends TimeGraphEntry implements IXmlStateSystemContainer
         fElement = null;
         fParentId = EMPTY_STRING;
         fId = name;
+        fValuechange = null;
     }
 
     /** Return the state value of the first interval with a non-null value */
@@ -195,6 +205,16 @@ public class XmlEntry extends TimeGraphEntry implements IXmlStateSystemContainer
      */
     public int getDisplayQuark() {
         return fDisplayQuark;
+    }
+
+    /**
+     * Get this entry's Base Quark
+     *
+     * @return The base quark of the entry.
+     * @since 2.0
+     */
+    public int getBaseQuark() {
+        return fBaseQuark;
     }
 
     /**
@@ -267,6 +287,36 @@ public class XmlEntry extends TimeGraphEntry implements IXmlStateSystemContainer
     @Override
     public Iterable<TmfXmlLocation> getLocations() {
         return Collections.EMPTY_SET;
+    }
+
+    /**
+     * Return the entry label for the given time.
+     *
+     * @param time
+     *            The time to fetch the label quark
+     * @return the label value
+     * @throws TimeRangeException
+     *         If the given time is not within the range of the trace or state history
+     * @throws StateValueTypeException
+     *         If there is a StateValue with an incorrect type
+     * @since 2.0
+     */
+    public String getLabel(long time){
+        try {
+            int quark = fValuechange.handleEntry(fBaseQuark, time);
+            ITmfStateInterval value = fSs.querySingleState(time, quark);
+
+            if (value != null && !value.getStateValue().isNull()) {
+                ITmfStateValue state = value.getStateValue();
+                return state.toString();
+            }
+
+        } catch (StateValueTypeException | TimeRangeException | AttributeNotFoundException | StateSystemDisposedException e) {
+
+        }
+
+        return null;
+
     }
 
 }

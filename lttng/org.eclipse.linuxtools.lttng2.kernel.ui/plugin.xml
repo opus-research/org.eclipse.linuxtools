@@ -38,6 +38,14 @@
             name="%cpuusage.view.name"
             restorable="true">
       </view>
+       <view
+            allowMultiple="false"
+            category="org.eclipse.linuxtools.lttng2.ui.views.category"
+            class="org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.abstrevents.AbsEventView"
+            id="org.eclipse.linuxtools.lttng2.kernel.ui.views.abstrevents"
+            name="%abstr.view.name"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.navigator.navigatorContent">
@@ -75,7 +83,14 @@
             class="org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput"
             id="org.eclipse.linuxtools.lttng2.kernel.ui.views.cpuusage">
          <analysisId
-               id="org.eclipse.linuxtools.lttng2.kernel.core.cpuusage">
+            id="org.eclipse.linuxtools.lttng2.kernel.core.cpuusage">
+         </analysisId>
+      </output>
+      <output
+            class="org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput"
+            id="org.eclipse.linuxtools.lttng2.kernel.ui.views.abstrevents">
+         <analysisId
+            id="org.eclipse.linuxtools.lttng2.kernel.core.cpuusage">
          </analysisId>
       </output>
    </extension>
