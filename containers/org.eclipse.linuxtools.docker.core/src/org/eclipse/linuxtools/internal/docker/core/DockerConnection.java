@@ -39,6 +39,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
+
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
@@ -97,9 +100,6 @@ import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
-
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
@@ -452,7 +452,6 @@ public class DockerConnection implements IDockerConnection {
 	private final Object imageLock = new Object();
 	private final Object containerLock = new Object();
 	private final Object actionLock = new Object();
-	private final Object clientLock = new Object();
 	private DefaultDockerClient client;
 
 	private Map<String, Job> actionJobs;
@@ -576,12 +575,11 @@ public class DockerConnection implements IDockerConnection {
 
 	@Override
 	public void close() {
-		synchronized (clientLock) {
-			if (client != null) {
-				this.client.close();
-				this.client = null;
-			}
+		if (client != null) {
+			this.client.close();
+			this.client = null;
 		}
+
 	}
 
 	@Override
@@ -812,15 +810,8 @@ public class DockerConnection implements IDockerConnection {
 		synchronized (containerLock) {
 			List<Container> list = null;
 			try {
-				synchronized (clientLock) {
-					// Check that client is not null as this connection may have
-					// been closed but there is an async request to update the
-					// containers list left in the queue
-					if (client == null)
-						return dclist;
-					list = client.listContainers(
-							DockerClient.ListContainersParam.allContainers());
-				}
+				list = client.listContainers(DockerClient.ListContainersParam
+						.allContainers());
 			} catch (com.spotify.docker.client.DockerException
 					| InterruptedException e) {
 				throw new DockerException(
@@ -952,15 +943,8 @@ public class DockerConnection implements IDockerConnection {
 		synchronized (imageLock) {
 			List<Image> rawImages = null;
 			try {
-				synchronized (clientLock) {
-					// Check that client is not null as this connection may have
-					// been closed but there is an async request to update the
-					// images list left in the queue
-					if (client == null)
-						return dilist;
-					rawImages = client.listImages(
-							DockerClient.ListImagesParam.allImages());
-				}
+				rawImages = client.listImages(DockerClient.ListImagesParam
+						.allImages());
 			} catch (com.spotify.docker.client.DockerRequestException e) {
 				throw new DockerException(e.message());
 			} catch (com.spotify.docker.client.DockerException
