@@ -24,8 +24,8 @@ import org.eclipse.ui.model.WorkbenchAdapter;
  * @author Marc-Andre Laperle
  */
 public abstract class TracePackageElement extends WorkbenchAdapter {
-    private List<TracePackageElement> fChildren;
-    private TracePackageElement fParent;
+    private TracePackageElement[] fChildren;
+    private final TracePackageElement fParent;
     private boolean fEnabled;
     private boolean fChecked;
     private boolean fVisible;
@@ -39,32 +39,7 @@ public abstract class TracePackageElement extends WorkbenchAdapter {
         fParent = parent;
         fEnabled = true;
         fVisible = true;
-        fChildren = new ArrayList<>();
-        if (parent != null) {
-            parent.addChild(this);
-        }
-    }
-
-    /**
-     * Add a child to the element.
-     *
-     * @param child
-     *            the element to add as a child
-     */
-    public void addChild(TracePackageElement child) {
-        child.setParent(this);
-        fChildren.add(child);
-    }
-
-    /**
-     * Remove a child from the element.
-     *
-     * @param child
-     *            the child to remove
-     */
-    public void removeChild(TracePackageElement child) {
-        fChildren.remove(child);
-        child.setParent(null);
+        fChildren = new TracePackageElement[0];
     }
 
     /**
@@ -72,10 +47,6 @@ public abstract class TracePackageElement extends WorkbenchAdapter {
      */
     public TracePackageElement getParent() {
         return fParent;
-    }
-
-    private void setParent(TracePackageElement parent) {
-        fParent = parent;
     }
 
     /**
@@ -91,7 +62,7 @@ public abstract class TracePackageElement extends WorkbenchAdapter {
      * @return the children of this element
      */
     public TracePackageElement[] getChildren() {
-        return fChildren.toArray(new TracePackageElement[fChildren.size()]);
+        return fChildren;
     }
 
     /**
@@ -107,6 +78,16 @@ public abstract class TracePackageElement extends WorkbenchAdapter {
             }
         }
         return visibleChildren.toArray(new TracePackageElement[0]);
+    }
+
+    /**
+     * Set the children of this element
+     *
+     * @param children
+     *            the children of this element
+     */
+    public void setChildren(TracePackageElement[] children) {
+        this.fChildren = children;
     }
 
     /**
