@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,11 @@
 package org.eclipse.linuxtools.internal.docker.ui.testutils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
@@ -20,6 +24,8 @@ import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerException;
@@ -27,6 +33,7 @@ import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.Image;
 import com.spotify.docker.client.messages.ImageInfo;
+import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 
 /**
@@ -82,6 +89,12 @@ public class MockDockerClientFactory {
 		builder.container(container, containerInfo);
 		return builder;
 	}
+	
+	public static Builder onSearch(final String term, final ImageSearchResult... results) {
+		final Builder builder = new Builder();
+		builder.onSearch(term, Arrays.asList(results));
+		return builder;
+	}
 
 	public static class Builder {
 		
@@ -90,6 +103,8 @@ public class MockDockerClientFactory {
 		private final List<Image> images = new ArrayList<>();
 
 		private final List<Container> containers = new ArrayList<>();
+		
+		private final Map<String, List<ImageSearchResult>> searchResults = new HashMap<>();
 		
 		private Builder() {
 			this.dockerClient = Mockito.mock(DockerClient.class);
@@ -140,10 +155,24 @@ public class MockDockerClientFactory {
 			return this;
 		}
 		
+		public Builder onSearch(final String term, final List<ImageSearchResult> results) {
+			this.searchResults.put(term, results);
+			return this;
+		}
+		
 		public DockerClient build() {
 			try {
 				Mockito.when(this.dockerClient.listImages(Matchers.any())).thenReturn(this.images);
-				Mockito.when(this.dockerClient.listContainers(Matchers.any())).thenReturn(this.containers);
+				Mockito.when(this.dockerClient.listContainers(Matchers.any())).thenAnswer(new Answer<List<Container>>() {
+
+					@Override
+					public List<Container> answer(InvocationOnMock invocation) {
+						return containers;
+					}
+				});
+				for(Entry<String, List<ImageSearchResult>> searchResult : this.searchResults.entrySet()) {
+					Mockito.when(this.dockerClient.searchImages(searchResult.getKey())).thenReturn(searchResult.getValue());
+				}
 			} catch (DockerException | InterruptedException e) {
 				// nothing may happen when mocking the method call 
 			}
