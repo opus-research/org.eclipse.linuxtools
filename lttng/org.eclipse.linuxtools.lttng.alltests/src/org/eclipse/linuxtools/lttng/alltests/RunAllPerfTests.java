@@ -10,18 +10,22 @@
  *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.tests.trace.stub;
+package org.eclipse.linuxtools.lttng.alltests;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Unit tests for the development trace package.
+ * Master test suite for all Linux Tools LTTng performance tests.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        XmlStubTraceTest.class
+    org.eclipse.linuxtools.ctf.core.tests.perf.AllPerfTests.class,
+    org.eclipse.linuxtools.lttng2.kernel.core.tests.perf.AllPerfTests.class,
+    org.eclipse.linuxtools.pcap.core.tests.perf.AllPerfTests.class,
+    org.eclipse.linuxtools.tmf.core.tests.perf.AllPerfTests.class,
+    org.eclipse.linuxtools.tmf.ctf.core.tests.perf.AllPerfTests.class
 })
-public class AllTests {
+public class RunAllPerfTests {
 
 }
