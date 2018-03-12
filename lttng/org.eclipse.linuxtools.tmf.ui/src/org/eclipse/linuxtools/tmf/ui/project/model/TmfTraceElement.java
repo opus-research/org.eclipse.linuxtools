@@ -449,23 +449,6 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
 
         if (sfEventType.equals(id)) {
             if (getTraceType() != null) {
-
-                if (getTraceType().startsWith(CustomTxtTrace.class.getCanonicalName())) {
-                    for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                        if (getTraceType().equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
-                            return TmfTraceType.CUSTOM_TXT_CATEGORY + " : " + def.definitionName; //$NON-NLS-1$
-                        }
-                    }
-                }
-
-                if (getTraceType().startsWith(CustomXmlTrace.class.getCanonicalName())) {
-                    for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                        if (getTraceType().equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
-                            return TmfTraceType.CUSTOM_XML_CATEGORY + " : " + def.definitionName; //$NON-NLS-1$
-                        }
-                    }
-                }
-
                 IConfigurationElement ce = sfTraceTypeAttributes.get(getTraceType());
                 return (ce != null) ? (getCategory(ce) + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR)) : ""; //$NON-NLS-1$ //$NON-NLS-2$
             }
