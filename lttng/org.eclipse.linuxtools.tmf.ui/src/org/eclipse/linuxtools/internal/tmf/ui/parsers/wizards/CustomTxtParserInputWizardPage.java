@@ -51,8 +51,6 @@ import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition.Cardinality;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition.InputData;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition.InputLine;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
@@ -121,12 +119,10 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
 
     private final ISelection selection;
     private CustomTxtTraceDefinition definition;
-    private String editCategoryName;
     private String editDefinitionName;
     private String defaultDescription;
     private Line selectedLine;
     private Composite container;
-    private Text categoryText;
     private Text logtypeText;
     private Text timestampOutputFormatText;
     private Text timestampPreviewText;
@@ -164,7 +160,6 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
         this.selection = selection;
         this.definition = definition;
         if (definition != null) {
-            this.editCategoryName = definition.categoryName;
             this.editDefinitionName = definition.definitionName;
         }
     }
@@ -183,11 +178,11 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
         headerComposite.setLayout(headerLayout);
         headerComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        Label categoryLabel = new Label(headerComposite, SWT.NULL);
-        categoryLabel.setText(Messages.CustomTxtParserInputWizardPage_category);
+        Label logtypeLabel = new Label(headerComposite, SWT.NULL);
+        logtypeLabel.setText(Messages.CustomTxtParserInputWizardPage_logType);
 
-        categoryText = new Text(headerComposite, SWT.BORDER | SWT.SINGLE);
-        categoryText.setLayoutData(new GridData(120, SWT.DEFAULT));
+        logtypeText = new Text(headerComposite, SWT.BORDER | SWT.SINGLE);
+        logtypeText.setLayoutData(new GridData(120, SWT.DEFAULT));
 
         Label timestampFormatLabel = new Label(headerComposite, SWT.NULL);
         timestampFormatLabel.setText(Messages.CustomTxtParserInputWizardPage_timestampFormat);
@@ -213,14 +208,8 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
             }
         });
 
-        Label logtypeLabel = new Label(headerComposite, SWT.NULL);
-        logtypeLabel.setText(Messages.CustomTxtParserInputWizardPage_logType);
-
-        logtypeText = new Text(headerComposite, SWT.BORDER | SWT.SINGLE);
-        logtypeText.setLayoutData(new GridData(120, SWT.DEFAULT));
-        logtypeText.setFocus();
-
         Label timestampPreviewLabel = new Label(headerComposite, SWT.NULL);
+        timestampPreviewLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
         timestampPreviewLabel.setText(Messages.CustomTxtParserInputWizardPage_preview);
 
         timestampPreviewText = new Text(headerComposite, SWT.BORDER | SWT.SINGLE | SWT.READ_ONLY);
@@ -397,7 +386,6 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
         treeViewer.expandAll();
         lineContainer.layout();
 
-        categoryText.addModifyListener(updateListener);
         logtypeText.addModifyListener(updateListener);
         timestampOutputFormatText.addModifyListener(updateListener);
 
@@ -543,7 +531,6 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
     }
 
     private void loadDefinition(CustomTxtTraceDefinition def) {
-        categoryText.setText(def.categoryName);
         logtypeText.setText(def.definitionName);
         timestampOutputFormatText.setText(def.timeStampOutputFormat);
         treeViewer.setInput(def.inputs);
@@ -677,15 +664,18 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
             int rootLineMatches = 0;
             String firstEntryTimeStamp = null;
             String firstEntryTimeStampInputFormat = null;
-            String log = null;
-            event: while (scanner.hasNext()) {
+            String line = null;
+            boolean lineIsNull = true; // needed because of JDT bug with continue at label
+            event: while (scanner.hasNext() || !lineIsNull) {
                 if (rootLineMatches > 0 && !updateAll) {
                     break;
                 }
-                if (log == null) {
-                    log = scanner.next();
+                if (line == null) {
+                    line = scanner.next();
+                    lineIsNull = false;
                 }
-                int length = log.length();
+                int length = line.length();
+                String log = line.replaceAll("\r", ""); //$NON-NLS-1$ //$NON-NLS-2$
                 for (InputLine rootInputLine : definition.inputs) {
                     Pattern pattern;
                     try {
@@ -713,12 +703,17 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
                         }
                         rawPos += length + 1; // +1 for \n
                         while (scanner.hasNext()) {
-                            log = scanner.next();
-                            length = log.length();
+                            line = scanner.next();
+                            length = line.length();
+                            log = line.replaceAll("\r", ""); //$NON-NLS-1$ //$NON-NLS-2$
                             boolean processed = false;
                             if (currentInput == null) {
                                 for (InputLine input : definition.inputs) {
-                                    matcher = input.getPattern().matcher(log);
+                                    try {
+                                        matcher = input.getPattern().matcher(log);
+                                    } catch (PatternSyntaxException e) {
+                                        continue;
+                                    }
                                     if (matcher.matches()) {
                                         continue event;
                                     }
@@ -819,7 +814,8 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
                     }
                 }
                 rawPos += length + 1; // +1 for \n
-                log = null;
+                line = null;
+                lineIsNull = true;
             }
 
             if (rootLineMatches == 1) {
@@ -1468,7 +1464,6 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
 
     private void validate() {
 
-        definition.categoryName = categoryText.getText().trim();
         definition.definitionName = logtypeText.getText().trim();
         definition.timeStampOutputFormat = timestampOutputFormatText.getText().trim();
 
@@ -1479,29 +1474,15 @@ public class CustomTxtParserInputWizardPage extends WizardPage {
 
         StringBuffer errors = new StringBuffer();
 
-        if (definition.categoryName.length() == 0) {
-            errors.append("Enter a category for the new trace type. "); //$NON-NLS-1$
-            categoryText.setBackground(COLOR_LIGHT_RED);
-        } else if (definition.definitionName.length() == 0) {
-            errors.append("Enter a name for the new trace type. "); //$NON-NLS-1$
+        if (definition.definitionName.length() == 0) {
+            errors.append("Enter a name for the new log type. "); //$NON-NLS-1$
             logtypeText.setBackground(COLOR_LIGHT_RED);
         } else {
-            categoryText.setBackground(COLOR_TEXT_BACKGROUND);
             logtypeText.setBackground(COLOR_TEXT_BACKGROUND);
-            if (definition.categoryName.indexOf(':') != -1) {
-                errors.append("Invalid character ':' in category. "); //$NON-NLS-1$
-                categoryText.setBackground(COLOR_LIGHT_RED);
-            }
-            if (definition.definitionName.indexOf(':') != -1) {
-                errors.append("Invalid character ':' in trace type. "); //$NON-NLS-1$
-                logtypeText.setBackground(COLOR_LIGHT_RED);
-            }
-            for (TraceTypeHelper helper : TmfTraceType.getTraceTypeHelpers()) {
-                if (definition.categoryName.equals(helper.getCategoryName()) &&
-                        definition.definitionName.equals(helper.getName()) &&
-                        (editDefinitionName == null || !editDefinitionName.equals(definition.definitionName)) &&
-                        (editCategoryName == null || !editCategoryName.equals(definition.categoryName))) {
-                    errors.append("The trace type name already exists. "); //$NON-NLS-1$
+            for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
+                if (definition.definitionName.equals(def.definitionName) &&
+                        (editDefinitionName == null || !editDefinitionName.equals(definition.definitionName))) {
+                    errors.append("The log type name already exists. "); //$NON-NLS-1$
                     logtypeText.setBackground(COLOR_LIGHT_RED);
                     break;
                 }
