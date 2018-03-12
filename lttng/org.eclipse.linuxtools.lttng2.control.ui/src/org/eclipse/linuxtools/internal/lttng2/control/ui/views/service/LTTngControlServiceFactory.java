@@ -23,8 +23,8 @@ import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.ICommandSh
 
 /**
  * <p>
- * Factory to create LTTngControlService instances depending on the version of
- * the LTTng Trace Control installed on the remote host.
+ * Factory to create LTTngControlService instances depending on the version of the LTTng Trace Control
+ * installed on the remote host.
  * </p>
  *
  * @author Bernd Hufmann
@@ -68,32 +68,23 @@ public class LTTngControlServiceFactory {
      * Gets the LTTng Control Service implementation based on the version of the
      * remote LTTng Tools.
      *
-     * @param shell
-     *            - the shell implementation to pass to the service
+     * @param shell - the shell implementation to pass to the service
      * @return - LTTng Control Service implementation
-     * @throws ExecutionException
-     *             If the command fails
+     * @throws ExecutionException If the command fails
      */
     public ILttngControlService getLttngControlService(ICommandShell shell) throws ExecutionException {
         // get the version
-        boolean machineInterfaceMode = true;
         String command = LTTngControlServiceConstants.CONTROL_COMMAND + LTTngControlServiceConstants.COMMAND_VERSION;
-        String commandMI = LTTngControlServiceConstants.CONTROL_COMMAND_MI_XML + LTTngControlServiceConstants.COMMAND_VERSION;
 
         if (ControlPreferences.getInstance().isLoggingEnabled()) {
             ControlCommandLogger.log(command);
         }
         ICommandResult result = null;
 
-        result = shell.executeCommand(commandMI, new NullProgressMonitor());
-        if (result.getResult() != 0) {
-            machineInterfaceMode = false;
-            // Fall back if no machine interface is present
-            try {
-                result = shell.executeCommand(command, new NullProgressMonitor());
-            } catch (ExecutionException e) {
-                throw new ExecutionException(Messages.TraceControl_GettingVersionError + ": " + e); //$NON-NLS-1$
-            }
+        try {
+            result = shell.executeCommand(command, new NullProgressMonitor());
+        } catch (ExecutionException e) {
+            throw new ExecutionException(Messages.TraceControl_GettingVersionError + ": " + e); //$NON-NLS-1$
         }
 
         if (ControlPreferences.getInstance().isLoggingEnabled()) {
@@ -101,11 +92,6 @@ public class LTTngControlServiceFactory {
         }
 
         if ((result != null) && (result.getResult() == 0) && (result.getOutput().length >= 1)) {
-            if (machineInterfaceMode) {
-                LTTngControlServiceMI service = new LTTngControlServiceMI(shell, LTTngControlService.class.getResource(LTTngControlServiceConstants.MI_XSD_FILENAME));
-                service.setVersion(result.getOutput());
-                return service;
-            }
             int index = 0;
             while (index < result.getOutput().length) {
                 String line = result.getOutput()[index];
