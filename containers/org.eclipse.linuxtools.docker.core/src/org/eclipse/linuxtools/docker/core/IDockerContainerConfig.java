@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.docker.core;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public interface IDockerContainerConfig {
@@ -62,6 +61,7 @@ public interface IDockerContainerConfig {
 
 	List<String> onBuild();
 
-	Map<String, String> labels();
+	// FIXME: to be included in Neon
+	// public Map<String, String> labels();
 
 }
