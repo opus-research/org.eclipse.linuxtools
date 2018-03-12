@@ -123,15 +123,7 @@ public class DockerContainer implements IDockerContainer {
 		return info(false);
 	}
 
-	/**
-	 * @param force
-	 *            <code>true</code> to force refresh, <code>false</code> to use
-	 *            existing {@link IDockerContainerInfo} if it was loaded before.
-	 * @return the {@link IDockerContainerInfo} by calling the Docker daemon
-	 *         using the {@link IDockerConnection} associated with this
-	 *         {@link IDockerContainer}.
-	 */
-	// TODO: add this method in the public interface
+	@Override
 	public IDockerContainerInfo info(final boolean force) {
 		if (force || isInfoLoaded()) {
 			this.containerInfo = this.parent.getContainerInfo(id);
@@ -139,11 +131,7 @@ public class DockerContainer implements IDockerContainer {
 		return this.containerInfo;
 	}
 
-	/**
-	 * @return <code>true</code> if the {@link IDockerContainerInfo} has been
-	 *         loaded, <code>false</code> otherwise.
-	 */
-	// TODO: add this method in the public interface
+	@Override
 	public boolean isInfoLoaded() {
 		return this.containerInfo != null;
 	}
