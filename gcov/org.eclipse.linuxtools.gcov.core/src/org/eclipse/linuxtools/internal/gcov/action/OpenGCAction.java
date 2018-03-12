@@ -118,8 +118,11 @@ public class OpenGCAction implements IEditorLauncher {
                 if (cproject != null) {
                     try {
                         IBinary[] b = cproject.getBinaryContainer().getBinaries();
-                        if (b != null && b.length > 0 && b[0] != null) {
-                            IResource r = b[0].getResource();
+                        for (IBinary bb : b) {
+                            System.err.println(bb.getResource());
+                        }
+                        if (b != null && b.length > 0 && b[b.length-1] != null) {
+                            IResource r = b[b.length-1].getResource();
                             return r.getLocation().toOSString();
                         }
                     } catch (CModelException _) {
