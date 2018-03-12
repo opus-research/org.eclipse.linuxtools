@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,7 +48,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.ViewPart;
@@ -66,15 +63,9 @@ public class DockerContainersView extends ViewPart implements
 		IDockerContainerListener, ISelectionListener,
 		IDockerConnectionManagerListener, ITabbedPropertySheetPageContributor {
 
-	private static final String TOGGLE_STATE = "org.eclipse.ui.commands.toggleState"; //$NON-NLS-1$
-
-	private static final String SHOW_ALL_CONTAINERS_COMMAND_ID = "org.eclipse.linuxtools.docker.ui.commands.showAllContainers"; //$NON-NLS-1$
-
 	public static final String VIEW_ID = "org.eclipse.linuxtools.docker.ui.dockerContainersView";
 
 	private final static String DaemonMissing = "ViewerDaemonMissing.msg"; //$NON-NLS-1$
-	private final static String ViewAllTitle = "ContainersViewTitle.all.msg"; //$NON-NLS-1$
-	private final static String ViewFilteredTitle = "ContainersViewTitle.filtered.msg"; //$NON-NLS-1$
 
 	private Form form;
 	private Text search;
@@ -89,8 +80,7 @@ public class DockerContainersView extends ViewPart implements
 	@Override
 	public void dispose() {
 		// stop tracking selection changes in the Docker Explorer view (only)
-		getSite().getWorkbenchWindow().getSelectionService()
-				.removeSelectionListener(DockerExplorerView.VIEW_ID, this);
+		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener("org.eclipse.linuxtools.docker.ui.dockerExplorerView", this);
 		DockerConnectionManager.getInstance().removeConnectionManagerListener(
 				this);
 		super.dispose();
@@ -98,7 +88,7 @@ public class DockerContainersView extends ViewPart implements
 
 	@Override
 	public String getContributorId() {
-		return DockerExplorerView.VIEW_ID;
+		return "org.eclipse.linuxtools.docker.ui.dockerExplorerView"; //$NON-NLS-1$
 	}
 
 	@SuppressWarnings("unchecked")
@@ -111,8 +101,13 @@ public class DockerContainersView extends ViewPart implements
 	}
 
 	private void hookContextMenu() {
-		MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
+		MenuManager menuMgr = new MenuManager("#PopupMenu");
 		menuMgr.setRemoveAllWhenShown(true);
+		// menuMgr.addMenuListener(new IMenuListener() {
+		// public void menuAboutToShow(IMenuManager manager) {
+		// DockerContainersView.this.fillContextMenu(manager);
+		// }
+		// });
 		Menu menu = menuMgr.createContextMenu(viewer.getControl());
 		viewer.getControl().setMenu(menu);
 		getSite().registerContextMenu(menuMgr, viewer);
@@ -129,22 +124,14 @@ public class DockerContainersView extends ViewPart implements
 		createTableViewer(container);
 		getSite().registerContextMenu(new MenuManager(), null);
 		// track selection changes in the Docker Explorer view (only)
-		getSite().getWorkbenchWindow().getSelectionService()
-				.addSelectionListener(DockerExplorerView.VIEW_ID, this);
+		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener("org.eclipse.linuxtools.docker.ui.dockerExplorerView", this);
 		DockerConnectionManager.getInstance()
 				.addConnectionManagerListener(this);
 		hookContextMenu();
-		// by default, only show running containers
-		showAllContainers(false);
-		final ICommandService service = getViewSite().getWorkbenchWindow()
-				.getService(ICommandService.class);
-		service.getCommand(SHOW_ALL_CONTAINERS_COMMAND_ID)
-				.getState(TOGGLE_STATE).setValue(false);
-		service.refreshElements(SHOW_ALL_CONTAINERS_COMMAND_ID, null);
 	}
 	
 	private void createTableViewer(final Composite container) {
-		search = new Text(container, SWT.SEARCH | SWT.ICON_SEARCH);
+		search = new Text(container, SWT.SEARCH);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, false).applyTo(search);
 		search.addModifyListener(onSearch());
 		Composite tableArea = new Composite(container, SWT.NONE);
@@ -344,10 +331,9 @@ public class DockerContainersView extends ViewPart implements
 					// remember the current selection before the viewer is
 					// refreshed
 					final ISelection currentSelection = DockerContainersView.this.viewer.getSelection();
-					CommandUtils.refresh(DockerContainersView.this.getViewer());
+					CommandUtils.refresh(DockerContainersView.this);
 					// restore the selection
 					DockerContainersView.this.viewer.setSelection(currentSelection);
-					refreshViewTitle();
 				}
 			});
 		}
@@ -395,48 +381,8 @@ public class DockerContainersView extends ViewPart implements
 	public void showAllContainers(boolean enabled) {
 		if(!enabled) {
 			this.viewer.addFilter(hideStoppedContainersViewerFilter);
-
 		} else {
-			final List<ViewerFilter> filters = new ArrayList<>(
-					Arrays.asList(this.viewer.getFilters()));
-
-			// remove filters and make sure there is no duplicate in the list of
-			// filters
-			for (Iterator<ViewerFilter> iterator = filters.iterator(); iterator
-					.hasNext();) {
-				ViewerFilter viewerFilter = iterator.next();
-				if (viewerFilter.equals(hideStoppedContainersViewerFilter)) {
-					iterator.remove();
-				}
-			}
-			this.viewer.setFilters(filters.toArray(new ViewerFilter[0]));
-		}
-		refreshViewTitle();
-	}
-
-	private void refreshViewTitle() {
-		if (this.viewer == null || this.viewer.getControl().isDisposed()
-				|| this.form == null
-				|| this.connection == null) {
-			return;
-		} else if (!this.connection.isContainersLoaded()) {
-			form.setText(connection.getName());
-		} else {
-			final List<ViewerFilter> filters = Arrays
-					.asList(this.viewer.getFilters());
-			if (filters.contains(hideStoppedContainersViewerFilter)) {
-				this.form.setText(
-						DVMessages.getFormattedString(ViewFilteredTitle,
-								new String[] { connection.getName(),
-										Integer.toString(viewer.getTable()
-												.getItemCount()),
-								Integer.toString(
-										connection.getContainers().size()), }));
-			} else {
-				this.form.setText(DVMessages.getFormattedString(ViewAllTitle,
-						new String[] { connection.getName(), Integer.toString(
-								connection.getContainers().size()) }));
-			}
+			this.viewer.removeFilter(hideStoppedContainersViewerFilter);
 		}
 	}
 

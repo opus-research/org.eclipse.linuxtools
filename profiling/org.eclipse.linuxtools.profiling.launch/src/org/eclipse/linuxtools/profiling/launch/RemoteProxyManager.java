@@ -124,9 +124,6 @@ public class RemoteProxyManager implements IRemoteProxyManager {
             IRemoteProxyManager manager = getRemoteManager(scheme);
             if (manager != null)
                 return manager.getLauncher(uri);
-            else
-                throw new CoreException(new Status(IStatus.ERROR, ProfileLaunchPlugin.PLUGIN_ID,
-                        IStatus.OK, Messages.RemoteProxyManager_unrecognized_scheme + scheme, null));
         }
         return new LocalLauncher();
     }
@@ -152,9 +149,6 @@ public class RemoteProxyManager implements IRemoteProxyManager {
             IRemoteProxyManager manager = getRemoteManager(scheme);
             if (manager != null)
                 return manager.getOS(uri);
-            else
-                throw new CoreException(new Status(IStatus.ERROR, ProfileLaunchPlugin.PLUGIN_ID,
-                        IStatus.OK, Messages.RemoteProxyManager_unrecognized_scheme + scheme, null));
         }
         return Platform.getOS();
     }
@@ -176,7 +170,7 @@ public class RemoteProxyManager implements IRemoteProxyManager {
      * have a cached path and a remote one, and this method
      * returns the remote one.
      * @param project The project which location is needed.
-     * @return The URI to the project location.
+     * @return The project location.
      * @throws CoreException If problem retrieving remote proxy occured.
      * @since 2.2
      */
