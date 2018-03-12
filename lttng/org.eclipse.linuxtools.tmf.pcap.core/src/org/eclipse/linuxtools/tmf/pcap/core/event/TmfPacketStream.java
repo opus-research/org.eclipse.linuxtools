@@ -14,6 +14,8 @@ package org.eclipse.linuxtools.tmf.pcap.core.event;
 
 import org.eclipse.linuxtools.internal.tmf.pcap.core.util.ProtocolConversion;
 import org.eclipse.linuxtools.pcap.core.stream.PacketStream;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
 
 /**
@@ -29,7 +31,7 @@ public class TmfPacketStream {
      * Class constructor.
      *
      * @param stream
-     *            The stream ot build the TmfPacketStream from.
+     *            The stream to build the TmfPacketStream from.
      */
     public TmfPacketStream(PacketStream stream) {
         fPacketStream = stream;
@@ -72,11 +74,102 @@ public class TmfPacketStream {
     }
 
     /**
-     * Method that returns the size of the packet stream.
+     * Get the number of packets going from the first endpoint to the second.
      *
-     * @return The size of the packet stream (nb of packets).
+     * @return The number of packets from A to B.
      */
-    public int size() {
-        return fPacketStream.size();
+    public synchronized long getNbPacketsAtoB() {
+        return fPacketStream.getNbPacketsAtoB();
     }
+
+    /**
+     * Get the number of packets going from the second endpoint to the first.
+     *
+     * @return The number of packets from B to A.
+     */
+    public synchronized long getNbPacketsBtoA() {
+        return fPacketStream.getNbPacketsBtoA();
+    }
+
+    /**
+     * Get the total number of packets in this stream.
+     *
+     * @return The total number of packets.
+     */
+    public synchronized long getNbPackets() {
+        return fPacketStream.getNbPackets();
+    }
+
+    /**
+     * Get the number of bytes going from the first endpoint to the second.
+     *
+     * @return The number of bytes from A to B.
+     */
+    public synchronized long getNbBytesAtoB() {
+        return fPacketStream.getNbBytesAtoB();
+    }
+
+    /**
+     * Get the number of bytes going from the second endpoint to the first.
+     *
+     * @return The number of bytes from B to A.
+     */
+    public synchronized long getNbBytesBtoA() {
+        return fPacketStream.getNbBytesBtoA();
+    }
+
+    /**
+     * Get the total number of bytes in this stream.
+     *
+     * @return The total number of bytes.
+     */
+    public synchronized long getNbBytes() {
+        return fPacketStream.getNbBytes();
+    }
+
+    /**
+     * Get the start time of this stream.
+     *
+     * @return The start time.
+     */
+    public synchronized ITmfTimestamp getStartTime() {
+        return new TmfTimestamp(fPacketStream.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE);
+    }
+
+    /**
+     * Get the stop time of this stream.
+     *
+     * @return The stop time.
+     */
+    public synchronized ITmfTimestamp getStopTime() {
+        return new TmfTimestamp(fPacketStream.getStopTime(), ITmfTimestamp.NANOSECOND_SCALE);
+    }
+
+    /**
+     * Get the duration of this stream, in seconds
+     *
+     * @return The duration of this stream.
+     */
+    public synchronized double getDuration() {
+        return fPacketStream.getDuration();
+    }
+
+    /**
+     * Get the the average byte per second from A to B.
+     *
+     * @return the average byte per second from A to B.
+     */
+    public synchronized double getBPSAtoB() {
+        return fPacketStream.getBPSAtoB();
+    }
+
+    /**
+     * Get the the average byte per second from B to A.
+     *
+     * @return the average byte per second from B to A.
+     */
+    public synchronized double getBPSBtoA() {
+        return fPacketStream.getBPSBtoA();
+    }
+
 }

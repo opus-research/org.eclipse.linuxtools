@@ -83,8 +83,38 @@ public class StreamListView extends TmfView {
      */
     public static final String ID = "org.eclipse.linuxtools.tmf.pcap.ui.view.stream.list"; //$NON-NLS-1$
 
-    private static final String[] COLUMN_NAMES = { Messages.StreamListView_ID, Messages.StreamListView_EndpointA, Messages.StreamListView_EndpointB, Messages.StreamListView_TotalPackets };
-    private static final int[] COLUMN_SIZES = { 75, 350, 350, 125 };
+    private static final String[] COLUMN_NAMES =
+    { Messages.StreamListView_ID,
+            Messages.StreamListView_EndpointA,
+            Messages.StreamListView_EndpointB,
+            Messages.StreamListView_TotalPackets,
+            Messages.StreamListView_TotalBytes,
+            Messages.StreamListView_PacketsAtoB,
+            Messages.StreamListView_BytesAtoB,
+            Messages.StreamListView_PacketsBtoA,
+            Messages.StreamListView_BytesBtoA,
+            Messages.StreamListView_StartTime,
+            Messages.StreamListView_StopTime,
+            Messages.StreamListView_Duration,
+            Messages.StreamListView_BPSAtoB,
+            Messages.StreamListView_BPSBtoA
+    };
+
+    private static final int[] COLUMN_SIZES =
+        { 75,
+        350,
+        350,
+        110,
+        110,
+        110,
+        110,
+        110,
+        110,
+        180,
+        180,
+        110,
+        110,
+        110 };
 
     private static final String KEY_PROTOCOL = "$protocol$"; //$NON-NLS-1$
     private static final String KEY_STREAM = "$stream$"; //$NON-NLS-1$
@@ -234,7 +264,8 @@ public class StreamListView extends TmfView {
                 }
                 for (TmfProtocol p : tables.keySet()) {
                     @SuppressWarnings("null")
-                    @NonNull TmfProtocol protocol = p;
+                    @NonNull
+                    TmfProtocol protocol = p;
                     TmfPacketStreamBuilder builder = analysis.getBuilder(protocol);
                     if (builder != null && !(tables.get(protocol).isDisposed())) {
                         for (TmfPacketStream stream : builder.getStreams()) {
@@ -248,7 +279,17 @@ public class StreamListView extends TmfView {
                             item.setText(0, String.valueOf(stream.getID()));
                             item.setText(1, stream.getFirstEndpoint().toString());
                             item.setText(2, stream.getSecondEndpoint().toString());
-                            item.setText(3, String.valueOf(stream.size()));
+                            item.setText(3, String.valueOf(stream.getNbPackets()));
+                            item.setText(4, String.valueOf(stream.getNbBytes()));
+                            item.setText(5, String.valueOf(stream.getNbPacketsAtoB()));
+                            item.setText(6, String.valueOf(stream.getNbBytesAtoB()));
+                            item.setText(7, String.valueOf(stream.getNbPacketsBtoA()));
+                            item.setText(8, String.valueOf(stream.getNbBytesBtoA()));
+                            item.setText(9, stream.getStartTime().toString());
+                            item.setText(10, stream.getStopTime().toString());
+                            item.setText(11, String.format("%.3f", stream.getDuration())); //$NON-NLS-1$
+                            item.setText(12, String.format("%.3f", stream.getBPSAtoB())); //$NON-NLS-1$
+                            item.setText(13, String.format("%.3f", stream.getBPSBtoA())); //$NON-NLS-1$
                             item.setData(KEY_STREAM, stream);
                         }
                     }
@@ -393,8 +434,8 @@ public class StreamListView extends TmfView {
                         }
 
                         // First stage - root
-                        String name = Messages.StreamListView_FilterName_Stream + ' ' + stream.getProtocol().getShortName() + ' ' + stream.getFirstEndpoint().toString()
-                                + " <--> " + stream.getSecondEndpoint().toString(); //$NON-NLS-1$
+                        String name = Messages.StreamListView_FilterName_Stream + ' ' + stream.getProtocol().getShortName() + ' ' + stream.getFirstEndpoint()
+                                + " <--> " + stream.getSecondEndpoint(); //$NON-NLS-1$
                         TmfFilterNode root = new TmfFilterNode(name);
 
                         // Second stage - and
@@ -413,16 +454,16 @@ public class StreamListView extends TmfView {
                         // Fourth stage - endpoints
                         TmfFilterContainsNode endpointAAndA = new TmfFilterContainsNode(andA);
                         endpointAAndA.setField(PcapEvent.EVENT_FIELD_PACKET_SOURCE);
-                        endpointAAndA.setValue(stream.getFirstEndpoint().toString().toString());
+                        endpointAAndA.setValue(stream.getFirstEndpoint());
                         TmfFilterContainsNode endpointBAndA = new TmfFilterContainsNode(andA);
                         endpointBAndA.setField(PcapEvent.EVENT_FIELD_PACKET_DESTINATION);
-                        endpointAAndA.setValue(stream.getSecondEndpoint().toString().toString());
+                        endpointBAndA.setValue(stream.getSecondEndpoint());
                         TmfFilterContainsNode endpointAAndB = new TmfFilterContainsNode(andB);
                         endpointAAndB.setField(PcapEvent.EVENT_FIELD_PACKET_SOURCE);
-                        endpointAAndA.setValue(stream.getSecondEndpoint().toString().toString());
+                        endpointAAndB.setValue(stream.getSecondEndpoint());
                         TmfFilterContainsNode endpointBAndB = new TmfFilterContainsNode(andB);
                         endpointBAndB.setField(PcapEvent.EVENT_FIELD_PACKET_DESTINATION);
-                        endpointAAndA.setValue(stream.getFirstEndpoint().toString().toString());
+                        endpointBAndB.setValue(stream.getFirstEndpoint());
 
                         return root;
                     }

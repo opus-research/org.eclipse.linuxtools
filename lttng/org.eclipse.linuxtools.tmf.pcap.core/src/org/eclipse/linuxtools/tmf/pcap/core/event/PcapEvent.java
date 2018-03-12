@@ -183,7 +183,9 @@ public class PcapEvent extends TmfEvent {
         }
 
         if (packet == null) {
-            fList = EMPTY_LIST;
+            @SuppressWarnings("null")
+            @NonNull List<TmfProtocol> emptyList = ImmutableList.copyOf(EMPTY_LIST);
+            fList = emptyList;
             return fList;
         }
         // Go through all the packets and add them to list.

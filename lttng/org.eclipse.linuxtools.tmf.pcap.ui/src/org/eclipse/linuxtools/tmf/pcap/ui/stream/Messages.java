@@ -18,13 +18,23 @@ import org.eclipse.osgi.util.NLS;
 @SuppressWarnings("javadoc")
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.tmf.pcap.ui.stream.messages"; //$NON-NLS-1$
+    public static @Nullable String StreamListView_BPSAtoB;
+    public static @Nullable String StreamListView_BPSBtoA;
+    public static @Nullable String StreamListView_BytesAtoB;
+    public static @Nullable String StreamListView_BytesBtoA;
     public static @Nullable String StreamListView_Clear;
+    public static @Nullable String StreamListView_Duration;
     public static @Nullable String StreamListView_EndpointA;
     public static @Nullable String StreamListView_EndpointB;
     public static @Nullable String StreamListView_ExtractAsFilter;
     public static @Nullable String StreamListView_FilterName_Stream;
     public static @Nullable String StreamListView_FollowStream;
     public static @Nullable String StreamListView_ID;
+    public static @Nullable String StreamListView_PacketsAtoB;
+    public static @Nullable String StreamListView_PacketsBtoA;
+    public static @Nullable String StreamListView_StartTime;
+    public static @Nullable String StreamListView_StopTime;
+    public static @Nullable String StreamListView_TotalBytes;
     public static @Nullable String StreamListView_TotalPackets;
     static {
         // initialize resource bundle
