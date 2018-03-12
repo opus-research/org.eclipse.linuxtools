@@ -170,7 +170,6 @@ In addition to these views, the '''Tracing and Monitoring Framework (TMF)''' fea
 * [[#Colors_View | Colors View]]
 * [[#Filters_View | Filters View]]
 * [[#Time_Chart_View  | Time Chart View]]
-* [[#Environment_Variables_View  | Environment Variables View]]
 * [[#State_System_Explorer_View | State System Explorer View]]
 * [[#Call_Stack_View | Call Stack View]]
 
@@ -551,6 +550,19 @@ It is possible to export the content of the trace to a text file based on the co
 
 ''Note'':  The columns in the text file are separated by tabs.
 
+=== Collapsing of Repetitive Events ===
+The implementation for collapsing of repetitive events is trace type specific and is only available for certain trace types. For example, a trace type could allow collapsing of consecutive events that have the same event content but not the same timestamp. If a trace type supports this feature then it is possible to select the '''Collapse Events''' menu item after pressing the right mouse button in the table.
+
+When the collapsing of events is executing, the table will clear all events and fill itself with all relevant events. If the collapse condition is met, the first column of the table will show the number of times this event was repeated consecutively.
+
+[[Image:images/TablePreCollapse.png]]
+
+A status row will be displayed before and after the events, dynamically showing how many non-collapsed events were found and how many events were processed so far. Once the collapsing is completed, the status row icon in the left margin will change from a 'stop' to a 'filter' icon.
+
+[[Image:images/TablePostCollapse.png]]
+
+To clear collapsing, press the right mouse button in the table and select menu item '''Clear Filters''' in the context sensitive menu. ''Note'' that collapsing is also removed when another filter is applied to the table.
+
 == Histogram View ==
 
 The Histogram View displays the trace events distribution with respect to time. When streaming a trace, this view is dynamically updated as the events are received.
@@ -668,11 +680,6 @@ When a bookmark is applied in the events table, the ticks corresponding to the b
 When a filter is applied in the events table, the non-matching ticks are removed from the Time Chart view.
 
 The Time Chart only supports traces that are opened in an editor. The use of an editor is specified in the plug-in extension for that trace type, or is enabled by default for custom traces.
-
-== Environment Variables View ==
-A new feature of CTF traces is their ability to store user defined data that is not to be placed in an event. It is generally data that is per-trace specific, such as the tracer version and the trace domain. It will be populated when a trace is loaded if the trace has environment variables. <br>
-[[Image:images/LTTng2EnvironmentsView.png]]<br>
-The above picture shows a trace loaded that was collected with the '''lttng-modules''' version '''2'''.'''0'''.'''0''' tracer. It is a '''kernel''' trace of the '''3.2.0-18-generic''' '''linux''' kernel.
 
 == State System Explorer View ==
 
