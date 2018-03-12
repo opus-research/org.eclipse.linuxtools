@@ -16,12 +16,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.Action;
@@ -44,7 +38,6 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
-import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.EnumDockerStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
@@ -95,8 +88,7 @@ public class DockerContainersView extends ViewPart implements
 	/** Id of the view. */
 	public static final String VIEW_ID = "org.eclipse.linuxtools.docker.ui.dockerContainersView";
 
-	private final static String NoConnectionSelected = "ViewerNoConnectionSelected.msg"; //$NON-NLS-1$
-	private final static String ConnectionNotAvailable = "ViewerConnectionNotAvailable.msg"; //$NON-NLS-1$
+	private final static String DaemonMissing = "ViewerDaemonMissing.msg"; //$NON-NLS-1$
 	private final static String ViewAllTitle = "ContainersViewTitle.all.msg"; //$NON-NLS-1$
 	private final static String ViewFilteredTitle = "ContainersViewTitle.filtered.msg"; //$NON-NLS-1$
 
@@ -159,7 +151,7 @@ public class DockerContainersView extends ViewPart implements
 	public void createPartControl(final Composite parent) {
 		final FormToolkit toolkit = new FormToolkit(parent.getDisplay());
 		form = toolkit.createForm(parent);
-		form.setText(DVMessages.getString(NoConnectionSelected));
+		form.setText(DVMessages.getString(DaemonMissing));
 		final Composite container = form.getBody();
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(0, 0).applyTo(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(container);
@@ -316,7 +308,14 @@ public class DockerContainersView extends ViewPart implements
 		this.viewer.setComparator(comparator);
 		// apply search filter
 		this.viewer.addFilter(getContainersFilter());
-		setConnection(CommandUtils.getCurrentConnection(null));
+		// default to first active connection or currently selected connection
+		// in Explorer View
+		IDockerConnection firstActiveConnection = CommandUtils
+				.getCurrentConnection(null);
+		if (firstActiveConnection != null) {
+			setConnection(firstActiveConnection);
+			connection.addContainerListener(this);
+		}
 		this.viewer.addSelectionChangedListener(onContainerSelection());
 		// get the current selection in the tableviewer
 		getSite().setSelectionProvider(this.viewer);
@@ -451,10 +450,15 @@ public class DockerContainersView extends ViewPart implements
 			setConnection(null);
 			return;
 		}
+		// remove this view as a container listener on the former select
+		// connection
+		if (this.connection != null) {
+			this.connection.removeContainerListener(this);
+		}
 		final Object firstSegment = treeSelection.getPaths()[0].getFirstSegment();
-		if (firstSegment instanceof IDockerConnection) {
-			final IDockerConnection connection = (IDockerConnection) firstSegment;
-			setConnection(connection);
+		if(firstSegment instanceof IDockerConnection) {
+			setConnection((IDockerConnection) firstSegment);
+			this.connection.addContainerListener(this);
 		}
 	}
 	
@@ -489,33 +493,13 @@ public class DockerContainersView extends ViewPart implements
 	 *            the active connection
 	 */
 	public void setConnection(final IDockerConnection connection) {
-		if (connection != null && connection.equals(this.connection)) {
-			return;
-		}
-		// remove 'this' as listener on the previous connection (if applicable)
-		if (this.connection != null) {
-			this.connection.removeContainerListener(this);
-		}
 		this.connection = connection;
-		if (this.viewer != null && this.connection != null) {
-			final Job refreshJob = new Job(
-					DVMessages.getString("ContainersRefresh.msg")) {
-
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					connection.getContainers(true);
-					connection.addContainerListener(DockerContainersView.this);
-					Display.getDefault().asyncExec(() -> {
-						viewer.setInput(connection);
-						refreshViewTitle();
-					});
-					return Status.OK_STATUS;
-				}
-			};
-			refreshJob.schedule();
+		if (connection != null && this.viewer != null) {
+			this.viewer.setInput(connection);
+			refreshViewTitle();
 		} else if (this.viewer != null) {
 			viewer.setInput(new IDockerContainer[0]);
-			form.setText(DVMessages.getString(NoConnectionSelected));
+			form.setText(DVMessages.getString(DaemonMissing));
 		}
 	}
 
@@ -574,14 +558,8 @@ public class DockerContainersView extends ViewPart implements
 				|| this.form == null
 				|| this.connection == null) {
 			return;
-		} else if (this.connection.getState() == EnumDockerConnectionState.CLOSED) {
-			this.form.setText(
-					DVMessages.getFormattedString(ConnectionNotAvailable,
-					connection.getName()));
-			this.form.setEnabled(false);
 		} else if (!this.connection.isContainersLoaded()) {
-			this.form.setText(connection.getName());
-			this.form.setEnabled(false);
+			form.setText(connection.getName());
 		} else {
 			final List<ViewerFilter> filters = Arrays
 					.asList(this.viewer.getFilters());
@@ -595,7 +573,6 @@ public class DockerContainersView extends ViewPart implements
 						new String[] { connection.getName(), Integer.toString(
 								connection.getContainers().size()) }));
 			}
-			this.form.setEnabled(true);
 		}
 	}
 
@@ -607,26 +584,8 @@ public class DockerContainersView extends ViewPart implements
 	@Override
 	public void changeEvent(final IDockerConnection connection,
 			final int type) {
-		if (type == IDockerConnectionManagerListener.UPDATE_SETTINGS_EVENT) {
-			final Job refreshJob = new Job(
-					DVMessages.getString("ContainersRefresh.msg")) {
-
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					connection.getContainers(true);
-					return Status.OK_STATUS;
-				}
-			};
-			refreshJob.addJobChangeListener(new JobChangeAdapter() {
-				@Override
-				public void done(IJobChangeEvent event) {
-					Display.getDefault().asyncExec(() -> refreshViewTitle());
-				}
-
-			});
-			refreshJob.schedule();
-		} else if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
-			Display.getDefault().asyncExec(() -> refreshViewTitle());
+		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
+			refreshViewTitle();
 		}
 	}
 

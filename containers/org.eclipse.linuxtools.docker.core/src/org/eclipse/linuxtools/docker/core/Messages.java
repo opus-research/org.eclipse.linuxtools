@@ -27,7 +27,6 @@ public class Messages extends NLS {
 	public static String Missing_Default_Settings;
 	public static String Missing_Settings;
 	public static String Retrieve_Default_Settings_Failure;
-	public static String Open_Connection;
 	public static String Open_Connection_Failure;
 	public static String Docker_Daemon_Ping_Failure;
 	public static String Retrieve_Docker_Certificates_Failure;
@@ -36,7 +35,6 @@ public class Messages extends NLS {
 	public static String Docker_No_Settings_Description_Script;
 	public static String Registry_Version_Mismatch;
 	public static String Docker_Machine_Command_Not_Found;
-	public static String Docker_Connection_Timeout;
 
 	static {
 		// Initialize resource bundle.

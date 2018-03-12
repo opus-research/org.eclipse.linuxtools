@@ -235,14 +235,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		return command;
 	}
 
-	public void setCommand(String command) {
-		// Make sure to quote commands with null/empty entrypoint
-		if ((getEntrypoint() == null || getEntrypoint().isEmpty())
-				&& !command.contains("'") //$NON-NLS-1$
-				&& command.matches("^/bin/sh\\s+-c.*")) { //$NON-NLS-1$
-			command = command + "\'"; //$NON-NLS-1$
-			command = command.replaceFirst("-c ", "-c \'"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
+	public void setCommand(final String command) {
 		firePropertyChange(COMMAND, this.command, this.command = command);
 	}
 
