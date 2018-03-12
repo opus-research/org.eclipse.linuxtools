@@ -27,6 +27,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -39,10 +40,13 @@ import org.eclipse.jdt.launching.ExecutionArguments;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
+import org.eclipse.linuxtools.internal.docker.core.TCPConnectionSettings;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Display;
 
 public class JavaAppInContainerLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
@@ -61,16 +65,36 @@ public class JavaAppInContainerLaunchDelegate extends AbstractJavaLaunchConfigur
 		if (monitor.isCanceled()) {
 			return;
 		}
-		String connectionURI = configuration.getAttribute("org.eclipse.linuxtools.jdt.docker.launcher.connection.uri", (String) null); //$NON-NLS-1$
-		String imageID = configuration.getAttribute("org.eclipse.linuxtools.jdt.docker.launcher.image.id", (String) null); //$NON-NLS-1$
-
-		if (connectionURI == null || imageID == null) {
-			return;
-		}
+		String connectionURI = configuration.getAttribute(JavaLaunchConfigurationConstants.CONNECTION_URI, (String) null);
+		String imageID = configuration.getAttribute(JavaLaunchConfigurationConstants.IMAGE_ID, (String) null);
+		List<String> extraDirs = configuration.getAttribute(JavaLaunchConfigurationConstants.DIRS, Arrays.asList(new String [0]));
 
 		try {
 			DockerConnection conn = (DockerConnection) DockerConnectionManager.getInstance().getConnectionByUri(connectionURI);
+			if (conn == null || !conn.isOpen()) {
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						MessageDialog.openError(Display.getDefault().getActiveShell()
+							, Messages.JavaAppInContainerLaunchDelegate_connection_not_found_title
+							, Messages.bind(Messages.JavaAppInContainerLaunchDelegate_connection_not_found_text, connectionURI));
+					}
+				});
+				return;
+			}
+
 			IDockerImage img = conn.getImage(imageID);
+			if (img == null) {
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						MessageDialog.openError(Display.getDefault().getActiveShell()
+							, Messages.JavaAppInContainerLaunchDelegate_image_not_found_title
+							, Messages.bind(Messages.JavaAppInContainerLaunchDelegate_image_not_found_text, imageID));
+					}
+				});
+				return;
+			}
 
 			// randomized port between 1025 and 65535
 			int port = ILaunchManager.DEBUG_MODE.equals(mode)
@@ -89,6 +113,8 @@ public class JavaAppInContainerLaunchDelegate extends AbstractJavaLaunchConfigur
 				workingDirName = workingDir.getAbsolutePath();
 			}
 
+			runner.setAdditionalDirectories(extraDirs);
+
 			// Environment variables
 			String[] envp= getEnvironment(configuration);
 
@@ -102,8 +128,10 @@ public class JavaAppInContainerLaunchDelegate extends AbstractJavaLaunchConfigur
 
 			// Classpath
 			String[] classpath = getClasspath(configuration);
-			for (int i = 0; i < classpath.length; i++) {
-				classpath[i] = UnixFile.convertDOSPathToUnixPath(classpath[i]);
+			if (Platform.OS_WIN32.equals(Platform.getOS())) {
+				for (int i = 0; i < classpath.length; i++) {
+					classpath[i] = UnixFile.convertDOSPathToUnixPath(classpath[i]);
+				}
 			}
 
 			// Create VM config
@@ -178,11 +206,31 @@ public class JavaAppInContainerLaunchDelegate extends AbstractJavaLaunchConfigur
 				// The container has an IP and is listening
 				// Can we reach it ? Or is it on a different network.
 				if (!isListening(ip, port)) {
-					// Try to find some network interface that's listening
-					ip = getIPAddressListening(port);
+					// If the daemon is reachable via TCP it should forward traffic.
+					if (conn.getSettings() instanceof TCPConnectionSettings) {
+						ip = ((TCPConnectionSettings)conn.getSettings()).getAddr();
+						if (!isListening(ip, port)) {
+							// Try to find some network interface that's listening
+							ip = getIPAddressListening(port);
+							if (!isListening(ip, port)) {
+								ip = null;
+							}
+						}
+					} else {
+						ip = null;
+					}
 				}
 
 				if (ip == null) {
+					String imageName = conn.getImage(imageID).repoTags().get(0);
+					Display.getDefault().asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							MessageDialog.openError(Display.getDefault().getActiveShell()
+									, Messages.JavaAppInContainerLaunchDelegate_session_unreachable_title
+									, Messages.bind(Messages.JavaAppInContainerLaunchDelegate_session_unreachable_text, new Object [] {imageName, imageID, runner.getIPAddress()}));
+						}
+					});
 					return;
 				}
 
