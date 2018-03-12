@@ -180,10 +180,10 @@ public class DockerImage implements IDockerImage {
 
 	@Override
 	public String toString() {
-		return "Image: id=" + id() + "\n" + "  parentId=" + parentId() + "\n"
-				+ "  created=" + created() + "\n" + "  repoTags="
-				+ repoTags().toString() + "\n" + "  size=" + size() + "\n"
-				+ "  virtualSize=" + virtualSize() + "\n";
+		return "Image: id=" + id() + "\n  parentId=" + parentId()
+				+ "\n  created=" + created() + "\n  repo=" + repo()
+				+ "\n  tags=" + tags() + "\n  size=" + size()
+				+ "\n  virtualSize=" + virtualSize();
 	}
 
 	@Override
@@ -191,23 +191,37 @@ public class DockerImage implements IDockerImage {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((repo == null) ? 0 : repo.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
-		DockerImage other = (DockerImage) obj;
+		}
+		final DockerImage other = (DockerImage) obj;
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
-		} else if (!id.equals(other.id))
+			}
+		} else if (!id.equals(other.id)) {
 			return false;
+		}
+		if (repo == null) {
+			if (other.repo != null) {
+				return false;
+			}
+		} else if (!repo.equals(other.repo)) {
+			return false;
+		}
+
 		return true;
 	}
 
