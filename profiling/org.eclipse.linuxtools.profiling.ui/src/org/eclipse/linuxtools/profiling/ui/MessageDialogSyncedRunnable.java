@@ -19,7 +19,7 @@ import org.eclipse.ui.PlatformUI;
 /**
  * <h1>UI sycned Message Dialogue </h1>
  * <p> 
- * This class is for launching common messages <b>from background threads</b> and <b>getting a return value</b>.
+ * This class is for launching common messages <b>from background threads</b> and <b>getting a return value.
  * </p>
  * <p> 
  * When you're not in a U.I thread, getting the 'shell' causes a runtime exception. <br>
@@ -39,34 +39,6 @@ public class MessageDialogSyncedRunnable extends MessageDialog {
      * <p> Neccessary to supress compiler warnings. Use static methods in this class instead </p>
      * <p> For details and paramater description, please see: <br> </p>
      * {@link org.eclipse.jface.dialogs.MessageDialog#MessageDialog(Shell, String, Image, String, int, String[], int) }
-     * 
-     * 
-     * @param parentShell
-     *            the parent shell
-     * @param dialogTitle
-     *            the dialog title, or <code>null</code> if none
-     * @param dialogTitleImage
-     *            the dialog title image, or <code>null</code> if none
-     * @param dialogMessage
-     *            the dialog message
-     * @param dialogImageType
-     *            one of the following values:
-     *            <ul>
-     *            <li><code>MessageDialog.NONE</code> for a dialog with no
-     *            image</li>
-     *            <li><code>MessageDialog.ERROR</code> for a dialog with an
-     *            error image</li>
-     *            <li><code>MessageDialog.INFORMATION</code> for a dialog
-     *            with an information image</li>
-     *            <li><code>MessageDialog.QUESTION </code> for a dialog with a
-     *            question image</li>
-     *            <li><code>MessageDialog.WARNING</code> for a dialog with a
-     *            warning image</li>
-     *            </ul>
-     * @param dialogButtonLabels
-     *            an array of labels for the buttons in the button bar
-     * @param defaultIndex
-     *            the index in the button label array of the default button
      */
     protected MessageDialogSyncedRunnable(Shell parentShell, String dialogTitle,
             Image dialogTitleImage, String dialogMessage, int dialogImageType,
