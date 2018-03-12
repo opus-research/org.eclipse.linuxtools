@@ -78,13 +78,16 @@ public class ContainerLauncher {
 	 *            - keep container after running
 	 * @param stdinSupport
 	 *            - true if stdin support is required, false otherwise
+	 * @param privilegedMode
+	 *            - true if privileged mode is required, false otherwise
 	 */
 	public void launch(String id, IContainerLaunchListener listener,
 			final String connectionUri,
 			String image, String command, String commandDir, String workingDir,
 			List<String> additionalDirs, Map<String, String> origEnv,
 			Map<String, String> envMap, List<String> ports, boolean keep,
-			boolean stdinSupport) {
+			boolean stdinSupport, boolean privilegedMode) {
+
 
 		final String LAUNCH_TITLE = "ContainerLaunch.title"; //$NON-NLS-1$
 		final String LAUNCH_EXITED_TITLE = "ContainerLaunchExited.title"; //$NON-NLS-1$
@@ -166,7 +169,7 @@ public class ContainerLauncher {
 		final DockerContainerConfig config = builder.build();
 
 		DockerHostConfig.Builder hostBuilder = new DockerHostConfig.Builder()
-				.binds(volumes);
+				.binds(volumes).privileged(privilegedMode);
 
 		// add any port bindings if specified
 		if (portBindingsMap.size() > 0)
