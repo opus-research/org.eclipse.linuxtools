@@ -157,8 +157,7 @@ public class CovManager implements Serializable {
 
         // to fill the view title
         if (daRcrd != null)
-        	nbrPgmRuns = daRcrd.getPgmSmryNbrPgmRuns();
-
+            nbrPgmRuns = daRcrd.getObjSmryNbrPgmRuns();
         /* process counts from data parsed */
 
         // solve graph for each function
