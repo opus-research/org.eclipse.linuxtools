@@ -63,10 +63,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * <p>
  * Service for sending LTTng trace control commands to remote host via machine
  * interface mode.
- * </p>
  *
  * @author Jonathan Rajotte
  */
@@ -76,9 +74,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final DocumentBuilderFactory fDocBuilderFactory;
     private final DocumentBuilder fDocumentBuilder;
-    private final SchemaFactory fSchemaFactory;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -98,20 +94,20 @@ public class LTTngControlServiceMI extends LTTngControlService {
     public LTTngControlServiceMI(ICommandShell shell, URL xsdUrl) throws ExecutionException {
         super(shell);
 
-        fDocBuilderFactory = DocumentBuilderFactory.newInstance();
-        fDocBuilderFactory.setValidating(false);
+        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+        docBuilderFactory.setValidating(false);
 
         // Schema factory for validation
-        fSchemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
         try {
-            fDocBuilderFactory.setSchema(fSchemaFactory.newSchema(xsdUrl));
+            docBuilderFactory.setSchema(schemaFactory.newSchema(xsdUrl));
         } catch (SAXException e) {
             throw new ExecutionException(Messages.TraceControl_InvalidSchemaError, e);
         }
 
         try {
-            fDocumentBuilder = fDocBuilderFactory.newDocumentBuilder();
+            fDocumentBuilder = docBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             throw new ExecutionException(Messages.TraceControl_XmlDocumentBuilderError, e);
         }
@@ -239,7 +235,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
         NodeList sessionsNode = document.getElementsByTagName(MIStrings.SESSION);
         // There should be only one session
         if (sessionsNode.getLength() != 1) {
-            throw new ExecutionException(NLS.bind(Messages.TraceControl_MiInvalidNumberOfElementError, MIStrings.SESSION));
+            throw new ExecutionException(Messages.TraceControl_MiInvalidNumberOfElementError);
         }
 
         // Populate session information
@@ -275,7 +271,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 sessionInfo.setSessionPath(rawInfo.getTextContent());
                 break;
             case MIStrings.ENABLED:
-                sessionInfo.setSessionState(Boolean.parseBoolean(rawInfo.getTextContent()));
+                sessionInfo.setSessionState(rawInfo.getTextContent());
                 break;
             case MIStrings.SNAPSHOT_MODE:
                 if (rawInfo.getTextContent().equals(LTTngControlServiceConstants.TRUE_NUMERICAL)) {
@@ -316,7 +312,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
         // Get the type
         Node rawType = getFirstOf(rawDomain.getChildNodes(), MIStrings.TYPE);
         if (rawType == null) {
-            throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+            throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
         }
         String rawTypeString = rawType.getTextContent().toLowerCase();
         TraceDomainType domainType = TraceDomainType.valueOfString(rawTypeString);
@@ -331,12 +327,15 @@ public class LTTngControlServiceMI extends LTTngControlService {
             break;
         case JUL:
             /**
-             * TODO: Support for JUL
-             * JUL substructure and semantic is not the same as a regular UST or Kernel Domain
-             * There is no channel under JUL domain only events.
-             * The channel is activated in UST Channel
+             * TODO: Support for JUL JUL substructure and semantic is not the
+             * same as a regular UST or Kernel Domain There is no channel under
+             * JUL domain only events. The channel is activated in UST Channel
              */
             domain = new DomainInfo(Messages.TraceControl_JULDomainDisplayName);
+            domain.setIsKernel(false);
+            break;
+        case UNKNOWN:
+            domain = new DomainInfo(Messages.TraceControl_UnknownDomainDisplayName);
             domain.setIsKernel(false);
             break;
         default:
@@ -348,7 +347,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             Node rawInfo = rawInfos.item(i);
             switch (rawInfo.getNodeName()) {
             case MIStrings.BUFFER_TYPE:
-                BufferType bufferType = BufferType.valueOfMi(rawInfo.getTextContent());
+                BufferType bufferType = BufferType.valueOfString(rawInfo.getTextContent());
                 domain.setBufferType(bufferType);
                 break;
             case MIStrings.CHANNELS:
@@ -449,22 +448,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
         ICommandResult result = executeCommand(command.toString(), monitor, false);
         List<IBaseEventInfo> events = new ArrayList<>();
 
-        if (isError(result) && result.getErrorOutput() != null) {
-            // Ignore the following 2 cases:
-            // Spawning a session daemon
-            // Error: Unable to list kernel events
-            // or:
-            // Error: Unable to list kernel events
-            int index = 0;
-            while (index < result.getErrorOutput().length) {
-                String line = result.getErrorOutput()[index];
-                Matcher matcher = LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    return events;
-                }
-                index++;
-            }
-            throw new ExecutionException(Messages.TraceControl_CommandError + LTTngControlServiceConstants.COMMAND_LIST_KERNEL);
+        if (isError(result)) {
+            return events;
         }
 
         Document document = getDocumentFromStrings(result.getOutput());
@@ -483,22 +468,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
         ICommandResult result = executeCommand(command.toString(), monitor, false);
         List<IUstProviderInfo> allProviders = new ArrayList<>();
 
-        if (isError(result) && result.getErrorOutput() != null) {
-            // Ignore the following 2 cases:
-            // Spawning a session daemon
-            // Error: Unable to list UST events: Listing UST events failed
-            // or:
-            // Error: Unable to list UST events: Listing UST events failed
-            int index = 0;
-            while (index < result.getErrorOutput().length) {
-                String line = result.getErrorOutput()[index];
-                Matcher matcher = LTTngControlServiceConstants.LIST_UST_NO_UST_PROVIDER_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    return allProviders;
-                }
-                index++;
-            }
-            throw new ExecutionException(Messages.TraceControl_CommandError + LTTngControlServiceConstants.COMMAND_LIST_UST);
+        if (isError(result)) {
+            return allProviders;
         }
 
         Document document = getDocumentFromStrings(result.getOutput());
@@ -675,43 +646,20 @@ public class LTTngControlServiceMI extends LTTngControlService {
     }
     @Override
     public void destroySession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        String newName = formatParameter(sessionName);
+        // TODO Auto-generated method stub
 
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_DESTROY_SESSION, newName);
+    }
 
-        ICommandResult result = executeCommand(command.toString(), monitor, false);
-        String[] errorOutput = result.getErrorOutput();
+    @Override
+    public void startSession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
 
-        if (isError(result) && (errorOutput != null)) {
-            int index = 0;
-            while (index < errorOutput.length) {
-                String line = errorOutput[index];
-                Matcher matcher = LTTngControlServiceConstants.SESSION_NOT_FOUND_ERROR_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    // Don't treat this as an error
-                    return;
-                }
-                index++;
-            }
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command.toString() + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
-        }
+    }
 
-        // Check for action effect
-        Document doc = getDocumentFromStrings(result.getOutput());
-        NodeList sessions = doc.getElementsByTagName(MIStrings.SESSION);
-        if (sessions.getLength() != 1) {
-            throw new ExecutionException(NLS.bind(Messages.TraceControl_MiInvalidNumberOfElementError, MIStrings.SESSION));
-        }
+    @Override
+    public void stopSession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
 
-        Node rawSessionName = getFirstOf(sessions.item(0).getChildNodes(), MIStrings.NAME);
-        if (rawSessionName == null) {
-            throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
-        }
-
-        // Validity check
-        if (!rawSessionName.getTextContent().equals(sessionName)) {
-            throw new ExecutionException(NLS.bind(Messages.TraceControl_UnexpectedValueError, rawSessionName.getTextContent(), sessionName));
-        }
     }
 
     @Override
@@ -819,7 +767,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             if (xmlBaseEvents.item(i).getNodeName().equalsIgnoreCase(MIStrings.EVENT)) {
                 Node rawName = getFirstOf(rawInfos, MIStrings.NAME);
                 if (rawName == null) {
-                    throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+                    throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                 }
                 eventInfo = new BaseEventInfo(rawName.getTextContent());
 
@@ -864,7 +812,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             if (xmlEvents.item(i).getNodeName().equalsIgnoreCase(MIStrings.EVENT)) {
                 Node rawName = getFirstOf(rawInfos, MIStrings.NAME);
                 if (rawName == null) {
-                    throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+                    throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                 }
 
                 eventInfo = new EventInfo(rawName.getTextContent());
@@ -909,7 +857,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                     // get attributes
                     Node rawAttributes = getFirstOf(rawInfos, MIStrings.ATTRIBUTES);
                     if (rawAttributes == null) {
-                        throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+                        throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                     }
 
                     Node rawDataNode = null;
@@ -973,7 +921,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 // Get name
                 Node name = getFirstOf(field.getChildNodes(), MIStrings.NAME);
                 if (name == null) {
-                    throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+                    throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                 }
                 fieldInfo = new FieldInfo(name.getTextContent());
 
