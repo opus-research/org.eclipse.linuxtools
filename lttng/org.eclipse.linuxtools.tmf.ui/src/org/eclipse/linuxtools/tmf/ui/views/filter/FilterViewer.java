@@ -15,9 +15,9 @@
 package org.eclipse.linuxtools.tmf.ui.views.filter;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -48,7 +48,6 @@ import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterOrNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterRootNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterTreeNode;
-import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtEvent;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
@@ -83,8 +82,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 
 class FilterViewer extends Composite {
-
-    private static final String SEP = " : "; //$NON-NLS-1$
 
     private TreeViewer fViewer;
 
@@ -365,28 +362,6 @@ class FilterViewer extends Composite {
             setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
         }
 
-        protected Map<String, Object> getEventsTypeMap() {
-            Map<String, Object> eventsTypeMap = new TreeMap<>();
-            for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
-                String categoryPrefix = ""; //$NON-NLS-1$
-                String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
-                if (categoryId != null) {
-                    categoryPrefix = TmfTraceType.getCategoryName(categoryId) + SEP;
-                }
-                String text = categoryPrefix + ce.getAttribute(TmfTraceType.NAME_ATTR);
-                eventsTypeMap.put(text, ce);
-            }
-            for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                String text = def.categoryName + SEP + def.definitionName;
-                eventsTypeMap.put(text, def);
-            }
-            for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                String text = def.categoryName + SEP + def.definitionName;
-                eventsTypeMap.put(text, def);
-            }
-            return eventsTypeMap;
-        }
-
         protected String[] getFieldsList(ITmfFilterTreeNode node) {
             ArrayList<String> fieldsList = new ArrayList<>();
             ITmfFilterTreeNode curNode = node;
@@ -417,7 +392,7 @@ class FilterViewer extends Composite {
                     }
                     if (eventTypeNode.getEventType() != null && eventTypeNode.getEventType().startsWith(CustomTxtEvent.class.getCanonicalName())) {
                         for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                            if (eventTypeNode.getEventType().equals(CustomTxtEvent.class.getCanonicalName() + ':' + def.categoryName + ':' + def.definitionName)) {
+                            if (eventTypeNode.getEventType().equals(CustomTxtEvent.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                                 for (OutputColumn output : def.outputs) {
                                     fieldsList.add(output.name);
                                 }
@@ -427,7 +402,7 @@ class FilterViewer extends Composite {
                     }
                     if (eventTypeNode.getEventType() != null && eventTypeNode.getEventType().startsWith(CustomXmlEvent.class.getCanonicalName())) {
                         for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                            if (eventTypeNode.getEventType().equals(CustomXmlEvent.class.getCanonicalName() + ':' + def.categoryName + ':' + def.definitionName)) {
+                            if (eventTypeNode.getEventType().equals(CustomXmlEvent.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                                 for (OutputColumn output : def.outputs) {
                                     fieldsList.add(output.name);
                                 }
@@ -447,37 +422,44 @@ class FilterViewer extends Composite {
             fieldsList.add(ITmfEvent.EVENT_FIELD_CONTENT);
             fieldsList.add(""); //$NON-NLS-1$
 
-            for (Entry<String, Object> eventTypeEntry : getEventsTypeMap().entrySet()) {
-                Object value = eventTypeEntry.getValue();
-                if (value instanceof IConfigurationElement) {
-                    IConfigurationElement ce = (IConfigurationElement) value;
-                    try {
-                        ITmfEvent event = (ITmfEvent) ce.createExecutableExtension(TmfTraceType.EVENT_TYPE_ATTR);
-                        ITmfEventType eventType = event.getType();
-                        if (eventType != null && eventType.getFieldNames().size() > 0) {
-                            String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
-                            if (categoryId != null) {
-                                fieldsList.add('[' + TmfTraceType.getCategoryName(categoryId) + SEP
-                                        + ce.getAttribute(TmfTraceType.NAME_ATTR) + ']');
-                            } else {
-                                fieldsList.add('[' + ce.getAttribute(TmfTraceType.NAME_ATTR) + ']');
-                            }
-                            for (String field : eventType.getFieldNames()) {
-                                fieldsList.add(field);
-                            }
-                            fieldsList.add(""); //$NON-NLS-1$
+            for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
+                try {
+                    ITmfEvent event = (ITmfEvent) ce.createExecutableExtension(TmfTraceType.EVENT_TYPE_ATTR);
+                    ITmfEventType eventType = event.getType();
+                    if (eventType != null && eventType.getFieldNames().size() > 0) {
+                        String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
+                        if (categoryId != null) {
+                            fieldsList.add('[' + TmfTraceType.getCategoryName(categoryId) + " : " //$NON-NLS-1$
+                                    + ce.getAttribute(TmfTraceType.NAME_ATTR) + ']');
+                        } else {
+                            fieldsList.add('[' + ce.getAttribute(TmfTraceType.NAME_ATTR) + ']');
                         }
-                    } catch (CoreException e) {
-                    }
-                } else if (value instanceof CustomTraceDefinition) {
-                    CustomTraceDefinition def = (CustomTraceDefinition) value;
-                    if (def.outputs.size() > 0) {
-                        fieldsList.add('[' + def.categoryName + SEP + def.definitionName + ']');
-                        for (OutputColumn output : def.outputs) {
-                            fieldsList.add(output.name);
+                        for (String field : eventType.getFieldNames()) {
+                            fieldsList.add(field);
                         }
                         fieldsList.add(""); //$NON-NLS-1$
                     }
+                } catch (CoreException e) {
+                }
+            }
+            for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
+                if (def.outputs.size() > 0) {
+                    fieldsList.add("[" + TmfTraceType.CUSTOM_TXT_CATEGORY + //$NON-NLS-1$
+                            " : " + def.definitionName + "]"); //$NON-NLS-1$ //$NON-NLS-2$
+                    for (OutputColumn output : def.outputs) {
+                        fieldsList.add(output.name);
+                    }
+                    fieldsList.add(""); //$NON-NLS-1$
+                }
+            }
+            for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
+                if (def.outputs.size() > 0) {
+                    fieldsList.add("[" + TmfTraceType.CUSTOM_XML_CATEGORY + //$NON-NLS-1$
+                            " : " + def.definitionName + "]"); //$NON-NLS-1$ //$NON-NLS-2$
+                    for (OutputColumn output : def.outputs) {
+                        fieldsList.add(output.name);
+                    }
+                    fieldsList.add(""); //$NON-NLS-1$
                 }
             }
             return fieldsList.toArray(new String[0]);
@@ -551,7 +533,27 @@ class FilterViewer extends Composite {
             fTypeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             fTypeCombo.setItems(fEventsTypeMap.keySet().toArray(new String[0]));
             if (fNode.getEventType() != null) {
-                fTypeCombo.setText(fNode.getName());
+                for (Entry<String, Object> eventTypeEntry : fEventsTypeMap.entrySet()) {
+                    Object value = eventTypeEntry.getValue();
+                    if (value instanceof IConfigurationElement) {
+                        IConfigurationElement ce = (IConfigurationElement) value;
+                        if (ce.getAttribute(TmfTraceType.EVENT_TYPE_ATTR).equals(fNode.getEventType())) {
+                            fTypeCombo.setText(eventTypeEntry.getKey());
+                        }
+                    } else if (value instanceof CustomTxtTraceDefinition) {
+                        CustomTxtTraceDefinition def = (CustomTxtTraceDefinition) value;
+                        String eventType = CustomTxtEvent.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
+                        if (eventType.equals(fNode.getEventType())) {
+                            fTypeCombo.setText(eventTypeEntry.getKey());
+                        }
+                    } else if (value instanceof CustomXmlTraceDefinition) {
+                        CustomXmlTraceDefinition def = (CustomXmlTraceDefinition) value;
+                        String eventType = CustomXmlEvent.class.getCanonicalName() + ":" + def.definitionName; //$NON-NLS-1$
+                        if (eventType.equals(fNode.getEventType())) {
+                            fTypeCombo.setText(eventTypeEntry.getKey());
+                        }
+                    }
+                }
             }
             fTypeCombo.addModifyListener(new ModifyListener() {
                 @Override
@@ -562,21 +564,15 @@ class FilterViewer extends Composite {
                             if (value instanceof IConfigurationElement) {
                                 IConfigurationElement ce = (IConfigurationElement) value;
                                 fNode.setEventType(ce.getAttribute(TmfTraceType.EVENT_TYPE_ATTR));
-                                String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
-                                if (categoryId != null) {
-                                    fNode.setName(TmfTraceType.getCategoryName(categoryId) + SEP
-                                            + ce.getAttribute(TmfTraceType.NAME_ATTR));
-                                } else {
-                                    fNode.setName(ce.getAttribute(TmfTraceType.NAME_ATTR));
-                                }
+                                fNode.setName(ce.getAttribute(TmfTraceType.NAME_ATTR));
                             } else if (value instanceof CustomTxtTraceDefinition) {
                                 CustomTxtTraceDefinition def = (CustomTxtTraceDefinition) value;
-                                fNode.setEventType(CustomTxtEvent.class.getCanonicalName() + ':' + def.categoryName + ':' + def.definitionName);
-                                fNode.setName(def.categoryName + SEP + def.definitionName);
+                                fNode.setEventType(CustomTxtEvent.class.getCanonicalName() + ":" + def.definitionName); //$NON-NLS-1$
+                                fNode.setName(def.definitionName);
                             } else if (value instanceof CustomXmlTraceDefinition) {
                                 CustomXmlTraceDefinition def = (CustomXmlTraceDefinition) value;
-                                fNode.setEventType(CustomXmlEvent.class.getCanonicalName() + ':' + def.categoryName + ':' + def.definitionName);
-                                fNode.setName(def.categoryName + SEP + def.definitionName);
+                                fNode.setEventType(CustomXmlEvent.class.getCanonicalName() + ":" + def.definitionName); //$NON-NLS-1$
+                                fNode.setName(def.definitionName);
                             }
                             fViewer.refresh(fNode);
                             break;
@@ -584,6 +580,28 @@ class FilterViewer extends Composite {
                     }
                 }
             });
+        }
+
+        protected Map<String, Object> getEventsTypeMap() {
+            Map<String, Object> eventsTypeMap = new LinkedHashMap<>();
+            for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
+                String categoryPrefix = ""; //$NON-NLS-1$
+                String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
+                if (categoryId != null) {
+                    categoryPrefix = TmfTraceType.getCategoryName(categoryId) + " : "; //$NON-NLS-1$
+                }
+                String text = categoryPrefix + ce.getAttribute(TmfTraceType.NAME_ATTR);
+                eventsTypeMap.put(text, ce);
+            }
+            for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
+                String text = TmfTraceType.CUSTOM_TXT_CATEGORY + " : " + def.definitionName; //$NON-NLS-1$
+                eventsTypeMap.put(text, def);
+            }
+            for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
+                String text = TmfTraceType.CUSTOM_XML_CATEGORY + " : " + def.definitionName; //$NON-NLS-1$
+                eventsTypeMap.put(text, def);
+            }
+            return eventsTypeMap;
         }
     }
 

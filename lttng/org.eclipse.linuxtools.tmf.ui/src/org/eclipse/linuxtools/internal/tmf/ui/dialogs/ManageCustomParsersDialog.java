@@ -46,9 +46,6 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class ManageCustomParsersDialog extends Dialog {
 
-    private static final String SEP = " : "; //$NON-NLS-1$
-    private static final int SEP_LEN = SEP.length();
-
     private static final Image image = Activator.getDefault().getImageFromPath("/icons/etool16/customparser_wizard.gif"); //$NON-NLS-1$
 
     Button txtButton;
@@ -177,15 +174,12 @@ public class ManageCustomParsersDialog extends Dialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 WizardDialog dialog = null;
-                String selection = parserList.getSelection()[0];
-                String category = selection.substring(0, selection.indexOf(SEP));
-                String name = selection.substring(selection.indexOf(SEP) + SEP_LEN);
                 if (txtButton.getSelection()) {
                     dialog = new WizardDialog(getShell(),
-                            new CustomTxtParserWizard(CustomTxtTraceDefinition.load(category, name)));
+                            new CustomTxtParserWizard(CustomTxtTraceDefinition.load(parserList.getSelection()[0])));
                 } else if (xmlButton.getSelection()) {
                     dialog = new WizardDialog(getShell(),
-                            new CustomXmlParserWizard(CustomXmlTraceDefinition.load(category, name)));
+                            new CustomXmlParserWizard(CustomXmlTraceDefinition.load(parserList.getSelection()[0])));
                 }
                 if (dialog != null) {
                     dialog.open();
@@ -211,13 +205,10 @@ public class ManageCustomParsersDialog extends Dialog {
                         Messages.ManageCustomParsersDialog_DeleteParserDialogHeader,
                         Messages.ManageCustomParsersDialog_DeleteConfirmation + parserList.getSelection()[0] + "?"); //$NON-NLS-1$
                 if (confirm) {
-                    String selection = parserList.getSelection()[0];
-                    String category = selection.substring(0, selection.indexOf(SEP));
-                    String name = selection.substring(selection.indexOf(SEP) + SEP_LEN);
                     if (txtButton.getSelection()) {
-                        CustomTxtTraceDefinition.delete(category, name);
+                        CustomTxtTraceDefinition.delete(parserList.getSelection()[0]);
                     } else if (xmlButton.getSelection()) {
-                        CustomXmlTraceDefinition.delete(category, name);
+                        CustomXmlTraceDefinition.delete(parserList.getSelection()[0]);
                     }
                     fillParserList();
                 }
@@ -271,14 +262,11 @@ public class ManageCustomParsersDialog extends Dialog {
                 dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 String path = dialog.open();
                 if (path != null) {
-                    String selection = parserList.getSelection()[0];
-                    String category = selection.substring(0, selection.indexOf(SEP));
-                    String name = selection.substring(selection.indexOf(SEP) + SEP_LEN);
                     CustomTraceDefinition def = null;
                     if (txtButton.getSelection()) {
-                        def = CustomTxtTraceDefinition.load(category, name);
+                        def = CustomTxtTraceDefinition.load(parserList.getSelection()[0]);
                     } else if (xmlButton.getSelection()) {
-                        def = CustomXmlTraceDefinition.load(category, name);
+                        def = CustomXmlTraceDefinition.load(parserList.getSelection()[0]);
                     }
                     if (def != null) {
                         def.save(path);
@@ -302,11 +290,11 @@ public class ManageCustomParsersDialog extends Dialog {
         parserList.removeAll();
         if (txtButton.getSelection()) {
             for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                parserList.add(def.categoryName + SEP + def.definitionName);
+                parserList.add(def.definitionName);
             }
         } else if (xmlButton.getSelection()) {
             for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                parserList.add(def.categoryName + SEP + def.definitionName);
+                parserList.add(def.definitionName);
             }
         }
         editButton.setEnabled(false);
