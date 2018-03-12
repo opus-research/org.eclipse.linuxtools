@@ -340,7 +340,6 @@ public class IOStructGen {
             final String key = child.getChild(0).getChild(0).getChild(0).getText();
             final CommonTree value = (CommonTree) child.getChild(1).getChild(0).getChild(0);
             final int type = value.getType();
-            final String text = value.getText();
             switch (type) {
             case CTFParser.INTEGER:
             case CTFParser.DECIMAL_LITERAL:
@@ -356,14 +355,14 @@ public class IOStructGen {
                  */
                 Long numValue;
                 try {
-                    numValue = Long.parseLong(text);
-                } catch (NumberFormatException e) {
-                    throw new ParseException("Number conversion issue with " + text, e); //$NON-NLS-1$
+                    numValue = Long.parseLong(value.getText());
+                } catch (Exception e) {
+                    throw new ParseException("Number conversion issue with " + value.getText(), e); //$NON-NLS-1$
                 }
                 ctfClock.addAttribute(key, numValue);
                 break;
             default:
-                ctfClock.addAttribute(key, text);
+                ctfClock.addAttribute(key, value.getText());
             }
 
         }
