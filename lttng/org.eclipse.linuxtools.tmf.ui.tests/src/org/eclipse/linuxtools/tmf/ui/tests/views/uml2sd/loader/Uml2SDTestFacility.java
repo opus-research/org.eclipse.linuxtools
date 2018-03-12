@@ -29,6 +29,8 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpointIndexer;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.eclipse.linuxtools.tmf.ui.tests.uml2sd.trace.TmfUml2SDTestTrace;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView;
@@ -37,7 +39,6 @@ import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.FilterCriteria;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.dialogs.FilterListDialog;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.load.LoadersManager;
 import org.eclipse.linuxtools.tmf.ui.views.uml2sd.loader.TmfUml2SDSyncLoader;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
@@ -180,12 +181,13 @@ public class Uml2SDTestFacility {
             final long endTimeMillis = System.currentTimeMillis() + waitTimeMillis;
             while(System.currentTimeMillis() < endTimeMillis) {
                 if (!display.readAndDispatch()) {
-                    if ("cocoa".equals (SWT.getPlatform ())) {
-                        // The display needs to be woken up because it's possible
-                        // to get in a state where nothing will wake up the UI thread
-                        display.asyncExec(null);
+                    // We do not use Display.sleep because it might never wake up
+                    // if there is no user interaction
+                    try {
+                        Thread.sleep(Math.min(waitTimeMillis, 10));
+                    } catch (final InterruptedException e) {
+                        // Ignored
                     }
-                    display.sleep();
                 }
                 display.update();
             }
@@ -303,11 +305,14 @@ public class Uml2SDTestFacility {
         fTrace = setupTrace(fParser);
         fParser.setTrace(fTrace);
 
-//        fTrace = setupTrace(fParser);
-
         final ITmfTrace traces[] = new ITmfTrace[1];
         traces[0] = fTrace;
-        fExperiment = new TmfExperiment(ITmfEvent.class, "TestExperiment", traces);
+        fExperiment = new TmfExperiment(ITmfEvent.class, "TestExperiment", traces) {
+            @Override
+            protected ITmfTraceIndexer createIndexer(int interval) {
+                return new TmfCheckpointIndexer(this, interval);
+            }
+        };
         fTrace.broadcast(new TmfTraceOpenedSignal(this, fExperiment, null));
         fTrace.broadcast(new TmfTraceSelectedSignal(this, fExperiment));
         if (wait) {
