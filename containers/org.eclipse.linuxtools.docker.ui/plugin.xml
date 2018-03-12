@@ -1133,11 +1133,16 @@
 	               checkEnabled="false">
 	               <with
 	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
 	                <iterate
 	                      ifEmpty="false"
-	                      operator="and">
-		                 <instanceof
-		                       value="org.eclipse.linuxtools.docker.core.IDockerConnection" />
+	                      operator="or">
+	                      <or>
+			                 <instanceof
+			                       value="org.eclipse.linuxtools.docker.core.IDockerConnection" />
+	                      </or>
 	                </iterate>
 	               </with>
 	            </visibleWhen>
