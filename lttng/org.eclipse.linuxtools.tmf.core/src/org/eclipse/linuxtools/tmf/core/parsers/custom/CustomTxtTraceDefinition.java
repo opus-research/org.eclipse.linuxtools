@@ -550,7 +550,7 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
                 writer.write(xmlString);
             }
 
-            TmfTraceType.addCustomTraceType(CustomTxtTrace.class, categoryName, definitionName);
+            TmfTraceType.addCustomTraceType(categoryName, definitionName);
 
         } catch (ParserConfigurationException e) {
             Activator.logError("Error saving CustomTxtTraceDefinition: path=" + path, e); //$NON-NLS-1$
@@ -903,9 +903,9 @@ public class CustomTxtTraceDefinition extends CustomTraceDefinition {
                 writer.write(xmlString);
             }
 
-            TmfTraceType.removeCustomTraceType(CustomTxtTrace.class, categoryName, definitionName);
+            TmfTraceType.removeCustomTraceType(categoryName, definitionName);
             // Check if default definition needs to be reloaded
-            TmfTraceType.addCustomTraceType(CustomTxtTrace.class, categoryName, definitionName);
+            TmfTraceType.addCustomTraceType(categoryName, definitionName);
 
         } catch (ParserConfigurationException | SAXException | IOException | TransformerFactoryConfigurationError | TransformerException e) {
             Activator.logError("Error deleting CustomTxtTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
