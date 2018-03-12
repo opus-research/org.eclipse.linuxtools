@@ -1447,6 +1447,9 @@ public class DockerConnection
 			if (hc.volumesFrom() != null) {
 				hbuilder.volumesFrom(hc.volumesFrom());
 			}
+			if (hc.securityOpt() != null) {
+				hbuilder.securityOpt(hc.securityOpt());
+			}
 			// FIXME: add the 'memory()' method in the IDockerHostConfig
 			// interface
 			if (((DockerHostConfig) hc).memory() != null) {
@@ -1925,6 +1928,23 @@ public class DockerConnection
 		}
 	}
 
+	@Override
+	public void attachLog(final String id, final OutputStream out,
+			final OutputStream err)
+			throws DockerException, InterruptedException, IOException {
+		DockerClient copyClient;
+		try {
+			copyClient = getClientCopy();
+			LogStream stream = copyClient.logs(id, LogsParam.follow(),
+					LogsParam.stdout(), LogsParam.stderr());
+			stream.attach(out, err);
+			stream.close();
+		} catch (com.spotify.docker.client.DockerException e) {
+			throw new DockerException(e.getMessage(), e.getCause());
+		}
+	}
+
+	@Override
 	public IDockerContainerExit waitForContainer(final String id)
 			throws DockerException, InterruptedException {
 		try {
