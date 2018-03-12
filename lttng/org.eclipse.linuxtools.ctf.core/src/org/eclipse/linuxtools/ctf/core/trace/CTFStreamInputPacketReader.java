@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel.MapMode;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -34,7 +33,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.SafeMappedByteBuffer;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.composite.EventHeaderDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
@@ -151,7 +149,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
         if (!(fStreamEventHeaderDecl instanceof StructDeclaration)) {
             throw new IllegalStateException("Definition is not a struct definition, this is a deprecated method that doesn't work so well, stop using it."); //$NON-NLS-1$
         }
-        return ((StructDeclaration) fStreamEventHeaderDecl).createDefinition(this, LexicalScope.STREAM_EVENT_HEADER, input);
+        return ((StructDeclaration)fStreamEventHeaderDecl).createDefinition(this, LexicalScope.STREAM_EVENT_HEADER, input);
     }
 
     /**
@@ -219,14 +217,6 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
     // Operations
     // ------------------------------------------------------------------------
 
-    @NonNull
-    private ByteBuffer getByteBufferAt(long position, long size) throws CTFReaderException, IOException {
-        ByteBuffer map = SafeMappedByteBuffer.map(fStreamInputReader.getFc(), MapMode.READ_ONLY, position, size);
-        if (map == null) {
-            throw new CTFReaderException("Failed to allocate mapped byte buffer"); //$NON-NLS-1$
-        }
-        return map;
-    }
     /**
      * Changes the current packet to the given one.
      *
@@ -245,7 +235,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
              */
             ByteBuffer bb = null;
             try {
-                bb = getByteBufferAt(
+                bb = fStreamInputReader.getStreamInput().getByteBufferAt(
                         fCurrentPacket.getOffsetBytes(),
                         (fCurrentPacket.getPacketSizeBits() + 7) / 8);
             } catch (IOException e) {
@@ -328,8 +318,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
      */
     public EventDefinition readNextEvent() throws CTFReaderException {
         /* Default values for those fields */
-        // compromise since we cannot have 64 bit addressing of arrays yet.
-        int eventID = (int) EventDeclaration.UNSET_EVENT_ID;
+        long eventID = EventDeclaration.UNSET_EVENT_ID;
         long timestamp = 0;
         if (fHasLost) {
             fHasLost = false;
@@ -420,7 +409,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
                     timestampDef = variantCurrentField.lookupInteger("timestamp"); //$NON-NLS-1$
                 }
                 if (simpleIdDef != null) {
-                    eventID = simpleIdDef.getIntegerValue().intValue();
+                    eventID = simpleIdDef.getIntegerValue();
                 }
                 if (timestampDef != null) {
                     timestamp = calculateTimestamp(timestampDef);
@@ -428,7 +417,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
             }
         }
         /* Get the right event definition using the event id. */
-        IEventDeclaration eventDeclaration = fStreamInputReader.getStreamInput().getStream().getEventDeclaration(eventID);
+        IEventDeclaration eventDeclaration = fStreamInputReader.getStreamInput().getStream().getEvents().get(eventID);
         if (eventDeclaration == null) {
             throw new CTFReaderException("Incorrect event id : " + eventID); //$NON-NLS-1$
         }
@@ -510,8 +499,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
      * Get stream event header
      *
      * @return the stream event header
-     * @deprecated use
-     *             {@link CTFStreamInputPacketReader#getStreamEventHeaderDefinition()}
+     * @deprecated use {@link CTFStreamInputPacketReader#getStreamEventHeaderDefinition()}
      */
     @Deprecated
     public StructDefinition getCurrentStreamEventHeader() {
