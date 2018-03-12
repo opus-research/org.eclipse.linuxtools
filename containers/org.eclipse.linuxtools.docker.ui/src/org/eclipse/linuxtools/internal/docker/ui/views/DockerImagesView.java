@@ -36,7 +36,6 @@ import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
-import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -363,9 +362,12 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 					// remember the current selection before the viewer is
 					// refreshed
 					final ISelection currentSelection = DockerImagesView.this.viewer.getSelection();
-					CommandUtils.refresh(DockerImagesView.this.getViewer());
+					DockerImagesView.this.viewer.refresh();
 					// restore the selection
-					DockerImagesView.this.viewer.setSelection(currentSelection);
+					if (currentSelection != null) {
+						DockerImagesView.this.viewer
+								.setSelection(currentSelection);
+					}
 					refreshViewTitle();
 				}
 			});
@@ -467,16 +469,16 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 
 	@Override
 	public void changeEvent(int type) {
-		String currName = null;
+		String currUri = null;
 		int currIndex = 0;
 		IDockerConnection[] connections = DockerConnectionManager.getInstance()
 				.getConnections();
 		if (connection != null) {
-			currName = connection.getName();
+			currUri = connection.getUri();
 		}
 		int index = 0;
 		for (int i = 0; i < connections.length; ++i) {
-			if (connections[i].getName().equals(currName))
+			if (connections[i].getUri().equals(currUri))
 				index = i;
 		}
 		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {

@@ -234,6 +234,8 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	}
 
 	public void setExposedPorts(final WritableList ports) {
+		// firePropertyChange(EXPOSED_PORTS, this.availablePorts,
+		// this.availablePorts = ports);
 		this.exposedPorts.clear();
 		this.exposedPorts.addAll(ports);
 	}

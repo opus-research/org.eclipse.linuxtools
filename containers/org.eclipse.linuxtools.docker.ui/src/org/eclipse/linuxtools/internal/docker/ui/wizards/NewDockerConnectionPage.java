@@ -77,11 +77,6 @@ public class NewDockerConnectionPage extends WizardPage {
 		setMessage(WizardMessages.getString("NewDockerConnectionPage.msg")); //$NON-NLS-1$
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
-	 */
 	@Override
 	public void createControl(final Composite parent) {
 		final Composite container = new Composite(parent, SWT.NONE);
@@ -479,7 +474,7 @@ public class NewDockerConnectionPage extends WizardPage {
 				}
 				try {
 					final Boolean result = resultQueue.poll(5000, TimeUnit.MILLISECONDS);
-					if(result) {
+					if (result != null && result) {
 						new MessageDialog(Display.getDefault().getActiveShell(),
 								WizardMessages.getString(
 										"NewDockerConnectionPage.success"), //$NON-NLS-1$
