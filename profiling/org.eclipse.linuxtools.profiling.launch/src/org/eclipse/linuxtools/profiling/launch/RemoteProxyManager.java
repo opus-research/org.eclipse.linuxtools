@@ -187,17 +187,4 @@ public class RemoteProxyManager implements IRemoteProxyManager {
         return null;
     }
 
-	@Override
-	public IRemoteCon getConnection(String schemeId) {
-		IRemoteProxyManager manager = null;
-		try {
-			manager = getRemoteManager(schemeId);
-		} catch (CoreException e1) {
-			return null;
-		}
-		if (manager == null) {
-			return null;
-		}
-		return manager.getConnection(schemeId);
-	}
 }

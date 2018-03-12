@@ -16,15 +16,20 @@ package org.eclipse.linuxtools.internal.perf;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.List;
 
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
+import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -151,6 +156,24 @@ public class PerfPlugin extends AbstractUIPlugin {
     }
 
     /**
+     * Get the working directory.
+     * @return the URI of the working directory or null.
+     */
+    public URI getWorkingDirURI() {
+        try {
+            IRemoteFileProxy fileProxy = RemoteProxyManager.getInstance().getFileProxy(getProfiledProject());
+            IPath wd = getWorkingDir();
+            if(wd == null || fileProxy == null) {
+                return null;
+            }
+            IFileStore fs = fileProxy.getResource(wd.toOSString());
+            return fs.toURI();
+        } catch (CoreException e) {
+            return null;
+        }
+    }
+
+    /**
      * Get perf file with specified name under the current profiled project.
      *
      * @param fileName file name.
@@ -251,13 +274,8 @@ public class PerfPlugin extends AbstractUIPlugin {
         final Status status = new Status(IStatus.ERROR, PLUGIN_ID, formattedMessage, new Throwable(writer.toString()));
 
         getLog().log(status);
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                ErrorDialog.openError(Display.getDefault().getActiveShell(),
-                        title, message, status);
-            }
-        });
+        Display.getDefault().asyncExec(() -> ErrorDialog.openError(Display.getDefault().getActiveShell(),
+		        title, message, status));
     }
 
 	/**

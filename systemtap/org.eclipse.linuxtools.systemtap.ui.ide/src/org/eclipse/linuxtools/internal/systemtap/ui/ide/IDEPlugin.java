@@ -93,12 +93,17 @@ public class IDEPlugin extends AbstractUIPlugin {
      */
     public URI createRemoteUri(String path) {
         IPreferenceStore p = ConsoleLogPlugin.getDefault().getPreferenceStore();
-        String connName = p.getString(ConsoleLogPreferenceConstants.CONNECTION_NAME);
-        if (connName == "" || connName == null) { //$NON-NLS-1$
-        	return null;
+        String user = p.getString(ConsoleLogPreferenceConstants.SCP_USER);
+        String host = p.getString(ConsoleLogPreferenceConstants.HOST_NAME);
+        if (path == null) {
+            path = ""; //$NON-NLS-1$
+        }
+        int port = p.getInt(ConsoleLogPreferenceConstants.PORT_NUMBER);
+        if (port == 0) {
+            port = p.getDefaultInt(ConsoleLogPreferenceConstants.PORT_NUMBER);
         }
         try {
-            return new URI("ssh://" + connName + path); //$NON-NLS-1$
+            return new URI("ssh", user, host, port, path, null, null); //$NON-NLS-1$
         } catch (URISyntaxException uri) {
             return null;
         }

@@ -12,8 +12,8 @@
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingModel;
@@ -32,6 +33,10 @@ import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingMode
  *
  */
 public class ImageRunSelectionModel extends BaseDatabindingModel {
+
+	public static final String CONNECTION_NAMES = "connectionNames"; //$NON-NLS-1$
+
+	public static final String SELECTED_CONNECTION_NAME = "selectedConnectionName"; //$NON-NLS-1$
 
 	public static final String SELECTED_IMAGE_NAME = "selectedImageName"; //$NON-NLS-1$
 
@@ -61,7 +66,11 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public static final String REMOVE_WHEN_EXITS = "removeWhenExits"; //$NON-NLS-1$
 
-	private final IDockerConnection selectedConnection;
+	private String selectedConnectionName;
+
+	private List<String> connectionNames;
+
+	private Map<String, IDockerConnection> connections;
 
 	private String selectedImageName;
 
@@ -79,11 +88,11 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	private boolean publishAllPorts = true;
 
-	private WritableList exposedPorts = new WritableList();
+	private final WritableList exposedPorts = new WritableList();
 
-	private Set<ExposedPortModel> selectedPorts = new HashSet<>();
+	private Set<ExposedPortModel> selectedPorts;
 
-	private WritableList links = new WritableList();
+	private final WritableList links = new WritableList();
 
 	private boolean interactiveMode = false;
 
@@ -93,20 +102,34 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public ImageRunSelectionModel(
 			final IDockerConnection selectedConnection) {
-		this.selectedConnection = selectedConnection;
+		refreshConnectionNames();
+		setSelectedConnectionName(selectedConnection.getName());
 		refreshImageNames();
+	}
+
+	public void refreshConnectionNames() {
+		this.connectionNames = new ArrayList<>();
+		this.connections = new HashMap<>();
+		for (IDockerConnection connection : DockerConnectionManager
+				.getInstance().getConnections()) {
+			String name = connection.getName();
+			connections.put(name, connection);
+			connectionNames.add(name);
+		}
 	}
 
 	public void refreshImageNames() {
 		this.imageNames = new ArrayList<>();
 		this.images = new HashMap<>();
-		for (IDockerImage image : this.selectedConnection.getImages()) {
-			if (!image.isIntermediateImage() && !image.isDangling()) {
-				for (String tag : image.tags()) {
-					final String imageName = ImageRunSelectionModel
-							.getImageName(image.repo(), tag);
-					images.put(imageName, image);
-					imageNames.add(imageName);
+		if (getSelectedConnection() != null) {
+			for (IDockerImage image : getSelectedConnection().getImages()) {
+				if (!image.isIntermediateImage() && !image.isDangling()) {
+					for (String tag : image.tags()) {
+						final String imageName = ImageRunSelectionModel
+								.getImageName(image.repo(), tag);
+						images.put(imageName, image);
+						imageNames.add(imageName);
+					}
 				}
 			}
 		}
@@ -134,6 +157,30 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 				this.publishAllPorts = publishAllPorts);
 	}
 
+	public List<String> getConnectionNames() {
+		return connectionNames;
+	}
+
+	public void setConnectionNames(final List<String> connectionNames) {
+		firePropertyChange(CONNECTION_NAMES, this.connectionNames,
+				this.connectionNames = connectionNames);
+	}
+
+	public String getSelectedConnectionName() {
+		return selectedConnectionName;
+	}
+
+	public void setSelectedConnectionName(final String selectedConnectionName) {
+		firePropertyChange(SELECTED_CONNECTION_NAME,
+				this.selectedConnectionName,
+				this.selectedConnectionName = selectedConnectionName);
+		refreshImageNames();
+	}
+
+	public IDockerConnection getSelectedConnection() {
+		return this.connections.get(selectedConnectionName);
+	}
+
 	public List<String> getImageNames() {
 		return imageNames;
 	}
@@ -141,10 +188,6 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	public void setImageNames(final List<String> imageNames) {
 		firePropertyChange(IMAGE_NAMES, this.imageNames,
 				this.imageNames = imageNames);
-	}
-
-	public IDockerConnection getSelectedConnection() {
-		return selectedConnection;
 	}
 
 	public String getSelectedImageName() {
@@ -233,13 +276,28 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		this.exposedPorts.remove(port);
 	}
 
-	public void setExposedPorts(final WritableList ports) {
+	public void setExposedPorts(final List<ExposedPortModel> exposedPorts) {
 		this.exposedPorts.clear();
-		this.exposedPorts.addAll(ports);
+		this.exposedPorts.addAll(exposedPorts);
+		// FIXME: also add all given exposedPorts to selectedExposedPorts ?
+	}
+
+	public void addExposedPort(final ExposedPortModel exposedPort) {
+		if (!this.exposedPorts.contains(exposedPort)) {
+			this.exposedPorts.add(exposedPort);
+		}
+	}
+
+	public void removeExposedPort(final ExposedPortModel exposedPort) {
+		this.exposedPorts.remove(exposedPort);
+	}
+
+	public void removeExposedPorts() {
+		this.exposedPorts.clear();
 	}
 
 	public Set<ExposedPortModel> getSelectedPorts() {
-		return selectedPorts;
+		return this.selectedPorts;
 	}
 
 	public void setSelectedPorts(final Set<ExposedPortModel> ports) {
@@ -253,7 +311,11 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public void addLink(final String containerName,
 			final String containerAlias) {
-		links.add(new ContainerLinkModel(containerName, containerAlias));
+		addLink(new ContainerLinkModel(containerName, containerAlias));
+	}
+
+	public void addLink(final ContainerLinkModel containerLink) {
+		links.add(containerLink);
 	}
 
 	public void addLink(final int index, final String containerName,
@@ -265,8 +327,29 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		links.remove(link);
 	}
 
+	public void removeLinks() {
+		this.links.clear();
+	}
+
 	public void setLinks(final WritableList links) {
-		firePropertyChange(LINKS, this.links, this.links = links);
+		this.links.clear();
+		this.links.addAll(links);
+	}
+
+	/**
+	 * Set the container links
+	 * 
+	 * @param links
+	 *            in the following format:
+	 *            <code>&lt;containerName&gt;:&lt;containerAlias&gt;</code>
+	 */
+	public void setLinks(final List<String> links) {
+		for (String link : links) {
+			final String[] items = link.split(":");
+			if (items.length == 2) {
+				addLink(items[0], items[1]);
+			}
+		}
 	}
 
 	public static String getImageName(final String repo, final String tag) {
@@ -303,6 +386,10 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	public static class ExposedPortModel extends BaseDatabindingModel
 			implements Comparable<ExposedPortModel> {
 
+		private static final String SEPARATOR = ":"; //$NON-NLS-1$
+
+		private static final String CONTAINER_TYPE_SEPARATOR = "/"; //$NON-NLS-1$
+
 		public static final String SELECTED = "selected"; //$NON-NLS-1$
 
 		public static final String CONTAINER_PORT = "containerPort"; //$NON-NLS-1$
@@ -326,6 +413,65 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		private String hostPort;
 
 		/**
+		 * Parses and converts the {@link List} of the given {@link String}
+		 * values into a {@link List} of {@link ExposedPortModel}
+		 * 
+		 * @param exposedPortInfos
+		 *            the input values
+		 * @return the corresponding {@link ExposedPortModel}s
+		 */
+		public static List<ExposedPortModel> fromStrings(
+				final Collection<String> exposedPortInfos) {
+			final List<ExposedPortModel> exposedPorts = new ArrayList<>();
+			for (String exposedPortInfo : exposedPortInfos) {
+				final ExposedPortModel exposedPort = ExposedPortModel
+						.fromString(exposedPortInfo);
+				if (exposedPort != null) {
+					exposedPorts.add(exposedPort);
+				}
+			}
+			return exposedPorts;
+		}
+
+		/**
+		 * Parse the given value and returns an instance of
+		 * {@link ExposedPortModel}.
+		 * 
+		 * @param exposedPortInfo
+		 *            the value to parse
+		 * @return the corresponding {@link ExposedPortModel}
+		 */
+		public static ExposedPortModel fromString(
+				final String exposedPortInfo) {
+			final String privatePort = exposedPortInfo.substring(0,
+					exposedPortInfo.indexOf(CONTAINER_TYPE_SEPARATOR));
+			// exposed ports without host IP/port info
+			final int firstColumnSeparator = exposedPortInfo.indexOf(SEPARATOR);
+			if (firstColumnSeparator == -1 && exposedPortInfo
+					.indexOf(CONTAINER_TYPE_SEPARATOR) != -1) {
+				final String type = exposedPortInfo.substring(
+						exposedPortInfo.indexOf(CONTAINER_TYPE_SEPARATOR)); // $NON-NLS-1$
+				final ExposedPortModel exposedPort = new ExposedPortModel(
+						privatePort, type, "", privatePort); // $NON-NLS-1$
+				return exposedPort; // $NON-NLS-1$
+			} else {
+				final int secondColumnSeparator = exposedPortInfo
+						.indexOf(SEPARATOR,
+						firstColumnSeparator + 1);
+				final String type = exposedPortInfo.substring(
+						exposedPortInfo.indexOf(CONTAINER_TYPE_SEPARATOR), // $NON-NLS-1$
+						firstColumnSeparator); // $NON-NLS-1$
+				final String hostIP = exposedPortInfo.substring(
+						firstColumnSeparator + 1, secondColumnSeparator);
+				final String hostPort = exposedPortInfo
+						.substring(secondColumnSeparator + 1);
+				final ExposedPortModel exposedPort = new ExposedPortModel(
+						privatePort, type, hostIP, hostPort); // $NON-NLS-1$
+				return exposedPort; // $NON-NLS-1$
+			}
+		}
+
+		/**
 		 * Full constructor
 		 * 
 		 * @param privatePort
@@ -344,12 +490,31 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 			this.hostAddress = hostAddress;
 		}
 
+		/**
+		 * Create an ExposedPortModel from its toString output
+		 * 
+		 * @param stringValue
+		 * @return ExposedPortModel
+		 */
+		static public ExposedPortModel createPortModel(String stringValue) {
+			final String[] elements = stringValue.split(SEPARATOR);
+			final String[] containerPortElements = elements[0]
+					.split(CONTAINER_TYPE_SEPARATOR);
+			ExposedPortModel model = new ExposedPortModel(
+					containerPortElements[0], containerPortElements[1],
+					elements[1], elements[2]);
+			// check the last argument if exists otherwise assume 'true'
+			model.selected = (elements.length == 4)
+					? Boolean.valueOf(elements[3]) : true;
+			return model;
+		}
+
 		public String getContainerPort() {
 			return containerPort;
 		}
 
 		public void setContainerPort(final String containerPort) {
-			firePropertyChange(SELECTED, this.containerPort,
+			firePropertyChange(CONTAINER_PORT, this.containerPort,
 					this.containerPort = containerPort);
 		}
 
@@ -358,7 +523,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		}
 
 		public void setPortType(final String type) {
-			firePropertyChange(SELECTED, this.portType, this.portType = type);
+			firePropertyChange(PORT_TYPE, this.portType, this.portType = type);
 		}
 
 		public boolean getSelected() {
@@ -418,9 +583,21 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 			return this.containerPort.compareTo(other.containerPort);
 		}
 
+		// FIXME we should have a dedicated method to serialize the bean
+		@Override
+		public String toString() {
+			StringBuffer buffer = new StringBuffer();
+			buffer.append(containerPort + CONTAINER_TYPE_SEPARATOR + portType
+					+ SEPARATOR + hostAddress + SEPARATOR + hostPort
+					+ SEPARATOR + selected);
+			return buffer.toString();
+		}
+
 	}
 
-	public class ContainerLinkModel extends BaseDatabindingModel {
+	public static class ContainerLinkModel extends BaseDatabindingModel {
+
+		private static final String CONTAINER_SEPARATOR = ":"; //$NON-NLS-1$
 
 		public static final String CONTAINER_NAME = "containerName"; //$NON-NLS-1$
 
@@ -442,6 +619,12 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 			this.containerAlias = alias;
 		}
 
+		public static ContainerLinkModel createContainerLinkModel(
+				final String fromString) {
+			String[] s = fromString.split(CONTAINER_SEPARATOR);
+			return new ContainerLinkModel(s[0], s[1]);
+		}
+
 		public String getContainerName() {
 			return containerName;
 		}
@@ -457,6 +640,11 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 		public void setContainerAlias(String alias) {
 			firePropertyChange(CONTAINER_ALIAS, this.containerAlias, this.containerAlias = alias);
+		}
+
+		@Override
+		public String toString() {
+			return containerName + CONTAINER_SEPARATOR + containerAlias;
 		}
 
 		@Override
