@@ -48,7 +48,9 @@
     <module>org.eclipse.linuxtools.changelog.c-feature</module>
     <module>org.eclipse.linuxtools.changelog.java-feature</module>
     <module>org.eclipse.linuxtools.changelog.tests</module>
+    <!--
     <module>org.eclipse.linuxtools.changelog.ui.tests</module>
+    -->
   </modules>
 
 </project>
