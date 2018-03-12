@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -40,6 +39,7 @@ import org.eclipse.linuxtools.docker.core.IDockerNetworkSettings;
 import org.eclipse.linuxtools.docker.core.IDockerPortBinding;
 import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
 import org.eclipse.linuxtools.docker.ui.Activator;
+import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainer;
 import org.eclipse.linuxtools.internal.docker.core.DockerImage;
 import org.eclipse.linuxtools.internal.docker.core.DockerPortMapping;
@@ -104,8 +104,23 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				// here we duplicate the images to show one org/repo with all
 				// its tags per node in the tree
 				final List<IDockerImage> allImages = connection.getImages();
-				final List<IDockerImage> explorerImages = splitImageTagsByRepo(
-						allImages);
+				final List<IDockerImage> explorerImages = new ArrayList<>();
+				for (IDockerImage image : allImages) {
+					final Map<String, List<String>> tagsByRepo = DockerImage
+							.extractTagsByRepo(image.repoTags());
+					for (Entry<String, List<String>> entry : tagsByRepo
+							.entrySet()) {
+						final IDockerImage explorerImage = new DockerImage(
+								(DockerConnection) image.getConnection(),
+								image.repoTags(), entry.getKey(),
+								entry.getValue(), image.id(), image.parentId(),
+								image.created(), image.size(),
+								image.virtualSize(),
+								image.isIntermediateImage(),
+								image.isDangling());
+						explorerImages.add(explorerImage);
+					}
+				}
 				return explorerImages.toArray();
 			}
 			loadImages(imagesCategory);
@@ -146,22 +161,6 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			return volumesCategory.getVolumes().toArray();
 		}
 		return EMPTY;
-	}
-
-	/**
-	 * Iterates on the given {@code images} and duplicates the elements that
-	 * have multiple repositories
-	 * 
-	 * @param images
-	 *            the {@link List} of {@link IDockerImage} to process
-	 * @return the resulting {@link List} containing duplicate
-	 *         {@link IDockerImage} when the source had multiple repositories.
-	 */
-	public static List<IDockerImage> splitImageTagsByRepo(
-			final List<IDockerImage> images) {
-		return images.stream()
-				.flatMap(image -> DockerImage.duplicateImageByRepo(image))
-				.collect(Collectors.toList());
 	}
 
 	/**

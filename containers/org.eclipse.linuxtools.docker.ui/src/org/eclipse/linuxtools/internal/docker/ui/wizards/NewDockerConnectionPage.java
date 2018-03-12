@@ -48,7 +48,6 @@ import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.EnumDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
-import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings.BindingType;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
@@ -371,12 +370,12 @@ public class NewDockerConnectionPage extends WizardPage {
 		// validations will be performed when the user changes the value
 		// only, not at the dialog opening
 		dbc.addValidationStatusProvider(
-				new UnixSocketValidator(connectionNameModelObservable,
-						unixSocketBindingModeModelObservable,
+				new ConnectionNameValidator(connectionNameModelObservable));
+		dbc.addValidationStatusProvider(
+				new UnixSocketValidator(unixSocketBindingModeModelObservable,
 						unixSocketPathModelObservable));
 		dbc.addValidationStatusProvider(
-				new TcpHostValidator(connectionNameModelObservable,
-						tcpConnectionBindingModeModelObservable,
+				new TcpHostValidator(tcpConnectionBindingModeModelObservable,
 						tcpHostModelObservable));
 		dbc.addValidationStatusProvider(new TcpCertificatesValidator(
 				tcpConnectionBindingModeModelObservable,
@@ -846,18 +845,13 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 	}
 
-	private static abstract class ConnectionNameValidator
-			extends MultiValidator {
+	private static class ConnectionNameValidator extends MultiValidator {
 
 		private final IObservableValue<String> connectionNameModelObservable;
 
-		ConnectionNameValidator(
+		public ConnectionNameValidator(
 				final IObservableValue<String> connectionNameModelObservable) {
 			this.connectionNameModelObservable = connectionNameModelObservable;
-		}
-
-		public IObservableValue<String> getConnectionNameModelObservable() {
-			return this.connectionNameModelObservable;
 		}
 
 		@Override
@@ -883,16 +877,14 @@ public class NewDockerConnectionPage extends WizardPage {
 		}
 	}
 
-	private static class UnixSocketValidator extends ConnectionNameValidator {
+	private static class UnixSocketValidator extends MultiValidator {
 
 		private final IObservableValue<Boolean> unixSocketBindingModeModelObservable;
 		private final IObservableValue<String> unixSocketPathModelObservable;
 
 		public UnixSocketValidator(
-				final IObservableValue<String> connectionNameModelObservable,
 				final IObservableValue<Boolean> unixSocketBindingModeModelObservable,
 				final IObservableValue<String> unixSocketPathModelObservable) {
-			super(connectionNameModelObservable);
 			this.unixSocketBindingModeModelObservable = unixSocketBindingModeModelObservable;
 			this.unixSocketPathModelObservable = unixSocketPathModelObservable;
 		}
@@ -900,59 +892,45 @@ public class NewDockerConnectionPage extends WizardPage {
 		@Override
 		public IObservableList<IObservableValue<String>> getTargets() {
 			WritableList<IObservableValue<String>> targets = new WritableList<>();
-			targets.add(getConnectionNameModelObservable());
 			targets.add(unixSocketPathModelObservable);
 			return targets;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final IStatus connectionNameStatus = super.validate();
 			final Boolean unixSocketBindingMode = this.unixSocketBindingModeModelObservable
 					.getValue();
 			final String unixSocketPath = this.unixSocketPathModelObservable
 					.getValue();
-			if (!connectionNameStatus.isOK()) {
-				return connectionNameStatus;
-			}
 			if (unixSocketBindingMode) {
 				if (unixSocketPath == null || unixSocketPath.isEmpty()) {
 					return ValidationStatus.error(WizardMessages.getString(
 							"DockerConnectionPage.validation.missingUnixSocket.msg")); //$NON-NLS-1$
 				}
 				try {
-					// validate the Unix socket format
 					final URI unixSocketURI = new URI(unixSocketPath);
 					if (unixSocketURI.getScheme() != null
 							&& !unixSocketURI.getScheme().equals("unix")) { //$NON-NLS-1$
 						return ValidationStatus.error(WizardMessages.getString(
 								"DockerConnectionPage.validation.invalidUnixSocketScheme.msg")); //$NON-NLS-1$
 					}
-					if (unixSocketURI.getPath() == null) {
+					if (unixSocketURI.getPath() != null) {
+						final File unixSocket = new File(
+								unixSocketURI.getPath());
+						if (!unixSocket.exists()) {
+							return ValidationStatus
+									.error(WizardMessages.getString(
+											"DockerConnectionPage.validation.invalidUnixSocketPath.msg")); //$NON-NLS-1$
+						} else if (!unixSocket.canRead()
+								|| !unixSocket.canWrite()) {
+							return ValidationStatus
+									.error(WizardMessages.getString(
+											"DockerConnectionPage.validation.unreadableUnixSocket.msg")); //$NON-NLS-1$
+						}
+					} else {
 						return ValidationStatus.error(WizardMessages.getString(
 								"DockerConnectionPage.validation.invalidUnixSocketPath.msg")); //$NON-NLS-1$
-					}
-					final File unixSocket = new File(unixSocketURI.getPath());
-					if (!unixSocket.exists()) {
-						return ValidationStatus.error(WizardMessages.getString(
-								"DockerConnectionPage.validation.invalidUnixSocketPath.msg")); //$NON-NLS-1$
-					} else if (!unixSocket.canRead()
-							|| !unixSocket.canWrite()) {
-						return ValidationStatus.error(WizardMessages.getString(
-								"DockerConnectionPage.validation.unreadableUnixSocket.msg")); //$NON-NLS-1$
-					}
-					// check for other, existing connections with the same
-					// settings
-					final boolean duplicateConnection = DockerConnectionManager
-							.getInstance().getAllConnections().stream()
-							.filter(c -> c.getSettings()
-									.getType() == BindingType.UNIX_SOCKET_CONNECTION)
-							.map(c -> (UnixSocketConnectionSettings) c
-									.getSettings())
-							.anyMatch(s -> s.getPath().equals(unixSocketPath));
-					if (duplicateConnection) {
-						return ValidationStatus.error(WizardMessages.getString(
-								"DockerConnectionPage.validation.duplicateUnixSocketPath.msg")); //$NON-NLS-1$
+
 					}
 				} catch (URISyntaxException e) {
 					return ValidationStatus.error(WizardMessages.getString(
@@ -965,16 +943,14 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	}
 
-	private static class TcpHostValidator extends ConnectionNameValidator {
+	private static class TcpHostValidator extends MultiValidator {
 
 		private final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable;
 		private final IObservableValue<String> tcpHostModelObservable;
 
 		public TcpHostValidator(
-				final IObservableValue<String> connectionNameModelObservable,
 				final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable,
 				final IObservableValue<String> tcpHostModelObservable) {
-			super(connectionNameModelObservable);
 			this.tcpConnectionBindingModeModelObservable = tcpConnectionBindingModeModelObservable;
 			this.tcpHostModelObservable = tcpHostModelObservable;
 		}
@@ -982,7 +958,6 @@ public class NewDockerConnectionPage extends WizardPage {
 		@Override
 		public IObservableList<IObservableValue<String>> getTargets() {
 			WritableList<IObservableValue<String>> targets = new WritableList<>();
-			targets.add(getConnectionNameModelObservable());
 			targets.add(tcpHostModelObservable);
 			return targets;
 		}
@@ -992,10 +967,6 @@ public class NewDockerConnectionPage extends WizardPage {
 			final Boolean tcpConnectionBindingMode = this.tcpConnectionBindingModeModelObservable
 					.getValue();
 			final String tcpHost = this.tcpHostModelObservable.getValue();
-			final IStatus connectionNameStatus = super.validate();
-			if (!connectionNameStatus.isOK()) {
-				return connectionNameStatus;
-			}
 			if (tcpConnectionBindingMode) {
 				if (tcpHost == null || tcpHost.isEmpty()) {
 					return ValidationStatus.error(WizardMessages.getString(
@@ -1020,18 +991,6 @@ public class NewDockerConnectionPage extends WizardPage {
 						return ValidationStatus.error(WizardMessages.getString(
 								"DockerConnectionPage.validation.invalidTcpConnectionPort.msg")); //$NON-NLS-1$
 
-					}
-					// check for other, existing connections with the same
-					// settings
-					final boolean duplicateConnection = DockerConnectionManager
-							.getInstance().getAllConnections().stream()
-							.filter(c -> c.getSettings()
-									.getType() == BindingType.TCP_CONNECTION)
-							.map(c -> (TCPConnectionSettings) c.getSettings())
-							.anyMatch(s -> s.getHost().equals(tcpHost));
-					if (duplicateConnection) {
-						return ValidationStatus.error(WizardMessages.getString(
-								"DockerConnectionPage.validation.duplicateUnixSocketPath.msg")); //$NON-NLS-1$
 					}
 				} catch (URISyntaxException e) {
 					// URI is not valid

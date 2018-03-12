@@ -49,8 +49,6 @@ public class DockerImageHierarchyView extends CommonNavigator
 
 	private Control currentPane;
 
-	private IDockerConnection connection;
-
 	@Override
 	protected Object getInitialInput() {
 		return this.selectedImageHierarchy;
@@ -90,7 +88,7 @@ public class DockerImageHierarchyView extends CommonNavigator
 		final Composite container = form.getBody();
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(5, 5)
 				.applyTo(container);
-		final Label label = new Label(container, SWT.WRAP);
+		final Label label = new Label(container, SWT.NONE);
 		label.setText(
 				DVMessages.getString("DockerHierarchyViewNoImageSelected.msg")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.FILL)
@@ -119,8 +117,7 @@ public class DockerImageHierarchyView extends CommonNavigator
 
 	@Override
 	public String getContributorId() {
-		return "org.eclipse.linuxtools.docker.ui.propertiesViewContributor"; //$NON-NLS-1$
-		// return getSite().getId();
+		return getSite().getId();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -172,18 +169,6 @@ public class DockerImageHierarchyView extends CommonNavigator
 		public IDockerImageHierarchyNode getRoot() {
 			return this.root;
 		}
-	}
-
-	/**
-	 * @return the {@link IDockerConnection} used to display the current
-	 *         hierarchy.
-	 */
-	public IDockerConnection getConnection() {
-		return connection;
-	}
-
-	public void setConnection(IDockerConnection connection) {
-		this.connection = connection;
 	}
 
 }
