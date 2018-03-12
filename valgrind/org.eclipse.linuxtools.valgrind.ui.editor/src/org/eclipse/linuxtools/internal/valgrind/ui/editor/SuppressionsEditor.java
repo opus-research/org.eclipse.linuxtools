@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2009 Phil Muldoon <pkmuldoon@picobot.org>.
+ * Copyright (c) 2008, 2017 Phil Muldoon and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,13 +27,11 @@ import org.eclipse.ui.editors.text.TextEditor;
 
 public class SuppressionsEditor extends TextEditor {
 
-    private ColorManager colorManager;
     private ProjectionAnnotationModel annotationModel;
     private Annotation[] oldAnnotations;
 
     public SuppressionsEditor() {
-        this.colorManager = new ColorManager();
-        setSourceViewerConfiguration(new SuppressionsConfiguration(colorManager, this));
+        setSourceViewerConfiguration(new SuppressionsConfiguration(this));
         setDocumentProvider(new SuppressionsDocumentProvider());
         oldAnnotations = null;
     }
@@ -68,12 +66,6 @@ public class SuppressionsEditor extends TextEditor {
         }
         annotationModel.modifyAnnotations(oldAnnotations, newAnnotations, null);
         oldAnnotations = updatedAnnotations;
-    }
-
-    @Override
-    public void dispose() {
-        colorManager.dispose();
-        super.dispose();
     }
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?><!--
-    Copyright (c) 2009, 2013 Red Hat, Inc.
+    Copyright (c) 2009, 2017 Red Hat, Inc.
     All rights reserved. This program and the accompanying materials
     are made available under the terms of the Eclipse Public License v1.0
     which accompanies this distribution, and is available at
@@ -19,25 +19,69 @@
             parentId="org.eclipse.ui.textEditorScope">
       </context>
    </extension>
-
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            file-extensions="spec"
+            id="org.eclipse.linuxtools.rpm.editor.content-type"
+            name="%content-type.name"
+            priority="high">
+      </content-type>
+   </extension>
+   <extension point="org.eclipse.core.runtime.adapters">
+		<factory
+    		adaptableType="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
+    		class="org.eclipse.linuxtools.internal.rpm.ui.editor.outline.SpecOutlinePageAdapterFactory">
+   			<adapter type="org.eclipse.ui.views.contentoutline.IContentOutlinePage"/>
+ 		</factory>
+ 		<factory
+    		adaptableType="org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileEditor"
+    		class="org.eclipse.linuxtools.internal.rpm.ui.editor.outline.SpecOutlinePageAdapterFactory">
+   			<adapter type="org.eclipse.ui.views.contentoutline.IContentOutlinePage"/>
+ 		</factory>
+   </extension>
    <extension
          point="org.eclipse.ui.editors">
       <editor
             name="%editor.name"
-            extensions="spec,spec2"
             icon="icons/rpm.gif"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
-            class="org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor"
+            class="org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileEditor"
             id="org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor">
+         <contentTypeBinding
+               contentTypeId="org.eclipse.linuxtools.rpm.editor.content-type">
+         </contentTypeBinding>
       </editor>
       <editor
             name="%editor.name.0"
-            extensions="spec"
             icon="icons/rpm.gif"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             class="org.eclipse.linuxtools.internal.rpm.ui.editor.forms.SpecfileFormEditor"
             id="org.eclipse.linuxtools.rpm.ui.editor.forms.SpecfileFormEditor">
+         <contentTypeBinding
+               contentTypeId="org.eclipse.linuxtools.rpm.editor.content-type">
+         </contentTypeBinding>
       </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.genericeditor.presentationReconcilers">
+      <presentationReconciler
+            class="org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfilePrecentationReconciler"
+            contentType="org.eclipse.linuxtools.rpm.editor.content-type">
+      </presentationReconciler>
+   </extension>
+    <extension point="org.eclipse.ui.genericeditor.contentAssistProcessors">
+      <contentAssistProcessor
+            class="org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileCompletionProcessor"
+            contentType="org.eclipse.linuxtools.rpm.editor.content-type">
+      </contentAssistProcessor>
+   </extension>
+   <extension point="org.eclipse.ui.genericeditor.hoverProviders">
+      <hoverProvider
+     		class="org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileHover"
+            contentType="org.eclipse.linuxtools.rpm.editor.content-type">
+  	  </hoverProvider>
    </extension>
 
        <!-- Hyperlink targets and detectors -->
@@ -398,9 +442,76 @@
          <with
                variable="activePart">
             <instanceof
-                  value="org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor">
+                  value="org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileEditor">
             </instanceof>
          </with>
       </definition>
+   </extension>
+    <extension
+         point="org.eclipse.ui.themes">
+      <themeElementCategory
+            id="org.eclipse.linuxtools.rpm.editor.presentation"
+            label="RPM .spec file editor">
+      </themeElementCategory>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.edtor.color.default"
+            label="Default"
+            value="0,0,0">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.editor.color.sections"
+            label="RPM Section name"
+            value="128,0,0">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.editor.color.macros"
+            label="Macros"
+            value="0,0,128">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.editor.color.keywords"
+            label="Keywords"
+            value="127,0,85">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.editor.color.defines"
+            label="Defines"
+            value="0,128,0">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.editor.color.tags"
+            label="Tags"
+            value="255,101,52">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.editor.color.comment"
+            label="Comment"
+            value="63,95,191">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.editor.color.packages"
+            label="Package names"
+            value="0,0,128">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.editor.color.author_email"
+            label="Author email"
+            value="10,20,175">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="org.eclipse.linuxtools.rpm.editor.presentation"
+            id="org.eclipse.linuxtools.rpm.editor.color.ver_rel"
+            label="Version.Release string"
+            value="255,101,52">
+      </colorDefinition>
    </extension>
 </plugin>
