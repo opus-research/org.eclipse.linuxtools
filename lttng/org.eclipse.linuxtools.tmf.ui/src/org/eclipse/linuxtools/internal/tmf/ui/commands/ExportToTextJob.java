@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Kalray, Ericsson
+ * Copyright (c) 2013 Kalray
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Xavier Raynaud - Initial API and implementation
- *   Bernd Hufmann - Adapted to new events table column API
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.tmf.ui.commands;
@@ -18,7 +17,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.MessageFormat;
-import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -28,8 +26,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.core.filter.ITmfFilter;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.osgi.util.NLS;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
 
 /**
  * This job exports traces to text files.
@@ -45,7 +42,8 @@ public class ExportToTextJob extends Job {
 
     private final ITmfTrace fTrace;
     private final ITmfFilter fFilter;
-    private final List<TmfEventTableColumn> fColumns;
+    private final TmfEventsTable fTable;
+    private final String fHeader;
     private final String destination;
 
     /**
@@ -55,22 +53,25 @@ public class ExportToTextJob extends Job {
      *            the trace to export
      * @param filter
      *            the filter to apply when exporting the trace. may be null.
-     * @param columns
+     * @param table
+     *            the {@link TmfEventsTable} requesting the export (may be <code>null</code>)
+     * @param header
      *            the header to put at top of the exported file (may be <code>null</code>)
      * @param destination
      *            the path of the file where the data is exported.
      */
-    public ExportToTextJob(ITmfTrace trace, ITmfFilter filter, List<TmfEventTableColumn> columns, String destination) {
+    public ExportToTextJob(ITmfTrace trace, ITmfFilter filter, TmfEventsTable table, String header, String destination) {
         super(MessageFormat.format(Messages.ExportToTextJob_Export_to, destination));
         this.fTrace = trace;
         this.fFilter = filter;
-        this.fColumns = columns;
+        this.fTable = table;
+        this.fHeader = header;
         this.destination = destination;
     }
 
     @Override
     public IStatus run(IProgressMonitor monitor) {
-        monitor.beginTask(NLS.bind(Messages.ExportToTextJob_Export_trace_to, destination), TOTAL_WORK);
+        monitor.beginTask(Messages.ExportToTextJob_Export_trace_to + destination, TOTAL_WORK);
         IStatus ret = saveImpl(monitor);
         monitor.done();
         return ret;
@@ -78,15 +79,8 @@ public class ExportToTextJob extends Job {
 
     private IStatus saveImpl(IProgressMonitor monitor) {
         try (final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));) {
-            if (fColumns != null) {
-                boolean needTab = false;
-                for (TmfEventTableColumn column : fColumns) {
-                    if (needTab) {
-                        bw.write('\t');
-                    }
-                    bw.write(column.getHeaderName());
-                    needTab = true;
-                }
+            if (fHeader != null) {
+                bw.write(fHeader);
                 bw.append('\n');
             }
             return saveImpl(bw, monitor);
@@ -99,7 +93,7 @@ public class ExportToTextJob extends Job {
     }
 
     private IStatus saveImpl(Writer bw, IProgressMonitor monitor) {
-        ExportToTextRequest request = new ExportToTextRequest(bw, fFilter, fColumns);
+        ExportToTextRequest request = new ExportToTextRequest(bw, fFilter, fTable);
         fTrace.sendRequest(request);
         int currentIndex = 0;
         while (!request.isCompleted()) {
