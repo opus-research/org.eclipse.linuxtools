@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.synchronization;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
@@ -27,7 +26,7 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
  * @author Geneviève Bastien
  * @since 3.0
  */
-public class TmfTimestampTransformLinear implements ITmfTimestampTransform, Serializable {
+public class TmfTimestampTransformLinear implements ITmfTimestampTransform {
 
     /**
      * Generated serial UID
@@ -118,6 +117,22 @@ public class TmfTimestampTransformLinear implements ITmfTimestampTransform, Seri
              */
             return this;
         }
+    }
+
+    /**
+     * @return the Alpha
+     * @since 3.1
+     */
+    public BigDecimal getAlpha() {
+        return fAlpha;
+    }
+
+    /**
+     * @return the Beta
+     * @since 3.1
+     */
+    public BigDecimal getBeta() {
+        return fBeta;
     }
 
     @Override
