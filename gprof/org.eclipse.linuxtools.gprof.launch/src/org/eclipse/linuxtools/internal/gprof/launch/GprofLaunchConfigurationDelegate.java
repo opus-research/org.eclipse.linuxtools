@@ -17,6 +17,7 @@
 package org.eclipse.linuxtools.internal.gprof.launch;
 
 import java.io.File;
+import java.net.URI;
 
 import org.eclipse.cdt.debug.core.CDebugUtils;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
@@ -247,10 +248,13 @@ public class GprofLaunchConfigurationDelegate extends AbstractCLaunchDelegate {
                         public void run() {
                             try {
                                 String s = exePath.toOSString();
+                                URI workingDirURI = getProject().getLocationURI();
                                 RemoteProxyManager rpmgr = RemoteProxyManager.getInstance();
                                 IRemoteFileProxy proxy = rpmgr.getFileProxy(getProject());
-                                // gmon.out file should be in working directory used for the launch.
-                                String gmonExpected = getWorkingDirectory(config).getAbsolutePath() + "/gmon.out"; //$NON-NLS-1$
+                                String workingDirPath = proxy.toPath(workingDirURI);
+                                // Because we set the working directory on execution to the top-level
+                                // project directory, the gmon.out file should be found there
+                                String gmonExpected = workingDirPath + "/gmon.out"; //$NON-NLS-1$
                                 IFileStore gmonFileStore = proxy.getResource(gmonExpected);
                                 if (!gmonFileStore.fetchInfo().exists()) {
                                     Shell parent = PlatformUI.getWorkbench().getDisplay().getActiveShell();
@@ -327,7 +331,7 @@ public class GprofLaunchConfigurationDelegate extends AbstractCLaunchDelegate {
       * @throws CoreException
       * @since 1.1
       */
-    private static IPath getExePath(ILaunchConfiguration config) throws CoreException{
+    private IPath getExePath(ILaunchConfiguration config) throws CoreException{
         return CDebugUtils.verifyProgramPath( config );
     }
 

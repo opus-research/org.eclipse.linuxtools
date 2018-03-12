@@ -361,7 +361,6 @@ public abstract class AbstractProfilingOptionsTab extends AbstractLaunchConfigur
             // Validate tab configurations of underlying tool.
             for (AbstractLaunchConfigurationTab tab : tabs) {
                 if (!tab.isValid(config)) {
-                    setErrorMessage(tab.getErrorMessage());
                     return false;
                 }
             }

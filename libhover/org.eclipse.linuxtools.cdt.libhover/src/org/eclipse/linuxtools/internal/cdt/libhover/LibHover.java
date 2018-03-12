@@ -116,11 +116,13 @@ public class LibHover implements ICHelpProvider {
         return libraries.values();
     }
 
-    public static void saveLibraries(IPath locationBase, IPreferenceStore ps) {
-    	// If user preference is to cache libhover data, then save any un-saved
-    	// library hover data.
-    	if (ps.getBoolean(PreferenceConstants.CACHE_EXT_LIBHOVER)) {
-    		for (Iterator<LibHoverLibrary> i = libraries.values().iterator(); i.hasNext();) {
+    public static void saveLibraries() {
+        // If user preference is to cache libhover data, then save any un-saved
+        // library hover data.
+        IPreferenceStore ps = LibhoverPlugin.getDefault().getPreferenceStore();
+        if (ps.getBoolean(PreferenceConstants.CACHE_EXT_LIBHOVER)) {
+            IPath locationBase = LibhoverPlugin.getDefault().getStateLocation();
+            for (Iterator<LibHoverLibrary> i = libraries.values().iterator(); i.hasNext();) {
                 LibHoverLibrary l = i.next();
                 try {
                     // Now, output the LibHoverInfo for caching later
@@ -744,15 +746,12 @@ public class LibHover implements ICHelpProvider {
 
     @Override
     public ICHelpResourceDescriptor[] getHelpResources(ICHelpInvocationContext context, ICHelpBook[] helpBooks, String name) {
-    	for (int i = 0; i < helpBooks.length; ++i) {
-    		IFunctionSummary fs = getFunctionInfo(context, new ICHelpBook[]{helpBooks[i]}, name);
-    		if (fs != null) {
-    			LibHoverLibrary l = libraries.get(helpBooks[i]);
-    			if (l != null && l.getDocs() != null) {
-    				return new HelpResourceDescriptor[]{new HelpResourceDescriptor(helpBooks[i])};
-    			}
-    		}
-    	}
+        for (int i = 0; i < helpBooks.length; ++i) {
+            IFunctionSummary fs = getFunctionInfo(context, new ICHelpBook[]{helpBooks[i]}, name);
+            if (fs != null) {
+                return new HelpResourceDescriptor[]{new HelpResourceDescriptor(helpBooks[i])};
+            }
+        }
         return null;
     }
 }
