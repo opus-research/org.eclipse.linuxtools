@@ -143,7 +143,8 @@ public class Oprofile {
                 return 0;
             }
         } catch (IOException e) {
-            return 0;
+			throw new RuntimeException(
+					OprofileProperties.getString("operfNotFound.errorMessage")); //$NON-NLS-1$
         }
         return info.getNrCounters();
     }
