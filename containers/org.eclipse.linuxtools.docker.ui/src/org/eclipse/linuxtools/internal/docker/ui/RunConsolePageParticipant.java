@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat Inc - modified to use in Docker UI
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.docker.ui.consoles;
+package org.eclipse.linuxtools.internal.docker.ui;
 
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.IActionBars;

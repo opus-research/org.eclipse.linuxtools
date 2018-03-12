@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
@@ -45,8 +44,8 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerHostConfigF
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerImageFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ButtonAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CheckBoxAssertion;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseShellRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWizardRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerConnectionManagerUtils;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.RadioAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTBotViewRule;
@@ -82,11 +81,10 @@ public class EditDockerConnectionSWTBotTest {
 	private static String PATH_TO_CERTS = System.getProperty("java.io.tmpdir");
 
 	@ClassRule
-	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(
-			CloseWelcomePageRule.DOCKER_PERSPECTIVE_ID);
+	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule();
 
 	@Rule
-	public CloseShellRule closeShell = new CloseShellRule(IDialogConstants.CANCEL_LABEL);
+	public CloseWizardRule closeWizard = new CloseWizardRule();
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();

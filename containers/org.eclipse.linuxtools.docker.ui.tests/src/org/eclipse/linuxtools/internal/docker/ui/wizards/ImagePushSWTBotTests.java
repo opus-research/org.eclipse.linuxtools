@@ -15,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.RegistryAccountInfo;
@@ -26,8 +25,8 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionF
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockRegistryAccountManagerFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ClearConnectionManagerRule;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseShellRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWizardRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ComboAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerConnectionManagerUtils;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTUtils;
@@ -57,21 +56,20 @@ public class ImagePushSWTBotTests {
 	private SWTBotView dockerExplorerViewBot;
 
 	@ClassRule
-	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(
-			CloseWelcomePageRule.DOCKER_PERSPECTIVE_ID);
+	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule();
 
 	@Rule
 	public ClearConnectionManagerRule clearConnectionManager = new ClearConnectionManagerRule();
 
 	@Rule
-	public CloseShellRule closeShell = new CloseShellRule(IDialogConstants.CANCEL_LABEL);
+	public CloseWizardRule closeWizard = new CloseWizardRule();
 
 	private RegistryAccountStorageManager defaultRegistryAccountStorageManager;
 	private DockerClient client;
 
 	@Before
 	public void lookupDockerExplorerView() {
-		this.dockerExplorerViewBot = SWTUtils.getSWTBotView(bot, DockerExplorerView.VIEW_ID);
+		this.dockerExplorerViewBot = bot.viewById("org.eclipse.linuxtools.docker.ui.dockerExplorerView");
 		this.dockerExplorerView = (DockerExplorerView) (dockerExplorerViewBot.getViewReference().getView(true));
 		this.dockerExplorerViewBot.show();
 		this.dockerExplorerViewBot.setFocus();
