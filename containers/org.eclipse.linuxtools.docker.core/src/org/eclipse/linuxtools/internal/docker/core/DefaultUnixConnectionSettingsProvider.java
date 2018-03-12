@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.docker.core;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
@@ -37,12 +36,12 @@ public class DefaultUnixConnectionSettingsProvider implements IDockerConnectionS
 				final UnixSocketConnectionSettings socket = new UnixSocketConnectionSettings(
 						DefaultDockerConnectionSettingsFinder.Defaults.DEFAULT_UNIX_SOCKET_PATH);
 				socket.setName(socket.getPath());
-				return Arrays.asList(socket);
+				return Arrays.asList(new IDockerConnectionSettings[] { socket });
 			} catch (IOException e) {
 				// do nothing, just assume socket did not work.
 			}
 		}
-		return Collections.emptyList();
+		return null;
 	}
 
 }
