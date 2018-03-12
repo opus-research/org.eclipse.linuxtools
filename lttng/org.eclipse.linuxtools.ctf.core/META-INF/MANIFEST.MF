@@ -9,7 +9,7 @@ Bundle-Activator: org.eclipse.linuxtools.internal.ctf.core.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.linuxtools.ctf.parser;bundle-version="3.1.0"
+ org.eclipse.linuxtools.ctf.parser;bundle-version="3.0.0"
 Export-Package: org.eclipse.linuxtools.ctf.core,
  org.eclipse.linuxtools.ctf.core.event,
  org.eclipse.linuxtools.ctf.core.event.io,
@@ -21,7 +21,7 @@ Export-Package: org.eclipse.linuxtools.ctf.core,
  org.eclipse.linuxtools.internal.ctf.core.event.metadata;x-friends:="org.eclipse.linuxtools.ctf.core.tests",
  org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions;x-friends:="org.eclipse.linuxtools.ctf.core.tests",
  org.eclipse.linuxtools.internal.ctf.core.event.types;x-friends:="org.eclipse.linuxtools.ctf.core.tests,org.eclipse.linuxtools.tmf.ctf.core,org.eclipse.linuxtools.tmf.ctf.core.tests",
- org.eclipse.linuxtools.internal.ctf.core.event.types.composite;x-friends:="org.eclipse.linuxtools.ctf.core.tests",
+ org.eclipse.linuxtools.internal.ctf.core.event.types.composite;x-internal:=true,
  org.eclipse.linuxtools.internal.ctf.core.trace;x-friends:="org.eclipse.linuxtools.ctf.core.tests"
 Import-Package: com.google.common.base,
  com.google.common.collect,

@@ -59,7 +59,6 @@ import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.eclipse.swtbot.swt.finder.results.BoolResult;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
@@ -396,7 +395,7 @@ public class TestCreateSystemtapScript {
         assertEquals(scriptName, bot.activeEditor().getTitle());
     }
 
-    private static SWTBotShell prepareScript(String scriptName, String scriptContents) {
+    private SWTBotShell prepareScript(String scriptName, String scriptContents) {
         createScript(bot, scriptName);
         if (scriptContents != null) {
             SWTBotEclipseEditor editor = bot.editorByTitle(scriptName).toTextEditor();
@@ -513,7 +512,7 @@ public class TestCreateSystemtapScript {
         assertTrue(wasProbeInserted(bot.activeEditor().toTextEditor(), item, false));
     }
 
-    private static boolean wasProbeInserted(SWTBotEclipseEditor editor, SWTBotTreeItem probeNode, boolean isGroup) {
+    private boolean wasProbeInserted(SWTBotEclipseEditor editor, SWTBotTreeItem probeNode, boolean isGroup) {
         String scriptText = editor.getText();
         int entryIndex = scriptText.indexOf("probe " + probeNode.getText() + (isGroup ? ".*\n" : "\n"));
         if (entryIndex == -1) {
@@ -1029,7 +1028,7 @@ public class TestCreateSystemtapScript {
         continuousControlTests(cb, false);
     }
 
-    private static void discreteXControlTests(AbstractChartBuilder cb, int numAxisItems) {
+    private void discreteXControlTests(AbstractChartBuilder cb, int numAxisItems) {
         // Check that default range shows 100% of data.
         IAxis axis = cb.getChart().getAxisSet().getXAxis(0);
         Range range = axis.getRange();
@@ -1152,15 +1151,15 @@ public class TestCreateSystemtapScript {
         assertFalse(lastButton.isEnabled());
     }
 
-    private static double getAxisScale(AbstractChartBuilder cb, boolean isXAxis) {
+    private double getAxisScale(AbstractChartBuilder cb, boolean isXAxis) {
         return isXAxis ? cb.getScale() : cb.getScaleY();
     }
 
-    private static double getAxisScroll(AbstractChartBuilder cb, boolean isXAxis) {
+    private double getAxisScroll(AbstractChartBuilder cb, boolean isXAxis) {
         return isXAxis ? cb.getScroll() : cb.getScrollY();
     }
 
-    private static void continuousControlTests(AbstractChartBuilder cb, boolean isXAxis) {
+    private void continuousControlTests(AbstractChartBuilder cb, boolean isXAxis) {
         // Continuous scaling/scrolling is less strict/predictable than discrete scrolling,
         // so just check that the controls perform their intended actions.
         IAxis axis;
@@ -1258,88 +1257,76 @@ public class TestCreateSystemtapScript {
         final Matcher<AbstractChartBuilder> matcher = widgetOfType(AbstractChartBuilder.class);
         AbstractChartBuilder cb = bot.widget(matcher);
         String tooltipFormat = "{0}: {1}";
-        checkTooltipAtDataPoint(cb, 0, MessageFormat.format(tooltipFormat, "Column 1", "1"), true);
+        checkTooltipAtDataPoint(cb, 0, 0, MessageFormat.format(tooltipFormat, "Column 1", "1"), true);
 
         bot.activeEditor().bot().cTabItem(title.concat(" - Line Graph")).activate();
         cb = bot.widget(matcher);
         tooltipFormat = "Series: {0}\nx: {1}\ny: {2}";
         String lineChartTooltip = MessageFormat.format(tooltipFormat, "Column 1", "2", "2");
-        checkTooltipAtDataPoint(cb, 1, lineChartTooltip, true);
+        checkTooltipAtDataPoint(cb, 0, 1, lineChartTooltip, true);
 
         // The tooltip should disappear when a point moves away from the mouse, without need for mouse movement.
         cb.setScale(0.2);
-        checkTooltipAtDataPoint(cb, -1, lineChartTooltip, false);
+        checkTooltipAtDataPoint(cb, 0, -1, lineChartTooltip, false);
     }
 
     /**
      * May move the mouse to a desired data point on a chart and test for the tooltip that appears.
      * @param cb The AbstractChartBuilder containing the chart to test.
+     * @param series The index of the data series to hover over.
      * @param dataPoint The data point of the series to move the mouse to. Set this to -1
      * or less if the mouse should stay where it is.
      * @param expectedTooltip The expected contents of the tooltip.
      * @param shellShouldExist Set to <code>false</code> if the tooltip should not be found.
      */
-    private static void checkTooltipAtDataPoint(final AbstractChartBuilder cb, final int dataPoint, final String expectedTooltip,
+    private void checkTooltipAtDataPoint(final AbstractChartBuilder cb, final int series,
+            final int dataPoint, final String expectedTooltip,
             final boolean shellShouldExist) {
+        if (dataPoint >= 0) {
 
-        for (int retries = 5; retries > 0; retries--) {
-
-            if (dataPoint >= 0) {
-                final Event event = new Event();
-                event.type = SWT.MouseMove;
-                // Jitter the mouse before moving to the data point
-                UIThreadRunnable.syncExec(new VoidResult() {
-                    @Override
-                    public void run() {
-                        event.x = 0;
-                        event.y = 0;
-                        bot.getDisplay().post(event);
-                    }
-                });
-                bot.sleep(100);
-                UIThreadRunnable.syncExec(new VoidResult() {
-                    @Override
-                    public void run() {
-                        Point mousePoint = cb.getChart().getPlotArea().toDisplay(
-                                cb.getChart().getSeriesSet().getSeries()[0].getPixelCoordinates(dataPoint));
-                        event.x = mousePoint.x;
-                        event.y = mousePoint.y;
-                        bot.getDisplay().post(event);
-                    }
-                });
-            }
-
-            bot.sleep(500); // Give some time for the tooltip to appear/change
-
-            boolean foundTooltip = UIThreadRunnable.syncExec(new BoolResult() {
+            bot.sleep(500);
+            UIThreadRunnable.syncExec(new VoidResult() {
                 @Override
-                public Boolean run() {
-                    for (SWTBotShell bshell : bot.shells()) {
-                        Control[] children = bshell.widget.getChildren();
-                        if (children.length == 1 && children[0] instanceof Text
-                                && children[0].isVisible()
-                                && expectedTooltip.equals(((Text) children[0]).getText())) {
+                public void run() {
+                    Event event = new Event();
+                    event.type = SWT.MouseMove;
+                    event.x = 0;
+                    event.y = 0;
+                    bot.getDisplay().post(event);
 
-                            return true;
-                        }
-                    }
-                    return false;
+                    Point mousePoint = cb.getChart().getPlotArea().toDisplay(
+                            cb.getChart().getSeriesSet().getSeries()[0].getPixelCoordinates(dataPoint));
+                    event.x = mousePoint.x;
+                    event.y = mousePoint.y;
+                    bot.getDisplay().post(event);
                 }
             });
+        }
 
-            if (foundTooltip == shellShouldExist) {
-                return;
+        bot.sleep(500); // Give some time for the tooltip to appear/change
+
+        UIThreadRunnable.syncExec(new VoidResult() {
+            @Override
+            public void run() {
+                for (SWTBotShell bshell : bot.shells()) {
+                    Control[] children = bshell.widget.getChildren();
+                    if (children.length == 1 && children[0] instanceof Text
+                            && children[0].isVisible()
+                            && expectedTooltip.equals(((Text) children[0]).getText())) {
+                        if (!shellShouldExist) {
+                            throw new AssertionError("Did not expect to find this tooltip, but found it: " + expectedTooltip);
+                        }
+                        return;
+                    }
+                }
+                if (shellShouldExist) {
+                    throw new AssertionError("Didn't find the expected tooltip: " + expectedTooltip);
+                }
             }
-        }
-
-        if (shellShouldExist) {
-            throw new AssertionError("Didn't find the expected tooltip: " + expectedTooltip);
-        } else {
-            throw new AssertionError("Did not expect to find this tooltip, but found it: " + expectedTooltip);
-        }
+        });
     }
 
-    private static void openRunConfigurations(String scriptName) {
+    private void openRunConfigurations(String scriptName) {
         // Focus on project explorer view.
         projectExplorer.setFocus();
         new SWTBotMenu(ContextMenuHelper.contextMenu(
@@ -1347,7 +1334,7 @@ public class TestCreateSystemtapScript {
                 "Run As", "Run Configurations...")).click();
     }
 
-    private static void setupGraphWithTests(String title, boolean isTab) {
+    private void setupGraphWithTests(String title, boolean isTab) {
         SWTBotShell firstShell = bot.activeShell();
 
         openGraphMenu(isTab);
@@ -1374,7 +1361,7 @@ public class TestCreateSystemtapScript {
         firstShell.setFocus();
     }
 
-    private static void setupGraphGeneral(String title, int numItems, String graphID, boolean useRowNum, boolean isTab) {
+    private void setupGraphGeneral(String title, int numItems, String graphID, boolean useRowNum, boolean isTab) {
         int offset = useRowNum ? 0 : 1;
         SWTBotShell firstShell = bot.activeShell();
 
@@ -1402,7 +1389,7 @@ public class TestCreateSystemtapScript {
         firstShell.setFocus();
     }
 
-    private static void openGraphMenu(boolean isTab) {
+    private void openGraphMenu(boolean isTab) {
         if (!isTab) {
             bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton).click();
         } else {
@@ -1419,7 +1406,7 @@ public class TestCreateSystemtapScript {
         }
     }
 
-    private static void createAndViewDummyData(String[] titles, Object[] data) {
+    private void createAndViewDummyData(String[] titles, Object[] data) {
         if (data.length % titles.length != 0) {
             throw new IllegalArgumentException("data.length must be a multiple of titles.length.");
         }
@@ -1461,7 +1448,7 @@ public class TestCreateSystemtapScript {
      * Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=344484
      * @param currSelection The index of the radiobutton to deselect
      */
-    private static void deselectDefaultSelection(final int currSelection) {
+    private void deselectDefaultSelection(final int currSelection) {
         UIThreadRunnable.syncExec(new VoidResult() {
             @Override
             public void run() {

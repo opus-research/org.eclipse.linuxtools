@@ -18,16 +18,13 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.eclipse.linuxtools.ctf.core.trace.CTFStream;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.Metadata;
+import org.eclipse.linuxtools.ctf.core.trace.CTFStream;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -209,9 +206,8 @@ public class MetadataTest {
     public void testStreamTextMD() throws CTFReaderException {
         try (CTFTrace trace = testSingleFragment();) {
             fixture.parseTextFragment(mdSecond);
-            final List<IEventDeclaration> eventDeclarations = new ArrayList<>(trace.getEventDeclarations(0L));
-            assertEquals(2, eventDeclarations.size());
-            assertEquals("bozo_the_clown", eventDeclarations.get(1).getName());
+            assertEquals(2, trace.getEventDeclarations(0L).size());
+            assertEquals("bozo_the_clown", trace.getEventDeclarations(0L).get(1).getName());
         }
     }
 

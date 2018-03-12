@@ -210,17 +210,15 @@ To import a set of traces to a trace folder, right-click on the target folder an
 
 [[Image:images/ProjectImportTraceAction.png]]
 
-At this point, the '''Import Trace Wizard''' will show for selecting traces to import. By default, it shows the correct destination directory where the traces will be imported to. Now, specify the location of the traces in the '''Root directory'''. For that click on the button '''Browse''', browse the media to the location of the traces and click on '''OK'''. Then select the traces to import in the list of files and folders.
+At this point, the '''Import Trace Wizard''' will show for selecting traces to import. By default, it shows the correct destination directory where the traces will be imported to. Now, specify the location of the traces in the '''Source directory'''. For that click on the button '''Browse''', browse the media to the location of the traces and click on '''OK'''. Then select the traces to import in the list of files and folders. Optionally, select the '''Trace Type''' from the drop-down menu.
 
-Traces can also be imported from an archive file such as a zip or a tar file by selecting the '''Select archive file''' option then by clicking '''Browse'''. Then select the traces to import in the list of files and folders as usual.
-
-Optionally, select the '''Trace Type''' from the drop-down menu. If '''Trace Type''' is set to '''<Automatic Detection>''', the wizard will attempt to detect the trace types of the selected files. The automatic detection algorithm validates a trace against all known trace types. If multiple trace types are valid, a trace type is chosen based on a confidence criteria. The validation process and the computation of the confidence level are trace type specific. Optionally, '''Import unrecognized traces''' can be selected to import trace files that could not be automatically detected by '''<Automatic Detection>'''.
+If '''Trace Type''' is set to '''<Automatic Detection>''', the wizard will attempt to detect the trace types of the selected files. The automatic detection algorithm validates a trace against all known trace types. If multiple trace types are valid, a trace type is chosen based on a confidence criteria. The validation process and the computation of the confidence level are trace type specific. Optionally, '''Import unrecognized traces''' can be selected to import trace files that could not be automatically detected by '''<Automatic Detection>'''.
 
 Select or deselect the checkboxes for '''Overwrite existing trace without warning''', '''Create links in workspace''' and '''Preserve folder structure'''. When all options are configured, click on '''Finish'''.
 
 Note that traces of certain types (e.g. LTTng Kernel) are actually a composite of multiple channel traces grouped under a folder. Either the folder or its files can be selected to import the trace.
 
-The option '''Preserve folder structure''' will create, if necessary, the structure of folders relative to (and excluding) the selected '''Root directory''' (or '''Archive file''') into the target trace folder.
+The option '''Preserve folder structure''' will create, if necessary, the structure of folders relative to (and excluding) the selected '''Source directory''' into the target trace folder.
 
 [[Image:images/ProjectImportTraceDialog.png]]
 
@@ -230,7 +228,7 @@ If a trace already exists with the same name in the target trace folder, the use
 
 If one selects '''Rename All''', '''Overwrite All''' or '''Skip All''' the choice will be applied for all traces with a name conflict.
 
-Upon successful importing, the traces will be stored in the target trace folder. If a trace type was associated to a trace, then the corresponding icon will be displayed. If no trace type is detected the default editor icon associated with this file type will be displayed. Linked traces will have a little arrow as decorator on the right bottom corner.
+Upon successful importing, the traces will be stored in the target trace folder. If a trace type was associated to a trace, then the corresponding icon will be displayed. If no trace type is detected the unknown icon [[Image:images/unknown_parser.gif]] will be displayed. Linked traces will have a little arrow as decorator on the right bottom corner.
 
 Note that trace type is an extension point of the '''Tracing and Monitoring Framework (TMF)'''. Depending on the which features are loaded, the list of trace types can vary.
 
@@ -320,7 +318,7 @@ After selecting the trace type, the trace icon will be updated with the correspo
 
 === Opening a Trace or Experiment ===
 
-A trace or experiment can be opened by double-clicking the left mouse button on the trace or experiment in the '''Project Explorer''' view. Alternatively, select the trace or experiment in the in the '''Project Explorer''' view and click the right mouse button. Then select '''Open''' menu item of the context-sensitive menu. If there is no trace type set for a file resource then the file will be opened in the default editor associated with this file type.
+A trace or experiment can be opened by double-clicking the left mouse button on the trace or experiment in the '''Project Explorer''' view. Alternatively, select the trace or experiment in the in the '''Project Explorer''' view and click the right mouse button. Then select '''Open''' menu item of the context-sensitive menu.
 
 [[Image:images/OpenTraceAction.png]]
 
@@ -580,8 +578,6 @@ In each histogram, the following keys are handled:
 * '''Right Arrow''': Moves the current event to the next non-empty bar
 * '''Home''': Sets the current time to the first non-empty bar
 * '''End''': Sets the current time to the last non-empty histogram bar
-* '''Plus (+)''': Zoom in
-* '''Minus (-)''': Zoom out
 
 == Statistics View ==
 
@@ -2101,58 +2097,6 @@ Here is the full XML for the time graph view:
 The following screenshot shows the result of the preceding example on a test trace. The trace used, as well as the XML file are available [http://secretaire.dorsal.polymtl.ca/~gbastien/Xml4Traces/XML_documentation_example.tar.gz here].
 
 [[Image:images/Xml_analysis_screenshot.png| XML analysis with view]]
-
-== Defining an XML XY chart ==
-
-An XY chart displays series as a set of numerical values over time. The X-axis represents the time and is synchronized with the trace's current time range. The Y-axis can be any numerical value.
-
-Such views can be defined in XML using the data in the state system. The state system itself could have been built by an XML-defined state provider or by any pre-defined Java analysis. It only requires knowing the structure of the state system, which can be explored using the [[#State System Explorer View | State System Explorer View]] (or programmatically using the methods in ''ITmfStateSystem'').
-
-We will use the LTTng Kernel Analysis on LTTng kernel traces to show an example XY chart. In this state system, the status of each CPU is a numerical value. We will display this value as the Y axis of the series. There will be one series per CPU. The XML to display these entries would be as such:
-
-<pre>
-<entry path="CPUs/*">
-	<display type="constant" value="Status" />
-	<name type="self" />
-</entry>
-</pre>
-
-But first, the view has to be declared. It has an ID, to uniquely identify this view among all the available XML files.
-
-<pre>
-<xyView id="my.test.xy.chart.view">
-</pre>
-
-Like for the time graph views, optional header information can be added to the view. '''analysis''' elements will associate the view only to the analysis identified by the "id" attribute. It can be either the ID of the state provider, like in this case, or the analysis ID of any analysis defined in Java. If no analysis is specified, the view will appear under every analysis with a state system. The '''label''' element allows to give a more user-friendly name to the view. The label does not have to be unique. As long as the ID is unique, views for different analyses can use the same name.
-
-<pre>
-<head>
-    <analysis id="org.eclipse.linuxtools.lttng2.kernel.analysis" />
-    <label value="CPU status XY view" />
-</head>
-</pre>
-
-Here is the full XML for the XY Chart that displays the CPU status over time of an LTTng Kernel Trace:
-
-<pre>
-<tmfxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../org.eclipse.linuxtools.tmf.analysis.xml.core/src/org/eclipse/linuxtools/tmf/analysis/xml/core/module/xmlDefinition.xsd">
-	<xyView id="my.test.xy.chart.view">
-		<head>
-			<analysis id="org.eclipse.linuxtools.lttng2.kernel.analysis" />
-			<label value="CPU status XY view" />
-		</head>
-
-		<entry path="CPUs/*">
-			<display type="constant" value="Status" />
-			<name type="self" />
-		</entry>
-	</xyView>
-</tmfxml>
-</pre>
-
-The following screenshot shows the result of the preceding example on a LTTng Kernel Trace.
-
-[[Image:images/XML_xy_chart.png| XML XY chart]]
 
 = Limitations =
 
