@@ -71,7 +71,7 @@ public class DockerImage implements IDockerImage {
 	public static Map<String, List<String>> extractTagsByRepo(final List<String> repoTags) {
 		final Map<String, List<String>> results = new HashMap<>();
 		for(String entry : repoTags) {
-			final int indexOfColonChar = entry.lastIndexOf(':');
+			final int indexOfColonChar = entry.indexOf(':');
 			final String repo = (indexOfColonChar > -1) ? entry.substring(0, indexOfColonChar) : entry;
 			if(!results.containsKey(repo)) {
 				results.put(repo, new ArrayList<String>());
@@ -95,7 +95,7 @@ public class DockerImage implements IDockerImage {
 		} 
 		final List<String> tags = new ArrayList<>();
 		for(String repoTag : repoTags) {
-			final int indexOfColonChar = repoTag.lastIndexOf(':');
+			final int indexOfColonChar = repoTag.indexOf(':');
 			if(indexOfColonChar == -1) {
 				continue;
 			}
