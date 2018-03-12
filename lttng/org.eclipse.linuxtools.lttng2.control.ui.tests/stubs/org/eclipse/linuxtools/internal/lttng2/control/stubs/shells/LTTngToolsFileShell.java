@@ -236,12 +236,13 @@ public class LTTngToolsFileShell extends TestCommandShell {
     }
 
     @Override
-   public synchronized ICommandResult executeCommand(String command, IProgressMonitor monitor) throws ExecutionException {
+   public synchronized ICommandResult executeCommand(List<String> command, IProgressMonitor monitor) throws ExecutionException {
         Map<String, ICommandResult> commands = fScenarioMap.get(fScenario);
-        String fullCommand = command;
+        String commandLine = toCommandSring(command);
+        String fullCommand = commandLine;
 
-        Matcher matcher = LTTNG_LIST_SESSION_PATTERN.matcher(command);
-        if (matcher.matches() && !command.matches(LTTNG_LIST_PROVIDER_PATTERN)) {
+        Matcher matcher = LTTNG_LIST_SESSION_PATTERN.matcher(commandLine);
+        if (matcher.matches() && !commandLine.matches(LTTNG_LIST_PROVIDER_PATTERN)) {
             String sessionName = matcher.group(1).trim();
             Integer i = fSessionNameMap.get(sessionName);
             if (i != null) {
@@ -276,5 +277,13 @@ public class LTTngToolsFileShell extends TestCommandShell {
             throw new RuntimeException("line is null");
         }
         return line.matches(COMMENT_KEY);
+    }
+
+    private static String toCommandSring(List<String> command) {
+        StringBuilder builder = new StringBuilder();
+        for (String segment : command) {
+            builder.append(segment).append(' ');
+        }
+        return builder.toString().trim();
     }
 }
