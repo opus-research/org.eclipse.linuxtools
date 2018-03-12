@@ -27,10 +27,6 @@ import java.util.Map;
 import org.eclipse.linuxtools.internal.tmf.core.synchronization.graph.SyncSpanningTree;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventDependency;
-import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
-import org.eclipse.linuxtools.tmf.core.synchronization.Messages;
-import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithm;
-import org.eclipse.linuxtools.tmf.core.synchronization.TimestampTransformFactory;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
@@ -47,11 +43,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  *
  * @author Geneviève Bastien
  * @since 3.0
- * @deprecated This class has been moved to internal. Use one of
- *             {@link SynchronizationAlgorithmFactory#getFullyIncrementalAlgorithm()}
- *             method to get this algorithm.
  */
-@Deprecated
 public class SyncAlgorithmFullyIncremental extends SynchronizationAlgorithm {
 
     /**
