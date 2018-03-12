@@ -11,15 +11,15 @@
 package org.eclipse.linuxtools.docker.core;
 
 public interface IDockerIpamConfig {
-	public String subnet();
+	String subnet();
 
-	public void subnet(final String subnet);
+	void subnet(final String subnet);
 
-	public String ipRange();
+	String ipRange();
 
-	public void ipRange(final String ipRange);
+	void ipRange(final String ipRange);
 
-	public String gateway();
+	String gateway();
 
-	public void gateway(final String gateway);
+	void gateway(final String gateway);
 }

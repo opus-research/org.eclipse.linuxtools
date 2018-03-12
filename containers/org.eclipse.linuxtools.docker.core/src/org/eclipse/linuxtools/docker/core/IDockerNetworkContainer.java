@@ -12,12 +12,12 @@ package org.eclipse.linuxtools.docker.core;
 
 public interface IDockerNetworkContainer {
 
-	public String endpointId();
+	String endpointId();
 
-	public String macAddress();
+	String macAddress();
 
-	public String ipv4address();
+	String ipv4address();
 
-	public String ipv6address();
+	String ipv6address();
 
 }

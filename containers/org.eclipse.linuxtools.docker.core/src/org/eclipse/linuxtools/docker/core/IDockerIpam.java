@@ -14,8 +14,8 @@ import java.util.List;
 
 public interface IDockerIpam {
 
-	public String driver();
+	String driver();
 
-	public List<IDockerIpamConfig> config();
+	List<IDockerIpamConfig> config();
 
 }

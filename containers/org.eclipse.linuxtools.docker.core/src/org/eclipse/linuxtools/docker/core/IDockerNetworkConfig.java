@@ -14,12 +14,12 @@ import java.util.Map;
 
 public interface IDockerNetworkConfig {
 
-	public String name();
+	String name();
 
-	public String driver();
+	String driver();
 
-	public IDockerIpam ipam();
+	IDockerIpam ipam();
 
-	public Map<String, String> options();
+	Map<String, String> options();
 
 }

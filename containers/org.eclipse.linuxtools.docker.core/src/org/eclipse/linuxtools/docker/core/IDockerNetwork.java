@@ -14,18 +14,18 @@ import java.util.Map;
 
 public interface IDockerNetwork {
 
-	public String name();
+	String name();
 
-	public String id();
+	String id();
 
-	public String scope();
+	String scope();
 
-	public String driver();
+	String driver();
 
-	public Map<String, String> options();
+	Map<String, String> options();
 
-	public Map<String, IDockerNetworkContainer> containers();
+	Map<String, IDockerNetworkContainer> containers();
 
-	public IDockerIpam ipam();
+	IDockerIpam ipam();
 
 }

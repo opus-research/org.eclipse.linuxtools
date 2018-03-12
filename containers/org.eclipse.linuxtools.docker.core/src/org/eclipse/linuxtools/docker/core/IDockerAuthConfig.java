@@ -12,12 +12,12 @@ package org.eclipse.linuxtools.docker.core;
 
 public interface IDockerAuthConfig {
 
-	public char[] username();
+	char[] username();
 
-	public char[] password();
+	char[] password();
 
-	public char[] email();
+	char[] email();
 
-	public char[] serverAddress();
+	char[] serverAddress();
 
 }
