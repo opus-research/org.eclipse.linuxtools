@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
@@ -109,8 +110,7 @@ public class DockerExplorerView extends CommonNavigator implements
 		final FormToolkit toolkit = new FormToolkit(parent.getDisplay());
 		this.pageBook = new PageBook(parent, SWT.NONE);
 		this.connectionsPane = createConnectionsPane(pageBook, toolkit);
-		this.explanationsPane = createExplanationPane(connectionsPane,
-				pageBook, toolkit);
+		this.explanationsPane = createExplanationPane(pageBook, toolkit);
 		showConnectionsOrExplanations();
 		this.containersAndImagesSearchFilter = getContainersAndImagesSearchFilter();
 		getCommonViewer().addFilter(containersAndImagesSearchFilter);
@@ -149,7 +149,7 @@ public class DockerExplorerView extends CommonNavigator implements
 		final Composite container = form.getBody();
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(5, 5)
 				.applyTo(container);
-		this.search = new Text(container, SWT.SEARCH);
+		this.search = new Text(container, SWT.SEARCH | SWT.ICON_SEARCH);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
 				.grab(true, false).applyTo(search);
 		search.addModifyListener(onSearch());
@@ -186,8 +186,8 @@ public class DockerExplorerView extends CommonNavigator implements
 		};
 	}
 
-	private Control createExplanationPane(final Control connectionsPane,
-			final PageBook pageBook, final FormToolkit toolkit) {
+	private Control createExplanationPane(final PageBook pageBook,
+			final FormToolkit toolkit) {
 		final Form form = toolkit.createForm(pageBook);
 		final Composite container = form.getBody();
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(5, 5)
@@ -199,12 +199,11 @@ public class DockerExplorerView extends CommonNavigator implements
 				SWT.COLOR_LIST_BACKGROUND));
 		GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.FILL)
 				.grab(true, false).applyTo(link);
-		link.addSelectionListener(onExplanationClicked(connectionsPane, link));
+		link.addSelectionListener(onExplanationClicked());
 		return form;
 	}
 
-	private SelectionAdapter onExplanationClicked(
-			final Control connectionsPane, final Control explanationPane) {
+	private SelectionAdapter onExplanationClicked() {
 		return new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -212,7 +211,7 @@ public class DockerExplorerView extends CommonNavigator implements
 				final WizardDialog dialog = new WizardDialog(PlatformUI
 						.getWorkbench().getModalDialogShellProvider()
 						.getShell(), wizard);
-				if (dialog.open() == WizardDialog.OK) {
+				if (dialog.open() == Window.OK) {
 					getCommonViewer().refresh();
 				}
 				// if a (first) connection is added, the
