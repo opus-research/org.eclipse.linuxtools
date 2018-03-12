@@ -415,6 +415,7 @@ public class ImageRunSelectionPage extends WizardPage {
 					setControlsEnabled(targetButtons, true);
 				}
 			}
+
 		};
 	}
 

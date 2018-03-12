@@ -21,64 +21,61 @@ import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.linuxtools.internal.docker.ui.views.ImagePullProgressHandler;
-import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageSearch;
+import org.eclipse.linuxtools.internal.docker.ui.wizards.ImagePull;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-/**
- * Command handler that opens the {@link ImageSearch} wizard and pulls the
- * selected image in background on completion.
- *
- */
 public class PullImageCommandHandler extends AbstractHandler {
 
 	private final static String PULL_IMAGE_JOB_TITLE = "ImagePull.title"; //$NON-NLS-1$
 	private final static String PULL_IMAGE_JOB_TASK = "ImagePull.msg"; //$NON-NLS-1$
 	private static final String ERROR_PULLING_IMAGE = "ImagePullError.msg"; //$NON-NLS-1$
+	
+	private IDockerConnection connection;
 
 	@Override
 	public Object execute(final ExecutionEvent event) {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-		final IDockerConnection connection = CommandUtils
-				.getCurrentConnection(activePart);
-		final ImageSearch wizard = new ImageSearch(connection);
+		final ImagePull wizard = new ImagePull();
 		final boolean pullImage = CommandUtils.openWizard(wizard,
 				HandlerUtil.getActiveShell(event));
 		if (pullImage) {
-			performPullImage(connection, wizard.getSelectedImage().getName(),
-					wizard.getSelectedImageTag().getName());
+			if (activePart instanceof DockerImagesView) {
+				connection = ((DockerImagesView) activePart)
+						.getConnection();
+			}
+			performPullImage(wizard);
 		}
 		return null;
 	}
-
-	private void performPullImage(final IDockerConnection connection,
-			final String imageName, final String tagName) {
-		final Job pullImageJob = new Job(DVMessages
-				.getFormattedString(PULL_IMAGE_JOB_TITLE, imageName, tagName)) {
+	
+	private void performPullImage(final ImagePull wizard) {
+		final Job pullImageJob = new Job(DVMessages.getFormattedString(
+				PULL_IMAGE_JOB_TITLE, wizard.getImageId())) {
 
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
+				final String id = wizard.getImageId();
 				monitor.beginTask(DVMessages.getString(PULL_IMAGE_JOB_TASK),
 						IProgressMonitor.UNKNOWN);
 				// pull the image and let the progress
 				// handler refresh the images when done
 				try {
-					((DockerConnection) connection).pullImage(
-							imageName + ":" + tagName,
-							new ImagePullProgressHandler(connection,
-									imageName));
+					((DockerConnection) connection).pullImage(id,
+							new ImagePullProgressHandler(connection, id));
 				} catch (final DockerException e) {
 					Display.getDefault().syncExec(new Runnable() {
 
 						@Override
 						public void run() {
-							MessageDialog.openError(
-									Display.getCurrent().getActiveShell(),
+							MessageDialog.openError(Display.getCurrent()
+									.getActiveShell(),
 									DVMessages.getFormattedString(
-											ERROR_PULLING_IMAGE, imageName),
-									e.getMessage());
+											ERROR_PULLING_IMAGE, id), e
+											.getMessage());
 
 						}
 

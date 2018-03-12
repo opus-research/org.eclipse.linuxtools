@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.beans.PojoProperties;
+import org.eclipse.core.databinding.observable.ChangeEvent;
+import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
@@ -69,6 +71,7 @@ import org.eclipse.swt.widgets.Text;
 public class ImageSearchPage extends WizardPage {
 
 	private final ImageSearchModel model;
+	private Button searchImageButton;
 	private final DataBindingContext ctx = new DataBindingContext();
 
 	/**
@@ -80,10 +83,6 @@ public class ImageSearchPage extends WizardPage {
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
 		setMessage(WizardMessages.getString("ImageSearchPage.title")); //$NON-NLS-1$
 		this.model = model;
-	}
-
-	public IDockerImageSearchResult getSelectedImage() {
-		return model.getSelectedImage();
 	}
 
 	@Override
@@ -112,7 +111,7 @@ public class ImageSearchPage extends WizardPage {
 				.grab(true, false).applyTo(searchImageText);
 		searchImageText.addKeyListener(onKeyPressed());
 		searchImageText.addTraverseListener(onSearchImageTextTraverse());
-		final Button searchImageButton = new Button(container, SWT.NONE);
+		searchImageButton = new Button(container, SWT.NONE);
 		searchImageButton
 				.setText(WizardMessages.getString("ImageSearchPage.search")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
@@ -149,7 +148,10 @@ public class ImageSearchPage extends WizardPage {
 				SWT.NONE,
 				SWT.CENTER,
 				70, new ImageAutomatedColumnLabelProvider());
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
+		searchResultTableViewer
+				.setContentProvider(new ObservableListContentProvider());
+		// searchResultTableViewer.addSelectionChangedListener(onImageSelected());
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(COLUMNS, 1).hint(200, 100)
 				.applyTo(table);
 		// description text area
@@ -188,15 +190,18 @@ public class ImageSearchPage extends WizardPage {
 			}
 		});
 		// observe the viewer content
-		searchResultTableViewer
-				.setContentProvider(new ObservableListContentProvider());
-		// observe the viewer content
 		final IObservableList observableSearchResultModel = BeanProperties
 				.list(ImageSearchModel.class,
-						ImageSearchModel.IMAGE_SEARCH_RESULT)
+						ImageSearchModel.SEARCH_RESULT)
 				.observe(model);
-		searchResultTableViewer.setInput(observableSearchResultModel);
+		observableSearchResultModel.addChangeListener(new IChangeListener() {
 
+			@Override
+			public void handleChange(ChangeEvent event) {
+				searchResultTableViewer.setInput(event.getObservable());
+
+			}
+		});
 		// observe the viewer selection
 		ctx.bindValue(
 				ViewerProperties.singleSelection()
@@ -211,7 +216,7 @@ public class ImageSearchPage extends WizardPage {
 		ctx.bindValue(WidgetProperties.text().observe(selectedImageDescription),
 				observableSelectedImageDescription);
 		searchImageText.setFocus();
-		setControl(container);
+		setControl(parent);
 	}
 
 	private TableViewerColumn addTableViewerColum(final TableViewer tableViewer,
@@ -282,6 +287,10 @@ public class ImageSearchPage extends WizardPage {
 								final List<IDockerImageSearchResult> searchResults = ImageSearchPage.this.model
 										.getSelectedConnection()
 										.searchImages(term);
+								monitor.beginTask(
+										WizardMessages.getString(
+												"ImageSearchPage.searchTask"), //$NON-NLS-1$
+										1);
 								searchResultQueue.offer(searchResults);
 							} catch (DockerException e) {
 								Activator.log(e);
@@ -294,8 +303,7 @@ public class ImageSearchPage extends WizardPage {
 			Display.getCurrent().asyncExec(new Runnable() {
 				@Override
 				public void run() {
-					ImageSearchPage.this.model
-							.setImageSearchResult(searchResult);
+					ImageSearchPage.this.model.setSearchResult(searchResult);
 					// refresh the wizard buttons
 					getWizard().getContainer().updateButtons();
 				}
@@ -376,7 +384,7 @@ public class ImageSearchPage extends WizardPage {
 	static abstract class IconColumnLabelProvider
 			extends StyledCellLabelProvider {
 
-		private static final Image ICON = SWTImagesFactory.DESC_RESOLVED
+		private static final Image ICON = SWTImagesFactory.DESC_CHECKED
 				.createImage();
 
 		@Override
@@ -403,5 +411,4 @@ public class ImageSearchPage extends WizardPage {
 		abstract boolean doPaint(final Object element);
 
 	}
-
 }
