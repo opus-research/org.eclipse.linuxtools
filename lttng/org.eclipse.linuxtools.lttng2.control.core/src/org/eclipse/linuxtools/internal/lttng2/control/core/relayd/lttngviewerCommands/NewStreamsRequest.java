@@ -50,4 +50,5 @@ public class NewStreamsRequest implements IRelayCommand {
         bb.putLong(fSessionId);
         return data;
     }
+
 }
