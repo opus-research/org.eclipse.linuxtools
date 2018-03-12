@@ -17,6 +17,7 @@ import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.junit.rules.ExternalResource;
 
 /**
@@ -27,21 +28,15 @@ public class ClearConnectionManagerRule extends ExternalResource {
 	@Override
 	protected void after() {
 		final SWTWorkbenchBot bot = new SWTWorkbenchBot();
-		final DockerExplorerView dockerExplorerView = getDockerExplorerView(bot);
+		final SWTBotView dockerExplorerViewBot = bot.viewById("org.eclipse.linuxtools.docker.ui.dockerExplorerView");
+		final DockerExplorerView dockerExplorerView = (DockerExplorerView) (dockerExplorerViewBot.getViewReference()
+				.getView(true));
 		SWTUtils.syncExec(() -> {
 			Stream.of(DockerConnectionManager.getInstance().getConnections())
 					.forEach(c -> DockerConnectionManager.getInstance().removeConnection(c));
-			if (dockerExplorerView != null) {
-				dockerExplorerView.getCommonViewer().refresh(true);
-				dockerExplorerView.showConnectionsOrExplanations();
-			}
+			dockerExplorerView.getCommonViewer().refresh(true);
+			dockerExplorerView.showConnectionsOrExplanations();
 		});
 		DockerConnectionManager.getInstance().setConnectionSettingsFinder(new DefaultDockerConnectionSettingsFinder());
-	}
-
-	private DockerExplorerView getDockerExplorerView(final SWTWorkbenchBot bot) {
-		return bot.views().stream().filter(v -> v.getReference().getId().equals(DockerExplorerView.VIEW_ID))
-				.map(viewBot -> (DockerExplorerView) (viewBot.getViewReference().getView(true))).findFirst()
-				.orElse(null);
 	}
 }
