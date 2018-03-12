@@ -239,7 +239,8 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		final Label containerNameLabel = new Label(container, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(imageSelectionLabel);
-		containerNameLabel.setText("Name:"); //$NON-NLS-1$
+		containerNameLabel.setText(WizardMessages
+				.getString("ImageRunSelectionPage.containerName")); //$NON-NLS-1$
 		final Text containerNameText = new Text(container, SWT.BORDER);
 		containerNameText.setToolTipText(WizardMessages
 				.getString("ImageRunSelectionPage.containerTooltip")); //$NON-NLS-1$
@@ -599,7 +600,8 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 						.getInstance().findConnection(connectionName);
 				if (connection == null || !connection.isOpen()) {
 					setErrorMessage(WizardMessages
-							.getString("ErrorInactiveConnection.msg")); //$NON-NLS-1$
+							.getFormattedString("ErrorInactiveConnection.msg", //$NON-NLS-1$
+									connectionName));
 					return false;
 				}
 			}
