@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IEventInfo;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceChannelOutputType;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceEnablement;
 
 /**
@@ -56,7 +55,7 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
     /**
      * The Output type of the channel.
      */
-    private TraceChannelOutputType fOutputType = TraceChannelOutputType.UNKNOWN;
+    private String fOutputType = ""; //$NON-NLS-1$
     /**
      * The channel enable state.
      */
@@ -107,7 +106,7 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         fMaxSizeTraceFiles = other.fMaxSizeTraceFiles;
         fMaxNumberTraceFiles = other.fMaxNumberTraceFiles;
         fBufferType = other.fBufferType;
-        fOutputType = (other.fOutputType == null ? null : other.fOutputType);
+        fOutputType = (other.fOutputType == null ? null : String.valueOf(other.fOutputType));
         fState = other.fState;
         for (Iterator<IEventInfo> iterator = other.fEvents.iterator(); iterator.hasNext();) {
             IEventInfo event = iterator.next();
@@ -175,12 +174,12 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
 
     @Override
     public String getOutputType() {
-        return fOutputType.getInName();
+        return fOutputType;
     }
 
     @Override
     public void setOutputType(String type) {
-        fOutputType = TraceChannelOutputType.valueOfString(type);
+        fOutputType = type;
     }
 
     @Override
@@ -298,7 +297,7 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
         output.append(",ReadTimer=");
         output.append(fReadTimer);
         output.append(",output=");
-        output.append(fOutputType.getInName());
+        output.append(fOutputType);
         if ((fBufferType != null) && !fBufferType.equals(BufferType.BUFFER_TYPE_UNKNOWN) && !fBufferType.equals(BufferType.BUFFER_SHARED)) {
             output.append(",BufferType=");
             output.append(fBufferType);
