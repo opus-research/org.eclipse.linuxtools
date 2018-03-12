@@ -67,7 +67,7 @@ public class MinimizedFileSystemElement extends FileSystemElement {
 	/**
 	 * Return whether or not population has happened for the receiver.
 	 */
-	public boolean isPopulated() {
+	boolean isPopulated() {
 		return this.populated;
 	}
 

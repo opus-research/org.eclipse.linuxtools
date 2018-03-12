@@ -70,11 +70,4 @@ public class DockerImageTagSearchResult {
 		return this.resolved;
 	}
 
-	@Override
-	public String toString() {
-		return "DockerImageTagSearchResult [repository=" + repository //$NON-NLS-1$
-				+ ", name=" + name + ", layer=" + layer + ", resolved=" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				+ resolved + "]"; //$NON-NLS-1$
-	}
-
 }

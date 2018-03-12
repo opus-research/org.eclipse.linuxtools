@@ -15,8 +15,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.runtime.IPath;
@@ -33,6 +31,9 @@ import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.core.ContainerFileProxy;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
+import org.eclipse.linuxtools.internal.docker.ui.TarEntry;
+import org.eclipse.linuxtools.internal.docker.ui.TarException;
+import org.eclipse.linuxtools.internal.docker.ui.TarInputStream;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ContainerCopyFrom;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
@@ -109,38 +110,31 @@ public class CopyFromContainerCommandHandler extends AbstractHandler {
 											COPY_FROM_CONTAINER_JOB_SUBTASK,
 											proxy.getFullPath()));
 							monitor.worked(1);
-							TarArchiveInputStream k = new TarArchiveInputStream(
+							TarInputStream k = new TarInputStream(
 									((DockerConnection) connection)
 											.copyContainer(container.id(),
 													proxy.getLink()));
-							TarArchiveEntry te = null;
-							while ((te = k.getNextTarEntry()) != null) {
-								long size = te.getSize();
-								IPath path = new Path(target);
-								path = path.append(te.getName());
-								File f = new File(path.toOSString());
-								if (te.isDirectory()) {
-									f.mkdir();
-									continue;
-								} else {
-									f.createNewFile();
+							TarEntry te = k.getNextEntry();
+							long size = te.getSize();
+							IPath path = new Path(target);
+							path = path.append(proxy.getName());
+							File f = new File(path.toOSString());
+							f.createNewFile();
+							FileOutputStream os = new FileOutputStream(f);
+							if (size > 4096)
+								size = 4096;
+							byte[] barray = new byte[(int) size];
+							while (k.read(barray) > 0) {
+								if (monitor.isCanceled()) {
+									monitor.done();
+									k.close();
+									os.close();
+									return Status.CANCEL_STATUS;
 								}
-								FileOutputStream os = new FileOutputStream(f);
-								if (size > 4096)
-									size = 4096;
-								byte[] barray = new byte[(int) size];
-								while (k.read(barray) > -1) {
-									if (monitor.isCanceled()) {
-										monitor.done();
-										k.close();
-										os.close();
-										return Status.CANCEL_STATUS;
-									}
-									os.write(barray);
-								}
-								os.close();
+								os.write(barray);
 							}
 							k.close();
+							os.close();
 						} catch (final DockerException e) {
 							Display.getDefault()
 									.syncExec(() -> MessageDialog.openError(
@@ -151,14 +145,13 @@ public class CopyFromContainerCommandHandler extends AbstractHandler {
 													ERROR_COPYING_FROM_CONTAINER,
 													proxy.getLink(),
 													container.name()),
-											e.getCause() != null
-													? e.getCause().getMessage()
-													: e.getMessage()));
+											e.getMessage()));
+							// for now
 						}
 					}
 				} catch (InterruptedException e) {
 					// do nothing
-				} catch (IOException e) {
+				} catch (TarException | IOException e) {
 					Activator.log(e);
 				} finally {
 					monitor.done();
