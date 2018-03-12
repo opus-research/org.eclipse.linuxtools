@@ -259,9 +259,6 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		if (model == null || configuration == null) {
-			return;
-		}
 		try {
 			boolean enableLimits = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.ENABLE_LIMITS,

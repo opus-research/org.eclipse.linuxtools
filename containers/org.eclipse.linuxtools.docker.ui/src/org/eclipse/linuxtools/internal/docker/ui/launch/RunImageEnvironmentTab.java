@@ -259,9 +259,6 @@ public class RunImageEnvironmentTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		if (model == null || configuration == null) {
-			return;
-		}
 		try {
 			model.removeEnvironmentVariables();
 			final List<String> environmentVariables = configuration
