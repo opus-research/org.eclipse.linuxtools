@@ -28,6 +28,10 @@ public class SourceDisassemblyData extends AbstractDataManipulator {
         super(title, workingDir, project);
     }
 
+    public SourceDisassemblyData(String title, IPath workingDir) {
+        super(title, workingDir);
+    }
+
     @Override
     public void parse() {
         URI workingDirURI = null;
@@ -42,12 +46,8 @@ public class SourceDisassemblyData extends AbstractDataManipulator {
     }
 
     protected String [] getCommand(String workingDir) {
-        /*
-         * Some versions of perf annotate hangs waiting for some input that never comes.
-         * Redirecting an empty file or /dev/null to its input will avoid this.
-         */
-        return new String[] { "sh", "-c", "perf annotate -i " + workingDir + "perf.data" + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                       " < /dev/null" }; //$NON-NLS-1$
+        return new String[] { "perf", "annotate", //$NON-NLS-1$ //$NON-NLS-2$
+                "-i", workingDir + "perf.data" }; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }
