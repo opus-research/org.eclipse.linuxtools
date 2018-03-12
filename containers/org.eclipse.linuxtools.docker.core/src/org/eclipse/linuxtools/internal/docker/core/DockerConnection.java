@@ -39,6 +39,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
+
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
@@ -97,9 +100,6 @@ import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
-
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
@@ -807,11 +807,6 @@ public class DockerConnection implements IDockerConnection {
 
 	private List<IDockerContainer> listContainers() throws DockerException {
 		final List<IDockerContainer> dclist = new ArrayList<>();
-		// Check that client is not null as this connection may have been closed
-		// but there is an async request to update the containers list left in
-		// the queue
-		if (client == null)
-			return dclist;
 		synchronized (containerLock) {
 			List<Container> list = null;
 			try {
@@ -945,11 +940,6 @@ public class DockerConnection implements IDockerConnection {
 	@Override
 	public List<IDockerImage> listImages() throws DockerException {
 		final List<IDockerImage> dilist = new ArrayList<>();
-		// Check that client is not null as this connection may have been closed
-		// but there is an async request to update the images list left in the
-		// queue
-		if (client == null)
-			return dilist;
 		synchronized (imageLock) {
 			List<Image> rawImages = null;
 			try {
