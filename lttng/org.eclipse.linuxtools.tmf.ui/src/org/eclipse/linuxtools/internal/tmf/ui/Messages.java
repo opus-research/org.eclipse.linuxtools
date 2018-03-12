@@ -269,6 +269,7 @@ public class Messages extends NLS {
     public static String FilterViewer_TypeLabel;
     public static String FilterViewer_ValueHint;
     public static String FilterViewer_ValueLabel;
+    public static String FilterViewer_DeleteActionText;
 
     public static String TmfView_PinActionNameText;
     public static String TmfView_PinActionToolTipText;
