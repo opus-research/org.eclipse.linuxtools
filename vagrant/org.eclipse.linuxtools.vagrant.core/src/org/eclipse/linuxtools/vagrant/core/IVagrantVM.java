@@ -11,26 +11,35 @@
 package org.eclipse.linuxtools.vagrant.core;
 
 import java.io.File;
+import java.util.Map;
 
 public interface IVagrantVM {
 
-	public String id();
+	String id();
 
-	public String name();
+	String name();
 
-	public String provider();
+	String provider();
 
-	public String state();
+	String state();
 
-	public String state_desc();
+	String state_desc();
 
-	public File directory();
+	File directory();
 
-	public String ip();
+	String ip();
 
-	public String user();
+	String user();
 
-	public int port();
+	int port();
 
-	public String identityFile();
+	String identityFile();
+
+	/**
+	 * Return the environment to be passed to any vagrant command process
+	 * launches
+	 * 
+	 * @return an environment
+	 */
+	public Map<String, String> getEnvironment();
 }

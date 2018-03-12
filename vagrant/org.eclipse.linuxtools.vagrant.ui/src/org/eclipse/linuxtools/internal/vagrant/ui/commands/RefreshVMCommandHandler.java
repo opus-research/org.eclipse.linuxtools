@@ -16,17 +16,17 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
 import org.eclipse.linuxtools.internal.vagrant.ui.views.DVMessages;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
+import org.eclipse.linuxtools.vagrant.core.VagrantService;
 
 public class RefreshVMCommandHandler extends AbstractHandler {
 
-	public final static String VM_REFRESH_MSG = "VMRefresh.msg"; //$NON-NLS-1$
+	public static final String VM_REFRESH_MSG = "VMRefresh.msg"; //$NON-NLS-1$
 
 	@Override
 	public Object execute(ExecutionEvent event) {
-		final IVagrantConnection connection = VagrantConnection.getInstance();
+		final IVagrantConnection connection = VagrantService.getInstance();
 		if (connection == null) {
 			return null;
 		}

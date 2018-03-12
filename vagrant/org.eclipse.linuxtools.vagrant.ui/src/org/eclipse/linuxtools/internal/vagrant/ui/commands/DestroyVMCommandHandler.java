@@ -16,33 +16,33 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.vagrant.core.Activator;
-import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantVM;
 import org.eclipse.linuxtools.vagrant.core.VagrantException;
+import org.eclipse.linuxtools.vagrant.core.VagrantService;
 
 public class DestroyVMCommandHandler extends BaseVMCommandHandler {
 
 	@Override
 	String getJobName(List<IVagrantVM> selectedVMs) {
-		return "Removing VMs...";
+		return Messages.DestroyVMCommandHandler_removing_title;
 	}
 
 	@Override
 	String getTaskName(IVagrantVM vm) {
-		return "Removing " + vm.id();
+		return Messages.DestroyVMCommandHandler_removing_msg + vm.id();
 	}
 
 	@Override
 	void executeInJob(IVagrantVM vm, IProgressMonitor monitor) {
-		IVagrantConnection connection = VagrantConnection.getInstance();
+		IVagrantConnection connection = VagrantService.getInstance();
 		try {
-			connection.destroyVM(vm.id());
+			connection.destroyVM(vm);
 			String stateLoc = Activator.getDefault().getStateLocation().toOSString();
 			File vagrantDir = Paths.get(stateLoc, vm.name()).toFile();
 			CommandUtils.delete(vagrantDir);
 		} catch (VagrantException | InterruptedException e) {
-			final String errorMessage = "Error in deleting " + vm.id();
+			final String errorMessage = Messages.DestroyVMCommandHandler_error + vm.id();
 			openError(errorMessage, e);
 		} finally {
 			// always get images as we sometimes get errors on intermediate

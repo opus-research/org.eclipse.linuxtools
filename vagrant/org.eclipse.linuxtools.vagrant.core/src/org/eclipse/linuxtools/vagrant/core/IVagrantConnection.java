@@ -15,41 +15,41 @@ import java.util.List;
 
 public interface IVagrantConnection {
 
-	public String getName();
+	String getName();
 
-	public void addVMListener(IVagrantVMListener listener);
+	void addVMListener(IVagrantVMListener listener);
 
-	public void removeVMListener(IVagrantVMListener listener);
+	void removeVMListener(IVagrantVMListener listener);
 
-	public List<IVagrantVM> getVMs();
+	List<IVagrantVM> getVMs();
 
-	public List<IVagrantVM> getVMs(boolean force);
+	List<IVagrantVM> getVMs(boolean force);
 
-	public boolean isVMsLoaded();
+	boolean isVMsLoaded();
 
-	public void addToTrackedKeys(String key);
+	void addToTrackedKeys(String key);
 
-	public void addBoxListener(IVagrantBoxListener listener);
+	void addBoxListener(IVagrantBoxListener listener);
 
-	public void removeBoxListener(IVagrantBoxListener listener);
+	void removeBoxListener(IVagrantBoxListener listener);
 
-	public boolean isBoxesLoaded();
+	boolean isBoxesLoaded();
 
-	public List<IVagrantBox> getBoxes();
+	List<IVagrantBox> getBoxes();
 
-	public List<IVagrantBox> getBoxes(boolean force);
+	List<IVagrantBox> getBoxes(boolean force);
 
-	public void init(File vagrantDir);
+	void init(File vagrantDir);
 
-	public Process up(File vagrantDir);
+	void up(File vagrantDir, String provider);
 
 	void addBox(String name, String location) throws VagrantException, InterruptedException;
 
-	void destroyVM(String id) throws VagrantException, InterruptedException;
+	void destroyVM(IVagrantVM vm) throws VagrantException, InterruptedException;
 
-	void haltVM(String id) throws VagrantException, InterruptedException;
+	void haltVM(IVagrantVM vm) throws VagrantException, InterruptedException;
 
-	void startVM(String id) throws VagrantException, InterruptedException;
+	void startVM(IVagrantVM vm) throws VagrantException, InterruptedException;
 
 	void removeBox(String name) throws VagrantException, InterruptedException;
 }
