@@ -311,6 +311,11 @@ public interface LTTngControlServiceConstants {
      */
     static final Pattern TRACE_NETWORK_PATH_PATTERN = Pattern.compile("\\s*Trace\\s+path\\:\\s+(net|net4|net6|tcp|tcp6)\\:\\/\\/(.*)(\\:(\\d*)\\/(.*)\\[data\\:\\s+(\\d*)\\]){0,1}"); //$NON-NLS-1$
     /**
+     * Pattern to match session path for network tracing
+     * Note: file for protocol is not considered as network trace since local consumer will be used.
+     */
+    static final Pattern TRACE_NETWORK_PATTERN = Pattern.compile("\\s*(net|net4|net6|tcp|tcp4|tcp6)\\:\\/\\/(.*)(\\:(\\d*)\\/(.*)\\[data\\:\\s+(\\d*)\\]){0,1}"); //$NON-NLS-1$
+    /**
      * Sub-pattern to pattern TRACE_NETWORK_PATH_PATTERN to match file protocol
      */
     static final Pattern TRACE_FILE_PROTOCOL_PATTERN = Pattern.compile("(file)\\:\\/\\/(.*)"); //$NON-NLS-1$
@@ -374,10 +379,6 @@ public interface LTTngControlServiceConstants {
      * Pattern to match indicating false for overwrite mode
      */
     static final String OVERWRITE_MODE_ATTRIBUTE_FALSE = "0"; //$NON-NLS-1$
-    /**
-     * Pattern to match indicating false for overwrite mode in machine interface mode
-     */
-    static final String OVERWRITE_MODE_ATTRIBUTE_FALSE_MI = "DISCARD"; //$NON-NLS-1$
     /**
      * Pattern to match for channel (sub-buffer size) information (lttng list <session>)
      */
