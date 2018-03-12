@@ -41,16 +41,12 @@
 
   <modules>
     <module>org.eclipse.linuxtools.oprofile.core</module>
-    <module>org.eclipse.linuxtools.oprofile.core.tests</module>
     <module>org.eclipse.linuxtools.oprofile.doc</module>
     <module>org.eclipse.linuxtools.oprofile-feature</module>
     <module>org.eclipse.linuxtools.oprofile.remote-feature</module>
     <module>org.eclipse.linuxtools.oprofile.launch</module>
     <module>org.eclipse.linuxtools.oprofile.remote.launch</module>
-    <module>org.eclipse.linuxtools.oprofile.launch.tests</module>
-    <module>org.eclipse.linuxtools.oprofile.tests</module>
     <module>org.eclipse.linuxtools.oprofile.ui</module>
-    <module>org.eclipse.linuxtools.oprofile.ui.tests</module>
   </modules>
 
 </project>
