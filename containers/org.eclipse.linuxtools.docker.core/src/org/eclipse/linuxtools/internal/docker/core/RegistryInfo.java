@@ -29,10 +29,6 @@ public class RegistryInfo extends AbstractRegistry {
 		this.dockerHubRegistry = dockerHubRegistry;
 	}
 
-	public String getRegistryId() {
-		return "getServerAddress()=" + getServerAddress(); //$NON-NLS-1$
-	}
-
 	@Override
 	public String getServerAddress() {
 		return serverAddress;
