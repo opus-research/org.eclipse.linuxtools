@@ -18,8 +18,6 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
-import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.IXmlStateSystemContainer;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
@@ -51,23 +49,12 @@ public class TmfXmlCondition {
     private final ITmfXmlStateValue fStateValue;
     private final ConditionOperator fOperator;
     private final IXmlStateSystemContainer fContainer;
-    private final ComparisonOperator cOperator;
-
 
     private enum ConditionOperator {
         NONE,
         NOT,
         AND,
         OR,
-    }
-    private enum ComparisonOperator {
-        NONE,
-        EQ,
-        NE,
-        GE,
-        GT,
-        LE,
-        LT,
     }
 
     /**
@@ -103,33 +90,6 @@ public class TmfXmlCondition {
         switch (rootNode.getNodeName()) {
         case TmfXmlStrings.CONDITION:
             fOperator = ConditionOperator.NONE;
-            /* Read comparison operation type*/
-            String equationType = rootNode.getAttribute(TmfXmlStrings.OPERATOR);
-
-            switch (equationType) {
-            case TmfXmlStrings.EQ:
-                cOperator = ComparisonOperator.EQ;
-                break;
-            case TmfXmlStrings.NE:
-                cOperator = ComparisonOperator.NE;
-                break;
-            case TmfXmlStrings.GE:
-                cOperator = ComparisonOperator.GE;
-                break;
-            case TmfXmlStrings.GT:
-                cOperator = ComparisonOperator.GT;
-                break;
-            case TmfXmlStrings.LE:
-                cOperator = ComparisonOperator.LE;
-                break;
-            case TmfXmlStrings.LT:
-                cOperator = ComparisonOperator.LT;
-                break;
-            default:
-                cOperator = ComparisonOperator.EQ;
-                break;
-            }
-
             /* The last element is a state value node */
             Element stateValueElement = childElements.remove(childElements.size() - 1);
 
@@ -154,14 +114,11 @@ public class TmfXmlCondition {
         case TmfXmlStrings.NOT:
             fOperator = ConditionOperator.NOT;
             fStateValue = null;
-            cOperator = ComparisonOperator.NONE;
             fConditions.add(modelFactory.createCondition(childElements.get(0), fContainer));
             break;
         case TmfXmlStrings.AND:
             fOperator = ConditionOperator.AND;
             fStateValue = null;
-            cOperator = ComparisonOperator.NONE;
-
             for (Element condition : childElements) {
                 fConditions.add(modelFactory.createCondition(condition, fContainer));
             }
@@ -169,7 +126,6 @@ public class TmfXmlCondition {
         case TmfXmlStrings.OR:
             fOperator = ConditionOperator.OR;
             fStateValue = null;
-            cOperator = ComparisonOperator.NONE;
             for (Element condition : childElements) {
                 fConditions.add(modelFactory.createCondition(condition, fContainer));
             }
@@ -188,7 +144,6 @@ public class TmfXmlCondition {
      * @throws AttributeNotFoundException
      *             The state attribute was not found
      */
-    @SuppressWarnings("null")
     public boolean testForEvent(@NonNull ITmfEvent event) throws AttributeNotFoundException {
         ITmfStateSystem ss = fContainer.getStateSystem();
         /*
@@ -220,7 +175,8 @@ public class TmfXmlCondition {
              */
             ITmfStateValue valueState = (quark != IXmlStateSystemContainer.ROOT_QUARK) ? ss.queryOngoingState(quark) :
                     filter.getEventFieldValue(event);
-            return valueState.compare(valueXML, cOperator.name());
+
+            return valueXML.equals(valueState);
 
         } else if (!fConditions.isEmpty()) {
             /* Verify a condition tree */
@@ -253,93 +209,4 @@ public class TmfXmlCondition {
         return true;
     }
 
-    /**
-     * Test the result of the condition for a state system entry
-     *
-     * @param basequark
-     *            The quark on which to test the condition
-     * @param time
-     *            The time on which to query the state system
-     * @return Whether the condition is true or not
-     * @throws AttributeNotFoundException
-     *             The state attribute was not found
-     * @throws StateSystemDisposedException
-     *             If a query is done on state system after it has been disposed.
-     * @since 2.0
-     */
-    @SuppressWarnings("null")
-    public boolean testForEntry(int basequark, long time) throws AttributeNotFoundException, StateSystemDisposedException {
-         ITmfStateSystem ss = fContainer.getStateSystem();
-        /*
-         * The condition is either the equality check of a state value or a
-         * boolean operation on other conditions
-         */
-           if (fStateValue != null) {
-            ITmfXmlStateValue filter = fStateValue;
-            int quark = IXmlStateSystemContainer.ROOT_QUARK;
-            for (ITmfXmlStateAttribute attribute : filter.getAttributes()) {
-                quark = attribute.getAttributeQuark(basequark);
-                /*
-                 * When verifying a condition, the state attribute must exist,
-                 * if it does not, the query is not valid, we stop the condition
-                 * check
-                 */
-               if (quark == IXmlStateSystemContainer.ERROR_QUARK) {
-                    throw new AttributeNotFoundException();
-                }
-            }
-
-            ITmfStateInterval currentInterval;
-            try {
-                currentInterval = ss.querySingleState(time, quark);
-                if (currentInterval == null){
-                    return false;
-                }
-            } catch (StateSystemDisposedException e) {
-                throw new StateSystemDisposedException();
-            }
-
-            /* Get the value to compare to from the XML file */
-            ITmfStateValue currentStatus = currentInterval.getStateValue();
-            if (currentStatus.isNull()) {
-                return false;
-            }
-
-            /* Get the value from the XML file */
-            ITmfStateValue valueXML =  filter.getValue(null);
-            return valueXML.compare(currentStatus, cOperator.name());
-
-        } else if (!fConditions.isEmpty()) {
-
-            /* Verify a condition tree */
-            switch (fOperator) {
-            case AND:
-                for (TmfXmlCondition childCondition : fConditions) {
-                    if (!childCondition.testForEntry(basequark, time)) {
-                        return false;
-                    }
-                }
-                return true;
-            case NONE:
-                break;
-            case NOT:
-                return !fConditions.get(0).testForEntry(basequark, time);
-            case OR:
-                for (TmfXmlCondition childCondition : fConditions) {
-                    if (childCondition.testForEntry(basequark, time)) {
-                        return true;
-                    }
-                }
-                return false;
-            default:
-                break;
-
-            }
-        } else {
-            throw new IllegalStateException("TmfXmlCondition: the condition should be either a state value or be the result of a condition tree"); //$NON-NLS-1$
-        }
-
-        return false;
-
-    }
 }

@@ -337,43 +337,6 @@ public class Utils {
     }
 
     /**
-     * @param gc
-     * @param text
-     * @param x
-     * @param y
-     * @param width
-     * @param isCentered
-     * @param isTransparent
-     * @param draw
-     * @return
-     * @since 3.1
-     */
-    public static String drawText(GC gc, String text, int x, int y, int width, boolean isCentered, boolean isTransparent, boolean draw) {
-        int len = text.length();
-        int textWidth = 0;
-        boolean isReallyCentered = isCentered;
-        int realX = x;
-
-        while (len > 0) {
-            textWidth = gc.stringExtent(text.substring(0, len)).x;
-            if (textWidth <= width) {
-                break;
-            }
-            isReallyCentered = false;
-            len--;
-        }
-        if (len > 0) {
-            if (isReallyCentered) {
-                realX += (width - textWidth) / 2;
-            }
-            gc.drawText(text.substring(0, len), realX, y, isTransparent);
-            return text.substring(0, len);
-        }
-
-        return null;
-    }
-
-    /**
      * Formats time in format: MM:SS:NNN
      *
      * @param time time

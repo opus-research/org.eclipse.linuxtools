@@ -42,7 +42,7 @@ public interface IEventDeclaration {
      * @throws CTFReaderException
      *             As a bitbuffer is used to read, it could have wrapped
      *             IOExceptions.
-     * @since 3.1
+     * @since 3.0
      */
     EventDefinition createDefinition(CTFStreamInputReader streamInputReader, @NonNull BitBuffer input, long timestamp) throws CTFReaderException;
 

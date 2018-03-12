@@ -87,10 +87,9 @@
 				<xs:element maxOccurs="unbounded" minOccurs="1" name="stateAttribute" type="stateAttribute" >
 					<xs:annotation>
 						<xs:documentation>Explain how to reach an attribute in the state system. It describes the path/to/attribute.</xs:documentation></xs:annotation></xs:element>
-				
-					<xs:element maxOccurs="1" minOccurs="1" name="stateValue" type="stateValue" >
-						<xs:annotation>
-							<xs:documentation>Explain how to obtain the value of the state attribute to modify.</xs:documentation></xs:annotation></xs:element>
+				<xs:element maxOccurs="1" minOccurs="1" name="stateValue" type="stateValue" >
+					<xs:annotation>
+						<xs:documentation>Explain how to obtain the value of the state attribute to modify.</xs:documentation></xs:annotation></xs:element>
 			</xs:sequence>
 			<xs:sequence maxOccurs="1" minOccurs="1">
 				<xs:annotation>
@@ -108,51 +107,6 @@
 		</xs:choice>
 	</xs:complexType>
 
-	<xs:complexType name="mathSingle">
-		<xs:annotation>
-			<xs:documentation>Define a mathematical operation between different state values.</xs:documentation></xs:annotation>
-		<xs:choice maxOccurs="1" minOccurs="1">				
-				<xs:element maxOccurs="unbounded" minOccurs="1" name="add" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to add two or more state values. example: (first value + second value + third value + ...)</xs:documentation></xs:annotation></xs:element>
-				<xs:element maxOccurs="unbounded" minOccurs="1" name="subtract" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to subtract two or more state values. example: (first value - second value - third value - ...)</xs:documentation></xs:annotation></xs:element>
-				<xs:element maxOccurs="unbounded" minOccurs="1" name="multiple" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to multiple two or more state values. example: (first value * second value * third value * ...)</xs:documentation></xs:annotation></xs:element>
-				<xs:element maxOccurs="unbounded" minOccurs="1" name="divide" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to divide two or more state values. example: (first value / second value / third value / ...)</xs:documentation></xs:annotation></xs:element>
-		</xs:choice>
-		<xs:anyAttribute />
-	</xs:complexType>
-
-	<xs:complexType name="mathMultiple">
-		<xs:annotation>
-			<xs:documentation>Allows the composition of more than one math statements.</xs:documentation></xs:annotation>
-		<xs:sequence maxOccurs="unbounded" minOccurs="1">
-			<xs:element maxOccurs="1" minOccurs="0" name="stateValue" type="stateValue" >
-				<xs:annotation>
-					<xs:documentation>Define a condition element, in the form "if (some_path == value)".</xs:documentation></xs:annotation></xs:element>
-			<xs:element maxOccurs="1" minOccurs="0" name="add" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to add two or more state values. example: (first value + second value + third value + ...)</xs:documentation></xs:annotation></xs:element>
-			<xs:element maxOccurs="1" minOccurs="0" name="subtract" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to subtract two or more state values. example: (first value - second value - third value - ...)</xs:documentation></xs:annotation></xs:element>
-			<xs:element maxOccurs="1" minOccurs="0" name="multiple" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to multiple two or more state values. example: (first value * second value * third value * ...)</xs:documentation></xs:annotation></xs:element>
-			<xs:element maxOccurs="1" minOccurs="0" name="divide" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to divide two or more state values. example: (first value / second value / third value / ...)</xs:documentation></xs:annotation></xs:element>
-		</xs:sequence>
-		<xs:anyAttribute />
-	</xs:complexType>
-	
-	
-			
 	<xs:complexType name="condition">
 		<xs:annotation>
 			<xs:documentation>Define a conditional statement. Conditions may use values of the state system or from the event being handled. This element defines a statement in the form of "if (some_path == value)".</xs:documentation></xs:annotation>
@@ -169,33 +123,7 @@
 				<xs:annotation>
 					<xs:documentation>Define the value to compare to.</xs:documentation></xs:annotation></xs:element>
 		</xs:sequence>
-		
-		<xs:attribute name="operator" default="eq">
-			<xs:annotation>
-				<xs:documentation>Indicate that a comparison operation will be performed with the value</xs:documentation></xs:annotation>
-			<xs:simpleType>
-				<xs:restriction base="xs:string">
-					<xs:enumeration value="eq">
-						<xs:annotation>
-							<xs:documentation>The operation type is to check if two values are equal</xs:documentation></xs:annotation></xs:enumeration>
-					<xs:enumeration value="ne">
-						<xs:annotation>
-							<xs:documentation>The operation type is to check if two values are not equal</xs:documentation></xs:annotation></xs:enumeration>
-					<xs:enumeration value="ge">
-						<xs:annotation>
-							<xs:documentation>The operation type is to check if the first value is greater than or equal the second one</xs:documentation></xs:annotation></xs:enumeration>
-					<xs:enumeration value="gt">
-						<xs:annotation>
-							<xs:documentation>The operation type is to check if the first value is greater than the second one</xs:documentation></xs:annotation></xs:enumeration>
-					<xs:enumeration value="le">
-						<xs:annotation>
-							<xs:documentation>The operation type is to check if the first value is smaller than or equal the second one</xs:documentation></xs:annotation></xs:enumeration>
-					<xs:enumeration value="lt">
-						<xs:annotation>
-							<xs:documentation>The operation type is to check if the first value is smaller than the second one</xs:documentation></xs:annotation></xs:enumeration>
-				</xs:restriction>
-			</xs:simpleType>
-		</xs:attribute>
+		<xs:anyAttribute />
 	</xs:complexType>
 
 	<xs:complexType name="conditionSingle">
@@ -277,29 +205,11 @@
 	<xs:complexType name="stateValue">
 		<xs:annotation>
 			<xs:documentation>Define a value, that can be assigned to an attribute of the state system.</xs:documentation></xs:annotation>
-		<xs:choice maxOccurs="1" minOccurs="0">
-			
-			<xs:choice maxOccurs="1" minOccurs="0">				
-				<xs:element maxOccurs="unbounded" minOccurs="1" name="add" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to add two or more state values. example: (first value + second value + third value + ...)</xs:documentation></xs:annotation></xs:element>
-				<xs:element maxOccurs="unbounded" minOccurs="1" name="subtract" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to subtract two or more state values. example: (first value - second value - third value - ...)</xs:documentation></xs:annotation></xs:element>
-				<xs:element maxOccurs="unbounded" minOccurs="1" name="multiple" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to multiple two or more state values. example: (first value * second value * third value * ...)</xs:documentation></xs:annotation></xs:element>
-				<xs:element maxOccurs="unbounded" minOccurs="1" name="divide" type="mathMultiple" >
-					<xs:annotation>
-						<xs:documentation>Explain how to divide two or more state values. example: (first value / second value / third value / ...)</xs:documentation></xs:annotation></xs:element>
-			</xs:choice>
-								
-			<xs:sequence>
-				<xs:annotation>
-					<xs:documentation>For a "query" value type, a sequence of stateAttributes will define the query whose result is the value.</xs:documentation></xs:annotation>
-				<xs:element maxOccurs="unbounded" minOccurs="0" name="stateAttribute" type="stateAttribute" ></xs:element>
-			</xs:sequence>
-		</xs:choice>
+		<xs:sequence>
+			<xs:annotation>
+				<xs:documentation>For a "query" value type, a sequence of stateAttributes will define the query whose result is the value.</xs:documentation></xs:annotation>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="stateAttribute" type="stateAttribute" ></xs:element>
+		</xs:sequence>
 		<xs:attribute name="type" use="required">
 			<xs:annotation>
 				<xs:documentation>The type of this state value. It will describe how to obtain to value and/or what to do with it.</xs:documentation></xs:annotation>
@@ -327,9 +237,6 @@
 						<xs:annotation>
 							<xs:documentation>Indicate that the attribute the value is to be applied to should be deleted.</xs:documentation></xs:annotation></xs:enumeration>
 					<xs:enumeration value="query" >
-						<xs:annotation>
-							<xs:documentation>The value is the result of a query to the state system. If this type is selected, a sequence of stateAttributes must be defined in this stateValue element.</xs:documentation></xs:annotation></xs:enumeration>
-					<xs:enumeration value="math" >
 						<xs:annotation>
 							<xs:documentation>The value is the result of a query to the state system. If this type is selected, a sequence of stateAttributes must be defined in this stateValue element.</xs:documentation></xs:annotation></xs:enumeration>
 				</xs:restriction>
