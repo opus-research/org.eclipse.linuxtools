@@ -170,6 +170,107 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>api-generation</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.cbi.maven.plugins</groupId>
+            <artifactId>eclipse-cbi-plugin</artifactId>
+            <version>1.0.4</version>
+            <executions>
+              <execution>
+                <id>generate-api-build-xml</id>
+                <goals>
+                  <goal>generate-api-build-xml</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.eclipse.tycho.extras</groupId>
+            <artifactId>tycho-eclipserun-plugin</artifactId>
+            <!-- this is actually present in any 0.14+ version -->
+            <version>${tycho-version}</version>
+            <configuration>
+              <repositories>
+                <repository>
+                  <id>eclipse</id>
+                  <layout>p2</layout>
+                  <url>http://download.eclipse.org/releases/mars</url>
+                </repository>
+              </repositories>
+              <!-- this is to fix some lucene 3.x compatibility issue -->
+              <argLine>-Dhelp.lucene.tokenizer=standard</argLine>
+              <!-- actuall indexer call -->
+              <appArgLine>-data target/apibuild-workspace -application org.eclipse.ant.core.antRunner -buildfile target/.apibuild.xml</appArgLine>
+              <dependencies>
+                <!-- list of bundles that we need -->
+                <dependency>
+                  <artifactId>org.eclipse.ant.core</artifactId>
+                  <type>eclipse-plugin</type>
+                </dependency>
+                <dependency>
+                  <artifactId>org.apache.ant</artifactId>
+                  <type>eclipse-plugin</type>
+                </dependency>
+                <dependency>
+                  <artifactId>org.eclipse.pde.api.tools</artifactId>
+                  <type>eclipse-plugin</type>
+                </dependency>
+                <dependency>
+                  <artifactId>org.eclipse.pde.build</artifactId>
+                  <type>eclipse-plugin</type>
+                </dependency>
+                <dependency>
+                  <artifactId>org.eclipse.pde.core</artifactId>
+                  <type>eclipse-plugin</type>
+                </dependency>
+                <dependency>
+                  <artifactId>org.eclipse.equinox.launcher</artifactId>
+                  <type>eclipse-plugin</type>
+                </dependency>
+              </dependencies>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>eclipse-run</goal>
+                </goals>
+                <phase>compile</phase>
+              </execution>
+            </executions>
+          </plugin>
+            <plugin>
+              <groupId>org.eclipse.tycho</groupId>
+              <artifactId>tycho-packaging-plugin</artifactId>
+              <version>${tycho-version}</version>
+              <configuration>
+                <additionalFileSets>
+                  <fileSet>
+                    <directory>${project.build.directory}</directory>
+                    <includes>
+                      <include>.api_description</include>
+                    </includes>
+                  </fileSet>
+                </additionalFileSets>
+              </configuration>
+	  </plugin>
+        </plugins>
+    <resources>
+      <!-- 
+           This task is to save properties we are explicitly interested in using later, 
+           such as when displaying in other reports or php pages. It depends on having 
+           the "template" file be part of the 'saveproperties' directory. Its only purpose
+           is to "fill in" the property values named in that file.
+       -->
+      <resource>
+        <directory>saveproperties</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+      </build>
+    </profile>
   </profiles>
 
 
