@@ -79,7 +79,8 @@ public class CTFStreamInputReaderTest {
 
     private static CTFStreamInputReader getStreamInputReader() throws CTFReaderException {
         assumeTrue(testTrace.exists());
-        CTFStream s = testTrace.getTrace().getStream((long) 0);
+        CTFTrace trace = testTrace.getTrace();
+        CTFStream s = trace.getStream((long) 0);
         Set<CTFStreamInput> streamInput = s.getStreamInputs();
         CTFStreamInputReader retVal = null;
         for (CTFStreamInput si : streamInput) {

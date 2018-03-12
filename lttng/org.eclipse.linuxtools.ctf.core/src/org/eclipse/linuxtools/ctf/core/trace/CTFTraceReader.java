@@ -221,7 +221,20 @@ public class CTFTraceReader implements AutoCloseable {
         for (CTFStream stream : fTrace.getStreams()) {
             Set<CTFStreamInput> streamInputs = stream.getStreamInputs();
             for (CTFStreamInput streamInput : streamInputs) {
-                addStreamInputReader(readers, streamInput);
+                /*
+                 * Create a reader.
+                 */
+                CTFStreamInputReader streamInputReader = new CTFStreamInputReader(
+                        streamInput);
+
+                /*
+                 * Add it to the group.
+                 */
+                if (!fStreamInputReaders.contains(streamInputReader)) {
+                    streamInputReader.readNextEvent();
+                    fStreamInputReaders.add(streamInputReader);
+                    readers.add(streamInputReader);
+                }
             }
         }
         long[] temp = fEventCountPerTraceFile;
@@ -231,22 +244,6 @@ public class CTFTraceReader implements AutoCloseable {
         }
         for (int i = 0; i < temp.length; i++) {
             fEventCountPerTraceFile[i] = temp[i];
-        }
-    }
-
-    private void addStreamInputReader(Set<CTFStreamInputReader> readers, CTFStreamInput streamInput) throws CTFReaderException {
-        /*
-         * Create a reader.
-         */
-        CTFStreamInputReader streamInputReader = new CTFStreamInputReader(streamInput);
-
-        /*
-         * Add it to the group.
-         */
-        if (!fStreamInputReaders.contains(streamInputReader)) {
-            streamInputReader.readNextEvent();
-            fStreamInputReaders.add(streamInputReader);
-            readers.add(streamInputReader);
         }
     }
 
@@ -314,7 +311,8 @@ public class CTFTraceReader implements AutoCloseable {
      *         of the trace.
      */
     public EventDefinition getCurrentEventDef() {
-        return (getTopStream() != null) ? getTopStream().getCurrentEvent() : null;
+        CTFStreamInputReader top = getTopStream();
+        return (top != null) ? top.getCurrentEvent() : null;
     }
 
     /**
@@ -463,10 +461,12 @@ public class CTFTraceReader implements AutoCloseable {
         }
 
         for (int j = 0; j < fEventCountPerTraceFile.length; j++) {
-            long len = (width * fEventCountPerTraceFile[fStreamInputReaders.get(j).getName()])
+            CTFStreamInputReader se = fStreamInputReaders.get(j);
+
+            long len = (width * fEventCountPerTraceFile[se.getName()])
                     / numEvents;
 
-            StringBuilder sb = new StringBuilder(fStreamInputReaders.get(j).getFilename());
+            StringBuilder sb = new StringBuilder(se.getFilename());
             sb.append("\t["); //$NON-NLS-1$
 
             for (int i = 0; i < len; i++) {
@@ -477,7 +477,7 @@ public class CTFTraceReader implements AutoCloseable {
                 sb.append(' ');
             }
 
-            sb.append("]\t" + fEventCountPerTraceFile[fStreamInputReaders.get(j).getName()] + " Events"); //$NON-NLS-1$//$NON-NLS-2$
+            sb.append("]\t" + fEventCountPerTraceFile[se.getName()] + " Events"); //$NON-NLS-1$//$NON-NLS-2$
             Activator.log(sb.toString());
         }
     }

@@ -24,6 +24,7 @@ import org.eclipse.linuxtools.ctf.core.event.EventDefinition;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.ICompositeDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
+import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.tmf.core.event.ITmfCustomAttributes;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
@@ -188,22 +189,24 @@ public class CtfTmfEvent extends TmfEvent
     @Override
     public CtfTmfCallsite getCallsite() {
         CTFCallsite callsite = null;
-        if (getTrace() == null) {
+        CtfTmfTrace trace = getTrace();
+        if (trace == null) {
             return null;
         }
+        CTFTrace ctfTrace = trace.getCTFTrace();
         /* Should not happen, but it is a good check */
-        if (getTrace().getCTFTrace() == null) {
+        if (ctfTrace == null) {
             return null;
         }
         if (getContent() != null) {
             ITmfEventField ipField = getContent().getField(CtfConstants.CONTEXT_FIELD_PREFIX + CtfConstants.IP_KEY);
             if (ipField != null && ipField.getValue() instanceof Long) {
                 long ip = (Long) ipField.getValue();
-                callsite = getTrace().getCTFTrace().getCallsite(fEventName, ip);
+                callsite = ctfTrace.getCallsite(fEventName, ip);
             }
         }
         if (callsite == null) {
-            callsite = getTrace().getCTFTrace().getCallsite(fEventName);
+            callsite = ctfTrace.getCallsite(fEventName);
         }
         if (callsite != null) {
             return new CtfTmfCallsite(callsite);

@@ -78,7 +78,8 @@ public class BadPacketTest {
     public void PacketExceptionTest() throws BadPacketException, IOException, BadPcapFileException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        try (PcapFile dummy = new PcapFile(trace.getPath())) {
+        String file = trace.getPath();
+        try (PcapFile dummy = new PcapFile(file)) {
             ByteBuffer packet = fEthernetPacket;
             if (packet != null) {
                 new EthernetIIPacket(dummy, null, packet);
