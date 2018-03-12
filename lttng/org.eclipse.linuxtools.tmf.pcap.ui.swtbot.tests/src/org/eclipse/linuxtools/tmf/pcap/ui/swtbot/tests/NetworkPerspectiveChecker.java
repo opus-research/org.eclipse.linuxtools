@@ -44,8 +44,8 @@ public class NetworkPerspectiveChecker extends AbstractPerspectiveChecker {
                 HistogramView.ID,
                 TmfStatisticsView.ID,
                 FilterView.ID,
-                // PCAP
                 ColorsView.ID,
+                // PCAP
                 StreamListView.ID,
                 // Standard Eclipse views
                 IPageLayout.ID_PROJECT_EXPLORER,
