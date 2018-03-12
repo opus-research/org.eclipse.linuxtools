@@ -45,6 +45,7 @@ import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Version;
 
 public class PerfCore {
+	private static IProject profiledProject;
 
     private static String spitStream(BufferedReader br, String blockTitle, PrintStream print) {
 
@@ -674,4 +675,22 @@ public class PerfCore {
                 e.getMessage());
         PerfPlugin.getDefault().getLog().log(status);
     }
+
+	/**
+	 * Get the project to be profiled
+	 *
+	 * @return project
+	 */
+	public static IProject getProfiledProject() {
+		return profiledProject;
+	}
+
+	/**
+	 * Set the project to be profiled
+	 *
+	 * @param project
+	 */
+	public static void setProfiledProject(IProject project) {
+		PerfCore.profiledProject = project;
+	}
 }

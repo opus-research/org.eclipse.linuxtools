@@ -20,6 +20,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.linuxtools.internal.perf.model.PMDso;
 import org.eclipse.linuxtools.internal.perf.model.PMFile;
@@ -47,7 +48,7 @@ public class PerfDoubleClickAction extends Action {
                 // Open in editor
                 PMLineRef line = (PMLineRef) obj;
                 PMFile file = (PMFile) ((PMSymbol) line.getParent()).getParent();
-                ProfileUIUtils.openEditorAndSelect(file.getPath(),Integer.parseInt(line.getName()));
+                ProfileUIUtils.openEditorAndSelect(file.getPath(),Integer.parseInt(line.getName()), PerfCore.getProfiledProject());
             } else if (obj instanceof PMFile) {
                 PMFile file = (PMFile) obj;
                 ProfileUIUtils.openEditorAndSelect(file.getName(), 1);
