@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.LogLevelType;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceChannelOutputType;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceEnablement;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.ChannelInfo;
@@ -191,15 +190,8 @@ public class TraceChannelComponent extends TraceControlComponent {
     /**
      * @return the output type.
      */
-    public TraceChannelOutputType getOutputType() {
+    public String getOutputType() {
         return fChannelInfo.getOutputType();
-    }
-    /**
-     * Sets the output type to the given value.
-     * @param type - type to set.
-     */
-    public void setOutputType(TraceChannelOutputType type) {
-        fChannelInfo.setOutputType(type);
     }
     /**
      * Sets the output type to the given value.
@@ -208,7 +200,6 @@ public class TraceChannelComponent extends TraceControlComponent {
     public void setOutputType(String type) {
         fChannelInfo.setOutputType(type);
     }
-
     /**
      * @return the channel state (enabled or disabled).
      */

@@ -108,15 +108,7 @@ public abstract class CtfTmfEventField extends TmfEventField {
         if (fieldDef instanceof IntegerDefinition) {
             IntegerDefinition intDef = (IntegerDefinition) fieldDef;
             int base = intDef.getDeclaration().getBase();
-            int length = intDef.getDeclaration().getLength();
-            boolean signed = intDef.getDeclaration().isSigned();
-            if (length < 16 || (length == 16 && signed)) {
-                field = new CTFIntegerField(fieldName, (short) intDef.getValue(), base, signed);
-            } else if (length < 32 || (length == 32 && signed)) {
-                field = new CTFIntegerField(fieldName, (int) intDef.getValue(), base, signed);
-            } else {
-                field = new CTFIntegerField(fieldName, intDef.getValue(), base, signed);
-            }
+            field = new CTFIntegerField(fieldName, intDef.getValue(), base, intDef.getDeclaration().isSigned());
 
         } else if (fieldDef instanceof EnumDefinition) {
             EnumDefinition enumDef = (EnumDefinition) fieldDef;
@@ -239,53 +231,9 @@ final class CTFIntegerField extends CtfTmfEventField {
         fBase = base;
     }
 
-    /**
-     * A CTF "IntegerDefinition" can be an integer of any byte size, so in the
-     * Java parser this is interpreted as a long.
-     *
-     * @param name
-     *            The name of this field
-     * @param shortValue
-     *            The integer value of this field
-     * @param signed
-     *            Is the value signed or not
-     */
-    CTFIntegerField(String name, int shortValue, int base, boolean signed) {
-        super(name, shortValue, null);
-        fSigned = signed;
-        fBase = base;
-    }
-
-    /**
-     * A CTF "IntegerDefinition" can be an integer of any byte size, so in the
-     * Java parser this is interpreted as a long.
-     *
-     * @param name
-     *            The name of this field
-     * @param charValue
-     *            The integer value of this field
-     * @param signed
-     *            Is the value signed or not
-     */
-    CTFIntegerField(String name, short charValue, int base, boolean signed) {
-        super(name, charValue, null);
-        fSigned = signed;
-        fBase = base;
-    }
-
     @Override
     public Long getValue() {
-        Object value = super.getValue();
-        if(value instanceof Long) {
-            return (Long) value;
-        }
-        if( value instanceof Integer) {
-            return ((Integer)value).longValue();
-        }
-        if(value instanceof Short) {
-            return ((Short)value).longValue();
-        }
-        throw new UnsupportedOperationException(value.getClass().toString());
+        return (Long) super.getValue();
     }
 
     @Override
