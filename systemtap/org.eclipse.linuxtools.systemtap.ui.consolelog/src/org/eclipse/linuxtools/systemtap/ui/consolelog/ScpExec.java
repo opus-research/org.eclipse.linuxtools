@@ -63,6 +63,8 @@ public class ScpExec extends Command {
     @Override
     public void run() {
         try {
+            channel.connect();
+
             errorGobbler.start();
             inputGobbler.start();
 
@@ -72,6 +74,9 @@ public class ScpExec extends Command {
                 }
                 cleanUpAfterStop();
             }
+        } catch (JSchException e) {
+            ExceptionErrorDialog.openError(Messages.ScpExec_Error,
+                    Messages.ScpExec_errorConnectingToServer, e);
         } catch (InterruptedException e) {
             // This thread was interrupted while waiting for
             // the process to exit. Destroy the process just

@@ -24,11 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTrace;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTrace;
@@ -661,31 +659,4 @@ public final class TmfTraceType {
         throw new IllegalArgumentException("Invalid trace type string: " + traceType); //$NON-NLS-1$
     }
 
-    /**
-     * Get the trace type id for a resource
-     *
-     * @param resource
-     *            the resource
-     * @return the trace type id or null if it is not set
-     * @throws CoreException
-     *             if the trace type id cannot be accessed
-     * @since 3.1
-     */
-    public static String getTraceTypeId(IResource resource) throws CoreException {
-        String traceTypeId = resource.getPersistentProperties().get(TmfCommonConstants.TRACETYPE);
-        // Fix custom trace type id with old class name or without category name for backward compatibility
-        if (traceTypeId != null) {
-            int index = traceTypeId.lastIndexOf(':');
-            if (index != -1) {
-                if (traceTypeId.contains(CustomTxtTrace.class.getSimpleName() + ':') && traceTypeId.indexOf(':') == index) {
-                    traceTypeId = CustomTxtTrace.class.getCanonicalName() + ':' +
-                            TmfTraceType.CUSTOM_TXT_CATEGORY + traceTypeId.substring(index);
-                } else if (traceTypeId.contains(CustomXmlTrace.class.getSimpleName() + ':') && traceTypeId.indexOf(':') == index) {
-                    traceTypeId = CustomXmlTrace.class.getCanonicalName() + ':' +
-                            TmfTraceType.CUSTOM_XML_CATEGORY + traceTypeId.substring(index);
-                }
-            }
-        }
-        return traceTypeId;
-    }
 }
