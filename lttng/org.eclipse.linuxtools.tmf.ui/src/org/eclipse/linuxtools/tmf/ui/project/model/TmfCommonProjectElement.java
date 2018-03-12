@@ -479,12 +479,7 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
      * trace resource
      */
     public void refreshSupplementaryFolder() {
-        IFolder supplFolder = createSupplementaryFolder();
-        try {
-            supplFolder.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-        } catch (CoreException e) {
-            Activator.getDefault().logError("Error refreshing supplementary folder " + supplFolder, e); //$NON-NLS-1$
-        }
+        createSupplementaryFolder();
     }
 
     /**
@@ -539,7 +534,7 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
         deleteSupplementaryResources(getSupplementaryResources());
     }
 
-    private IFolder createSupplementaryFolder() {
+    private void createSupplementaryFolder() {
         IFolder supplFolder = prepareTraceSupplementaryFolder(getSupplementaryFolderPath(), true);
 
         try {
@@ -547,7 +542,7 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
         } catch (CoreException e) {
             Activator.getDefault().logError("Error setting persistant property " + TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, e); //$NON-NLS-1$
         }
-        return supplFolder;
+
     }
 
     // -------------------------------------------------------
