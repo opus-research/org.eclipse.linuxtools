@@ -657,7 +657,6 @@ public final class TmfTraceType {
             if (traceTypeHelper != null) {
                 return traceTypeHelper.isDirectoryTraceType();
             }
-            return false;
         }
         throw new IllegalArgumentException("Invalid trace type string: " + traceType); //$NON-NLS-1$
     }
