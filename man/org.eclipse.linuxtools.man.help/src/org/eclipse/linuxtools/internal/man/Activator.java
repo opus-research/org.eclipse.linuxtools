@@ -1,32 +1,25 @@
 /*******************************************************************************
- * Copyright (c) 2015-2016 Open Analytics NV and others.
+ * Copyright (c) 2015 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.docker.editor;
+package org.eclipse.linuxtools.internal.man;
 
-import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 
 /**
- * The activator class controls the plug-in life cycle
+ * Plug-in activator.
  */
-public class Activator extends AbstractUIPlugin {
-
-	// The plug-in ID
-	public static final String PLUGIN_ID = "org.eclipse.linuxtools.docker.editor"; //$NON-NLS-1$
+public class Activator extends Plugin {
 
 	// The shared instance
 	private static Activator plugin;
-
-	/**
-	 * The constructor
-	 */
-	public Activator() {
-	}
 
 	@Override
 	public void start(BundleContext context) throws Exception {
@@ -41,7 +34,7 @@ public class Activator extends AbstractUIPlugin {
 	}
 
 	/**
-	 * Returns the shared instance
+	 * Returns the shared instance of the bundle activator.
 	 *
 	 * @return the shared instance
 	 */
@@ -49,7 +42,12 @@ public class Activator extends AbstractUIPlugin {
 		return plugin;
 	}
 
-	public static void log(int severity, String message, Throwable cause) {
-		getDefault().getLog().log(new Status(severity, PLUGIN_ID, message, cause));
+	/**
+	 * Returns the bundle symbolic name of the plug-in.
+	 *
+	 * @return an ID unique to this plug-in
+	 */
+	public String getPluginId() {
+		return getBundle().getSymbolicName();
 	}
 }

@@ -641,7 +641,6 @@
 			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
-		          tooltip="%command.removeconnection.tooltip"
 		          disabledIcon="icons/delete_d.gif"
 		          icon="icons/delete.gif"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
@@ -649,46 +648,16 @@
 		          style="push">
 				</command>
 		</menuContribution>
-		<!-- explorer view context menu: remove connection -->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=?after=group.edit">
-				<command
-		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
-		          disabledIcon="icons/delete_d.gif"
-		          icon="icons/delete.gif"
-		          id="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
-		          mnemonic="D"
-		          style="push">
-		          <visibleWhen
-	               checkEnabled="false">
-	               <with
-	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
-	                <iterate
-	                      ifEmpty="false"
-	                      operator="or">
-	                      <or>
-			                 <instanceof
-			                       value="org.eclipse.linuxtools.docker.core.IDockerConnection" />
-	                      </or>
-	                </iterate>
-	               </with>
-	            </visibleWhen>
-				</command>
-		</menuContribution>
-		
-	    <menuContribution
-	        locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
-	       <command
-	           commandId="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
-	           icon="icons/repository-synchronize-attributes.png"
-	           id="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
-	           mnemonic="R"
-	           style="push">
-	       </command>
-	    </menuContribution>
+  <menuContribution
+        locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
+     <command
+           commandId="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
+           icon="icons/repository-synchronize-attributes.png"
+           id="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
+           mnemonic="R"
+           style="push">
+     </command>
+  </menuContribution>
 		<!-- explorer view context menu: Show In -->
 		<menuContribution
 			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.navigate">
@@ -1088,31 +1057,6 @@
 	            </visibleWhen>
 				</command>
 		</menuContribution>
-		<!-- explorer view context menu: exec in shell -->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.removeImages">
-	       <command
-		          commandId="org.eclipse.linuxtools.docker.ui.commands.execContainer"
-		          id="org.eclipse.linuxtools.docker.ui.commands.execContainer"
-		          icon="icons/console_view.gif"
-		          style="push">
-		          <visibleWhen
-	               checkEnabled="false">
-	               <with
-	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
-	                <iterate
-	                      ifEmpty="false"
-	                      operator="and">
-	                 <instanceof
-	                       value="org.eclipse.linuxtools.docker.core.IDockerContainer" />
-	                </iterate>
-	               </with>
-	            </visibleWhen>
-				</command>
-		</menuContribution>
 		<!-- explorer view context menu: tag image -->
 		<menuContribution
 			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.tags">
@@ -1380,14 +1324,15 @@
 					mnemonic="A">
 				</command>
 		</menuContribution>
-		<menuContribution
-	    	locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerContainersView">
-				<command
-					commandId="org.eclipse.linuxtools.docker.ui.commands.execContainer"
-					id="org.eclipse.linuxtools.docker.ui.commands.execContainer"
-					style="push">
-			</command>
-	    </menuContribution>
+  <menuContribution
+        locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerContainersView">
+     <command
+           commandId="org.eclipse.linuxtools.docker.ui.commands.execContainer"
+           id="org.eclipse.linuxtools.docker.ui.commands.execContainer"
+           style="push">
+     </command>
+  </menuContribution>
+		
 	</extension>
 	
     <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor">

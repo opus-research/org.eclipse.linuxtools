@@ -12,29 +12,10 @@ package org.eclipse.linuxtools.docker.core;
 
 import java.util.List;
 
-/**
- * IP Address Management
- * 
- * Corresponds to docker client IPAM which is needed to create a Docker Network
- * config
- * 
- * @author jjohnstn
- *
- */
 public interface IDockerIpam {
 
-	/**
-	 * Get driver
-	 * 
-	 * @return String containing driver
-	 */
-	String driver();
+	public String driver();
 
-	/**
-	 * Get IPAM configurations
-	 * 
-	 * @return List of IPAM configurations
-	 */
-	List<IDockerIpamConfig> config();
+	public List<IDockerIpamConfig> config();
 
 }

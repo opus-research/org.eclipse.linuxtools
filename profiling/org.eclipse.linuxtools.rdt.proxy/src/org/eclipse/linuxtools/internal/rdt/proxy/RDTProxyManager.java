@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2016 Red Hat Inc..
+ * Copyright (c) 2011 Red Hat Inc..
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -103,11 +103,12 @@ public class RDTProxyManager implements IRemoteEnvProxyManager {
         Map<String, String> envMap = new HashMap<>();
         IRemoteProcessService ps = connection.getService(IRemoteProcessService.class);
         Map<String, String> envTemp = ps.getEnv();
-        for (Map.Entry<String, String> entry : envTemp.entrySet()) {
-            String env = entry.getKey() + '=' + entry.getValue();
+        for (String key : envTemp.keySet()) {
+            String value = envTemp.get(key);
+            String env = key + "=" + value; //$NON-NLS-1$
             m = variablePattern.matcher(env);
             if (m.matches()) {
-                envMap.put(entry.getKey(), entry.getValue());
+                envMap.put(key, value);
             }
         }
         return envMap;

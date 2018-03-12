@@ -62,7 +62,8 @@ public class BuildDockerImageUtils {
 		final Matcher imageNameMatcher = DockerImage.imageNamePattern
 				.matcher(imageName);
 		if (imageNameMatcher.matches()) {
-			return imageNameMatcher.group("repository");
+			final String repository = imageNameMatcher.group("repository");
+			return repository; //$NON-NLS-1$
 		}
 		return null;
 	}
@@ -97,7 +98,8 @@ public class BuildDockerImageUtils {
 		final Matcher imageNameMatcher = DockerImage.imageNamePattern
 				.matcher(imageName);
 		if (imageNameMatcher.matches()) {
-			return imageNameMatcher.group("tag"); //$NON-NLS-1$
+			final String tag = imageNameMatcher.group("tag"); //$NON-NLS-1$
+			return tag; //$NON-NLS-1$
 		}
 		return null;
 	}
