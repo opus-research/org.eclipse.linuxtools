@@ -19,6 +19,7 @@ import org.eclipse.linuxtools.docker.reddeer.condition.ContainerIsDeployedCondit
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunNetworkPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunResourceVolumesVariablesPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
+import org.eclipse.linuxtools.docker.reddeer.ui.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
@@ -36,7 +37,7 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
 
 /**
- * 
+ *
  * @author jkopriva@redhat.com
  *
  */
@@ -49,8 +50,8 @@ public class NetworkModeTest extends AbstractImageBotTest {
 	private static final String NETWORK_MODE_BRIDGE = "bridge";
 	private static final String NETWORK_MODE_HOST = "host";
 	private static final String NETWORK_MODE_NONE = "none";
-	private static final String NETWORK_MODE_CONTAINER = "container";
-	private static final String NETWORK_MODE_OTHER = "other";
+
+	ImageRunSelectionPage firstPage;
 
 	@Before
 	public void before() throws DockerException, InterruptedException {
@@ -58,48 +59,50 @@ public class NetworkModeTest extends AbstractImageBotTest {
 		getConnection();
 		pullImage(IMAGE_NAME, IMAGE_TAG);
 		new WaitWhile(new JobIsRunning());
+		DockerExplorerView explorer = new DockerExplorerView();
 		getConnection().getImage(IMAGE_NAME).run();
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
+		firstPage = new ImageRunSelectionPage(explorer);
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.setAllocatePseudoTTY();
 		firstPage.setKeepSTDINOpen();
 		firstPage.next();
-		ImageRunResourceVolumesVariablesPage variablesPage = new ImageRunResourceVolumesVariablesPage();
+		ImageRunResourceVolumesVariablesPage variablesPage = new ImageRunResourceVolumesVariablesPage(firstPage);
 		variablesPage.next();
 	}
 
 	@Test
 	public void testDefaultMode() {
-		ImageRunNetworkPage networkPage = new ImageRunNetworkPage();
+		ImageRunNetworkPage networkPage = new ImageRunNetworkPage(firstPage);
 		networkPage.setDefaultNetworkMode();
 		networkPage.finish();
 		checkNetworkMode(NETWORK_MODE_DEFAULT);
 	}
-	
+
 	@Test
 	public void testBridgeMode() {
-		ImageRunNetworkPage networkPage = new ImageRunNetworkPage();
+		ImageRunNetworkPage networkPage = new ImageRunNetworkPage(firstPage);
 		networkPage.setBridgeNetworkMode();
 		networkPage.finish();
 		checkNetworkMode(NETWORK_MODE_BRIDGE);
 	}
-	
+
 	@Test
 	public void testHostMode() {
-		ImageRunNetworkPage networkPage = new ImageRunNetworkPage();
+		ImageRunNetworkPage networkPage = new ImageRunNetworkPage(firstPage);
 		networkPage.setHostNetworkMode();
 		networkPage.finish();
 		checkNetworkMode(NETWORK_MODE_HOST);
 	}
-	
+
 	@Test
 	public void testNoneMode() {
-		ImageRunNetworkPage networkPage = new ImageRunNetworkPage();
+		ImageRunNetworkPage networkPage = new ImageRunNetworkPage(firstPage);
 		networkPage.setNoneNetworkMode();
 		networkPage.finish();
 		checkNetworkMode(NETWORK_MODE_NONE);
 	}
 
+	@Override
 	@After
 	public void after() {
 		deleteContainerIfExists(CONTAINER_NAME);
