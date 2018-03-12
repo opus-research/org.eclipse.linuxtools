@@ -68,21 +68,15 @@ public class MockDockerConnectionSettingsFinder {
 	 * able to detect a <strong>valid TCP Connection</strong> to a Docker daemon.
 	 */
 	public static void validTCPConnectionAvailable() {
-		validTCPConnectionAvailable("mock", "tcp://1.2.3.4:1234", "/path/to/certs");
-	}
-
-	public static void validTCPConnectionAvailable(final String connectionName, final String host,
-			final String pathToCerts) {
-
 		final IDockerConnectionSettingsFinder validTCPSocketConnectionAvailable = Mockito
 				.mock(IDockerConnectionSettingsFinder.class);
-		final TCPConnectionSettings tcpConnectionSettings = new TCPConnectionSettings(host, pathToCerts);
+		final TCPConnectionSettings tcpConnectionSettings = new TCPConnectionSettings("tcp://1.2.3.4:1234", "/path/to/certs");
 		//tcpConnectionSettings.setName("mock");
 		tcpConnectionSettings.setSettingsResolved(true);
 		Mockito.when(validTCPSocketConnectionAvailable.findDefaultConnectionSettings()).thenReturn(tcpConnectionSettings);
 		Mockito.when(
 				validTCPSocketConnectionAvailable.resolveConnectionName(Matchers.any(IDockerConnectionSettings.class)))
-				.thenReturn(connectionName);
+				.thenReturn("mock");
 		DockerConnectionManager.getInstance().setConnectionSettingsFinder(validTCPSocketConnectionAvailable);
 	}
 
