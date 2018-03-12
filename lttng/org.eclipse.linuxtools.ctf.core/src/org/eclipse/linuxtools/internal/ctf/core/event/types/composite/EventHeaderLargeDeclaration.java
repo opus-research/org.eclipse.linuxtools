@@ -102,7 +102,7 @@ public class EventHeaderLargeDeclaration extends Declaration implements IEventHe
         ByteOrder bo = input.getByteOrder();
         input.setByteOrder(fByteOrder);
         int first = (int) input.get(COMPACT_ID, false);
-        int second = (int) input.get(COMPACT_TS, false);
+        long second = input.get(COMPACT_TS, false);
         if (first != EXTENDED_VALUE) {
             input.setByteOrder(bo);
             return new EventHeaderDefinition(this, first, second, COMPACT_TS);
