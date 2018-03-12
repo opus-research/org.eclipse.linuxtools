@@ -26,6 +26,5 @@ Require-Bundle:
 Bundle-ActivationPolicy: lazy
 Import-Package: com.jcraft.jsch;version="0.1.37",
  org.eclipse.cdt.core.model,
- org.eclipse.linuxtools.internal.profiling.launch.ui.rdt.proxy,
  org.eclipse.linuxtools.tools.launch.core.factory
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
