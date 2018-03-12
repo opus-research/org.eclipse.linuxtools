@@ -16,7 +16,6 @@ import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumesVariablesModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel;
 
@@ -44,11 +43,10 @@ public class RunImageLaunchConfigurationTabGroup
 		runSelectionModel = null;
 		runVolumesModel = null;
 		if (connections != null && connections.length > 0) {
-			runSelectionModel = new ImageRunSelectionModel(
-					CommandUtils.getCurrentConnection(null));
+			runSelectionModel = new ImageRunSelectionModel(connections[0]);
 			try {
 				runVolumesModel = new ImageRunResourceVolumesVariablesModel(
-						CommandUtils.getCurrentConnection(null));
+						connections[0]);
 			} catch (DockerException e) {
 				// do nothing
 			}

@@ -415,8 +415,6 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		if (model == null)
-			return;
 		final List<DataVolumeModel> volumes = new ArrayList<>();
 		try {
 			final List<String> volumesList = configuration.getAttribute(
@@ -433,6 +431,7 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 			}
 			model.setDataVolumes(volumes);
 			model.setSelectedDataVolumes(selectedVolumes);
+
 		} catch (CoreException e) {
 			Activator.logErrorMessage(
 					LaunchMessages.getString(
@@ -447,8 +446,6 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		if (model == null)
-			return;
 		WritableList<DataVolumeModel> volumes = model.getDataVolumes();
 		Set<DataVolumeModel> selectedVolumes = model.getSelectedDataVolumes();
 

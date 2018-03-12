@@ -492,22 +492,9 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 				.getInstance()
 				.getConnections();
 		try {
-			String defaultConnectionName = ""; //$NON-NLS-1$
-			// Default to first active connection name
-			if (connections != null && connections.length > 0) {
-				for (int i = 0; i < connections.length; ++i) {
-					if (connections[i].isActive())
-						defaultConnectionName = connections[i].getName();
-				}
-			}
-			// Mark in error if there is no active connection
-			if (defaultConnectionName.equals("")) { //$NON-NLS-1$
-				setErrorMessage(WizardMessages
-						.getString("ErrorNoActiveConnection.msg")); //$NON-NLS-1$
-			}
 			String connectionName = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
-					defaultConnectionName);
+					connections[0].getName());
 			model.setSelectedConnectionName(connectionName);
 			String imageName = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.IMAGE_NAME, ""); //$NON-NLS-1$
@@ -592,20 +579,10 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 	@Override
 	public boolean isValid(ILaunchConfiguration launchConfig) {
 		try {
-			String connectionName = launchConfig.getAttribute(
+			if (launchConfig.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
-					"");
-			if (connectionName.isEmpty()) {
+					"").isEmpty()) {
 				return false;
-			} else {
-				// Verify Connection is active
-				IDockerConnection connection = DockerConnectionManager
-						.getInstance().findConnection(connectionName);
-				if (connection == null || !connection.isActive()) {
-					setErrorMessage(WizardMessages
-							.getString("ErrorInactiveConnection.msg")); //$NON-NLS-1$
-					return false;
-				}
 			}
 			final IStatus imageSelectionValidationStatus = new ImageSelectionValidator()
 					.validate(model.getSelectedImageName());
