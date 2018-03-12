@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.eclipse.linuxtools.internal.tmf.core.filter.TmfCollapseFilter;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent2;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
@@ -125,7 +124,7 @@ public class TmfCollapseFilterTest {
             fIsCollapsible = isCollapsible;
         }
         @Override
-        public boolean isCollapsibleWith(ITmfEvent2 otherEvent) {
+        public boolean isCollapsibleWith(ITmfEvent otherEvent) {
             return ((CollapsibleEvent)otherEvent).fIsCollapsible;
         }
     }

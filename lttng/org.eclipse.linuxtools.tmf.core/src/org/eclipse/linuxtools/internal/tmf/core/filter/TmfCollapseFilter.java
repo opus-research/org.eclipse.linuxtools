@@ -14,7 +14,7 @@ package org.eclipse.linuxtools.internal.tmf.core.filter;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent2;
+import org.eclipse.linuxtools.tmf.core.event.collapse.ITmfCollapsibleEvent;
 import org.eclipse.linuxtools.tmf.core.filter.model.ITmfFilterTreeNode;
 
 /**
@@ -30,16 +30,15 @@ public class TmfCollapseFilter implements ITmfFilterTreeNode {
 
     private static final String COLLAPSE_NODE_NAME = "Collapse"; //$NON-NLS-1$
 
-    private ITmfEvent2 fPrevEvent = null;
+    private ITmfCollapsibleEvent fPrevEvent = null;
 
     @Override
     public boolean matches(ITmfEvent event) {
 
         if (fPrevEvent != null) {
-            if (event instanceof ITmfEvent2) {
-                ITmfEvent2 currEvent = (ITmfEvent2) event;
-                boolean matches = (fPrevEvent).isCollapsibleWith(currEvent);
-                fPrevEvent = currEvent;
+            if (event instanceof ITmfCollapsibleEvent) {
+                boolean matches = fPrevEvent.isCollapsibleWith(event);
+                fPrevEvent = (ITmfCollapsibleEvent) event;
                 if (matches) {
                     return false;
                 }
@@ -47,8 +46,8 @@ public class TmfCollapseFilter implements ITmfFilterTreeNode {
                 fPrevEvent = null;
             }
         } else {
-            if (event instanceof ITmfEvent2) {
-                fPrevEvent = (ITmfEvent2) event;
+            if (event instanceof ITmfCollapsibleEvent) {
+                fPrevEvent = (ITmfCollapsibleEvent) event;
             }
         }
         return true;

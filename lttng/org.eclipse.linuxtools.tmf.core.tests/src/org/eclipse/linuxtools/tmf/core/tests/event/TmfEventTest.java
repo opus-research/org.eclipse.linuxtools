@@ -29,12 +29,12 @@ import java.net.URL;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent2;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
+import org.eclipse.linuxtools.tmf.core.event.collapse.ITmfCollapsibleEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.tests.TmfCoreTestPlugin;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
@@ -111,7 +111,7 @@ public class TmfEventTest {
 
     @Test
     public void testDefaultConstructor() {
-        final ITmfEvent2 event = new TmfEvent();
+        final ITmfEvent event = new TmfEvent();
         assertNull("getTrace", event.getTrace());
         assertEquals("getRank", ITmfContext.UNKNOWN_RANK, event.getRank());
         assertNull("getTimestamp", event.getTimestamp());
@@ -119,7 +119,7 @@ public class TmfEventTest {
         assertNull("getType", event.getType());
         assertNull("getContent", event.getContent());
         assertNull("getReference", event.getReference());
-        assertFalse("isSimilar", event.isCollapsibleWith(new TmfEvent()));
+        assertFalse("isCollapsibleWith", ((ITmfCollapsibleEvent)event).isCollapsibleWith(event));
     }
 
     @Test

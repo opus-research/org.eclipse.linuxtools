@@ -9,25 +9,27 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.tmf.core.event;
+package org.eclipse.linuxtools.tmf.core.event.collapse;
+
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 
 /**
- * The event structure in TMF extending {@link ITmfEvent} with additional interfaces
+ * Interface for deciding whether an event can be collapsed with another event.
  *
  * @author Bernd Hufmann
  * @since 3.1
  */
-public interface ITmfEvent2 extends ITmfEvent {
+public interface ITmfCollapsibleEvent {
 
     /**
-     * Verifies if this event is similar to a given event and can be collapsed
-     * into one event. For example, an event can be seen as similar the all data
-     * of the events but the timestmap are equal.
+     * Verifies if an event is similar to a given event and can be collapsed
+     * into one event. For example, an event can be seen as similar if all data
+     * of the events but the timestmap is equal.
      *
      * @param otherEvent
-     *            a event to compare
+     *            an event to compare
      * @return <code>true</code> if a given event is similar to another event
      *         else <code>false</code>
      */
-    boolean isCollapsibleWith(ITmfEvent2 otherEvent);
+    boolean isCollapsibleWith(ITmfEvent otherEvent);
 }
