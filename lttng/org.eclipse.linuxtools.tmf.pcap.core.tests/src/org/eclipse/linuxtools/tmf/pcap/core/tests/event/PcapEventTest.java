@@ -21,15 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.linuxtools.internal.pcap.core.trace.BadPcapFileException;
-import org.eclipse.linuxtools.internal.pcap.core.trace.PcapFile;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.event.PcapEvent;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.protocol.TmfProtocol;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.trace.PcapTrace;
 import org.eclipse.linuxtools.pcap.core.tests.shared.PcapTestTrace;
+import org.eclipse.linuxtools.pcap.core.trace.BadPcapFileException;
+import org.eclipse.linuxtools.pcap.core.trace.PcapFile;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
+import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEvent;
+import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
+import org.eclipse.linuxtools.tmf.pcap.core.trace.PcapTrace;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -60,9 +60,10 @@ public class PcapEventTest {
 
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        try (PcapFile pcap = new PcapFile(trace.getPath());
+        String file = trace.getPath();
+        try (PcapFile pcap = new PcapFile(file);
                 PcapTrace pcapTrace = new PcapTrace();) {
-            pcapTrace.initTrace(null, trace.getPath().toString(), PcapEvent.class);
+            pcapTrace.initTrace(null, trace.getPath(), PcapEvent.class);
             fEvent = pcapTrace.parseEvent(new TmfContext(new TmfLongLocation(3), 3));
         }
 
