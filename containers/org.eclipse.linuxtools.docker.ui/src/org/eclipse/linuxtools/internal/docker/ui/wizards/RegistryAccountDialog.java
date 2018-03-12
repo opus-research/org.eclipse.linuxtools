@@ -105,9 +105,6 @@ public class RegistryAccountDialog extends Dialog {
 		passwordText.setEchoChar('*');
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).applyTo(passwordText);
-		if (password != null) {
-			passwordText.setText(new String(password));
-		}
 		passwordText.addModifyListener(e -> {
 			password = passwordText.getText().toCharArray();
 			validate();
@@ -126,11 +123,10 @@ public class RegistryAccountDialog extends Dialog {
 		}
 	}
 
-	public void setInputData(IRegistryAccount info) {
-		this.serverAddress = info.getServerAddress();
-		this.username = info.getUsername();
-		this.email = info.getEmail();
-		this.password = info.getPassword();
+	public void setInputData(String serverAddress, String username, String email) {
+		this.serverAddress = serverAddress;
+		this.username = username;
+		this.email = email;
 	}
 
 	public IRegistryAccount getSignonInformation() {
