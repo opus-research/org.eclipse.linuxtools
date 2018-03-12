@@ -65,13 +65,4 @@ final class DoubleStateValue extends TmfStateValue {
     public double unboxDouble() {
         return value;
     }
-
-    @Override
-    public int compareTo(@Nullable ITmfStateValue object) {
-        if (!(object instanceof DoubleStateValue)) {
-            return -1;
-        }
-        DoubleStateValue other = (DoubleStateValue) object;
-        return Double.compare(this.value, other.value);
-    }
 }
