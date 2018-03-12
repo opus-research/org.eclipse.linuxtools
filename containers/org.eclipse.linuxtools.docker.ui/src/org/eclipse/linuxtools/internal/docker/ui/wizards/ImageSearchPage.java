@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -289,8 +290,11 @@ public class ImageSearchPage extends WizardPage {
 							monitor.done();
 						}
 					});
-			final List<IDockerImageSearchResult> searchResult = searchResultQueue
+			List<IDockerImageSearchResult> res = searchResultQueue
 					.poll(10, TimeUnit.SECONDS);
+			final List<IDockerImageSearchResult> searchResult = (res == null)
+					? new ArrayList<IDockerImageSearchResult>() : res;
+
 			Display.getCurrent().asyncExec(new Runnable() {
 				@Override
 				public void run() {
