@@ -48,9 +48,10 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
     /* 'Byte' equivalent for state values types */
     private static final byte TYPE_NULL = -1;
     private static final byte TYPE_INTEGER = 0;
-    private static final byte TYPE_STRING = 1;
-    private static final byte TYPE_LONG = 2;
-    private static final byte TYPE_DOUBLE = 3;
+    private static final byte TYPE_STRING_1 = 1;
+    private static final byte TYPE_STRING_2 = 2;
+    private static final byte TYPE_LONG = 3;
+    private static final byte TYPE_DOUBLE = 4;
 
     /* String entry sizes of different state values */
     private static final int NO_ENTRY_SIZE = 0;
@@ -155,7 +156,7 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
             valueSize = NO_ENTRY_SIZE;
             break;
 
-        case TYPE_STRING:
+        case TYPE_STRING_1:
             /* Go read the matching entry in the Strings section of the block */
             buffer.mark();
             buffer.position(valueOrOffset);
@@ -170,6 +171,37 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
              * value.
              */
             array = new byte[valueSize - 2];
+            buffer.get(array);
+            value = TmfStateValue.newValueString(new String(array));
+
+            /* Confirm the 0'ed byte at the end */
+            res = buffer.get();
+            if (res != 0) {
+                throw new IOException(errMsg);
+            }
+
+            /*
+             * Restore the file pointer's position (so we can read the next
+             * interval)
+             */
+            buffer.reset();
+            break;
+
+        case TYPE_STRING_2:
+            /* Go read the matching entry in the Strings section of the block */
+            buffer.mark();
+            buffer.position(valueOrOffset);
+
+            /* the first byte = the size to read */
+            valueSize = buffer.getShort();
+
+            /*
+             * Careful though, 'valueSize' is the total size of the entry,
+             * including the 'size' byte at the start and end (0'ed) byte at the
+             * end. Here we want 'array' to only contain the real payload of the
+             * value.
+             */
+            array = new byte[valueSize - 3];
             buffer.get(array);
             value = TmfStateValue.newValueString(new String(array));
 
@@ -245,9 +277,13 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
         buffer.putLong(start);
         buffer.putLong(end);
         buffer.putInt(attribute);
-        buffer.put(getByteFromType(sv.getType()));
+        byte type = getByteFromType(sv.getType(), sv);
+        byte[] byteArrayToWrite;
+        buffer.put(type);
 
-        switch (getByteFromType(sv.getType())) {
+        int stringOffset = endPosOfStringEntry - stringsEntrySize;
+
+        switch (type) {
 
         case TYPE_NULL:
         case TYPE_INTEGER:
@@ -263,8 +299,7 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
             }
             break;
 
-        case TYPE_STRING:
-            byte[] byteArrayToWrite;
+        case TYPE_STRING_1:
             try {
                 byteArrayToWrite = sv.unboxStr().getBytes();
             } catch (StateValueTypeException e1) {
@@ -273,9 +308,9 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
             }
 
             /* we use the valueOffset as an offset. */
-            buffer.putInt(endPosOfStringEntry - stringsEntrySize);
+            buffer.putInt(stringOffset);
             buffer.mark();
-            buffer.position(endPosOfStringEntry - stringsEntrySize);
+            buffer.position(stringOffset);
 
             /*
              * write the Strings entry (1st byte = size, then the bytes, then the 0)
@@ -287,11 +322,35 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
             buffer.reset();
             break;
 
+        case TYPE_STRING_2:
+            try {
+                byteArrayToWrite = sv.unboxStr().getBytes();
+            } catch (StateValueTypeException e1) {
+                /* Should not happen, we're in a switch/case for string type */
+                throw new RuntimeException();
+            }
+
+            /* we use the valueOffset as an offset. */
+            buffer.putInt(stringOffset);
+            buffer.mark();
+            buffer.position(stringOffset);
+
+            /*
+             * write the Strings entry (1st byte = size, then the bytes, then the 0)
+             */
+            buffer.putShort((short) stringsEntrySize);
+            buffer.put(byteArrayToWrite);
+            buffer.put((byte) 0);
+            assert (buffer.position() == endPosOfStringEntry);
+            buffer.reset();
+            break;
+
+
         case TYPE_LONG:
             /* we use the valueOffset as an offset. */
-            buffer.putInt(endPosOfStringEntry - stringsEntrySize);
+            buffer.putInt(stringOffset);
             buffer.mark();
-            buffer.position(endPosOfStringEntry - stringsEntrySize);
+            buffer.position(stringOffset);
 
             /*
              * write the Long in the Strings section
@@ -311,9 +370,9 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
 
         case TYPE_DOUBLE:
             /* we use the valueOffset as an offset. */
-            buffer.putInt(endPosOfStringEntry - stringsEntrySize);
+            buffer.putInt(stringOffset);
             buffer.mark();
-            buffer.position(endPosOfStringEntry - stringsEntrySize);
+            buffer.position(stringOffset);
 
             /* Write the Double in the Strings section */
             try {
@@ -399,8 +458,15 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
             return DOUBLE_ENTRY_SIZE;
         case STRING:
             try {
+                String str = sv.unboxStr();
+                if (str.length() > 127) {
+                    /* String's length + 2 (2 bytes for size, 1 byte for \0 at the end */
+                    return str.getBytes().length + 3;
+                }
+
                 /* String's length + 2 (1 byte for size, 1 byte for \0 at the end */
-                return sv.unboxStr().getBytes().length + 2;
+                return str.getBytes().length + 2;
+
             } catch (StateValueTypeException e) {
                 /* We're inside a switch/case for the string type, can't happen */
                 throw new IllegalStateException(e);
@@ -463,15 +529,20 @@ public final class HTInterval implements ITmfStateInterval, Comparable<HTInterva
     /**
      * Here we determine how state values "types" are written in the 8-bit
      * field that indicates the value type in the file.
+     * @param sv
      */
-    private static byte getByteFromType(ITmfStateValue.Type type) {
+    private static byte getByteFromType(ITmfStateValue.Type type, TmfStateValue sv) {
         switch(type) {
         case NULL:
             return TYPE_NULL;
         case INTEGER:
             return TYPE_INTEGER;
         case STRING:
-            return TYPE_STRING;
+            String val = sv.unboxStr();
+            if (val.length() > 127) {
+                return TYPE_STRING_2;
+            }
+            return TYPE_STRING_1;
         case LONG:
             return TYPE_LONG;
         case DOUBLE:
