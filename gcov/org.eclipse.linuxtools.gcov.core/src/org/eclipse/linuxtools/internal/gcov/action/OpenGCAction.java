@@ -11,9 +11,7 @@
 package org.eclipse.linuxtools.internal.gcov.action;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.eclipse.cdt.core.IBinaryParser.IBinaryObject;
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.IBinary;
@@ -24,12 +22,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
-import org.eclipse.linuxtools.internal.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.dialog.OpenGCDialog;
-import org.eclipse.linuxtools.internal.gcov.utils.STGcovProgramChecker;
 import org.eclipse.linuxtools.internal.gcov.view.CovView;
 import org.eclipse.linuxtools.internal.gcov.view.annotatedsource.GcovAnnotationModelTracker;
 import org.eclipse.osgi.util.NLS;
@@ -66,11 +61,6 @@ public class OpenGCAction implements IEditorLauncher {
         }
     }
 
-    private boolean exists(String binaryFile) {
-    	File f = new File(binaryFile);
-    	return f.isFile();
-    }
-    
     @Override
     public void open(IPath file) {
         Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
@@ -101,18 +91,7 @@ public class OpenGCAction implements IEditorLauncher {
             return;
         }
 
-        IDialogSettings ds = Activator.getDefault().getDialogSettings();
-        IDialogSettings defaultMapping = ds.getSection(OpenGCDialog.class.getName());
-        if (defaultMapping == null) {
-        	defaultMapping = ds.addNewSection(OpenGCDialog.class.getName());
-        }
-        String defaultBinary = defaultMapping.get(file.toOSString());
-        if (defaultBinary == null || defaultBinary.isEmpty() || !exists(defaultBinary)) {
-        	defaultBinary = getDefaultBinary(file);
-        }
-        
-        
-        OpenGCDialog d = new OpenGCDialog(shell, defaultBinary, file);
+        OpenGCDialog d = new OpenGCDialog(shell, getDefaultBinary(file), file);
         if (d.open() != Window.OK) {
             return;
         }
@@ -139,25 +118,10 @@ public class OpenGCAction implements IEditorLauncher {
                 if (cproject != null) {
                     try {
                         IBinary[] b = cproject.getBinaryContainer().getBinaries();
-                        if (b!= null) {
-                        	for (IBinary iBinary : b) {
-                        		IBinaryObject o = (IBinaryObject) iBinary.getAdapter(IBinaryObject.class);
-                        		try {
-                        		if (STGcovProgramChecker.isGCovCompatible(o, project)) {
-                        			IResource r = iBinary.getResource();
-                        			return r.getLocation().toOSString();
-                        		}
-                        		} catch (IOException ioe) {
-                        			// no nothing
-                        		}
-                        	}
-                        	// found no binary with gcov info. Provide first by default
-                        	if (b.length > 0 && b[0] != null) {
-                                IResource r = b[0].getResource();
-                                return r.getLocation().toOSString();
-                            }
+                        if (b != null && b.length > 0 && b[0] != null) {
+                            IResource r = b[0].getResource();
+                            return r.getLocation().toOSString();
                         }
-                        
                     } catch (CModelException _) {
                     }
                 }
