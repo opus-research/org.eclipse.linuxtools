@@ -21,13 +21,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.systemtap.ui.consolelog.structures.ErrorStreamDaemon;
-import org.eclipse.linuxtools.internal.systemtap.ui.consolelog.views.ErrorView;
 import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.structures.runnable.Command;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.ScpExec;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
@@ -43,7 +41,9 @@ import org.eclipse.ui.console.IOConsole;
  */
 public class ScriptConsole extends IOConsole {
 
-    /**
+    private static final String STAP_CONSOLE_TYPE = "stap"; //$NON-NLS-1$
+
+	/**
      * The command that will run in this console.
      */
     private Command cmd = null;
@@ -177,7 +177,7 @@ public class ScriptConsole extends IOConsole {
     }
 
     ScriptConsole(String name, ImageDescriptor imageDescriptor) {
-        super(name, imageDescriptor);
+        super(name, STAP_CONSOLE_TYPE, imageDescriptor);
     }
 
     /**
@@ -186,19 +186,6 @@ public class ScriptConsole extends IOConsole {
      */
     private void createConsoleDaemon() {
         consoleDaemon = new ConsoleStreamDaemon(this);
-    }
-
-    /**
-     * Creates the <code>ErrorStreamDaemon</code> for passing data from the
-     * <code>LoggedCommand</code>'s ErrorStream to the Console and ErrorView.
-     */
-    private void createErrorDaemon(IErrorParser parser) {
-        ErrorView errorView = null;
-        IViewPart ivp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ErrorView.ID);
-        if (ivp instanceof ErrorView) {
-            errorView = ((ErrorView)ivp);
-        }
-        errorDaemon = new ErrorStreamDaemon(this, errorView, parser);
     }
 
     /**
@@ -240,7 +227,7 @@ public class ScriptConsole extends IOConsole {
             reset();
         }
         if (errorParser != null) {
-            createErrorDaemon(errorParser);
+        	errorDaemon = new ErrorStreamDaemon(this);
         }
         createConsoleDaemon();
         notifyConsoleObservers();
