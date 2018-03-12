@@ -181,7 +181,8 @@ public class PcapPacketTest {
     public void CompletePcapPacketTest() throws IOException, BadPcapFileException, BadPacketException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_UDP;
         assumeTrue(trace.exists());
-        try (PcapFile file = new PcapFile(trace.getPath());) {
+        String path = trace.getPath();
+        try (PcapFile file = new PcapFile(path);) {
 
             file.seekPacket(36);
             PcapPacket packet = file.parseNextPacket();

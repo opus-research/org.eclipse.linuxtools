@@ -155,7 +155,8 @@ public class IPv4PacketTest {
     public void CompleteIPv4PacketTest() throws IOException, BadPcapFileException, BadPacketException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        try (PcapFile dummy = new PcapFile(trace.getPath())) {
+        String file = trace.getPath();
+        try (PcapFile dummy = new PcapFile(file)) {
             ByteBuffer byteBuffer = fPacket;
             if (byteBuffer == null) {
                 fail("CompleteIPv4PacketTest has failed!");
