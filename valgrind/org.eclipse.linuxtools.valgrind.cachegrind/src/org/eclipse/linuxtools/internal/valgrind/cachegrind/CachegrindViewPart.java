@@ -15,7 +15,6 @@ import java.util.Arrays;
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.ISourceRange;
 import org.eclipse.cdt.core.model.ISourceReference;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -36,7 +35,6 @@ import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindFunct
 import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindLine;
 import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindOutput;
 import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.ICachegrindElement;
-import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindUIPlugin;
 import org.eclipse.linuxtools.profiling.ui.ProfileUIUtils;
 import org.eclipse.linuxtools.valgrind.ui.CollapseAction;
 import org.eclipse.linuxtools.valgrind.ui.ExpandAction;
@@ -51,6 +49,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
@@ -142,8 +141,8 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
                 }
                 if (path != null) {
                     try {
-                    	ProfileUIUtils.openEditorAndSelect(path, line, ValgrindUIPlugin.getDefault().getProfiledProject());
-                    } catch (BadLocationException | CoreException e) {
+                        ProfileUIUtils.openEditorAndSelect(path, line);
+                    } catch (PartInitException|BadLocationException e) {
                         e.printStackTrace();
                     }
                 }
