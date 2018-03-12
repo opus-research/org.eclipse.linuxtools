@@ -24,6 +24,8 @@ import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerException;
@@ -55,7 +57,7 @@ public class MockDockerClientFactory {
 		builder.image(image);
 		return builder;
 	}
-	
+
 	/**
 	 * @param image the first {@link Image} to use to build the {@link DockerClient}
 	 * @param imageInfo the associated {@link ImageInfo}
@@ -76,7 +78,7 @@ public class MockDockerClientFactory {
 		builder.container(container);
 		return builder;
 	}
-	
+
 	/**
 	 * @param container the first {@link Container} to use to build the {@link DockerClient}
 	 * @param containerInfo the associated {@link ContainerInfo}
@@ -87,7 +89,14 @@ public class MockDockerClientFactory {
 		builder.container(container, containerInfo);
 		return builder;
 	}
-	
+
+	public static Builder containerWithStatus(final Container container,
+			final MockStatusProvider statusProvider) {
+		final Builder builder = new Builder();
+		builder.container(container).containerWithStatus(container, statusProvider);
+		return builder;
+	}
+
 	public static Builder onSearch(final String term, final ImageSearchResult... results) {
 		final Builder builder = new Builder();
 		builder.onSearch(term, Arrays.asList(results));
@@ -95,15 +104,15 @@ public class MockDockerClientFactory {
 	}
 
 	public static class Builder {
-		
+
 		private final DockerClient dockerClient;
-		
+
 		private final List<Image> images = new ArrayList<>();
 
 		private final List<Container> containers = new ArrayList<>();
-		
+
 		private final Map<String, List<ImageSearchResult>> searchResults = new HashMap<>();
-		
+
 		private Builder() {
 			this.dockerClient = Mockito.mock(DockerClient.class);
 			try {
@@ -114,14 +123,14 @@ public class MockDockerClientFactory {
 				// ignore while setting-up the mock instance
 			}
 		}
-		
+
 		public Builder image(final Image image) {
 			if(image != null) {
 				this.images.add(image);
 			}
 			return this;
 		}
-		
+
 		public Builder image(final Image image, final ImageInfo imageInfo) {
 			if(image != null ) {
 				this.images.add(image);
@@ -133,7 +142,7 @@ public class MockDockerClientFactory {
 			}
 			return this;
 		}
-		
+
 		public Builder container(final Container container) {
 			if(container != null) {
 				this.containers.add(container);
@@ -152,12 +161,27 @@ public class MockDockerClientFactory {
 			}
 			return this;
 		}
-		
+
+		public Builder containerWithStatus(final Container container, final MockStatusProvider statusProvider) {
+			try {
+				Mockito.doAnswer(new Answer<Void> () {
+					@Override
+					public Void answer(InvocationOnMock invocation) {
+						statusProvider.setStatus("Running");
+						return null;
+					}
+				}).when(this.dockerClient).restartContainer(container.id(), 10);
+			} catch (DockerException | InterruptedException e) {
+				// nothing may happen when mocking the method call
+			}
+			return this;
+		}
+
 		public Builder onSearch(final String term, final List<ImageSearchResult> results) {
 			this.searchResults.put(term, results);
 			return this;
 		}
-		
+
 		public DockerClient build() {
 			try {
 				Mockito.when(this.dockerClient.listImages(Matchers.any())).thenReturn(this.images);
@@ -166,7 +190,7 @@ public class MockDockerClientFactory {
 					Mockito.when(this.dockerClient.searchImages(searchResult.getKey())).thenReturn(searchResult.getValue());
 				}
 			} catch (DockerException | InterruptedException e) {
-				// nothing may happen when mocking the method call 
+				// nothing may happen when mocking the method call
 			}
 			return this.dockerClient;
 		}
@@ -185,8 +209,8 @@ public class MockDockerClientFactory {
 		Mockito.when(dockerClient.inspectContainer(container.id())).thenReturn(containerInfo);
 		Mockito.when(dockerClient.listContainers(Matchers.any())).thenReturn(containers);
 		} catch (DockerException | InterruptedException e) {
-			// nothing may happen when mocking the method call 
+			// nothing may happen when mocking the method call
 		}
 	}
-	
+
 }
