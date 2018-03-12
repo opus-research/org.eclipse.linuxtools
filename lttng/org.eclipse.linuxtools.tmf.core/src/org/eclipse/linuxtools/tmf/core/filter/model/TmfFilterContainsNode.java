@@ -35,7 +35,7 @@ public class TmfFilterContainsNode extends TmfFilterTreeNode {
     private boolean fNot = false;
     private String fField;
     private String fValue;
-    private transient String fValueUpperCase;
+    private String fValueUpperCase;
     private boolean fIgnoreCase = false;
 
     /**
@@ -148,6 +148,7 @@ public class TmfFilterContainsNode extends TmfFilterTreeNode {
         result = prime * result + (fIgnoreCase ? 1231 : 1237);
         result = prime * result + (fNot ? 1231 : 1237);
         result = prime * result + ((fValue == null) ? 0 : fValue.hashCode());
+        result = prime * result + ((fValueUpperCase == null) ? 0 : fValueUpperCase.hashCode());
         return result;
     }
 
@@ -181,6 +182,13 @@ public class TmfFilterContainsNode extends TmfFilterTreeNode {
                 return false;
             }
         } else if (!fValue.equals(other.fValue)) {
+            return false;
+        }
+        if (fValueUpperCase == null) {
+            if (other.fValueUpperCase != null) {
+                return false;
+            }
+        } else if (!fValueUpperCase.equals(other.fValueUpperCase)) {
             return false;
         }
         return true;

@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.internal.tmf.pcap.core.util;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,22 +19,21 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.linuxtools.internal.pcap.core.packet.Packet;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.pcap.PcapPacket;
-import org.eclipse.linuxtools.internal.pcap.core.trace.PcapFile;
-import org.eclipse.linuxtools.internal.pcap.core.util.LinkTypeHelper;
-import org.eclipse.linuxtools.internal.pcap.core.util.PcapTimestampScale;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.event.PcapEvent;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.event.PcapEventField;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.event.PcapEventType;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.event.PcapRootEventField;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.trace.PcapTrace;
+import org.eclipse.linuxtools.pcap.core.packet.Packet;
+import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
+import org.eclipse.linuxtools.pcap.core.protocol.pcap.PcapPacket;
+import org.eclipse.linuxtools.pcap.core.trace.PcapFile;
+import org.eclipse.linuxtools.pcap.core.util.LinkTypeHelper;
+import org.eclipse.linuxtools.pcap.core.util.PcapTimestampScale;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
+import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEvent;
+import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEventField;
+import org.eclipse.linuxtools.tmf.pcap.core.event.PcapRootEventField;
+import org.eclipse.linuxtools.tmf.pcap.core.trace.PcapTrace;
 
 /**
  * Factory class that helps generating Pcap Events.
@@ -47,7 +45,7 @@ public class PcapEventFactory {
     private static final ITmfEventField[] EMPTY_FIELD_ARRAY = new ITmfEventField[0];
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
-    private static final Map<PcapProtocol, TmfEventType> fEventTypes = new HashMap<>();
+    private static final Map<Protocol, TmfEventType> fEventTypes = new HashMap<>();
 
     private PcapEventFactory() {
     }
@@ -78,18 +76,19 @@ public class PcapEventFactory {
         default:
             throw new IllegalArgumentException("The timestamp precision is not valid!"); //$NON-NLS-1$
         }
-        Path filePath = pcap.getPath().getFileName();
-        @SuppressWarnings("null") // for .toString()
-        @NonNull String fileName = (filePath == null ? EMPTY_STRING : filePath.toString());
-
-        String dataLink = Messages.PcapEventFactory_LinkType + ':' + LinkTypeHelper.toString((int) pcapPacket.getPcapFile().getDataLinkType());
+        String fileName = pcap.getPath().substring(pcap.getPath().lastIndexOf('/') + 1);
+        if (fileName == null) {
+            fileName = EMPTY_STRING;
+        }
+        String dataLink = "linktype:" + LinkTypeHelper.toString((int) pcapPacket.getPcapFile().getDataLinkType()); //$NON-NLS-1$
 
         ITmfEventField[] fields = generatePacketFields(pcapPacket);
         ITmfEventField field = new PcapRootEventField(EMPTY_STRING, fields, pcapPacket);
         Packet packet = pcapPacket.getMostEcapsulatedPacket();
         if (!fEventTypes.containsKey(packet.getProtocol())) {
-            String typeIdString = PcapEventType.DEFAULT_PCAP_TYPE_ID + ':' + packet.getProtocol().getShortName();
-            fEventTypes.put(packet.getProtocol(), new PcapEventType(typeIdString, null));
+            String contextString = "Network/Pcap Event"; //$NON-NLS-1$
+            String typeIdString = "packet:" + packet.getProtocol().getShortName(); //$NON-NLS-1$
+            fEventTypes.put(packet.getProtocol(), new TmfEventType(contextString, typeIdString, null));
         }
         TmfEventType eventType = fEventTypes.get(packet.getProtocol());
         if (eventType == null) {
@@ -104,7 +103,7 @@ public class PcapEventFactory {
         // way to use less intermediate data structures.
         List<ITmfEventField> fieldList = new ArrayList<>();
         List<ITmfEventField> subfieldList = new ArrayList<>();
-        Packet localPacket = packet.getPacket(PcapProtocol.PCAP);
+        Packet localPacket = packet.getPacket(Protocol.PCAP);
 
         while (localPacket != null) {
             subfieldList.clear();

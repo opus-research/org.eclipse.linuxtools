@@ -36,7 +36,7 @@ public class TmfFilterMatchesNode extends TmfFilterTreeNode {
     private boolean fNot = false;
     private String fField;
     private String fRegex;
-    private transient Pattern fPattern;
+    private Pattern fPattern;
 
     /**
      * @param parent
@@ -152,12 +152,16 @@ public class TmfFilterMatchesNode extends TmfFilterTreeNode {
         return ret;
     }
 
+    // FIXME Pattern does not implements hashCode and Equals which is bad. It
+    // might declare two filter equals even if they have different pattern.
+    // ATM, this is really not an issue.
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
         result = prime * result + ((fField == null) ? 0 : fField.hashCode());
         result = prime * result + (fNot ? 1231 : 1237);
+        result = prime * result + ((fPattern == null) ? 0 : fPattern.hashCode());
         result = prime * result + ((fRegex == null) ? 0 : fRegex.hashCode());
         return result;
     }
@@ -182,6 +186,13 @@ public class TmfFilterMatchesNode extends TmfFilterTreeNode {
             return false;
         }
         if (fNot != other.fNot) {
+            return false;
+        }
+        if (fPattern == null) {
+            if (other.fPattern != null) {
+                return false;
+            }
+        } else if (!fPattern.equals(other.fPattern)) {
             return false;
         }
         if (fRegex == null) {

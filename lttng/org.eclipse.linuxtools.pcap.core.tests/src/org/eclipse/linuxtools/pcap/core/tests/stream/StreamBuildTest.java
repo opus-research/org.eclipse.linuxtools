@@ -18,11 +18,11 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
-import org.eclipse.linuxtools.internal.pcap.core.stream.PacketStream;
-import org.eclipse.linuxtools.internal.pcap.core.stream.PacketStreamBuilder;
-import org.eclipse.linuxtools.internal.pcap.core.trace.BadPcapFileException;
+import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
+import org.eclipse.linuxtools.pcap.core.stream.PacketStream;
+import org.eclipse.linuxtools.pcap.core.stream.PacketStreamBuilder;
 import org.eclipse.linuxtools.pcap.core.tests.shared.PcapTestTrace;
+import org.eclipse.linuxtools.pcap.core.trace.BadPcapFileException;
 import org.junit.Test;
 
 /**
@@ -31,8 +31,6 @@ import org.junit.Test;
  * @author Vincent Perot
  */
 public class StreamBuildTest {
-
-    private static final double DELTA = 0.001;
 
     /**
      * Test that verify that stream building is done correctly.
@@ -43,10 +41,11 @@ public class StreamBuildTest {
         assumeTrue(trace.exists());
 
         try {
+            String file = trace.getPath();
             // Test Ethernet II stream
-            PacketStreamBuilder builder = new PacketStreamBuilder(PcapProtocol.ETHERNET_II);
-            builder.parsePcapFile(trace.getPath());
-            assertEquals(PcapProtocol.ETHERNET_II, builder.getProtocol());
+            PacketStreamBuilder builder = new PacketStreamBuilder(Protocol.ETHERNET_II);
+            builder.parsePcapFile(file);
+            assertEquals(Protocol.ETHERNET_II, builder.getProtocol());
             // Should do one loop only, so hardcoded values are okay.
             for (PacketStream stream : builder.getStreams()) {
                 assertEquals("Stream eth.0, Number of Packets: 43\n", stream.toString());
@@ -58,22 +57,22 @@ public class StreamBuildTest {
                 assertEquals(22768, stream.getNbBytesBtoA());
                 assertEquals(1084443427311224000L, stream.getStartTime());
                 assertEquals(1084443457704928000L, stream.getStopTime());
-                assertEquals(30.393704, stream.getDuration(), DELTA);
-                assertEquals(76.43030280218561, stream.getBPSAtoB(), DELTA);
-                assertEquals(749.1025114938278, stream.getBPSBtoA(), DELTA);
+                assertEquals(30.393704, stream.getDuration(), 0.001);
+                assertEquals(76.43030280218561, stream.getBPSAtoB(), 0.001);
+                assertEquals(749.1025114938278, stream.getBPSBtoA(), 0.001);
             }
 
             // Test TCP streams and other constructor
-            builder = new PacketStreamBuilder(PcapProtocol.TCP);
-            builder.parsePcapFile(trace.getPath());
-            assertEquals(PcapProtocol.TCP, builder.getProtocol());
+            builder = new PacketStreamBuilder(Protocol.TCP);
+            builder.parsePcapFile(file);
+            assertEquals(Protocol.TCP, builder.getProtocol());
 
             PacketStream stream = builder.getStream(0);
             if (stream == null) {
                 fail("StreamBuildingTest has failed!");
                 return;
             }
-            assertEquals(PcapProtocol.TCP, stream.getProtocol());
+            assertEquals(Protocol.TCP, stream.getProtocol());
             assertEquals(0, stream.getID());
             assertEquals("tcp.0", stream.getUniqueID());
             assertEquals(34, stream.getNbPackets());
@@ -84,16 +83,16 @@ public class StreamBuildTest {
             assertEquals(19344, stream.getNbBytesBtoA());
             assertEquals(1084443427311224000L, stream.getStartTime());
             assertEquals(1084443457704928000L, stream.getStopTime());
-            assertEquals(30.393704, stream.getDuration(), DELTA);
-            assertEquals(44.449995301658525, stream.getBPSAtoB(), DELTA);
-            assertEquals(636.4476011216008, stream.getBPSBtoA(), DELTA);
+            assertEquals(30.393704, stream.getDuration(), 0.001);
+            assertEquals(44.449995301658525, stream.getBPSAtoB(), 0.001);
+            assertEquals(636.4476011216008, stream.getBPSBtoA(), 0.001);
 
             stream = builder.getStream(1);
             if (stream == null) {
                 fail("StreamBuildingTest has failed!");
                 return;
             }
-            assertEquals(PcapProtocol.TCP, stream.getProtocol());
+            assertEquals(Protocol.TCP, stream.getProtocol());
             assertEquals(1, stream.getID());
             assertEquals("tcp.1", stream.getUniqueID());
             assertEquals(7, stream.getNbPackets());
@@ -104,9 +103,9 @@ public class StreamBuildTest {
             assertEquals(3236, stream.getNbBytesBtoA());
             assertEquals(1084443430295515000L, stream.getStartTime());
             assertEquals(1084443432088092000L, stream.getStopTime());
-            assertEquals(1.792577, stream.getDuration(), DELTA);
-            assertEquals(492.58692932019096, stream.getBPSAtoB(), DELTA);
-            assertEquals(1805.2223140205413, stream.getBPSBtoA(), DELTA);
+            assertEquals(1.792577, stream.getDuration(), 0.001);
+            assertEquals(492.58692932019096, stream.getBPSAtoB(), 0.001);
+            assertEquals(1805.2223140205413, stream.getBPSBtoA(), 0.001);
 
             builder.clear();
             assertEquals(0, builder.getNbStreams());
