@@ -38,6 +38,13 @@ public class DockerPreferencePage extends PreferencePage implements
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 	}
 	
+	/**
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
+	 * 
+	 * @see PreferenceInitializer
+	 */
 	@Override
 	public void init(final IWorkbench workbench) {
 	}

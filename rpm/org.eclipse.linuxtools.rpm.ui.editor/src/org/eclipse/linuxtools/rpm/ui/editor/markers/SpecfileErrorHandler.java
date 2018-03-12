@@ -95,6 +95,9 @@ public class SpecfileErrorHandler extends SpecfileMarkerHandler {
 
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.cdt.autotools.ui.editors.IAutoconfErrorHandler#handleError(org.eclipse.linuxtools.cdt.autotools.core.ui.editors.parser.ParseException)
+     */
     public void handleError(SpecfileParseException e) {
 
         int lineNumber = e.getLineNumber();

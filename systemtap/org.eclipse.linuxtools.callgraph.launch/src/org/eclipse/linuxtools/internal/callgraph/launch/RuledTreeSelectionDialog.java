@@ -40,6 +40,10 @@ public class RuledTreeSelectionDialog extends CheckedTreeSelectionDialog {
         super(parent, labelProvider, contentProvider);
     }
 
+    /*
+     *  (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -56,6 +60,10 @@ public class RuledTreeSelectionDialog extends CheckedTreeSelectionDialog {
         return composite;
     }
 
+
+    /*
+     * @see Dialog#createButtonBar(Composite)
+     */
     @Override
     protected Control createButtonBar(Composite parent) {
         Font font = parent.getFont();

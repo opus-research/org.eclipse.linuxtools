@@ -283,12 +283,11 @@ public class DockerExplorerView extends CommonNavigator implements
 					// following is to force Container property testers
 					// to run again after list is updated. They won't do so by
 					// default.
-					final ISelection selection = getCommonViewer()
-							.getSelection();
+					ISelection selection = getCommonViewer().getSelection();
 					if (selection != null) {
 						getCommonViewer().setSelection(selection, false);
 					}
-					getCommonViewer().refresh();
+					getCommonViewer().refresh(connection, true);
 				}
 			});
 		}

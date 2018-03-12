@@ -20,7 +20,6 @@ import java.util.TreeSet;
 import org.eclipse.linuxtools.docker.core.IDockerContainerConfig;
 
 import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.HostConfig;
 
 public class DockerContainerConfig implements IDockerContainerConfig {
 
@@ -49,14 +48,13 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 	private final List<String> onBuild;
 
 	public DockerContainerConfig(final ContainerConfig containerConfig) {
-		HostConfig hc = containerConfig.hostConfig();
 		this.hostname = containerConfig.hostname();
 		this.domainname = containerConfig.domainname();
 		this.user = containerConfig.user();
-		this.memory = hc != null ? hc.memory() : null;
-		this.memorySwap = hc != null ? hc.memorySwap() : null;
-		this.cpuShares = hc != null ? hc.cpuShares() : null;
-		this.cpuset = hc != null ? hc.cpusetCpus() : null;
+		this.memory = containerConfig.memory();
+		this.memorySwap = containerConfig.memorySwap();
+		this.cpuShares = containerConfig.cpuShares();
+		this.cpuset = containerConfig.cpuset();
 		this.attachStdin = containerConfig.attachStdin() != null
 				? containerConfig.attachStdin() : false;
 		this.attachStdout = containerConfig.attachStdout() != null
