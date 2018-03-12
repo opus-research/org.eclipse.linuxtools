@@ -63,12 +63,12 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
+import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.core.RegistryInfo;
@@ -759,7 +759,7 @@ public class ImageRunSelectionPage extends WizardPage {
 								.getSelectedConnection(),
 						ImageRunSelectionPage.this.model
 								.getSelectedImageName(),
-						new RegistryInfo(AbstractRegistry.DOCKERHUB_REGISTRY));
+						new RegistryInfo(IRegistry.DOCKERHUB_REGISTRY, true));
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {
