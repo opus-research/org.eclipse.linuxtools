@@ -24,9 +24,9 @@ import com.spotify.docker.client.messages.NetworkSettings;
 import com.spotify.docker.client.messages.PortBinding;
 
 /**
- * A factory for mock {@link ContainerInfo}s.
+ * 
  */
-public class MockContainerInfoFactory {
+public class MockDockerContainerInfoFactory {
 
 	public static Builder port(final String privatePort, final String hostIp, final String hostPort) {
 		return new Builder().port(privatePort, hostIp, hostPort);
