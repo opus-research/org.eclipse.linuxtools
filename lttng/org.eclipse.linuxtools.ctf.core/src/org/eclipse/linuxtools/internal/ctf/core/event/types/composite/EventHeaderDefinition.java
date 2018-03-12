@@ -38,7 +38,7 @@ public final class EventHeaderDefinition extends Definition implements IComposit
             IEventHeaderDeclaration.TIMESTAMP
             );
 
-    private final long fId;
+    private final int fId;
     private final long fTimestamp;
     private final int fTimestampLength;
 
@@ -54,7 +54,7 @@ public final class EventHeaderDefinition extends Definition implements IComposit
      * @param timestampLength
      *            the number of bits valid in the timestamp
      */
-    public EventHeaderDefinition(@NonNull Declaration eventHeaderDecl, long id, long timestamp, int timestampLength) {
+    public EventHeaderDefinition(@NonNull Declaration eventHeaderDecl, int id, long timestamp, int timestampLength) {
         super(eventHeaderDecl, null, LexicalScope.EVENT_HEADER.toString(), LexicalScope.EVENT_HEADER);
         fId = id;
         fTimestamp = timestamp;
@@ -75,7 +75,7 @@ public final class EventHeaderDefinition extends Definition implements IComposit
      *
      * @return the event id
      */
-    public long getId() {
+    public int getId() {
         return fId;
     }
 

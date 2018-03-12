@@ -198,7 +198,7 @@ public class MetadataTest {
             assertNotNull(s);
         }
         assertEquals(1, count);
-        assertEquals(1, trace.getEventDeclarations(0L).size());
+        assertEquals(1, trace.getEvents(0L).size());
         return trace;
     }
 
@@ -206,8 +206,8 @@ public class MetadataTest {
     public void testStreamTextMD() throws CTFReaderException {
         try (CTFTrace trace = testSingleFragment();) {
             fixture.parseTextFragment(mdSecond);
-            assertEquals(2, trace.getEventDeclarations(0L).size());
-            assertEquals("bozo_the_clown", trace.getEventDeclarations(0L).get(1).getName());
+            assertEquals(2, trace.getEvents(0L).size());
+            assertEquals("bozo_the_clown", trace.getEvents(0L).get(1L).getName());
         }
     }
 
