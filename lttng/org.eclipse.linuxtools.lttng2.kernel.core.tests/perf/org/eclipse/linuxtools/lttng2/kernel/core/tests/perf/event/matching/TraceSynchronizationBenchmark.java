@@ -12,17 +12,16 @@
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.perf.event.matching;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
-
-import java.util.Arrays;
 
 import org.eclipse.linuxtools.lttng2.kernel.core.event.matching.TcpEventMatching;
 import org.eclipse.linuxtools.lttng2.kernel.core.event.matching.TcpLttngEventMatching;
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventMatching;
-import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithm;
-import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationManager;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.ctf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.test.performance.Dimension;
@@ -43,6 +42,7 @@ public class TraceSynchronizationBenchmark {
     private static final String TIME = " (time)";
     private static final String MEMORY = " (memory usage)";
     private static final String TEST_SUMMARY = "Trace synchronization";
+    private static int BLOCK_SIZE = 1000;
 
     /**
      * Initialize some data
@@ -83,7 +83,7 @@ public class TraceSynchronizationBenchmark {
                 CtfTmfTrace trace2 = CtfTmfTestTrace.DJANGO_DB.getTrace();
                 CtfTmfTrace trace3 = CtfTmfTestTrace.DJANGO_HTTPD.getTrace();) {
             ITmfTrace[] traces = { trace1, trace2, trace3 };
-//            runCpuTest(traces, "Django traces", 10);
+            runCpuTest(traces, "Django traces", 10);
             runMemoryTest(traces, "Django traces", 10);
         }
     }
@@ -94,9 +94,16 @@ public class TraceSynchronizationBenchmark {
         perf.tagAsSummary(pm, TEST_SUMMARY + ':' + testName + TIME, Dimension.CPU_TIME);
 
         for (int i = 0; i < loop_count; i++) {
+            TmfExperiment experiment = new TmfExperiment(CtfTmfEvent.class, "Test experiment", testTraces, BLOCK_SIZE);
+
             pm.start();
-            SynchronizationManager.synchronizeTraces(null, Arrays.asList(testTraces), true);
+            try {
+                experiment.synchronizeTraces(true);
+            } catch (TmfTraceException e) {
+                fail("Failed at iteration " + i + " with message: " + e.getMessage());
+            }
             pm.stop();
+
         }
         pm.commit();
 
@@ -109,14 +116,18 @@ public class TraceSynchronizationBenchmark {
         perf.tagAsSummary(pm, TEST_SUMMARY + ':' + testName + MEMORY, Dimension.USED_JAVA_HEAP);
 
         for (int i = 0; i < loop_count; i++) {
+            TmfExperiment experiment = new TmfExperiment(CtfTmfEvent.class, "Test experiment", testTraces, BLOCK_SIZE);
 
             System.gc();
             pm.start();
-            SynchronizationAlgorithm algo = SynchronizationManager.synchronizeTraces(null, Arrays.asList(testTraces), true);
-            assertNotNull(algo);
-
+            try {
+                experiment.synchronizeTraces(true);
+            } catch (TmfTraceException e) {
+                fail("Failed at iteration " + i + " with message: " + e.getMessage());
+            }
             System.gc();
             pm.stop();
+
         }
         pm.commit();
     }
