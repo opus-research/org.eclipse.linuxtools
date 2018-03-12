@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import org.eclipse.linuxtools.internal.tmf.core.synchronization.TmfConstantTransform;
 import org.eclipse.linuxtools.internal.tmf.core.synchronization.TmfTimestampTransform;
 import org.eclipse.linuxtools.internal.tmf.core.synchronization.TmfTimestampTransformLinear;
+import org.eclipse.linuxtools.internal.tmf.core.synchronization.TmfTimestampTransformLinearFast;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
@@ -119,6 +120,10 @@ public final class TimestampTransformFactory {
             return createWithOffset(offset.longValueExact());
         }
         return new TmfTimestampTransformLinear(factor, offset);
+    }
+
+    public static ITmfTimestampTransform createLinearFast(BigDecimal factor, BigDecimal offset) {
+        return new TmfTimestampTransformLinearFast(new TmfTimestampTransformLinear(factor, offset));
     }
 
 }
