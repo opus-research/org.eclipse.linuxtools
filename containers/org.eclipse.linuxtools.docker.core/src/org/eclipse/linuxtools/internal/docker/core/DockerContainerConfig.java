@@ -29,14 +29,14 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 	private final Long memorySwap;
 	private final Long cpuShares;
 	private final String cpuset;
-	private final Boolean attachStdin;
-	private final Boolean attachStdout;
-	private final Boolean attachStderr;
+	private final boolean attachStdin;
+	private final boolean attachStdout;
+	private final boolean attachStderr;
 	private final List<String> portSpecs;
 	private final Set<String> exposedPorts;
-	private final Boolean tty;
-	private final Boolean openStdin;
-	private final Boolean stdinOnce;
+	private final boolean tty;
+	private final boolean openStdin;
+	private final boolean stdinOnce;
 	private final List<String> env;
 	private final List<String> cmd;
 	private final String image;
@@ -134,17 +134,17 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 	}
 
 	@Override
-	public Boolean attachStdin() {
+	public boolean attachStdin() {
 		return attachStdin;
 	}
 
 	@Override
-	public Boolean attachStdout() {
+	public boolean attachStdout() {
 		return attachStdout;
 	}
 
 	@Override
-	public Boolean attachStderr() {
+	public boolean attachStderr() {
 		return attachStderr;
 	}
 
@@ -159,17 +159,17 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 	}
 
 	@Override
-	public Boolean tty() {
+	public boolean tty() {
 		return tty;
 	}
 
 	@Override
-	public Boolean openStdin() {
+	public boolean openStdin() {
 		return openStdin;
 	}
 
 	@Override
-	public Boolean stdinOnce() {
+	public boolean stdinOnce() {
 		return stdinOnce;
 	}
 
@@ -330,7 +330,6 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder portSpecs(final List<String> portSpecs) {
-
 			this.portSpecs = new ArrayList<>(portSpecs);
 			return this;
 		}
@@ -400,12 +399,20 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder cmd(final List<String> cmd) {
-			this.cmd = new ArrayList<>(cmd);
+			this.cmd = cmd;
 			return this;
 		}
 
 		public Builder cmd(final String... cmd) {
-			this.cmd = Arrays.asList(cmd);
+			return cmd(Arrays.asList(cmd));
+		}
+
+		public Builder cmd(final String cmd) {
+			if (cmd != null && !cmd.isEmpty()) {
+				return cmd(cmd.split(" "));
+			} else {
+				this.cmd = null;
+			}
 			return this;
 		}
 
@@ -446,12 +453,22 @@ public class DockerContainerConfig implements IDockerContainerConfig {
 		}
 
 		public Builder entryPoint(final List<String> entrypoint) {
-			this.entrypoint = new ArrayList<>(entrypoint);
+			if (entrypoint != null && !entrypoint.isEmpty()) {
+				this.entrypoint = new ArrayList<>(entrypoint);
+			}
 			return this;
 		}
 
 		public Builder entryPoint(final String... entrypoint) {
-			this.entrypoint = Arrays.asList(entrypoint);
+			return entryPoint(Arrays.asList(entrypoint));
+		}
+
+		public Builder entryPoint(final String entrypoint) {
+			if (entrypoint != null && !entrypoint.isEmpty()) {
+				return entryPoint(entrypoint.split(" "));
+			} else {
+				this.entrypoint = null;
+			}
 			return this;
 		}
 
