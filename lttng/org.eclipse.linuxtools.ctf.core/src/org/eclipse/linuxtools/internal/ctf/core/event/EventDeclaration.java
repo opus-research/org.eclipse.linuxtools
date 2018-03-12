@@ -23,6 +23,8 @@ import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Declaration;
+import org.eclipse.linuxtools.ctf.core.event.types.ICompositeDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.types.ICompositeDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
@@ -92,8 +94,8 @@ public class EventDeclaration implements IEventDeclaration {
 
     @Override
     public EventDefinition createDefinition(CTFStreamInputReader streamInputReader, @NonNull BitBuffer input, long timestamp) throws CTFReaderException {
-        StructDeclaration streamEventContextDecl = streamInputReader.getStreamEventContextDecl();
-        StructDefinition streamEventContext = streamEventContextDecl != null ? streamEventContextDecl.createDefinition(fStream.getTrace(), LexicalScope.STREAM_EVENT_CONTEXT, input) : null;
+        ICompositeDeclaration streamEventContextDecl = streamInputReader.getStreamEventContextDeclaration();
+        ICompositeDefinition streamEventContext = streamEventContextDecl != null ? streamEventContextDecl.createDefinition(fStream.getTrace(), LexicalScope.STREAM_EVENT_CONTEXT, input) : null;
         StructDefinition packetContext = streamInputReader.getPacketReader().getCurrentPacketEventHeader();
         StructDefinition eventContext = fContext != null ? fContext.createDefinition(fStream.getTrace(), LexicalScope.CONTEXT, input) : null;
         StructDefinition eventPayload = fFields != null ? fFields.createDefinition(fStream.getTrace(), LexicalScope.FIELDS, input) : null;
