@@ -14,12 +14,12 @@
 package org.eclipse.linuxtools.tmf.ctf.ui.swtbot.tests;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.varia.NullAppender;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -46,9 +46,6 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotToolbarButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.PlatformUI;
@@ -84,6 +81,7 @@ public abstract class AbstractImportAndReadSmokeTest {
     /** Test Class setup */
     @BeforeClass
     public static void init() {
+        assumeTrue(fTrace.exists());
         SWTBotUtil.failIfUIThread();
 
         /* set up for swtbot */
@@ -134,72 +132,6 @@ public abstract class AbstractImportAndReadSmokeTest {
     }
 
     /**
-     * Opens and get the TmfEventsEditor
-     * @return TmfEventsEditor
-     */
-    protected TmfEventsEditor openEditor() {
-        final SWTBotView projectExplorerBot = fBot.viewById(IPageLayout.ID_PROJECT_EXPLORER);
-        projectExplorerBot.setFocus();
-
-        final SWTBotTree tree = fBot.tree();
-        final SWTBotTreeItem treeItem = tree.getTreeItem(getProjectName());
-        treeItem.expand();
-
-        String nodeName = getFullNodeName(treeItem, "Traces");
-        fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(nodeName, treeItem));
-        SWTBotTreeItem tracesNode = treeItem.getNode(nodeName);
-        tracesNode.expand();
-
-
-        SWTBotTreeItem traceParentNode = tracesNode;
-
-        if (supportsFolderStructure()) {
-            String nodeFolderName = getFullNodeName(tracesNode, TRACE_FOLDER);
-            fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(nodeFolderName, tracesNode));
-            SWTBotTreeItem traceFolder = tracesNode.getNode(nodeFolderName);
-            traceFolder.select();
-            traceFolder.doubleClick();
-            traceParentNode = traceFolder;
-        }
-
-        fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(TRACE_NAME, traceParentNode));
-        traceParentNode.getNode(TRACE_NAME).select();
-        traceParentNode.getNode(TRACE_NAME).doubleClick();
-        SWTBotUtil.delay(1000);
-        SWTBotUtil.waitForJobs();
-        final String expectedTitle = supportsFolderStructure() ? TRACE_FOLDER + IPath.SEPARATOR + TRACE_NAME : TRACE_NAME;
-
-        final IEditorPart iep[] = new IEditorPart[1];
-        UIThreadRunnable.syncExec(new VoidResult() {
-            @Override
-            public void run() {
-                IEditorReference[] ieds = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-                assertNotNull(ieds);
-                iep[0] = null;
-                for (IEditorReference ied : ieds) {
-                    if (ied.getTitle().equals(expectedTitle)) {
-                        iep[0] = ied.getEditor(true);
-                        break;
-                    }
-                }
-            }
-        });
-        assertNotNull(iep[0]);
-        return (TmfEventsEditor) iep[0];
-    }
-
-    private static String getFullNodeName(final SWTBotTreeItem treeItem, String prefix) {
-        List<String> nodes = treeItem.getNodes();
-        String nodeName = "";
-        for (String node : nodes) {
-            if (node.startsWith(prefix)) {
-                nodeName = node;
-            }
-        }
-        return nodeName;
-    }
-
-    /**
      * Finishes the wizard
      */
     protected void importFinish() {
@@ -215,13 +147,6 @@ public abstract class AbstractImportAndReadSmokeTest {
      * @return the project name
      */
     protected abstract String getProjectName();
-
-    /**
-     * Returns whether or not that test support folder structure
-     *
-     * @return true if the test supports folder structure, false otherwise
-     */
-    protected abstract boolean supportsFolderStructure();
 
     // ---------------------------------------------
     // Helpers for testing views

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,15 +9,16 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  *   Bernd Hufmann - Updated for support of LTTng Tools 2.1
+ *   Jonathan Rajotte - Updated for basic support of LTTng 2.6 machine interface
+ *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  *******************************************************************************/
+
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views.messages;
 
 import org.eclipse.osgi.util.NLS;
 
 /**
- * <p>
  * Messages file for the trace control package.
- * </p>
  *
  * @author Bernd Hufmann
  */
@@ -45,9 +46,25 @@ public final class Messages extends NLS {
     public static String TraceControl_UnexpectedCommandOutputFormat;
     public static String TraceControl_UnexpectedNameError;
     public static String TraceControl_UnexpectedPathError;
+    public static String TraceControl_UnexpectedNumberOfElementError;
+    public static String TraceControl_UnexpectedValueError;
 
     public static String TraceControl_UnsupportedVersionError;
     public static String TraceControl_GettingVersionError;
+
+    // Xml parsing related failures
+    public static String TraceControl_InvalidSchemaError;
+    public static String TraceControl_XmlDocumentBuilderError;
+    public static String TraceControl_XmlParsingError;
+    public static String TraceControl_XmlValidationError;
+    public static String TraceControl_XmlValidationWarning;
+
+    // Xml machine interface failures
+    public static String TraceControl_MiInvalidNumberOfElementError;
+    public static String TraceControl_MiInvalidProviderError;
+    public static String TraceControl_MiMissingRequiredError;
+    public static String TraceControl_MiInvalidElementError;
+    public static String TraceControl_MiIllegalValueError;
 
     // Commands
     public static String TraceControl_ErrorTitle;
@@ -55,6 +72,8 @@ public final class Messages extends NLS {
     public static String TraceControl_RetrieveNodeConfigurationFailure;
     public static String TraceControl_ListSessionFailure;
     public static String TraceControl_EclipseCommandFailure;
+    public static String TraceControl_NewNodeCreateButtonText;
+
     public static String TraceControl_NewNodeCreationFailure;
     public static String TraceControl_CreateSessionJob;
     public static String TraceControl_CreateSessionFailure;
@@ -248,6 +267,8 @@ public final class Messages extends NLS {
     public static String TraceControl_KernelDomainDisplayName;
     public static String TraceControl_UstDisplayName;
     public static String TraceControl_UstGlobalDomainDisplayName;
+    public static String TraceControl_UnknownDomainDisplayName;
+    public static String TraceControl_JULDomainDisplayName;
     public static String TraceControl_AllSessionsDisplayName;
     public static String TraceControl_SessionDisplayName;
     public static String TraceControl_DomainDisplayName;
@@ -274,6 +295,8 @@ public final class Messages extends NLS {
     public static String TraceControl_DomainNamePropertyName;
     public static String TraceControl_BufferTypePropertyName;
     public static String TraceControl_ChannelNamePropertyName;
+    public static String TraceControl_OpenConnectionTo;
+
     public static String TraceControl_OverwriteModePropertyName;
     public static String TraceControl_SubBufferSizePropertyName;
     public static String TraceControl_NbSubBuffersPropertyName;
@@ -314,6 +337,8 @@ public final class Messages extends NLS {
     public static String TraceControl_ExecuteScriptDialogTitle;
     public static String TraceControl_ExecuteScriptBrowseText;
     public static String TraceControl_ExecuteScriptSelectLabel;
+
+    public static String TraceControl_UnknownNode;
 
     static {
         // initialize resource bundle

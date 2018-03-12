@@ -21,13 +21,20 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTracesFolder;
 import org.eclipse.linuxtools.tmf.ui.swtbot.tests.conditions.ConditionHelpers;
 import org.eclipse.linuxtools.tmf.ui.views.TracingPerspectiveFactory;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.eclipse.finder.matchers.WidgetMatcherFactory;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
@@ -38,9 +45,12 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
+import org.hamcrest.Matcher;
 
 /**
  * SWTBot Helper functions
@@ -103,7 +113,8 @@ public abstract class SWTBotUtil {
      *            the workbench bot
      */
     public static void deleteProject(String projectName, SWTWorkbenchBot bot) {
-        // Wait for any analysis to complete because it might create supplementary files
+        // Wait for any analysis to complete because it might create
+        // supplementary files
         SWTBotUtil.waitForJobs();
         try {
             ResourcesPlugin.getWorkspace().getRoot().getProject(projectName).refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -115,7 +126,7 @@ public abstract class SWTBotUtil {
         final SWTBotView projectViewBot = bot.viewById(IPageLayout.ID_PROJECT_EXPLORER);
         projectViewBot.setFocus();
 
-        SWTBotTree treeBot = bot.tree();
+        SWTBotTree treeBot = projectViewBot.bot().tree();
         SWTBotTreeItem treeItem = treeBot.getTreeItem(projectName);
         SWTBotMenu contextMenu = treeItem.contextMenu("Delete");
         contextMenu.click();
@@ -200,5 +211,135 @@ public abstract class SWTBotUtil {
                     + " that useUIThread is set to false in the pom.xml");
         }
 
+    }
+
+    /**
+     * Open a trace, this does not perform any validation though
+     *
+     * @param projectName
+     *            The project name
+     * @param tracePath
+     *            the path of the trace file (absolute or relative)
+     * @param traceType
+     *            the trace canonical string (eg:
+     *            org.eclipse.linuxtools.btf.trace)
+     */
+    public static void openTrace(final String projectName, final String tracePath, final String traceType) {
+        final Exception exception[] = new Exception[1];
+        exception[0] = null;
+        UIThreadRunnable.syncExec(new VoidResult() {
+            @Override
+            public void run() {
+                try {
+                    IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+                    TmfTraceFolder destinationFolder = TmfProjectRegistry.getProject(project, true).getTracesFolder();
+                    TmfOpenTraceHelper.openTraceFromPath(destinationFolder, tracePath, PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), traceType);
+                } catch (CoreException e) {
+                    exception[0] = e;
+                }
+            }
+        });
+        if (exception[0] != null) {
+            fail(exception[0].getMessage());
+        }
+
+        delay(1000);
+        waitForJobs();
+    }
+
+    /**
+     * Finds an editor and sets focus to the editor
+     *
+     * @param bot
+     *            the workbench bot
+     * @param editorName
+     *            the editor name
+     * @return the corresponding SWTBotEditor
+     */
+    public static SWTBotEditor activateEditor(SWTWorkbenchBot bot, String editorName) {
+        Matcher<IEditorReference> matcher = WidgetMatcherFactory.withPartName(editorName);
+        final SWTBotEditor editorBot = bot.editor(matcher);
+        IEditorPart iep = editorBot.getReference().getEditor(true);
+        final TmfEventsEditor tmfEd = (TmfEventsEditor) iep;
+        editorBot.show();
+        UIThreadRunnable.syncExec(new VoidResult() {
+            @Override
+            public void run() {
+                tmfEd.setFocus();
+            }
+        });
+
+        SWTBotUtil.waitForJobs();
+        SWTBotUtil.delay(1000);
+        assertNotNull(tmfEd);
+        return editorBot;
+    }
+
+    /**
+     * Opens a trace in an editor and get the TmfEventsEditor
+     *
+     * @param bot
+     *            the workbench bot
+     * @param projectName
+     *            the name of the project that contains the trace
+     * @param elementPath
+     *            the trace element path (relative to Traces folder)
+     * @return TmfEventsEditor the opened editor
+     */
+    public static TmfEventsEditor openEditor(SWTWorkbenchBot bot, String projectName, IPath elementPath) {
+        final SWTBotView projectExplorerBot = bot.viewById(IPageLayout.ID_PROJECT_EXPLORER);
+        projectExplorerBot.setFocus();
+
+        final SWTBotTree tree = bot.tree();
+        final SWTBotTreeItem treeItem = tree.getTreeItem(projectName);
+        treeItem.expand();
+
+        String nodeName = getFullNodeName(treeItem, TmfTracesFolder.TRACES_FOLDER_NAME);
+        bot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(nodeName, treeItem));
+        SWTBotTreeItem tracesNode = treeItem.getNode(nodeName);
+        tracesNode.expand();
+
+        SWTBotTreeItem currentNode = tracesNode;
+        for (String segment : elementPath.segments()) {
+            String fullNodeName = getFullNodeName(currentNode, segment);
+            bot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(fullNodeName, currentNode));
+            SWTBotTreeItem newNode = currentNode.getNode(fullNodeName);
+            newNode.select();
+            newNode.doubleClick();
+            currentNode = newNode;
+        }
+
+        SWTBotUtil.delay(1000);
+        SWTBotUtil.waitForJobs();
+        final String expectedTitle = elementPath.toString();
+
+        final IEditorPart iep[] = new IEditorPart[1];
+        UIThreadRunnable.syncExec(new VoidResult() {
+            @Override
+            public void run() {
+                IEditorReference[] ieds = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+                assertNotNull(ieds);
+                iep[0] = null;
+                for (IEditorReference ied : ieds) {
+                    if (ied.getTitle().equals(expectedTitle)) {
+                        iep[0] = ied.getEditor(true);
+                        break;
+                    }
+                }
+            }
+        });
+        assertNotNull(iep[0]);
+        return (TmfEventsEditor) iep[0];
+    }
+
+    private static String getFullNodeName(final SWTBotTreeItem treeItem, String prefix) {
+        List<String> nodes = treeItem.getNodes();
+        String nodeName = "";
+        for (String node : nodes) {
+            if (node.startsWith(prefix)) {
+                nodeName = node;
+            }
+        }
+        return nodeName;
     }
 }
