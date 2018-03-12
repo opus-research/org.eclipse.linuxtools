@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -134,12 +134,18 @@ public class BuildDockerImageJob extends Job implements IDockerProgressHandler {
 				connection.getImages(true);
 			}
 		} catch (DockerException | InterruptedException e) {
-			Display.getDefault()
-					.syncExec(() -> MessageDialog.openError(
-							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-									.getShell(),
-							JobMessages.getString(BUILD_IMAGE_ERROR_MESSAGE),
-							e.getMessage()));
+			Display.getDefault().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					MessageDialog
+							.openError(PlatformUI.getWorkbench()
+									.getActiveWorkbenchWindow().getShell(),
+									JobMessages.getString(
+											BUILD_IMAGE_ERROR_MESSAGE),
+							e.getMessage());
+				}
+
+			});
 		}
 		// make sure the progress monitor is 'done' even if the build failed or
 		// timed out.
@@ -167,12 +173,16 @@ public class BuildDockerImageJob extends Job implements IDockerProgressHandler {
 
 	private void logMessage(final String buildMessage) {
 		if (this.console != null && buildMessage != null) {
-			Display.getDefault().asyncExec(() -> {
-				console.showConsole();
-				try {
-					console.write(buildMessage.getBytes("UTF-8")); //$NON-NLS-1$
-				} catch (IOException e) {
-					Activator.log(e);
+			Display.getDefault().asyncExec(new Runnable() {
+
+				@Override
+				public void run() {
+					console.showConsole();
+					try {
+						console.write(buildMessage.getBytes("UTF-8")); //$NON-NLS-1$
+					} catch (IOException e) {
+						Activator.log(e);
+					}
 				}
 			});
 		}

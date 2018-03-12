@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import java.util.Set;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
+import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -32,10 +33,12 @@ import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.linuxtools.docker.ui.Activator;
@@ -181,27 +184,35 @@ public class RunImagePortsTab extends AbstractLaunchConfigurationTab
 
 	private ISelectionChangedListener onSelectionChanged(
 			final Button... targetButtons) {
-		return e -> {
-			if (e.getSelection().isEmpty()) {
-				setControlsEnabled(targetButtons, false);
-			} else {
-				setControlsEnabled(targetButtons, true);
+		return new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(final SelectionChangedEvent e) {
+				if (e.getSelection().isEmpty()) {
+					setControlsEnabled(targetButtons, false);
+				} else {
+					setControlsEnabled(targetButtons, true);
+				}
 			}
 		};
 	}
 
 	private ICheckStateListener onCheckStateChanged() {
-		return e -> {
-			ImageRunSelectionModel.ExposedPortModel element = (ImageRunSelectionModel.ExposedPortModel) e
-					.getElement();
-			if (e.getChecked()) {
-				model.getSelectedPorts().add(element);
-				element.setSelected(true);
-			} else {
-				model.getSelectedPorts().remove(element);
-				element.setSelected(false);
+		return new ICheckStateListener() {
+
+			@Override
+			public void checkStateChanged(final CheckStateChangedEvent e) {
+				ImageRunSelectionModel.ExposedPortModel element = (ImageRunSelectionModel.ExposedPortModel) e
+						.getElement();
+				if (e.getChecked()) {
+					model.getSelectedPorts().add(element);
+					element.setSelected(true);
+				} else {
+					model.getSelectedPorts().remove(element);
+					element.setSelected(false);
+				}
+				updateLaunchConfigurationDialog();
 			}
-			updateLaunchConfigurationDialog();
 		};
 	}
 
@@ -246,7 +257,13 @@ public class RunImagePortsTab extends AbstractLaunchConfigurationTab
 
 	private IValueChangeListener onPublishAllPortsChange(
 			final Control... controls) {
-		return event -> togglePortMappingControls(controls);
+		return new IValueChangeListener() {
+
+			@Override
+			public void handleValueChange(final ValueChangeEvent event) {
+				togglePortMappingControls(controls);
+			}
+		};
 	}
 
 	private SelectionListener onAddPort(

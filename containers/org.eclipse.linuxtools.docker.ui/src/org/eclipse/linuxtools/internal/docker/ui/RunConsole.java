@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2010, 2013, 2015 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -142,17 +142,21 @@ public class RunConsole extends IOConsole {
 	public void attachToConsole(final IDockerConnection connection) {
 		final InputStream in = getInputStream();
 		final OutputStream out = newOutputStream();
-		Thread t = new Thread(() -> {
-			try {
-				DockerConnection conn = (DockerConnection) connection;
-				if (conn.getContainerInfo(containerId).config().openStdin()) {
-					while (!conn.getContainerInfo(containerId).state()
-							.running()) {
-						Thread.sleep(1000);
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					DockerConnection conn = (DockerConnection) connection;
+					if (conn.getContainerInfo(containerId).config()
+							.openStdin()) {
+						while (!conn.getContainerInfo(containerId).state()
+								.running()) {
+							Thread.sleep(1000);
+						}
+						conn.attachCommand(containerId, in, out);
 					}
-					conn.attachCommand(containerId, in, out);
+				} catch (Exception e) {
 				}
-			} catch (Exception e) {
 			}
 		});
 		t.start();
@@ -160,17 +164,21 @@ public class RunConsole extends IOConsole {
 	}
 
 	public static void attachToTerminal (final IDockerConnection connection, final String containerId) {
-		Thread t = new Thread(() -> {
-			try {
-				DockerConnection conn = (DockerConnection) connection;
-				if (conn.getContainerInfo(containerId).config().openStdin()) {
-					while (!conn.getContainerInfo(containerId).state()
-							.running()) {
-						Thread.sleep(1000);
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					DockerConnection conn = (DockerConnection) connection;
+					if (conn.getContainerInfo(containerId).config()
+							.openStdin()) {
+						while (!conn.getContainerInfo(containerId).state()
+								.running()) {
+							Thread.sleep(1000);
+						}
+						conn.attachCommand(containerId, null, null);
 					}
-					conn.attachCommand(containerId, null, null);
+				} catch (Exception e) {
 				}
-			} catch (Exception e) {
 			}
 		});
 		t.start();

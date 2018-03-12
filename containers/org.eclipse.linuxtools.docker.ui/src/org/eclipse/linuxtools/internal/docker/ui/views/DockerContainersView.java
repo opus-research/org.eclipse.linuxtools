@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -49,6 +50,7 @@ import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.propertytesters.ContainerPropertyTester;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -382,9 +384,13 @@ public class DockerContainersView extends ViewPart implements
 	 * @return
 	 */
 	private ModifyListener onSearch() {
-		return e -> {
-			if (DockerContainersView.this.viewer != null) {
-				DockerContainersView.this.viewer.refresh();
+		return new ModifyListener() {
+			
+			@Override
+			public void modifyText(final ModifyEvent e) {
+				if (DockerContainersView.this.viewer != null) {
+					DockerContainersView.this.viewer.refresh();
+				}
 			}
 		};
 	}
@@ -418,11 +424,14 @@ public class DockerContainersView extends ViewPart implements
 	}
 
 	private ISelectionChangedListener onContainerSelection() {
-		return event -> {
-			ISelection s = event.getSelection();
-			if (s instanceof StructuredSelection) {
-				StructuredSelection ss = (StructuredSelection) s;
-				updateToolBarItemEnablement(ss);
+		return new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				ISelection s = event.getSelection();
+				if (s instanceof StructuredSelection) {
+					StructuredSelection ss = (StructuredSelection) s;
+					updateToolBarItemEnablement(ss);
+				}
 			}
 		};
 	}
@@ -449,14 +458,18 @@ public class DockerContainersView extends ViewPart implements
 	public void listChanged(final IDockerConnection connection,
 			final List<IDockerContainer> containers) {
 		if (connection.getName().equals(connection.getName())) {
-			Display.getDefault().asyncExec(() -> {
-				if (DockerContainersView.this.viewer != null
-						&& !DockerContainersView.this.viewer.getTable()
-								.isDisposed()) {
-					DockerContainersView.this.viewer.refresh();
-					refreshViewTitle();
-					updateToolBarItemEnablement(DockerContainersView.this.viewer
-							.getStructuredSelection());
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					if (DockerContainersView.this.viewer != null
+							&& !DockerContainersView.this.viewer.getTable()
+									.isDisposed()) {
+						DockerContainersView.this.viewer.refresh();
+						refreshViewTitle();
+						updateToolBarItemEnablement(
+								DockerContainersView.this.viewer
+										.getStructuredSelection());
+					}
 				}
 			});
 		}
