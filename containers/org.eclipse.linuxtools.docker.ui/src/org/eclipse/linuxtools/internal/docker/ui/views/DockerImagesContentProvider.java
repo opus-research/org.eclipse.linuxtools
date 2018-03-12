@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Display;
  */
 public class DockerImagesContentProvider implements ITreeContentProvider{
 
-	private static final String LoadingImages = "ImagesLoadJob.msg"; //$NON-NLS-1$
 	private static final Object[] EMPTY = new Object[0];
 	private TableViewer viewer;
 	
@@ -62,7 +61,8 @@ public class DockerImagesContentProvider implements ITreeContentProvider{
 	 *            the selected {@link DockerConnection}
 	 */
 	private void loadImages(final IDockerConnection connection) {
-		final Job loadImagesJob = new Job(DVMessages.getString(LoadingImages)) {
+		final Job loadImagesJob = new Job(DVMessages
+				.getFormattedString("ImagesLoadJob.msg", connection.getUri())) {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				Display.getDefault().asyncExec(() -> {

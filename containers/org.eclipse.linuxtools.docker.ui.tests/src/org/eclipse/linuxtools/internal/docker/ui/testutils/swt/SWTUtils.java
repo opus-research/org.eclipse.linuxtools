@@ -21,12 +21,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swtbot.eclipse.finder.waits.Conditions;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.Result;
@@ -160,6 +162,18 @@ public class SWTUtils {
 	}
 
 	/**
+	 * Waits for all {@link Job} to complete.
+	 * 
+	 * @throws InterruptedException
+	 */
+	public static void waitForJobsToComplete(Object familly) {
+//		while (Job.getJobManager().find(familly).length > 0) {
+//			wait(1, TimeUnit.SECONDS);
+//		}
+		Conditions.waitForJobs(DockerExplorerView.class, "Docker Explorer View jobs");
+	}
+	
+	/**
 	 * @param viewBot
 	 *            the {@link SWTBotView} containing the {@link Tree} to traverse
 	 * @param paths
@@ -185,6 +199,27 @@ public class SWTUtils {
 		final String[] remainingPaths = new String[paths.length - 1];
 		System.arraycopy(paths, 1, remainingPaths, 0, paths.length - 1);
 		return getTreeItem(getTreeItem(parentTreeItem, paths[0]), remainingPaths);
+	}
+
+	/**
+	 * Returns the first child node in the given parent tree item whose text
+	 * matches (ie, begins with) the given path argument.
+	 * 
+	 * @param parentTree
+	 *            the parent tree item
+	 * @param path
+	 *            the text of the node that should match
+	 * @return the first matching node or <code>null</code> if none could be
+	 *         found
+	 */
+	public static SWTBotTreeItem getTreeItem(final SWTBotTree parentTree, final String path) {
+		waitForJobsToComplete(DockerExplorerView.class);
+		for (SWTBotTreeItem child : parentTree.getAllItems()) {
+			if (child.getText().startsWith(path)) {
+				return child;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -241,11 +276,12 @@ public class SWTUtils {
 	 *            the first item to select
 	 * @param otherItems
 	 *            the other items to select
+	 * @return 
 	 */
-	public static void select(final SWTBotTreeItem parentTreeItem, final String firstItem, final String... otherItems) {
+	public static SWTBotTreeItem select(final SWTBotTreeItem parentTreeItem, final String firstItem, final String... otherItems) {
 		final String[] matchItems = new String[otherItems.length];
 		matchItems[0] = firstItem;
-		select(parentTreeItem, matchItems);
+		return select(parentTreeItem, matchItems);
 	}
 
 	/**
@@ -256,13 +292,14 @@ public class SWTUtils {
 	 *            the parent tree item
 	 * @param matchItems
 	 *            the items to select
+	 * @return 
 	 */
-	public static void select(final SWTBotTreeItem parentTreeItem, final String[] matchItems) {
+	public static SWTBotTreeItem select(final SWTBotTreeItem parentTreeItem, final String[] matchItems) {
 		final List<String> fullyQualifiedItems = Stream.of(parentTreeItem.getItems())
 				.filter(treeItem -> Stream.of(matchItems)
 						.anyMatch(matchItem -> treeItem.getText().startsWith(matchItem)))
 				.map(item -> item.getText()).collect(Collectors.toList());
-		parentTreeItem.select(fullyQualifiedItems.toArray(new String[0]));
+		return parentTreeItem.select(fullyQualifiedItems.toArray(new String[0]));
 	}
 	/**
 	 * Selects the given <code>treeItem</code> whose
@@ -333,6 +370,30 @@ public class SWTUtils {
 		final String[] remainingPath = new String[path.length -1];
 		System.arraycopy(path, 1, remainingPath, 0, remainingPath.length);
 		return getSubMenu(subMenu, remainingPath);
+	}
+	
+	public static SWTBotTreeItem expand(final SWTBotTree tree, final String... path) {
+		final SWTBotTreeItem rootItem = getTreeItem(tree, path[0]);
+		rootItem.expand();
+		SWTUtils.wait(100, TimeUnit.MILLISECONDS);
+		if(path.length > 1) {
+			final String[] remainingPath = new String[path.length -1];
+			System.arraycopy(path, 1, remainingPath, 0, remainingPath.length);
+			return expand(rootItem, remainingPath);
+		}
+		return rootItem;
+	}
+
+	public static SWTBotTreeItem expand(final SWTBotTreeItem treeItem, final String... path) {
+		final SWTBotTreeItem childItem = getTreeItem(treeItem, path[0]).expand();
+		waitForJobsToComplete(DockerExplorerView.class);
+		SWTUtils.wait(1000, TimeUnit.MILLISECONDS);
+		if(path.length > 1) {
+			final String[] remainingPath = new String[path.length -1];
+			System.arraycopy(path, 1, remainingPath, 0, remainingPath.length);
+			return expand(childItem, remainingPath);
+		}
+		return getTreeItem(treeItem, path[0]);
 	}
 	
 }

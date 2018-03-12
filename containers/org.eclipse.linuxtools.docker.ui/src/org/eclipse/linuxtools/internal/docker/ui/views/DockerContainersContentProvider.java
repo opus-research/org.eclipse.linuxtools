@@ -23,6 +23,8 @@ import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProv
 import org.eclipse.swt.widgets.Display;
 
 /**
+ * Content provider for the {@link DockerContainersView}
+ * 
  * @author xcoulon
  *
  */
@@ -58,7 +60,9 @@ public class DockerContainersContentProvider implements ITreeContentProvider{
 	 * @param containersCategory the selected {@link DockerContainersCategory}
 	 */
 	private void loadContainers(final IDockerConnection connection) {
-		final Job loadContainersJob = new Job("Loading containers...") {
+		final Job loadContainersJob = new Job(DVMessages
+				.getFormattedString("ContainersLoadJob.msg", //$NON-NLS-1$
+						connection.getUri())) {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				connection.getContainers(true);
