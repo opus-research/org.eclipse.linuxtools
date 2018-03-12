@@ -31,7 +31,6 @@ import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainerConfig;
 import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
-import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerPortBinding;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerConfig;
@@ -64,9 +63,7 @@ public class RunDockerImageLaunchConfigurationDelegate
 			final IDockerConnection connection = getDockerConnection(config);
 			if (connection == null)
 				return;
-			final IDockerImage image = getDockerImage(config, connection);
-			RunImageCommandHandler.runImage(image,
-					containerConfig,
+			RunImageCommandHandler.runImage(connection, containerConfig,
 					hostConfig,
 					config.getAttribute(
 							IRunDockerImageLaunchConfigurationConstants.CONTAINER_NAME,
@@ -77,17 +74,6 @@ public class RunDockerImageLaunchConfigurationDelegate
 		} catch (CoreException e) {
 			Activator.log(e);
 		}
-	}
-
-	private IDockerImage getDockerImage(final ILaunchConfiguration config,
-			final IDockerConnection connection) throws CoreException {
-		final String imageId = config.getAttribute(
-				IRunDockerImageLaunchConfigurationConstants.IMAGE_NAME,
-				(String) null);
-		if (imageId != null) {
-			return connection.getImage(imageId);
-		}
-		return null;
 	}
 
 	public IDockerHostConfig getDockerHostConfig(ILaunchConfiguration config)
