@@ -177,7 +177,7 @@ public class ImageRun extends Wizard {
 	private String convertToUnixPath(String path) {
 		String unixPath = path;
 
-		if (Platform.OS_WIN32.equals(Platform.getOS())) {
+		if (Platform.getOS() == Platform.OS_WIN32) {
 			unixPath = path.replaceAll("\\\\", "/").replaceFirst("\\:", "");
 			if (!unixPath.startsWith("/")) {
 				unixPath = '/' + unixPath;
