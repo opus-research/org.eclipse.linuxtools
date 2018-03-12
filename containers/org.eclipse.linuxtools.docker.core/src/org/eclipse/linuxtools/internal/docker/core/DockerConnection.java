@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystems;
@@ -38,6 +39,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -73,7 +77,6 @@ import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
 import org.eclipse.linuxtools.docker.core.IDockerProgressHandler;
 import org.eclipse.linuxtools.docker.core.ILogger;
 import org.eclipse.linuxtools.docker.core.Messages;
-import org.eclipse.osgi.util.NLS;
 
 import com.spotify.docker.client.ContainerNotFoundException;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -96,9 +99,6 @@ import com.spotify.docker.client.messages.ImageInfo;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
-
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
@@ -395,7 +395,7 @@ public class DockerConnection implements IDockerConnection {
 
 	private Map<String, Job> actionJobs;
 
-	private Map<String, LogThread> loggingThreads = new HashMap<>();
+	private Map<String, LogThread> loggingThreads = new HashMap<String, LogThread>();
 
 	// private Set<String> printIds = new HashSet<String>();
 
@@ -621,7 +621,7 @@ public class DockerConnection implements IDockerConnection {
 	public void registerActionJob(String id, Job j) {
 		synchronized (actionLock) {
 			if (actionJobs == null)
-				actionJobs = new HashMap<>();
+				actionJobs = new HashMap<String, Job>();
 			actionJobs.put(id, j);
 		}
 	}
@@ -686,12 +686,10 @@ public class DockerConnection implements IDockerConnection {
 			return new LogThread(id, copyClient, follow);
 		}
 
-		@Override
 		public void setOutputStream(OutputStream stream) {
 			outputStream = stream;
 		}
 
-		@Override
 		public void execute() throws InterruptedException, IOException {
 			try {
 				// Add timestamps to log based on user preference
@@ -745,7 +743,7 @@ public class DockerConnection implements IDockerConnection {
 	}
 
 	private List<IDockerContainer> listContainers() throws DockerException {
-		final List<IDockerContainer> dclist = new ArrayList<>();
+		final List<IDockerContainer> dclist = new ArrayList<IDockerContainer>();
 		synchronized (containerLock) {
 			List<Container> list = null;
 			try {
@@ -753,8 +751,7 @@ public class DockerConnection implements IDockerConnection {
 						.allContainers());
 			} catch (com.spotify.docker.client.DockerException
 					| InterruptedException e) {
-				throw new DockerException(
-						NLS.bind(
+				throw new DockerException(Messages.bind(
 						Messages.List_Docker_Containers_Failure,
 						this.getName()), e);
 			}
@@ -886,7 +883,7 @@ public class DockerConnection implements IDockerConnection {
 	}
 
 	private List<IDockerImage> listImages() throws DockerException {
-		final List<IDockerImage> dilist = new ArrayList<>();
+		final List<IDockerImage> dilist = new ArrayList<IDockerImage>();
 		synchronized (imageLock) {
 			List<Image> rawImages = null;
 			try {
@@ -913,7 +910,7 @@ public class DockerConnection implements IDockerConnection {
 						&& imageParentIds.contains(rawImage.id());
 				final boolean danglingImage = !taggedImage
 						&& !intermediateImage;
-				dilist.add(new DockerImage(this, rawImage
+				dilist.add(new DockerImage(this, (List<String>) rawImage
 						.repoTags(), rawImage.id(), rawImage.parentId(),
 						rawImage.created(), rawImage.size(), rawImage
 								.virtualSize(), intermediateImage,
@@ -1227,7 +1224,7 @@ public class DockerConnection implements IDockerConnection {
 				builder.links(config.links());
 			if (config.lxcConf() != null) {
 				List<IDockerConfParameter> lxcconf = config.lxcConf();
-				ArrayList<LxcConfParameter> lxcreal = new ArrayList<>();
+				ArrayList<LxcConfParameter> lxcreal = new ArrayList<LxcConfParameter>();
 				for (IDockerConfParameter param : lxcconf) {
 					lxcreal.add(new LxcConfParameter(param.key(), param.value()));
 				}
@@ -1236,13 +1233,13 @@ public class DockerConnection implements IDockerConnection {
 			if (config.portBindings() != null) {
 				Map<String, List<IDockerPortBinding>> bindings = config
 						.portBindings();
-				HashMap<String, List<PortBinding>> realBindings = new HashMap<>();
+				HashMap<String, List<PortBinding>> realBindings = new HashMap<String, List<PortBinding>>();
 
 				for (Entry<String, List<IDockerPortBinding>> entry : bindings
 						.entrySet()) {
 					String key = entry.getKey();
 					List<IDockerPortBinding> bindingList = entry.getValue();
-					ArrayList<PortBinding> newList = new ArrayList<>();
+					ArrayList<PortBinding> newList = new ArrayList<PortBinding>();
 					for (IDockerPortBinding binding : bindingList) {
 						newList.add(PortBinding.of(binding.hostIp(),
 								binding.hostPort()));
@@ -1378,7 +1375,7 @@ public class DockerConnection implements IDockerConnection {
 
 	public WritableByteChannel attachCommand(final String id,
 			final InputStream in, final OutputStream out)
-					throws DockerException {
+			throws DockerException, InterruptedException {
 
 		final byte[] prevCmd = new byte[1024];
 		try {
