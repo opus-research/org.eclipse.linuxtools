@@ -59,7 +59,6 @@ public class RunImageLaunchConfigurationTabGroup
 				new RunImagePortsTab(runSelectionModel),
 				new RunImageLinksTab(runSelectionModel),
 				new RunImageEnvironmentTab(runVolumesModel),
-				new RunImageLabelsTab(runVolumesModel),
 				new RunImageResourcesTab(runVolumesModel) });
 	}
 
