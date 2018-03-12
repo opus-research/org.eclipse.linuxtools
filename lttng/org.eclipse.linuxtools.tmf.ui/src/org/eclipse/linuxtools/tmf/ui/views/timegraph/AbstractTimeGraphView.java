@@ -851,13 +851,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
             }
         });
 
-        fTimeGraphWrapper.addSelectionListener(new ITimeGraphSelectionListener() {
-            @Override
-            public void selectionChanged(TimeGraphSelectionEvent event) {
-                // ITimeGraphEntry selection = event.getSelection();
-            }
-        });
-
         fTimeGraphWrapper.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
 
         IStatusLineManager statusLineManager = getViewSite().getActionBars().getStatusLineManager();
