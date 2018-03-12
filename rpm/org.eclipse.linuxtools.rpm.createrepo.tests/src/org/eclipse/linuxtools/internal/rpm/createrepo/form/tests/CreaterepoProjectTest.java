@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Guzman - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.rpm.createrepo.tests;
+package org.eclipse.linuxtools.internal.rpm.createrepo.form.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -36,17 +36,18 @@ import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
 import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProject;
 import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProjectCreator;
 import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoUtils;
-import org.eclipse.linuxtools.internal.rpm.createrepo.form.tests.ICreaterepoTestConstants;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 
 /**
  * Tests for CreaterepoProject.
  */
+@Ignore
 public class CreaterepoProjectTest {
 
     private static final String TEST_RPM_LOC1 = ICreaterepoTestConstants.RPM_RESOURCE_LOC
@@ -62,7 +63,7 @@ public class CreaterepoProjectTest {
      * Initialize workspace root and progress monitor.
      */
     @BeforeClass
-    public static void beforeClass() {
+    public static void setUpBeforeClass() {
         root = ResourcesPlugin.getWorkspace().getRoot();
         monitor = new NullProgressMonitor();
     }
