@@ -31,7 +31,6 @@ public class JavaAppInContainerLaunchConfigurationTabGroup extends AbstractLaunc
 		AbstractLaunchConfigurationTab [] tabs = new AbstractLaunchConfigurationTab[] {
 				new JavaMainTab(),
 				new JavaArgumentsTab(),
-				new JavaImageTab(),
 				new JavaJRETab(),
 				new JavaClasspathTab(),
 				new SourceLookupTab(),
