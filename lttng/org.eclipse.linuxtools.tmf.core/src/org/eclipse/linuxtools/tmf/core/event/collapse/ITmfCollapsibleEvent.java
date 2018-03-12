@@ -24,7 +24,7 @@ public interface ITmfCollapsibleEvent {
     /**
      * Verifies if an event is similar to a given event and can be collapsed
      * into one event. For example, an event can be seen as similar if all data
-     * of the events but the timestamp is equal.
+     * of the events but the timestmap is equal.
      *
      * @param otherEvent
      *            an event to compare
