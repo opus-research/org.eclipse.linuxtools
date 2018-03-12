@@ -242,7 +242,7 @@ public class TestCustomTxtWizard {
         assertNotNull(treeNode);
         treeNode.contextMenu("Manage Custom Parsers...").click();
         fBot.shell(MANAGE_CUSTOM_PARSERS_SHELL_TITLE).setFocus();
-        fBot.list().select(fBot.list().getItems()[0]);
+        fBot.list().select("Demo trace");
         fBot.button("Edit...").click();
 
         fBot.textWithLabel("Log type:").setText(PROJECT_NAME);
