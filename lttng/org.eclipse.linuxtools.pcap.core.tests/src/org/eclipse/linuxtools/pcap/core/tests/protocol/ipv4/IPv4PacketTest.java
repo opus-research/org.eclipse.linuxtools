@@ -19,19 +19,20 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.eclipse.linuxtools.pcap.core.packet.BadPacketException;
-import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
-import org.eclipse.linuxtools.pcap.core.protocol.ipv4.IPv4Endpoint;
-import org.eclipse.linuxtools.pcap.core.protocol.ipv4.IPv4Packet;
+import org.eclipse.linuxtools.internal.pcap.core.packet.BadPacketException;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.ipv4.IPv4Endpoint;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.ipv4.IPv4Packet;
+import org.eclipse.linuxtools.internal.pcap.core.trace.BadPcapFileException;
+import org.eclipse.linuxtools.internal.pcap.core.trace.PcapFile;
 import org.eclipse.linuxtools.pcap.core.tests.shared.PcapTestTrace;
-import org.eclipse.linuxtools.pcap.core.trace.BadPcapFileException;
-import org.eclipse.linuxtools.pcap.core.trace.PcapFile;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,7 +42,6 @@ import org.junit.Test;
  * @author Vincent Perot
  */
 public class IPv4PacketTest {
-
 
     private static final Map<String, String> EXPECTED_FIELDS;
     static {
@@ -54,7 +54,7 @@ public class IPv4PacketTest {
         EXPECTED_FIELDS.put("Identification", "0x0ff0");
         EXPECTED_FIELDS.put("Don't Fragment Flag", "false");
         EXPECTED_FIELDS.put("More Fragment Flag", "false");
-        EXPECTED_FIELDS.put("Fragment Offset", "-31");
+        EXPECTED_FIELDS.put("Fragment Offset", "7905");
         EXPECTED_FIELDS.put("Time to live", "160");
         EXPECTED_FIELDS.put("Protocol", "Unknown (254)");
         EXPECTED_FIELDS.put("Checksum", "0x3344");
@@ -69,7 +69,7 @@ public class IPv4PacketTest {
         sb.append("Internet Protocol Version 4, Source: 192.168.1.0, Destination: 193.169.2.1\n");
         sb.append("Version: 4, Identification: 0x0ff0, Header Length: 24 bytes, Total Length: 255 bytes\n");
         sb.append("Differentiated Services Code Point: 0x26; Explicit Congestion Notification: 0x02\n");
-        sb.append("Flags: 0x00 (Don't have more fragments), Fragment Offset: -31\n");
+        sb.append("Flags: 0x00 (Don't have more fragments), Fragment Offset: 7905\n");
         sb.append("Time to live: 160\n");
         sb.append("Protocol: 254\n");
         sb.append("Header Checksum: 0x3344\n");
@@ -143,6 +143,7 @@ public class IPv4PacketTest {
 
     /**
      * Test that verify the correctness of the IPv4Packet's methods.
+     *
      * @throws BadPcapFileException
      *             Thrown when the file is erroneous. Fails the test.
      * @throws IOException
@@ -154,8 +155,7 @@ public class IPv4PacketTest {
     public void CompleteIPv4PacketTest() throws IOException, BadPcapFileException, BadPacketException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        String file = trace.getPath();
-        try (PcapFile dummy = new PcapFile(file)) {
+        try (PcapFile dummy = new PcapFile(trace.getPath())) {
             ByteBuffer byteBuffer = fPacket;
             if (byteBuffer == null) {
                 fail("CompleteIPv4PacketTest has failed!");
@@ -164,14 +164,14 @@ public class IPv4PacketTest {
             IPv4Packet packet = new IPv4Packet(dummy, null, byteBuffer);
 
             // Protocol Testing
-            assertEquals(Protocol.IPV4, packet.getProtocol());
-            assertTrue(packet.hasProtocol(Protocol.IPV4));
-            assertTrue(packet.hasProtocol(Protocol.UNKNOWN));
-            assertFalse(packet.hasProtocol(Protocol.TCP));
+            assertEquals(PcapProtocol.IPV4, packet.getProtocol());
+            assertTrue(packet.hasProtocol(PcapProtocol.IPV4));
+            assertTrue(packet.hasProtocol(PcapProtocol.UNKNOWN));
+            assertFalse(packet.hasProtocol(PcapProtocol.TCP));
 
             // Abstract methods Testing
             assertTrue(packet.validate());
-            assertEquals(1910842322, packet.hashCode());
+            assertEquals(-222021887, packet.hashCode());
             assertFalse(packet.equals(null));
             assertEquals(new IPv4Packet(dummy, null, byteBuffer), packet);
 
@@ -189,8 +189,8 @@ public class IPv4PacketTest {
             assertEquals(ByteBuffer.wrap(payload), packet.getPayload());
 
             // Packet-specific methods Testing
-            assertTrue(Arrays.equals(packet.getSourceIpAddress(), Arrays.copyOfRange(fPacket.array(), 12, 16)));
-            assertTrue(Arrays.equals(packet.getDestinationIpAddress(), Arrays.copyOfRange(fPacket.array(), 16, 20)));
+            assertEquals(InetAddress.getByAddress(Arrays.copyOfRange(fPacket.array(), 12, 16)), packet.getSourceIpAddress());
+            assertEquals(InetAddress.getByAddress(Arrays.copyOfRange(fPacket.array(), 16, 20)), packet.getDestinationIpAddress());
             assertTrue(Arrays.equals(packet.getOptions(), Arrays.copyOfRange(fPacket.array(), 20, 24)));
             assertEquals(4, packet.getVersion());
             assertEquals(24, packet.getHeaderLength());
@@ -201,7 +201,7 @@ public class IPv4PacketTest {
             assertFalse(packet.getReservedFlag());
             assertFalse(packet.getDontFragmentFlag());
             assertFalse(packet.getHasMoreFragment());
-            assertEquals(-31, packet.getFragmentOffset());
+            assertEquals(7905, packet.getFragmentOffset());
             assertEquals(160, packet.getTimeToLive());
             assertEquals(0xFE, packet.getIpDatagramProtocol());
             assertEquals(0x3344, packet.getHeaderChecksum());
