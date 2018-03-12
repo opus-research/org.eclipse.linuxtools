@@ -25,5 +25,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: plugin
 Export-Package: org.eclipse.linuxtools.docker.ui,
- org.eclipse.linuxtools.docker.ui.launch
-Import-Package: com.spotify.docker.client
+ org.eclipse.linuxtools.docker.ui.launch,
+ org.eclipse.linuxtools.internal.docker.ui.preferences

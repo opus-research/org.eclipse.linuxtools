@@ -151,7 +151,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	}
 	
 	private void createTableViewer(final Composite container) {
-		search = new Text(container, SWT.SEARCH);
+		search = new Text(container, SWT.SEARCH | SWT.ICON_SEARCH);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, false).applyTo(search);
 		search.addModifyListener(onSearch());
 		Composite tableArea = new Composite(container, SWT.NONE);
@@ -476,8 +476,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		}
 		int index = 0;
 		for (int i = 0; i < connections.length; ++i) {
-			if (connections[i].getName() != null
-					&& connections[i].getName().equals(currName))
+			if (connections[i].getName().equals(currName))
 				index = i;
 		}
 		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
