@@ -44,6 +44,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
+import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
  * Implementation of the copy trace dialog box.
@@ -51,7 +52,7 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
  * @version 1.0
  * @author Francois Chouinard
  */
-public class CopyTraceDialog extends AbstractSelectionDialog {
+public class CopyTraceDialog extends SelectionStatusDialog {
 
     // ------------------------------------------------------------------------
     // Members
@@ -163,6 +164,16 @@ public class CopyTraceDialog extends AbstractSelectionDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
+
+    @Override
+    protected void computeResult() {
+    }
+
+    @Override
+    public void create() {
+        super.create();
+        getButton(IDialogConstants.OK_ID).setEnabled(false);
+    }
 
     @Override
     protected void okPressed() {

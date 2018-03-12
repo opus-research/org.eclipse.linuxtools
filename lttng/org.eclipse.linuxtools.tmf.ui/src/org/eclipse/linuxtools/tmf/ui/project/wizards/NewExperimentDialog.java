@@ -49,6 +49,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
+import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
  * Implementation of new experiment dialog that creates the experiment element.
@@ -57,7 +58,7 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
  * @version 1.0
  * @author Francois Chouinard
  */
-public class NewExperimentDialog extends AbstractSelectionDialog {
+public class NewExperimentDialog extends SelectionStatusDialog {
 
     // ------------------------------------------------------------------------
     // Members
@@ -153,6 +154,16 @@ public class NewExperimentDialog extends AbstractSelectionDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
+
+    @Override
+    protected void computeResult() {
+    }
+
+    @Override
+    public void create() {
+        super.create();
+        getButton(IDialogConstants.OK_ID).setEnabled(false);
+    }
 
     @Override
     protected void okPressed() {

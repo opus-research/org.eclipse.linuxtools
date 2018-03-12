@@ -32,15 +32,15 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
  * Implementation of a dialog box to rename a trace.
  * <p>
- *
  * @version 1.0
  * @author Francois Chouinard
  */
-public class RenameTraceDialog extends AbstractSelectionDialog {
+public class RenameTraceDialog extends SelectionStatusDialog {
 
     // ------------------------------------------------------------------------
     // Members
@@ -54,11 +54,8 @@ public class RenameTraceDialog extends AbstractSelectionDialog {
     // ------------------------------------------------------------------------
     /**
      * Constructor
-     *
-     * @param shell
-     *            The parent shell
-     * @param trace
-     *            The trace element to rename
+     * @param shell The parent shell
+     * @param trace The trace element to rename
      */
     public RenameTraceDialog(Shell shell, TmfTraceElement trace) {
         super(shell);
@@ -152,6 +149,16 @@ public class RenameTraceDialog extends AbstractSelectionDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
+
+    @Override
+    protected void computeResult() {
+    }
+
+    @Override
+    public void create() {
+        super.create();
+        getButton(IDialogConstants.OK_ID).setEnabled(false);
+    }
 
     @Override
     protected void okPressed() {

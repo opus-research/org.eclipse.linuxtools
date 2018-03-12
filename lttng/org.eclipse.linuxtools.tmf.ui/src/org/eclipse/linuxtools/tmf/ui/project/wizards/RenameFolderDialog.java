@@ -31,12 +31,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
  * Implementation of a dialog box to rename a folder.
  * @since 3.0
  */
-public class RenameFolderDialog extends AbstractSelectionDialog {
+public class RenameFolderDialog extends SelectionStatusDialog {
 
     // ------------------------------------------------------------------------
     // Members
@@ -146,6 +147,16 @@ public class RenameFolderDialog extends AbstractSelectionDialog {
     // ------------------------------------------------------------------------
     // SelectionStatusDialog
     // ------------------------------------------------------------------------
+
+    @Override
+    protected void computeResult() {
+    }
+
+    @Override
+    public void create() {
+        super.create();
+        getButton(IDialogConstants.OK_ID).setEnabled(false);
+    }
 
     @Override
     protected void okPressed() {

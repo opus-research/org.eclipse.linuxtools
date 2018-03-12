@@ -44,6 +44,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
+import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
  * Implementation of the copy experiement dialog box.
@@ -52,14 +53,14 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
  * @version 1.0
  * @author Francois Chouinard
  */
-public class CopyExperimentDialog extends AbstractSelectionDialog {
+public class CopyExperimentDialog extends SelectionStatusDialog {
 
     // ------------------------------------------------------------------------
     // Members
     // ------------------------------------------------------------------------
 
     private final TmfExperimentElement fExperiment;
-    Text fNewExperimentName;
+    private Text fNewExperimentName;
     private IFolder fExperimentFolder;
 
     // ------------------------------------------------------------------------
@@ -168,6 +169,16 @@ public class CopyExperimentDialog extends AbstractSelectionDialog {
     // ------------------------------------------------------------------------
 
     @Override
+    protected void computeResult() {
+    }
+
+    @Override
+    public void create() {
+        super.create();
+        getButton(IDialogConstants.OK_ID).setEnabled(false);
+    }
+
+    @Override
     protected void okPressed() {
         IFolder folder = copyExperiment(fNewExperimentName.getText());
         if (folder == null) {
@@ -177,7 +188,7 @@ public class CopyExperimentDialog extends AbstractSelectionDialog {
         super.okPressed();
     }
 
-    IFolder copyExperiment(final String newName) {
+    private IFolder copyExperiment(final String newName) {
 
         WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
             @Override
