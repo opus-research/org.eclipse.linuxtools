@@ -54,7 +54,15 @@ public class PrepareCommitHandler extends ChangeLogAction implements IHandler {
     @Override
     public Object execute(ExecutionEvent event) {
 
-        IRunnableWithProgress code = monitor -> loadClipboard(monitor);
+        IRunnableWithProgress code = new IRunnableWithProgress() {
+
+            @Override
+            public void run(IProgressMonitor monitor) {
+                // monitor.beginTask("Loading Clipboard", 1000);
+                loadClipboard(monitor);
+                // monitor.done();
+            }
+        };
 
         ProgressMonitorDialog pd = new ProgressMonitorDialog(PlatformUI
                 .getWorkbench().getActiveWorkbenchWindow().getShell());
