@@ -260,6 +260,15 @@ public final class GcovAnnotationModel implements IAnnotationModel {
                     if (file != null && elementLocation.equals(file.getLocation())) {
                         return sf;
                     }
+                    // No match up to here...see if we have a relative path to the
+                    // source file from the binary in which case check if creating the
+                    // location results in an existing file that matches one of the
+                    // the sources
+                    if (!sfPath.isAbsolute()) {
+                    	sfPath = target.removeLastSegments(1).append(sf.getName());
+                    	if (elementLocation.equals(sfPath.makeAbsolute()))
+                    		return sf;
+                    }
                 }
             }
         }
