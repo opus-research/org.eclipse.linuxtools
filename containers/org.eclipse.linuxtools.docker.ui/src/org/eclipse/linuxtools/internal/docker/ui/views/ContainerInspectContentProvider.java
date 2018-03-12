@@ -110,6 +110,7 @@ public class ContainerInspectContentProvider implements ITreeContentProvider {
 					new Object[]{"ExposedPorts", LabelUtils.reduce(config.exposedPorts())}, //$NON-NLS-1$
 					new Object[]{"Hostname", config.hostname()}, //$NON-NLS-1$
 					new Object[]{"Image", config.image()}, //$NON-NLS-1$
+					new Object[] { "Labels", config.labels() }, //$NON-NLS-1$
 					new Object[]{"Memory", config.memory()}, //$NON-NLS-1$
 					new Object[]{"MemorySwap", config.memorySwap()}, //$NON-NLS-1$
 					new Object[]{"NetworkDisabled", config.networkDisabled()}, //$NON-NLS-1$

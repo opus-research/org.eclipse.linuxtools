@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.docker.core;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface IDockerContainerConfig {
@@ -60,5 +61,7 @@ public interface IDockerContainerConfig {
 	public boolean networkDisabled();
 
 	public List<String> onBuild();
+
+	public Map<String, String> labels();
 
 }
