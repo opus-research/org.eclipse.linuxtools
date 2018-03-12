@@ -28,6 +28,10 @@ public class SourceDisassemblyData extends AbstractDataManipulator {
         super(title, workingDir, project);
     }
 
+    public SourceDisassemblyData(String title, IPath workingDir) {
+        super(title, workingDir);
+    }
+
     @Override
     public void parse() {
         URI workingDirURI = null;

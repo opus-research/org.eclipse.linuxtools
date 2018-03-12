@@ -228,9 +228,8 @@ public class ContainerLauncher {
 			@Override
 			public void run() {
 				// create the container
-				String containerId = null;
 				try {
-					containerId = ((DockerConnection) connection)
+					String containerId = ((DockerConnection) connection)
 							.createContainer(config, hostConfig);
 					OutputStream stream = null;
 					RunConsole oldConsole = getConsole();
@@ -315,15 +314,6 @@ public class ContainerLauncher {
 					}
 
 				} catch (final DockerException e) {
-					// error in creation, try and remove Container if possible
-					if (!keepContainer && containerId != null) {
-						try {
-							((DockerConnection) connection)
-									.removeContainer(containerId);
-						} catch (DockerException | InterruptedException e1) {
-							// ignore exception
-						}
-					}
 					Display.getDefault().syncExec(new Runnable() {
 
 						@Override
