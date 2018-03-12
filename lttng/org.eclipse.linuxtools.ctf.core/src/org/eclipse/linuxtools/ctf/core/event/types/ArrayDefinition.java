@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableList;
  */
 @NonNullByDefault
 @Deprecated
-public final class ArrayDefinition extends AbstractArrayDefinition{
+public final class ArrayDefinition extends Definition {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -77,7 +77,10 @@ public final class ArrayDefinition extends AbstractArrayDefinition{
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
 
-    @Override
+    /**
+     * @return the definitions
+     * @since 3.0
+     */
     public List<Definition> getDefinitions() {
         return fDefinitions;
     }

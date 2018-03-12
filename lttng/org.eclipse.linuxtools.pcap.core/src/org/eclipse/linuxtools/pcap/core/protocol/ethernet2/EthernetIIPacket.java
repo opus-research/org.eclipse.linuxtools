@@ -42,11 +42,8 @@ public class EthernetIIPacket extends Packet {
     private final @Nullable Packet fChildPacket;
     private final @Nullable ByteBuffer fPayload;
 
-    /* We store MAC addresses as byte arrays since
-     * there is no standard java class to store them. */
     private final byte[] fSourceMacAddress;
     private final byte[] fDestinationMacAddress;
-
     private final int fType;
 
     private @Nullable EthernetIIEndpoint fSourceEndpoint;
