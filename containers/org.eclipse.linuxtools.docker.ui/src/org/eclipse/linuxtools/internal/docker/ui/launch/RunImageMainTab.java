@@ -178,8 +178,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 				connectionSelectionCombo);
 		connectionSelectionComboViewer
 				.setContentProvider(new ArrayContentProvider());
-		connectionSelectionComboViewer.setInput(DockerConnectionManager
-				.getInstance().getConnectionNames().toArray());
+		connectionSelectionComboViewer.setInput(getConnectionNames());
 		dbc.bindValue(
 				WidgetProperties.selection().observe(connectionSelectionCombo),
 				BeanProperties
@@ -288,6 +287,15 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(commandText),
 				BeanProperties.value(ImageRunSelectionModel.class,
 						ImageRunSelectionModel.COMMAND).observe(model));
+	}
+
+	private String[] getConnectionNames() {
+		IDockerConnection[] connections = DockerConnectionManager.getInstance().getConnections();
+		ArrayList<String> connectionNames = new ArrayList<>();
+		for (IDockerConnection connection :  connections) {
+			connectionNames.add(connection.getName());
+		}
+		return connectionNames.toArray(new String[] {});
 	}
 
 	/**
@@ -485,13 +493,18 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		// no connections
 		if (model == null)
 			return;
+		final IDockerConnection[] connections = DockerConnectionManager
+				.getInstance()
+				.getConnections();
 		try {
-			final String defaultConnectionName = DockerConnectionManager
-					.getInstance().getAllConnections().stream()
-					.filter(connection -> connection.isOpen())
-					.map(connection -> connection.getName()).findFirst()
-					.orElse(""); //$NON-NLS-1$
-
+			String defaultConnectionName = ""; //$NON-NLS-1$
+			// Default to first active connection name
+			if (connections != null && connections.length > 0) {
+				for (int i = 0; i < connections.length; ++i) {
+					if (connections[i].isOpen())
+						defaultConnectionName = connections[i].getName();
+				}
+			}
 			// Mark in error if there is no active connection
 			if (defaultConnectionName.equals("")) { //$NON-NLS-1$
 				setErrorMessage(WizardMessages

@@ -49,15 +49,7 @@ public class Activator extends Plugin {
 	}
 
 	public static void log(IStatus status) {
-		if (Activator.getDefault() != null
-				&& Activator.getDefault().getLog() != null) {
-			Activator.getDefault().getLog().log(status);
-		}
-	}
-
-	public static void logWarningMessage(final String message) {
-		log(new Status(IStatus.WARNING, PLUGIN_ID, IStatus.WARNING, message,
-				null));
+		Activator.getDefault().getLog().log(status);
 	}
 
 	public static void logErrorMessage(final String message) {
