@@ -24,14 +24,14 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.eclipse.linuxtools.internal.pcap.core.packet.BadPacketException;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.ethernet2.EthernetIIEndpoint;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.ethernet2.EthernetIIPacket;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.ethernet2.EthernetIIValues;
-import org.eclipse.linuxtools.internal.pcap.core.trace.BadPcapFileException;
-import org.eclipse.linuxtools.internal.pcap.core.trace.PcapFile;
+import org.eclipse.linuxtools.pcap.core.packet.BadPacketException;
+import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
+import org.eclipse.linuxtools.pcap.core.protocol.ethernet2.EthernetIIEndpoint;
+import org.eclipse.linuxtools.pcap.core.protocol.ethernet2.EthernetIIPacket;
+import org.eclipse.linuxtools.pcap.core.protocol.ethernet2.EthernetIIValues;
 import org.eclipse.linuxtools.pcap.core.tests.shared.PcapTestTrace;
+import org.eclipse.linuxtools.pcap.core.trace.BadPcapFileException;
+import org.eclipse.linuxtools.pcap.core.trace.PcapFile;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -111,10 +111,10 @@ public class EthernetIIPacketTest {
             EthernetIIPacket packet = new EthernetIIPacket(dummy, null, byteBuffer);
 
             // Protocol Testing
-            assertEquals(PcapProtocol.ETHERNET_II, packet.getProtocol());
-            assertTrue(packet.hasProtocol(PcapProtocol.ETHERNET_II));
-            assertTrue(packet.hasProtocol(PcapProtocol.UNKNOWN));
-            assertFalse(packet.hasProtocol(PcapProtocol.TCP));
+            assertEquals(Protocol.ETHERNET_II, packet.getProtocol());
+            assertTrue(packet.hasProtocol(Protocol.ETHERNET_II));
+            assertTrue(packet.hasProtocol(Protocol.UNKNOWN));
+            assertFalse(packet.hasProtocol(Protocol.TCP));
 
             // Abstract methods Testing
             assertTrue(packet.validate());

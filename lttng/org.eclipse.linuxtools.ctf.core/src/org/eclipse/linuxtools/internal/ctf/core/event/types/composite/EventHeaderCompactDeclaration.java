@@ -109,13 +109,10 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
         }
         // needed since we read 5 bits
         input.position(input.position() + 3);
-        long id = input.get(ID_SIZE, false);
-        if (id > Integer.MAX_VALUE) {
-            throw new CTFReaderException("ID " + id + " larger than " + Integer.MAX_VALUE + " is currently unsupported by the parser"); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
-        }
+        int id = (int) input.get(ID_SIZE, false);
         long timestampLong = input.get(FULL_TS, false);
         input.setByteOrder(bo);
-        return new EventHeaderDefinition(this, (int) id, timestampLong, FULL_TS);
+        return new EventHeaderDefinition(this, id, timestampLong, FULL_TS);
 
     }
 
@@ -155,11 +152,11 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
         if (!vDec.hasField(COMPACT) || !vDec.hasField(EXTENDED)) {
             return false;
         }
-        if (vDec.getFields().size() != VARIANT_SIZE) {
+        if( vDec.getFields().size()!= VARIANT_SIZE) {
             return false;
         }
         iDeclaration = vDec.getFields().get(COMPACT);
-        if (!(iDeclaration instanceof StructDeclaration)) {
+        if( !(iDeclaration instanceof StructDeclaration)) {
             return false;
         }
         StructDeclaration compactDec = (StructDeclaration) iDeclaration;
@@ -170,7 +167,7 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
             return false;
         }
         iDeclaration = compactDec.getFields().get(TIMESTAMP);
-        if (!(iDeclaration instanceof IntegerDeclaration)) {
+        if(!(iDeclaration instanceof IntegerDeclaration)) {
             return false;
         }
         IntegerDeclaration tsDec = (IntegerDeclaration) iDeclaration;
@@ -178,7 +175,7 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
             return false;
         }
         iDeclaration = vDec.getFields().get(EXTENDED);
-        if (!(iDeclaration instanceof StructDeclaration)) {
+        if( !(iDeclaration instanceof StructDeclaration)) {
             return false;
         }
         StructDeclaration extendedDec = (StructDeclaration) iDeclaration;
@@ -189,7 +186,7 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
             return false;
         }
         iDeclaration = extendedDec.getFields().get(TIMESTAMP);
-        if (!(iDeclaration instanceof IntegerDeclaration)) {
+        if(!(iDeclaration instanceof IntegerDeclaration)) {
             return false;
         }
         tsDec = (IntegerDeclaration) iDeclaration;
