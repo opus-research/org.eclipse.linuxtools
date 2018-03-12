@@ -3,13 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.eclipse.linuxtools</groupId>
 	<artifactId>org.eclipse.linuxtools.docker</artifactId>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>3.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
         <parent>
           <groupId>org.eclipse.linuxtools</groupId>
           <artifactId>linuxtools-parent</artifactId>
-          <version>6.0.0</version>
+          <version>6.1.0-SNAPSHOT</version>
         </parent>
 
 	<properties>
@@ -33,6 +33,7 @@
     <module>org.eclipse.linuxtools.docker.reddeer</module>
     <module>org.eclipse.linuxtools.docker.integration.tests</module>
     <module>org.eclipse.linuxtools.docker.tests-feature</module>
+    <module>org.eclipse.linuxtools.jdt.docker.launcher</module>
   </modules>
 
 	<build>
