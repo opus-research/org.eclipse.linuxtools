@@ -62,7 +62,7 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
         fShowCommand = false;
         try {
             if (project.hasNature(RDTProxyManager.SYNC_NATURE)) {
-                IRemoteResource remoteRes = project.getAdapter(IRemoteResource.class);
+                IRemoteResource remoteRes = (IRemoteResource)project.getAdapter(IRemoteResource.class);
                 uri = remoteRes.getActiveLocationURI();
             } else{
                 uri = project.getLocationURI();
