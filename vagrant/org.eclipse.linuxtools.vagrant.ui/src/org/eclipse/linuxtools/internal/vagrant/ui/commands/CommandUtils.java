@@ -11,7 +11,6 @@
 
 package org.eclipse.linuxtools.internal.vagrant.ui.commands;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -169,19 +168,6 @@ public class CommandUtils {
 		wizardDialog.setPageSize(width, height);
 		wizardDialog.create();
 		return wizardDialog.open() == Window.OK;
-	}
-
-	public static void delete(File root) {
-		if (root.isDirectory()) {
-			for (File child : root.listFiles()) {
-				if (child.isDirectory() && child.canRead()) {
-					delete(child);
-				} else {
-					child.delete();
-				}
-			}
-		}
-		root.delete();
 	}
 
 }

@@ -272,16 +272,6 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	}
 
 	@Override
-	public void init(File vagrantDir) {
-		call(new String [] {"init"}, vagrantDir);
-	}
-
-	@Override
-	public Process up(File vagrantDir) {
-		return rt_call(new String[] { "up" }, vagrantDir);
-	}
-
-	@Override
 	public void addBox(String name, String location) throws VagrantException, InterruptedException {
 		call(new String [] {"--machine-readable", "box", "add", name, location});
 	}
@@ -312,17 +302,12 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	}
 
 	private static String[] call(String[] args) {
-		return call(args, null);
-	}
-
-	private static String[] call(String[] args, File vagrantDir) {
 		List<String> result = new ArrayList<>();
 		try {
 			List<String> cmd = new ArrayList<>();
 			cmd.add(VG);
 			cmd.addAll(Arrays.asList(args));
-			Process p = Runtime.getRuntime().exec(cmd.toArray(new String[0]),
-					null, vagrantDir);
+			Process p = Runtime.getRuntime().exec(cmd.toArray(new String[0]));
 			BufferedReader buff = new BufferedReader(
 					new InputStreamReader(p.getInputStream()));
 			if (p.waitFor() == 0) {
@@ -337,19 +322,6 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		} catch (InterruptedException e) {
 		}
 		return result.toArray(new String[0]);
-	}
-
-	private static Process rt_call(String[] args, File vagrantDir) {
-		try {
-			List<String> cmd = new ArrayList<>();
-			cmd.add(VG);
-			cmd.addAll(Arrays.asList(args));
-			Process p = Runtime.getRuntime().exec(cmd.toArray(new String[0]),
-					null, vagrantDir);
-			return p;
-		} catch (IOException e) {
-		}
-		return null;
 	}
 
 }
