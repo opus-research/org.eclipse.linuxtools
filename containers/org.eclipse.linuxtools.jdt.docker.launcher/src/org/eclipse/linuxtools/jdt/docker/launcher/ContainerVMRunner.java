@@ -145,7 +145,7 @@ public class ContainerVMRunner extends StandardVMRunner {
 
 	private String [] extractClassPathFromCommand (String [] cmd) {
 		int i = 0;
-		while (!"-classpath".equals(cmd[i])) { //$NON-NLS-1$
+		while (!"-classpath".equals(cmd[i])) {
 			i++;
 		}
 		String [] classPath = (cmd.length > i + 1) ? cmd[i+1].split(UnixFile.pathSeparator) : new String[0];

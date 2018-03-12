@@ -38,7 +38,7 @@ public class ImageQuery {
 		IDockerHostConfig hc = DockerHostConfig.builder().build();
 		IDockerContainerConfig cc = new DockerContainerConfig.Builder()
 				.image(image)
-				.cmd("/bin/sh") //$NON-NLS-1$
+				.cmd("/bin/sh")
 				.attachStdout(true)
 				.attachStderr(true)
 				.attachStdin(true)
@@ -96,21 +96,21 @@ public class ImageQuery {
 		final String[] fgCandidateJavaFiles = {"javaw", "javaw.exe", "java", "java.exe", "j9w", "j9w.exe", "j9", "j9.exe"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		final String[] fgCandidateJavaLocations = {JRE + UnixFile.separatorChar + "bin" + UnixFile.separatorChar, "bin" + UnixFile.separatorChar}; //$NON-NLS-1$ //$NON-NLS-2$
 
-		String result = exec(new String [] {"sh", "-c", "readlink -f `which java`"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		String result = exec(new String [] {"sh", "-c", "readlink -f `which java`"});
 		if (result != null) {
-			result = result.replaceAll("\n", ""); //$NON-NLS-1$ //$NON-NLS-2$
+			result = result.replaceAll("\n", "");
 
 			for (int i = 0; i < fgCandidateJavaFiles.length; i++) {
 				for (int j = 0; j < fgCandidateJavaLocations.length; j++) {
 					if (result.endsWith(fgCandidateJavaLocations[j] + fgCandidateJavaFiles[i])) {
-						return new UnixFile(result.replace(fgCandidateJavaLocations[j] + fgCandidateJavaFiles[i], "")); //$NON-NLS-1$
+						return new UnixFile(result.replace(fgCandidateJavaLocations[j] + fgCandidateJavaFiles[i], ""));
 					}
 				}
 			}
 
-			result = exec(new String [] {"readlink", "-f", "/usr/lib/jvm/java"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			result = exec(new String [] {"readlink", "-f", "/usr/lib/jvm/java"});
 			if (result != null) {
-				result = result.replaceAll("\n", ""); //$NON-NLS-1$ //$NON-NLS-2$
+				result = result.replaceAll("\n", "");
 			}
 			return new UnixFile(result);
 		} else {
@@ -119,11 +119,11 @@ public class ImageQuery {
 	}
 
 	public double getJavaVersion () {
-		String result = exec(new String [] {"sh", "-c", "java -version 2>&1 | grep version | cut -d\\\" -f2 | cut -d_ -f1"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		String result = exec(new String [] {"sh", "-c", "java -version 2>&1 | grep version | cut -d\\\" -f2 | cut -d_ -f1"});
 		if (result != null) {
-			result = result.replaceAll("\n", ""); //$NON-NLS-1$ //$NON-NLS-2$
+			result = result.replaceAll("\n", "");
 			Version v = new Version(result);
-			String newV = v.getMajor() + "." + v.getMinor(); //$NON-NLS-1$
+			String newV = v.getMajor() + "." + v.getMinor();
 			return Double.valueOf(newV);
 		} else {
 			return 0;
@@ -131,9 +131,9 @@ public class ImageQuery {
 	}
 
 	public boolean fileExists (File file) {
-		String result = exec(new String [] {"sh", "-c", "[ -e " + file.getAbsolutePath() + " ]; echo $?"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		String result = exec(new String [] {"sh", "-c", "[ -e " + file.getAbsolutePath() + " ]; echo $?"});
 		try {
-			result = result.replaceAll("\n", ""); //$NON-NLS-1$ //$NON-NLS-2$
+			result = result.replaceAll("\n", "");
 			int res = Integer.parseInt(result);
 			return res == 0;
 		} catch (NumberFormatException e) {
@@ -142,9 +142,9 @@ public class ImageQuery {
 	}
 
 	public boolean isFile (File file) {
-		String result = exec(new String [] {"sh", "-c", "[ -f " + file.getAbsolutePath() + " ]; echo $?"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		String result = exec(new String [] {"sh", "-c", "[ -f " + file.getAbsolutePath() + " ]; echo $?"});
 		try {
-			result = result.replaceAll("\n", ""); //$NON-NLS-1$ //$NON-NLS-2$
+			result = result.replaceAll("\n", "");
 			int res = Integer.parseInt(result);
 			return res == 0;
 		} catch (NumberFormatException e) {
