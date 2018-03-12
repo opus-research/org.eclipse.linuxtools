@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.launch;
 
+import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.MEMORY_LIMIT;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -109,7 +111,7 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 		lowCPULimitationButton.setText(WizardMessages
 				.getString("ImageRunResourceVolVarPage.lowButton")); //$NON-NLS-1$
 		lowCPULimitationButton.addSelectionListener(
-				onCpuShareWeighting(ImageRunResourceVolumesVariablesModel.LOW));
+				onCpuShareWeighting(ImageRunResourceVolumesVariablesModel.CPU_LOW));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.applyTo(lowCPULimitationButton);
 		final Button mediumCPULimitationButton = new Button(subContainer,
@@ -117,7 +119,7 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 		mediumCPULimitationButton.setText(WizardMessages
 				.getString("ImageRunResourceVolVarPage.mediumButton")); //$NON-NLS-1$
 		mediumCPULimitationButton.addSelectionListener(onCpuShareWeighting(
-				ImageRunResourceVolumesVariablesModel.MEDIUM));
+				ImageRunResourceVolumesVariablesModel.CPU_MEDIUM));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.applyTo(mediumCPULimitationButton);
 		final Button highCPULimitationButton = new Button(subContainer,
@@ -126,7 +128,7 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 		highCPULimitationButton.setText(WizardMessages
 				.getString("ImageRunResourceVolVarPage.highButton")); //$NON-NLS-1$
 		highCPULimitationButton.addSelectionListener(onCpuShareWeighting(
-				ImageRunResourceVolumesVariablesModel.HIGH));
+				ImageRunResourceVolumesVariablesModel.CPU_HIGH));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(2, 1)
 				.applyTo(highCPULimitationButton);
 		dbc.bindValue(
@@ -194,7 +196,7 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 		return container;
 	}
 
-	private SelectionListener onCpuShareWeighting(final int cpuShareWeigth) {
+	private SelectionListener onCpuShareWeighting(final long cpuShareWeigth) {
 		return new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -244,18 +246,22 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 					IRunDockerImageLaunchConfigurationConstants.ENABLE_LIMITS,
 					false);
 			model.setEnableResourceLimitations(enableLimits);
-
-			int cpuShareWeight = configuration.getAttribute(
+			long cpuShareWeight = Long.parseLong(configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CPU_PRIORITY,
-					1024);
+					Long.toString(
+							ImageRunResourceVolumesVariablesModel.CPU_MEDIUM)));
 			model.setCpuShareWeight(cpuShareWeight);
 
 			int maxMemory = this.model.getTotalMemory();
-			int memoryLimit = Math.min(512, maxMemory);
-			memoryLimit = configuration.getAttribute(
-					IRunDockerImageLaunchConfigurationConstants.MEMORY_LIMIT,
-					memoryLimit);
-			model.setMemoryLimit(memoryLimit);
+			// retrieve memory limit in bytes and converts in MB in the
+			// wizard model
+			final long memoryLimit = Long
+					.parseLong(configuration.getAttribute(MEMORY_LIMIT,
+							Long.toString(
+									ImageRunResourceVolumesVariablesModel.DEFAULT_MEMORY
+											* 1048576)));
+			// make sure memory limit is not higher than maxMemory
+			model.setMemoryLimit(Math.min(maxMemory, memoryLimit / 1048576));
 			toggleResourceLimitationControls(getContainer());
 		} catch (CoreException e) {
 			Activator.logErrorMessage(
@@ -274,10 +280,10 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 				model.isEnableResourceLimitations());
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.MEMORY_LIMIT,
-				model.getMemoryLimit());
+				Long.toString(model.getMemoryLimit()));
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.CPU_PRIORITY,
-				model.getCpuShareWeight());
+				Long.toString(model.getCpuShareWeight()));
 	}
 
 	@Override

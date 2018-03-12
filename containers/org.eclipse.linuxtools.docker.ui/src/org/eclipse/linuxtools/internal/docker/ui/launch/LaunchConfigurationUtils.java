@@ -175,11 +175,11 @@ public class LaunchConfigurationUtils {
 			workingCopy.setAttribute(AUTO_REMOVE, removeWhenExits);
 			workingCopy.setAttribute(ALLOCATE_PSEUDO_CONSOLE,
 					containerConfig.tty());
-			workingCopy.setAttribute(INTERACTIVE,
-					containerConfig.attachStdin());
+			workingCopy.setAttribute(INTERACTIVE, containerConfig.openStdin());
 			// resources limitations
 			if (containerConfig.memory() != null) {
 				workingCopy.setAttribute(ENABLE_LIMITS, true);
+				// memory in containerConfig is expressed in bytes
 				workingCopy.setAttribute(MEMORY_LIMIT,
 						containerConfig.memory().toString());
 			}

@@ -230,8 +230,8 @@ public class ImageRun extends Wizard {
 				.tty(selectionModel.isAllocatePseudoTTY())
 				.openStdin(selectionModel.isInteractiveMode());
 		if (resourcesModel.isEnableResourceLimitations()) {
-			config.memory(resourcesModel.getMemory());
-			config.cpuShares((long) resourcesModel.getCpuShareWeight());
+			config.memory(resourcesModel.getMemoryLimit() * 1048576);
+			config.cpuShares(resourcesModel.getCpuShareWeight());
 		}
 		// environment variables
 		final List<String> environmentVariables = new ArrayList<>();

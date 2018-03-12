@@ -64,4 +64,5 @@ public interface IRunDockerImageLaunchConfigurationConstants {
 
 	public static final String CONNECTION_NAME = "connectionName"; //$NON-NLS-1$
 
+
 }
