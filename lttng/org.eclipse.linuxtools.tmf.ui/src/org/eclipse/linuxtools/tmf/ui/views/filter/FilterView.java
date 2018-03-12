@@ -10,7 +10,7 @@
  *   Yuriy Vashchuk - Initial API and implementation
  *   Xavier Raynaud - add cut/copy/paste/dnd support
  *   based on Francois Chouinard ProjectView code.
- */
+ *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.filter;
 
@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
@@ -55,7 +56,7 @@ import org.xml.sax.SAXException;
 public class FilterView extends TmfView {
 
     /** ID for the Filter view */
-    public static final String ID = "org.eclipse.linuxtools.tmf.ui.views.filter"; //$NON-NLS-1$
+    public static final @NonNull String ID = "org.eclipse.linuxtools.tmf.ui.views.filter"; //$NON-NLS-1$
 
     private static final Image SAVE_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/save_button.gif"); //$NON-NLS-1$
     private static final Image ADD_IMAGE = Activator.getDefault().getImageFromPath("/icons/elcl16/add_button.gif"); //$NON-NLS-1$
@@ -106,6 +107,26 @@ public class FilterView extends TmfView {
         for (ITmfFilterTreeNode node : FilterManager.getSavedFilters()) {
             fRoot.addChild(node);
         }
+    }
+
+    /**
+     * Add a filter to the FilterView. This does not modify the XML, which must
+     * be done manually. If the filter is already in the FilterView, this is a
+     * no-op.
+     *
+     * @param filter
+     *            The filter to add.
+     * @since 3.1
+     */
+    public void addFilter(ITmfFilterTreeNode filter) {
+        ITmfFilterTreeNode root = fViewer.getInput();
+        for (ITmfFilterTreeNode node : root.getChildren()) {
+            if (node.equals(filter)) {
+                return;
+            }
+        }
+        root.addChild(filter);
+        fViewer.setInput(root);
     }
 
     /**

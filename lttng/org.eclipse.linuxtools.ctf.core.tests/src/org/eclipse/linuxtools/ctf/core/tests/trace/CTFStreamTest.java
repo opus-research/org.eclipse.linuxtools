@@ -17,18 +17,20 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Map;
+import java.io.IOException;
 import java.util.Set;
 
-import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
-import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFStream;
 import org.eclipse.linuxtools.ctf.core.trace.CTFStreamInput;
+import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,6 +48,8 @@ public class CTFStreamTest {
 
     private CTFStream fixture;
 
+    private CTFStreamInput fInput;
+
     /**
      * Perform pre-test initialization.
      *
@@ -59,12 +63,19 @@ public class CTFStreamTest {
         fixture.setPacketContext(new StructDeclaration(1L));
         fixture.setEventHeader(new StructDeclaration(1L));
         fixture.setId(1L);
-        fixture.addInput(new CTFStreamInput(new CTFStream(testTrace.getTrace()), createFile()));
+        fInput = new CTFStreamInput(new CTFStream(testTrace.getTrace()), createFile());
+        fixture.addInput(fInput);
     }
 
+    @After
+    public void tearDown() throws IOException {
+        fInput.close();
+    }
+
+    @NonNull
     private static File createFile() {
         File path = new File(testTrace.getPath());
-        return path.listFiles(new FilenameFilter() {
+        final File[] listFiles = path.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 if (name.contains("hann")) {
@@ -72,7 +83,11 @@ public class CTFStreamTest {
                 }
                 return false;
             }
-        })[0];
+        });
+        assertNotNull(listFiles);
+        final File returnFile = listFiles[0];
+        assertNotNull(returnFile);
+        return returnFile;
     }
 
     /**
@@ -82,9 +97,10 @@ public class CTFStreamTest {
      */
     @Test
     public void testStream() throws CTFReaderException {
-        CTFTrace trace = testTrace.getTrace();
-        CTFStream result = new CTFStream(trace);
-        assertNotNull(result);
+        try (CTFTrace trace = testTrace.getTrace()) {
+            CTFStream result = new CTFStream(trace);
+            assertNotNull(result);
+        }
     }
 
     /**
@@ -135,7 +151,8 @@ public class CTFStreamTest {
      */
     @Test
     public void testGetEventHeaderDecl() {
-        assertNotNull(fixture.getEventHeaderDecl());
+        IDeclaration eventHeaderDecl = fixture.getEventHeaderDeclaration();
+        assertNotNull(eventHeaderDecl);
     }
 
     /**
@@ -143,8 +160,7 @@ public class CTFStreamTest {
      */
     @Test
     public void testGetEvents() {
-        Map<Long, IEventDeclaration> result = fixture.getEvents();
-        assertNotNull(result);
+        assertNotNull(fixture.getEventDeclarations());
     }
 
     /**
