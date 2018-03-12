@@ -14,11 +14,6 @@ package org.eclipse.linuxtools.tmf.ui.viewers.events.columns;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.linuxtools.internal.tmf.ui.viewers.events.columns.TmfContentsColumn;
-import org.eclipse.linuxtools.internal.tmf.ui.viewers.events.columns.TmfReferenceColumn;
-import org.eclipse.linuxtools.internal.tmf.ui.viewers.events.columns.TmfSourceColumn;
-import org.eclipse.linuxtools.internal.tmf.ui.viewers.events.columns.TmfTimestampColumn;
-import org.eclipse.linuxtools.internal.tmf.ui.viewers.events.columns.TmfTypeColumn;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 
 /**
