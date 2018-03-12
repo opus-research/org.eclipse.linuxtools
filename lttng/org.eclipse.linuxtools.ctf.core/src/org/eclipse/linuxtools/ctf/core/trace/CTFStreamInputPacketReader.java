@@ -23,7 +23,6 @@ import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition;
@@ -124,7 +123,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
      *             out of bounds exception or such
      */
     public StructDefinition getEventContextDefinition(@NonNull BitBuffer input) throws CTFReaderException {
-        return fStreamEventContextDecl.createDefinition(fStreamInputReader.getStreamInput(), LexicalScope.STREAM_EVENT_CONTEXT, input);
+        return fStreamEventContextDecl.createDefinition(this, LexicalScope.STREAM_EVENT_CONTEXT.getName(), input);
     }
 
     /**
@@ -137,7 +136,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
      *             out of bounds exception or such
      */
     public StructDefinition getStreamEventHeaderDefinition(@NonNull BitBuffer input) throws CTFReaderException {
-        return fStreamEventHeaderDecl.createDefinition(this, LexicalScope.EVENT_HEADER, input);
+        return fStreamEventHeaderDecl.createDefinition(this, LexicalScope.STREAM_EVENT_HEADER.getName(), input);
     }
 
     /**
@@ -150,7 +149,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
      *             out of bounds exception or such
      */
     public StructDefinition getStreamPacketContextDefinition(@NonNull BitBuffer input) throws CTFReaderException {
-        return fStreamPacketContextDecl.createDefinition(fStreamInputReader.getStreamInput(), LexicalScope.STREAM_PACKET_CONTEXT, input);
+        return fStreamPacketContextDecl.createDefinition(this, LexicalScope.STREAM_PACKET_CONTEXT.getName(), input);
     }
 
     /**
@@ -163,7 +162,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
      *             out of bounds exception or such
      */
     public StructDefinition getTracePacketHeaderDefinition(@NonNull BitBuffer input) throws CTFReaderException {
-        return fTracePacketHeaderDecl.createDefinition(fStreamInputReader.getStreamInput().getStream().getTrace(), LexicalScope.TRACE_PACKET_HEADER, input);
+        return fTracePacketHeaderDecl.createDefinition(this, LexicalScope.TRACE_PACKET_HEADER.getName(), input);
     }
 
     /**
@@ -353,7 +352,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
             fCurrentStreamEventHeaderDef = getStreamEventHeaderDefinition(currentBitBuffer);
 
             /* Check for the event id. */
-            IDefinition idDef = fCurrentStreamEventHeaderDef.lookupDefinition("id"); //$NON-NLS-1$
+            Definition idDef = fCurrentStreamEventHeaderDef.lookupDefinition("id"); //$NON-NLS-1$
             if (idDef instanceof SimpleDatatypeDefinition) {
                 eventID = ((SimpleDatatypeDefinition) idDef).getIntegerValue();
             } else if (idDef != null) {
@@ -370,7 +369,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
             } // else timestamp remains 0
 
             /* Check for the variant v. */
-            IDefinition variantDef = fCurrentStreamEventHeaderDef.lookupDefinition("v"); //$NON-NLS-1$
+            Definition variantDef = fCurrentStreamEventHeaderDef.lookupDefinition("v"); //$NON-NLS-1$
             if (variantDef instanceof VariantDefinition) {
 
                 /* Get the variant current field */
@@ -380,7 +379,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
                  * Try to get the id field in the current field of the variant.
                  * If it is present, it overrides the previously read event id.
                  */
-                IDefinition idIntegerDef = variantCurrentField.lookupDefinition("id"); //$NON-NLS-1$
+                Definition idIntegerDef = variantCurrentField.lookupDefinition("id"); //$NON-NLS-1$
                 if (idIntegerDef instanceof IntegerDefinition) {
                     eventID = ((IntegerDefinition) idIntegerDef).getValue();
                 }
@@ -389,7 +388,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
                  * Get the timestamp. This would overwrite any previous
                  * timestamp definition
                  */
-                IDefinition def = variantCurrentField.lookupDefinition("timestamp"); //$NON-NLS-1$
+                Definition def = variantCurrentField.lookupDefinition("timestamp"); //$NON-NLS-1$
                 if (def instanceof IntegerDefinition) {
                     timestamp = calculateTimestamp((IntegerDefinition) def);
                 }

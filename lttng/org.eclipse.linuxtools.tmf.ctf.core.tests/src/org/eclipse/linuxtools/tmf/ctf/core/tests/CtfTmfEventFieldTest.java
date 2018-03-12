@@ -22,10 +22,10 @@ import java.nio.ByteOrder;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
@@ -180,7 +180,7 @@ public class CtfTmfEventFieldTest {
     @Test
     public void testParseField_float() {
         FloatDefinition fieldDef = (FloatDefinition) fixture.lookupDefinition(FLOAT);
-        CtfTmfEventField result = CtfTmfEventField.parseField((IDefinition)fieldDef, "_" + NAME);
+        CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, "_" + NAME);
         assertEquals("test=2.0", result.toString());
     }
 
@@ -190,7 +190,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_array_float() {
-        IDefinition fieldDef = fixture.lookupArrayDefinition(ARRAY_FLOAT);
+        Definition fieldDef = fixture.lookupArray2(ARRAY_FLOAT);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=[2.0, 2.0]", result.toString());
     }
@@ -200,7 +200,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_int() {
-        IDefinition fieldDef = fixture.lookupDefinition(INT);
+        Definition fieldDef = fixture.lookupDefinition(INT);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=2", result.toString());
     }
@@ -211,7 +211,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_array_int() {
-        IDefinition fieldDef = fixture.lookupArrayDefinition(ARRAY_INT);
+        Definition fieldDef = fixture.lookupArray2(ARRAY_INT);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=[2, 2]", result.toString());
     }
@@ -221,7 +221,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_sequence() {
-        IDefinition fieldDef = fixture.lookupDefinition(SEQ);
+        Definition fieldDef = fixture.lookupDefinition(SEQ);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=[2, 2]", result.toString());
     }
@@ -231,7 +231,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_sequence_value() {
-        IDefinition fieldDef = fixture.lookupDefinition(SEQ);
+        Definition fieldDef = fixture.lookupDefinition(SEQ);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         long[] values = (long[]) result.getValue();
         long[] expected = new long[] { 2, 2 };
@@ -243,7 +243,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_string() {
-        IDefinition fieldDef = fixture.lookupDefinition(STR);
+        Definition fieldDef = fixture.lookupDefinition(STR);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=two", result.toString());
     }
@@ -254,7 +254,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_array_string() {
-        IDefinition fieldDef = fixture.lookupArrayDefinition(ARRAY_STR);
+        Definition fieldDef = fixture.lookupArray2(ARRAY_STR);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=[two, two]", result.toString());
     }
@@ -264,7 +264,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_struct() {
-        IDefinition fieldDef = fixture.lookupDefinition(STRUCT);
+        Definition fieldDef = fixture.lookupDefinition(STRUCT);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=[str=two, int=2]", result.toString());
     }
@@ -275,7 +275,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_array_struct() {
-        IDefinition fieldDef = fixture.lookupArrayDefinition(ARRAY_STRUCT);
+        Definition fieldDef = fixture.lookupArray2(ARRAY_STRUCT);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=[[str=two, int=2], [str=two, int=2]]", result.toString());
     }
@@ -285,7 +285,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_enum() {
-        IDefinition fieldDef = fixture.lookupDefinition(ENUM);
+        Definition fieldDef = fixture.lookupDefinition(ENUM);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=float", result.toString());
     }
@@ -296,7 +296,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_array_enum() {
-        IDefinition fieldDef = fixture.lookupArrayDefinition(ARRAY_ENUM);
+        Definition fieldDef = fixture.lookupArray2(ARRAY_ENUM);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=[float, float]", result.toString());
     }
@@ -306,7 +306,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_variant() {
-        IDefinition fieldDef = fixture.lookupDefinition(VARIANT);
+        Definition fieldDef = fixture.lookupDefinition(VARIANT);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=float=2.0", result.toString());
     }
@@ -317,7 +317,7 @@ public class CtfTmfEventFieldTest {
      */
     @Test
     public void testParseField_array_variant() {
-        IDefinition fieldDef = fixture.lookupArrayDefinition(ARRAY_VARIANT);
+        Definition fieldDef = fixture.lookupArray2(ARRAY_VARIANT);
         CtfTmfEventField result = CtfTmfEventField.parseField(fieldDef, NAME);
         assertEquals("test=[float=2.0, float=2.0]", result.toString());
     }

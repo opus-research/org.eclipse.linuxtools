@@ -68,39 +68,33 @@ public final class FunctionParser extends TreeTapsetParser {
     }
 
     @Override
-    protected void resetTree() {
-        functions = new TreeNode(null, false);
-    }
-
-    @Override
     public void dispose() {
         functions.dispose();
     }
 
-    /**
-     * Runs stap to collect all available tapset functions.
-     */
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-        super.run(monitor);
-        boolean canceled = !addFunctions(monitor);
+        boolean cancelled = runPass2Functions();
         functions.sortTree();
-        return new Status(!canceled ? IStatus.OK : IStatus.CANCEL,
-                IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
+        fireUpdateEvent(); //Inform listeners that everything is done
+        return new Status(!cancelled ? IStatus.OK : IStatus.CANCEL, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
     }
 
     /**
      * This method is used to build up the list of functions that were found
-     * during the first pass of stap.
+     * during the first pass of stap.  Stap is invoked by: $stap -v -p1 -e
+     * 'probe begin{}' and parsing the output.
      *
      * FunctionTree organized as:
      *    Root->Functions->Parameters
      *
-     * @return <code>false</code> if a cancelation prevented all functions from being added;
+     * @return <code>false</code> if a cancellation prevented all probes from being added;
      * <code>true</code> otherwise.
      */
-    private boolean addFunctions(IProgressMonitor monitor) {
+    private boolean runPass2Functions() {
         String tapsetContents = SharedParser.getInstance().getTapsetContents();
+        // Create a new function tree each time, so as to not add duplicates
+        functions = new TreeNode(null, false);
         if (tapsetContents == null) {
             // Functions are only drawn from the tapset dump, so exit if it's empty.
             return true;
@@ -111,7 +105,7 @@ public final class FunctionParser extends TreeTapsetParser {
 
             SharedParser sparser = SharedParser.getInstance();
             while (st.hasNextLine()) {
-                if (monitor.isCanceled()) {
+                if (isCancelRequested()) {
                     return false;
                 }
                 String tok = st.nextLine();

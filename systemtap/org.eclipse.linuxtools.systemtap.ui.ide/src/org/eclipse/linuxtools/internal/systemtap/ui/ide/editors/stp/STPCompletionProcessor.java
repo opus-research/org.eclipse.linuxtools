@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.regex.Pattern;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.BadPartitioningException;
@@ -29,12 +28,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.proposals.STPFunctionCompletionProposal;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.proposals.STPProbeCompletionProposal;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.proposals.STPProbevarCompletionProposal;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.ManpageCacher;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetItemType;
-import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
 
 public class STPCompletionProcessor implements IContentAssistProcessor, ITextHover {
 
@@ -152,13 +146,19 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 
     private ICompletionProposal[] getFunctionCompletions(int offset,
             String prefix) {
-        TreeNode[] completionData = stpMetadataSingleton.getFunctionCompletions(prefix);
+        String[] completionData = stpMetadataSingleton.getFunctionCompletions(prefix);
         ICompletionProposal[] result = new ICompletionProposal[completionData.length];
+        int prefixLength = prefix.length();
         for (int i = 0; i < completionData.length; i++) {
-            result[i] = new STPFunctionCompletionProposal(
-                    completionData[i],
-                    prefix.length(),
-                    offset);
+            result[i] = new CompletionProposal(
+                            completionData[i].substring(prefixLength) + "()", //$NON-NLS-1$
+                            offset,
+                            0,
+                            completionData[i].length() - prefixLength + 1,
+                            null,
+                            completionData[i] + " - function", //$NON-NLS-1$
+                            null,
+                            TapsetLibrary.getAndCacheDocumentation("function::" + completionData[i])); //$NON-NLS-1$
         }
 
         return result;
@@ -166,17 +166,25 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 
     private ICompletionProposal[] getProbeVariableCompletions(IDocument document, int offset, String prefix) {
         try {
-            String probeName = getProbe(document, offset);
-            TreeNode[] completionData = stpMetadataSingleton
-                    .getProbeVariableCompletions(probeName, prefix);
+            String probe;
+            probe = getProbe(document, offset);
+            String[] completionData = stpMetadataSingleton
+                    .getProbeVariableCompletions(probe, prefix);
             ICompletionProposal[] result = new ICompletionProposal[completionData.length];
 
+            int prefixLength = prefix.length();
             for (int i = 0; i < completionData.length; i++) {
-                result[i] = new STPProbevarCompletionProposal(
-                        completionData[i],
-                        prefix.length(),
+                int endIndex = completionData[i].indexOf(':');
+                String variableName = completionData[i].substring(0, endIndex);
+                result[i] = new CompletionProposal(completionData[i].substring(
+                        prefixLength, endIndex),
                         offset,
-                        probeName);
+                        0,
+                        endIndex - prefixLength,
+                        null,
+                        completionData[i] + " - variable", //$NON-NLS-1$
+                        null,
+                        TapsetLibrary.getAndCacheDocumentation("probe::" + probe + "::" + variableName)); //$NON-NLS-1$ //$NON-NLS-2$
             }
             return result;
         } catch (BadLocationException|BadPartitioningException e) {
@@ -213,14 +221,19 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
 
     private ICompletionProposal[] getProbeCompletionList(String prefix, int offset) {
         prefix = canonicalizePrefix(prefix);
-        TreeNode[] completionData = stpMetadataSingleton.getProbeCompletions(prefix);
+        String[] completionData = stpMetadataSingleton.getProbeCompletions(prefix);
 
         ICompletionProposal[] result = new ICompletionProposal[completionData.length];
         for (int i = 0; i < completionData.length; i++) {
-            result[i] = new STPProbeCompletionProposal(
+            result[i] = new CompletionProposal(
+                            completionData[i].substring(prefix.length()),
+                            offset,
+                            0,
+                            completionData[i].length() - prefix.length(),
+                            null,
                             completionData[i],
-                            prefix.length(),
-                            offset);
+                            null,
+                            TapsetLibrary.getAndCacheDocumentation("probe::" + completionData[i])); //$NON-NLS-1$
         }
         return result;
 
@@ -285,7 +298,7 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
         }
 
         int end = n;
-        while (n >= 0 && !isTokenDelimiter(doc.getChar(n))) {
+        while (n >= 0 && !isTokenDelimiter((doc.getChar(n)))) {
             n--;
         }
 
@@ -300,25 +313,17 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
         }
 
         int start = offset;
-        while (start >= 0 && !isDelimiter(doc.getChar(start))) {
+        while (start >= 0 && !isDelimiter((doc.getChar(start)))) {
             start--;
         }
 
         int end = offset;
-        while (end < doc.getLength() && !isDelimiter(doc.getChar(end))) {
+        while (end < doc.getLength() && !isDelimiter((doc.getChar(end)))) {
             end++;
         }
 
         start++;
         return new Token(doc.get(start, end-start), start);
-    }
-
-    private boolean isFunctionRegion(IDocument doc, IRegion region) throws BadLocationException {
-        int start = region.getLength() + region.getOffset();
-        while (isTokenDelimiter(doc.getChar(start))) {
-            start++;
-        }
-        return doc.getChar(start) == '(';
     }
 
     /**
@@ -361,13 +366,18 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
         return false;
     }
 
-    private boolean isDelimiter(char c) {
+    private boolean isDelimiter (char c) {
 
         if (isTokenDelimiter(c)) {
             return true;
         }
 
-        return c != '.' && Pattern.matches("\\W", Character.toString(c)); //$NON-NLS-1$
+        switch (c) {
+        case '(':
+        case ')':
+            return true;
+        }
+        return false;
     }
 
     public void waitForInitialization() {
@@ -406,25 +416,34 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
         String documentation = null;
         try {
             String keyword = textViewer.getDocument().get(hoverRegion.getOffset(), hoverRegion.getLength());
-            int offset = hoverRegion.getOffset();
-            IDocument document = textViewer.getDocument();
 
-            if (getPrecedingToken(document, offset - 1).tokenString.equals(PROBE_KEYWORD.trim())) {
-                documentation = ManpageCacher.getDocumentation(TapsetItemType.PROBE, keyword);
-            } else {
-                ITypedRegion partition =
-                        ((IDocumentExtension3)document).getPartition(STPProbeScanner.STP_PROBE_PARTITIONING,
-                                offset, false);
-                if (partition.getType() == STPProbeScanner.STP_PROBE) {
-                    if (isFunctionRegion(document, hoverRegion)) {
-                        documentation = ManpageCacher.getDocumentation(TapsetItemType.FUNCTION, keyword);
-                    } else {
-                        String probe = getProbe(document, offset);
-                        if (stpMetadataSingleton.isVariableInProbe(probe, keyword)) {
-                            documentation = ManpageCacher.getDocumentation(TapsetItemType.PROBEVAR, probe, keyword);
-                        }
-                    }
-                }
+            documentation = TapsetLibrary.getDocumentation("function::" + keyword); //$NON-NLS-1$
+            if (!documentation.startsWith("No manual entry for")) { //$NON-NLS-1$
+                return documentation;
+            }
+
+            documentation = TapsetLibrary.getDocumentation("probe::" + keyword); //$NON-NLS-1$
+            if (!documentation.startsWith("No manual entry for")) { //$NON-NLS-1$
+                return documentation;
+            }
+
+            documentation = TapsetLibrary.getDocumentation("tapset::" + keyword); //$NON-NLS-1$
+            if (!documentation.startsWith("No manual entry for")) { //$NON-NLS-1$
+                return documentation;
+            }
+
+            if (keyword.indexOf('.') > 0) {
+                keyword = keyword.split("\\.")[0]; //$NON-NLS-1$
+                documentation = TapsetLibrary.getDocumentation("tapset::" + keyword); //$NON-NLS-1$
+            }
+
+            IDocument document = textViewer.getDocument();
+            ITypedRegion partition =
+                    ((IDocumentExtension3)document).getPartition(STPProbeScanner.STP_PROBE_PARTITIONING,
+                            hoverRegion.getOffset(), false);
+            if (partition.getType() == STPProbeScanner.STP_PROBE) {
+                String probe = getProbe(textViewer.getDocument(), hoverRegion.getOffset());
+                documentation = TapsetLibrary.getDocumentation("probe::" + probe + "::"+ keyword); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
         } catch (BadLocationException|BadPartitioningException e) {

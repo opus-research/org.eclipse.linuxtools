@@ -19,7 +19,6 @@ import java.nio.ByteOrder;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
@@ -111,7 +110,7 @@ public class SequenceDefinition2Test {
     @Test
     public void testGetElem() {
         int i = 1;
-        IDefinition result = fixture.getDefinitions().get(i);
+        Definition result = fixture.getDefinitions().get(i);
         assertNotNull(result);
     }
 

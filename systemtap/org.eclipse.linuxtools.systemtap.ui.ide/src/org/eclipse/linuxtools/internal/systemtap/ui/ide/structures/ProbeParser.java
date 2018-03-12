@@ -68,25 +68,22 @@ public final class ProbeParser extends TreeTapsetParser {
         aliases.dispose();
     }
 
-    /**
-     * Runs stap to collect all available tapset probes.
-     * ProbeTree organized as:
-     *    Root->Named Groups->ProbePoints->Variables
-     */
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-        super.run(monitor);
-        boolean canceled = !addStaticProbes(monitor);
-        if (!canceled) {
-            canceled = !addProbeAliases(monitor);
+        // Create a new function tree each time, so as to not add duplicates.
+        reset();
+
+        addStaticProbes();
+        if (isCancelRequested()) {
+            return new Status(IStatus.CANCEL, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
         }
+        addProbeAliases();
         constructRootTree();
-        return new Status(!monitor.isCanceled() ? IStatus.OK : IStatus.CANCEL,
-                IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
+        fireUpdateEvent();    //Inform listeners that everything is done
+        return new Status(!isCancelRequested() ? IStatus.OK : IStatus.CANCEL, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
     }
 
-    @Override
-    protected void resetTree() {
+    private void reset() {
         probes = new TreeNode(null, false);
         statics = new TreeNode(Messages.ProbeParser_staticProbes, false);
         aliases = new TreeNode(Messages.ProbeParser_aliasProbes, false);
@@ -99,49 +96,46 @@ public final class ProbeParser extends TreeTapsetParser {
         probes.add(aliases);
     }
 
-    /**
-     * Runs stap to obtain a log of all static probes, and populate the probe tree with them.
-     *
-     * @return <code>false</code> if a cancelation prevented all probes from being added;
-     * <code>true</code> otherwise.
-     */
-    private boolean addStaticProbes(IProgressMonitor monitor) {
+    private void addStaticProbes() {
         String probeDump = runStap(new String[]{"--dump-probe-types"}, null, false); //$NON-NLS-1$
         if (probeDump == null) {
-            return true;
+            return;
         }
         TreeNode group = null;
         try (Scanner st = new Scanner(probeDump)) {
             while (st.hasNextLine()) {
-                if (monitor.isCanceled()) {
-                    return false;
+                if (isCancelRequested()) {
+                    return;
                 }
                 String tokenString = st.nextLine();
                 String probeName = (new StringTokenizer(tokenString)).nextToken();
                 group = addOrFindProbeGroup(extractProbeGroupName(probeName), group, statics);
                 group.add(makeStaticProbeNode(probeName));
             }
-            return true;
+            return;
         }
     }
 
     /**
-     * Runs stap to obtain a log of all probe aliases & their variables,
-     * and populate the probe tree with them.
+     * Parses the output generated from running stap -L. Pulls out all functions
+     * and probe aliases from the provided string. Populates the probe tree.
      *
-     * @return <code>false</code> if a cancelation prevented all probes from being added;
+     * ProbeTree organized as:
+     *    Root->Named Groups->ProbePoints->Variables
+     *
+     * @return <code>false</code> if a cancellation prevented all probes from being added;
      * <code>true</code> otherwise.
      */
-    private boolean addProbeAliases(IProgressMonitor monitor) {
+    private void addProbeAliases() {
         String probeDump = runStap(new String[]{"-L"}, "**", false); //$NON-NLS-1$ //$NON-NLS-2$
         if (probeDump == null) {
-            return true;
+            return;
         }
         TreeNode group = null;
         try (Scanner st = new Scanner(probeDump)) {
             while (st.hasNextLine()) {
-                if (monitor.isCanceled()) {
-                    return false;
+                if (isCancelRequested()) {
+                    return;
                 }
                 String tokenString = st.nextLine();
                 // If the token starts with '_' or '__' it is a private probe so
@@ -161,7 +155,7 @@ public final class ProbeParser extends TreeTapsetParser {
                     addAllVarNodesToProbeNode(probeTokenizer, probeNode);
                 }
             }
-            return true;
+            return;
         }
     }
 
