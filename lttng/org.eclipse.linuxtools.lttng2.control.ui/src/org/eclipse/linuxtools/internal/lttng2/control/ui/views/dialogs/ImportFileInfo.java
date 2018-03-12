@@ -8,12 +8,11 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views.dialogs;
 
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
 
 /**
  * <p>
@@ -30,7 +29,7 @@ public class ImportFileInfo {
     /**
      * Remote file reference
      */
-    private IFileStore fRemoteFile;
+    private IRemoteFile fRemoteFile;
     /**
      * Local Trace Name
      */
@@ -59,7 +58,7 @@ public class ImportFileInfo {
      * @param isOverwrite
      *            global overwrite flag
      */
-    public ImportFileInfo(IFileStore file, String traceName, IFolder destinationFolder, boolean isOverwrite) {
+    public ImportFileInfo(IRemoteFile file, String traceName, IFolder destinationFolder, boolean isOverwrite) {
         fRemoteFile = file;
         fLocalTraceName = traceName;
         fDestinationFolder = destinationFolder;
@@ -102,7 +101,7 @@ public class ImportFileInfo {
     /**
      * @return the remote file implementation.
      */
-    public IFileStore getImportFile() {
+    public IRemoteFile getImportFile() {
         return fRemoteFile;
     }
 
@@ -112,7 +111,7 @@ public class ImportFileInfo {
      * @param remoteFile
      *            The remote file implementation.
      */
-    public void setRemoteFile(IFileStore remoteFile) {
+    public void setRemoteFile(IRemoteFile remoteFile) {
         fRemoteFile = remoteFile;
     }
 
