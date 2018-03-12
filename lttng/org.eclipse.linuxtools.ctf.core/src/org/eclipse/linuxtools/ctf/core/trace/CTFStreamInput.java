@@ -232,8 +232,8 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
      */
     public boolean addPacketHeaderIndex() throws CTFReaderException {
         long currentPos = 0L;
-        if (!fIndex.isEmpty()) {
-            StreamInputPacketIndexEntry pos = fIndex.lastElement();
+        if (!fIndex.getEntries().isEmpty()) {
+            StreamInputPacketIndexEntry pos = fIndex.getEntries().lastElement();
             currentPos = computeNextOffset(pos);
         }
         long fileSize = getStreamSize();
@@ -243,7 +243,7 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
                     currentPos);
             createPacketIndexEntry(fileSize, currentPos, packetIndex,
                     fTracePacketHeaderDecl, fStreamPacketContextDecl);
-            fIndex.add(packetIndex);
+            fIndex.addEntry(packetIndex);
             return true;
         }
         return false;

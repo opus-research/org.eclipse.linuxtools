@@ -272,11 +272,11 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
                      * to 1.
                      */
                     long lostEventsStartTime;
-                    int index = fStreamInputReader.getStreamInput().getIndex().indexOf(currentPacket);
+                    int index = fStreamInputReader.getStreamInput().getIndex().getEntries().indexOf(currentPacket);
                     if (index == 0) {
                         lostEventsStartTime = currentPacket.getTimestampBegin() + 1;
                     } else {
-                        prevPacket = fStreamInputReader.getStreamInput().getIndex().get(index - 1);
+                        prevPacket = fStreamInputReader.getStreamInput().getIndex().getEntries().get(index - 1);
                         lostEventsStartTime = prevPacket.getTimestampEnd();
                     }
                     fLostEventsDuration = Math.abs(lostEventsStartTime - currentPacket.getTimestampBegin());
