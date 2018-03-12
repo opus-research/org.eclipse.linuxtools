@@ -142,7 +142,7 @@ public class DockerContainersView extends ViewPart implements
 		IEclipsePreferences preferences = InstanceScope.INSTANCE
 				.getNode(Activator.PLUGIN_ID);
 		boolean showAll = preferences.getBoolean(SHOW_ALL_CONTAINERS_PREFERENCE,
-				true);
+				false);
 		showAllContainers(showAll);
 		final ICommandService service = getViewSite().getWorkbenchWindow()
 				.getService(ICommandService.class);
@@ -350,7 +350,6 @@ public class DockerContainersView extends ViewPart implements
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		final ITreeSelection treeSelection = (ITreeSelection) selection;
 		if(treeSelection.isEmpty()) {
-			setConnection(null);
 			return;
 		}
 		// remove this view as a container listener on the former select connection 

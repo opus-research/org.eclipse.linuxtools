@@ -37,7 +37,6 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerNetworkSettings;
 import org.eclipse.linuxtools.docker.core.IDockerPortBinding;
 import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
-import org.eclipse.linuxtools.internal.docker.core.DockerContainer;
 import org.eclipse.linuxtools.internal.docker.core.DockerPortMapping;
 import org.eclipse.swt.widgets.Display;
 
@@ -92,7 +91,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			loadImages(imagesCategory);
 			return new Object[] { new LoadingStub(imagesCategory) };
 		} else if (parentElement instanceof IDockerContainer) {
-			final DockerContainer container = (DockerContainer) parentElement;
+			final IDockerContainer container = (IDockerContainer) parentElement;
 			if (container.isInfoLoaded()) {
 				final IDockerContainerInfo info = container.info();
 				final IDockerNetworkSettings networkSettings = info
@@ -171,7 +170,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				DVMessages.getString("ContainerInfoLoadJob.msg")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				((DockerContainer) container).info(true);
+				container.info(true);
 				return Status.OK_STATUS;
 			}
 		};

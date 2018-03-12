@@ -24,6 +24,7 @@ import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageTag;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
@@ -35,33 +36,40 @@ public class TagImageCommandHandler extends AbstractHandler {
 	private final static String TAG_IMAGE_MSG = "ImageTag.msg"; //$NON-NLS-1$
 	private static final String ERROR_TAGGING_IMAGE = "ImageTagError.msg"; //$NON-NLS-1$
 	
+	private IDockerConnection connection;
+	private IDockerImage image;
+
 	@Override
 	public Object execute(final ExecutionEvent event) {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-		final List<IDockerImage> selectedImages = CommandUtils
+		List<IDockerImage> selectedImages = CommandUtils
 				.getSelectedImages(activePart);
-		final IDockerConnection connection = CommandUtils
-				.getCurrentConnection(activePart);
-		if (selectedImages.size() != 1 || connection == null) {
-			return null;
+		if (activePart instanceof DockerImagesView) {
+			connection = ((DockerImagesView) activePart).getConnection();
 		}
-		final IDockerImage image = selectedImages.get(0);
-		final ImageTag wizard = new ImageTag();
+		if (selectedImages.size() != 1 || connection == null)
+			return null;
+		image = selectedImages.get(0);
+		final ImageTag wizard = new ImageTag(image.id());
 		final boolean tagImage = CommandUtils.openWizard(wizard,
 				HandlerUtil.getActiveShell(event));
 		if (tagImage) {
-			performTagImage(connection, image, wizard.getTag());
+			if (activePart instanceof DockerImagesView) {
+				connection = ((DockerImagesView) activePart)
+						.getConnection();
+			}
+			performTagImage(wizard);
 		}
 		return null;
 	}
 	
-	private void performTagImage(final IDockerConnection connection,
-			final IDockerImage image, final String tag) {
+	private void performTagImage(final ImageTag wizard) {
 		final Job tagImageJob = new Job(
 				DVMessages.getString(TAG_IMAGE_JOB_TITLE)) {
 
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
+				final String tag = wizard.getTag();
 				monitor.beginTask(
 						DVMessages.getFormattedString(TAG_IMAGE_MSG, tag), 2);
 				// tag the image and let the progress
@@ -73,6 +81,7 @@ public class TagImageCommandHandler extends AbstractHandler {
 					monitor.worked(1);
 				} catch (final DockerException e) {
 					Display.getDefault().syncExec(new Runnable() {
+
 						@Override
 						public void run() {
 							MessageDialog.openError(Display.getCurrent()
@@ -81,6 +90,7 @@ public class TagImageCommandHandler extends AbstractHandler {
 											tag), e.getMessage());
 
 						}
+
 					});
 					// for now
 				} catch (InterruptedException e) {
@@ -90,8 +100,11 @@ public class TagImageCommandHandler extends AbstractHandler {
 				}
 				return Status.OK_STATUS;
 			}
+
 		};
+
 		tagImageJob.schedule();
+
 	}
 
 }

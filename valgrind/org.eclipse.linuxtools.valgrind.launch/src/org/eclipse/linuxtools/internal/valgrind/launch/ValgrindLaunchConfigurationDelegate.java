@@ -69,7 +69,12 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
 
     private static final String LOG_FILE = CommandLineConstants.LOG_PREFIX + "%p.txt"; //$NON-NLS-1$
     private static final Pattern CORE_PATTERN = Pattern.compile("^.*\\.txt\\.core\\.[0-9]+$");  //$NON-NLS-1$
-    private static final FileFilter LOG_FILTER = pathname -> pathname.getName().startsWith(CommandLineConstants.LOG_PREFIX) && !CORE_PATTERN.matcher(pathname.getName()).matches();
+    private static final FileFilter LOG_FILTER = new FileFilter() {
+        @Override
+        public boolean accept(File pathname) {
+            return pathname.getName().startsWith(CommandLineConstants.LOG_PREFIX) && !CORE_PATTERN.matcher(pathname.getName()).matches();
+        }
+    };
 
     protected String toolID;
     protected ValgrindCommand command;
@@ -138,7 +143,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
             ArrayList<String> cmdLine = new ArrayList<>(1 + arguments.length);
             cmdLine.add(valgrindCommand);
             cmdLine.addAll(Arrays.asList(opts));
-            cmdLine.add(exePath.toPortableString());
+            cmdLine.add(exePath.toOSString());
             cmdLine.addAll(Arrays.asList(arguments));
             String[] commandArray = cmdLine.toArray(new String[cmdLine.size()]);
             boolean usePty = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_USE_TERMINAL, ICDTLaunchConfigurationConstants.USE_TERMINAL_DEFAULT);
@@ -235,7 +240,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
                 if (children[i] instanceof ValgrindStackFrame && marker == null) {
                     ValgrindStackFrame frame = (ValgrindStackFrame) children[i];
                     if (frame.getLine() > 0) {
-                        ISourceLocator locator = frame.getSourceLocator();
+                        ISourceLocator locator = frame.getLaunch().getSourceLocator();
                         ISourceLookupResult result = DebugUITools.lookupSource(frame.getFile(), locator);
                         Object sourceElement = result.getSourceElement();
 
@@ -327,7 +332,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
         ArrayList<String> opts = new ArrayList<>();
         opts.add(CommandLineConstants.OPT_TOOL + EQUALS + getPlugin().getToolName(toolID));
         opts.add(CommandLineConstants.OPT_QUIET); // suppress uninteresting output
-        opts.add(CommandLineConstants.OPT_LOGFILE + EQUALS + outputPath.append(LOG_FILE).toPortableString());
+        opts.add(CommandLineConstants.OPT_LOGFILE + EQUALS + outputPath.append(LOG_FILE).toOSString());
 
         opts.add(CommandLineConstants.OPT_TRACECHILD + EQUALS + (config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_TRACECHILD, LaunchConfigurationConstants.DEFAULT_GENERAL_TRACECHILD) ? YES : NO));
         opts.add(CommandLineConstants.OPT_CHILDSILENT + EQUALS + YES); // necessary for parsing
@@ -359,14 +364,11 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
         for (Object strpath : suppFiles) {
             IPath suppfile = getPlugin().parseWSPath((String) strpath);
             if (suppfile != null) {
-                opts.add(CommandLineConstants.OPT_SUPPFILE + EQUALS + suppfile.toPortableString());
+                opts.add(CommandLineConstants.OPT_SUPPFILE + EQUALS + suppfile.toOSString());
             }
         }
         opts.addAll(Arrays.asList(dynamicDelegate.getCommandArray(config, valgrindVersion, outputPath)));
-        String otherOptions = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_EXTRA_OPTIONS,"").trim(); //$NON-NLS-1$
-		if (!otherOptions.isEmpty()) {
-			opts.addAll(Arrays.asList(otherOptions.split("\\s+"))); //$NON-NLS-1$
-		}
+
         String[] ret = new String[opts.size()];
         return opts.toArray(ret);
     }

@@ -56,7 +56,7 @@ public class ContainerLinkDialog extends Dialog {
 
 	private final DataBindingContext dbc = new DataBindingContext();
 
-	public ContainerLinkDialog(final Shell shell,
+	protected ContainerLinkDialog(final Shell shell,
 			final IDockerConnection connection) {
 		super(shell);
 		this.connection = connection;

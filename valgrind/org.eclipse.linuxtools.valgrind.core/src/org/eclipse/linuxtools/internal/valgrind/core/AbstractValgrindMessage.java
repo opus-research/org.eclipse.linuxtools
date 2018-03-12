@@ -57,4 +57,5 @@ public class AbstractValgrindMessage implements IValgrindMessage {
     public String getText() {
         return text;
     }
+
 }

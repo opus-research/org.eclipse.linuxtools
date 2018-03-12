@@ -23,7 +23,8 @@ import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonViewer;
 
 /**
- * Removes the selected {@link IDockerConnection}(s)
+ * @author xcoulon
+ *
  */
 public class RemoveConnectionCommandHandler extends AbstractHandler {
 
@@ -36,6 +37,7 @@ public class RemoveConnectionCommandHandler extends AbstractHandler {
 			for (TreePath treePath : selection.getPaths()) {
 				DockerConnectionManager.getInstance().removeConnection((IDockerConnection) treePath.getLastSegment());
 			}
+			viewer.refresh();
 		}
 		return null;
 	}

@@ -12,15 +12,13 @@
 package org.eclipse.linuxtools.internal.docker.ui.launch;
 
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.linuxtools.docker.core.IDockerImageBuildOptions;
 
 /**
  * Constants used to pass values in the {@link ILaunchConfiguration} to build
  * Docker Images.
  * 
  */
-public interface IBuildDockerImageLaunchConfigurationConstants
-		extends IDockerImageBuildOptions {
+public interface IBuildDockerImageLaunchConfigurationConstants {
 
 	/**
 	 * the launch id
@@ -36,13 +34,7 @@ public interface IBuildDockerImageLaunchConfigurationConstants
 	 */
 	public final static String SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION = "sourcePathWorkspaceRelativeLocation"; //$NON-NLS-1$
 
-	/** the path to the dockerfile. */
-	public final static String DOCKERFILE_PATH = "dockerfilePath"; //$NON-NLS-1$
-
-	/**
-	 * marker to indicate if the location above is a workspace-relative
-	 * location.
-	 */
-	public final static String DOCKERFILE_PATH_WORKSPACE_RELATIVE_LOCATION = "dockerfilePathWorkspaceRelativeLocation"; //$NON-NLS-1$
+	/** name of the connection to use to build the Image. */
+	public final static String DOCKER_CONNECTION = "dockerConnection"; //$NON-NLS-1$
 
 }

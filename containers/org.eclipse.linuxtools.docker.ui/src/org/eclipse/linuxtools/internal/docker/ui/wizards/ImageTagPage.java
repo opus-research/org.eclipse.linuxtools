@@ -10,14 +10,15 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -34,7 +35,7 @@ public class ImageTagPage extends WizardPage {
 
 	private String tag;
 
-	public ImageTagPage() {
+	public ImageTagPage(String image) {
 		super(WizardMessages.getString(NAME));
 		setDescription(WizardMessages.getString(DESC));
 		setTitle(WizardMessages.getString(TITLE));
@@ -72,23 +73,39 @@ public class ImageTagPage extends WizardPage {
 
 	@Override
 	public void createControl(Composite parent) {
-		parent.setLayout(new GridLayout());
-		final Composite container = new Composite(parent, SWT.NONE);
-		GridLayoutFactory.fillDefaults().numColumns(2).margins(6, 6)
-				.applyTo(container);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(1, 1)
-				.grab(true, false).applyTo(container);
+		final Composite container = new Composite(parent, SWT.NULL);
+		FormLayout layout = new FormLayout();
+		layout.marginHeight = 5;
+		layout.marginWidth = 5;
+		container.setLayout(layout);
 
-		final Label repoLabel = new Label(container, SWT.NULL);
+		Label label = new Label(container, SWT.NULL);
+
+		Label repoLabel = new Label(container, SWT.NULL);
 		repoLabel.setText(WizardMessages.getString(TAG_LABEL));
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(repoLabel);
 
 		tagText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		tagText.addModifyListener(Listener);
 		tagText.setToolTipText(WizardMessages.getString(TAG_TOOLTIP));
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).applyTo(tagText);
+
+		Point p1 = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		Point p2 = tagText.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		int centering = (p2.y - p1.y + 1) / 2;
+
+		FormData f = new FormData();
+		f.top = new FormAttachment(0);
+		label.setLayoutData(f);
+
+		f = new FormData();
+		f.top = new FormAttachment(label, 11 + centering);
+		f.left = new FormAttachment(0, 0);
+		repoLabel.setLayoutData(f);
+
+		f = new FormData();
+		f.top = new FormAttachment(label, 11);
+		f.left = new FormAttachment(repoLabel, 5);
+		f.right = new FormAttachment(100);
+		tagText.setLayoutData(f);
 
 		setControl(container);
 		setPageComplete(false);

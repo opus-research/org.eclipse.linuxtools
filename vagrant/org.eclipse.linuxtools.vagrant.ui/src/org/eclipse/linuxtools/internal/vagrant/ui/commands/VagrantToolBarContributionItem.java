@@ -26,32 +26,23 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.linuxtools.internal.vagrant.core.EnvironmentsManager;
 import org.eclipse.linuxtools.internal.vagrant.ui.Activator;
 import org.eclipse.linuxtools.internal.vagrant.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.vagrant.core.EnumVMStatus;
-import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantVM;
-import org.eclipse.linuxtools.vagrant.core.IVagrantVMListener;
 import org.eclipse.linuxtools.vagrant.core.VagrantService;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 
-public class VagrantToolBarContributionItem extends ContributionItem
-		implements IVagrantVMListener {
-
-	private List<IVagrantVM> vms = new ArrayList<>();
+public class VagrantToolBarContributionItem extends ContributionItem {
 
 	public VagrantToolBarContributionItem() {
-		IVagrantConnection conn = VagrantService.getInstance();
-		conn.addVMListener(this);
-		Thread t = new Thread(() -> {
-			vms = conn.getVMs();
-		});
-		t.start();
+		EnvironmentsManager.getSingleton();
+		VagrantService.getInstance().getVMs();
 	}
 
 	public VagrantToolBarContributionItem(String id) {
@@ -69,7 +60,7 @@ public class VagrantToolBarContributionItem extends ContributionItem
 			mm.removeAll();
 			// dynamic menu contribution ensures fill() gets called
 			mm.add(v);
-			for (IVagrantVM vm : vms) {
+			for (IVagrantVM vm : VagrantService.getInstance().getVMs()) {
 				EnumVMStatus containerStatus = EnumVMStatus.fromStatusMessage(vm.state());
 				ImageDescriptor img = (containerStatus == EnumVMStatus.RUNNING)
 						? SWTImagesFactory.DESC_CONTAINER_STARTED
@@ -136,23 +127,5 @@ public class VagrantToolBarContributionItem extends ContributionItem
 	@Override
 	public boolean isDynamic() {
 		return true;
-	}
-
-	@Override
-	public boolean isDirty() {
-		return true;
-	}
-
-	@Override
-	public void listChanged(IVagrantConnection connection,
-			List<IVagrantVM> list) {
-		this.vms = list;
-		// Need to call update(false) so menu manager is up to date
-		if (getParent() instanceof IMenuManager) {
-			IMenuManager mm = (IMenuManager) getParent();
-			Display.getDefault().asyncExec(() -> {
-				mm.update(false);
-			});
-		}
 	}
 }
