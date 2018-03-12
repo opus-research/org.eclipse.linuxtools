@@ -14,6 +14,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
+
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
@@ -31,6 +35,7 @@ import org.eclipse.remote.core.IRemoteFileService;
 import org.eclipse.remote.core.IRemoteServicesManager;
 import org.eclipse.remote.core.exception.RemoteConnectionException;
 import org.eclipse.remote.internal.jsch.core.JSchConnection;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
@@ -57,6 +62,9 @@ public abstract class AbstractRemoteTest extends AbstractTest {
     public static String CONNECTION_NAME = "localhost"; //$NON-NLS-1$
     public static final String RESOURCES_DIR = "resources/"; //$NON-NLS-1$
 
+    private IRemoteConnectionWorkingCopy fRemoteConnection;
+
+
     // Skip tests if there is not suitable connection details
     public static void checkConnectionInfo() {
         String host = System.getenv("TEST_HOST");
@@ -78,7 +86,54 @@ public abstract class AbstractRemoteTest extends AbstractTest {
         assumeTrue("Skip remote tests due lack of an password for connection", !PASSWORD.isEmpty());
     }
 
-     protected void deleteResource (String directory) {
+    /**
+     * @deprecated As of 1.1, this should not be used because PTP no more provides
+     *  rdt managed projects.
+     *
+     * Create a CDT project outside the default workspace.
+     *
+     * @param bundle            The plug-in bundle.
+     * @param projname            The name of the project.
+     * @param absProjectPath    Absolute path to the directory to which the project should be mapped
+     *                             outside the workspace.
+     * @return                    A new external CDT project.
+     * @throws CoreException
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws InvocationTargetException
+     * @throws InterruptedException
+     */
+    @Deprecated protected IProject createRemoteExternalProject(Bundle bundle,
+            final String projname, final String absProjectPath,
+            final String sourceFile) throws CoreException, URISyntaxException, IOException {
+        return null;
+    }
+    /**
+     * @deprecated As of 1.1, this should not be used because PTP no more provides
+     *  rdt managed projects.
+     */
+    @Deprecated protected IProject createRemoteExternalProjectAndBuild(Bundle bundle,
+            String projname, String absProjectPath, String sourceFile, String host,
+            String connectionName) throws CoreException, URISyntaxException, IOException {
+        HOST = host;
+        CONNECTION_NAME = connectionName;
+        IProject proj = createRemoteExternalProject(bundle, projname, absProjectPath, sourceFile);
+        buildProject(proj);
+        return proj;
+    }
+
+    /**
+     * @deprecated As of 1.1, this should not be used because PTP no more provides
+     *  rdt managed projects.
+     */
+    @Deprecated protected IProject createRemoteExternalProjectAndBuild(Bundle bundle,
+            String projname, String absProjectPath, String sourceFile) throws CoreException, URISyntaxException, IOException {
+        IProject proj = createRemoteExternalProject(bundle, projname, absProjectPath, sourceFile);
+        buildProject(proj);
+        return proj;
+    }
+
+        protected void deleteResource (String directory) {
                 IRemoteServicesManager sm = getServicesManager();
                 IRemoteConnection conn = sm.getConnectionType("ssh").getConnection(CONNECTION_NAME);
                 assertNotNull(conn);
