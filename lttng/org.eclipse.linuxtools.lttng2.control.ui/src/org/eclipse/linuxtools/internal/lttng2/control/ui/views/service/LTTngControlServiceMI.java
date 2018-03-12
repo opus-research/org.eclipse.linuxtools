@@ -19,11 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.validation.SchemaFactory;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -97,15 +95,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setValidating(false);
 
-        // Schema factory for validation
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
-        try {
-            docBuilderFactory.setSchema(schemaFactory.newSchema(xsdUrl));
-        } catch (SAXException e) {
-            throw new ExecutionException(Messages.TraceControl_InvalidSchemaError, e);
-        }
-
+        // TODO: Add xsd validation for machine interface via mi_lttng.xsd from LTTng
         try {
             fDocumentBuilder = docBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
@@ -457,50 +447,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public ISnapshotInfo getSnapshotInfo(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        // TODO A session can have multiple snapshot output. This need to be
-        // supported in the future.
-        // Currently the SessionInfo object does not support multiple snashot
-        // output.
-        // For now only keep the last one.
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_SNAPSHOT_OUTPUT, LTTngControlServiceConstants.OPTION_SESSION, sessionName);
-        ICommandResult result = executeCommand(command.toString(), monitor);
-        Document doc = getDocumentFromStrings(result.getOutput());
-        NodeList rawSnapshotsOutputs = doc.getElementsByTagName(MIStrings.SNAPSHOT_OUTPUTS);
-
-        ISnapshotInfo snapshotInfo = new SnapshotInfo(""); //$NON-NLS-1$
-
-        // TODO: tmf does not have a notion of a ctrl url.
-        for (int i = 0; i < rawSnapshotsOutputs.getLength(); i++) {
-            NodeList rawSnapshotOutput = rawSnapshotsOutputs.item(i).getChildNodes();
-            for (int j = 0; j < rawSnapshotOutput.getLength(); j++) {
-                Node rawInfo = rawSnapshotOutput.item(j);
-                switch (rawInfo.getNodeName()) {
-                case MIStrings.ID:
-                    snapshotInfo.setId(Integer.parseInt(rawInfo.getTextContent()));
-                    break;
-                case MIStrings.NAME:
-                    snapshotInfo.setName(rawInfo.getTextContent());
-                    break;
-                case MIStrings.SNAPSHOT_CTRL_URL:
-                    // The use of the ctrl_url for the snapshot path is to assure
-                    // basic support. Refactoring is necessary in lttng and
-                    // tmf side.
-                    // See http://bugs.lttng.org/issues/828 (+comment)
-                    snapshotInfo.setSnapshotPath(rawInfo.getTextContent());
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-
-        // Check if the snapshot output is Streamed
-        Matcher matcher2 = LTTngControlServiceConstants.TRACE_NETWORK_PATTERN.matcher(snapshotInfo.getSnapshotPath());
-        if (matcher2.matches()) {
-            snapshotInfo.setStreamedSnapshot(true);
-        }
-
-        return snapshotInfo;
+        // TODO JRJ - STUB
+        return null;
     }
 
     @Override
