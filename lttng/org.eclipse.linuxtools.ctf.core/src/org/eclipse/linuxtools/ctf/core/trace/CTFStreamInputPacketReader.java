@@ -26,7 +26,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.ICompositeDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDecl;
+import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition;
@@ -34,7 +34,7 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
-import org.eclipse.linuxtools.internal.ctf.core.event.types.composite.EventHeaderDef;
+import org.eclipse.linuxtools.internal.ctf.core.event.types.composite.EventHeaderDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
 
 import com.google.common.collect.ImmutableList;
@@ -318,8 +318,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
      */
     public EventDefinition readNextEvent() throws CTFReaderException {
         /* Default values for those fields */
-        // compromise since we cannot have 64 bit addressing of arrays yet.
-        int eventID = (int) EventDeclaration.UNSET_EVENT_ID;
+        long eventID = EventDeclaration.UNSET_EVENT_ID;
         long timestamp = 0;
         if (fHasLost) {
             fHasLost = false;
@@ -363,9 +362,9 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
         final long posStart = currentBitBuffer.position();
         /* Read the stream event header. */
         if (fStreamEventHeaderDecl != null) {
-            if (fStreamEventHeaderDecl instanceof IEventHeaderDecl) {
+            if (fStreamEventHeaderDecl instanceof IEventHeaderDeclaration) {
                 fCurrentStreamEventHeaderDef = (ICompositeDefinition) fStreamEventHeaderDecl.createDefinition(null, "", currentBitBuffer); //$NON-NLS-1$
-                EventHeaderDef ehd = (EventHeaderDef) fCurrentStreamEventHeaderDef;
+                EventHeaderDefinition ehd = (EventHeaderDefinition) fCurrentStreamEventHeaderDef;
                 eventID = ehd.getId();
                 timestamp = calculateTimestamp(ehd.getTimestamp(), ehd.getTimestampLength());
             } else {
@@ -410,7 +409,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
                     timestampDef = variantCurrentField.lookupInteger("timestamp"); //$NON-NLS-1$
                 }
                 if (simpleIdDef != null) {
-                    eventID = simpleIdDef.getIntegerValue().intValue();
+                    eventID = simpleIdDef.getIntegerValue();
                 }
                 if (timestampDef != null) {
                     timestamp = calculateTimestamp(timestampDef);
@@ -418,7 +417,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
             }
         }
         /* Get the right event definition using the event id. */
-        IEventDeclaration eventDeclaration = fStreamInputReader.getStreamInput().getStream().getEventDeclaration(eventID);
+        IEventDeclaration eventDeclaration = fStreamInputReader.getStreamInput().getStream().getEvents().get(eventID);
         if (eventDeclaration == null) {
             throw new CTFReaderException("Incorrect event id : " + eventID); //$NON-NLS-1$
         }
