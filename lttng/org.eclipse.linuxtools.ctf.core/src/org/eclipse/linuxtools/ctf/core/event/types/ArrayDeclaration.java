@@ -133,7 +133,8 @@ public class ArrayDeclaration extends CompoundDeclaration {
             definitions.add(fElemType.createDefinition(definitionScope, name, input));
         }
         @SuppressWarnings("null")
-        @NonNull ImmutableList<Definition> ret = definitions.build();
+        @NonNull
+        ImmutableList<Definition> ret = definitions.build();
         return ret;
     }
 
