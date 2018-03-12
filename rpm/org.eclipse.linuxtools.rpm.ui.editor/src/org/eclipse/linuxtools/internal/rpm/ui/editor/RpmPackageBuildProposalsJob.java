@@ -13,15 +13,18 @@ package org.eclipse.linuxtools.internal.rpm.ui.editor;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -42,73 +45,43 @@ public final class RpmPackageBuildProposalsJob extends Job {
 
     private static RpmPackageBuildProposalsJob job = null;
 
-    private Object updatingLock = false;
-    private boolean updating = false;
-
-    private IJobChangeListener updateFinishedListener = new JobChangeAdapter(){
-
-        @Override
-        public void done(IJobChangeEvent event) {
-            synchronized (updatingLock) {
-                updating = false;
-                updatingLock.notifyAll();
-            }
-        }
-    };
-
-    /**
-     * If the updates thread has not finished updating this function blocks
-     * the current thread until that job is done.
-     */
-    public static void waitForUpdates (){
-        if (job != null){
-            try {
-                synchronized (job.updatingLock){
-                    if (job.updating){
-                        job.updatingLock.wait();
-                    }
-                }
-            } catch (InterruptedException e) {}
-        }
-    }
+    private IJobChangeListener updateFinishedListener = new JobChangeAdapter();
 
     protected static final IPropertyChangeListener PROPERTY_LISTENER = new IPropertyChangeListener() {
 
-		@Override
-		public void propertyChange(PropertyChangeEvent event) {
-			if (event.getProperty().equals(PreferenceConstants.P_CURRENT_RPMTOOLS)) {
-                update();
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            if (event.getProperty().equals(PreferenceConstants.P_CURRENT_RPMTOOLS)) {
+                updateAsync();
             }
-		}
+        }
     };
 
     protected static final IPreferenceStore STORE = Activator.getDefault().getPreferenceStore();
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
-     */
     @Override
     protected IStatus run(IProgressMonitor monitor) {
         return retrievePackageList(monitor);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.core.runtime.jobs.Job#shouldSchedule()
-     */
     @Override
     public boolean shouldSchedule() {
         return equals(job);
+    }
+
+    public static void updateSync() {
+        update(false);
+    }
+
+    public static void updateAsync() {
+        update(true);
     }
 
     /**
      * Run the Job if it's needed according with the configuration set in the
      * preference page.
      */
-    public static void update() {
+    private static void update(boolean async) {
         boolean runJob = false;
         // Today's date
         Date today = new Date();
@@ -136,13 +109,15 @@ public final class RpmPackageBuildProposalsJob extends Job {
             if (runJob) {
                 if (job == null) {
                     job = new RpmPackageBuildProposalsJob(Messages.RpmPackageBuildProposalsJob_0);
-                    job.lockAndSchedule();
-                    STORE.setValue(PreferenceConstants.P_RPM_LIST_LAST_BUILD, today.getTime());
                 } else {
                     job.cancel();
-                    job.lockAndSchedule();
-                    STORE.setValue(PreferenceConstants.P_RPM_LIST_LAST_BUILD, today.getTime());
                 }
+                if (async) {
+                    job.schedule();
+                } else {
+                    job.run(new NullProgressMonitor());
+                }
+                STORE.setValue(PreferenceConstants.P_RPM_LIST_LAST_BUILD, today.getTime());
             }
         } else {
             if (job != null) {
@@ -150,19 +125,6 @@ public final class RpmPackageBuildProposalsJob extends Job {
                 job = null;
             }
         }
-    }
-
-
-    /**
-     * Puts the object in the updating state so that any objets
-     * requesting information will be made to wait until the update
-     * is complete.
-     */
-    private void lockAndSchedule() {
-        synchronized(this.updatingLock){
-            this.updating = true;
-        }
-        this.schedule();
     }
 
     /**
@@ -188,45 +150,44 @@ public final class RpmPackageBuildProposalsJob extends Job {
                     Utils.copyFile(new File(rpmListFilepath), bkupFile);
                 }
 
-                BufferedWriter out = new BufferedWriter(new FileWriter(
-                        rpmListFile, false));
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(in));
-                monitor.subTask(Messages.RpmPackageBuildProposalsJob_2
-                        + rpmListCmd + Messages.RpmPackageBuildProposalsJob_3);
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    monitor.subTask(line);
-                    out.write(line + "\n"); //$NON-NLS-1$
-                    if (monitor.isCanceled()) {
-                        in.destroyProcess();
-                        in.close();
-                        out.close();
-                        // restore backup
-                        if (rpmListFile.exists() && bkupFile.exists()) {
-                            Utils.copyFile(bkupFile, rpmListFile);
-                            bkupFile.delete();
+                try (BufferedWriter out = new BufferedWriter(new FileWriter(rpmListFile, false));
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                    monitor.subTask(Messages.RpmPackageBuildProposalsJob_2
+                            + rpmListCmd + Messages.RpmPackageBuildProposalsJob_3);
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        monitor.subTask(line);
+                        out.write(line + "\n"); //$NON-NLS-1$
+                        if (monitor.isCanceled()) {
+                            in.destroyProcess();
+                            in.close();
+                            out.close();
+                            // restore backup
+                            if (rpmListFile.exists() && bkupFile.exists()) {
+                                Utils.copyFile(bkupFile, rpmListFile);
+                                bkupFile.delete();
+                            }
+                            Activator.packagesList = new RpmPackageProposalsList();
+                            return Status.CANCEL_STATUS;
                         }
-                        Activator.packagesList = new RpmPackageProposalsList();
+                    }
+                    in.close();
+                    out.close();
+                    bkupFile.delete();
+                    int processExitValue = 0;
+                    try {
+                        processExitValue = in.getExitValue();
+                    } catch (InterruptedException e) {
                         return Status.CANCEL_STATUS;
                     }
-                }
-                in.close();
-                out.close();
-                bkupFile.delete();
-                int processExitValue = 0;
-                try {
-                    processExitValue = in.getExitValue();
-                } catch (InterruptedException e) {
-                    return Status.CANCEL_STATUS;
-                }
-                if (processExitValue != 0){
-                    SpecfileLog
-                            .log(IStatus.WARNING,
-                                    processExitValue,
-                                    NLS.bind(
-                                            Messages.RpmPackageBuildProposalsJob_NonZeroReturn,
-                                            processExitValue), null);
+                    if (processExitValue != 0) {
+                        SpecfileLog
+                        .log(IStatus.WARNING,
+                                processExitValue,
+                                NLS.bind(
+                                        Messages.RpmPackageBuildProposalsJob_NonZeroReturn,
+                                        processExitValue), null);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -240,6 +201,25 @@ public final class RpmPackageBuildProposalsJob extends Job {
         return Status.OK_STATUS;
     }
 
+    public static Set<String> getPackages() throws InterruptedException, IOException {
+        if (job.getThread() != Thread.currentThread()) {
+            job.join();
+        }
+        final Set<String> list = new HashSet<>();
+        String rpmpkgsFile = Activator.getDefault().getPreferenceStore()
+                .getString(PreferenceConstants.P_RPM_LIST_FILEPATH);
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(rpmpkgsFile)))) {
+            String line = reader.readLine();
+            while (line != null) {
+                list.add(line.trim());
+                line = reader.readLine();
+            }
+        }
+        return list;
+    }
+
     /**
      * Enable and disable the property change listener.
      *
@@ -247,9 +227,9 @@ public final class RpmPackageBuildProposalsJob extends Job {
      */
     public static void setPropertyChangeListener(boolean activated) {
         if (activated) {
-        	STORE.addPropertyChangeListener(PROPERTY_LISTENER);
+            STORE.addPropertyChangeListener(PROPERTY_LISTENER);
         } else {
-        	STORE.removePropertyChangeListener(PROPERTY_LISTENER);
+            STORE.removePropertyChangeListener(PROPERTY_LISTENER);
         }
     }
 

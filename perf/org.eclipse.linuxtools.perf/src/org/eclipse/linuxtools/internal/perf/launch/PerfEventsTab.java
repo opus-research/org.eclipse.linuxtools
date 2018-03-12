@@ -24,8 +24,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
 import org.eclipse.swt.SWT;
@@ -66,10 +64,6 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
     private Composite top;
     private IProject previousProject = null;
 
-
-    /**
-     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getImage()
-     */
     @Override
     public Image getImage() {
         return PerfPlugin.getImageDescriptor("icons/event.gif").createImage(); //$NON-NLS-1$
@@ -83,7 +77,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
         this.top = top;
     }
 
-    private void createEventTabs(final Composite top, ILaunchConfiguration config){
+    private void createEventTabs(Composite top, ILaunchConfiguration config){
         //Maybe not the best place to load the event list but we'll see.
         Map<String,List<String>> events = PerfCore.getEventList(config);
 
@@ -135,7 +129,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
                 // for adding
                 Label l = new Label(right, SWT.NONE);
                 l.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false,2,1));
-                final Text t = new Text(right, SWT.SINGLE | SWT.BORDER);
+                Text t = new Text(right, SWT.SINGLE | SWT.BORDER);
                 t.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
                 if (tabNames[i].equals(PerfPlugin.STRINGS_HWBREAKPOINTS)) {
                     bpTabIndex = i;
@@ -148,38 +142,19 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
                     l.setText(Messages.PerfEventsTab_RawRegisterEncoding);
                 }
 
-                //String to store the label to be used in the Message Dialog
-                final String lhelp = l.getText();
                 Button b = new Button(right, SWT.PUSH);
                 b.setText(Messages.PerfEventsTab_Add);
                 b.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false));
                 b.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent se) {
-                    	if (!t.getText().isEmpty()){
-                    		 int i = tabFolder.getSelectionIndex();
-                             if (rawTabIndex == i) {
-                                 new TableItem(eventTable[i], SWT.NONE).setText(rawText.getText());
-                             } else if(bpTabIndex == i) {
-                                 new TableItem(eventTable[i], SWT.NONE).setText(bpText.getText());
-                             }
-                             updateLaunchConfigurationDialog();
-                    	}else {
-                    		//Shows a message dialog regarding not allowing empty text
-                    		MessageDialog dg = new MessageDialog(
-                    				top.getShell(),
-                    				lhelp,
-                    				null,
-                    				Messages.PerfOptionsTab_EventsCantBeEmpty,
-                    				MessageDialog.ERROR,
-                    				new String[]{
-                    					IDialogConstants.OK_LABEL},
-                    				0
-                    				);
-                    		dg.open();
-                    	}
-                    	//clear the text box before the add button is pressed
-                		t.setText(""); //$NON-NLS-1$
+                        int i = tabFolder.getSelectionIndex();
+                        if (rawTabIndex == i) {
+                            new TableItem(eventTable[i], SWT.NONE).setText(rawText.getText());
+                        } else if(bpTabIndex == i) {
+                            new TableItem(eventTable[i], SWT.NONE).setText(bpText.getText());
+                        }
+                        updateLaunchConfigurationDialog();
                     }
                 });
                 l = new Label(right, SWT.NONE);

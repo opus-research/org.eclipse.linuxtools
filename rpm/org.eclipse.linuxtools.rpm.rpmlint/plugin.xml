@@ -55,41 +55,19 @@
                label="%addremovewarnings.name" >
             <visibleWhen
                   checkEnabled="false">
-               <or>
-                  <with
-                        variable="activeMenuSelection">
-                     <reference
-                           definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                     </reference>
-                  </with>
-                  <with
-                        variable="activeMenuEditorInput">
-                     <reference
-                           definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                     </reference>
-                  </with>
-               </or>
+               <reference
+                     definitionId="org.eclipse.linuxtools.rpm.core.rpmselection">
+               </reference>
             </visibleWhen>
-               </command>
+         </command>
          <command
                commandId="rpmlint.runRpmlint.command"
                label="%runrpmlintcommand.label">
             <visibleWhen
                   checkEnabled="false">
-               <or>
-                  <with
-                        variable="activeMenuSelection">
-                     <reference
-                           definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                     </reference>
-                  </with>
-                  <with
-                        variable="activeMenuEditorInput">
-                     <reference
-                           definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                     </reference>
-                  </with>
-               </or>
+               <reference
+                     definitionId="org.eclipse.linuxtools.rpm.core.rpmselection">
+               </reference>
             </visibleWhen>
          </command>
       </menuContribution>
@@ -97,7 +75,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.eclipse.linuxtools.rpm.ui.editor.mainpage"
+            category="org.eclipse.linuxtools.rpm.ui.mainpage"
             class="org.eclipse.linuxtools.internal.rpm.rpmlint.preferences.RpmlintPreferencePage"
             id="org.eclipse.linuxtools.rpm.rpmlint.preferences.rpmlintPreferencePage"
             name="%rpmlintpreferences.name"/>
