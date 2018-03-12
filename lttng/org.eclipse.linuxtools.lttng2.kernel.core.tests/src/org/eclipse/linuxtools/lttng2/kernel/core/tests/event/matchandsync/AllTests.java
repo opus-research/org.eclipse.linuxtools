@@ -20,8 +20,8 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    ExperimentSyncTest.class,
-    MatchAndSyncTest.class
+    MatchAndSyncTest.class,
+    ExperimentSyncTest.class
 })
 public class AllTests {
 

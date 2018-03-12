@@ -21,8 +21,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    LTTngControlServiceTest.class,
-    LTTngControlServiceMiTest.class
+    LTTngControlServiceTest.class
 })
 public class AllTests {
 

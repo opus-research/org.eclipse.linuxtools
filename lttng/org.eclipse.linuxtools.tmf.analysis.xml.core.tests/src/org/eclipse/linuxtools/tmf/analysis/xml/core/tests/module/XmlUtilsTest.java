@@ -19,20 +19,15 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.TmfXmlStrings;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.tests.Activator;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.tests.common.TmfXmlTestFiles;
 import org.junit.After;
 import org.junit.Test;
@@ -45,26 +40,7 @@ import org.w3c.dom.Element;
  */
 public class XmlUtilsTest {
 
-    private static final Path PATH_INVALID = new Path("test_xml_files/test_invalid");
-    private static final Path PATH_VALID = new Path("test_xml_files/test_valid");
-
-    private static IPath getAbsolutePath(Path relativePath) {
-        Activator plugin = Activator.getDefault();
-        if (plugin == null) {
-            /*
-             * Shouldn't happen but at least throw something to get the test to
-             * fail early
-             */
-            throw new IllegalStateException();
-        }
-        URL location = FileLocator.find(plugin.getBundle(), relativePath, null);
-        try {
-            IPath path = new Path(FileLocator.toFileURL(location).getPath());
-            return path;
-        } catch (IOException e) {
-            throw new IllegalStateException();
-        }
-    }
+    private static final String pathname = "test_xml_files/test_invalid";
 
     /**
      * Empty the XML directory after the test
@@ -125,30 +101,12 @@ public class XmlUtilsTest {
      */
     @Test
     public void testXmlValidateInvalid() {
-        IPath path = getAbsolutePath(PATH_INVALID);
-        File file = path.toFile();
-
-        File[] invalidFiles = file.listFiles();
-        assertTrue(invalidFiles.length > 0);
-        for (File f : invalidFiles) {
+        File[] validFiles = (new File(pathname)).listFiles();
+        for (File f : validFiles) {
             assertFalse("File " + f.getName(), XmlUtils.xmlValidate(f).isOK());
         }
     }
 
-    /**
-     * Test various valid files and make sure they are valid
-     */
-    @Test
-    public void testXmlValidateValid() {
-        IPath path = getAbsolutePath(PATH_VALID);
-        File file = path.toFile();
-
-        File[] validFiles = file.listFiles();
-        assertTrue(validFiles.length > 0);
-        for (File f : validFiles) {
-            assertTrue("File " + f.getName(), XmlUtils.xmlValidate(f).isOK());
-        }
-    }
 
     /**
      * test the {@link XmlUtils#addXmlFile(File)} method
@@ -170,7 +128,7 @@ public class XmlUtilsTest {
         assertTrue(destFile.exists());
     }
 
-    private static final @NonNull String ANALYSIS_ID = "kernel.linux.sp";
+    @NonNull private static final String ANALYSIS_ID = "kernel.linux.sp";
 
     /**
      * Test the {@link XmlUtils#getElementInFile(String, String, String)} method
