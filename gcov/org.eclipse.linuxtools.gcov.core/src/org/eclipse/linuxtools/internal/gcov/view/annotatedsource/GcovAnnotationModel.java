@@ -17,11 +17,16 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.IBinary;
 import org.eclipse.cdt.core.model.ICElement;
 import org.eclipse.cdt.core.model.ICProject;
 import org.eclipse.cdt.ui.CDTUITools;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceProxy;
+import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -128,10 +133,10 @@ public final class GcovAnnotationModel implements IAnnotationModel {
 
     private void updateAnnotations(boolean force) {
         // We do not annotate any editor displaying content of a project not tracked.
-        ICElement element = CDTUITools.getEditorInputCElement(editor.getEditorInput());
-        if (!GcovAnnotationModelTracker.getInstance().containsProject(element.getCProject().getProject())) {
-            return;
-        }
+//        ICElement element = CDTUITools.getEditorInputCElement(editor.getEditorInput());
+//        if (!GcovAnnotationModelTracker.getInstance().containsProject(element.getCProject().getProject())) {
+//            return;
+//        }
 
         SourceFile coverage = findSourceCoverageForEditor();
         if (coverage != null) {
@@ -160,10 +165,65 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         return findSourceCoverageForElement(element);
     }
 
+    // Private resource proxy visitor to run through a project's resources to see if
+    // it contains a link to a C element's resource.  This allows us to locate the
+    // project (and it's binary) that has gcov data for a particular resource that has been linked into
+    // the project.  We can't just query the resource for it's project in such a case.  This
+    // is part of the fix for bug: 447554
+    private class FindLinkedResourceVisitor implements IResourceProxyVisitor {
+
+    	final private ICElement element;
+    	private boolean keepSearching = true;
+    	private boolean found;
+
+    	public FindLinkedResourceVisitor(ICElement element) {
+    		this.element = element;
+    	}
+
+    	public boolean foundElement() {
+    		return found;
+    	}
+
+    	@Override
+    	public boolean visit(IResourceProxy proxy) {
+    		if (proxy.isLinked() && proxy.requestResource().getLocationURI().equals(element.getLocationURI())) {
+    			found = true;
+    			keepSearching = false;
+    		}
+    		return keepSearching;
+    	}
+
+    }
+    
     private SourceFile findSourceCoverageForElement(ICElement element) {
         List<SourceFile> sources = new ArrayList<> ();
         ICProject cProject = element.getCProject();
         IPath target = GcovAnnotationModelTracker.getInstance().getBinaryPath(cProject.getProject());
+        if (target == null) {
+        	// We cannot find a target for this element, using it's project.
+        	// This can be caused by linking in a file to the project which may
+        	// not have a project or may point to another unseen project if the file originated
+        	// there.
+        	IProject[] trackedProjects = GcovAnnotationModelTracker.getInstance().getTrackedProjects();
+        	for (IProject proj : trackedProjects) {
+        		// Look at all projects that are registered for gcov viewing and see if the
+        		// element is linked in.
+        		try {
+        			FindLinkedResourceVisitor visitor = new FindLinkedResourceVisitor(element);
+        			proj.accept(visitor, IResource.DEPTH_INFINITE);
+        			// If we find a match, make note of the target and the real C project.
+        			if (visitor.foundElement()) {
+        				target = GcovAnnotationModelTracker.getInstance().getBinaryPath(proj);
+        				cProject = CoreModel.getDefault().getCModel().getCProject(proj.getName());
+        				break;
+        			}
+        		} catch (CoreException e) {
+        		}
+        	}
+        	if (target == null)
+        		return null;
+        }
+
         try {
             IBinary[] binaries = cProject.getBinaryContainer().getBinaries();
             for (IBinary b : binaries) {
