@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.eclipse.cdt.core.CCProjectNature;
+import org.eclipse.cdt.core.model.IBinary;
+import org.eclipse.cdt.core.model.ICProject;
 import org.eclipse.cdt.ui.CUIPlugin;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -91,20 +93,29 @@ public abstract class GcovTest extends AbstractTest {
 
     @Before
     public void setUp() throws Exception {
-        if (project == null) {
-            project = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), getTestProjectName()).getProject();
-            isCppProject = project.getNature(CCProjectNature.CC_NATURE_ID) != null;
+    	if (project == null) {
+    		ICProject cproject = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), getTestProjectName());
+            project = cproject.getProject();
+    		isCppProject = project.getNature(CCProjectNature.CC_NATURE_ID) != null;
 
-            gcovFiles = new TreeSet<>();
-            for (IResource r : project.members()) {
-                if (r.getType() == IResource.FILE && r.exists()) {
-                    String fileName = r.getName();
-                    if (fileName.endsWith(".gcda") || fileName.endsWith(".gcno")) {
-                        gcovFiles.add(fileName);
-                    }
-                }
-            }
-        }
+    		gcovFiles = new TreeSet<>();
+    		do {
+    			for (IResource r : project.members()) {
+    				if (r.getType() == IResource.FILE && r.exists()) {
+    					String fileName = r.getName();
+    					if (fileName.endsWith(".gcda") || fileName.endsWith(".gcno")) {
+    						gcovFiles.add(fileName);
+    					}
+    				}
+    			}
+    		} while (gcovFiles.size() < 1);
+
+    		IBinary[] binaries = null;
+    		do {
+    			Thread.sleep(500)           ;
+    			binaries = cproject.getBinaryContainer().getBinaries();
+    		} while (binaries == null || binaries.length < 1);
+    	}
     }
 
     @After
@@ -141,6 +152,8 @@ public abstract class GcovTest extends AbstractTest {
     }
 
     private void testGcovFileDetails(final String filename, final String binPath) {
+    	System.out.println("filename is " + filename);
+    	System.out.println("binPath is " + binPath);
         openGcovResult(project.getFile(filename), binPath, false);
 
         display.syncExec(() -> {
@@ -231,6 +244,8 @@ public abstract class GcovTest extends AbstractTest {
     }
 
     private void openGcovResult(final IFile file, String binaryPath, final boolean isCompleteCoverageResultWanted) {
+    	System.out.println("openGcovResult file exists is " + file.exists());
+    	System.out.println("file.getLocation() is " + file.getLocation());
         new OpenGCAction().autoOpen(file.getLocation(), binaryPath, isCompleteCoverageResultWanted);
     }
 
