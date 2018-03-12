@@ -134,21 +134,18 @@ public abstract class CtfTmfEventField extends TmfEventField {
             if (elemType instanceof IntegerDeclaration) {
                 /* Array of integers => CTFIntegerArrayField */
                 IntegerDeclaration elemIntType = (IntegerDeclaration) elemType;
-                if (elemIntType.isCharacter()) {
-                    field = new CTFStringField(fieldName, arrayDef.toString());
-                } else {
-                    long[] values = new long[arrayDef.getLength()];
-                    for (int i = 0; i < arrayDef.getLength(); i++) {
-                        IDefinition elem = arrayDef.getDefinitions().get(i);
-                        if (elem == null) {
-                            break;
-                        }
-                        values[i] = ((IntegerDefinition) elem).getValue();
+                long[] values = new long[arrayDef.getLength()];
+                for (int i = 0; i < arrayDef.getLength(); i++) {
+                    IDefinition elem = arrayDef.getDefinitions().get(i);
+                    if (elem == null) {
+                        break;
                     }
-                    field = new CTFIntegerArrayField(fieldName, values,
-                            elemIntType.getBase(),
-                            elemIntType.isSigned());
+                    values[i] = ((IntegerDefinition) elem).getValue();
                 }
+                field = new CTFIntegerArrayField(fieldName, values,
+                        elemIntType.getBase(),
+                        elemIntType.isSigned());
+
             } else {
                 /* Arrays of elements of any other type */
                 CtfTmfEventField[] elements = new CtfTmfEventField[arrayDef.getLength()];
