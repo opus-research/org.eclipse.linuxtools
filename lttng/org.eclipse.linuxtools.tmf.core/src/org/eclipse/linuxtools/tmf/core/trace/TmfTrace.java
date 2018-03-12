@@ -87,7 +87,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
  * @see ITmfTraceIndexer
  * @see ITmfEventParser
  */
-public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, ITmfTraceCompleteness {
+public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -723,13 +723,11 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
                 return;
             }
 
-            if (isComplete()) {
-                final TmfTimeRange timeRange = new TmfTimeRange(getStartTime(), TmfTimestamp.BIG_CRUNCH);
-                final TmfTraceRangeUpdatedSignal rangeUpdatedsignal = new TmfTraceRangeUpdatedSignal(this, this, timeRange);
+            final TmfTimeRange timeRange = new TmfTimeRange(getStartTime(), TmfTimestamp.BIG_CRUNCH);
+            final TmfTraceRangeUpdatedSignal rangeUpdatedsignal = new TmfTraceRangeUpdatedSignal(this, this, timeRange);
 
-                // Broadcast in separate thread to prevent deadlock
-                broadcastAsync(rangeUpdatedsignal);
-            }
+            // Broadcast in separate thread to prevent deadlock
+            broadcastAsync(rangeUpdatedsignal);
             return;
         }
     }
@@ -859,26 +857,4 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
                 + ", fEndTime=" + fEndTime + ", fStreamingInterval=" + fStreamingInterval + "]";
     }
 
-    /**
-     * @since 3.1
-     */
-    @Override
-    public boolean isComplete() {
-        /*
-         * Be default, all traces are "complete" which means no more data will
-         * be added later
-         */
-        return true;
-    }
-
-    /**
-     * @since 3.1
-     */
-    @Override
-    public void setComplete(boolean isComplete) {
-        /*
-         * This should be overridden by trace classes that can support live
-         * reading (traces in an incomplete state)
-         */
-    }
 }
