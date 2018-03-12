@@ -85,6 +85,16 @@
    <feature url="features/org.eclipse.linuxtools.gdbtrace_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.gdbtrace" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
+   <!-- Orbit Dependencies -->
+   <iu id="org.swtchart" version="0.0.0">
+      <category name="Linux Tools"/>
+   </iu>
+   <iu id="org.cyberneko.html" version="0.0.0">
+      <category name="Linux Tools"/>
+   </iu>
+   <iu id="org.apache.xerces" version="0.0.0">
+      <category name="Linux Tools"/>
+   </iu>
    <feature url="features/org.eclipse.linuxtools.tracing.rcp_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.tracing.rcp" version="0.0.0">
       <category name="Linux Tools LTTng RCP"/>
    </feature>
