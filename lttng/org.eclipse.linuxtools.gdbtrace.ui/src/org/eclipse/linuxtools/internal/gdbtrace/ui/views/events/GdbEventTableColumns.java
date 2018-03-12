@@ -38,8 +38,7 @@ public class GdbEventTableColumns implements ITmfEventTableColumns {
     static final @NonNull Collection<TmfEventTableColumn> GDB_COLUMNS = ImmutableList.of(
             new GdbTraceFrameColumn(),
             new GdbTracepointColumn(),
-            new GdbFileColumn(),
-            TmfEventTableColumn.BaseColumns.CONTENTS
+            new GdbFileColumn()
             );
 
     private static class GdbTraceFrameColumn extends TmfEventTableFieldColumn {
