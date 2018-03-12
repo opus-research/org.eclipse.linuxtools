@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.internal.rpm.ui.editor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 
@@ -22,7 +21,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePartitionScanner;
@@ -93,7 +91,7 @@ public class SpecfileDocumentProvider extends TextFileDocumentProvider {
 					}
 					resetDocument(element);
 					return false;
-				} catch (IOException | CoreException | BadLocationException e) {
+				} catch (Exception e) {
 					return true;
 				}
 			}
