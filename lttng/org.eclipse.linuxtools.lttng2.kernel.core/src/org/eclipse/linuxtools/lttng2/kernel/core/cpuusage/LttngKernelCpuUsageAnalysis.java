@@ -29,7 +29,6 @@ import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
  * This analysis module computes the CPU usage of a system from a kernel trace.
@@ -86,12 +85,17 @@ public class LttngKernelCpuUsageAnalysis extends TmfStateSystemAnalysisModule {
         Map<String, Long> map = new HashMap<>();
         Map<String, Long> totalMap = new HashMap<>();
 
-        ITmfTrace trace = getTrace();
         ITmfStateSystem cpuSs = getStateSystem();
-        if (trace == null || cpuSs == null) {
+        if (cpuSs == null) {
             return map;
         }
-        ITmfStateSystem kernelSs = TmfStateSystemAnalysisModule.getStateSystem(trace, LttngKernelAnalysisModule.ID);
+        TmfStateSystemAnalysisModule module = getTrace().getAnalysisModuleOfClass(TmfStateSystemAnalysisModule.class, LttngKernelAnalysisModule.ID);
+        if (module == null) {
+            return map;
+        }
+        module.schedule();
+        module.waitForInitialization();
+        ITmfStateSystem kernelSs = module.getStateSystem();
         if (kernelSs == null) {
             return map;
         }

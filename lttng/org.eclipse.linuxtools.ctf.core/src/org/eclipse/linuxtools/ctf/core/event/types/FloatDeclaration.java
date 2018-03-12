@@ -25,7 +25,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  * @version 1.0
  * @author Matthew Khouzam
  */
-public final class FloatDeclaration extends Declaration implements ISimpleDatatypeDeclaration {
+public final class FloatDeclaration extends Declaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -109,10 +109,8 @@ public final class FloatDeclaration extends Declaration implements ISimpleDataty
     @Override
     public FloatDefinition createDefinition(IDefinitionScope definitionScope,
             String fieldName, BitBuffer input) throws CTFReaderException {
-        ByteOrder byteOrder = input.getByteOrder();
-        input.setByteOrder(fByteOrder);
+        alignRead(input);
         double value = read(input);
-        input.setByteOrder(byteOrder);
         return new FloatDefinition(this, definitionScope, fieldName, value);
     }
 

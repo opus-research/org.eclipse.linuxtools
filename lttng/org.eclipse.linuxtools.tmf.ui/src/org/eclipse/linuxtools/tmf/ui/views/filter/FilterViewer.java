@@ -9,7 +9,6 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   Xavier Raynaud - add cut/copy/paste/dnd support
- *   Vincent Perot - Add subfield filtering
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.filter;
@@ -349,7 +348,6 @@ class FilterViewer extends Composite {
 
     /**
      * Gets the TreeViewer displaying filters
-     *
      * @return a {@link TreeViewer}
      */
     TreeViewer getTreeViewer() {
@@ -430,13 +428,8 @@ class FilterViewer extends Composite {
                     ITmfEvent event = (ITmfEvent) ce.createExecutableExtension(TmfTraceType.EVENT_TYPE_ATTR);
                     ITmfEventType eventType = event.getType();
                     if (eventType != null && eventType.getFieldNames().size() > 0) {
-                        String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
-                        if (categoryId != null) {
-                            fieldsList.add('[' + TmfTraceType.getCategoryName(categoryId) + " : " //$NON-NLS-1$
-                                    + ce.getAttribute(TmfTraceType.NAME_ATTR) + ']');
-                        } else {
-                            fieldsList.add('[' + ce.getAttribute(TmfTraceType.NAME_ATTR) + ']');
-                        }
+                        fieldsList.add("[" + TmfTraceType.getCategoryName(ce.getAttribute(TmfTraceType.CATEGORY_ATTR)) + //$NON-NLS-1$
+                                " : " + ce.getAttribute(TmfTraceType.NAME_ATTR) + "]"); //$NON-NLS-1$ //$NON-NLS-2$
                         for (String field : eventType.getFieldNames()) {
                             fieldsList.add(field);
                         }
@@ -588,12 +581,8 @@ class FilterViewer extends Composite {
         protected Map<String, Object> getEventsTypeMap() {
             Map<String, Object> eventsTypeMap = new LinkedHashMap<>();
             for (IConfigurationElement ce : TmfTraceType.getTypeElements()) {
-                String categoryPrefix = ""; //$NON-NLS-1$
-                String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
-                if (categoryId != null) {
-                    categoryPrefix = TmfTraceType.getCategoryName(categoryId) + " : "; //$NON-NLS-1$
-                }
-                String text = categoryPrefix + ce.getAttribute(TmfTraceType.NAME_ATTR);
+                String categoryName = TmfTraceType.getCategoryName(ce.getAttribute(TmfTraceType.CATEGORY_ATTR));
+                String text = categoryName + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR); //$NON-NLS-1$
                 eventsTypeMap.put(text, ce);
             }
             for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
@@ -691,7 +680,6 @@ class FilterViewer extends Composite {
             fFieldCombo = new Combo(this, SWT.DROP_DOWN);
             fFieldCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             fFieldCombo.setItems(getFieldsList(fNode));
-            fFieldCombo.setToolTipText(Messages.FilterViewer_Subfilter_ToolTip);
             if (fNode.getField() != null) {
                 fFieldCombo.setText(fNode.getField());
             }
@@ -792,7 +780,6 @@ class FilterViewer extends Composite {
             fFieldCombo = new Combo(this, SWT.DROP_DOWN);
             fFieldCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             fFieldCombo.setItems(getFieldsList(fNode));
-            fFieldCombo.setToolTipText(Messages.FilterViewer_Subfilter_ToolTip);
             if (fNode.getField() != null) {
                 fFieldCombo.setText(fNode.getField());
             }
@@ -892,7 +879,6 @@ class FilterViewer extends Composite {
             fFieldCombo = new Combo(this, SWT.DROP_DOWN);
             fFieldCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             fFieldCombo.setItems(getFieldsList(fNode));
-            fFieldCombo.setToolTipText(Messages.FilterViewer_Subfilter_ToolTip);
             if (fNode.getField() != null) {
                 fFieldCombo.setText(fNode.getField());
             }
@@ -983,7 +969,6 @@ class FilterViewer extends Composite {
             fFieldCombo = new Combo(this, SWT.DROP_DOWN);
             fFieldCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             fFieldCombo.setItems(getFieldsList(fNode));
-            fFieldCombo.setToolTipText(Messages.FilterViewer_Subfilter_ToolTip);
             if (fNode.getField() != null) {
                 fFieldCombo.setText(fNode.getField());
             }

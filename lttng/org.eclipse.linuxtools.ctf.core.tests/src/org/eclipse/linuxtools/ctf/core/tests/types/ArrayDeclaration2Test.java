@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.io.Util;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.ArrayDeclaration;
 import org.junit.Before;
@@ -80,13 +79,12 @@ public class ArrayDeclaration2Test {
         IDefinitionScope definitionScope = null;
         AbstractArrayDefinition result;
         byte[] array = { 't', 'e', 's', 't', '\0', 't', 'h', 'i', 's', '\0' };
-        BitBuffer bb = new BitBuffer(Util.testMemory(ByteBuffer.wrap(array)));
+        ByteBuffer byb = ByteBuffer.wrap(array);
+        BitBuffer bb = new BitBuffer(byb);
         result = fixture.createDefinition(definitionScope, fieldName, bb);
 
         assertNotNull(result);
     }
-
-
 
     /**
      * Run the Declaration getElementType() method test.

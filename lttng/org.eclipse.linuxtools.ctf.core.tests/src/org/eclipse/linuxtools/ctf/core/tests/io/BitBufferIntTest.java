@@ -41,31 +41,22 @@ public class BitBufferIntTest {
      */
     @Before
     public void setUp() throws CTFReaderException {
-        ByteBuffer allocateDirect = ByteBuffer.allocateDirect(128);
-        if (allocateDirect == null) {
-            throw new IllegalStateException("Failed to allocate memory");
-        }
-        fixture = new BitBuffer(allocateDirect);
+        fixture = new BitBuffer(ByteBuffer.allocateDirect(128));
         fixture.setByteOrder(ByteOrder.BIG_ENDIAN);
-        fixture = createBuffer();
+        createBuffer(fixture);
     }
 
-    private static BitBuffer createBuffer() throws CTFReaderException {
-        return createBuffer(16);
+    private static void createBuffer(BitBuffer fixture) throws CTFReaderException {
+        createBuffer(fixture, 16);
     }
 
-    private static BitBuffer createBuffer(int j) throws CTFReaderException {
+    private static void createBuffer(BitBuffer fixture, int j) throws CTFReaderException {
         final byte[] bytes = new byte[j];
         for (int i = 0; i < j; i++) {
             bytes[i] = (byte) (i % 0xff);
         }
-        ByteBuffer wrap = ByteBuffer.wrap(bytes);
-        if (wrap == null) {
-            throw new IllegalStateException("Failed to allocate memory");
-        }
-        BitBuffer fixture = new BitBuffer(wrap);
+        fixture.setByteBuffer(ByteBuffer.wrap(bytes));
         fixture.position(1);
-        return fixture;
     }
 
     /**
@@ -121,6 +112,7 @@ public class BitBufferIntTest {
         assertEquals(0, result);
     }
 
+
     /**
      * Test {@link BitBuffer#get} with explicit little-endian reading.
      *
@@ -129,9 +121,11 @@ public class BitBufferIntTest {
      */
     @Test
     public void testGetInt_le2() throws CTFReaderException {
-        BitBuffer leFixture = createBuffer(128);
+        BitBuffer leFixture = new BitBuffer(ByteBuffer.allocateDirect(128));
         leFixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        createBuffer(leFixture);
         leFixture.position(0);
+
         long result = leFixture.get(24, false);
         assertEquals(0x020100, result);
     }
@@ -145,12 +139,15 @@ public class BitBufferIntTest {
      */
     @Test
     public void testGetInt_le1() throws CTFReaderException {
-        BitBuffer leFixture = createBuffer(128);
+        BitBuffer leFixture = new BitBuffer(ByteBuffer.allocateDirect(128));
         leFixture.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        createBuffer(leFixture);
         leFixture.position(1);
+
         long result = leFixture.get(24, false);
-        assertEquals(0x810080, result); /* 0x020100 down-shifted */
+        assertEquals(0x810080, result);  /* 0x020100 down-shifted */
     }
+
 
     /**
      * Test {@link BitBuffer#get} with a 32-bit out-of-bounds read. Should throw
@@ -161,9 +158,9 @@ public class BitBufferIntTest {
      */
     @Test(expected = CTFReaderException.class)
     public void testGetInt_invalid() throws CTFReaderException {
-        BitBuffer smallFixture = createBuffer(2);
+        BitBuffer smallFixture = new BitBuffer(ByteBuffer.allocateDirect(128));
         smallFixture.setByteOrder(ByteOrder.BIG_ENDIAN);
-
+        createBuffer(smallFixture, 2);
         smallFixture.position(10);
 
         /* This will attempt to read past the buffer's end. */
@@ -179,9 +176,9 @@ public class BitBufferIntTest {
      */
     @Test(expected = CTFReaderException.class)
     public void testGetInt_invalid2() throws CTFReaderException {
-        BitBuffer smallFixture = createBuffer(2);
+        BitBuffer smallFixture = new BitBuffer(ByteBuffer.allocateDirect(128));
         smallFixture.setByteOrder(ByteOrder.BIG_ENDIAN);
-
+        createBuffer(smallFixture, 2);
         smallFixture.position(1);
 
         /* This will attempt to read past the buffer's end. */
@@ -420,6 +417,7 @@ public class BitBufferIntTest {
         assertEquals(0xFFFFFFFFL, result);
     }
 
+
     /**
      * Test reading 24 bits of a 32-bit negative value as a signed value.
      *
@@ -523,8 +521,9 @@ public class BitBufferIntTest {
     @Test(expected = CTFReaderException.class)
     public void testPutInt_invalid() throws CTFReaderException {
         BitBuffer fixture2;
-        fixture2 = createBuffer(4);
+        fixture2 = new BitBuffer(ByteBuffer.allocateDirect(128));
         fixture2.setByteOrder(ByteOrder.BIG_ENDIAN);
+        createBuffer(fixture2, 4);
         fixture2.position(1);
 
         /* This will try writing past the buffer's end */

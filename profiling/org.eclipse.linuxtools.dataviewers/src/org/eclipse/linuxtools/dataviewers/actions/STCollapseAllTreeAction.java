@@ -11,10 +11,9 @@
 package org.eclipse.linuxtools.dataviewers.actions;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.linuxtools.dataviewers.STDataViewersActivator;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
+import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersImages;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersMessages;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * This action collapse all the tree
@@ -31,9 +30,8 @@ public class STCollapseAllTreeAction extends Action {
      *            the stViewer to collapse
      */
     public STCollapseAllTreeAction(AbstractSTTreeViewer stViewer) {
-        super(STDataViewersMessages.collapseAllAction_title,
-        		AbstractUIPlugin.imageDescriptorFromPlugin(STDataViewersActivator.PLUGIN_ID,
-        				"icons/collapse_all.gif")); //$NON-NLS-1$
+        super(STDataViewersMessages.collapseAllAction_title, STDataViewersImages
+                .getImageDescriptor(STDataViewersImages.IMG_COLLAPSEALL));
         this.stViewer = stViewer;
     }
 

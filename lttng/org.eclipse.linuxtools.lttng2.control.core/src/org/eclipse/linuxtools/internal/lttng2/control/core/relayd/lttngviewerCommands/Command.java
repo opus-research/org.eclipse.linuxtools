@@ -39,7 +39,7 @@ public enum Command implements IBaseCommand {
     VIEWER_CREATE_SESSION(8);
 
     /**
-     * Command size (fCode)
+     * Command size
      */
     public static final int SIZE = Integer.SIZE / 8;
 

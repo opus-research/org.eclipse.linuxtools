@@ -27,7 +27,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
@@ -36,7 +35,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
-import org.eclipse.linuxtools.ctf.core.tests.io.Util;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.ArrayDeclaration;
 import org.junit.Before;
@@ -109,7 +107,7 @@ public class VariantDefinitionTest {
         sDec.addField(VAR_FIELD_NAME, varDec);
         varDec.setTag(TAG_ID);
 
-        final ByteBuffer byteBuffer = Util.testMemory(ByteBuffer.allocate(100));
+        ByteBuffer byteBuffer = ByteBuffer.allocate(100);
         BitBuffer bb = new BitBuffer(byteBuffer);
         byteBuffer.mark();
         byteBuffer.putInt(1);
@@ -175,7 +173,7 @@ public class VariantDefinitionTest {
      */
     @Test
     public void testGetCurrentField() {
-        IDefinition result = fixture.getCurrentField();
+        Definition result = fixture.getCurrentField();
         assertNotNull(result);
     }
 
@@ -202,7 +200,7 @@ public class VariantDefinitionTest {
      */
     @Test
     public void testGetDefinitions() {
-        IDefinition result = fixture.getCurrentField();
+        Definition result = fixture.getCurrentField();
         assertNotNull(result);
     }
 
@@ -220,7 +218,7 @@ public class VariantDefinitionTest {
      */
     @Test
     public void testLookupArray() {
-        AbstractArrayDefinition result = fixture.lookupArrayDefinition(ENUM_3);
+        AbstractArrayDefinition result = fixture.lookupArray2(ENUM_3);
         assertNull(result);
     }
 
@@ -229,7 +227,7 @@ public class VariantDefinitionTest {
      */
     @Test
     public void testLookupDefinition() {
-        IDefinition result = fixture.lookupDefinition(ENUM_1);
+        Definition result = fixture.lookupDefinition(ENUM_1);
         assertNotNull(result);
         assertEquals("a", ((EnumDefinition) result).getStringValue());
     }

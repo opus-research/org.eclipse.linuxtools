@@ -141,7 +141,6 @@ public class FloatDefinitionTest {
         data[0] = 2.0f;
         data[1] = 3.14f;
         ByteBuffer byb = ByteBuffer.allocate(128);
-        byb.order(ByteOrder.nativeOrder());
         byb.mark();
         byb.putFloat(data[0]);
         byb.putFloat(data[1]);
@@ -156,7 +155,6 @@ public class FloatDefinitionTest {
         data[0] = 2.0f;
         data[1] = 3.14f;
         ByteBuffer byb = ByteBuffer.allocate(128);
-        byb.order(ByteOrder.nativeOrder());
         byb.mark();
         byb.putDouble(data[0]);
         byb.putDouble(data[1]);

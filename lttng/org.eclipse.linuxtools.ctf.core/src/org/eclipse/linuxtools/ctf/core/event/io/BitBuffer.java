@@ -1,5 +1,5 @@
 /*******************************************************************************.
- * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -51,8 +51,7 @@ public final class BitBuffer {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final @NonNull ByteBuffer fBuffer;
-    private final long fBitCapacity;
+    private ByteBuffer fBuffer;
 
     /**
      * Bit-buffer's position, maximum value = Integer.MAX_VALUE * 8
@@ -66,9 +65,8 @@ public final class BitBuffer {
     /**
      * Default constructor, makes a big-endian buffer
      */
-    @SuppressWarnings("null")
     public BitBuffer() {
-        this(ByteBuffer.allocateDirect(0), ByteOrder.BIG_ENDIAN);
+        this(null, ByteOrder.BIG_ENDIAN);
     }
 
     /**
@@ -77,7 +75,7 @@ public final class BitBuffer {
      * @param buf
      *            the bytebuffer to read
      */
-    public BitBuffer(@NonNull ByteBuffer buf) {
+    public BitBuffer(ByteBuffer buf) {
         this(buf, ByteOrder.BIG_ENDIAN);
     }
 
@@ -89,11 +87,10 @@ public final class BitBuffer {
      * @param order
      *            the byte order (big-endian, little-endian, network?)
      */
-    public BitBuffer(@NonNull ByteBuffer buf, ByteOrder order) {
-        fBuffer = buf;
+    public BitBuffer(ByteBuffer buf, ByteOrder order) {
+        setByteBuffer(buf);
         setByteOrder(order);
         resetPosition();
-        fBitCapacity = fBuffer.capacity() * BIT_CHAR;
     }
 
     private void resetPosition() {
@@ -597,7 +594,14 @@ public final class BitBuffer {
      * @return does the buffer have enough room to read the next "length"
      */
     public boolean canRead(int length) {
-        return ((fPosition + length) <= fBitCapacity);
+        if (fBuffer == null) {
+            return false;
+        }
+
+        if ((fPosition + length) > (((long) fBuffer.capacity()) * BIT_CHAR)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -608,7 +612,9 @@ public final class BitBuffer {
      */
     public void setByteOrder(ByteOrder order) {
         fByteOrder = order;
-        fBuffer.order(order);
+        if (fBuffer != null) {
+            fBuffer.order(order);
+        }
     }
 
     /**
@@ -631,8 +637,7 @@ public final class BitBuffer {
      */
     public void position(long newPosition) throws CTFReaderException {
 
-
-        if (newPosition > fBitCapacity) {
+        if ((fBuffer != null) && (newPosition / 8) > fBuffer.capacity()) {
             throw new CTFReaderException("Out of bounds exception on a position move, attempting to access position: " + newPosition); //$NON-NLS-1$
         }
         fPosition = newPosition;
@@ -655,16 +660,12 @@ public final class BitBuffer {
      * @param buf
      *            the byte buffer
      */
-    @Deprecated
     public void setByteBuffer(ByteBuffer buf) {
-        /*
-         * to avoid "The method setByteBuffer(ByteBuffer) from the type
-         * BitBuffer can be declared as static"
-         */
-        long data = fPosition;
-        fPosition = data;
-        throw new UnsupportedOperationException("Bytebuffers are now final"); //$NON-NLS-1$
-
+        fBuffer = buf;
+        if (buf != null) {
+            fBuffer.order(fByteOrder);
+        }
+        clear();
     }
 
     /**
@@ -681,6 +682,9 @@ public final class BitBuffer {
      */
     public void clear() {
         resetPosition();
+        if (fBuffer == null) {
+            return;
+        }
         fBuffer.clear();
     }
 

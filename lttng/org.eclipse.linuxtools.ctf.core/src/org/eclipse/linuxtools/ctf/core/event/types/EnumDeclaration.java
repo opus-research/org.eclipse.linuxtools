@@ -32,7 +32,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public final class EnumDeclaration extends Declaration implements ISimpleDatatypeDeclaration {
+public final class EnumDeclaration extends Declaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -99,8 +99,8 @@ public final class EnumDeclaration extends Declaration implements ISimpleDatatyp
     }
 
     /**
-     * Add a value. Do not overlap, this is <em><strong>not</strong></em> an
-     * interval tree.
+     * Add a value. Do not overlap, this is <em><strong>not</strong></em> an interval
+     * tree.
      *
      * @param low
      *            lowest value that this int can be to have label as a return
@@ -174,7 +174,7 @@ public final class EnumDeclaration extends Declaration implements ISimpleDatatyp
         public String query(long value) {
             for (LabelAndRange r : ranges) {
                 if (r.intersects(value)) {
-                    return r.getLabel();
+                    return r.fLabel;
                 }
             }
             return null;
@@ -182,19 +182,10 @@ public final class EnumDeclaration extends Declaration implements ISimpleDatatyp
 
     }
 
-    private static class LabelAndRange {
+    private class LabelAndRange {
 
         private final long low, high;
         private final String fLabel;
-
-        /**
-         * Get the label
-         *
-         * @return the label
-         */
-        public String getLabel() {
-            return fLabel;
-        }
 
         public LabelAndRange(long low, long high, String str) {
             this.low = low;

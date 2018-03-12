@@ -34,7 +34,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  * @author Simon Marchi
  */
 @NonNullByDefault
-public class IntegerDeclaration extends Declaration implements ISimpleDatatypeDeclaration {
+public class IntegerDeclaration extends Declaration {
 
     // ------------------------------------------------------------------------
     // Helpers
@@ -312,10 +312,7 @@ public class IntegerDeclaration extends Declaration implements ISimpleDatatypeDe
     @Override
     public IntegerDefinition createDefinition(@Nullable IDefinitionScope definitionScope,
             String fieldName, BitBuffer input) throws CTFReaderException {
-        ByteOrder byteOrder = input.getByteOrder();
-        input.setByteOrder(fByteOrder);
         long value = read(input);
-        input.setByteOrder(byteOrder);
         return new IntegerDefinition(this, definitionScope, fieldName, value);
     }
 

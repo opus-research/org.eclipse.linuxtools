@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +31,9 @@ import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedExc
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.views.timegraph.AbstractTimeGraphView;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.NullTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
@@ -96,19 +93,16 @@ public class ResourcesView extends AbstractTimeGraphView {
 
     @Override
     protected void buildEventList(ITmfTrace trace, ITmfTrace parentTrace, IProgressMonitor monitor) {
-        if (trace == null) {
+        LttngKernelAnalysisModule module = trace.getAnalysisModuleOfClass(LttngKernelAnalysisModule.class, LttngKernelAnalysisModule.ID);
+        if (module == null) {
             return;
         }
-        ITmfStateSystem ssq = TmfStateSystemAnalysisModule.getStateSystem(trace, LttngKernelAnalysisModule.ID);
+        module.schedule();
+        module.waitForInitialization();
+        ITmfStateSystem ssq = module.getStateSystem();
         if (ssq == null) {
             return;
         }
-        Comparator<ITimeGraphEntry> comparator = new Comparator<ITimeGraphEntry>() {
-            @Override
-            public int compare(ITimeGraphEntry o1, ITimeGraphEntry o2) {
-                return ((ResourcesEntry) o1).compareTo(o2);
-            }
-        };
 
         Map<Integer, ResourcesEntry> entryMap = new HashMap<>();
         TimeGraphEntry traceEntry = null;
@@ -134,7 +128,6 @@ public class ResourcesView extends AbstractTimeGraphView {
 
             if (traceEntry == null) {
                 traceEntry = new ResourcesEntry(trace, trace.getName(), startTime, endTime, 0);
-                traceEntry.sortChildren(comparator);
                 List<TimeGraphEntry> entryList = Collections.singletonList(traceEntry);
                 addToEntryList(parentTrace, entryList);
             } else {
@@ -182,20 +175,17 @@ public class ResourcesView extends AbstractTimeGraphView {
                 refresh();
             }
             long resolution = Math.max(1, (endTime - ssq.getStartTime()) / getDisplayWidth());
-            for (ITimeGraphEntry child : traceEntry.getChildren()) {
+            for (TimeGraphEntry entry : traceEntry.getChildren()) {
                 if (monitor.isCanceled()) {
                     return;
                 }
-                if (child instanceof TimeGraphEntry) {
-                    TimeGraphEntry entry = (TimeGraphEntry) child;
-                    List<ITimeEvent> eventList = getEventList(entry, start, endTime, resolution, monitor);
-                    if (eventList != null) {
-                        for (ITimeEvent event : eventList) {
-                            entry.addEvent(event);
-                        }
+                List<ITimeEvent> eventList = getEventList(entry, start, endTime, resolution, monitor);
+                if (eventList != null) {
+                    for (ITimeEvent event : eventList) {
+                        entry.addEvent(event);
                     }
-                    redraw();
                 }
+                redraw();
             }
 
             start = end;
@@ -207,7 +197,11 @@ public class ResourcesView extends AbstractTimeGraphView {
             long startTime, long endTime, long resolution,
             IProgressMonitor monitor) {
         ResourcesEntry resourcesEntry = (ResourcesEntry) entry;
-        ITmfStateSystem ssq = TmfStateSystemAnalysisModule.getStateSystem(resourcesEntry.getTrace(), LttngKernelAnalysisModule.ID);
+        LttngKernelAnalysisModule module = resourcesEntry.getTrace().getAnalysisModuleOfClass(LttngKernelAnalysisModule.class, LttngKernelAnalysisModule.ID);
+        if (module == null) {
+            return null;
+        }
+        ITmfStateSystem ssq = module.getStateSystem();
         if (ssq == null) {
             return null;
         }

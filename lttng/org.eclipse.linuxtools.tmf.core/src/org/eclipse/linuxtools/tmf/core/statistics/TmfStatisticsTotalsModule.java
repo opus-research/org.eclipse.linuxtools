@@ -46,7 +46,6 @@ public class TmfStatisticsTotalsModule extends TmfStateSystemAnalysisModule {
      * Constructor
      */
     public TmfStatisticsTotalsModule() {
-        super();
         setId(ID);
         setName(NAME);
     }

@@ -27,12 +27,10 @@ import org.eclipse.linuxtools.ctf.core.event.types.CompoundDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
-import org.eclipse.linuxtools.ctf.core.tests.io.Util;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.ArrayDeclaration;
@@ -47,7 +45,7 @@ import org.junit.Test;
  */
 public class ArrayDefinition2Test {
 
-    private @NonNull CTFTrace trace = new CTFTrace();
+    @NonNull private CTFTrace trace = new CTFTrace();
     private ArrayDefinition charArrayFixture;
     private ArrayDefinition stringArrayFixture;
     private ArrayDefinition longArrayFixture;
@@ -93,8 +91,8 @@ public class ArrayDefinition2Test {
         return temp;
     }
 
-    @NonNull
-    private static List<Definition> createIntDefs(int size, int bits) {
+    private @NonNull
+    static List<Definition> createIntDefs(int size, int bits) {
         List<Definition> defs = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             String content = "test" + i;
@@ -104,8 +102,8 @@ public class ArrayDefinition2Test {
         return defs;
     }
 
-    @NonNull
-    private static List<Definition> createDefs() {
+    private @NonNull
+    static List<Definition> createDefs() {
         int size = 4;
         List<Definition> defs = new ArrayList<>();
         for (int i = 0; i < size; i++) {
@@ -142,7 +140,7 @@ public class ArrayDefinition2Test {
 
         String fieldName = "";
         @SuppressWarnings("null")
-        ArrayDefinition result = new ArrayDefinition(declaration, definitionScope, fieldName, Arrays.asList(new Definition[0]));
+        ArrayDefinition result = new ArrayDefinition(declaration, definitionScope, fieldName , Arrays.asList(new Definition[0]));
         assertNotNull(result);
     }
 
@@ -162,7 +160,7 @@ public class ArrayDefinition2Test {
     @Test
     public void testgetElem_noDefs() {
         int i = 0;
-        IDefinition result = charArrayFixture.getDefinitions().get(i);
+        Definition result = charArrayFixture.getDefinitions().get(i);
 
         assertNotNull(result);
     }
@@ -177,13 +175,12 @@ public class ArrayDefinition2Test {
         ArrayDefinition ad = new ArrayDefinition((CompoundDeclaration) charArrayFixture.getDeclaration(), definitionScope, "test", defs);
         int j = 1;
 
-        IDefinition result = ad.getDefinitions().get(j);
+        Definition result = ad.getDefinitions().get(j);
 
         assertNotNull(result);
     }
 
-    @NonNull
-    private static IDefinitionScope getDefinitionScope() {
+    @NonNull private static IDefinitionScope getDefinitionScope() {
         return new IDefinitionScope() {
 
             @Override
@@ -206,7 +203,7 @@ public class ArrayDefinition2Test {
      */
     @Test
     public void testRead_noDefs() throws CTFReaderException {
-        BitBuffer input = new BitBuffer(Util.testMemory(ByteBuffer.allocateDirect(128)));
+        BitBuffer input = new BitBuffer(ByteBuffer.allocateDirect(128));
         charArrayFixture.getDeclaration().createDefinition(null, "test", input);
     }
 

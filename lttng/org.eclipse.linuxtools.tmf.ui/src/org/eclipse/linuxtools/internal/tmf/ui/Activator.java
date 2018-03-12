@@ -20,7 +20,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.ui.TmfUiRefreshHandler;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfExperimentElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventAdapterFactory;
@@ -86,7 +85,6 @@ public class Activator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        TmfUiRefreshHandler.getInstance(); // to classload/initialize it
         TmfUiTracer.init();
         TmfTraceElement.init();
         TmfExperimentElement.init();
@@ -98,7 +96,6 @@ public class Activator extends AbstractUIPlugin {
     @Override
     public void stop(BundleContext context) throws Exception {
         TmfUiTracer.stop();
-        TmfUiRefreshHandler.getInstance().dispose();
         plugin = null;
 
         Platform.getAdapterManager().unregisterAdapters(fTmfEventAdapterFactory);

@@ -21,7 +21,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
@@ -44,8 +43,7 @@ import com.google.common.collect.ImmutableList;
 @SuppressWarnings("javadoc")
 public class CTFEventFieldTest {
 
-    @NonNull
-    private static final String fieldName = "id";
+    @NonNull private static final String fieldName = "id";
 
     /**
      * Run the CTFEventField parseField(Definition,String) method test.
@@ -80,22 +78,14 @@ public class CTFEventFieldTest {
                 });
 
         SequenceDeclaration sd = new SequenceDeclaration(lengthName, id);
-        ByteBuffer byb = testMemory(ByteBuffer.allocate(1024));
+        ByteBuffer byb = ByteBuffer.allocate(1024);
         for (int i = 0; i < 1024; i++) {
             byb.put((byte) i);
         }
         BitBuffer bb = new BitBuffer(byb);
-        IDefinition fieldDef = sd.createDefinition(structDef, "fff-fffield", bb);
+        Definition fieldDef = sd.createDefinition(structDef, "fff-fffield", bb);
 
         assertNotNull(fieldDef);
-    }
-
-    @NonNull
-    private static ByteBuffer testMemory(ByteBuffer buffer) {
-        if (buffer == null) {
-            throw new IllegalStateException("Failed to allocate memory");
-        }
-        return buffer;
     }
 
     /**
@@ -107,8 +97,9 @@ public class CTFEventFieldTest {
     public void testParseField_simple() throws CTFReaderException {
         final StringDeclaration elemType = new StringDeclaration();
         byte[] bytes = { 'T', 'e', 's', 't', '\0' };
-        ByteBuffer bb = testMemory(ByteBuffer.wrap(bytes));
-        IDefinition fieldDef = elemType.createDefinition(null, fieldName, new BitBuffer(bb));
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
+
+        Definition fieldDef = elemType.createDefinition(null, fieldName, new BitBuffer(bb));
 
         assertNotNull(fieldDef);
     }

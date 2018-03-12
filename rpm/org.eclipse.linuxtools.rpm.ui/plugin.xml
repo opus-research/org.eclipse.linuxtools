@@ -99,11 +99,7 @@
         name="%extension.name"
         point="org.eclipse.ui.menus">
         <menuContribution
-              locationURI="popup:org.eclipse.ui.popup.any?after=additions" >
-              <separator
-                    name="org.eclipse.linuxtools.rpm.ui.rpmsep1"
-                    visible="true">
-              </separator>
+              locationURI="popup:org.eclipse.ui.popup.any?before=additions" >
               <menu
                     icon="icons/rpm.gif"
                     id="org.eclipse.linuxtools.rpm.ui.popup"
@@ -121,10 +117,6 @@
                        visible="true">
                  </separator>
               </menu>
-              <separator
-                    name="org.eclipse.linuxtools.rpm.ui.rpmsep2"
-                    visible="true">
-              </separator>
         </menuContribution>
         <menuContribution
               locationURI="popup:org.eclipse.linuxtools.rpm.ui.popup?before=org.eclipse.linuxtools.rpm.ui.buildsep">

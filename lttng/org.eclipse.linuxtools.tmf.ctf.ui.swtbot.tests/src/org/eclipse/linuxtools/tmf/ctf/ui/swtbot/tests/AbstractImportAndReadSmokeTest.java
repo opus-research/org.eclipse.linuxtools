@@ -106,7 +106,7 @@ public abstract class AbstractImportAndReadSmokeTest {
         SWTBotUtil.focusMainWindow(fBot.shells());
         fBot.menu("File").menu("New").menu("Project...").click();
 
-        fBot.shell("New Project").setFocus();
+        fBot.waitUntil(Conditions.shellIsActive("New Project"));
         SWTBotTree tree = fBot.tree();
         assertNotNull(tree);
         final String tracingKey = "Tracing";
@@ -125,7 +125,7 @@ public abstract class AbstractImportAndReadSmokeTest {
         SWTBotButton nextButton = fBot.button("Next >");
         fBot.waitUntil(Conditions.widgetIsEnabled(nextButton));
         nextButton.click();
-        fBot.shell("Tracing Project").setFocus();
+        fBot.waitUntil(Conditions.shellIsActive("Tracing Project"));
 
         final SWTBotText text = fBot.text();
         text.setText(getProjectName());
@@ -201,7 +201,8 @@ public abstract class AbstractImportAndReadSmokeTest {
         SWTBotMenu contextMenu = treeItem.contextMenu("Delete");
         contextMenu.click();
 
-        fBot.shell("Delete Resources").setFocus();
+        String shellText = "Delete Resources";
+        fBot.waitUntil(Conditions.shellIsActive(shellText));
         final SWTBotButton okButton = fBot.button("OK");
         fBot.waitUntil(Conditions.widgetIsEnabled(okButton));
         okButton.click();

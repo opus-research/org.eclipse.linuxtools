@@ -32,6 +32,8 @@ import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisModuleHelperConfigElement;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisRequirement;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
@@ -40,14 +42,11 @@ import org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestAnalysis2;
 import org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestRequirementAnalysis;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub2;
-import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub3;
 import org.eclipse.osgi.util.NLS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
-
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Test suite for the {@link TmfAnalysisModuleHelperConfigElement} class
@@ -55,6 +54,8 @@ import com.google.common.collect.ImmutableSet;
  * @author Geneviève Bastien
  */
 public class AnalysisModuleHelperTest {
+
+    private static final String VALID_TRACE_TYPE = "org.eclipse.linuxtools.tmf.core.tests.tracetype";
 
     private IAnalysisModuleHelper fModule;
     private IAnalysisModuleHelper fModuleOther;
@@ -119,13 +120,11 @@ public class AnalysisModuleHelperTest {
         assertFalse(fModule.appliesToTraceType(TmfTrace.class));
         assertTrue(fModule.appliesToTraceType(TmfTraceStub.class));
         assertTrue(fModule.appliesToTraceType(TmfTraceStub2.class));
-        assertFalse(fModule.appliesToTraceType(TmfTraceStub3.class));
 
         /* stub module 2 */
         assertFalse(fModuleOther.appliesToTraceType(TmfTrace.class));
         assertFalse(fModuleOther.appliesToTraceType(TmfTraceStub.class));
         assertTrue(fModuleOther.appliesToTraceType(TmfTraceStub2.class));
-        assertTrue(fModuleOther.appliesToTraceType(TmfTraceStub3.class));
     }
 
     /**
@@ -226,9 +225,16 @@ public class AnalysisModuleHelperTest {
      */
     @Test
     public void testGetValidTraceTypes() {
-        Set<Class<? extends ITmfTrace>> expected = ImmutableSet.of((Class<? extends ITmfTrace>) TmfTraceStub.class, TmfTraceStub2.class, TmfTraceStub3.class);
+        TraceTypeHelper traceTypeHelper = TmfTraceType.getTraceType(VALID_TRACE_TYPE);
+        int traceTypeCount = 0;
         Iterable<Class<? extends ITmfTrace>> traceTypes = fReqModule.getValidTraceTypes();
-        assertEquals(expected, traceTypes);
+        for (Class<? extends ITmfTrace> traceType : traceTypes) {
+            assertTrue(fReqModule.appliesToTraceType(traceType));
+            assertNotNull(traceTypeHelper);
+            assertEquals(traceTypeHelper.getTraceClass(), traceType);
+            traceTypeCount++;
+        }
+        assertEquals(1, traceTypeCount);
     }
 
     /**

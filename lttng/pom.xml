@@ -58,7 +58,7 @@
   <profile>
     <id>lttngPackage</id>
       <properties>
-          <lttngPackageDestination>/var/www/tools/linuxtools/lttng/update-nightly/</lttngPackageDestination>
+          <lttngPackageDestination>/var/www/technology/linuxtools/lttng/update-nightly/</lttngPackageDestination>
       </properties>
       <modules>
         <module>org.eclipse.linuxtools.lttng.releng-site</module>
@@ -99,9 +99,6 @@
     <module>org.eclipse.linuxtools.ctf.core.tests</module>
     <module>org.eclipse.linuxtools.ctf.parser</module>
     <module>org.eclipse.linuxtools.ctf.parser.tests</module>
-
-    <module>org.eclipse.linuxtools.pcap.core</module>
-    <module>org.eclipse.linuxtools.pcap.core.tests</module>
 
     <module>org.eclipse.linuxtools.statesystem.core</module>
     <module>org.eclipse.linuxtools.statesystem.core.tests</module>

@@ -23,7 +23,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.TmfXmlUiStrings;
-import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.views.xychart.XmlXYView;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.TmfXmlStrings;
 import org.eclipse.linuxtools.tmf.analysis.xml.ui.views.timegraph.XmlTimeGraphView;
@@ -47,31 +46,6 @@ public class TmfXmlAnalysisOutputSource implements ITmfNewAnalysisModuleListener
     /** String separating data elements for the output properties */
     public static final String DATA_SEPARATOR = ";;;"; //$NON-NLS-1$
 
-    /**
-     * Enum to match the name of a view's XML element to its view ID.
-     */
-    private static enum ViewType {
-        TIME_GRAPH_VIEW(TmfXmlUiStrings.TIME_GRAPH_VIEW, XmlTimeGraphView.ID),
-        XY_VIEW(TmfXmlUiStrings.XY_VIEW, XmlXYView.ID);
-
-        private final String fXmlElem;
-        private final String fViewId;
-
-        private ViewType(String xmlElem, String viewId) {
-            fXmlElem = xmlElem;
-            fViewId = viewId;
-        }
-
-        public String getXmlElem() {
-            return fXmlElem;
-        }
-
-        public String getViewId() {
-            return fViewId;
-        }
-    }
-
-
     @Override
     public void moduleCreated(IAnalysisModule module) {
         IPath pathToFiles = XmlUtils.getXmlFilesPath();
@@ -93,26 +67,23 @@ public class TmfXmlAnalysisOutputSource implements ITmfNewAnalysisModuleListener
 
                 /* get state provider views if the analysis has state systems */
                 if (module instanceof TmfStateSystemAnalysisModule) {
-                    for (ViewType viewType : ViewType.values()) {
-                        NodeList ssViewNodes = doc.getElementsByTagName(viewType.getXmlElem());
-                        for (int i = 0; i < ssViewNodes.getLength(); i++) {
-                            Element node = (Element) ssViewNodes.item(i);
+                    NodeList ssViewNodes = doc.getElementsByTagName(TmfXmlUiStrings.TIME_GRAPH_VIEW);
+                    for (int i = 0; i < ssViewNodes.getLength(); i++) {
+                        Element node = (Element) ssViewNodes.item(i);
 
-                            /* Check if analysis is the right one */
-                            List<Element> headNodes = XmlUtils.getChildElements(node, TmfXmlStrings.HEAD);
-                            if (headNodes.size() != 1) {
-                                continue;
-                            }
+                        /* Check if analysis is the right one */
+                        List<Element> headNodes = XmlUtils.getChildElements(node, TmfXmlStrings.HEAD);
+                        if (headNodes.size() != 1) {
+                            continue;
+                        }
 
-                            List<Element> analysisNodes = XmlUtils.getChildElements(headNodes.get(0), TmfXmlStrings.ANALYSIS);
-                            for (Element analysis : analysisNodes) {
-                                String analysisId = analysis.getAttribute(TmfXmlStrings.ID);
-                                if (analysisId.equals(module.getId())) {
-                                    String viewId = viewType.getViewId();
-                                    IAnalysisOutput output = new TmfXmlViewOutput(viewId);
-                                    output.setOutputProperty(TmfXmlUiStrings.XML_OUTPUT_DATA, node.getAttribute(TmfXmlStrings.ID) + DATA_SEPARATOR + xmlFile.getAbsolutePath(), false);
-                                    module.registerOutput(output);
-                                }
+                        List<Element> analysisNodes = XmlUtils.getChildElements(headNodes.get(0), TmfXmlStrings.ANALYSIS);
+                        for (Element analysis : analysisNodes) {
+                            String analysisId = analysis.getAttribute(TmfXmlStrings.ID);
+                            if (analysisId.equals(module.getId())) {
+                                IAnalysisOutput output = new TmfXmlViewOutput(XmlTimeGraphView.ID);
+                                output.setOutputProperty(TmfXmlUiStrings.XML_OUTPUT_DATA, node.getAttribute(TmfXmlStrings.ID) + DATA_SEPARATOR + xmlFile.getAbsolutePath(), false);
+                                module.registerOutput(output);
                             }
                         }
                     }

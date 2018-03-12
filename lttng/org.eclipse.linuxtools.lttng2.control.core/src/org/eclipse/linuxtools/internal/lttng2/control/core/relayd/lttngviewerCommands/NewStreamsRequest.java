@@ -25,7 +25,7 @@ import java.nio.ByteOrder;
 public class NewStreamsRequest implements IRelayCommand {
 
     /**
-     * Command size (fSessionId)
+     * Command size
      */
     public static final int SIZE = Long.SIZE / 8;
 
@@ -50,4 +50,5 @@ public class NewStreamsRequest implements IRelayCommand {
         bb.putLong(fSessionId);
         return data;
     }
+
 }

@@ -29,7 +29,7 @@ public enum SeekCommand implements IBaseCommand {
     private final int fCode;
 
     /**
-     * Command size (fCode)
+     * Size of the enum
      */
     public static final int SIZE = Integer.SIZE / 8;
 

@@ -25,7 +25,7 @@ import java.nio.ByteOrder;
 public class GetMetadata implements IRelayCommand {
 
     /**
-     * Command size (fStreamId)
+     * Command size
      */
     public static final int SIZE = Long.SIZE / 8;
 

@@ -13,10 +13,10 @@ package org.eclipse.linuxtools.ctf.core.tests.types;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
@@ -78,23 +78,20 @@ public class StructDeclarationTest {
     @Test
     public void testCreateDefinition() throws CTFReaderException {
         String fieldName = "";
-        ByteBuffer allocate = ByteBuffer.allocate(100);
-        if( allocate == null){
-            throw new IllegalStateException("Failed to allocate memory");
-        }
-        BitBuffer bb = new BitBuffer(allocate);
+        BitBuffer bb = new BitBuffer(ByteBuffer.allocate(100));
         StructDefinition result = fixture.createDefinition(null, fieldName, bb);
         assertNotNull(result);
     }
 
     /**
-     * Run the Declaration getField(String) method test.
+     * Run the HashMap<String, Declaration> getFields() method test.
      */
     @Test
-    public void testGetField() {
-        IDeclaration result = fixture.getField("test");
+    public void testGetFields() {
+        Map<String, IDeclaration> result = fixture.getFields();
 
-        assertNull(result);
+        assertNotNull(result);
+        assertEquals(0, result.size());
     }
 
     /**
