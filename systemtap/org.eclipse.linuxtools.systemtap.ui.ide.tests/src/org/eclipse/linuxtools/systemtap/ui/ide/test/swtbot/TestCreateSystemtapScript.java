@@ -9,12 +9,12 @@
  *     Red Hat - initial implementation
  *******************************************************************************/
 
+
 package org.eclipse.linuxtools.systemtap.ui.ide.test.swtbot;
 
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.allOf;
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.widgetOfType;
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withStyle;
-import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -27,9 +27,6 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.handlers.ImportDataSetHandler;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.Messages;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
@@ -52,7 +49,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -65,7 +61,6 @@ import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.results.BoolResult;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
-import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
@@ -95,7 +90,6 @@ import org.swtchart.Range;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class TestCreateSystemtapScript {
     private static final String SYSTEMTAP_PROJECT_NAME = "SystemtapTest";
-    private static final Logger fLogger = Logger.getRootLogger();
 
     private static SWTWorkbenchBot bot;
     private static SWTBotView projectExplorer;
@@ -246,29 +240,8 @@ public class TestCreateSystemtapScript {
         }
     }
 
-    /**
-     * Click an item from the main Eclipse menu, with a guarantee that the main
-     * shell will be in focus.
-     * @param items The names of each item in the path to the target item to click.
-     * For example, to click "File->New->Project...", the items would be "File",
-     * "New", and "Project...".
-     */
-    public static void clickMainMenu(String... items) {
-        if (items.length == 0) {
-            return;
-        }
-        mainShell.setFocus();
-        SWTBotMenu menu = bot.menu(items[0]);
-        for (int i = 1; i < items.length; i++) {
-            menu = menu.menu(items[i]);
-        }
-        menu.click();
-    }
-
     @BeforeClass
     public static void beforeClass() {
-        SWTBotPreferences.TIMEOUT = 20000;
-        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         bot = new SWTWorkbenchBot();
 
         try {
@@ -306,7 +279,11 @@ public class TestCreateSystemtapScript {
         }
 
         // Create a Systemtap project.
-        clickMainMenu("File", "New", "Project...");
+        SWTBotMenu fileMenu = bot.menu("File");
+        SWTBotMenu newMenu = fileMenu.menu("New");
+        SWTBotMenu projectMenu = newMenu.menu("Project...");
+        projectMenu.click();
+
         SWTBotShell shell = bot.shell("New Project");
         shell.setFocus();
         shell.bot().text().setText("Project");
@@ -397,7 +374,11 @@ public class TestCreateSystemtapScript {
     }
 
     public static void createScript(SWTWorkbenchBot bot, String scriptName) {
-        clickMainMenu("File", "New", "Other...");
+        SWTBotMenu fileMenu = bot.menu("File");
+        SWTBotMenu newMenu = fileMenu.menu("New");
+        SWTBotMenu projectMenu = newMenu.menu("Other...");
+        projectMenu.click();
+
         SWTBotShell shell = bot.shell("New");
         shell.setFocus();
         shell.bot().text().setText("SystemTap");
@@ -411,6 +392,7 @@ public class TestCreateSystemtapScript {
 
         bot.button("Finish").click();
         bot.waitUntil(Conditions.shellCloses(shell));
+
         assertEquals(scriptName, bot.activeEditor().getTitle());
     }
 
@@ -468,7 +450,10 @@ public class TestCreateSystemtapScript {
 
         // Open a non-stap file and add a probe. This should bring up a dialog
         // asking if the function should be added to the only open .stp file.
-        clickMainMenu("File", "New", "Other...");
+        SWTBotMenu fileMenu = bot.menu("File");
+        SWTBotMenu newMenu = fileMenu.menu("New");
+        SWTBotMenu projectMenu = newMenu.menu("Other...");
+        projectMenu.click();
         SWTBotShell shell = bot.shell("New");
         shell.setFocus();
         shell.bot().text().setText("Untitled Text File");
@@ -489,12 +474,6 @@ public class TestCreateSystemtapScript {
         bot.waitUntil(new TreeItemPopulated(item));
         item = item.getNode(0);
         item.doubleClick();
-
-        {
-            Matcher<Shell> withText = withText(dialogTitle);
-            bot.waitUntil(Conditions.waitForShell(withText));
-        }
-
         shell = bot.shell(dialogTitle);
         shell.setFocus();
         bot.button("Yes").click();
@@ -530,7 +509,6 @@ public class TestCreateSystemtapScript {
         table.select(scriptName);
         bot.button("OK").click();
         bot.waitUntil(Conditions.shellCloses(shell));
-
         bot.waitUntil(new EditorIsActive(scriptName));
         assertTrue(wasProbeInserted(bot.activeEditor().toTextEditor(), item, false));
     }
@@ -1408,7 +1386,6 @@ public class TestCreateSystemtapScript {
         bot.radioWithTooltip(GraphFactory.getGraphName(graphID) + "\n\n" +
                 GraphFactory.getGraphDescription(graphID)).click();
 
-        shell.setFocus();
         SWTBotText text = bot.textWithLabel("Title:");
         text.setText(title);
 
@@ -1495,5 +1472,4 @@ public class TestCreateSystemtapScript {
             }
         });
     }
-
 }
