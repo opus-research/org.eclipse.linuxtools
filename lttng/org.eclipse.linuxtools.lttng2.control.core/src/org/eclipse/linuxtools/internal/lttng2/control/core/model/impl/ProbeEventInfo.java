@@ -11,6 +11,7 @@
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.core.model.impl;
 
+import org.eclipse.linuxtools.internal.lttng2.control.core.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IProbeEventInfo;
 
 /**
@@ -61,6 +62,18 @@ public class ProbeEventInfo extends EventInfo implements IProbeEventInfo {
         fAddress = other.fAddress;
         fOffset = other.fOffset;
         fSymbol = other.fSymbol;
+    }
+
+    /**
+     * Constructor from a {@link IEventInfo}
+     * @param eventInfo - the instance to copy
+     */
+    public ProbeEventInfo(IEventInfo eventInfo) {
+        super(eventInfo.getName());
+        setState(eventInfo.getState());
+        setLogLevelType(eventInfo.getLogLevelType());
+        setLogLevel(eventInfo.getLogLevel());
+        setFilterExpression(eventInfo.getFilterExpression());
     }
 
     // ------------------------------------------------------------------------
