@@ -124,10 +124,15 @@ public class OpenGCAction implements IEditorLauncher {
     }
 
     private void displayCoverage(IPath file, String binaryPath, File gcda, boolean isCompleteCoverageResultWanted) {
+        System.out.println(ResourcesPlugin.getWorkspace());
+        System.out.println(ResourcesPlugin.getWorkspace().getRoot());
+        System.out.println(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(file));
+        System.out.println(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(file).getProject());
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(file).getProject();
         GcovAnnotationModelTracker.getInstance().addProject(project, new Path(binaryPath));
         GcovAnnotationModelTracker.getInstance().annotateAllCEditors();
 
+System.out.println("here 1");
         if (isCompleteCoverageResultWanted) {
             CovView.displayCovResults(binaryPath, gcda.getAbsolutePath());
         } else {
