@@ -34,7 +34,6 @@ import org.eclipse.linuxtools.internal.docker.core.RegistryAccountManager;
 import org.eclipse.linuxtools.internal.docker.core.RegistryInfo;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
-import org.eclipse.linuxtools.internal.docker.ui.preferences.DockerRegistryAccountPreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -45,7 +44,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 
 /**
  * 
@@ -115,19 +113,16 @@ public class ImagePullPage extends WizardPage {
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(accountLabel);
 
-		final Combo accountCombo = new Combo(container, SWT.DROP_DOWN);
+		Combo accountCombo = new Combo(container, SWT.DROP_DOWN);
 		accountCombo.setToolTipText(WizardMessages.getString("ImagePullPage.registry.account.desc")); //$NON-NLS-1$
-		accountCombo.setItems(getAccountComboItems());
+		List<String> items = RegistryAccountManager.getInstance().getAccounts()
+				.stream()
+				.map(e -> e.getUsername() + "@" + e.getServerAddress()) //$NON-NLS-1$
+				.collect(Collectors.toList());
+		items.add(0, DOCKER_DAEMON_DEFAULT);
+		accountCombo.setItems(items.toArray(new String[0]));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).applyTo(accountCombo);
-
-		// Browse
-		final Button browseButton = new Button(container, SWT.NONE);
-		browseButton.setText(
-				WizardMessages.getString("ImagePullPushPage.browse.label")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(browseButton);
-		browseButton.addSelectionListener(onBrowse(accountCombo));
+				.grab(true, false).span(2, 1).applyTo(accountCombo);
 
 		// Image name
 		final Label imageNameLabel = new Label(container, SWT.NONE);
@@ -172,20 +167,6 @@ public class ImagePullPage extends WizardPage {
 		setControl(container);
 	}
 
-	private SelectionListener onBrowse(Combo combo) {
-		return new SelectionAdapter() {
-			@Override
-			public void widgetSelected(final SelectionEvent e) {
-				PreferencesUtil.createPreferenceDialogOn(getShell(),
-						DockerRegistryAccountPreferencePage.ACCOUNT_PREFERENCE_PAGE_ID,
-						new String[] { DockerRegistryAccountPreferencePage.ACCOUNT_PREFERENCE_PAGE_ID },
-						null)
-				.open();
-				combo.setItems(getAccountComboItems());
-			}
-		};
-	}
-
 	/**
 	 * Opens the {@link ImageSearch} dialog with current image name pre-filled.
 	 * 
@@ -218,15 +199,6 @@ public class ImagePullPage extends WizardPage {
 				}
 			}
 		};
-	}
-
-	private String[] getAccountComboItems() {
-		List<String> items = RegistryAccountManager.getInstance().getAccounts()
-				.stream()
-				.map(e -> e.getUsername() + "@" + e.getServerAddress()) //$NON-NLS-1$
-				.collect(Collectors.toList());
-		items.add(0, DOCKER_DAEMON_DEFAULT);
-		return items.toArray(new String[0]);
 	}
 
 }
