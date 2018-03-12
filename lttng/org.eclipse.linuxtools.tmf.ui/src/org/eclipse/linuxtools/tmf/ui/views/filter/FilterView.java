@@ -120,8 +120,8 @@ public class FilterView extends TmfView {
      */
     public void addFilter(ITmfFilterTreeNode filter) {
         ITmfFilterTreeNode root = fViewer.getInput();
-        for (int i = 0; i < root.getChildrenCount(); i++) {
-            if (root.getChild(0).equals(filter)) {
+        for (ITmfFilterTreeNode node : root.getChildren()) {
+            if (node.equals(filter)) {
                 return;
             }
         }

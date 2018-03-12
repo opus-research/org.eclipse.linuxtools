@@ -32,6 +32,8 @@ import org.junit.Test;
  */
 public class StreamBuildTest {
 
+    private static final double DELTA = 0.001;
+
     /**
      * Test that verify that stream building is done correctly.
      */
@@ -57,9 +59,9 @@ public class StreamBuildTest {
                 assertEquals(22768, stream.getNbBytesBtoA());
                 assertEquals(1084443427311224000L, stream.getStartTime());
                 assertEquals(1084443457704928000L, stream.getStopTime());
-                assertEquals(30.393704, stream.getDuration(), 0.001);
-                assertEquals(76.43030280218561, stream.getBPSAtoB(), 0.001);
-                assertEquals(749.1025114938278, stream.getBPSBtoA(), 0.001);
+                assertEquals(30.393704, stream.getDuration(), DELTA);
+                assertEquals(76.43030280218561, stream.getBPSAtoB(), DELTA);
+                assertEquals(749.1025114938278, stream.getBPSBtoA(), DELTA);
             }
 
             // Test TCP streams and other constructor
@@ -83,9 +85,9 @@ public class StreamBuildTest {
             assertEquals(19344, stream.getNbBytesBtoA());
             assertEquals(1084443427311224000L, stream.getStartTime());
             assertEquals(1084443457704928000L, stream.getStopTime());
-            assertEquals(30.393704, stream.getDuration(), 0.001);
-            assertEquals(44.449995301658525, stream.getBPSAtoB(), 0.001);
-            assertEquals(636.4476011216008, stream.getBPSBtoA(), 0.001);
+            assertEquals(30.393704, stream.getDuration(), DELTA);
+            assertEquals(44.449995301658525, stream.getBPSAtoB(), DELTA);
+            assertEquals(636.4476011216008, stream.getBPSBtoA(), DELTA);
 
             stream = builder.getStream(1);
             if (stream == null) {
@@ -103,9 +105,9 @@ public class StreamBuildTest {
             assertEquals(3236, stream.getNbBytesBtoA());
             assertEquals(1084443430295515000L, stream.getStartTime());
             assertEquals(1084443432088092000L, stream.getStopTime());
-            assertEquals(1.792577, stream.getDuration(), 0.001);
-            assertEquals(492.58692932019096, stream.getBPSAtoB(), 0.001);
-            assertEquals(1805.2223140205413, stream.getBPSBtoA(), 0.001);
+            assertEquals(1.792577, stream.getDuration(), DELTA);
+            assertEquals(492.58692932019096, stream.getBPSAtoB(), DELTA);
+            assertEquals(1805.2223140205413, stream.getBPSBtoA(), DELTA);
 
             builder.clear();
             assertEquals(0, builder.getNbStreams());

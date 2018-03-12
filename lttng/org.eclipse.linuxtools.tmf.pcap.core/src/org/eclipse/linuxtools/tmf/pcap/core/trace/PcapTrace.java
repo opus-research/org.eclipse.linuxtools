@@ -61,7 +61,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     private @Nullable ImmutableMap<String, String> fTraceProperties = null;
 
     @Override
-    public ITmfLocation getCurrentLocation() {
+    public synchronized ITmfLocation getCurrentLocation() {
         PcapFile pcap = fPcapFile;
         if (pcap == null) {
             return new TmfLongLocation(0);
@@ -70,7 +70,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     }
 
     @Override
-    public double getLocationRatio(@Nullable ITmfLocation location) {
+    public synchronized double getLocationRatio(@Nullable ITmfLocation location) {
         TmfLongLocation loc = (TmfLongLocation) location;
         PcapFile pcap = fPcapFile;
         if (loc == null || pcap == null) {
@@ -105,7 +105,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     }
 
     @Override
-    public @Nullable PcapEvent parseEvent(@Nullable ITmfContext context) {
+    public synchronized @Nullable PcapEvent parseEvent(@Nullable ITmfContext context) {
         if (context == null) {
             return null;
         }
@@ -225,7 +225,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
             @SuppressWarnings("null")
             @NonNull ImmutableMap<String, String> newProperties = ImmutableMap.<String, String> builder()
                     .put(Messages.PcapTrace_Version, String.format("%d%c%d", pcap.getMajorVersion(), '.', pcap.getMinorVersion())) //$NON-NLS-1$
-                    .put(Messages.PcapTrace_TimeZoneCorrection, pcap.getTimeZoneCorrection() + " second") //$NON-NLS-1$
+                    .put(Messages.PcapTrace_TimeZoneCorrection, pcap.getTimeZoneCorrection() + " s") //$NON-NLS-1$
                     .put(Messages.PcapTrace_TimestampAccuracy, String.valueOf(pcap.getTimeAccuracy()))
                     .put(Messages.PcapTrace_MaxSnapLength, pcap.getSnapLength() + " bytes") //$NON-NLS-1$
                     .put(Messages.PcapTrace_LinkLayerHeaderType, LinkTypeHelper.toString((int) pcap.getDataLinkType()) + " (" + pcap.getDataLinkType() + ")") //$NON-NLS-1$ //$NON-NLS-2$

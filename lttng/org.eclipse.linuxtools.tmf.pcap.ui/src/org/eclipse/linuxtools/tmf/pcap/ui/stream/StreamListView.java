@@ -37,7 +37,7 @@ import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEvent;
 import org.eclipse.linuxtools.tmf.pcap.core.event.TmfPacketStream;
 import org.eclipse.linuxtools.tmf.pcap.core.event.TmfPacketStreamBuilder;
 import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
-import org.eclipse.linuxtools.tmf.pcap.core.signal.TmfNewPacketStreamSignal;
+import org.eclipse.linuxtools.tmf.pcap.core.signal.TmfPacketStreamSelectedSignal;
 import org.eclipse.linuxtools.tmf.pcap.core.trace.PcapTrace;
 import org.eclipse.linuxtools.tmf.ui.TmfUiRefreshHandler;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
@@ -71,7 +71,7 @@ import org.eclipse.ui.PlatformUI;
  * is possible that an UpdateUI is called after a resetView (which is bad in
  * case of a trace closed). <br>
  * <br>
- * FIXME analysis is leaking ressource. Alex told me not to worry about it since
+ * FIXME analysis is leaking ressource. Someone I will not name told me not to worry about it since
  * AnalysisModule will not be autocloseable later.
  *
  * @author Vincent Perot
@@ -367,7 +367,7 @@ public class StreamListView extends TmfView {
 
                     @Override
                     public void handleEvent(@Nullable Event event) {
-                        TmfSignal signal = new TmfNewPacketStreamSignal(this, 0, fCurrentStream);
+                        TmfSignal signal = new TmfPacketStreamSelectedSignal(this, 0, fCurrentStream);
                         TmfSignalManager.dispatchSignal(signal);
                     }
                 });
@@ -377,7 +377,7 @@ public class StreamListView extends TmfView {
 
                     @Override
                     public void handleEvent(@Nullable Event event) {
-                        TmfSignal signal = new TmfNewPacketStreamSignal(this, 0, null);
+                        TmfSignal signal = new TmfPacketStreamSelectedSignal(this, 0, null);
                         TmfSignalManager.dispatchSignal(signal);
 
                     }
@@ -420,8 +420,8 @@ public class StreamListView extends TmfView {
                             FilterView filterView = (FilterView) view;
                             filterView.addFilter(filter);
                         } catch (final PartInitException e) {
-                            TraceUtils.displayErrorMsg(Messages.StreamListView_ExtractAsFilter, "Error opening view " + getName() + e.getMessage()); //$NON-NLS-1$
-                            Activator.logError("Error opening view " + getName(), e); //$NON-NLS-1$
+                            TraceUtils.displayErrorMsg(Messages.StreamListView_ExtractAsFilter, "Error opening view " + FilterView.ID + e.getMessage()); //$NON-NLS-1$
+                            Activator.logError("Error opening view " + FilterView.ID, e); //$NON-NLS-1$
                             return;
                         }
 
@@ -481,32 +481,6 @@ public class StreamListView extends TmfView {
         CTabFolder tabFolder = fTabFolder;
         if (tabFolder != null && !(tabFolder.isDisposed())) {
             tabFolder.setFocus();
-        }
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-
-        Map<TmfProtocol, Table> tables = fTableMap;
-        if (tables != null) {
-            for (TmfProtocol p : tables.keySet()) {
-                if (!(tables.get(p).isDisposed())) {
-                    tables.get(p).dispose();
-                }
-            }
-        }
-        CTabFolder tabFolder = fTabFolder;
-        if (tabFolder != null) {
-            CTabItem[] tabItem = tabFolder.getItems();
-            for (int i = 0; i < tabItem.length; i++) {
-                if (!(tabItem[i].isDisposed())) {
-                    tabItem[i].dispose();
-                }
-            }
-        }
-        if (tabFolder != null && !(tabFolder.isDisposed())) {
-            tabFolder.dispose();
         }
     }
 
