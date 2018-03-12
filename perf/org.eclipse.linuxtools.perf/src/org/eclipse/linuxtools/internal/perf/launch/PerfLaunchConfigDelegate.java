@@ -58,6 +58,7 @@ import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteConnection;
 import org.eclipse.linuxtools.profiling.launch.RemoteConnectionException;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyCMainTab;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.widgets.Display;
@@ -99,10 +100,12 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
             if(binPath==null) {
                 CDebugUtils.verifyProgramPath( config );
             }
-            if (binPath.removeLastSegments(2).toPortableString().equals(EMPTY_STRING)) {
-                workingDirPath=Path.fromPortableString(getWorkingDirectory(config).toURI().getPath());
+
+            URI uri = new URI(config.getAttribute(RemoteProxyCMainTab.ATTR_REMOTE_WORKING_DIRECTORY_NAME, EMPTY_STRING));
+            if (uri.toString().equals(EMPTY_STRING)) {
+            	workingDirPath = Path.fromPortableString(getWorkingDirectory(config).toURI().getPath());
             } else {
-                workingDirPath=Path.fromPortableString((binPath.removeLastSegments(2).toPortableString()) + IPath.SEPARATOR);
+            	workingDirPath = Path.fromPortableString(uri.getPath() + IPath.SEPARATOR);
             }
 
             PerfPlugin.getDefault().setWorkingDir(workingDirPath);
