@@ -190,8 +190,10 @@ public final class FunctionParser extends TreeTapsetParser {
     }
 
     @Override
-    protected int addTapsets(String tapsetContents, String[] additions, IProgressMonitor monitor) {
+    protected int addTapsets(String[] additions, IProgressMonitor monitor) {
+        String tapsetContents = SharedParser.getInstance().getTapsetContents();
         boolean canceled = false;
+
         // Search tapset contents for all files provided by each added directory.
         for (int i = 0; i < additions.length; i++) {
             int firstTagIndex = 0;

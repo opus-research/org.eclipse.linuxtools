@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.internal.tmf.pcap.ui.stream;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,8 +62,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-
-import com.google.common.collect.Lists;
 
 /**
  * Class that represents the Stream List View. Such a view lists all the
@@ -414,18 +413,14 @@ public class StreamListView extends TmfView {
                         }
 
                         // Update XML
-                        List<ITmfFilterTreeNode> filters = Lists.newArrayList(FilterManager.getSavedFilters());
-                        boolean newFilter = true;
-                        for (ITmfFilterTreeNode savedFilter : filters) {
-                            // Use toString() equality because equals() is not implemented
-                            if (savedFilter.toString().equals(filter.toString())) {
-                                newFilter = false;
-                                break;
-                            }
+                        List<ITmfFilterTreeNode> newFilters = new ArrayList<>();
+                        ITmfFilterTreeNode[] oldFilters = FilterManager.getSavedFilters();
+                        for (int i = 0; i < oldFilters.length; i++) {
+                            newFilters.add(oldFilters[i]);
                         }
-                        if (newFilter) {
-                            filters.add(filter);
-                            FilterManager.setSavedFilters(filters.toArray(new ITmfFilterTreeNode[filters.size()]));
+                        if (!(newFilters.contains(filter))) {
+                            newFilters.add(filter);
+                            FilterManager.setSavedFilters(newFilters.toArray(new ITmfFilterTreeNode[newFilters.size()]));
                         }
 
                         // Update Filter View
