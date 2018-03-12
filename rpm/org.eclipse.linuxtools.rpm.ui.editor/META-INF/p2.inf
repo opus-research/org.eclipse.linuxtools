@@ -1,3 +1,0 @@
-instructions.install=\
-  org.eclipse.equinox.p2.touchpoint.natives.checkAndPromptNativePackage(distro:fedora,package:rpm-build);\
-  org.eclipse.equinox.p2.touchpoint.natives.checkAndPromptNativePackage(distro:fedora,package:rpmdevtools);

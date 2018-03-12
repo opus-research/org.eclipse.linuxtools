@@ -93,7 +93,7 @@
           <plugin>
             <groupId>org.eclipse.cbi.maven.plugins</groupId>
             <artifactId>eclipse-jarsigner-plugin</artifactId>
-            <version>1.1.4</version>
+            <version>1.1.3</version>
             <executions>
               <execution>
                 <id>sign</id>
@@ -107,7 +107,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>sonar-maven-plugin</artifactId>
-            <version>3.3.0.603</version>
+            <version>3.2</version>
           </plugin>
           <plugin>
             <groupId>org.eclipse.tycho.extras</groupId>
@@ -230,42 +230,6 @@
         </plugins>
       </build>
     </profile>
-    <profile>
-			<id>regenHelp</id>
-			<build>
-				<pluginManagement>
-				<plugins>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>helpdocs</id>
-								<configuration>
-									<target>
-										<taskdef classpathref="maven.plugin.classpath"
-											resource="org/eclipse/mylyn/wikitext/mediawiki/ant/tasks.properties" />
-										<taskdef classpathref="maven.plugin.classpath"
-											resource="org/eclipse/mylyn/wikitext/ant/tasks.properties" />
-										<ant antfile="build-helper.xml" target="all" />
-									</target>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-						<dependencies>
-							<dependency>
-								<groupId>org.eclipse.mylyn.docs</groupId>
-								<artifactId>org.eclipse.mylyn.wikitext.mediawiki.ant</artifactId>
-								<version>3.0.8</version>
-							</dependency>
-						</dependencies>
-					</plugin>
-				</plugins>
-				</pluginManagement>
-			</build>
-		</profile>
   </profiles>
 
 
@@ -449,7 +413,7 @@
           <artifactId>maven-javadoc-plugin</artifactId>
 	  <version>2.10.4</version>
           <configuration>
-            <excludePackageNames>org.eclipse.linuxtools.internal.*:*.test*:org.eclipse.linuxtools.docker.reddeer*</excludePackageNames>
+            <excludePackageNames>org.eclipse.linuxtools.internal.*:*.test*</excludePackageNames>
           </configuration>
         </plugin>
       </plugins>
