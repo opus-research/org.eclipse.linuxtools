@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
 import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProject;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
-import org.eclipse.linuxtools.internal.rpm.createrepo.tests.CreaterepoProjectTest;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -48,7 +47,6 @@ import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.FrameworkUtil;
@@ -58,7 +56,6 @@ import org.osgi.framework.FrameworkUtil;
  * SWTBot not supporting native dialogs (File dialogs).
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
-@Ignore
 public class ImportRPMsPageTest {
 
     private static final String TEST_RPM_LOC1 = ICreaterepoTestConstants.RPM_RESOURCE_LOC

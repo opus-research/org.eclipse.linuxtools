@@ -21,7 +21,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     StateSystemPushPopTest.class,
-    org.eclipse.linuxtools.statesystem.core.tests.backend.AllTests.class
+    org.eclipse.linuxtools.statesystem.core.tests.backend.AllTests.class,
+    StateSystemComparisonTest.class
 })
 public class AllTests {
 
