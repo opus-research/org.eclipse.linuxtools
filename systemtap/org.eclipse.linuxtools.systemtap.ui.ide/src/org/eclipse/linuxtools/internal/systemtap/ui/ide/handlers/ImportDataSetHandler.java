@@ -38,7 +38,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 
 /**
- * This handler imports data from an external file to populate
+ * This <code>Action</code> imports data from an external file to populate
  * a {@link GraphSelectorEditor}.
  * into an external file, which can be imported back in later.
  */
@@ -50,17 +50,10 @@ public class ImportDataSetHandler extends AbstractHandler {
         dialog.setFilterExtensions(new String[]{Messages.DataSetFileExtension});
         dialog.setText(Messages.ImportDataSetAction_DialogTitle);
         String path = dialog.open();
-        if (path != null) {
-            execute(path);
+        if (path == null) {
+            return null;
         }
-        return null;
-    }
 
-    /**
-     * Import a data set from the specified path.
-     * @param path The path of the data set to import.
-     */
-    public void execute(String path) {
         IFilteredDataSet dataset = null;
         File file = new File(path);
         try (InputStreamReader fr = new InputStreamReader(new FileInputStream(file), Charset.defaultCharset());
@@ -90,6 +83,8 @@ public class ImportDataSetHandler extends AbstractHandler {
         } catch (WorkbenchException we) {
             ExceptionErrorDialog.openError(Messages.RunScriptChartHandler_couldNotSwitchToGraphicPerspective, we);
         }
+
+        return null;
     }
 
 }

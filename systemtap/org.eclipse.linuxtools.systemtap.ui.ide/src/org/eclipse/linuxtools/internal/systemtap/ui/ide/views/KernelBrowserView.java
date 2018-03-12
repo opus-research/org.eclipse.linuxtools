@@ -38,6 +38,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.progress.UIJob;
 
 /**
  * The Kernel Source Browser module for the SystemTap GUI. This browser provides a list of kernel source
@@ -78,10 +79,31 @@ public class KernelBrowserView extends BrowserView {
                 kst.buildKernelTree(kernelSource, excluded);
             }
             if (monitor.isCanceled()) {
-                setViewerInput(null);
                 return Status.CANCEL_STATUS;
             }
-            setViewerInput(kst.getTree());
+            UpdateKernelBrowserJob job = new UpdateKernelBrowserJob(kst);
+            job.schedule();
+            monitor.done();
+            return Status.OK_STATUS;
+        }
+    }
+
+    private class UpdateKernelBrowserJob extends UIJob {
+        KernelSourceTree kst;
+        public UpdateKernelBrowserJob(KernelSourceTree kst) {
+            super(Localization.getString("KernelBrowserView.UpdateKernelBrowser")); //$NON-NLS-1$
+            this.kst = kst;
+        }
+
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+            monitor.beginTask(Localization.getString("KernelBrowserView.UpdateKernelBrowser"), 100); //$NON-NLS-1$
+            if (kst == null) {
+                return Status.OK_STATUS;
+            }
+            tree = kst.getTree();
+            viewer.setInput(tree);
+            kst.dispose();
             monitor.done();
             return Status.OK_STATUS;
         }
@@ -97,8 +119,10 @@ public class KernelBrowserView extends BrowserView {
         makeActions();
     }
 
-    @Override
-    protected void makeActions() {
+    /**
+     * Wires up all of the actions for this browser, such as double and right click handlers.
+     */
+    private void makeActions() {
         doubleClickAction = new KernelSourceAction(getSite().getWorkbenchWindow(), this);
         viewer.addDoubleClickListener(doubleClickAction);
         IDEPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(propertyChangeListener);
@@ -106,10 +130,6 @@ public class KernelBrowserView extends BrowserView {
 
     @Override
     protected Image getEntryImage(TreeNode treeObj) {
-        if (treeObj.toString().equals(
-                Localization.getString("KernelBrowserView.NoKernelSourceFound"))) { //$NON-NLS-1$
-            return null;
-        }
         if (treeObj.toString().lastIndexOf('.') != -1) {
             String item = treeObj.getData().toString();
             if (item.endsWith(".c")) { //$NON-NLS-1$
@@ -130,11 +150,10 @@ public class KernelBrowserView extends BrowserView {
      */
     @Override
     public void refresh() {
-        displayLoadingMessage();
         IPreferenceStore p = IDEPlugin.getDefault().getPreferenceStore();
         String kernelSource = p.getString(IDEPreferenceConstants.P_KERNEL_SOURCE);
         if (kernelSource == null || kernelSource.length() < 1) {
-            displayMessage(Localization.getString("KernelBrowserView.NoKernelSourceFound")); //$NON-NLS-1$
+            showBrowserErrorMessage(Localization.getString("KernelBrowserView.NoKernelSourceFound")); //$NON-NLS-1$
             return;
         }
 
@@ -158,12 +177,13 @@ public class KernelBrowserView extends BrowserView {
                 error = true;
             }
             if (error) {
-                displayMessage(Localization.getString("KernelBrowserView.KernelSourceDirNotFound")); //$NON-NLS-1$
+                showBrowserErrorMessage(Localization.getString("KernelBrowserView.KernelSourceDirNotFound")); //$NON-NLS-1$
                 return;
             }
         }
 
         KernelRefreshJob refreshJob = new KernelRefreshJob(remote, kernelLocationURI, proxy, kernelSource);
+        refreshJob.setUser(true);
         refreshJob.setPriority(Job.SHORT);
         refreshJob.schedule();
     }
@@ -186,6 +206,12 @@ public class KernelBrowserView extends BrowserView {
         return true;
     }
 
+    private void showBrowserErrorMessage(String message) {
+        tree = new TreeNode("", "", false); //$NON-NLS-1$ //$NON-NLS-2$
+        tree.add(new TreeNode("", message, false)); //$NON-NLS-1$
+        viewer.setInput(tree);
+    }
+
     /**
      * A <code>IPropertyChangeListener</code> that detects changes to the Kernel Source location
      * and runs the <code>updateKernelSourceTree</code> method.
@@ -196,7 +222,7 @@ public class KernelBrowserView extends BrowserView {
             if (event.getProperty().equals(IDEPreferenceConstants.P_KERNEL_SOURCE) ||
                 event.getProperty().equals(IDEPreferenceConstants.P_REMOTE_LOCAL_KERNEL_SOURCE) ||
                 event.getProperty().equals(IDEPreferenceConstants.P_EXCLUDED_KERNEL_SOURCE)) {
-                refresh();
+                viewUpdater.handleUpdateEvent();
             }
         }
     };

@@ -17,9 +17,9 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.Localization;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.actions.BrowserViewAction;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
+import org.eclipse.linuxtools.systemtap.structures.listeners.IUpdateListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -45,10 +45,14 @@ import org.eclipse.ui.part.ViewPart;
  */
 public abstract class BrowserView extends ViewPart {
     protected TreeViewer viewer;
+    protected TreeNode tree;
     protected BrowserViewAction doubleClickAction;
 
     private CollapseAllHandler collapseHandler;
-    private RefreshHandler refreshHandler;
+
+    public BrowserView() {
+        super();
+    }
 
     /**
      * Provides an interface for the TreeViewer to interact with the internal TreeNode data structure.
@@ -105,33 +109,22 @@ public abstract class BrowserView extends ViewPart {
 
         @Override
         public Image getImage(Object obj) {
-            TreeNode treeObj = (TreeNode) obj;
-            if (treeObj.toString().equals(Localization.getString("BrowserView.Loading"))) { //$NON-NLS-1$
-                return null;
-            }
-            return getEntryImage(treeObj);
+            return getEntryImage((TreeNode) obj);
         }
     }
 
     @Override
     public void createPartControl(Composite parent) {
+        parent.getShell().setCursor(parent.getShell().getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
         PatternFilter filter = new PatternFilter();
         FilteredTree filteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
         viewer = filteredTree.getViewer();
         viewer.setContentProvider(new ViewContentProvider());
         viewer.setLabelProvider(new ViewLabelProvider());
-
         IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
         collapseHandler = new CollapseAllHandler(getViewer());
         handlerService.activateHandler(CollapseAllHandler.COMMAND_ID, collapseHandler);
-        refreshHandler = new RefreshHandler(this);
-        handlerService.activateHandler(RefreshHandler.COMMAND_ID, refreshHandler);
     }
-
-    /**
-     * Wires up all of the actions for this browser, such as double and right click handlers.
-     */
-    abstract void makeActions();
 
     protected void registerContextMenu(String menuName) {
         Control control = this.viewer.getControl();
@@ -161,10 +154,6 @@ public abstract class BrowserView extends ViewPart {
             collapseHandler.dispose();
             collapseHandler = null;
         }
-        if (refreshHandler != null) {
-            refreshHandler.dispose();
-            refreshHandler = null;
-        }
         if (viewer != null) {
             if (doubleClickAction != null) {
                 viewer.removeDoubleClickListener(doubleClickAction);
@@ -179,30 +168,17 @@ public abstract class BrowserView extends ViewPart {
 
     abstract void refresh();
 
-    protected void displayLoadingMessage() {
-        displayMessage(Localization.getString("BrowserView.Loading")); //$NON-NLS-1$
-    }
-
-    protected void displayMessage(String message) {
-        TreeNode tree = new TreeNode(null, false);
-        tree.add(new TreeNode(message, false));
-        setViewerInput(tree);
-    }
-
-    protected void setViewerInput(final Object input) {
-        if (viewer != null) {
-            viewer.getControl().getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    viewer.setInput(input);
-                }
-            });
+    protected IUpdateListener viewUpdater = new IUpdateListener() {
+        @Override
+        public void handleUpdateEvent() {
+            if (viewer != null) {
+                viewer.getControl().getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        refresh();
+                    }
+                });
+            }
         }
-    }
-
-    protected void setRefreshable(boolean state) {
-        if (refreshHandler != null) {
-            refreshHandler.setActive(state);
-        }
-    }
+    };
 }
