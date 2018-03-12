@@ -24,9 +24,6 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 
 public class DockerImage implements IDockerImage {
 
-	/** The 'latest' tag. */
-	public static final String LATEST_TAG = "latest"; //$NON-NLS-1$
-
 	private static final String REGISTRY_HOST = "[a-zA-Z0-9]+([\\._-][a-zA-Z0-9]+)*"; //$NON-NLS-1$
 	private static final String REGISTRY_PORT = "[0-9]+"; //$NON-NLS-1$
 	private static final String REPOSITORY = "[a-z0-9]+([\\._-][a-z0-9]+)*"; //$NON-NLS-1$
@@ -52,7 +49,6 @@ public class DockerImage implements IDockerImage {
 	private final String created;
 	private final String createdDate;
 	private final String id;
-	private final String shortId;
 	private final String parentId;
 	private final List<String> repoTags;
 	private final String repo;
@@ -73,9 +69,6 @@ public class DockerImage implements IDockerImage {
 		this.repo = repo;
 		this.tags = tags;
 		this.id = id;
-		this.shortId = id.startsWith("sha256:")
-				? id.substring("sha256:".length(), "sha256:".length() + 12)
-				: (id.length() > 12 ? id.substring(0, 12) : id);
 		this.parentId = parentId;
 		this.created = created;
 		this.createdDate = created != null
@@ -169,7 +162,7 @@ public class DockerImage implements IDockerImage {
 	 * 
 	 * @param repoTag
 	 *            the repo/tag to analyze
-	 * @return the tag or <code>null</code> if none was found.
+	 * @return the tag or null if none was found.
 	 */
 	public static String extractTag(final String repoTag) {
 		if (repoTag == null) {
@@ -204,12 +197,7 @@ public class DockerImage implements IDockerImage {
 
 	@Override
 	public String id() {
-		return this.id;
-	}
-
-	@Override
-	public String shortId() {
-		return this.shortId;
+		return id;
 	}
 
 	@Override
@@ -292,20 +280,6 @@ public class DockerImage implements IDockerImage {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Appends the <code>latest</code> tag to the given {@code imageName}
-	 * 
-	 * @param imageName
-	 *            the image name to check
-	 * @return the image name with the <code>latest</code> tag if none was set
-	 */
-	public static String setDefaultTagIfMissing(final String imageName) {
-		if (DockerImage.extractTag(imageName) == null) {
-			return imageName + ':' + LATEST_TAG;
-		}
-		return imageName;
 	}
 
 }

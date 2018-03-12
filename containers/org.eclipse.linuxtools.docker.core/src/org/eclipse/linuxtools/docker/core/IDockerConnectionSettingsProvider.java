@@ -8,21 +8,15 @@
  * Contributors:
  *     Red Hat - Initial Contribution
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.docker.core;
+package org.eclipse.linuxtools.docker.core;
 
-import org.eclipse.linuxtools.docker.core.AbstractRegistry;
+import java.util.List;
 
-public class RegistryInfo extends AbstractRegistry {
+/**
+ * @since 2.1
+ */
+public interface IDockerConnectionSettingsProvider {
 
-	private String serverAddress;
-
-	public RegistryInfo(String serverAddress) {
-		this.serverAddress = serverAddress;
-	}
-
-	@Override
-	public String getServerAddress() {
-		return serverAddress;
-	}
+	List<IDockerConnectionSettings> getConnectionSettings();
 
 }

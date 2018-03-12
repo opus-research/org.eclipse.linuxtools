@@ -256,9 +256,11 @@ public class DockerConnection implements IDockerConnection, Closeable {
 						addContainerListener(dcrm);
 					}
 				} catch (DockerCertificateException e) {
+					setState(EnumDockerConnectionState.CLOSED);
 					throw new DockerException(NLS
 							.bind(Messages.Open_Connection_Failure, this.name,
-									this.getUri()));
+									this.getUri()),
+							e);
 				}
 			}
 			// then try to ping the Docker daemon to verify the connection
@@ -318,13 +320,15 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			if (this.client != null) {
 				this.client.ping();
 			} else {
-				throw new DockerException(Messages.Docker_Daemon_Ping_Failure);
+				throw new DockerException(NLS.bind(
+						Messages.Docker_Daemon_Ping_Failure, this.getName()));
 			}
 			setState(EnumDockerConnectionState.ESTABLISHED);
 		} catch (com.spotify.docker.client.DockerException
 				| InterruptedException e) {
 			setState(EnumDockerConnectionState.CLOSED);
-			throw new DockerException(Messages.Docker_Daemon_Ping_Failure, e);
+			throw new DockerException(NLS.bind(
+					Messages.Docker_Daemon_Ping_Failure, this.getName()), e);
 		}
 	}
 
@@ -407,7 +411,10 @@ public class DockerConnection implements IDockerConnection, Closeable {
 							ping();
 						} catch (DockerException e) {
 							Activator.logErrorMessage(
-									Messages.Docker_Daemon_Ping_Failure, e);
+									NLS.bind(
+											Messages.Docker_Daemon_Ping_Failure,
+											this.getName()),
+									e);
 							return Status.CANCEL_STATUS;
 						}
 						return Status.OK_STATUS;
@@ -723,6 +730,68 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		// list changed.
 		notifyContainerListeners(this.containers);
 		return this.containers;
+	}
+
+	public Set<String> getContainerIdsWithLabels(Map<String, String> labels)
+			throws DockerException {
+		Set<String> labelSet = new HashSet<>();
+		try {
+			final List<Container> nativeContainers = new ArrayList<>();
+			synchronized (clientLock) {
+				// Check that client is not null as this connection may have
+				// been closed but there is an async request to filter the
+				// containers list left in the queue
+				if (client == null) {
+					// in that case the list becomes empty, which is fine is
+					// there's no client.
+					return Collections.emptySet();
+				}
+				DockerClient clientCopy = getClientCopy();
+				DockerClient.ListContainersParam[] parms = new DockerClient.ListContainersParam[2];
+				parms[0] = DockerClient.ListContainersParam.allContainers();
+				// DockerClient doesn't support multiple labels with its
+				// ListContainersParam so we have
+				// to do a kludge and put in control chars ourselves and pretend
+				// we have a label with no value.
+				String separator = "";
+				StringBuffer labelString = new StringBuffer();
+				for (Entry<String, String> entry : labels.entrySet()) {
+					labelString.append(separator);
+					if (entry.getValue() == null || "".equals(entry.getValue())) //$NON-NLS-1$
+						labelString.append(entry.getKey());
+					else {
+						labelString.append(
+								entry.getKey() + "=" + entry.getValue()); //$NON-NLS-1$
+					}
+					separator = "\",\""; //$NON-NLS-1$
+				}
+				parms[1] = DockerClient.ListContainersParam
+						.withLabel(labelString.toString());
+				nativeContainers.addAll(clientCopy.listContainers(parms));
+			}
+			// We have a list of containers with labels. Now, we create a Set of
+			// ids which contain those labels to use in filtering a list of
+			// Containers
+			for (Container nativeContainer : nativeContainers) {
+				labelSet.add(nativeContainer.id());
+			}
+		} catch (DockerTimeoutException e) {
+			if (isOpen()) {
+				Activator.log(new Status(IStatus.WARNING, Activator.PLUGIN_ID,
+						Messages.Docker_Connection_Timeout, e));
+				close();
+			}
+		} catch (com.spotify.docker.client.DockerException
+				| InterruptedException e) {
+			if (isOpen() && e.getCause() != null
+					&& e.getCause().getCause() != null
+					&& e.getCause().getCause() instanceof ProcessingException) {
+				close();
+			} else {
+				throw new DockerException(e.getMessage());
+			}
+		}
+		return labelSet;
 	}
 
 	/**
@@ -1078,14 +1147,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void tagImage(final String name, final String newTag) throws DockerException,
 			InterruptedException {
-		tagImage(name, newTag, false);
-	}
-
-	@Override
-	public void tagImage(final String name, final String newTag,
-			final boolean force) throws DockerException, InterruptedException {
 		try {
-			client.tag(name, newTag, force);
+			client.tag(name, newTag);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
@@ -1617,8 +1680,19 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		ContainerInfo info;
 		try {
 			info = client.inspectContainer(id);
+			/*
+			 * Workaround error message thrown to stderr due to lack of Guava
+			 * 18.0. Remove this when we begin using Guava 18.0.
+			 */
+			PrintStream oldErr = System.err;
+			System.setErr(new PrintStream(new OutputStream() {
+				@Override
+				public void write(int b) {
+				}
+			}));
 			client.commitContainer(id, repo, tag, info.config(), comment,
 					author);
+			System.setErr(oldErr);
 			// update images list
 			// FIXME: are we refreshing the list of images twice ?
 			listImages();
@@ -1664,8 +1738,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		try {
 			AuthConfig authConfig = AuthConfig.builder()
 					.username(new String(cfg.getUsername()))
-					.password(cfg.getPassword() != null
-							? new String(cfg.getPassword()) : null)
+					.password(new String(cfg.getPassword()))
 					.email(new String(cfg.getEmail()))
 					.serverAddress(new String(cfg.getServerAddress())).build();
 			return client.auth(authConfig);
@@ -1988,5 +2061,18 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 	}
 
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof IDockerConnection) {
+			return getSettings()
+					.equals(((IDockerConnection) other).getSettings());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return getSettings().hashCode();
+	}
 
 }
