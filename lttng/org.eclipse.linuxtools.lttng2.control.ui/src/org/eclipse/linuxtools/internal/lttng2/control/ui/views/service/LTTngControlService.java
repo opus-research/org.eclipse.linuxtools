@@ -91,11 +91,16 @@ public class LTTngControlService implements ILttngControlService {
     // ------------------------------------------------------------------------
 
     @Override
-    public String getVersion() {
+    public String getVersionString() {
         if (fVersion == null) {
             return "Unknown"; //$NON-NLS-1$
         }
         return fVersion.toString();
+    }
+
+    @Override
+    public LttngVersion getVersion() {
+        return fVersion;
     }
 
     /**
@@ -104,6 +109,14 @@ public class LTTngControlService implements ILttngControlService {
      */
     public void setVersion(String version) {
         fVersion = new LttngVersion(version);
+    }
+
+    /**
+     * Sets the version of the LTTng 2.x control service.
+     * @param version - a version to set
+     */
+    public void setVersion(LttngVersion version) {
+        fVersion = version;
     }
 
     @Override
@@ -1065,15 +1078,15 @@ public class LTTngControlService implements ILttngControlService {
         String[] output = result.getOutput();
         String[] errorOutput = result.getErrorOutput();
         StringBuffer ret = new StringBuffer();
+        ret.append("Error Ouptut:\n"); //$NON-NLS-1$
+        for (int i = 0; i < errorOutput.length; i++) {
+           ret.append(errorOutput[i]).append("\n"); //$NON-NLS-1$
+        }
         ret.append("Return Value: "); //$NON-NLS-1$
         ret.append(result.getResult());
         ret.append("\n"); //$NON-NLS-1$
         for (int i = 0; i < output.length; i++) {
             ret.append(output[i]).append("\n"); //$NON-NLS-1$
-        }
-        ret.append("Error stream:\n"); //$NON-NLS-1$
-        for (int i = 0; i < errorOutput.length; i++) {
-           ret.append(errorOutput[i]).append("\n"); //$NON-NLS-1$
         }
         return ret.toString();
     }
