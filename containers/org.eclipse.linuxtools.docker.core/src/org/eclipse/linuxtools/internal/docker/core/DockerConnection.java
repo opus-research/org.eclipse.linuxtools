@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -39,9 +38,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -101,6 +97,9 @@ import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
+
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
@@ -215,8 +214,7 @@ public class DockerConnection implements IDockerConnection {
 						connectionSettingsDetectionScript);
 				final Process process = Runtime.getRuntime().exec(cmdArray);
 				process.waitFor();
-				final int exitValue = process.exitValue();
-				if (exitValue == 0) {
+				if (process.exitValue() == 0) {
 					final InputStream processInputStream = process
 							.getInputStream();
 					// read content from temp file
@@ -242,15 +240,12 @@ public class DockerConnection implements IDockerConnection {
 					return true;
 				} else {
 					// log what happened if the process did not end as expected
-					// an exit value of 1 should indicate no connection found
-					if (exitValue != 1) {
-						final InputStream processErrorStream = process
-								.getErrorStream();
-						final String errorMessage = streamToString(
-								processErrorStream);
-						Activator.log(new Status(IStatus.ERROR,
-								Activator.PLUGIN_ID, errorMessage));
-					}
+					final InputStream processErrorStream = process
+							.getErrorStream();
+					final String errorMessage = streamToString(
+							processErrorStream);
+					Activator.log(new Status(IStatus.ERROR,
+							Activator.PLUGIN_ID, errorMessage));
 				}
 			} catch (IOException | IllegalArgumentException
 					| InterruptedException e) {
@@ -432,7 +427,7 @@ public class DockerConnection implements IDockerConnection {
 
 		public Builder tcpCertPath(final String tcpCertPath) {
 			this.tcpCertPath = tcpCertPath;
-			if (this.tcpHost != null && this.tcpCertPath != null) {
+			if (this.tcpHost != null) {
 				this.tcpHost = tcpHost.replace("http://", "https://");
 			}
 			return this;
@@ -1009,20 +1004,6 @@ public class DockerConnection implements IDockerConnection {
 	}
 
 	@Override
-	public boolean hasImage(final String repository, final String tag) {
-		for (IDockerImage image : getImages()) {
-			if (image.repo().equals(repository)) {
-				for (String imageTag : image.tags()) {
-					if (imageTag.startsWith(tag)) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	@Override
 	public void pullImage(final String id, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
 		try {
@@ -1050,6 +1031,8 @@ public class DockerConnection implements IDockerConnection {
 		}
 	}
 	
+	
+
 	@Override
 	public void pushImage(final String name, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
@@ -1561,8 +1544,7 @@ public class DockerConnection implements IDockerConnection {
 		try {
 			final LogStream pty_stream = client.attachContainer(id,
 					AttachParameter.STDIN, AttachParameter.STDOUT,
-					AttachParameter.STDERR, AttachParameter.STREAM,
-					AttachParameter.LOGS);
+					AttachParameter.STDERR, AttachParameter.STREAM);
 			final boolean isTtyEnabled = getContainerInfo(id).config().tty();
 
 			// Data from the given input stream
@@ -1651,17 +1633,6 @@ public class DockerConnection implements IDockerConnection {
 							}
 						}
 					} catch (Exception e) {
-						/*
-						 * Temporary workaround for BZ #469717
-						 * Remove this when we begin using a release with :
-						 * https://github.com/spotify/docker-client/pull/223
-						 */
-						if (e instanceof SocketTimeoutException) {
-							try {
-								attachCommand(id, in, out);
-							} catch (DockerException e1) {
-							}
-						}
 					}
 				}
 			});

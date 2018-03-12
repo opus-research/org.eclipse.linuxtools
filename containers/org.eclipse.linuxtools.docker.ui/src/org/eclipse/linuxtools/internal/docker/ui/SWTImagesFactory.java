@@ -91,7 +91,6 @@ public class SWTImagesFactory {
 			+ "systemprocess.gif"; //$NON-NLS-1$
 	public static final String IMG_CHECKED = NAME_PREFIX + "checked.gif"; //$NON-NLS-1$
 	public static final String IMG_UNCHECKED = NAME_PREFIX + "unchecked.gif"; //$NON-NLS-1$
-	public static final String IMG_RESOLVED = NAME_PREFIX + "resolved.gif"; //$NON-NLS-1$
 	public static final String IMG_BANNER_REPOSITORY = NAME_PREFIX
 			+ "banner-repository.gif"; //$NON-NLS-1$
 	public static final String IMG_WARNING = NAME_PREFIX + "warning_obj.gif"; //$NON-NLS-1$
@@ -170,8 +169,6 @@ public class SWTImagesFactory {
 			IMG_CHECKED);
 	public static final ImageDescriptor DESC_UNCHECKED = createManaged("",
 			IMG_UNCHECKED);
-	public static final ImageDescriptor DESC_RESOLVED = createManaged("",
-			IMG_RESOLVED);
 	public static final ImageDescriptor DESC_BANNER_REPOSITORY = createManaged(
 			"", IMG_BANNER_REPOSITORY);
 	public static final ImageDescriptor DESC_WARNING = createManaged("",
