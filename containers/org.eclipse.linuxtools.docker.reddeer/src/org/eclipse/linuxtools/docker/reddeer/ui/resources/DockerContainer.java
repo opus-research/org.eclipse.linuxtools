@@ -11,14 +11,15 @@
 package org.eclipse.linuxtools.docker.reddeer.ui.resources;
 
 import org.eclipse.linuxtools.docker.reddeer.ui.AbstractDockerExplorerItem;
-import org.eclipse.reddeer.common.wait.TimePeriod;
-import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.swt.api.TreeItem;
-import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
-import org.eclipse.reddeer.swt.impl.button.PushButton;
-import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.jboss.reddeer.common.wait.TimePeriod;
+import org.jboss.reddeer.common.wait.WaitUntil;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.core.condition.ShellWithTextIsAvailable;
+import org.jboss.reddeer.swt.api.Menu;
+import org.jboss.reddeer.swt.api.TreeItem;
+import org.jboss.reddeer.swt.impl.button.PushButton;
+import org.jboss.reddeer.swt.impl.menu.ContextMenu;
 
 /**
  * 
@@ -34,15 +35,15 @@ public class DockerContainer extends AbstractDockerExplorerItem {
 
 	public void remove() {
 		select();
-		ContextMenuItem contextMenu = new ContextMenuItem("Remove");
+		Menu contextMenu = new ContextMenu("Remove");
 		if (!contextMenu.isEnabled()) {
-			new ContextMenuItem("Stop").select();
+			new ContextMenu("Stop").select();
 			new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
 			item.select();
-			contextMenu = new ContextMenuItem("Remove");
+			contextMenu = new ContextMenu("Remove");
 		}
 		contextMenu.select();
-		new WaitUntil(new ShellIsAvailable("Confirm Remove Container"), TimePeriod.DEFAULT);
+		new WaitUntil(new ShellWithTextIsAvailable("Confirm Remove Container"), TimePeriod.NORMAL);
 		new PushButton("OK").click();
 		new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
 	}
