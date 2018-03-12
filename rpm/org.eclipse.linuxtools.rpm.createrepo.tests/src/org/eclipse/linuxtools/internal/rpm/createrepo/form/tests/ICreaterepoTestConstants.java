@@ -57,7 +57,6 @@ public interface ICreaterepoTestConstants {
      */
     String PROJECT_NAME_LABEL = "Project name:"; //$NON-NLS-1$
     String CREATEREPO_CATEGORY = "Createrepo"; //$NON-NLS-1$
-    String CREATEREPO_PROJECT_CATEGORY = "RPM"; //$NON-NLS-1$
     String CREATEREPO_PROJECT_WIZARD = "Createrepo Wizard"; //$NON-NLS-1$
 
     /*
