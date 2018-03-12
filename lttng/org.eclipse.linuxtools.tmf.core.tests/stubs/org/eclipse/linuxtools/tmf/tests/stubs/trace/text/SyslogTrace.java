@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimePreferences;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 import org.eclipse.linuxtools.tmf.core.trace.text.TextTrace;
@@ -37,9 +38,8 @@ public class SyslogTrace extends TextTrace<SyslogEvent> {
     /** The time stamp format of the trace type. */
     public static final String TIMESTAMP_FORMAT = "MMM dd HH:mm:ss"; //$NON-NLS-1$
     /** The corresponding date format of the time stamp. */
-    public static final SimpleDateFormat TIMESTAMP_SIMPLEDATEFORMAT = new SimpleDateFormat(TIMESTAMP_FORMAT);
-    /** The scale of the time stamps. */
-    public static final byte TIMESTAMP_SCALE = ITmfTimestamp.MILLISECOND_SCALE;
+    public static final SimpleDateFormat TIMESTAMP_SIMPLEDATEFORMAT = new SimpleDateFormat(
+            TIMESTAMP_FORMAT, TmfTimePreferences.getInstance().getLocale());
     /** The regular expression pattern of the first line of an event. */
     public static final Pattern LINE1_PATTERN = Pattern.compile(
             "\\s*(\\S\\S\\S \\d\\d? \\d\\d:\\d\\d:\\d\\d)\\s*(\\S*)\\s*(\\S*):+\\s*(.*\\S)?"); //$NON-NLS-1$
@@ -74,8 +74,8 @@ public class SyslogTrace extends TextTrace<SyslogEvent> {
                 if (calendar.after(CURRENT)) {
                     calendar.set(Calendar.YEAR, CURRENT.get(Calendar.YEAR) - 1);
                 }
-                long ms = calendar.getTimeInMillis();
-                timestamp = new TmfTimestamp(ms, TIMESTAMP_SCALE);
+                long ns = calendar.getTimeInMillis() * 1000000;
+                timestamp = createTimestamp(ns);
             }
         } catch (ParseException e) {
             timestamp = new TmfTimestamp();
