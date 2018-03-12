@@ -11,123 +11,101 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
 /**
- * Strings generated from the TSDL grammar. Note that they are so
+ * Strings generated from the TSDL grammar. Note that they are static final so
  * they get quarked. See CTF specs for more details
  *
  * @author Matthew Khouzam and All
  */
 @SuppressWarnings("nls")
-@NonNullByDefault
 public interface MetadataStrings {
 
     /** None */
-    String NONE = "none";
+
+    static final String NONE = "none";
     /** Ascii */
-    String ASCII = "ASCII";
+    static final String ASCII = "ASCII";
     /** UTF8 */
-    String UTF8 = "UTF8";
+    static final String UTF8 = "UTF8";
     /** b (for binary like b11010010 */
-    String BIN = "b";
+    static final String BIN = "b";
     /** Binary */
-    String BINARY = "binary";
+    static final String BINARY = "binary";
     /** Octal like o177 */
-    String OCTAL_CTE = "o";
+    static final String OCTAL_CTE = "o";
     /** Octal like oct177 */
-    String OCT = "oct";
+    static final String OCT = "oct";
     /** Octal like octal177 */
-    String OCTAL = "octal";
+    static final String OCTAL = "octal";
     /** Pointer (memory address for all the hardcore Java gurus out there)*/
-    String POINTER = "p";
+    static final String POINTER = "p";
     /** X for hex */
-    String X2 = "X";
+    static final String X2 = "X";
     /** x for hex */
-    String X = "x";
+    static final String X = "x";
     /** hex */
-    String HEX = "hex";
+    static final String HEX = "hex";
     /** Hexadecimal */
-    String HEXADECIMAL = "hexadecimal";
+    static final String HEXADECIMAL = "hexadecimal";
     /** unsigned like in 10000ul */
-    String UNSIGNED_CTE = "u";
+    static final String UNSIGNED_CTE = "u";
     /** Decimal */
-    String DEC_CTE = "d";
+    static final String DEC_CTE = "d";
     /** Integer like 1000i */
-    String INT_MOD = "i";
+    static final String INT_MOD = "i";
     /** Decimal */
-    String DEC = "dec";
+    static final String DEC = "dec";
     /** Decimal */
-    String DECIMAL = "decimal";
+    static final String DECIMAL = "decimal";
     /** native for byteorders*/
-    String NATIVE = "native";
+    static final String NATIVE = "native";
     /** network for byteorders*/
-    String NETWORK = "network";
+    static final String NETWORK = "network";
     /** Big endian */
-    String BE = "be";
+    static final String BE = "be";
     /** Little endian */
-    String LE = "le";
+    static final String LE = "le";
     /** Alignment of a field */
-    String ALIGN = "align";
+    static final String ALIGN = "align";
     /** Mantissa digits */
-    String MANT_DIG = "mant_dig";
+    static final String MANT_DIG = "mant_dig";
     /** Exponent digits */
-    String EXP_DIG = "exp_dig";
+    static final String EXP_DIG = "exp_dig";
     /** Loglevel */
-    String LOGLEVEL2 = "loglevel";
-    /** Event context */
-    String EVENT_CONTEXT = "event.context";
-    /** Fields */
-    String FIELDS_STRING = "fields";
-    /** context */
-    String CONTEXT = "context";
-    /** Stream ID */
-    String STREAM_ID = "stream_id";
-    /** Packet context */
-    String PACKET_CONTEXT = "packet.context";
-    /** ID */
-    String ID = "id";
-    /** Packet Header */
-    String PACKET_HEADER = "packet.header";
-    /** Event Header */
-    String EVENT_HEADER = "event.header";
-    /** Byte order */
-    String BYTE_ORDER = "byte_order";
-    /** UUID */
-    String UUID_STRING = "uuid";
-    /** False */
-    String FALSE2 = "FALSE";
-    /** False */
-    String FALSE = "false";
-    /** True */
-    String TRUE2 = "TRUE";
-    /** True */
-    String TRUE = "true";
-    /** Minor (Version)*/
-    String MINOR = "minor";
-    /** Major (Version)*/
-    String MAJOR = "major";
-    /** Map */
-    String MAP = "map";
-    /** base of a number */
-    String BASE = "base";
-    /** size in bits */
-     String SIZE = "size";
-    /** signedness */
-    String SIGNED = "signed";
-    /** line number */
-    String LINE = "line";
-    /** file name */
-    String FILE = "file";
-    /** instruction pointer */
-    String IP = "ip";
-    /** function name */
-    String FUNC = "func";
+    static final String LOGLEVEL2 = "loglevel";
     /** Name */
-    String NAME = "name";
-    /** Encoding utf8, ascii or none */
-    String ENCODING = "encoding";
-    /** "" string */
-    String EMPTY_STRING = "";
+    static final String NAME2 = "name";
+    /** Event context */
+    static final String EVENT_CONTEXT = "event.context";
+    /** Fields */
+    static final String FIELDS_STRING = "fields";
+    /** context */
+    static final String CONTEXT = "context";
+    /** Stream ID */
+    static final String STREAM_ID = "stream_id";
+    /** Packet context */
+    static final String PACKET_CONTEXT = "packet.context";
+    /** ID */
+    static final String ID = "id";
+    /** Packet Header */
+    static final String PACKET_HEADER = "packet.header";
+    /** Event Header */
+    static final String EVENT_HEADER = "event.header";
+    /** Byte order */
+    static final String BYTE_ORDER = "byte_order";
+    /** UUID */
+    static final String UUID_STRING = "uuid";
+    /** False */
+    static final String FALSE2 = "FALSE";
+    /** False */
+    static final String FALSE = "false";
+    /** True */
+    static final String TRUE2 = "TRUE";
+    /** True */
+    static final String TRUE = "true";
+    /** Minor (Version)*/
+    static final String MINOR = "minor";
+    /** Major (Version)*/
+    static final String MAJOR = "major";
 
 }

@@ -30,7 +30,6 @@ import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfEvent;
 import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.ctf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTracesFolder;
 import org.eclipse.linuxtools.tmf.ui.swtbot.tests.SWTBotUtil;
 import org.eclipse.linuxtools.tmf.ui.swtbot.tests.conditions.ConditionHelpers;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramView;
@@ -138,12 +137,9 @@ public abstract class AbstractImportAndReadSmokeTest {
 
     /**
      * Opens and get the TmfEventsEditor
-     *
-     * @param elementPath
-     *            the trace element path (relative to Traces folder)
      * @return TmfEventsEditor
      */
-    protected TmfEventsEditor openEditor(IPath elementPath) {
+    protected TmfEventsEditor openEditor() {
         final SWTBotView projectExplorerBot = fBot.viewById(IPageLayout.ID_PROJECT_EXPLORER);
         projectExplorerBot.setFocus();
 
@@ -151,24 +147,29 @@ public abstract class AbstractImportAndReadSmokeTest {
         final SWTBotTreeItem treeItem = tree.getTreeItem(getProjectName());
         treeItem.expand();
 
-        String nodeName = getFullNodeName(treeItem, TmfTracesFolder.TRACES_FOLDER_NAME);
+        String nodeName = getFullNodeName(treeItem, "Traces");
         fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(nodeName, treeItem));
         SWTBotTreeItem tracesNode = treeItem.getNode(nodeName);
         tracesNode.expand();
 
-        SWTBotTreeItem currentNode = tracesNode;
-        for (String segment : elementPath.segments()) {
-            String fullNodeName = getFullNodeName(currentNode, segment);
-            fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(fullNodeName, currentNode));
-            SWTBotTreeItem newNode = currentNode.getNode(fullNodeName);
-            newNode.select();
-            newNode.doubleClick();
-            currentNode = newNode;
+
+        SWTBotTreeItem traceParentNode = tracesNode;
+
+        if (supportsFolderStructure()) {
+            String nodeFolderName = getFullNodeName(tracesNode, TRACE_FOLDER);
+            fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(nodeFolderName, tracesNode));
+            SWTBotTreeItem traceFolder = tracesNode.getNode(nodeFolderName);
+            traceFolder.select();
+            traceFolder.doubleClick();
+            traceParentNode = traceFolder;
         }
 
+        fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(TRACE_NAME, traceParentNode));
+        traceParentNode.getNode(TRACE_NAME).select();
+        traceParentNode.getNode(TRACE_NAME).doubleClick();
         SWTBotUtil.delay(1000);
         SWTBotUtil.waitForJobs();
-        final String expectedTitle = elementPath.toString();
+        final String expectedTitle = supportsFolderStructure() ? TRACE_FOLDER + IPath.SEPARATOR + TRACE_NAME : TRACE_NAME;
 
         final IEditorPart iep[] = new IEditorPart[1];
         UIThreadRunnable.syncExec(new VoidResult() {
@@ -216,6 +217,13 @@ public abstract class AbstractImportAndReadSmokeTest {
      * @return the project name
      */
     protected abstract String getProjectName();
+
+    /**
+     * Returns whether or not that test support folder structure
+     *
+     * @return true if the test supports folder structure, false otherwise
+     */
+    protected abstract boolean supportsFolderStructure();
 
     // ---------------------------------------------
     // Helpers for testing views
