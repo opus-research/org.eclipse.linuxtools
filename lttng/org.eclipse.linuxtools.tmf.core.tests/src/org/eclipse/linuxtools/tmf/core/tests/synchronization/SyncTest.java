@@ -13,20 +13,10 @@
 package org.eclipse.linuxtools.tmf.core.tests.synchronization;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.eclipse.linuxtools.internal.tmf.core.synchronization.SyncAlgorithmFullyIncremental;
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventDependency;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithm;
@@ -79,35 +69,59 @@ public class SyncTest {
         syncAlgo.init(fTraces);
 
         assertEquals(SyncQuality.ABSENT, syncAlgo.getSynchronizationQuality(t1, t2));
-        addSyncMatch(syncAlgo, t2, 1, t1, 1);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t2, new TmfTimestamp(1)),
+                        new TmfSyncEventStub(t1, new TmfTimestamp(1))
+                ));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 1 beta 0 ]]", syncAlgo.toString());
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 1, t2, 3);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(1)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(3))
+                ));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 1 beta 0 ]]", syncAlgo.toString());
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t2, 2, t1, 3);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t2, new TmfTimestamp(2)),
+                        new TmfSyncEventStub(t1, new TmfTimestamp(3))
+                ));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 1 beta 0.5 ]]", syncAlgo.toString());
         assertEquals(SyncQuality.APPROXIMATE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 3, t2, 5);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(3)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(5))
+                ));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 0.75 beta 1.25 ]]", syncAlgo.toString());
         assertEquals(SyncQuality.ACCURATE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 4, t2, 8);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(4)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(8))
+                ));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 0.75 beta 1.25 ]]", syncAlgo.toString());
         assertEquals(SyncQuality.ACCURATE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t2, 4, t1, 5);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t2, new TmfTimestamp(4)),
+                        new TmfSyncEventStub(t1, new TmfTimestamp(5))
+                ));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 1.125 beta 0.875 ]]", syncAlgo.toString());
         assertEquals(SyncQuality.ACCURATE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t2, 4, t1, 6);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t2, new TmfTimestamp(4)),
+                        new TmfSyncEventStub(t1, new TmfTimestamp(6))
+                ));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 1.125 beta 0.875 ]]", syncAlgo.toString());
         assertEquals(SyncQuality.ACCURATE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 6, t2, 7);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(6)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(7))
+                ));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 0.725 beta 1.275 ]]", syncAlgo.toString());
         assertEquals(SyncQuality.ACCURATE, syncAlgo.getSynchronizationQuality(t1, t2));
 
@@ -119,8 +133,14 @@ public class SyncTest {
         assertEquals(syncAlgo.getTimestampTransform(t2.getHostId()), tt2);
 
         /* Make the two hulls intersect */
-        addSyncMatch(syncAlgo, t1, 7, t2, 4);
-        addSyncMatch(syncAlgo, t2, 7, t1, 3);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(7)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(4))
+                ));
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t2, new TmfTimestamp(7)),
+                        new TmfSyncEventStub(t1, new TmfTimestamp(3))
+                ));
         assertEquals(SyncQuality.FAIL, syncAlgo.getSynchronizationQuality(t1, t2));
     }
 
@@ -137,16 +157,29 @@ public class SyncTest {
 
         assertEquals(SyncQuality.ABSENT, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 1, t2, 3);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(1)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(3)))
+                );
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 2, t2, 5);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(2)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(5)))
+                );
+
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 3, t2, 5);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(3)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(5)))
+                );
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 4, t2, 7);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(4)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(7)))
+                );
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 1 beta 0 ]]", syncAlgo.toString());
 
@@ -166,101 +199,49 @@ public class SyncTest {
 
         assertEquals(SyncQuality.ABSENT, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 1, t2, 3);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(1)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(3)))
+                );
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 2, t2, 5);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(2)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(5)))
+                );
+
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 3, t2, 5);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(3)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(5)))
+                );
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t1, 4, t2, 7);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t1, new TmfTimestamp(4)),
+                        new TmfSyncEventStub(t2, new TmfTimestamp(7)))
+                );
         assertEquals(SyncQuality.INCOMPLETE, syncAlgo.getSynchronizationQuality(t1, t2));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 1 beta 0 ]]", syncAlgo.toString());
 
-        addSyncMatch(syncAlgo, t2, 7, t1, 6);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t2, new TmfTimestamp(7)),
+                        new TmfSyncEventStub(t1, new TmfTimestamp(6)))
+                );
         assertEquals(SyncQuality.APPROXIMATE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t2, 8, t1, 6);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t2, new TmfTimestamp(8)),
+                        new TmfSyncEventStub(t1, new TmfTimestamp(6)))
+                );
         assertEquals(SyncQuality.APPROXIMATE, syncAlgo.getSynchronizationQuality(t1, t2));
 
-        addSyncMatch(syncAlgo, t2, 10, t1, 8);
+        syncAlgo.addMatch(
+                new TmfEventDependency(new TmfSyncEventStub(t2, new TmfTimestamp(10)),
+                        new TmfSyncEventStub(t1, new TmfTimestamp(8)))
+                );
         assertEquals(SyncQuality.APPROXIMATE, syncAlgo.getSynchronizationQuality(t1, t2));
         assertEquals("SyncAlgorithmFullyIncremental [Between t1 and t2 [ alpha 1 beta 2.5 ]]", syncAlgo.toString());
     }
-
-    private static void addSyncMatch(SynchronizationAlgorithm algo, ITmfTrace sender, long sendTs, ITmfTrace receiver, long receiveTs) {
-        algo.addMatch(
-                new TmfEventDependency(
-                        new TmfSyncEventStub(sender, new TmfTimestamp(sendTs)),
-                        new TmfSyncEventStub(receiver, new TmfTimestamp(receiveTs))
-                ));
-    }
-
-    /**
-     * Testing the serialization of the fully incremental synchronization
-     * algorithm
-     */
-    @Test
-    public void testFullyIncrementalSerialization() {
-
-        /* Do a run of synchronization and check the results */
-        SynchronizationAlgorithm syncAlgo = SynchronizationAlgorithmFactory.getFullyIncrementalAlgorithm();
-
-        syncAlgo.init(fTraces);
-
-        addSyncMatch(syncAlgo, t2, 1, t1, 1);
-        addSyncMatch(syncAlgo, t1, 1, t2, 3);
-        addSyncMatch(syncAlgo, t2, 2, t1, 3);
-        addSyncMatch(syncAlgo, t1, 3, t2, 5);
-        addSyncMatch(syncAlgo, t1, 4, t2, 8);
-        addSyncMatch(syncAlgo, t2, 4, t1, 5);
-        addSyncMatch(syncAlgo, t2, 4, t1, 6);
-        addSyncMatch(syncAlgo, t1, 6, t2, 7);
-
-        ITmfTimestampTransform tt2 = syncAlgo.getTimestampTransform(t2);
-        ITmfTimestampTransform tt1 = syncAlgo.getTimestampTransform(t1);
-
-        assertEquals(SyncQuality.ACCURATE, syncAlgo.getSynchronizationQuality(t1, t2));
-        assertEquals(syncAlgo.getTimestampTransform(t1.getHostId()), tt1);
-        assertEquals(TimestampTransformFactory.getDefaultTransform(), tt1);
-        assertEquals(syncAlgo.getTimestampTransform(t2.getHostId()), tt2);
-
-        /* Serialize the object */
-        String filePath = null;
-        try {
-            File temp = File.createTempFile("serialSyncAlgo", ".tmp");
-            filePath = temp.getAbsolutePath();
-        } catch (IOException e) {
-            fail("Could not create temporary file for serialization");
-        }
-        assertNotNull(filePath);
-
-        try (FileOutputStream fileOut = new FileOutputStream(filePath);
-                ObjectOutputStream out = new ObjectOutputStream(fileOut);) {
-            out.writeObject(syncAlgo);
-
-        } catch (IOException e) {
-            fail("Error serializing the synchronization algorithm " + e.getMessage());
-        }
-
-        SynchronizationAlgorithm deserialAlgo = null;
-        /* De-Serialize the object */
-        try (FileInputStream fileIn = new FileInputStream(filePath);
-                ObjectInputStream in = new ObjectInputStream(fileIn);) {
-            deserialAlgo = (SynchronizationAlgorithm) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            fail("Error de-serializing the synchronization algorithm " + e.getMessage());
-        }
-
-        /* Check that the deserialize algorithm is equivalent to original */
-        assertNotNull(deserialAlgo);
-        assertTrue(deserialAlgo instanceof SyncAlgorithmFullyIncremental);
-        assertEquals(SyncQuality.ACCURATE, deserialAlgo.getSynchronizationQuality(t1, t2));
-        assertEquals(tt1, deserialAlgo.getTimestampTransform(t1));
-        assertEquals(tt2, deserialAlgo.getTimestampTransform(t2));
-
-    }
-
 }
