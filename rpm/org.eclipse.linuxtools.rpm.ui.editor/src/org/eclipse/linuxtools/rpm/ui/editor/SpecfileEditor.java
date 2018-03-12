@@ -127,20 +127,19 @@ public class SpecfileEditor extends TextEditor {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
-	@Override
-    public <T> T getAdapter(Class<T> required) {
+    @Override
+    public Object getAdapter(Class required) {
         if (IContentOutlinePage.class.equals(required)) {
-            return (T) getOutlinePage();
+            return getOutlinePage();
         }
         if (IDocument.class.equals(required)) {
-            return (T) getDocumentProvider().getDocument(input);
+            return getDocumentProvider().getDocument(input);
         }
         if (projectionSupport != null) {
             Object adapter = projectionSupport.getAdapter(getSourceViewer(),
                     required);
             if (adapter != null) {
-                return (T) adapter;
+                return adapter;
             }
         }
         return super.getAdapter(required);
@@ -203,12 +202,15 @@ public class SpecfileEditor extends TextEditor {
         if (fOccurrencesUpdater != null) {
             Shell shell = getSite().getShell();
             if (!(shell == null || shell.isDisposed())) {
-                shell.getDisplay().asyncExec(() -> {
-				    ISourceViewer viewer = getSourceViewer();
-				    if (viewer != null) {
-				        fOccurrencesUpdater.update(viewer);
-				    }
-				});
+                shell.getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        ISourceViewer viewer = getSourceViewer();
+                        if (viewer != null) {
+                            fOccurrencesUpdater.update(viewer);
+                        }
+                    }
+                });
             }
         }
 

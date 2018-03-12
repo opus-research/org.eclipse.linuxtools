@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.linuxtools.internal.docker.ui.validators.ImageNameValidator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
