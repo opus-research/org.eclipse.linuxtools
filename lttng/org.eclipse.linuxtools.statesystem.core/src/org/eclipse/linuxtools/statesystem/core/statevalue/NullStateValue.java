@@ -75,4 +75,13 @@ final class NullStateValue extends TmfStateValue {
     public String unboxStr() {
         return value;
     }
+
+    @Override
+    public int compareTo(ITmfStateValue object) {
+        if (object instanceof NullStateValue){
+            return -1;
+        }
+        return 1;
+    }
+
 }
