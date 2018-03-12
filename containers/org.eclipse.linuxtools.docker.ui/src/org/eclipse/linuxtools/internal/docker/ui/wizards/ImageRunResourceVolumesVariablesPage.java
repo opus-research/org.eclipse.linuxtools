@@ -12,10 +12,13 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.beans.IBeanValueProperty;
+import org.eclipse.core.databinding.observable.ChangeEvent;
+import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.map.IObservableMap;
 import org.eclipse.core.databinding.property.Properties;
@@ -268,13 +271,12 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		editButton
 				.addSelectionListener(onEditDataVolume(dataVolumesTableViewer));
 		editButton.setEnabled(false);
-		final Button removeButton = new Button(buttonsContainers, SWT.NONE);
+		final Button resetButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
-				.grab(true, false).applyTo(removeButton);
-		removeButton.setText("Remove"); //$NON-NLS-1$
-		removeButton.addSelectionListener(
-				onRemoveDataVolumes(dataVolumesTableViewer));
-		removeButton.setEnabled(false);
+				.grab(true, false).applyTo(resetButton);
+		resetButton.setText("Remove"); //$NON-NLS-1$
+		resetButton.addSelectionListener(onRemoveDataVolumes());
+		resetButton.setEnabled(false);
 		// update table content when selected image changes
 		bind(dataVolumesTableViewer, model.getDataVolumes(),
 				BeanProperties.values(DataVolumeModel.class,
@@ -287,10 +289,9 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 				BeanProperties
 						.set(ImageRunResourceVolumesVariablesModel.SELECTED_DATA_VOLUMES)
 						.observe(model));
-		// disable the edit and removeButton if the table is empty
-		dataVolumesTableViewer.addSelectionChangedListener(
-				onSelectionChanged(editButton, removeButton));
-
+		ViewersObservables.observeMultiSelection(dataVolumesTableViewer)
+				.addChangeListener(
+						onDataVolumesSelection(editButton, resetButton));
 	}
 
 	/**
@@ -319,19 +320,16 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 
 	}
 
-	private ISelectionChangedListener onSelectionChanged(
+	private IChangeListener onDataVolumesSelection(
 			final Button... targetButtons) {
-		return new ISelectionChangedListener() {
+		return new IChangeListener() {
 
 			@Override
-			public void selectionChanged(final SelectionChangedEvent e) {
-				if (e.getSelection().isEmpty()) {
-					setControlsEnabled(targetButtons, false);
-				} else {
+			public void handleChange(ChangeEvent event) {
+				if (event.getSource() != null) {
 					setControlsEnabled(targetButtons, true);
 				}
 			}
-
 		};
 	}
 
@@ -341,6 +339,11 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
+				final IStructuredSelection selection = (IStructuredSelection) dataVolumesTableViewer
+						.getSelection();
+				if (selection.isEmpty()) {
+					return;
+				}
 				final ContainerDataVolumeDialog dialog = new ContainerDataVolumeDialog(
 						getShell(), model.getConnection());
 				dialog.create();
@@ -386,20 +389,12 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		};
 	}
 
-	private SelectionListener onRemoveDataVolumes(
-			final TableViewer dataVolumesTableViewer) {
+	private SelectionListener onRemoveDataVolumes() {
 		return new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				final IStructuredSelection selection = dataVolumesTableViewer
-						.getStructuredSelection();
-				for (@SuppressWarnings("unchecked")
-				Iterator<DataVolumeModel> iterator = selection
-						.iterator(); iterator.hasNext();) {
-					model.removeDataVolume(iterator.next());
-				}
-
+				// TODO
 			}
 		};
 	}
@@ -482,9 +477,11 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 				BeanProperties.values(EnvironmentVariableModel.class,
 						new String[] { EnvironmentVariableModel.NAME,
 								EnvironmentVariableModel.VALUE }));
-		// disable the edit and removeButton if the table is empty
 		environmentVariablesTableViewer.addSelectionChangedListener(
-				onSelectionChanged(editButton, removeButton));
+				onEnvironmentVariableSelected(editButton, removeButton));
+		// disable the edit and removeButton if the table is empty
+		model.getEnvironmentVariables().addChangeListener(
+				onRemoveEnvironmentVariables(editButton, removeButton));
 	}
 
 	private TableViewer createEnvironmentVariablesTable(Composite container) {
@@ -498,6 +495,22 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		addTableViewerColum(tableViewer, "Value", //$NON-NLS-1$
 				200);
 		return tableViewer;
+	}
+
+	private ISelectionChangedListener onEnvironmentVariableSelected(
+			final Control... controls) {
+		return new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(final SelectionChangedEvent e) {
+				if (e.getSelection().isEmpty()) {
+					setControlsEnabled(controls, false);
+				} else {
+					setControlsEnabled(controls, true);
+				}
+			}
+
+		};
 	}
 
 	private SelectionListener onAddEnvironmentVariable() {
@@ -532,6 +545,22 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 					selectedVariable.setValue(
 							dialog.getEnvironmentVariable().getValue());
 					environmentVariablesTableViewer.refresh();
+				}
+			}
+		};
+	}
+
+	private IChangeListener onRemoveEnvironmentVariables(
+			final Button... buttons) {
+		return new IChangeListener() {
+
+			@Override
+			public void handleChange(final ChangeEvent event) {
+				@SuppressWarnings("unchecked")
+				final List<EnvironmentVariableModel> links = (List<EnvironmentVariableModel>) event
+						.getSource();
+				if (links.isEmpty()) {
+					setControlsEnabled(buttons, false);
 				}
 			}
 		};
