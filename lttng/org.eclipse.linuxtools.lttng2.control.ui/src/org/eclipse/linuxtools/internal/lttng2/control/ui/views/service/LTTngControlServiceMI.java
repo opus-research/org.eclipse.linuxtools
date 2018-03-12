@@ -481,10 +481,14 @@ public class LTTngControlServiceMI extends LTTngControlService {
                     snapshotInfo.setName(rawInfo.getTextContent());
                     break;
                 case MIStrings.SNAPSHOT_CTRL_URL:
-                    // TODO: tmf does not have a notion of a ctrl url.
+                    // The use of the ctrl_url for the snapshot path is to assure
+                    // basic support. Refactoring is necessary in lttng and
+                    // tmf side.
+                    // See http://bugs.lttng.org/issues/828 (+comment)
+                    snapshotInfo.setSnapshotPath(rawInfo.getTextContent());
                     break;
                 case MIStrings.SNAPSHOT_DATA_URL:
-                    snapshotInfo.setSnapshotPath(rawInfo.getTextContent());
+                    // TODO: tmf does not have a notion of a ctrl url.
                     break;
                 default:
                     break;
