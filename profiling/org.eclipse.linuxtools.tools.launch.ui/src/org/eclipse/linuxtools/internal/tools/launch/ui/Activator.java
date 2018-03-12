@@ -1,23 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2009 Red Hat Inc. and others.
+ * Copyright (c) 2011 IBM Corporation
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Alexander Kurtakov - initial API and implementation
+ *    Otavio Busatto Pontes <obusatto@br.ibm.com> - initial API and implementation
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.man.preferences;
 
-/**
- * Constant definitions for plug-in preferences
- */
-public class PreferenceConstants {
+package org.eclipse.linuxtools.internal.tools.launch.ui;
 
-    /**
-     * Path preference constant.
-     */
-    public static final String P_PATH = "pathPreference"; //$NON-NLS-1$
+public interface Activator {
 
+    // The plug-in ID
+    String PLUGIN_ID = "org.eclipse.linuxtools.tools.launch.ui"; //$NON-NLS-1$
 }

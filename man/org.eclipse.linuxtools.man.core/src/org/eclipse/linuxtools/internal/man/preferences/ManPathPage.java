@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2009 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,14 +10,11 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.man.preferences;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.linuxtools.internal.man.Activator;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.osgi.framework.FrameworkUtil;
 
 /**
  * Man page preferences.
@@ -31,10 +28,7 @@ public class ManPathPage extends FieldEditorPreferencePage
 	 */
 	public ManPathPage() {
 		super(GRID);
-		IPreferenceStore prefs = new ScopedPreferenceStore(
-				InstanceScope.INSTANCE,
-				FrameworkUtil.getBundle(this.getClass()).getSymbolicName());
-		setPreferenceStore(prefs);
+		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 		setDescription(Messages.ManPathPage_0);
 	}
 
