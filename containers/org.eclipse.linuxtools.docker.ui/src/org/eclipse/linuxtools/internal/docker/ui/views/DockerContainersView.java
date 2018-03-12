@@ -29,14 +29,12 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
-import org.eclipse.linuxtools.docker.core.EnumDockerStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerListener;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
-import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -44,7 +42,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
@@ -173,26 +170,6 @@ public class DockerContainersView extends ViewPart implements
 					return ((IDockerContainer)element).name();
 				}
 				return super.getText(element);
-			}
-
-			@Override
-			public Image getImage(Object element) {
-				if (element instanceof IDockerContainer) {
-					final IDockerContainer container = (IDockerContainer) element;
-					final EnumDockerStatus containerStatus = EnumDockerStatus
-							.fromStatusMessage(container.status());
-					if (containerStatus == EnumDockerStatus.RUNNING) {
-						return SWTImagesFactory.DESC_CONTAINER_STARTED
-								.createImage();
-					} else if (containerStatus == EnumDockerStatus.PAUSED) {
-						return SWTImagesFactory.DESC_CONTAINER_PAUSED
-								.createImage();
-					} else {
-						return SWTImagesFactory.DESC_CONTAINER_STOPPED
-								.createImage();
-					}
-				}
-				return super.getImage(element);
 			}
 		});
 		// 'Image' column
