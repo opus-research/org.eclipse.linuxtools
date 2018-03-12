@@ -45,7 +45,6 @@ public final class Messages extends NLS {
     public static String TraceControl_UnexpectedCommandOutputFormat;
     public static String TraceControl_UnexpectedNameError;
     public static String TraceControl_UnexpectedPathError;
-    public static String TraceControl_UnexpectedNumberOfElementError;
 
     public static String TraceControl_UnsupportedVersionError;
     public static String TraceControl_GettingVersionError;
