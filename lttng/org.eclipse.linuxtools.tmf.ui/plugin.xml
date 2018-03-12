@@ -395,6 +395,10 @@
       </menuContribution>
       <menuContribution
             locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+         <separator
+               name="org.eclipse.linuxtools.tmf.ui.separator1"
+               visible="true">
+         </separator>
          <command
                commandId="org.eclipse.linuxtools.tmf.ui.import"
                label="%command.import"
