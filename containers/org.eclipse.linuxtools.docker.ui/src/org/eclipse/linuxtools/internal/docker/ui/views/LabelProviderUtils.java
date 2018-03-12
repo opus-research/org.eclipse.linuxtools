@@ -16,11 +16,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StyledString;
@@ -219,10 +219,13 @@ public class LabelProviderUtils {
 	 */
 	public static StyledString getStyledText(
 			final DockerContainerLink containerLink) {
+		final String containerName = containerLink.getContainerName();
+		final String containerAlias = " (" + containerLink.getContainerAlias()
+				+ ")";
 		final StyledString styledString = new StyledString(
-				containerLink.getContainerName()).append(
-						" (" + containerLink.getContainerAlias() + ")", //$NON-NLS-1$ //$NON-NLS-2$
-						StyledString.QUALIFIER_STYLER);
+				containerName + containerAlias);
+		styledString.setStyle(containerName.length(), containerAlias.length(),
+				StyledString.QUALIFIER_STYLER);
 		return styledString;
 	}
 
@@ -233,18 +236,20 @@ public class LabelProviderUtils {
 	 */
 	public static StyledString getStyledText(
 			final DockerContainerVolume containerVolume) {
-		final StyledString styledString = new StyledString();
 		final String hostPath = containerVolume.getHostPath();
+		final StyledString styledString = new StyledString();
 		if (containerVolume.getHostPath() != null
 				&& containerVolume.getContainerPath() != null) {
-			styledString.append(hostPath).append(" -> ") //$NON-NLS-1$
+			styledString.append(hostPath).append(" -> ")
 					.append(containerVolume.getContainerPath());
 		} else if (containerVolume.getHostPath() == null
 				&& containerVolume.getContainerPath() != null) {
 			styledString.append(containerVolume.getContainerPath());
 		}
 		if (containerVolume.getFlags() != null) {
-			styledString.append(" (" + containerVolume.getFlags() + ")", //$NON-NLS-1$ //$NON-NLS-2$
+			final int offset = styledString.length();
+			styledString.append(" (" + containerVolume.getFlags() + ")");
+			styledString.setStyle(offset, styledString.length() - offset,
 					StyledString.QUALIFIER_STYLER);
 		}
 		return styledString;
@@ -256,12 +261,15 @@ public class LabelProviderUtils {
 	 * @return the {@link StyledString} to be displayed.
 	 */
 	public static StyledString getStyledText(final IDockerPortMapping mapping) {
-		final StyledString styledString = new StyledString();
-		styledString.append(mapping.getIp() + ":" + mapping.getPublicPort()) //$NON-NLS-1$
-				.append(" -> ") //$NON-NLS-1$
-				.append(Integer.toString(mapping.getPrivatePort()))
-				.append(" (" + mapping.getType() + ")", //$NON-NLS-1$ //$NON-NLS-2$
-						StyledString.QUALIFIER_STYLER);
+		final String hostMapping = mapping.getIp() + ":"
+				+ mapping.getPublicPort() + " -> ";
+		final String containerMapping = Integer
+				.toString(mapping.getPrivatePort());
+		final String mappingType = " (" + mapping.getType() + ")";
+		final StyledString styledString = new StyledString(
+				hostMapping + containerMapping + mappingType);
+		styledString.setStyle(hostMapping.length() + containerMapping.length(),
+				mappingType.length(), StyledString.QUALIFIER_STYLER);
 		return styledString;
 	}
 
@@ -272,9 +280,12 @@ public class LabelProviderUtils {
 	 */
 	public static StyledString getStyledText(
 			final IDockerContainer dockerContainer) {
-		final StyledString styledString = new StyledString();
-		styledString.append(dockerContainer.name()).append(
-				" (" + dockerContainer.image() + ")", //$NON-NLS-1$ //$NON-NLS-2$
+		final String containerName = dockerContainer.name();
+		final String image = dockerContainer.image();
+		final String message = containerName + " (" + image + ")";
+		final StyledString styledString = new StyledString(message);
+		styledString.setStyle(containerName.length(),
+				message.length() - containerName.length(),
 				StyledString.QUALIFIER_STYLER);
 		return styledString;
 	}
@@ -289,12 +300,17 @@ public class LabelProviderUtils {
 		final String connectionName = (connection.getName() != null
 				&& !connection.getName().isEmpty()) ? connection.getName()
 						: DVMessages.getString("Connection.unnamed"); //$NON-NLS-1$
-		final StyledString styledString = new StyledString();
-		styledString.append(connectionName);
+		final StringBuilder messageBuilder = new StringBuilder();
+		messageBuilder.append(connectionName);
 		if (connection.getUri() != null && !connection.getUri().isEmpty()) {
-			styledString.append(" (" + connection.getUri() + //$NON-NLS-1$
-					")", StyledString.QUALIFIER_STYLER); //$NON-NLS-1$
+			messageBuilder.append(" (").append(connection.getUri()) //$NON-NLS-1$
+					.append(")"); //$NON-NLS-1$
 		}
+		final String message = messageBuilder.toString();
+		final StyledString styledString = new StyledString(message);
+		styledString.setStyle(connectionName.length(),
+				message.length() - connectionName.length(),
+				StyledString.QUALIFIER_STYLER);
 		return styledString;
 	}
 
@@ -304,21 +320,35 @@ public class LabelProviderUtils {
 	 * @return the {@link StyledString} to be displayed.
 	 */
 	public static StyledString getStyledText(final IDockerImage dockerImage) {
-		final StyledString result = new StyledString(dockerImage.repo());
+		final StringBuilder messageBuilder = new StringBuilder(
+				dockerImage.repo());
+		final int startTags = messageBuilder.length();
 		if (!dockerImage.tags().isEmpty()) {
 			final List<String> tags = new ArrayList<>(dockerImage.tags());
 			Collections.sort(tags);
-			result.append(":");
-			result.append(tags.stream().collect(Collectors.joining(", ")), //$NON-NLS-1$
-					StyledString.COUNTER_STYLER);
+			messageBuilder.append(": ");
+			for (Iterator<String> tagIterator = tags.iterator(); tagIterator
+					.hasNext();) {
+				messageBuilder.append(tagIterator.next());
+				if (tagIterator.hasNext()) {
+					messageBuilder.append(", ");
+				}
+			}
 		}
+		final int startImageId = messageBuilder.length();
 		// TODO: remove the cast to 'DockerImage' once the 'shortId()'
 		// method is in the public API
-		result.append(" (", StyledString.QUALIFIER_STYLER) //$NON-NLS-1$
-				.append(((DockerImage) dockerImage).shortId(),
-						StyledString.QUALIFIER_STYLER)
-				.append(')', StyledString.QUALIFIER_STYLER); // $NON-NLS-1$
-		return result;
+		messageBuilder.append(" (") //$NON-NLS-1$
+				.append(((DockerImage) dockerImage).shortId()).append(')'); // $NON-NLS-1$
+		final String message = messageBuilder.toString();
+		final StyledString styledString = new StyledString(message);
+		// styled tags
+		styledString.setStyle(startTags, startImageId - startTags,
+				StyledString.COUNTER_STYLER);
+		// styled image id
+		styledString.setStyle(startImageId, message.length() - startImageId,
+				StyledString.QUALIFIER_STYLER);
+		return styledString;
 	}
 
 }
