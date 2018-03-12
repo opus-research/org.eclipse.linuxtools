@@ -198,7 +198,7 @@ public class ImageRunSelectionPage extends WizardPage {
 	private void createImageSettingsSection(final Composite container) {
 		// Image selection name
 		final Label imageSelectionLabel = new Label(container, SWT.NONE);
-		imageSelectionLabel.setText("Image:"); //$NON-NLS-1$
+		imageSelectionLabel.setText(WizardMessages.getString("Image.label")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(imageSelectionLabel);
 		final Combo imageSelectionCombo = new Combo(container, SWT.BORDER);
