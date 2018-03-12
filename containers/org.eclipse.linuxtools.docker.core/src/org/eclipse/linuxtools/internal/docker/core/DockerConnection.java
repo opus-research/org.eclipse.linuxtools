@@ -110,12 +110,32 @@ public class DockerConnection implements IDockerConnection {
 
 	public static class Defaults {
 
-		public static final String DEFAULT_UNIX_SOCKET_PATH = "unix:///var/run/docker.sock"; //$NON-NLS-1$
+		public static final String DEFAULT_UNIX_SOCKET_PATH = "unix:///var/run/docker.sock";
 
 		private String name = Messages.Default_Name;
 		private final Map<EnumDockerConnectionSettings, Object> settings = new HashMap<>();
 
 		public Defaults() throws DockerException {
+			File scriptFile = Activator.getDefault().getBundle()
+					.getDataFile("script.sh"); //$NON-NLS-1$
+			if (!scriptFile.exists()) {
+				InputStream is = DockerConnection.class
+						.getResourceAsStream("/resources/script.sh"); //$NON-NLS-1$
+				FileOutputStream fo;
+				try {
+					byte[] buff = new byte[1024];
+					fo = new FileOutputStream(scriptFile);
+					int n;
+					while ((n = is.read(buff)) > 0) {
+						fo.write(buff, 0, n);
+					}
+					fo.close();
+					is.close();
+					scriptFile.setExecutable(true);
+				} catch (IOException e) {
+					Activator.logErrorMessage(e.getMessage());
+				}
+			}
 			// first, looking for a Unix socket at /var/run/docker.sock
 			if (defaultsWithUnixSocket() || defaultsWithSystemEnv()
 					|| defaultWithShellEnv()) {
@@ -142,7 +162,7 @@ public class DockerConnection implements IDockerConnection {
 		 *         {@code false} otherwise.
 		 */
 		private boolean defaultsWithUnixSocket() {
-			final File unixSocketFile = new File("/var/run/docker.sock"); //$NON-NLS-1$
+			final File unixSocketFile = new File("/var/run/docker.sock");
 			if (unixSocketFile.exists() && unixSocketFile.canRead()) {
 				try {
 					final UnixSocketAddress address = new UnixSocketAddress(
@@ -169,15 +189,15 @@ public class DockerConnection implements IDockerConnection {
 		 *         {@code false} otherwise.
 		 */
 		private boolean defaultsWithSystemEnv() {
-			final String dockerHostEnv = System.getenv("DOCKER_HOST"); //$NON-NLS-1$
+			final String dockerHostEnv = System.getenv("DOCKER_HOST");
 			if (dockerHostEnv != null) {
 				settings.put(BINDING_MODE, TCP_CONNECTION);
 				settings.put(TCP_HOST, dockerHostEnv);
-				final String tlsVerifyEnv = System.getenv("DOCKER_TLS_VERIFY"); //$NON-NLS-1$
+				final String tlsVerifyEnv = System.getenv("DOCKER_TLS_VERIFY");
 				if (tlsVerifyEnv != null && tlsVerifyEnv.equals("1")) {
 					settings.put(TCP_TLS_VERIFY, Boolean.TRUE);
 					final String dockerCertPathEnv = System
-							.getenv("DOCKER_CERT_PATH"); //$NON-NLS-1$
+							.getenv("DOCKER_CERT_PATH");
 					if (dockerCertPathEnv != null) {
 						settings.put(TCP_CERT_PATH, dockerCertPathEnv);
 					}
@@ -200,16 +220,11 @@ public class DockerConnection implements IDockerConnection {
 		 */
 		private boolean defaultWithShellEnv() throws DockerException {
 			try {
-				final String connectionSettingsDetectionScriptName = getConnectionSettingsDetectionScriptName();
-				if (connectionSettingsDetectionScriptName == null) {
-					Activator.log(new Status(IStatus.WARNING,
-							Activator.PLUGIN_ID,
-							Messages.Docker_No_Settings_Description_Script));
-					return false;
-				}
-				final File connectionSettingsDetectionScript = getConnectionSettingsDetectionScript(connectionSettingsDetectionScriptName);
+				// FIXME need to verify the OS and decide which script to run
+				File scriptFile = Activator.getDefault().getBundle()
+						.getDataFile("script.sh"); //$NON-NLS-1$
 				final Process process = Runtime.getRuntime().exec(
-						new String[] {connectionSettingsDetectionScript.getAbsolutePath()});
+						new String[] { scriptFile.getAbsolutePath() });
 				process.waitFor();
 				if (process.exitValue() == 0) {
 					final InputStream processInputStream = process
@@ -218,20 +233,20 @@ public class DockerConnection implements IDockerConnection {
 					Properties dockerSettings = new Properties();
 					dockerSettings.load(processInputStream);
 					settings.put(BINDING_MODE, TCP_CONNECTION);
-					if (dockerSettings.containsKey("DOCKER_HOST")) { //$NON-NLS-1$
-						settings.put(TCP_HOST,
-								dockerSettings.get("DOCKER_HOST").toString()); //$NON-NLS-1$
+					if (dockerSettings.containsKey("DOCKER_HOST")) {
+						settings.put(TCP_HOST, dockerSettings
+								.get("DOCKER_HOST").toString());
 					}
-					if (dockerSettings.containsKey("DOCKER_CERT_PATH")) { //$NON-NLS-1$
+					if (dockerSettings.containsKey("DOCKER_CERT_PATH")) {
 						settings.put(TCP_CERT_PATH,
-								dockerSettings.get("DOCKER_CERT_PATH") //$NON-NLS-1$
+								dockerSettings.get("DOCKER_CERT_PATH")
 										.toString());
 					}
-					if (dockerSettings.containsKey("DOCKER_TLS_VERIFY")) { //$NON-NLS-1$
-						settings.put(TCP_TLS_VERIFY,
-								Boolean.valueOf(
-										dockerSettings.get("DOCKER_TLS_VERIFY") //$NON-NLS-1$
-												.toString()
+					if (dockerSettings.containsKey("DOCKER_TLS_VERIFY")) {
+						settings.put(
+								TCP_TLS_VERIFY,
+								Boolean.valueOf(dockerSettings
+										.get("DOCKER_TLS_VERIFY").toString()
 										.equals("1")));
 					}
 					return true;
@@ -249,56 +264,6 @@ public class DockerConnection implements IDockerConnection {
 			return false;
 		}
 
-		/**
-		 * Finds the script file in the data directory of the bundle given its
-		 * name, or creates it from the 'resources' dir in the bundle if it was
-		 * not found in the data dir.
-		 * 
-		 * @param scriptName
-		 *            the name of the script to load in the data dir or in the
-		 *            'resources' dir in the bundle
-		 * @return the script {@link File}
-		 */
-		private File getConnectionSettingsDetectionScript(
-				final String scriptName) {
-			final File script = Activator.getDefault().getBundle()
-					.getDataFile(scriptName);
-			if (script != null && !script.exists()) {
-				try (final FileOutputStream output = new FileOutputStream(
-						script);
-						final InputStream is = DockerConnection.class
-								.getResourceAsStream(
-										"/resources/" + scriptName)) { //$NON-NLS-1$
-					byte[] buff = new byte[1024];
-					int n;
-					while ((n = is.read(buff)) > 0) {
-						output.write(buff, 0, n);
-					}
-					script.setExecutable(true);
-				} catch (IOException e) {
-					Activator.logErrorMessage(e.getMessage());
-				}
-			}
-			return script;
-		}
-
-		/**
-		 * @return the name of the script to run, depending on the OS (Windows,
-		 *         MAc, *Nix)
-		 */
-		private String getConnectionSettingsDetectionScriptName() {
-			final String osName = System.getProperty("os.name"); //$NON-NLS-1$
-			if (osName.toLowerCase().startsWith("win")) { //$NON-NLS-1$
-				return "script.bat"; //$NON-NLS-1$
-			} else if (osName.toLowerCase().startsWith("mac") //$NON-NLS-1$
-					|| osName.toLowerCase().contains("linux") //$NON-NLS-1$
-					|| osName.toLowerCase().contains("nix")) { //$NON-NLS-1$
-				return "script.sh";//$NON-NLS-1$
-			} else {
-				return null;
-			}
-		}
-
 		private String streamToString(InputStream stream) {
 			BufferedReader buff = new BufferedReader(new InputStreamReader(
 					stream));
@@ -306,7 +271,7 @@ public class DockerConnection implements IDockerConnection {
 			String line = "";
 			try {
 				while ((line = buff.readLine()) != null) {
-					res.append(System.getProperty("line.separator")); //$NON-NLS-1$
+					res.append(System.getProperty("line.separator"));
 					res.append(line);
 				}
 				buff.close();
