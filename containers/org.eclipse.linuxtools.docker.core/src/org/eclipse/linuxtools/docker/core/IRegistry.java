@@ -14,12 +14,26 @@ import java.util.List;
 
 public interface IRegistry {
 
+	/**
+	 * @return the server address URL, including the scheme
+	 */
 	String getServerAddress();
+
+	/**
+	 * 
+	 * @return the server host (and optional port) to prepend to an image name
+	 *         when pushing or pulling
+	 */
+	String getServerHost();
 
 	List<IDockerImageSearchResult> getImages(String term) throws DockerException;
 
 	List<IRepositoryTag> getTags(String repository) throws DockerException;
 
 	boolean isVersion2();
+
+	boolean isDockerHubRegistry();
+
+	boolean isAuthProvided();
 
 }
