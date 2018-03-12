@@ -686,11 +686,6 @@ public class ContainerLauncher {
 			return;
 		}
 
-		// if connection is not open, force it to be by fetching images
-		if (!connection.isOpen()) {
-			connection.getImages();
-		}
-
 		DockerHostConfig.Builder hostBuilder = new DockerHostConfig.Builder()
 				.privileged(privilegedMode);
 
