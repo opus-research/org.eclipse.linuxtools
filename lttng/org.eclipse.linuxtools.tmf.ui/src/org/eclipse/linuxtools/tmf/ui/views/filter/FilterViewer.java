@@ -339,6 +339,16 @@ class FilterViewer extends Composite {
         return selectedNode;
     }
 
+    @Override
+    public boolean setFocus() {
+        return fViewer.getControl().setFocus();
+    }
+
+    @Override
+    public boolean isFocusControl() {
+        return fViewer.getControl().isFocusControl();
+    }
+
     public void addSelectionChangedListener(ISelectionChangedListener listener) {
         fViewer.addSelectionChangedListener(listener);
     }
