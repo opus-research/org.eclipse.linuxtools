@@ -48,6 +48,43 @@ final class IntegerStateValue extends TmfStateValue {
     }
 
     @Override
+    public boolean compare(@Nullable Object object, ComparisonOperator comparisonOperator) {
+        if (!(object instanceof IntegerStateValue)) {
+            return false;
+        }
+        IntegerStateValue other = (IntegerStateValue) object;
+
+        boolean result = false;
+        switch (comparisonOperator) {
+        case EQ:
+             result = (this.value == other.value);
+             break;
+        case NE:
+            result = (this.value != other.value);
+            break;
+        case GE:
+            result = (this.value >= other.value);
+            break;
+        case GT:
+            result = (this.value > other.value);
+            break;
+        case LE:
+            result = (this.value <= other.value);
+            break;
+        case LT:
+            result = (this.value < other.value);
+            break;
+        case None:
+            throw new IllegalArgumentException();
+        default:
+            result = (this.value == other.value);
+            break;
+        }
+        return result;
+    }
+
+
+    @Override
     public int hashCode() {
         return value;
     }

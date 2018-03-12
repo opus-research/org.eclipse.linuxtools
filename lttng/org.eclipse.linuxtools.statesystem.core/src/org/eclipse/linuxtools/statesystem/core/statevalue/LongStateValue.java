@@ -64,4 +64,40 @@ final class LongStateValue extends TmfStateValue {
     public long unboxLong() {
         return value;
     }
+
+    @Override
+    public boolean compare(Object object, ComparisonOperator comparisonOperator) {
+        if (!(object instanceof LongStateValue)) {
+            return false;
+        }
+        LongStateValue other = (LongStateValue) object;
+
+        boolean result = false;
+        switch (comparisonOperator) {
+        case EQ:
+             result = (this.value == other.value);
+             break;
+        case NE:
+            result = (this.value != other.value);
+            break;
+        case GE:
+            result = (this.value >= other.value);
+            break;
+        case GT:
+            result = (this.value > other.value);
+            break;
+        case LE:
+            result = (this.value <= other.value);
+            break;
+        case LT:
+            result = (this.value < other.value);
+            break;
+        case None:
+            throw new IllegalArgumentException();
+        default:
+            result = (this.value == other.value);
+            break;
+        }
+        return result;
+    }
 }

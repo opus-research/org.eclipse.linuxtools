@@ -41,6 +41,27 @@ public interface ITmfStateValue {
     }
 
     /**
+     * The supported comparison operations to compare the different state values.
+     * @since 4.0
+     */
+    public enum ComparisonOperator {
+            /** Equal (=) */
+            EQ,
+            /** Not Equal (!=) */
+            NE,
+            /** Greater Equal (>=) */
+            GE,
+            /** Greater Than (>) */
+            GT,
+            /** Less Equal (<=) */
+            LE,
+            /** Less Than (<) */
+            LT,
+            /** None! */
+            None
+    }
+
+    /**
      * Each implementation has to define which one (among the supported types)
      * they implement. There could be more than one implementation of each type,
      * depending on the needs of the different users.
@@ -95,4 +116,14 @@ public interface ITmfStateValue {
      *             If the contained value cannot be read as a String
      */
     String unboxStr();
+
+    /**
+     * Compare two state values with respect to the comparisonOperator
+     * @param object the state value to be compared with the current value
+     * @param comparisonOperator the operator to compare the state values
+     *
+     * @return The comparison result
+     * @since 4.0
+     */
+    boolean compare(Object object, ComparisonOperator comparisonOperator);
 }
