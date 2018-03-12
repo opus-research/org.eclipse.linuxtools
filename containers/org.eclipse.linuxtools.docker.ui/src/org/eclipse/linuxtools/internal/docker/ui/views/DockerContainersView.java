@@ -91,6 +91,7 @@ public class DockerContainersView extends ViewPart implements
 
 	private static final String SHOW_ALL_CONTAINERS_COMMAND_ID = "org.eclipse.linuxtools.docker.ui.commands.showAllContainers"; //$NON-NLS-1$
 	private static final String SHOW_ALL_CONTAINERS_PREFERENCE = "showAllContainers"; //$NON-NLS-1$
+	private static final String FILTER_WITH_LABELS_PREFERENCE = "filterWithLabels"; //$NON-NLS-1$
 
 	/** Id of the view. */
 	public static final String VIEW_ID = "org.eclipse.linuxtools.docker.ui.dockerContainersView";
@@ -105,6 +106,7 @@ public class DockerContainersView extends ViewPart implements
 	private TableViewer viewer;
 	private IDockerConnection connection;
 	private final HideStoppedContainersViewerFilter hideStoppedContainersViewerFilter = new HideStoppedContainersViewerFilter();
+	private final ContainersWithLabelsViewerFilter containersWithLabelsViewerFilter = new ContainersWithLabelsViewerFilter();
 
 	private final Image STARTED_IMAGE = SWTImagesFactory.DESC_CONTAINER_STARTED
 			.createImage();
@@ -189,6 +191,10 @@ public class DockerContainersView extends ViewPart implements
 		boolean showAll = preferences.getBoolean(SHOW_ALL_CONTAINERS_PREFERENCE,
 				true);
 		showAllContainers(showAll);
+		// boolean filterWithLabels = preferences
+		// .getBoolean(FILTER_WITH_LABELS_PREFERENCE, false);
+		// String labelsString =
+		// }
 		final ICommandService service = getViewSite().getWorkbenchWindow()
 				.getService(ICommandService.class);
 		service.getCommand(SHOW_ALL_CONTAINERS_COMMAND_ID)
@@ -322,7 +328,7 @@ public class DockerContainersView extends ViewPart implements
 		comparator.setColumn(creationDateColumn.getColumn());
 		this.viewer.setComparator(comparator);
 		// apply search filter
-		this.viewer.addFilter(getContainersFilter());
+		this.viewer.setFilters(getContainersFilter());
 		setConnection(CommandUtils.getCurrentConnection(null));
 		this.viewer.addSelectionChangedListener(onContainerSelection());
 		// get the current selection in the tableviewer
@@ -565,6 +571,43 @@ public class DockerContainersView extends ViewPart implements
 					.hasNext();) {
 				ViewerFilter viewerFilter = iterator.next();
 				if (viewerFilter.equals(hideStoppedContainersViewerFilter)) {
+					iterator.remove();
+				}
+			}
+			this.viewer.setFilters(filters.toArray(new ViewerFilter[0]));
+		}
+		// Save enablement across sessions using a preference variable.
+		IEclipsePreferences preferences = InstanceScope.INSTANCE
+				.getNode(Activator.PLUGIN_ID);
+		preferences.putBoolean(SHOW_ALL_CONTAINERS_PREFERENCE, enabled);
+		refreshViewTitle();
+	}
+
+	/**
+	 * Activates {@link ContainersWithLabelsViewerFilter} if the given
+	 * {@code enabled} argument is <code>false</code>, deactivates the filter
+	 * otherwise.
+	 * 
+	 * @param enabled
+	 *            the argument to enable/disable the filter.
+	 */
+	public void showContainersWithLabels(boolean enabled) {
+		if (DockerContainersView.this.viewer == null) {
+			return;
+		}
+		if (!enabled) {
+			this.viewer.addFilter(containersWithLabelsViewerFilter);
+
+		} else {
+			final List<ViewerFilter> filters = new ArrayList<>(
+					Arrays.asList(this.viewer.getFilters()));
+
+			// remove filters and make sure there is no duplicate in the list of
+			// filters
+			for (Iterator<ViewerFilter> iterator = filters.iterator(); iterator
+					.hasNext();) {
+				ViewerFilter viewerFilter = iterator.next();
+				if (viewerFilter.equals(containersWithLabelsViewerFilter)) {
 					iterator.remove();
 				}
 			}

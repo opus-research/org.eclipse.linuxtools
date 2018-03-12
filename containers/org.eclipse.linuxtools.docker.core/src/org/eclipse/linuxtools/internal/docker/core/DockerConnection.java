@@ -725,6 +725,60 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		return this.containers;
 	}
 
+	public Set<String> getContainerIdsWithLabels(Map<String, String> labels)
+			throws DockerException {
+		Set<String> labelSet = new HashSet<>();
+		try {
+			final List<Container> nativeContainers = new ArrayList<>();
+			synchronized (clientLock) {
+				// Check that client is not null as this connection may have
+				// been closed but there is an async request to filter the
+				// containers list left in the queue
+				if (client == null) {
+					// in that case the list becomes empty, which is fine is
+					// there's no client.
+					return Collections.emptySet();
+				}
+				DockerClient clientCopy = getClientCopy();
+				DockerClient.ListContainersParam[] parms = new DockerClient.ListContainersParam[labels
+						.size() + 1];
+				parms[0] = DockerClient.ListContainersParam.allContainers();
+				int i = 1;
+				for (Entry<String, String> entry : labels.entrySet()) {
+					if (entry.getValue() == null || "".equals(entry.getValue())) //$NON-NLS-1$
+						parms[i++] = DockerClient.ListContainersParam
+								.withLabel(entry.getKey());
+					else
+						parms[i++] = DockerClient.ListContainersParam
+								.withLabel(entry.getKey(), entry.getValue());
+				}
+				nativeContainers.addAll(clientCopy.listContainers(parms));
+			}
+			// We have a list of containers with labels. Now, we create a Set of
+			// ids which contain those labels to use in filtering a list of
+			// Containers
+			for (Container nativeContainer : nativeContainers) {
+				labelSet.add(nativeContainer.id());
+			}
+		} catch (DockerTimeoutException e) {
+			if (isOpen()) {
+				Activator.log(new Status(IStatus.WARNING, Activator.PLUGIN_ID,
+						Messages.Docker_Connection_Timeout, e));
+				close();
+			}
+		} catch (com.spotify.docker.client.DockerException
+				| InterruptedException e) {
+			if (isOpen() && e.getCause() != null
+					&& e.getCause().getCause() != null
+					&& e.getCause().getCause() instanceof ProcessingException) {
+				close();
+			} else {
+				throw new DockerException(e.getMessage());
+			}
+		}
+		return labelSet;
+	}
+
 	/**
 	 * Sorts the given values using the given comparator and returns the result
 	 * in a {@link List}
