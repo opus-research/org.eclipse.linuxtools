@@ -25,7 +25,6 @@ import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.integration.tests.image.AbstractImageBotTest;
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.preferences.DockerComposePreferencePage;
-import org.eclipse.linuxtools.docker.reddeer.ui.BrowserView;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
 import org.eclipse.linuxtools.docker.reddeer.utils.BrowserContentsCheck;
 import org.eclipse.linuxtools.internal.docker.core.DockerCompose;
@@ -38,12 +37,12 @@ import org.jboss.reddeer.core.condition.JobIsRunning;
 import org.jboss.reddeer.core.matcher.WithTextMatcher;
 import org.jboss.reddeer.eclipse.condition.ConsoleHasNoChange;
 import org.jboss.reddeer.eclipse.jdt.ui.packageexplorer.PackageExplorer;
+import org.jboss.reddeer.eclipse.ui.browser.BrowserView;
 import org.jboss.reddeer.jface.preference.PreferenceDialog;
 import org.jboss.reddeer.swt.api.Menu;
 import org.jboss.reddeer.swt.exception.SWTLayerException;
 import org.jboss.reddeer.swt.impl.button.FinishButton;
 import org.jboss.reddeer.swt.impl.button.OkButton;
-import org.jboss.reddeer.swt.impl.button.PushButton;
 import org.jboss.reddeer.swt.impl.combo.LabeledCombo;
 import org.jboss.reddeer.swt.impl.menu.ContextMenu;
 import org.jboss.reddeer.swt.impl.menu.ShellMenu;
@@ -149,7 +148,7 @@ public class ComposeTest extends AbstractImageBotTest {
 		new OkButton().click();
 		try {
 			new DefaultShell("Docker Compose");
-			new PushButton("Apply and Close").click();
+			new OkButton().click();
 			fail("Docker Compose has not been found! Is it installed and the path is correct?");
 		} catch (SWTLayerException ex) {
 		}
