@@ -16,10 +16,16 @@ import java.io.IOException;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionSettingsFinder;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ButtonAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CheckBoxAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseShellRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerConnectionManagerUtils;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.RadioAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTBotTreeItemAssertions;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTUtils;
@@ -44,6 +50,8 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.spotify.docker.client.DockerClient;
 
 /**
  * Testing the {@link NewDockerConnection} {@link Wizard}
@@ -79,6 +87,22 @@ public class NewDockerConnectionSWTBotTest {
 				|| v.getReference().getId().equals(DockerImagesView.VIEW_ID)).forEach(v -> v.close());
 		dockerExplorerViewBot.setFocus();
 		this.addConnectionButton = dockerExplorerViewBot.toolbarButton("&Add Connection");
+	}
+
+	private IDockerConnection configureUnixSocketConnection(final String connectionName, final String pathToSocket) {
+		final DockerClient client = MockDockerClientFactory.build();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from(connectionName, client)
+				.withUnixSocketConnectionSettings(pathToSocket);
+		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
+		return dockerConnection;
+	}
+
+	private IDockerConnection configureTCPConnection(final String connectionName, final String host) {
+		final DockerClient client = MockDockerClientFactory.build();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from(connectionName, client)
+				.withTCPConnectionSettings(host, null);
+		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
+		return dockerConnection;
 	}
 
 	@Test
@@ -174,6 +198,78 @@ public class NewDockerConnectionSWTBotTest {
 	}
 
 	@Test
+	public void shouldNotAllowNewConnectionWithDifferentNameAndSameUnixSocketSettings() throws IOException {
+		// given
+		final String dockerSocketTmpPath = File.createTempFile("docker", ".sock").getAbsolutePath();
+		MockDockerConnectionSettingsFinder.validUnixSocketConnectionAvailable("Mock",
+				"unix://" + dockerSocketTmpPath);
+		// add an existing connection based on the settings above
+		configureUnixSocketConnection("Mock", dockerSocketTmpPath);
+		// when open wizard
+		addConnectionButton.click();
+		bot.waitUntil(Conditions.shellIsActive(WizardMessages.getString("NewDockerConnection.title"))); //$NON-NLS-1$
+		// when changing connection name
+		bot.text(0).setText("foo");
+		// then the wizard should not allow for completion because a connection
+		// with the connection settings already exists.
+		ButtonAssertion.assertThat(bot.button("Finish")).isNotEnabled();
+	}
+
+	@Test
+	public void shouldNotAllowNewConnectionWithDifferentNameAndSameTCPSettings() throws IOException {
+		// given
+		MockDockerConnectionSettingsFinder.validTCPConnectionAvailable("Mock", "https://foo:1234", null);
+		// add an existing connection based on the settings above
+		configureTCPConnection("Mock", "https://foo:1234");
+		// when open wizard
+		addConnectionButton.click();
+		bot.waitUntil(Conditions.shellIsActive(WizardMessages.getString("NewDockerConnection.title"))); //$NON-NLS-1$
+		// when changing connection name
+		bot.text(0).setText("foo");
+		// then the wizard should not allow for completion because a connection
+		// with the connection settings already exists.
+		ButtonAssertion.assertThat(bot.button("Finish")).isNotEnabled();
+	}
+
+	@Test
+	public void shouldAllowNewConnectionWithDifferentNameAndUnixSettings() throws IOException {
+		// given
+		final String dockerSocketTmpPath = File.createTempFile("docker", ".sock").getAbsolutePath();
+		configureUnixSocketConnection("Bar", dockerSocketTmpPath);
+		MockDockerConnectionSettingsFinder.validUnixSocketConnectionAvailable("Mock",
+				"unix://" + dockerSocketTmpPath);
+		final String otherDockerSocketTmpPath = File.createTempFile("docker", ".sock").getAbsolutePath();
+		// when open wizard
+		addConnectionButton.click();
+		bot.waitUntil(Conditions.shellIsActive(WizardMessages.getString("NewDockerConnection.title"))); //$NON-NLS-1$
+		// when changing connection name
+		bot.text(0).setText("foo");
+		bot.checkBox(0).select();
+		bot.text(1).setText(otherDockerSocketTmpPath);
+		// then the wizard should not allow for completion because a connection
+		// with the connection settings already exists.
+		ButtonAssertion.assertThat(bot.button("Finish")).isEnabled();
+	}
+
+	@Test
+	public void shouldAllowNewConnectionWithDifferentNameAndTCPSettings() throws IOException {
+		// given
+		MockDockerConnectionSettingsFinder.validTCPConnectionAvailable("Mock", "https://foo:1234", null);
+		// add an existing connection based on the settings above
+		configureTCPConnection("Mock", "https://foo");
+		// when open wizard
+		addConnectionButton.click();
+		bot.waitUntil(Conditions.shellIsActive(WizardMessages.getString("NewDockerConnection.title"))); //$NON-NLS-1$
+		// when changing connection name
+		bot.text(0).setText("foo");
+		bot.checkBox(0).select();
+		bot.text(2).setText("https://bar:1234");
+		// then the wizard should not allow for completion because a connection
+		// with the connection settings already exists.
+		ButtonAssertion.assertThat(bot.button("Finish")).isEnabled();
+	}
+
+	@Test
 	public void shouldPopulateConnectionWithClipboard() {
 		final int [] DND_TYPE = {DND.SELECTION_CLIPBOARD, DND.CLIPBOARD};
 		for (int i = 0; i < DND_TYPE.length; i++) {
@@ -218,5 +314,6 @@ public class NewDockerConnectionSWTBotTest {
 		}
 
 	}
+
 
 }
