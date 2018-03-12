@@ -60,7 +60,7 @@ public class CTFStream {
     /**
      * Maps event ids to events
      */
-    private List<IEventDeclaration> fEvents = Collections.EMPTY_LIST;
+    private final ArrayList<IEventDeclaration> fEvents = new ArrayList<>();
 
     private boolean fEventUnsetId = false;
 
@@ -305,12 +305,8 @@ public class CTFStream {
                 throw new ParseException("Event without id with multiple events in a stream"); //$NON-NLS-1$
             }
             fEventUnsetId = true;
-            fEvents = Collections.singletonList(event);
+            fEvents.add(event);
         } else {
-            if (fEvents.equals(Collections.EMPTY_LIST)) {
-                fEvents = new ArrayList<>();
-            }
-
             /* Check if an event with the same ID already exists */
             if (fEvents.size() > id && fEvents.get(id) != null) {
                 throw new ParseException("Event id already exists"); //$NON-NLS-1$
@@ -333,7 +329,7 @@ public class CTFStream {
      * @since 3.1
      */
     public void addEvents(Collection<IEventDeclaration> events) throws CTFReaderException {
-        if (fEvents != Collections.EMPTY_LIST) {
+        if (!fEvents.isEmpty()) {
             if (fEventUnsetId) {
                 throw new CTFReaderException("Cannot add to a stream with an unidentified event"); //$NON-NLS-1$
             }
@@ -348,14 +344,12 @@ public class CTFStream {
                 }
             }
         } else {
-            fEvents = new ArrayList<>(events);
+            fEvents.addAll(events);
         }
     }
 
     private void ensureSize(int index) {
-        if (fEvents instanceof ArrayList) {
-            ((ArrayList<IEventDeclaration>) fEvents).ensureCapacity(index);
-        }
+        fEvents.ensureCapacity(index);
         while (fEvents.size() <= index) {
             fEvents.add(null);
         }
