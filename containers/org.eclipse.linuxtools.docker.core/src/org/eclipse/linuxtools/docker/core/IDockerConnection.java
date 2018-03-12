@@ -86,6 +86,14 @@ public interface IDockerConnection {
 	public List<IDockerImage> getImages();
 
 	/**
+	 * @return the {@link IDockerImage} identified by the given {@code id} or
+	 *         <code>null</code> if none was found.
+	 * @param id
+	 *            the {@link IDockerImage} id
+	 */
+	public IDockerImage getImage(final String id);
+
+	/**
 	 * Checks if an entry in the current list of {@link IDockerImage} exists
 	 * with the same <code>name</code> and <code>tag</code>
 	 * 
