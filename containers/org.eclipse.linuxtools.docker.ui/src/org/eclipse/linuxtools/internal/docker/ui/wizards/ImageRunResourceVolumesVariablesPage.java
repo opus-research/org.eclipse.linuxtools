@@ -12,10 +12,13 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.beans.IBeanValueProperty;
+import org.eclipse.core.databinding.observable.ChangeEvent;
+import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.map.IObservableMap;
 import org.eclipse.core.databinding.property.Properties;
@@ -71,7 +74,7 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 	public ImageRunResourceVolumesVariablesPage(
 			final IDockerConnection connection) throws DockerException {
 		super("ImageSelectionPage", //$NON-NLS-1$
-				WizardMessages.getString("ImageRunResourceVolVarPage.title"), //$NON-NLS-1$
+				"Volumes, Environment Variables and Resource Limitations", //$NON-NLS-1$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
 		setPageComplete(true);
 		this.model = new ImageRunResourceVolumesVariablesModel(connection);
@@ -113,8 +116,7 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		GridLayoutFactory.fillDefaults().spacing(10, 2).applyTo(container);
 		final Button enableResourceLimitationButton = new Button(container,
 				SWT.CHECK);
-		enableResourceLimitationButton.setText(WizardMessages.getString(
-				"ImageRunResourceVolVarPage.enableLimitationButton")); //$NON-NLS-1$
+		enableResourceLimitationButton.setText("Enable resource limitations"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.applyTo(enableResourceLimitationButton);
 		dbc.bindValue(
@@ -135,22 +137,19 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 
 		// specify CPU limitation
 		final Label cpuPriorityLabel = new Label(subContainer, SWT.NONE);
-		cpuPriorityLabel.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.cpuPriorityLabel")); //$NON-NLS-1$
+		cpuPriorityLabel.setText("CPU priority:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(cpuPriorityLabel);
 		final Button lowCPULimitationButton = new Button(subContainer,
 				SWT.RADIO);
-		lowCPULimitationButton.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.lowButton")); //$NON-NLS-1$
+		lowCPULimitationButton.setText("Low");
 		lowCPULimitationButton.addSelectionListener(
 				onCpuShareWeighting(ImageRunResourceVolumesVariablesModel.LOW));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.applyTo(lowCPULimitationButton);
 		final Button mediumCPULimitationButton = new Button(subContainer,
 				SWT.RADIO);
-		mediumCPULimitationButton.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.mediumButton")); //$NON-NLS-1$
+		mediumCPULimitationButton.setText("Medium");
 		mediumCPULimitationButton.addSelectionListener(onCpuShareWeighting(
 				ImageRunResourceVolumesVariablesModel.MEDIUM));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
@@ -158,8 +157,7 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		final Button highCPULimitationButton = new Button(subContainer,
 				SWT.RADIO);
 		mediumCPULimitationButton.setSelection(true);
-		highCPULimitationButton.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.highButton")); //$NON-NLS-1$
+		highCPULimitationButton.setText("High");
 		highCPULimitationButton.addSelectionListener(onCpuShareWeighting(
 				ImageRunResourceVolumesVariablesModel.HIGH));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(2, 1)
@@ -174,8 +172,7 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 
 		// Memory limitation
 		final Label memoryLimitLabel = new Label(subContainer, SWT.NONE);
-		memoryLimitLabel.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.memoryLimit")); //$NON-NLS-1$
+		memoryLimitLabel.setText("Memory limit:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(memoryLimitLabel);
 		final Scale memoryLimitSpinner = new Scale(subContainer, SWT.NONE);
@@ -247,8 +244,7 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 
 	private void createVolumeSettingsContainer(final Composite container) {
 		final Label volumesLabel = new Label(container, SWT.NONE);
-		volumesLabel.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.dataVolumesLabel")); //$NON-NLS-1$
+		volumesLabel.setText("Data Volumes:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(COLUMNS, 1).applyTo(volumesLabel);
 		final CheckboxTableViewer dataVolumesTableViewer = createVolumesTable(
@@ -266,25 +262,21 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		final Button addButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(addButton);
-		addButton.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.addButton")); //$NON-NLS-1$
+		addButton.setText("Add..."); //$NON-NLS-1$
 		addButton.addSelectionListener(onAddDataVolume(dataVolumesTableViewer));
 		final Button editButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(editButton);
-		editButton.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.editButton")); //$NON-NLS-1$
+		editButton.setText("Edit..."); //$NON-NLS-1$
 		editButton
 				.addSelectionListener(onEditDataVolume(dataVolumesTableViewer));
 		editButton.setEnabled(false);
-		final Button removeButton = new Button(buttonsContainers, SWT.NONE);
+		final Button resetButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
-				.grab(true, false).applyTo(removeButton);
-		removeButton.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.removeButton")); //$NON-NLS-1$
-		removeButton.addSelectionListener(
-				onRemoveDataVolumes(dataVolumesTableViewer));
-		removeButton.setEnabled(false);
+				.grab(true, false).applyTo(resetButton);
+		resetButton.setText("Remove"); //$NON-NLS-1$
+		resetButton.addSelectionListener(onRemoveDataVolumes());
+		resetButton.setEnabled(false);
 		// update table content when selected image changes
 		bind(dataVolumesTableViewer, model.getDataVolumes(),
 				BeanProperties.values(DataVolumeModel.class,
@@ -297,10 +289,9 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 				BeanProperties
 						.set(ImageRunResourceVolumesVariablesModel.SELECTED_DATA_VOLUMES)
 						.observe(model));
-		// disable the edit and removeButton if the table is empty
-		dataVolumesTableViewer.addSelectionChangedListener(
-				onSelectionChanged(editButton, removeButton));
-
+		ViewersObservables.observeMultiSelection(dataVolumesTableViewer)
+				.addChangeListener(
+						onDataVolumesSelection(editButton, resetButton));
 	}
 
 	/**
@@ -329,19 +320,16 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 
 	}
 
-	private ISelectionChangedListener onSelectionChanged(
+	private IChangeListener onDataVolumesSelection(
 			final Button... targetButtons) {
-		return new ISelectionChangedListener() {
+		return new IChangeListener() {
 
 			@Override
-			public void selectionChanged(final SelectionChangedEvent e) {
-				if (e.getSelection().isEmpty()) {
-					setControlsEnabled(targetButtons, false);
-				} else {
+			public void handleChange(ChangeEvent event) {
+				if (event.getSource() != null) {
 					setControlsEnabled(targetButtons, true);
 				}
 			}
-
 		};
 	}
 
@@ -351,6 +339,11 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
+				final IStructuredSelection selection = (IStructuredSelection) dataVolumesTableViewer
+						.getSelection();
+				if (selection.isEmpty()) {
+					return;
+				}
 				final ContainerDataVolumeDialog dialog = new ContainerDataVolumeDialog(
 						getShell(), model.getConnection());
 				dialog.create();
@@ -396,20 +389,12 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		};
 	}
 
-	private SelectionListener onRemoveDataVolumes(
-			final TableViewer dataVolumesTableViewer) {
+	private SelectionListener onRemoveDataVolumes() {
 		return new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				final IStructuredSelection selection = dataVolumesTableViewer
-						.getStructuredSelection();
-				for (@SuppressWarnings("unchecked")
-				Iterator<DataVolumeModel> iterator = selection
-						.iterator(); iterator.hasNext();) {
-					model.removeDataVolume(iterator.next());
-				}
-
+				// TODO
 			}
 		};
 	}
@@ -426,17 +411,11 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 				BeanProperties
 						.set(ImageRunResourceVolumesVariablesModel.SELECTED_DATA_VOLUMES)
 						.observe(model));
-		addTableViewerColum(tableViewer,
-				WizardMessages.getString(
-						"ImageRunResourceVolVarPage.containerPathColumn"), //$NON-NLS-1$
+		addTableViewerColum(tableViewer, "Container Path", //$NON-NLS-1$
 				150);
-		addTableViewerColum(tableViewer,
-				WizardMessages
-						.getString("ImageRunResourceVolVarPage.mountColumn"), //$NON-NLS-1$
+		addTableViewerColum(tableViewer, "Mount", //$NON-NLS-1$
 				150);
-		addTableViewerColum(tableViewer,
-				WizardMessages
-						.getString("ImageRunResourceVolVarPage.readonlyColumn"), //$NON-NLS-1$
+		addTableViewerColum(tableViewer, "Read-only", //$NON-NLS-1$
 				60);
 		return tableViewer;
 	}
@@ -455,11 +434,10 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 
 	private void createEnvironmentVariablesContainer(
 			final Composite container) {
-		final Label envVarLabel = new Label(container, SWT.NONE);
-		envVarLabel.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.envVarLabel")); //$NON-NLS-1$
+		final Label volumesLabel = new Label(container, SWT.NONE);
+		volumesLabel.setText("Environment variables:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).span(COLUMNS, 1).applyTo(envVarLabel);
+				.grab(true, false).span(COLUMNS, 1).applyTo(volumesLabel);
 		final TableViewer environmentVariablesTableViewer = createEnvironmentVariablesTable(
 				container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
@@ -475,15 +453,13 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		final Button addButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(addButton);
-		addButton.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.addButton")); //$NON-NLS-1$
+		addButton.setText("Add..."); //$NON-NLS-1$
 		addButton.setEnabled(true);
 		addButton.addSelectionListener(onAddEnvironmentVariable());
 		final Button editButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(editButton);
-		editButton.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.editButton")); //$NON-NLS-1$
+		editButton.setText("Edit..."); //$NON-NLS-1$
 		editButton.setEnabled(true);
 		editButton.addSelectionListener(
 				onEditEnvironmentVariable(environmentVariablesTableViewer));
@@ -491,8 +467,7 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		final Button removeButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(removeButton);
-		removeButton.setText(WizardMessages
-				.getString("ImageRunResourceVolVarPage.removeButton")); //$NON-NLS-1$
+		removeButton.setText("Remove"); //$NON-NLS-1$
 		removeButton.addSelectionListener(
 				onRemoveEnvironmentVariables(environmentVariablesTableViewer));
 		removeButton.setEnabled(false);
@@ -502,9 +477,11 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 				BeanProperties.values(EnvironmentVariableModel.class,
 						new String[] { EnvironmentVariableModel.NAME,
 								EnvironmentVariableModel.VALUE }));
-		// disable the edit and removeButton if the table is empty
 		environmentVariablesTableViewer.addSelectionChangedListener(
-				onSelectionChanged(editButton, removeButton));
+				onEnvironmentVariableSelected(editButton, removeButton));
+		// disable the edit and removeButton if the table is empty
+		model.getEnvironmentVariables().addChangeListener(
+				onRemoveEnvironmentVariables(editButton, removeButton));
 	}
 
 	private TableViewer createEnvironmentVariablesTable(Composite container) {
@@ -513,15 +490,27 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 		final TableViewer tableViewer = new TableViewer(table);
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
-		addTableViewerColum(tableViewer,
-				WizardMessages
-						.getString("ImageRunResourceVolVarPage.nameColumn"), //$NON-NLS-1$
+		addTableViewerColum(tableViewer, "Name", //$NON-NLS-1$
 				200);
-		addTableViewerColum(tableViewer,
-				WizardMessages
-						.getString("ImageRunResourceVolVarPage.valueColumn"), //$NON-NLS-1$
+		addTableViewerColum(tableViewer, "Value", //$NON-NLS-1$
 				200);
 		return tableViewer;
+	}
+
+	private ISelectionChangedListener onEnvironmentVariableSelected(
+			final Control... controls) {
+		return new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(final SelectionChangedEvent e) {
+				if (e.getSelection().isEmpty()) {
+					setControlsEnabled(controls, false);
+				} else {
+					setControlsEnabled(controls, true);
+				}
+			}
+
+		};
 	}
 
 	private SelectionListener onAddEnvironmentVariable() {
@@ -556,6 +545,22 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 					selectedVariable.setValue(
 							dialog.getEnvironmentVariable().getValue());
 					environmentVariablesTableViewer.refresh();
+				}
+			}
+		};
+	}
+
+	private IChangeListener onRemoveEnvironmentVariables(
+			final Button... buttons) {
+		return new IChangeListener() {
+
+			@Override
+			public void handleChange(final ChangeEvent event) {
+				@SuppressWarnings("unchecked")
+				final List<EnvironmentVariableModel> links = (List<EnvironmentVariableModel>) event
+						.getSource();
+				if (links.isEmpty()) {
+					setControlsEnabled(buttons, false);
 				}
 			}
 		};
@@ -626,11 +631,9 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 				if (dataVolume.getMountType() != MountType.HOST_FILE_SYSTEM) {
 					return null;
 				} else if (dataVolume.isReadOnly()) {
-					return WizardMessages
-							.getString("ImageRunResourceVolVarPage.true"); //$NON-NLS-1$
+					return "true";
 				}
-				return WizardMessages
-						.getString("ImageRunResourceVolVarPage.false"); //$NON-NLS-1$
+				return "false";
 			default:
 				return null;
 			}

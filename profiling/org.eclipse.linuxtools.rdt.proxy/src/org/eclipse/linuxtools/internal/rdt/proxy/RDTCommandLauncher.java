@@ -84,11 +84,17 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
         lineSeparator = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.cdt.core.ICommandLauncher#getErrorMessage()
+     */
     @Override
     public String getErrorMessage() {
         return fErrorMessage;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.cdt.core.ICommandLauncher#getCommandArgs()
+     */
     private String[] getCommandArgs() {
         return fCommandArgs;
     }
@@ -104,6 +110,9 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
     }
 
 
+    /**
+     * @see org.eclipse.cdt.core.IRemoteCommandLauncher#execute(IPath, String[], String[], IPath, IProgressMonitor)
+     */
     @Override
     public Process execute(IPath commandPath, String[] args, String[] env, IPath changeToDirectory, IProgressMonitor monitor, PTY pty) {
         try {
@@ -145,6 +154,9 @@ public class RDTCommandLauncher implements IRemoteCommandLauncher {
         return new RemoteProcessAdapter(fProcess);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.cdt.core.IRemoteCommandLauncher#waitAndRead(java.io.OutputStream, java.io.OutputStream, org.eclipse.core.runtime.IProgressMonitor)
+     */
     @Override
     public int waitAndRead(OutputStream output, OutputStream err, IProgressMonitor monitor) {
         if (fShowCommand) {

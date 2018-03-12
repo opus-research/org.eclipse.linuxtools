@@ -23,7 +23,6 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -55,27 +54,12 @@ public class ContainerEnvironmentVariableDialog extends Dialog {
 	protected void configureShell(final Shell shell) {
 		super.configureShell(shell);
 		setShellStyle(getShellStyle() | SWT.RESIZE);
-		shell.setText(WizardMessages
-				.getString("ContainerEnvironmentVariableDialog.title")); //$NON-NLS-1$
+		shell.setText("Environment Variable");
 	}
 
 	@Override
 	protected Point getInitialSize() {
 		return new Point(400, super.getInitialSize().y);
-	}
-
-	/**
-	 * Disable the 'OK' button by default
-	 */
-	@Override
-	protected Button createButton(Composite parent, int id, String label,
-			boolean defaultButton) {
-		final Button button = super.createButton(parent, id, label,
-				defaultButton);
-		if (id == IDialogConstants.OK_ID) {
-			button.setEnabled(false);
-		}
-		return button;
 	}
 
 	@Override
@@ -84,24 +68,22 @@ public class ContainerEnvironmentVariableDialog extends Dialog {
 		final Composite container = new Composite(parent, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
 				.span(COLUMNS, 1).grab(true, true).applyTo(container);
-		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(10, 10)
+		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
 				.applyTo(container);
 		final Label explanationLabel = new Label(container, SWT.NONE);
-		explanationLabel.setText(WizardMessages.getString(
-				"ContainerEnvironmentVariableDialog.explanationLabel")); //$NON-NLS-1$
+		explanationLabel
+				.setText("Specify the environment variable name and value:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(false, false).applyTo(explanationLabel);
 		final Label variableNameLabel = new Label(container, SWT.NONE);
-		variableNameLabel.setText(WizardMessages
-				.getString("ContainerEnvironmentVariableDialog.nameLabel")); //$NON-NLS-1$
+		variableNameLabel.setText("Name:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(variableNameLabel);
 		final Text variableNameText = new Text(container, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).applyTo(variableNameText);
 		final Label variableValueLabel = new Label(container, SWT.NONE);
-		variableValueLabel.setText(WizardMessages
-				.getString("ContainerEnvironmentVariableDialog.valueLabel")); //$NON-NLS-1$
+		variableValueLabel.setText("Host address:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(variableValueLabel);
 		final Text variableValueText = new Text(container, SWT.BORDER);

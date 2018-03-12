@@ -11,7 +11,7 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.commands;
 
-import static org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils.getRunConsole;
+import java.io.OutputStream;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -57,7 +57,7 @@ public class RunImageCommandHandler extends AbstractHandler {
 		final IDockerImage selectedImage = getSelectedImage(activePart);
 		if (selectedImage == null) {
 			Activator.logErrorMessage(
-					DVMessages.getString("RunImageUnableToRetrieveError.msg")); //$NON-NLS-1$
+					"Unable to retrieve Docker Image from current selection.");
 		} else {
 			try {
 				final ImageRun wizard = new ImageRun(selectedImage);
@@ -93,20 +93,16 @@ public class RunImageCommandHandler extends AbstractHandler {
 		}
 
 		// Create the container in a non-UI thread.
-		final Job runImageJob = new Job(
-				DVMessages.getString("RunImageCreateContainer.job")) { //$NON-NLS-1$
+		final Job runImageJob = new Job("Create Container") {
 
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				monitor.beginTask(
-						DVMessages.getString("RunImageRunningTask.msg"), 2); //$NON-NLS-1$
+				monitor.beginTask("Running image...", 2);
 				try {
 					final SubProgressMonitor createContainerMonitor = new SubProgressMonitor(
 							monitor, 1);
 					// create the container
-					createContainerMonitor.beginTask(
-							DVMessages.getString(
-									"RunImageCreatingContainerTask.msg"), //$NON-NLS-1$
+					createContainerMonitor.beginTask("Creating container...",
 							1);
 					final String containerId = ((DockerConnection) connection)
 							.createContainer(containerConfig, containerName);
@@ -121,16 +117,11 @@ public class RunImageCommandHandler extends AbstractHandler {
 					// start the container
 					final SubProgressMonitor startContainerMonitor = new SubProgressMonitor(
 							monitor, 1);
-					startContainerMonitor.beginTask(DVMessages
-							.getString("RunImageStartingContainerTask.msg"), 1); //$NON-NLS-1$
-					final RunConsole console = getRunConsole(connection,
-							container);
-					if (console != null) {
-						// if we are auto-logging, show the console
-						console.showConsole();
-					}
+					startContainerMonitor.beginTask("Starting container...", 1);
+					final OutputStream consoleOutputStream = getConsoleOutputStream(
+							connection, container, containerConfig);
 					((DockerConnection) connection).startContainer(containerId,
-							hostConfig, console.getOutputStream());
+							hostConfig, consoleOutputStream);
 					startContainerMonitor.done();
 				} catch (final DockerException | InterruptedException e) {
 					Display.getDefault().syncExec(new Runnable() {
@@ -155,6 +146,21 @@ public class RunImageCommandHandler extends AbstractHandler {
 		};
 		runImageJob.schedule();
 
+	}
+
+	private OutputStream getConsoleOutputStream(
+			final IDockerConnection connection,
+			final IDockerContainer container,
+			final IDockerContainerConfig containerConfig) {
+		if (containerConfig.tty()) {
+			final RunConsole rc = RunConsole.findConsole(container);
+			if (rc != null) {
+				rc.attachToConsole(connection);
+				final OutputStream consoleOutputStream = rc.getOutputStream();
+				return consoleOutputStream;
+			}
+		}
+		return null;
 	}
 
 	/**

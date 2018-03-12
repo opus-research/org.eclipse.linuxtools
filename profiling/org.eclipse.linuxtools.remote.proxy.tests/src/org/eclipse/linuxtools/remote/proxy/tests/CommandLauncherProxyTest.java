@@ -38,7 +38,7 @@ public class CommandLauncherProxyTest extends AbstractProxyTest {
 		IPath commandPath, changeToDirectory;
 		String[] args, env;
 		try {
-			cl =  proxyManager.getLauncher(syncProject.getProject());
+			cl =  proxyManager.getLauncher(syncProject);
 			assertTrue("Should have returned a remote launcher", cl instanceof RDTCommandLauncher);
 		} catch (CoreException e) {
 			fail("Should have returned a launcher: " + e.getCause());
@@ -50,8 +50,8 @@ public class CommandLauncherProxyTest extends AbstractProxyTest {
 		changeToDirectory = new Path("/tmp");
 		try {
 			p = cl.execute(commandPath, args, env, changeToDirectory, new NullProgressMonitor());
-			assertNotNull(p);
 			p.waitFor();
+			assertNotNull(p);
 			assertEquals("Process exited with failure", 0, p.exitValue());
 		} catch (Exception e) {
 			fail("Unable to execute " + commandPath + " on remote machine: " + e.getMessage());
@@ -75,7 +75,7 @@ public class CommandLauncherProxyTest extends AbstractProxyTest {
 		IPath commandPath, changeToDirectory;
 		String[] args, env;
 		try {
-			cl =  proxyManager.getLauncher(localProject.getProject());
+			cl =  proxyManager.getLauncher(localProject);
 			assertTrue("Should have returned a local launcher", cl instanceof LocalLauncher);
 		} catch (CoreException e) {
 			fail("Should have returned a launcher: " + e.getCause());
@@ -91,7 +91,7 @@ public class CommandLauncherProxyTest extends AbstractProxyTest {
 			fullCmd.append(" " + s);
 		}
 		// Use local env variables
-		ArrayList<String> envList = new ArrayList<>();
+		ArrayList<String> envList = new ArrayList<String>();
 		for(Entry<String, String> entry : System.getenv().entrySet()) {
 			envList.add(entry.getKey()+"="+entry.getValue());
 		}
@@ -104,7 +104,7 @@ public class CommandLauncherProxyTest extends AbstractProxyTest {
 		try {
 			p = cl.execute(commandPath, args, env, changeToDirectory, new NullProgressMonitor());
 			assertNotNull(p);
-			while(p.isAlive()){}
+			while(p.isAlive());
 			// Call to waitFor() will drive to empty result
 			//p.waitFor();
 			assertEquals("Process exited with failure", 0, p.exitValue());

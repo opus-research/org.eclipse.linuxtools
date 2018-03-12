@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
-import java.util.UUID;
-
 import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumesVariablesModel.MountType;
 
@@ -22,19 +20,17 @@ import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumes
 public class DataVolumeModel extends BaseDatabindingModel
 		implements Comparable<DataVolumeModel> {
 
-	public static final String CONTAINER_PATH = "containerPath"; //$NON-NLS-1$
+	public static final String CONTAINER_PATH = "containerPath";
 
-	public static final String MOUNT_TYPE = "mountType"; //$NON-NLS-1$
+	public static final String MOUNT_TYPE = "mountType";
 
-	public static final String MOUNT = "mount"; //$NON-NLS-1$
+	public static final String MOUNT = "mount";
 
-	public static final String HOST_PATH_MOUNT = "hostPathMount"; //$NON-NLS-1$
+	public static final String HOST_PATH_MOUNT = "hostPathMount";
 
-	public static final String READ_ONLY_VOLUME = "readOnly"; //$NON-NLS-1$
+	public static final String READ_ONLY_VOLUME = "readOnly";
 
-	public static final String CONTAINER_MOUNT = "containerMount"; //$NON-NLS-1$
-
-	private final String id = UUID.randomUUID().toString();
+	public static final String CONTAINER_MOUNT = "containerMount";
 
 	private String containerPath;
 
@@ -154,7 +150,12 @@ public class DataVolumeModel extends BaseDatabindingModel
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((containerPath == null) ? 0 : containerPath.hashCode());
+		result = prime * result + ((mount == null) ? 0 : mount.hashCode());
+		result = prime * result
+				+ ((mountType == null) ? 0 : mountType.hashCode());
+		result = prime * result + (readOnly ? 1231 : 1237);
 		return result;
 	}
 
@@ -167,10 +168,19 @@ public class DataVolumeModel extends BaseDatabindingModel
 		if (getClass() != obj.getClass())
 			return false;
 		DataVolumeModel other = (DataVolumeModel) obj;
-		if (id == null) {
-			if (other.id != null)
+		if (containerPath == null) {
+			if (other.containerPath != null)
 				return false;
-		} else if (!id.equals(other.id))
+		} else if (!containerPath.equals(other.containerPath))
+			return false;
+		if (mount == null) {
+			if (other.mount != null)
+				return false;
+		} else if (!mount.equals(other.mount))
+			return false;
+		if (mountType != other.mountType)
+			return false;
+		if (readOnly != other.readOnly)
 			return false;
 		return true;
 	}

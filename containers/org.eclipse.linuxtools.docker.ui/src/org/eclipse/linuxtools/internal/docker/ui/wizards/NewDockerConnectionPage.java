@@ -38,9 +38,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -71,12 +69,16 @@ public class NewDockerConnectionPage extends WizardPage {
 	private Text tcpCertPathText;
 
 	public NewDockerConnectionPage() {
-		super("NewDockerConnectionPage", //$NON-NLS-1$
-				WizardMessages.getString("NewDockerConnectionPage.title"),
+		super("NewDockerConnectionPage", "Connect to a Docker daemon",
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
-		setMessage(WizardMessages.getString("NewDockerConnectionPage.msg")); //$NON-NLS-1$
+		setMessage("Select the binding mode to connect to the Docker daemon");
 	}
 
+	/**
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
+	 */
 	@Override
 	public void createControl(final Composite parent) {
 		final Composite container = new Composite(parent, SWT.NONE);
@@ -105,12 +107,10 @@ public class NewDockerConnectionPage extends WizardPage {
 
 		// Connection name
 		final Label connectionNameLabel = new Label(container, SWT.NONE);
-		connectionNameLabel.setText(
-				WizardMessages.getString("NewDockerConnectionPage.nameLabel")); //$NON-NLS-1$
+		connectionNameLabel.setText("Connection name:");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(connectionNameLabel);
 		connectionNameText = new Text(container, SWT.BORDER);
-		connectionNameText.setToolTipText(WizardMessages
-				.getString("NewDockerConnectionPage.nameTooltip")); //$NON-NLS-1$
+		connectionNameText.setToolTipText("Name of the connection");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).span(2, 1)
 				.applyTo(connectionNameText);
 
@@ -126,59 +126,45 @@ public class NewDockerConnectionPage extends WizardPage {
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6).spacing(10, 2).applyTo(customSettingsGroup);
 
 		unixSocketSelectionButton = new Button(customSettingsGroup, SWT.RADIO);
-		unixSocketSelectionButton.setText(
-				WizardMessages.getString("NewDockerConnectionPage.unixSocket")); //$NON-NLS-1$
+		unixSocketSelectionButton.setText("Unix socket");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(COLUMNS, 1).applyTo(unixSocketSelectionButton);
 		final Label unixSocketPathLabel = new Label(customSettingsGroup, SWT.NONE);
-		unixSocketPathLabel.setText(
-				WizardMessages.getString("NewDockerConnectionPage.location")); //$NON-NLS-1$
+		unixSocketPathLabel.setText("Location:");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).indent(INDENT, 0).applyTo(unixSocketPathLabel);
 		unixSocketPathText = new Text(customSettingsGroup, SWT.BORDER);
-		unixSocketPathText.setToolTipText(WizardMessages
-				.getString("NewDockerConnectionPage.unixPathTooltip")); //$NON-NLS-1$
+		unixSocketPathText.setToolTipText("Path to the socket file");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(unixSocketPathText);
 		final Button unixSocketPathBrowseButton = new Button(customSettingsGroup, SWT.BUTTON1);
-		unixSocketPathBrowseButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.browseButton")); //$NON-NLS-1$
-		unixSocketPathBrowseButton
-				.addSelectionListener(onBrowseUnixSocketPath());
+		unixSocketPathBrowseButton.setText("Browse...");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(unixSocketPathBrowseButton);
 
 		tcpConnectionSelectionButton = new Button(customSettingsGroup, SWT.RADIO);
-		tcpConnectionSelectionButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.tcpConnection")); //$NON-NLS-1$
+		tcpConnectionSelectionButton.setText("TCP Connection");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(COLUMNS, 1)
 				.applyTo(tcpConnectionSelectionButton);
 		final Label tcpHostLabel = new Label(customSettingsGroup, SWT.NONE);
-		tcpHostLabel.setText(
-				WizardMessages.getString("NewDockerConnectionPage.hostLabel")); //$NON-NLS-1$
+		tcpHostLabel.setText("Host:");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).indent(INDENT, 0).applyTo(tcpHostLabel);
 		tcpHostText = new Text(customSettingsGroup, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(2, 1).grab(true, false).applyTo(tcpHostText);
 		tcpAuthButton = new Button(customSettingsGroup, SWT.CHECK);
-		tcpAuthButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.tcpAuthButton")); //$NON-NLS-1$
+		tcpAuthButton.setText("Enable authentication");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).indent(INDENT, 0).span(3, 1).applyTo(tcpAuthButton);
 		final Label tcpCertPathLabel = new Label(customSettingsGroup, SWT.NONE);
-		tcpCertPathLabel.setText(
-				WizardMessages.getString("NewDockerConnectionPage.tcpPathLabel")); //$NON-NLS-1$
-		tcpCertPathLabel.setToolTipText(WizardMessages
-				.getString("NewDockerConnectionPage.tcpPathTooltip")); //$NON-NLS-1$
+		tcpCertPathLabel.setText("Path:");
+		tcpCertPathLabel.setToolTipText("Path to the certificates folder");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).indent(INDENT * 2, 0).applyTo(tcpCertPathLabel);
 		tcpCertPathText = new Text(customSettingsGroup, SWT.BORDER);
 		tcpCertPathText.setEnabled(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(tcpCertPathText);
 		final Button tcpCertPathBrowseButton = new Button(customSettingsGroup, SWT.BUTTON1);
-		tcpCertPathBrowseButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.browseButton")); //$NON-NLS-1$
-		tcpCertPathBrowseButton.addSelectionListener(onBrowseTcpCertPathFile());
+		tcpCertPathBrowseButton.setText("Browse...");
 		tcpCertPathText.setEnabled(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(tcpCertPathBrowseButton);
 
 		// the 'test connection' button
 		final Button testConnectionButton = new Button(container, SWT.NONE);
-		testConnectionButton.setText(WizardMessages
-				.getString("NewDockerConnectionPage.testConnection")); //$NON-NLS-1$
+		testConnectionButton.setText("Test Connection");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(COLUMNS, 1).align(SWT.END, SWT.CENTER).applyTo(testConnectionButton);
 		testConnectionButton.addSelectionListener(onTestConnectionButtonSelection());
 		
@@ -203,35 +189,6 @@ public class NewDockerConnectionPage extends WizardPage {
 				tcpAuthControls);
 	}
 	
-	private SelectionListener onBrowseUnixSocketPath() {
-		return new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				final FileDialog fileDialog = new FileDialog(getShell());
-				final String selectedPath = fileDialog.open();
-				if (selectedPath != null) {
-					unixSocketPathText.setText(selectedPath);
-				}
-
-			}
-		};
-	}
-
-	private SelectionListener onBrowseTcpCertPathFile() {
-		return new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				final DirectoryDialog directoryDialog = new DirectoryDialog(
-						getShell());
-				final String selectedPath = directoryDialog.open();
-				if (selectedPath != null) {
-					tcpCertPathText.setText(selectedPath);
-				}
-
-			}
-		};
-	}
-
 	/**
 	 * Sets the default settings by looking for the:
 	 * <ul>
@@ -252,10 +209,7 @@ public class NewDockerConnectionPage extends WizardPage {
 			getWizard().getContainer().run(true, true, new IRunnableWithProgress() {
 				@Override
 						public void run(final IProgressMonitor monitor) {
-							monitor.beginTask(
-									WizardMessages.getString(
-											"NewDockerConnectionPage.retrieveTask"), //$NON-NLS-1$
-									1);
+					monitor.beginTask("Retrieving Docker connection settings...", 1);
 					try {
 						final DockerConnection.Defaults defaults = new DockerConnection.Defaults();
 						NewDockerConnectionPage.this.bindingMode = defaults.getBindingMode();
@@ -453,10 +407,7 @@ public class NewDockerConnectionPage extends WizardPage {
 					getWizard().getContainer().run(true, false, new IRunnableWithProgress() {
 						@Override
 						public void run(final IProgressMonitor monitor) {
-							monitor.beginTask(
-									WizardMessages.getString(
-											"NewDockerConnectionPage.pingTask"), //$NON-NLS-1$
-									IProgressMonitor.UNKNOWN);
+							monitor.beginTask("Pinging Docker daemon...", IProgressMonitor.UNKNOWN);
 							try {
 								final DockerConnection dockerConnection = getDockerConnection();
 								dockerConnection.open(false);
@@ -474,41 +425,13 @@ public class NewDockerConnectionPage extends WizardPage {
 				}
 				try {
 					final Boolean result = resultQueue.poll(5000, TimeUnit.MILLISECONDS);
-					if (result != null && result) {
-						new MessageDialog(Display.getDefault().getActiveShell(),
-								WizardMessages.getString(
-										"NewDockerConnectionPage.success"), //$NON-NLS-1$
-								null,
-								WizardMessages.getString(
-										"NewDockerConnectionPage.pingSuccess"), //$NON-NLS-1$
-								SWT.ICON_INFORMATION,
-								new String[] { WizardMessages.getString(
-										"NewDockerConnectionPage.ok") }, //$NON-NLS-1$
-								0).open();
-
+					if(result) {
+						new MessageDialog(Display.getDefault().getActiveShell(), "Success", null, "Ping succeeded !", SWT.ICON_INFORMATION, new String[]{"OK"}, 0).open();
 					} else {
-						new MessageDialog(Display.getDefault().getActiveShell(),
-								WizardMessages.getString(
-										"NewDockerConnectionPage.failure"), //$NON-NLS-1$
-								null,
-								WizardMessages.getString(
-										"NewDockerConnectionPage.pingFailure"), //$NON-NLS-1$
-								SWT.ICON_ERROR,
-								new String[] { WizardMessages.getString(
-										"NewDockerConnectionPage.ok") }, //$NON-NLS-1$
-								0).open();
+						new MessageDialog(Display.getDefault().getActiveShell(), "Failure", null, "Ping failed !", SWT.ICON_ERROR, new String[]{"OK"}, 0).open();
 					}
 				} catch (InterruptedException o_O) {
-					new MessageDialog(Display.getDefault().getActiveShell(),
-							WizardMessages.getString(
-									"NewDockerConnectionPage.failure"), //$NON-NLS-1$
-							null,
-							WizardMessages.getString(
-									"NewDockerConnectionPage.pingFailure"), //$NON-NLS-1$
-							SWT.ICON_ERROR,
-							new String[] { WizardMessages
-									.getString("NewDockerConnectionPage.ok") }, //$NON-NLS-1$
-							0).open();
+					new MessageDialog(Display.getDefault().getActiveShell(), "Failure", null, "Ping failed !", SWT.ICON_ERROR, new String[]{"OK"}, 0).open();
 				}
 			}
 

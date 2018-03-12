@@ -14,11 +14,12 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.docker.core.DockerException;
@@ -55,7 +56,7 @@ public class ImageRun extends Wizard {
 	 */
 	public ImageRun(final IDockerConnection connection) throws DockerException {
 		super();
-		setWindowTitle(WizardMessages.getString("ImageRun.title")); //$NON-NLS-1$
+		setWindowTitle("Run a Docker Image");
 		setNeedsProgressMonitor(true);
 		this.imageRunSelectionPage = new ImageRunSelectionPage(connection);
 		this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
@@ -70,7 +71,7 @@ public class ImageRun extends Wizard {
 	 * @throws DockerException
 	 */
 	public ImageRun(final IDockerImage selectedImage) throws DockerException {
-		setWindowTitle(WizardMessages.getString("ImageRun.title")); //$NON-NLS-1$
+		setWindowTitle("Run a Docker Image");
 		setNeedsProgressMonitor(true);
 		this.imageRunSelectionPage = new ImageRunSelectionPage(selectedImage);
 		this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
@@ -141,7 +142,6 @@ public class ImageRun extends Wizard {
 
 		// data volumes
 		final List<String> volumesFrom = new ArrayList<>();
-		final List<String> binds = new ArrayList<>();
 		for (Iterator<DataVolumeModel> iterator = resourcesModel
 				.getDataVolumes().iterator(); iterator.hasNext();) {
 			final DataVolumeModel dataVolume = iterator.next();
@@ -152,14 +152,6 @@ public class ImageRun extends Wizard {
 			}
 
 			switch (dataVolume.getMountType()) {
-			case HOST_FILE_SYSTEM:
-				String bind = convertToUnixPath(dataVolume.getHostPathMount())
-						+ ':' + dataVolume.getContainerPath();
-				if (dataVolume.isReadOnly()) {
-					bind += ':' + "ro";
-				}
-				binds.add(bind);
-				break;
 			case CONTAINER:
 				volumesFrom.add(dataVolume.getContainerMount());
 				break;
@@ -168,23 +160,9 @@ public class ImageRun extends Wizard {
 
 			}
 		}
-		hostConfigBuilder.binds(binds);
 		hostConfigBuilder.volumesFrom(volumesFrom);
 
 		return hostConfigBuilder.build();
-	}
-
-	private String convertToUnixPath(String path) {
-		String unixPath = path;
-
-		if (Platform.OS_WIN32.equals(Platform.getOS())) {
-			unixPath = path.replaceAll("\\\\", "/").replaceFirst("\\:", "");
-			if (!unixPath.startsWith("/")) {
-				unixPath = '/' + unixPath;
-			}
-		}
-
-		return unixPath;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -195,7 +173,7 @@ public class ImageRun extends Wizard {
 				.getModel();
 
 		final Builder config = new DockerContainerConfig.Builder()
-				.cmd(getCmdList(selectionModel.getCommand()))
+				.cmd(selectionModel.getCommand())
 				.entryPoint(selectionModel.getEntrypoint())
 				.image(selectionModel.getSelectedImageName())
 				.tty(selectionModel.isAllocatePseudoTTY())
@@ -209,68 +187,44 @@ public class ImageRun extends Wizard {
 		for (Iterator<EnvironmentVariableModel> iterator = resourcesModel
 				.getEnvironmentVariables().iterator(); iterator.hasNext();) {
 			final EnvironmentVariableModel var = iterator.next();
-			environmentVariables.add(var.getName() + "=" + var.getValue()); //$NON-NLS-1$
+			environmentVariables.add(var.getName() + "=" + var.getValue());
 		}
 		config.env(environmentVariables);
-		return config.build();
-	}
 
-	// Create a proper command list after handling quotation.
-	private List<String> getCmdList(String s) {
-		ArrayList<String> list = new ArrayList<>();
-		int length = s.length();
-		boolean insideQuote1 = false; // single-quote
-		boolean insideQuote2 = false; // double-quote
-		boolean escaped = false;
-		StringBuffer buffer = new StringBuffer();
-		// Parse the string and break it up into chunks that are
-		// separated by white-space or are quoted. Ignore characters
-		// that have been escaped, including the escape character.
-		for (int i = 0; i < length; ++i) {
-			char c = s.charAt(i);
-			if (escaped) {
-				buffer.append(c);
-				escaped = false;
+		// container data volumes
+		final Set<String> volumes = new HashSet<>();
+		for (Iterator<DataVolumeModel> iterator = resourcesModel
+				.getDataVolumes().iterator(); iterator.hasNext();) {
+			final DataVolumeModel dataVolume = iterator.next();
+			// only data volumes selected in the CheckBoxTableViewer are
+			// included.
+			if (!resourcesModel.getSelectedDataVolumes().contains(dataVolume)) {
+				continue;
 			}
-			switch (c) {
-			case '\'':
-				if (!insideQuote2)
-					insideQuote1 = insideQuote1 ^ true;
-				else
-					buffer.append(c);
+			switch (dataVolume.getMountType()) {
+			case CONTAINER:
+				// different way to configure 'volumes-from'
 				break;
-			case '\"':
-				if (!insideQuote1)
-					insideQuote2 = insideQuote2 ^ true;
-				else
-					buffer.append(c);
-				break;
-			case '\\':
-				escaped = true;
-				break;
-			case ' ':
-			case '\t':
-			case '\r':
-			case '\n':
-				if (insideQuote1 || insideQuote2)
-					buffer.append(c);
-				else {
-					String item = buffer.toString();
-					buffer.setLength(0);
-					if (item.length() > 0)
-						list.add(item);
+			case HOST_FILE_SYSTEM:
+				if (dataVolume.isReadOnly()) {
+					volumes.add(dataVolume.getContainerPath() + ':'
+							+ dataVolume.getHostPathMount() + ':' + "ro");
+				} else {
+					volumes.add(dataVolume.getContainerPath() + ':'
+							+ dataVolume.getHostPathMount());
 				}
 				break;
-			default:
-				buffer.append(c);
+			case NONE:
+				volumes.add(dataVolume.getContainerPath());
 				break;
+			default:
+				break;
+
 			}
 		}
-		// add last item of string that will be in the buffer
-		String item = buffer.toString();
-		if (item.length() > 0)
-			list.add(item);
-		return list;
+		config.volumes(volumes);
+
+		return config.build();
 	}
 
 }

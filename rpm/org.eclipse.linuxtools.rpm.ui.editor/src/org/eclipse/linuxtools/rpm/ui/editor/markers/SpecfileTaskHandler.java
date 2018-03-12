@@ -88,6 +88,10 @@ public class SpecfileTaskHandler extends SpecfileMarkerHandler{
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.rpm.ui.editor.markers.SpecfileMarkerHandler#getMarkerID()
+     */
     @Override
     String getMarkerID() {
         return SPECFILE_TASK_MARKER_ID;

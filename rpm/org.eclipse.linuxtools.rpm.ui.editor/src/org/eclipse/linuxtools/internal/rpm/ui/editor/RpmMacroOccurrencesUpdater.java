@@ -48,6 +48,9 @@ public class RpmMacroOccurrencesUpdater implements ISelectionChangedListener {
         fEditor = specfileEditor;
     }
 
+    /*
+     * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
+     */
     @Override
     public void selectionChanged(SelectionChangedEvent event) {
         update((ISourceViewer) event.getSource());

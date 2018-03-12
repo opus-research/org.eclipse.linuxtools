@@ -19,6 +19,8 @@ import java.util.Set;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.ChangeEvent;
+import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
@@ -108,10 +110,9 @@ public class ImageRunSelectionPage extends WizardPage {
 	 * 
 	 */
 	public ImageRunSelectionPage(final IDockerImage selectedImage) {
-		super("ImageSelectionPage", //$NON-NLS-1$
-				WizardMessages.getString("ImageSelectionPage.title"), //$NON-NLS-1$
+		super("ImageSelectionPage", "Docker Container settings", //$NON-NLS-1$ //$NON-NLS-2$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
-		setMessage(WizardMessages.getString("ImageSelectionPage.runImage")); //$NON-NLS-1$
+		setMessage("Run a Docker Image"); //$NON-NLS-1$
 		setPageComplete(true);
 		this.model = new ImageRunSelectionModel(selectedImage);
 	}
@@ -125,10 +126,9 @@ public class ImageRunSelectionPage extends WizardPage {
 	 */
 	public ImageRunSelectionPage(final IDockerConnection selectedConnection) {
 		super("ImageSelectionPage", //$NON-NLS-1$
-				WizardMessages.getString("ImageSelectionPage.exposedPortTitle"), //$NON-NLS-1$
+				"Image Selection and Exposed Port Publishing", //$NON-NLS-1$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
-		setMessage(WizardMessages
-				.getString("ImageRunSelectionPage.exposedPortMsg")); //$NON-NLS-1$
+		setMessage("Select the Docker Image to run and the ports to expose"); //$NON-NLS-1$
 		setPageComplete(false);
 		this.model = new ImageRunSelectionModel(selectedConnection);
 	}
@@ -204,8 +204,7 @@ public class ImageRunSelectionPage extends WizardPage {
 		final Combo imageSelectionCombo = new Combo(container, SWT.BORDER);
 		final ComboViewer imageSelectionComboViewer = new ComboViewer(
 				imageSelectionCombo);
-		imageSelectionCombo.setToolTipText(WizardMessages
-				.getString("ImageRunSelectionPage.selectTooltip")); //$NON-NLS-1$
+		imageSelectionCombo.setToolTipText("Select the Docker Image to run"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(1, 1).applyTo(imageSelectionCombo);
 		new ControlDecoration(imageSelectionCombo, SWT.TOP | SWT.LEFT);
@@ -225,8 +224,7 @@ public class ImageRunSelectionPage extends WizardPage {
 				null, null);
 		// image search
 		final Button searchImageButton = new Button(container, SWT.NONE);
-		searchImageButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.search")); //$NON-NLS-1$
+		searchImageButton.setText("Search..."); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).span(1, 1).applyTo(searchImageButton);
 		searchImageButton.addSelectionListener(onSearchImage());
@@ -235,8 +233,7 @@ public class ImageRunSelectionPage extends WizardPage {
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).span(1, 1).applyTo(fillerLabel);
 		final Link pullImageLink = new Link(container, SWT.NONE);
-		pullImageLink.setText(
-				WizardMessages.getString("ImageRunSelectionPage.pullImage")); //$NON-NLS-1$
+		pullImageLink.setText("<a>Pull this image...</a>");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(COLUMNS - 1, 1).applyTo(pullImageLink);
 		pullImageLink.addSelectionListener(onPullImage());
@@ -264,8 +261,8 @@ public class ImageRunSelectionPage extends WizardPage {
 				.grab(false, false).applyTo(imageSelectionLabel);
 		containerNameLabel.setText("Name:"); //$NON-NLS-1$
 		final Text containerNameText = new Text(container, SWT.BORDER);
-		containerNameText.setToolTipText(WizardMessages
-				.getString("ImageRunSelectionPage.containerTooltip")); //$NON-NLS-1$
+		containerNameText.setToolTipText(
+				"a UUID long identifier, a UUID short identifier or a String"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(1, 1).applyTo(containerNameText);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
@@ -282,8 +279,7 @@ public class ImageRunSelectionPage extends WizardPage {
 		final Label entrypointLabel = new Label(container, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(imageSelectionLabel);
-		entrypointLabel.setText(
-				WizardMessages.getString("ImageRunSelectionPage.entrypoint")); //$NON-NLS-1$
+		entrypointLabel.setText("Entrypoint:"); //$NON-NLS-1$
 		// TODO: include SWT.SEARCH | SWT.ICON_SEARCH to support value reset
 		final Text entrypointText = new Text(container, SWT.BORDER);
 
@@ -302,8 +298,7 @@ public class ImageRunSelectionPage extends WizardPage {
 		final Label commandLabel = new Label(container, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(imageSelectionLabel);
-		commandLabel.setText(
-				WizardMessages.getString("ImageRunSelectionPage.command")); //$NON-NLS-1$
+		commandLabel.setText("Command:"); //$NON-NLS-1$
 		final Text commandText = new Text(container, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(1, 1).applyTo(commandText);
@@ -317,8 +312,8 @@ public class ImageRunSelectionPage extends WizardPage {
 
 	private void createPortSettingsSection(final Composite container) {
 		final Button publishAllPortsButton = new Button(container, SWT.CHECK);
-		publishAllPortsButton.setText(WizardMessages
-				.getString("ImageRunSelectionPage.publishAllPorts")); //$NON-NLS-1$
+		publishAllPortsButton.setText(
+				"Publish all exposed ports to random ports on the host interfaces"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(true, false)
 				.applyTo(publishAllPortsButton);
@@ -331,7 +326,7 @@ public class ImageRunSelectionPage extends WizardPage {
 		// specify ports
 		final Label portSettingsLabel = new Label(container, SWT.NONE);
 		portSettingsLabel.setText(
-				WizardMessages.getString("ImageRunSelectionPage.portSettings")); //$NON-NLS-1$
+				"Only publish the selected container ports below to the host:");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).span(COLUMNS, 1).indent(INDENT, 0)
 				.applyTo(portSettingsLabel);
@@ -349,21 +344,18 @@ public class ImageRunSelectionPage extends WizardPage {
 		final Button addButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(addButton);
-		addButton
-				.setText(WizardMessages.getString("ImageRunSelectionPage.add")); //$NON-NLS-1$
+		addButton.setText("Add"); //$NON-NLS-1$
 		addButton.addSelectionListener(onAddPort());
 		final Button editButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(editButton);
-		editButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.editButton")); //$NON-NLS-1$
+		editButton.setText("Edit..."); //$NON-NLS-1$
 		editButton.setEnabled(false);
 		editButton.addSelectionListener(onEditPort(exposedPortsTableViewer));
 		final Button removeButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(removeButton);
-		removeButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.remove")); //$NON-NLS-1$
+		removeButton.setText("Remove"); //$NON-NLS-1$
 		removeButton
 				.addSelectionListener(onRemovePorts(exposedPortsTableViewer));
 		BeanProperties
@@ -384,28 +376,9 @@ public class ImageRunSelectionPage extends WizardPage {
 						exposedPortsTableViewer, ExposedPortModel.class),
 				BeanProperties.set(ImageRunSelectionModel.SELECTED_PORTS)
 						.observe(model));
-		// disable the edit and removeButton if the table is empty
-		exposedPortsTableViewer.addSelectionChangedListener(
-				onSelectionChanged(editButton, removeButton));
 
 		togglePortMappingControls(exposedPortsTableViewer.getTable(), addButton,
 				removeButton);
-	}
-
-	private ISelectionChangedListener onSelectionChanged(
-			final Button... targetButtons) {
-		return new ISelectionChangedListener() {
-
-			@Override
-			public void selectionChanged(final SelectionChangedEvent e) {
-				if (e.getSelection().isEmpty()) {
-					setControlsEnabled(targetButtons, false);
-				} else {
-					setControlsEnabled(targetButtons, true);
-				}
-			}
-
-		};
 	}
 
 	private CheckboxTableViewer createPortSettingsTable(
@@ -415,20 +388,13 @@ public class ImageRunSelectionPage extends WizardPage {
 		final CheckboxTableViewer tableViewer = new CheckboxTableViewer(table);
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
-		createTableViewerColum(tableViewer,
-				WizardMessages
-						.getString("ImageRunSelectionPage.containerPortColumn"), //$NON-NLS-1$
+		createTableViewerColum(tableViewer, "Container Port", //$NON-NLS-1$
 				100);
-		createTableViewerColum(tableViewer,
-				WizardMessages.getString("ImageRunSelectionPage.typeColumn"), //$NON-NLS-1$
+		createTableViewerColum(tableViewer, "Type", //$NON-NLS-1$
 				50);
-		createTableViewerColum(tableViewer,
-				WizardMessages
-						.getString("ImageRunSelectionPage.hostAddressColumn"), //$NON-NLS-1$
+		createTableViewerColum(tableViewer, "Host Address", //$NON-NLS-1$
 				100);
-		createTableViewerColum(tableViewer,
-				WizardMessages
-						.getString("ImageRunSelectionPage.hostPortColumn"), //$NON-NLS-1$
+		createTableViewerColum(tableViewer, "Host Port", //$NON-NLS-1$
 				100);
 		tableViewer.setContentProvider(new ObservableListContentProvider());
 		return tableViewer;
@@ -449,8 +415,7 @@ public class ImageRunSelectionPage extends WizardPage {
 
 	private void createLinkSettingsSection(final Composite container) {
 		final Label linksLabel = new Label(container, SWT.NONE);
-		linksLabel.setText(
-				WizardMessages.getString("ImageRunSelectionPage.links"));
+		linksLabel.setText("Links to other containers:");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).span(COLUMNS, 1).applyTo(linksLabel);
 		final TableViewer linksTableViewer = createLinksTable(container);
@@ -467,21 +432,18 @@ public class ImageRunSelectionPage extends WizardPage {
 		final Button addButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(addButton);
-		addButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.addButton")); //$NON-NLS-1$
+		addButton.setText("Add..."); //$NON-NLS-1$
 		addButton.addSelectionListener(onAddLink());
 		final Button editButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(editButton);
-		editButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.editButton")); //$NON-NLS-1$
+		editButton.setText("Edit..."); //$NON-NLS-1$
 		editButton.setEnabled(false);
 		editButton.addSelectionListener(onEditLink(linksTableViewer));
 		final Button removeButton = new Button(buttonsContainers, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
 				.grab(true, false).applyTo(removeButton);
-		removeButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.remove")); //$NON-NLS-1$
+		removeButton.setText("Remove"); //$NON-NLS-1$
 		removeButton.addSelectionListener(onRemoveLinks(linksTableViewer));
 		removeButton.setEnabled(false);
 		ViewerSupport
@@ -490,10 +452,27 @@ public class ImageRunSelectionPage extends WizardPage {
 								new String[] {
 										ContainerLinkModel.CONTAINER_NAME,
 										ContainerLinkModel.CONTAINER_ALIAS }));
-		// disable the edit and removeButton if the table is empty
 		linksTableViewer.addSelectionChangedListener(
-				onSelectionChanged(editButton, removeButton));
+				onLinkSelected(editButton, removeButton));
+		// disable the edit and removeButton if the table is empty
+		model.getLinks()
+				.addChangeListener(onRemoveLinks(editButton, removeButton));
+	}
 
+	private ISelectionChangedListener onLinkSelected(
+			final Control... controls) {
+		return new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(final SelectionChangedEvent e) {
+				if (e.getSelection().isEmpty()) {
+					setControlsEnabled(controls, false);
+				} else {
+					setControlsEnabled(controls, true);
+				}
+			}
+
+		};
 	}
 
 	private TableViewer createLinksTable(final Composite container) {
@@ -502,12 +481,9 @@ public class ImageRunSelectionPage extends WizardPage {
 		final TableViewer tableViewer = new TableViewer(table);
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
-		createTableViewerColum(tableViewer,
-				WizardMessages
-						.getString("ImageRunSelectionPage.containerNameColumn"), //$NON-NLS-1$
+		createTableViewerColum(tableViewer, "Container Name", //$NON-NLS-1$
 				200);
-		createTableViewerColum(tableViewer,
-				WizardMessages.getString("ImageRunSelectionPage.aliasColumn"), //$NON-NLS-1$
+		createTableViewerColum(tableViewer, "Alias", //$NON-NLS-1$
 				150);
 		return tableViewer;
 	}
@@ -553,6 +529,21 @@ public class ImageRunSelectionPage extends WizardPage {
 		};
 	}
 
+	private IChangeListener onRemoveLinks(final Button... buttons) {
+		return new IChangeListener() {
+
+			@Override
+			public void handleChange(final ChangeEvent event) {
+				@SuppressWarnings("unchecked")
+				final List<ContainerLinkModel> links = (List<ContainerLinkModel>) event
+						.getSource();
+				if (links.isEmpty()) {
+					setControlsEnabled(buttons, false);
+				}
+			}
+		};
+	}
+
 	private SelectionListener onRemoveLinks(
 			final TableViewer linksTableViewer) {
 		return new SelectionAdapter() {
@@ -574,7 +565,7 @@ public class ImageRunSelectionPage extends WizardPage {
 		// interactive/show in console mode
 		final Button interactiveButton = new Button(container, SWT.CHECK);
 		interactiveButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.openStdin")); //$NON-NLS-1$
+				"Keep STDIN open to Console even if not attached (-i)"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(true, false).applyTo(interactiveButton);
 		dbc.bindValue(WidgetProperties.selection().observe(interactiveButton),
@@ -584,8 +575,7 @@ public class ImageRunSelectionPage extends WizardPage {
 						.observe(model));
 		// allocate pseudo-TTY
 		final Button allocatePseudoTTY = new Button(container, SWT.CHECK);
-		allocatePseudoTTY
-				.setText(WizardMessages.getString("ImageRunSelectionPage.tty")); //$NON-NLS-1$
+		allocatePseudoTTY.setText("Allocate pseudo-TTY from Console (-t)"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(true, false).applyTo(allocatePseudoTTY);
 		dbc.bindValue(WidgetProperties.selection().observe(allocatePseudoTTY),
@@ -597,7 +587,7 @@ public class ImageRunSelectionPage extends WizardPage {
 		// remove when exits
 		final Button removeWhenExitsButton = new Button(container, SWT.CHECK);
 		removeWhenExitsButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.autoRemove")); //$NON-NLS-1$
+				"Automatically remove the container when it exits (--rm)"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(true, false)
 				.applyTo(removeWhenExitsButton);
@@ -778,9 +768,9 @@ public class ImageRunSelectionPage extends WizardPage {
 					final String privatePort = exposedPort.substring(0,
 							exposedPort.indexOf('/'));
 					final String type = exposedPort
-							.substring(exposedPort.indexOf('/')); // $NON-NLS-1$
+							.substring(exposedPort.indexOf('/'));
 					availablePorts.add(
-							new ExposedPortModel(privatePort, type, "", "")); //$NON-NLS-1$
+							new ExposedPortModel(privatePort, type, "", ""));
 				}
 			}
 			model.setExposedPorts(availablePorts);
@@ -812,8 +802,7 @@ public class ImageRunSelectionPage extends WizardPage {
 					final IDockerConnection connection = model
 							.getSelectedConnection();
 					final String imageName = model.getSelectedImageName();
-					monitor.beginTask(WizardMessages.getFormattedString(
-							"ImageRunSelectionPage.pullingTask", imageName), 1); //$NON-NLS-1$
+					monitor.beginTask("Pulling image '" + imageName + "'", 1);
 					try {
 						connection.pullImage(imageName,
 								new ImagePullProgressHandler(connection,
@@ -887,17 +876,16 @@ public class ImageRunSelectionPage extends WizardPage {
 					.getValue();
 			if (selectedImageName.isEmpty()) {
 				model.setSelectedImageNeedsPulling(false);
-				return ValidationStatus.error(WizardMessages
-						.getString("ImageRunSelectionPage.specifyImageMsg")); //$NON-NLS-1$
+				return ValidationStatus
+						.error("Please specify the image to run."); //$NON-NLS-1$
 			}
 			if (model.getSelectedImage() != null) {
 				model.setSelectedImageNeedsPulling(false);
 				return ValidationStatus.ok();
 			}
 			model.setSelectedImageNeedsPulling(true);
-			return ValidationStatus.warning(WizardMessages.getFormattedString(
-					"ImageRunSelectionPage.imageNotFoundMessage", //$NON-NLS-1$
-					selectedImageName));
+			return ValidationStatus.warning("Image named '" + selectedImageName
+					+ "' does not exist locally. Click on the link under the 'Image' combo to start pulling it."); //$NON-NLS-1$
 		}
 
 		@Override
