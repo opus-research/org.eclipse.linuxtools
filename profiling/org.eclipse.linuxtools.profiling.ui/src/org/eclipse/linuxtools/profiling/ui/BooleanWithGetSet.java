@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    lufimtse :  Leo Ufimtsev lufimtse@redhat.com
+ *    Red Hat Inc.
  *******************************************************************************/
 
 package org.eclipse.linuxtools.profiling.ui;
@@ -19,7 +19,7 @@ package org.eclipse.linuxtools.profiling.ui;
  * upon a way to set/get a boolean (it is used to transfer a boolean between synced threads). <br>
  * This class was created for this purpose.
  * </p>
- * @since 3.1.0
+ * @since 3.1
  */
 public class BooleanWithGetSet {
     private boolean val;
