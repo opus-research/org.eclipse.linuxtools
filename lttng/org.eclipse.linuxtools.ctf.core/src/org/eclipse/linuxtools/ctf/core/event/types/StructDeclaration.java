@@ -36,7 +36,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class StructDeclaration extends Declaration implements ICompositeDeclaration {
+public class StructDeclaration extends Declaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -116,16 +116,25 @@ public class StructDeclaration extends Declaration implements ICompositeDeclarat
     }
 
     /**
+     * Get the field declaration corresponding to a field name.
+     *
+     * @param fieldName
+     *            The field name
+     * @return The declaration of the field, or null if there is no such field.
      * @since 3.1
      */
-    @Override
     @Nullable
     public IDeclaration getField(String fieldName) {
         return fFieldMap.get(fieldName);
     }
 
-    @SuppressWarnings("null")
-    @Override
+    /**
+     * Gets the field list. Very important since the map of fields does not
+     * retain the order of the fields.
+     *
+     * @return the field list.
+     * @since 3.0
+     */
     public Iterable<String> getFieldsList() {
         return fFieldMap.keySet();
     }
@@ -173,7 +182,6 @@ public class StructDeclaration extends Declaration implements ICompositeDeclarat
         return structDefinition;
     }
 
-
     /**
      * Accelerated create definition
      *
@@ -188,7 +196,6 @@ public class StructDeclaration extends Declaration implements ICompositeDeclarat
      *             read error and such
      * @since 3.1
      */
-    @Override
     public StructDefinition createDefinition(IDefinitionScope definitionScope,
             LexicalScope fieldScope, @NonNull BitBuffer input) throws CTFReaderException {
         alignRead(input);

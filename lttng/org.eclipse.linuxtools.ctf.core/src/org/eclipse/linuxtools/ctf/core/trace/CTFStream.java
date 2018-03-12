@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.ICompositeDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
@@ -46,7 +45,7 @@ public class CTFStream {
      */
     private StructDeclaration fPacketContextDecl = null;
     private StructDeclaration fEventHeaderDecl = null;
-    private ICompositeDeclaration fEventContextDecl = null;
+    private StructDeclaration fEventContextDecl = null;
 
     /**
      * The trace to which the stream belongs
@@ -147,17 +146,6 @@ public class CTFStream {
     }
 
     /**
-     * Sets the event context to a composite declaration
-     *
-     * @param eventContext
-     *            the context for all events in this stream
-     * @since 3.1
-     */
-    public void setEventContext(ICompositeDeclaration eventContext) {
-        fEventContextDecl = eventContext;
-    }
-
-    /**
      *
      * @param packetContext the packet context for all packets in this stream
      */
@@ -174,23 +162,10 @@ public class CTFStream {
     }
 
     /**
-     * Gets the context declaration
      *
      * @return the event context declaration in structdeclaration form
-     * @deprecated use @link {@link #getEventContextDeclaration()}
      */
-    @Deprecated
     public StructDeclaration getEventContextDecl() {
-        return (StructDeclaration) (fEventContextDecl instanceof StructDeclaration ? fEventContextDecl : null);
-    }
-
-    /**
-     * Gets the event context declaration, can be a helper
-     *
-     * @return the context declaration
-     * @since 3.1
-     */
-    public ICompositeDeclaration getEventContextDeclaration() {
         return fEventContextDecl;
     }
 
