@@ -70,9 +70,15 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
      */
     @After
     public void cleanup() {
-        module.close();
-        stateFile.delete();
-        stateFileBenchmark.delete();
+        if (module != null) {
+            module.close();
+        }
+        if (stateFile != null) {
+            stateFile.delete();
+        }
+        if (stateFileBenchmark != null) {
+            stateFileBenchmark.delete();
+        }
     }
 
     // ------------------------------------------------------------------------

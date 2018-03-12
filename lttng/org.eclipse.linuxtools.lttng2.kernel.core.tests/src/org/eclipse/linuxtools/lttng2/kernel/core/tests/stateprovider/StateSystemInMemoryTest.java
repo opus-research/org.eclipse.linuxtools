@@ -52,7 +52,9 @@ public class StateSystemInMemoryTest extends StateSystemTest {
      */
     @After
     public void cleanup() {
-        module.close();
+        if (module != null) {
+            module.close();
+        }
     }
 
     private static class TestLttngKernelAnalysisModule extends TmfStateSystemAnalysisModule {
