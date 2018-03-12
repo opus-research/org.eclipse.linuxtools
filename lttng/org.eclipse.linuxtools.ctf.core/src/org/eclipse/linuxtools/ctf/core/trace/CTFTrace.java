@@ -217,12 +217,18 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
     /**
      * Dispose the trace
      *
-     * FIXME Not needed anymore, class doesn't need to be AutoCloseable.
-     *
      * @since 3.0
      */
     @Override
     public void close() {
+        for (CTFStream s : fStreams.values()) {
+            for (CTFStreamInput input : s.getStreamInputs()) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -270,6 +276,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
     public IEventDeclaration getEventType(long streamId, long id) {
         return getStream(streamId).getEventDeclaration((int) id);
     }
+
 
     /**
      * Get an event by it's ID
@@ -476,6 +483,7 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
     public String getPath() {
         return (fPath != null) ? fPath.getPath() : ""; //$NON-NLS-1$
     }
+
 
     // ------------------------------------------------------------------------
     // Operations
@@ -757,7 +765,6 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
 
     /**
      * Gets the current first packet start time
-     *
      * @return the current start time
      * @since 3.0
      */
@@ -773,7 +780,6 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
 
     /**
      * Gets the current last packet end time
-     *
      * @return the current end time
      * @since 3.0
      */
@@ -957,21 +963,15 @@ public class CTFTrace implements IDefinitionScope, AutoCloseable {
      *             The file must exist
      * @since 3.0
      */
-    // TODO: remove suppress warning
-    @SuppressWarnings("resource")
     public void addStream(long id, File streamFile) throws CTFReaderException {
         CTFStream stream = null;
-        final File file = streamFile;
-        if (file == null) {
-            throw new CTFReaderException("cannot create a stream with no file"); //$NON-NLS-1$
-        }
         if (fStreams.containsKey(id)) {
             stream = fStreams.get(id);
         } else {
             stream = new CTFStream(this);
             fStreams.put(id, stream);
         }
-        stream.addInput(new CTFStreamInput(stream, file));
+        stream.addInput(new CTFStreamInput(stream, streamFile));
     }
 }
 
