@@ -58,7 +58,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-@SuppressWarnings("restriction")
 public class OSIORestPatchUpdateTask extends OSIORestPatchRequest<TaskData> {
 
 	private final TaskData taskData;
@@ -248,7 +247,7 @@ public class OSIORestPatchUpdateTask extends OSIORestPatchRequest<TaskData> {
 				Map<String, Label> spaceLabels = space.getLabels();
 				for (String label : labels) {
 					Label l = spaceLabels.get(label);
-					if (l == null && !label.isEmpty()) {
+					if (l == null) {
 						try {
 							LabelResponse response = new OSIORestPostNewLabelTask(client, space, label).run(new NullOperationMonitor());
 							Label newLabel = response.getData();
