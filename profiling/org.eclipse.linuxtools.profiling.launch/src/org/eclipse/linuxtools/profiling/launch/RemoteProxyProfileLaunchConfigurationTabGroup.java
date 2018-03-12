@@ -16,7 +16,6 @@ package org.eclipse.linuxtools.profiling.launch;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.eclipse.cdt.launch.remote.tabs.RemoteCMainTab;
 import org.eclipse.cdt.launch.ui.CArgumentsTab;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
@@ -24,7 +23,6 @@ import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.EnvironmentTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.sourcelookup.SourceLookupTab;
-import org.eclipse.linuxtools.internal.valgrind.launch.ValgrindRemoteProxyLaunchConfigurationTabGroup;
 
 /**
  * @since 1.1
@@ -34,13 +32,7 @@ public abstract class RemoteProxyProfileLaunchConfigurationTabGroup extends Abst
     @Override
     public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
         ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<>();
-        // TODO: Once Perf and OProfile use CRemoteMainTab then we can remove
-        // this hacky instanceof logic test.
-        if (this instanceof ValgrindRemoteProxyLaunchConfigurationTabGroup) {
-            tabs.add(new RemoteCMainTab());
-        } else {
-            tabs.add(new RemoteProxyCMainTab());
-        }
+        tabs.add(new RemoteProxyCMainTab());
         tabs.add(new CArgumentsTab());
 
         tabs.addAll(Arrays.asList(getProfileTabs()));

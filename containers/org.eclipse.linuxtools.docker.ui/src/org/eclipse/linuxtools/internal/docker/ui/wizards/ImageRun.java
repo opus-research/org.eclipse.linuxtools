@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,13 +16,14 @@ import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLa
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -122,6 +123,7 @@ public class ImageRun extends Wizard {
 		return this.imageRunSelectionPage.getModel().isRemoveWhenExits();
 	}
 
+	@SuppressWarnings("unchecked")
 	public IDockerHostConfig getDockerHostConfig() {
 		final ImageRunSelectionModel selectionModel = this.imageRunSelectionPage
 				.getModel();
@@ -173,8 +175,7 @@ public class ImageRun extends Wizard {
 
 			switch (dataVolume.getMountType()) {
 			case HOST_FILE_SYSTEM:
-				String bind = LaunchConfigurationUtils
-						.convertToUnixPath(dataVolume.getHostPathMount())
+				String bind = convertToUnixPath(dataVolume.getHostPathMount())
 						+ ':' + dataVolume.getContainerPath() + ":Z"; //$NON-NLS-1$ //$NON-NLS-2$
 				if (dataVolume.isReadOnly()) {
 					bind += ",ro"; //$NON-NLS-1$
@@ -199,6 +200,29 @@ public class ImageRun extends Wizard {
 		return hostConfigBuilder.build();
 	}
 
+	private String convertToUnixPath(String path) {
+		String unixPath = path;
+
+		if (Platform.OS_WIN32.equals(Platform.getOS())) {
+			// replace backslashes with slashes
+			unixPath = unixPath.replaceAll("\\\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+
+			// replace "C:/" with "/c/"
+			Matcher m = Pattern.compile("([a-zA-Z]):/").matcher(unixPath); //$NON-NLS-1$
+			if (m.find()) {
+				StringBuffer b = new StringBuffer();
+				b.append('/');
+				m.appendReplacement(b, m.group(1).toLowerCase());
+				b.append('/');
+				m.appendTail(b);
+				unixPath = b.toString();
+			}
+		}
+
+		return unixPath;
+	}
+
+	@SuppressWarnings("unchecked")
 	public DockerContainerConfig getDockerContainerConfig() {
 		final ImageRunSelectionModel selectionModel = this.imageRunSelectionPage
 				.getModel();
@@ -224,21 +248,6 @@ public class ImageRun extends Wizard {
 			environmentVariables.add(var.getName() + "=" + var.getValue()); //$NON-NLS-1$
 		}
 		config.env(environmentVariables);
-
-		if (!selectionModel.isPublishAllPorts()) {
-			final Set<String> exposedPorts = new HashSet<>();
-			for (Iterator<ExposedPortModel> iterator = selectionModel
-					.getExposedPorts().iterator(); iterator.hasNext();) {
-				final ExposedPortModel exposedPort = iterator.next();
-				// only selected Ports in the CheckboxTableViewer are exposed.
-				if (!selectionModel.getSelectedPorts().contains(exposedPort)) {
-					continue;
-				}
-				exposedPorts.add(exposedPort.getContainerPort()
-						+ exposedPort.getPortType());
-			}
-			config.exposedPorts(exposedPorts);
-		}
 		return config.build();
 	}
 

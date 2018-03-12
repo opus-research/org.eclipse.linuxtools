@@ -37,7 +37,6 @@ import org.eclipse.linuxtools.internal.docker.ui.ConsoleOutputStream;
 import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 
 public class ContainerLauncher {
 
@@ -181,10 +180,8 @@ public class ContainerLauncher {
 
 				@Override
 				public void run() {
-					MessageDialog.openError(
-							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-									.getShell(),
-							DVMessages
+					MessageDialog.openError(Display.getCurrent()
+							.getActiveShell(), DVMessages
 							.getString(ERROR_LAUNCHING_CONTAINER), DVMessages
 							.getString(ERROR_NO_CONNECTIONS));
 				}
@@ -209,8 +206,7 @@ public class ContainerLauncher {
 				@Override
 				public void run() {
 					MessageDialog.openError(
-							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-									.getShell(),
+							Display.getCurrent().getActiveShell(),
 							DVMessages.getString(ERROR_LAUNCHING_CONTAINER),
 							DVMessages.getFormattedString(
 									ERROR_NO_CONNECTION_WITH_URI,
@@ -332,8 +328,8 @@ public class ContainerLauncher {
 
 						@Override
 						public void run() {
-							MessageDialog.openError(PlatformUI.getWorkbench()
-									.getActiveWorkbenchWindow().getShell(),
+							MessageDialog.openError(Display.getCurrent()
+									.getActiveShell(),
 									DVMessages
 											.getFormattedString(
 													ERROR_CREATING_CONTAINER,

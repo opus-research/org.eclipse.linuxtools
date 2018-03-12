@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -59,12 +61,10 @@ import org.eclipse.linuxtools.internal.docker.core.UnixSocketConnectionSettings;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -74,11 +74,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ListDialog;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-
-import com.spotify.docker.client.DockerCertificateException;
 
 /**
  * {@link WizardPage} to input the settings to connect to a Docker
@@ -93,9 +90,6 @@ public class NewDockerConnectionPage extends WizardPage {
 	
 	private final NewDockerConnectionPageModel model;
 
-	/**
-	 * Constructor.
-	 */
 	public NewDockerConnectionPage() {
 		super("NewDockerConnectionPage", //$NON-NLS-1$
 				WizardMessages.getString("NewDockerConnectionPage.title"), //$NON-NLS-1$
@@ -107,12 +101,7 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	@Override
 	public void createControl(final Composite parent) {
-		final ScrolledComposite scrollTop = new ScrolledComposite(parent,
-				SWT.H_SCROLL | SWT.V_SCROLL);
-		scrollTop.setExpandVertical(true);
-		scrollTop.setExpandHorizontal(true);
-
-		final Composite container = new Composite(scrollTop, SWT.NONE);
+		final Composite container = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
 				.applyTo(container);
@@ -120,11 +109,6 @@ public class NewDockerConnectionPage extends WizardPage {
 		// attach the Databinding context status to this wizard page.
 		WizardPageSupport.create(this, this.dbc);
 		retrieveDefaultConnectionSettings();
-
-		scrollTop.setContent(container);
-		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		scrollTop.setSize(point);
-		scrollTop.setMinSize(point);
 		setControl(container);
 	}
 
@@ -272,15 +256,15 @@ public class NewDockerConnectionPage extends WizardPage {
 				.addSelectionListener(onTestConnectionButtonSelection());
 
 		// observe
-		final IObservableValue<String> connectionNameModelObservable = BeanProperties
+		final IObservableValue connectionNameModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.CONNECTION_NAME)
 				.observe(model);
-		final IObservableValue<Boolean> unixSocketBindingModeModelObservable = BeanProperties
+		final IObservableValue unixSocketBindingModeModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.UNIX_SOCKET_BINDING_MODE)
 				.observe(model);
-		final IObservableValue<String> unixSocketPathModelObservable = BeanProperties
+		final IObservableValue unixSocketPathModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.UNIX_SOCKET_PATH)
 				.observe(model);
@@ -289,19 +273,19 @@ public class NewDockerConnectionPage extends WizardPage {
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.CUSTOM_SETTINGS)
 				.observe(model);
-		final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable = BeanProperties
+		final IObservableValue tcpConnectionBindingModeModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_CONNECTION_BINDING_MODE)
 				.observe(model);
-		final IObservableValue<String> tcpCertPathModelObservable = BeanProperties
+		final IObservableValue tcpCertPathModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_CERT_PATH)
 				.observe(model);
-		final IObservableValue<Boolean> tcpTlsVerifyModelObservable = BeanProperties
+		final IObservableValue tcpTlsVerifyModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_TLS_VERIFY)
 				.observe(model);
-		final IObservableValue<String> tcpHostModelObservable = BeanProperties
+		final IObservableValue tcpHostModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_HOST)
 				.observe(model);
@@ -575,6 +559,8 @@ public class NewDockerConnectionPage extends WizardPage {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				final ArrayBlockingQueue<Boolean> resultQueue = new ArrayBlockingQueue<>(
+						1);
 				try {
 					getWizard().getContainer().run(true, false,
 							new IRunnableWithProgress() {
@@ -589,62 +575,55 @@ public class NewDockerConnectionPage extends WizardPage {
 								dockerConnection.open(false);
 								dockerConnection.ping();
 								dockerConnection.close();
-								// ping succeeded
-								displaySuccessDialog();
+								resultQueue.add(true);
 							} catch (DockerException e) {
-								// only log if there's an underlying cause.
-								if (e.getCause() != null) {
-									Activator.log(e);
-								}
-								displayErrorDialog();
+								Activator.log(e);
+								resultQueue.add(false);
 							}
 						}
-
 					});
 				} catch (InvocationTargetException | InterruptedException o_O) {
 					Activator.log(o_O);
 				}
+				try {
+					final Boolean result = resultQueue.poll(5000,
+							TimeUnit.MILLISECONDS);
+					if (result != null && result) {
+						new MessageDialog(Display.getDefault().getActiveShell(),
+								WizardMessages.getString(
+										"NewDockerConnectionPage.success"), //$NON-NLS-1$
+								null,
+								WizardMessages.getString(
+										"NewDockerConnectionPage.pingSuccess"), //$NON-NLS-1$
+								SWT.ICON_INFORMATION,
+								new String[] { WizardMessages.getString(
+										"NewDockerConnectionPage.ok") }, //$NON-NLS-1$
+								0).open();
 
-			}
-
-			private void displaySuccessDialog() {
-				displayDialog(
-						WizardMessages
-								.getString("NewDockerConnectionPage.success"), //$NON-NLS-1$
-						WizardMessages.getString(
-								"NewDockerConnectionPage.pingSuccess"), //$NON-NLS-1$
-						SWT.ICON_INFORMATION,
-						new String[] { WizardMessages
-								.getString("NewDockerConnectionPage.ok") } //$NON-NLS-1$
-						);
-			}
-
-			private void displayErrorDialog() {
-				displayDialog(
-						WizardMessages
-								.getString("NewDockerConnectionPage.failure"), //$NON-NLS-1$
-						WizardMessages.getString(
-								"NewDockerConnectionPage.pingFailure"), //$NON-NLS-1$
-						SWT.ICON_ERROR,
-						new String[] { WizardMessages
-								.getString("NewDockerConnectionPage.ok") } //$NON-NLS-1$
-						);
-			}
-			
-			private void displayDialog(final String dialogTitle,
-					final String dialogMessage, final int icon,
-					final String[] buttonLabels) {
-				Display.getDefault().syncExec(new Runnable() {
-
-					@Override
-					public void run() {
-						new MessageDialog(
-								PlatformUI.getWorkbench()
-										.getActiveWorkbenchWindow().getShell(),
-								dialogTitle, null, dialogMessage, icon,
-								buttonLabels, 0).open();
+					} else {
+						new MessageDialog(Display.getDefault().getActiveShell(),
+								WizardMessages.getString(
+										"NewDockerConnectionPage.failure"), //$NON-NLS-1$
+								null,
+								WizardMessages.getString(
+										"NewDockerConnectionPage.pingFailure"), //$NON-NLS-1$
+								SWT.ICON_ERROR,
+								new String[] { WizardMessages.getString(
+										"NewDockerConnectionPage.ok") }, //$NON-NLS-1$
+								0).open();
 					}
-				});
+				} catch (InterruptedException o_O) {
+					new MessageDialog(Display.getDefault().getActiveShell(),
+							WizardMessages.getString(
+									"NewDockerConnectionPage.failure"), //$NON-NLS-1$
+							null,
+							WizardMessages.getString(
+									"NewDockerConnectionPage.pingFailure"), //$NON-NLS-1$
+							SWT.ICON_ERROR,
+							new String[] { WizardMessages
+									.getString("NewDockerConnectionPage.ok") }, //$NON-NLS-1$
+							0).open();
+				}
 			}
 
 		};
@@ -667,9 +646,8 @@ public class NewDockerConnectionPage extends WizardPage {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (!DockerMachine
-						.checkPathToDockerMachine(getDockerMachineInstallDir())
-						|| getVMDriverInstallDir().equals("")) { //$NON-NLS-1$
+				if (getDockerMachineInstallDir().equals("")
+						|| getVMDriverInstallDir().equals("")) {
 					final boolean confirm = MessageDialog.openConfirm(
 							getShell(),
 									WizardMessages.getString(
@@ -683,8 +661,8 @@ public class NewDockerConnectionPage extends WizardPage {
 										DOCKER_MACHINE_PREFERENCE_PAGE_ID },
 								null).open();
 						// after user input data, check again
-						if (getDockerMachineInstallDir().equals("") //$NON-NLS-1$
-								|| getVMDriverInstallDir().equals("")) { //$NON-NLS-1$
+						if (getDockerMachineInstallDir().equals("")
+								|| getVMDriverInstallDir().equals("")) {
 							return;
 						}
 					} else {
@@ -793,26 +771,26 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private static class ConnectionNameValidator extends MultiValidator {
 
-		private final IObservableValue<String> connectionNameModelObservable;
+		private final IObservableValue connectionNameModelObservable;
 
 		public ConnectionNameValidator(
-				final IObservableValue<String> connectionNameModelObservable) {
+				final IObservableValue connectionNameModelObservable) {
 			this.connectionNameModelObservable = connectionNameModelObservable;
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(connectionNameModelObservable);
 			return targets;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final String connectionName = this.connectionNameModelObservable
+			final String connectionName = (String) this.connectionNameModelObservable
 					.getValue();
 			if (connectionName == null || connectionName.isEmpty()) {
-				return ValidationStatus.error(WizardMessages.getString(
+				return ValidationStatus.cancel(WizardMessages.getString(
 						"NewDockerConnectionPage.validation.missingConnectionName.msg")); //$NON-NLS-1$
 			} else if (DockerConnectionManager.getInstance()
 					.findConnection(connectionName) != null) {
@@ -825,28 +803,28 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private static class UnixSocketValidator extends MultiValidator {
 
-		private final IObservableValue<Boolean> unixSocketBindingModeModelObservable;
-		private final IObservableValue<String> unixSocketPathModelObservable;
+		private final IObservableValue unixSocketBindingModeModelObservable;
+		private final IObservableValue unixSocketPathModelObservable;
 
 		public UnixSocketValidator(
-				final IObservableValue<Boolean> unixSocketBindingModeModelObservable,
-				final IObservableValue<String> unixSocketPathModelObservable) {
+				final IObservableValue unixSocketBindingModeModelObservable,
+				final IObservableValue unixSocketPathModelObservable) {
 			this.unixSocketBindingModeModelObservable = unixSocketBindingModeModelObservable;
 			this.unixSocketPathModelObservable = unixSocketPathModelObservable;
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(unixSocketPathModelObservable);
 			return targets;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final Boolean unixSocketBindingMode = this.unixSocketBindingModeModelObservable
+			final Boolean unixSocketBindingMode = (Boolean) this.unixSocketBindingModeModelObservable
 					.getValue();
-			final String unixSocketPath = this.unixSocketPathModelObservable
+			final String unixSocketPath = (String) this.unixSocketPathModelObservable
 					.getValue();
 			if (unixSocketBindingMode) {
 				if (unixSocketPath == null || unixSocketPath.isEmpty()) {
@@ -891,28 +869,29 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private static class TcpHostValidator extends MultiValidator {
 
-		private final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable;
-		private final IObservableValue<String> tcpHostModelObservable;
+		private final IObservableValue tcpConnectionBindingModeModelObservable;
+		private final IObservableValue tcpHostModelObservable;
 
 		public TcpHostValidator(
-				final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable,
-				final IObservableValue<String> tcpHostModelObservable) {
+				final IObservableValue tcpConnectionBindingModeModelObservable,
+				final IObservableValue tcpHostModelObservable) {
 			this.tcpConnectionBindingModeModelObservable = tcpConnectionBindingModeModelObservable;
 			this.tcpHostModelObservable = tcpHostModelObservable;
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(tcpHostModelObservable);
 			return targets;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final Boolean tcpConnectionBindingMode = this.tcpConnectionBindingModeModelObservable
+			final Boolean tcpConnectionBindingMode = (Boolean) this.tcpConnectionBindingModeModelObservable
 					.getValue();
-			final String tcpHost = this.tcpHostModelObservable.getValue();
+			final String tcpHost = (String) this.tcpHostModelObservable
+					.getValue();
 			if (tcpConnectionBindingMode) {
 				if (tcpHost == null || tcpHost.isEmpty()) {
 					return ValidationStatus.error(WizardMessages.getString(
@@ -951,33 +930,33 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private static class TcpCertificatesValidator extends MultiValidator {
 
-		private final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable;
-		private final IObservableValue<Boolean> tcpTlsVerifyModelObservable;
-		private final IObservableValue<String> tcpCertPathModelObservable;
+		private final IObservableValue tcpConnectionBindingModeModelObservable;
+		private final IObservableValue tcpTlsVerifyModelObservable;
+		private final IObservableValue tcpCertPathModelObservable;
 
 		public TcpCertificatesValidator(
-				final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable,
-				final IObservableValue<Boolean> tcpTlsVerifyModelObservable,
-				final IObservableValue<String> tcpCertPathModelObservable) {
+				final IObservableValue tcpConnectionBindingModeModelObservable,
+				final IObservableValue tcpTlsVerifyModelObservable,
+				final IObservableValue tcpCertPathModelObservable) {
 			this.tcpConnectionBindingModeModelObservable = tcpConnectionBindingModeModelObservable;
 			this.tcpTlsVerifyModelObservable = tcpTlsVerifyModelObservable;
 			this.tcpCertPathModelObservable = tcpCertPathModelObservable;
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(tcpCertPathModelObservable);
 			return targets;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final Boolean tcpConnectionBindingMode = this.tcpConnectionBindingModeModelObservable
+			final Boolean tcpConnectionBindingMode = (Boolean) this.tcpConnectionBindingModeModelObservable
 					.getValue();
-			final Boolean tcpTlsVerify = this.tcpTlsVerifyModelObservable
+			final Boolean tcpTlsVerify = (Boolean) this.tcpTlsVerifyModelObservable
 					.getValue();
-			final String tcpCertPath = this.tcpCertPathModelObservable
+			final String tcpCertPath = (String) this.tcpCertPathModelObservable
 					.getValue();
 			if (tcpConnectionBindingMode && tcpTlsVerify) {
 				if (tcpCertPath == null || tcpCertPath.isEmpty()) {

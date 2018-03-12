@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -29,6 +31,7 @@ import org.eclipse.core.databinding.observable.map.IObservableMap;
 import org.eclipse.core.databinding.observable.set.IObservableSet;
 import org.eclipse.core.databinding.property.Properties;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -458,7 +461,7 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		WritableList<DataVolumeModel> volumes = model.getDataVolumes();
+		WritableList volumes = model.getDataVolumes();
 		Set<DataVolumeModel> selectedVolumes = model.getSelectedDataVolumes();
 
 		ArrayList<String> binds = new ArrayList<>();
@@ -466,7 +469,8 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 		ArrayList<String> volumesList = new ArrayList<>();
 		Set<String> selectedVolumesSet = new TreeSet<>();
 
-		for (Iterator<DataVolumeModel> iterator = volumes.iterator(); iterator
+		for (@SuppressWarnings("unchecked")
+		Iterator<DataVolumeModel> iterator = volumes.iterator(); iterator
 				.hasNext();) {
 			DataVolumeModel volume = iterator.next();
 			StringBuffer buffer = new StringBuffer();
@@ -478,8 +482,7 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 						+ volume.isReadOnly());
 				if (selectedVolumes.contains(volume)) {
 					selectedVolumesSet.add(volume.toString());
-					String bind = LaunchConfigurationUtils
-							.convertToUnixPath(volume.getHostPathMount())
+					String bind = convertToUnixPath(volume.getHostPathMount())
 							+ ':' + volume.getContainerPath() + ':' + 'Z';
 					if (volume.isReadOnly()) {
 						bind += ",ro"; //$NON-NLS-1$
@@ -505,6 +508,28 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.DATA_VOLUMES,
 				volumesList);
+	}
+
+	private String convertToUnixPath(String path) {
+		String unixPath = path;
+
+		if (Platform.OS_WIN32.equals(Platform.getOS())) {
+			// replace backslashes with slashes
+			unixPath = unixPath.replaceAll("\\\\", "/");
+
+			// replace "C:/" with "/c/"
+			Matcher m = Pattern.compile("([a-zA-Z]):/").matcher(unixPath);
+			if (m.find()) {
+				StringBuffer b = new StringBuffer();
+				b.append('/');
+				m.appendReplacement(b, m.group(1).toLowerCase());
+				b.append('/');
+				m.appendTail(b);
+				unixPath = b.toString();
+			}
+		}
+
+		return unixPath;
 	}
 
 	@Override
