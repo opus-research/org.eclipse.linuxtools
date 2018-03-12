@@ -757,13 +757,9 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             return adapted;
         }
 
-        public IFileSystemObject getIFileSystemObject(Object o) {
-            if (o == null) {
-                return null;
-            }
-
+       public IFileSystemObject getIFileSystemObject(Object o) {
             if (o instanceof File) {
-                return new FileFileSystemObject((File) o);
+                return new FileFileSystemObject((File)o);
             } else if (o instanceof TarEntry) {
                 return new TarFileSystemObject((TarEntry) o, fArchivePath);
             } else if (o instanceof ZipEntry) {
