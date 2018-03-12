@@ -12,10 +12,16 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.EventIterator;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 
 /**
  * An entry, or row, in the Call Stack view
@@ -23,14 +29,18 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
  * @author Patrick Tasse
  * @since 2.0
  */
-public class CallStackEntry extends TimeGraphEntry {
+public class CallStackEntry implements ITimeGraphEntry {
 
     private final int fQuark;
     private final int fStackLevel;
     private final ITmfTrace fTrace;
+    private ITimeGraphEntry fParent = null;
+    private String fName;
     private String fFunctionName;
-    private long fFunctionEntryTime;
-    private long fFunctionExitTime;
+    private long fStartTime;
+    private long fEndTime;
+    private List<ITimeEvent> fEventList = new ArrayList<>(1);
+    private List<ITimeEvent> fZoomedEventList = null;
     private @NonNull ITmfStateSystem fSS;
 
     /**
@@ -42,19 +52,16 @@ public class CallStackEntry extends TimeGraphEntry {
      *            The stack level
      * @param trace
      *            The trace that this view is talking about
-     * @deprecated Use {@link #CallStackEntry(String, int, int, ITmfTrace, ITmfStateSystem)}
+     * @deprecated Use {@link #CallStackEntry(int, int, ITmfTrace, ITmfStateSystem)}
      */
     @Deprecated
     public CallStackEntry(int quark, int stackLevel, ITmfTrace trace) {
-        super(null, 0, 0);
         throw new UnsupportedOperationException();
     }
 
     /**
      * Standard constructor
      *
-     * @param name
-     *            The parent thread name
      * @param quark
      *            The call stack quark
      * @param stackLevel
@@ -65,13 +72,32 @@ public class CallStackEntry extends TimeGraphEntry {
      *            The call stack state system
      * @since 3.1
      */
-    public CallStackEntry(String name, int quark, int stackLevel, ITmfTrace trace, @NonNull ITmfStateSystem ss) {
-        super(name, 0, 0);
+    public CallStackEntry(int quark, int stackLevel, ITmfTrace trace, @NonNull ITmfStateSystem ss) {
         fQuark = quark;
         fStackLevel = stackLevel;
         fTrace = trace;
         fFunctionName = ""; //$NON-NLS-1$
         fSS = ss;
+    }
+
+    @Override
+    public ITimeGraphEntry getParent() {
+        return fParent;
+    }
+
+    @Override
+    public boolean hasChildren() {
+        return false;
+    }
+
+    @Override
+    public List<CallStackEntry> getChildren() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return ""; //$NON-NLS-1$
     }
 
     /**
@@ -90,66 +116,56 @@ public class CallStackEntry extends TimeGraphEntry {
         fFunctionName = functionName;
     }
 
+    @Override
+    public long getStartTime() {
+        return fStartTime;
+    }
+
     /**
      * Set the start time of the call stack entry
      * @param startTime the start time
-     * @deprecated Use {@link #setFunctionEntryTime(long)}
      */
-    @Deprecated
     public void setStartTime(long startTime) {
-        throw new UnsupportedOperationException();
+        fStartTime = startTime;
+    }
+
+    @Override
+    public long getEndTime() {
+        return fEndTime;
     }
 
     /**
      * Set the end time of the call stack entry
      * @param endTime the end time
-     * @deprecated Use {@link #setFunctionExitTime(long)}
      */
-    @Deprecated
     public void setEndTime(long endTime) {
-        throw new UnsupportedOperationException();
+        fEndTime = endTime;
+    }
+
+    @Override
+    public boolean hasTimeEvents() {
+        return fEventList != null;
+    }
+
+    @Override
+    public Iterator<ITimeEvent> getTimeEventsIterator() {
+        return new EventIterator(fEventList, fZoomedEventList);
+    }
+
+    @Override
+    public Iterator<ITimeEvent> getTimeEventsIterator(long startTime, long stopTime, long visibleDuration) {
+        return new EventIterator(fEventList, fZoomedEventList, startTime, stopTime);
     }
 
     /**
-     * Set the selected function entry time
+     * Assign a parent entry to this one, to organize them in a tree in the
+     * view.
      *
-     * @param entryTime
-     *            the function entry time
-     * @since 3.1
+     * @param parent
+     *            The parent entry
      */
-    public void setFunctionEntryTime(long entryTime) {
-        fFunctionEntryTime = entryTime;
-    }
-
-    /**
-     * Get the selected function entry time
-     *
-     * @return the function entry time
-     * @since 3.1
-     */
-    public long getFunctionEntryTime() {
-        return fFunctionEntryTime;
-    }
-
-    /**
-     * Set the selected function exit time
-     *
-     * @param exitTime
-     *            the function exit time
-     * @since 3.1
-     */
-    public void setFunctionExitTime(long exitTime) {
-        fFunctionExitTime = exitTime;
-    }
-
-    /**
-     * Get the selected function exit time
-     *
-     * @return the function exit time
-     * @since 3.1
-     */
-    public long getFunctionExitTime() {
-        return fFunctionExitTime;
+    public void setParent(ITimeGraphEntry parent) {
+        fParent = parent;
     }
 
     /**
@@ -189,4 +205,43 @@ public class CallStackEntry extends TimeGraphEntry {
         return fSS;
     }
 
+    /**
+     * Assign the target event list to this view.
+     *
+     * @param eventList
+     *            The list of time events
+     */
+    public void setEventList(List<ITimeEvent> eventList) {
+        fEventList = eventList;
+        if (eventList != null && eventList.size() > 0) {
+            fStartTime = eventList.get(0).getTime();
+            ITimeEvent lastEvent = eventList.get(eventList.size() - 1);
+            fEndTime = lastEvent.getTime() + lastEvent.getDuration();
+        }
+    }
+
+    /**
+     * Assign the zoomed event list to this view.
+     *
+     * @param eventList
+     *            The list of "zoomed" time events
+     */
+    public void setZoomedEventList(List<ITimeEvent> eventList) {
+        fZoomedEventList = eventList;
+    }
+
+    /**
+     * Add an event to the event list
+     *
+     * @param timeEvent
+     *          The event
+     */
+    public void addEvent(ITimeEvent timeEvent) {
+        fEventList.add(timeEvent);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " name=" + fName; //$NON-NLS-1$
+    }
 }
