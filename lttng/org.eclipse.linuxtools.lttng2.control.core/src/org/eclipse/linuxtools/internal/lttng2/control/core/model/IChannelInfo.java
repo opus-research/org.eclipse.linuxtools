@@ -86,17 +86,12 @@ public interface IChannelInfo extends ITraceInfo {
     /**
      * @return the output type.
      */
-    TraceChannelOutputType getOutputType();
+    String getOutputType();
     /**
      * Sets the output type to the given value.
      * @param type - type to set.
      */
     void setOutputType(String type);
-    /**
-     * Sets the output type to the given value.
-     * @param type - type to set.
-     */
-    void setOutputType(TraceChannelOutputType type);
 
     /**
      * @return the channel state (enabled or disabled).
