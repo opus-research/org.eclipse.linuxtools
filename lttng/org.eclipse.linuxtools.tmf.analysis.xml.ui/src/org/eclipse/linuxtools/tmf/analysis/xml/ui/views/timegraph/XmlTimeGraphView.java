@@ -31,7 +31,6 @@ import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.TmfXmlUiStrings;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.views.XmlViewInfo;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
-import org.eclipse.linuxtools.statesystem.core.StateSystemUtils;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
@@ -476,7 +475,7 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
         try {
             if (xmlEntry.getType() == EntryDisplayType.DISPLAY) {
 
-                List<ITmfStateInterval> statusIntervals = StateSystemUtils.queryHistoryRange(ssq, quark, realStart, realEnd - 1, resolution, monitor);
+                List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(quark, realStart, realEnd - 1, resolution, monitor);
                 eventList = new ArrayList<>(statusIntervals.size());
                 long lastEndTime = -1;
                 for (ITmfStateInterval statusInterval : statusIntervals) {

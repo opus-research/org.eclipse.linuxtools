@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
-import org.eclipse.linuxtools.statesystem.core.StateSystemUtils;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
@@ -146,12 +145,9 @@ public abstract class StateSystemTest {
         int quark;
         List<ITmfStateInterval> intervals;
 
-        final ITmfStateSystem ss = fixture;
-        assertNotNull(ss);
-
         try {
-            quark = ss.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
-            intervals = StateSystemUtils.queryHistoryRange(ss, quark, time1, time2);
+            quark = fixture.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
+            intervals = fixture.queryHistoryRange(quark, time1, time2);
             assertEquals(487, intervals.size()); /* Number of context switches! */
             assertEquals(1685, intervals.get(100).getStateValue().unboxInt());
             assertEquals(1331668248427681372L, intervals.get(205).getEndTime());
@@ -169,15 +165,12 @@ public abstract class StateSystemTest {
     public void testRangeQuery2() {
         List<ITmfStateInterval> intervals;
 
-        final ITmfStateSystem ss = fixture;
-        assertNotNull(ss);
-
         try {
-            int quark = ss.getQuarkAbsolute(Attributes.RESOURCES, Attributes.IRQS, "1");
-            long ts1 = ss.getStartTime(); /* start of the trace */
+            int quark = fixture.getQuarkAbsolute(Attributes.RESOURCES, Attributes.IRQS, "1");
+            long ts1 = fixture.getStartTime(); /* start of the trace */
             long ts2 = startTime + 20L * NANOSECS_PER_SEC; /* invalid, but ignored */
 
-            intervals = StateSystemUtils.queryHistoryRange(ss, quark, ts1, ts2);
+            intervals = fixture.queryHistoryRange(quark, ts1, ts2);
 
             /* Activity of IRQ 1 over the whole trace */
             assertEquals(65, intervals.size());
@@ -198,12 +191,9 @@ public abstract class StateSystemTest {
         int quark;
         List<ITmfStateInterval> intervals;
 
-        final ITmfStateSystem ss = fixture;
-        assertNotNull(ss);
-
         try {
-            quark = ss.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
-            intervals = StateSystemUtils.queryHistoryRange(ss, quark, time1, time2, resolution, null);
+            quark = fixture.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
+            intervals = fixture.queryHistoryRange(quark, time1, time2, resolution, null);
             assertEquals(126, intervals.size()); /* Number of context switches! */
             assertEquals(1452, intervals.get(50).getStateValue().unboxInt());
             assertEquals(1331668248815698779L, intervals.get(100).getEndTime());
@@ -256,14 +246,11 @@ public abstract class StateSystemTest {
 
     @Test(expected = TimeRangeException.class)
     public void testRangeQueryInvalidTime1() throws TimeRangeException {
-        final ITmfStateSystem ss = fixture;
-        assertNotNull(ss);
-
         try {
-            int quark = ss.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
+            int quark = fixture.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
             long ts1 = startTime - 20L * NANOSECS_PER_SEC; /* invalid */
             long ts2 = startTime + 1L * NANOSECS_PER_SEC; /* valid */
-            StateSystemUtils.queryHistoryRange(ss, quark, ts1, ts2);
+            fixture.queryHistoryRange(quark, ts1, ts2);
 
         } catch (AttributeNotFoundException e) {
             fail();
@@ -274,14 +261,11 @@ public abstract class StateSystemTest {
 
     @Test(expected = TimeRangeException.class)
     public void testRangeQueryInvalidTime2() throws TimeRangeException {
-        final ITmfStateSystem ss = fixture;
-        assertNotNull(ss);
-
         try {
-            int quark = ss.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
+            int quark = fixture.getQuarkAbsolute(Attributes.CPUS, "0", Attributes.CURRENT_THREAD);
             long ts1 = startTime - 1L * NANOSECS_PER_SEC; /* invalid */
             long ts2 = startTime + 20L * NANOSECS_PER_SEC; /* invalid */
-            StateSystemUtils.queryHistoryRange(ss, quark, ts1, ts2);
+            fixture.queryHistoryRange(quark, ts1, ts2);
 
         } catch (AttributeNotFoundException | StateSystemDisposedException e) {
             fail();
