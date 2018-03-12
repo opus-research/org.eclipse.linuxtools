@@ -1312,7 +1312,6 @@ public class CallStackView extends TmfView {
                 }
             };
             fSortByNameAction.setToolTipText(Messages.CallStackView_SortByThreadName);
-            fSortByNameAction.setImageDescriptor(SORT_BY_NAME_ICON);
         }
         return fSortByNameAction;
     }
@@ -1330,7 +1329,6 @@ public class CallStackView extends TmfView {
                 }
             };
             fSortByIdAction.setToolTipText(Messages.CallStackView_SortByThreadId);
-            fSortByIdAction.setImageDescriptor(SORT_BY_ID_ICON);
         }
         return fSortByIdAction;
     }
@@ -1348,7 +1346,6 @@ public class CallStackView extends TmfView {
                 }
             };
             fSortByTimeAction.setToolTipText(Messages.CallStackView_SortByThreadTime);
-            fSortByTimeAction.setImageDescriptor(SORT_BY_TIME_ICON);
         }
         return fSortByTimeAction;
     }
@@ -1360,9 +1357,6 @@ public class CallStackView extends TmfView {
             return;
         }
         String sortOption = section.get(SORT_OPTION_KEY);
-        if (sortOption == null) {
-            return;
-        }
 
         // reset defaults
         getSortByNameAction().setChecked(false);
