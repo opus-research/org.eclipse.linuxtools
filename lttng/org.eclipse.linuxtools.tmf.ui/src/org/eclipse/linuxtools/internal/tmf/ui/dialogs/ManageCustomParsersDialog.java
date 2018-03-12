@@ -24,7 +24,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.parsers.wizards.CustomXmlParserWiz
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
-import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -177,10 +176,10 @@ public class ManageCustomParsersDialog extends Dialog {
                 WizardDialog dialog = null;
                 if (txtButton.getSelection()) {
                     dialog = new WizardDialog(getShell(),
-                            new CustomTxtParserWizard(CustomTxtTraceDefinition.load(TmfTraceType.CUSTOM_TXT_CATEGORY, parserList.getSelection()[0]))); //TODO
+                            new CustomTxtParserWizard(CustomTxtTraceDefinition.load(parserList.getSelection()[0])));
                 } else if (xmlButton.getSelection()) {
                     dialog = new WizardDialog(getShell(),
-                            new CustomXmlParserWizard(CustomXmlTraceDefinition.load(TmfTraceType.CUSTOM_XML_CATEGORY, parserList.getSelection()[0]))); //TODO
+                            new CustomXmlParserWizard(CustomXmlTraceDefinition.load(parserList.getSelection()[0])));
                 }
                 if (dialog != null) {
                     dialog.open();
@@ -207,9 +206,9 @@ public class ManageCustomParsersDialog extends Dialog {
                         Messages.ManageCustomParsersDialog_DeleteConfirmation + parserList.getSelection()[0] + "?"); //$NON-NLS-1$
                 if (confirm) {
                     if (txtButton.getSelection()) {
-                        CustomTxtTraceDefinition.delete(TmfTraceType.CUSTOM_TXT_CATEGORY, parserList.getSelection()[0]); //TODO
+                        CustomTxtTraceDefinition.delete(parserList.getSelection()[0]);
                     } else if (xmlButton.getSelection()) {
-                        CustomXmlTraceDefinition.delete(TmfTraceType.CUSTOM_XML_CATEGORY, parserList.getSelection()[0]); //TODO
+                        CustomXmlTraceDefinition.delete(parserList.getSelection()[0]);
                     }
                     fillParserList();
                 }
@@ -265,9 +264,9 @@ public class ManageCustomParsersDialog extends Dialog {
                 if (path != null) {
                     CustomTraceDefinition def = null;
                     if (txtButton.getSelection()) {
-                        def = CustomTxtTraceDefinition.load(TmfTraceType.CUSTOM_TXT_CATEGORY, parserList.getSelection()[0]); //TODO
+                        def = CustomTxtTraceDefinition.load(parserList.getSelection()[0]);
                     } else if (xmlButton.getSelection()) {
-                        def = CustomXmlTraceDefinition.load(TmfTraceType.CUSTOM_XML_CATEGORY, parserList.getSelection()[0]); //TODO
+                        def = CustomXmlTraceDefinition.load(parserList.getSelection()[0]);
                     }
                     if (def != null) {
                         def.save(path);
