@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
-import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.MB;
-
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionInfo;
@@ -47,7 +45,8 @@ public class ConnectionInfoContentProvider implements ITreeContentProvider {
 					new Object[] { "CPU number", //$NON-NLS-1$
 							connectionInfo.getCPUNumber() },
 					new Object[] { "Total memory", //$NON-NLS-1$
-							Long.toString(connectionInfo.getTotalMemory() / MB)
+							Long.toString(
+									connectionInfo.getTotalMemory() / 1048576)
 									+ " MB" },
 					new Object[]{"File descriptors", connectionInfo.getFileDescriptors()}, //$NON-NLS-1$
 					new Object[]{"Go routines", connectionInfo.getGoroutines()}, //$NON-NLS-1$
