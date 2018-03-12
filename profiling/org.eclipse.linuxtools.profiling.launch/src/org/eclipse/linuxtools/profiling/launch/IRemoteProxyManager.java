@@ -25,4 +25,5 @@ public interface IRemoteProxyManager {
     IRemoteCommandLauncher getLauncher(URI uri) throws CoreException;
     String getOS(IProject project) throws CoreException;
     String getOS(URI uri) throws CoreException;
+    IRemoteCon getConnection(String schemeId);
 }

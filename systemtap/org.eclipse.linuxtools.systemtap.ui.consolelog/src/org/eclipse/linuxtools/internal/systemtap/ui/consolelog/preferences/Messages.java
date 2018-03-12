@@ -14,12 +14,11 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.systemtap.ui.consolelog.preferences.messages"; //$NON-NLS-1$
     public static String ConsoleLogPreferencePage_AlwaysConnectToHost;
-    public static String ConsoleLogPreferencePage_Host;
-    public static String ConsoleLogPreferencePage_Password;
-    public static String ConsoleLogPreferencePage_Port;
     public static String ConsoleLogPreferencePage_PreferencesTitle;
     public static String ConsoleLogPreferencePage_SecondsToSaveData;
-    public static String ConsoleLogPreferencePage_User;
+    public static String ConsoleLogPreferencePage_Connection;
+    public static String ConsoleLogPreferencePage_NewConnection;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
