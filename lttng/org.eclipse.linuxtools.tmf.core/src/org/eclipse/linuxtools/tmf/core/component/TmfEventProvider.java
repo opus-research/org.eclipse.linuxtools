@@ -15,19 +15,12 @@
 
 package org.eclipse.linuxtools.tmf.core.component;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.internal.tmf.core.TmfCoreTracer;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfEventThread;
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
@@ -39,10 +32,7 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEndSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfStartSynchSignal;
-import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
-import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 
 /**
@@ -70,8 +60,6 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
 
     /** Delay for coalescing background requests (in milli-seconds) */
     private static final long DELAY = 1000;
-
-    private ITmfTimestampTransform fTsTransform;
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -415,88 +403,6 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
      */
     protected boolean executorIsTerminated() {
         return fExecutor.isTerminated();
-    }
-
-    // ------------------------------------------------------------------------
-    // Timestamp transformation functions
-    // ------------------------------------------------------------------------
-
-    /**
-     * Returns the file resource used to store synchronization formula. The file
-     * may not exist.
-     *
-     * @return the synchronization file
-     * @since 3.1
-     */
-    protected File getSyncFormulaFile(){
-        return null;
-    }
-
-    /**
-     * Returns the timestamp transformation for this trace
-     *
-     * @return the timestamp transform
-     * @since 3.1
-     */
-    public ITmfTimestampTransform getTimestampTransform() {
-        if (fTsTransform == null) {
-            /* Check if a formula is stored somewhere in the resources */
-            File sync_file = getSyncFormulaFile();
-            if (sync_file != null && sync_file.exists()) {
-
-                try (FileInputStream fis = new FileInputStream(sync_file);
-                        ObjectInputStream ois = new ObjectInputStream(fis);) {
-
-                    fTsTransform = (ITmfTimestampTransform) ois.readObject();
-
-                } catch (ClassNotFoundException | IOException e) {
-                    fTsTransform = TmfTimestampTransform.IDENTITY;
-                }
-            } else {
-                fTsTransform = TmfTimestampTransform.IDENTITY;
-            }
-        }
-        return fTsTransform;
-    }
-
-    /**
-     * Sets the trace's timestamp transform
-     *
-     * @param tt
-     *            The timestamp transform for all timestamps of this trace
-     * @since 3.1
-     */
-    public void setTimestampTransform(final ITmfTimestampTransform tt) {
-        fTsTransform = tt;
-
-        /* Save the timestamp transform to a file */
-        File sync_file = getSyncFormulaFile();
-        if (sync_file != null) {
-            if (sync_file.exists()) {
-                sync_file.delete();
-            }
-
-            /* Save the header of the file */
-            try (FileOutputStream fos = new FileOutputStream(sync_file, false);
-                    ObjectOutputStream oos = new ObjectOutputStream(fos);) {
-
-                oos.writeObject(fTsTransform);
-            } catch (IOException e1) {
-                Activator.logError("Error writing timestamp transform for trace", e1); //$NON-NLS-1$
-            }
-        }
-    }
-
-    /**
-     * Creates a timestamp for this trace, using the transformation formula
-     *
-     * @param ts
-     *            The time in long with which to create the timestamp
-     * @return The new timestamp
-     * @since 3.1
-     */
-    public ITmfTimestamp createTimestamp(long ts) {
-        return new TmfTimestamp(getTimestampTransform().transform(ts));
     }
 
     // ------------------------------------------------------------------------
