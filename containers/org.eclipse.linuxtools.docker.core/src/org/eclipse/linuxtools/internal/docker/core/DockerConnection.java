@@ -288,8 +288,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		active = false;
 		images = Collections.emptyList();
 		containers = Collections.emptyList();
-		imagesLoaded = true;
-		containersLoaded = true;
 		notifyContainerListeners(containers);
 		notifyImageListeners(images);
 	}
