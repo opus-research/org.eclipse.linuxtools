@@ -87,6 +87,7 @@ public class UnknownPacket extends Packet {
 
     @Override
     public String toString() {
+        @SuppressWarnings("null")
         @NonNull byte[] array = fPayload.array();
         String string = "Payload: " + ConversionHelper.bytesToHex(array, true); //$NON-NLS-1$
         final Packet child = fChildPacket;
@@ -128,6 +129,7 @@ public class UnknownPacket extends Packet {
     public Map<String, String> getFields() {
         ImmutableMap<String, String> map = fFields;
         if (map == null) {
+            @SuppressWarnings("null")
             @NonNull byte[] array = fPayload.array();
 
             Builder<String, String> builder = ImmutableMap.<String, String> builder()
