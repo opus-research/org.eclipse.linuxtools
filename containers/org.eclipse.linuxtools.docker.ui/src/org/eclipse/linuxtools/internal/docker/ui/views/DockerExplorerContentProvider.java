@@ -71,8 +71,6 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			final DockerImagesCategory imagesCategory = (DockerImagesCategory) parentElement;
 			final IDockerConnection connection = imagesCategory.getConnection();
 			if(connection.isImagesLoaded()) {
-				//System.err.println("Images in DockerImagesCategory: "
-				// + connection.getImages());
 				return connection.getImages().toArray();
 			}
 			loadImages(imagesCategory);

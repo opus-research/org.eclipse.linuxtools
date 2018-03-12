@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionStorageManager;
-import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
 
 public class DockerConnectionManager {
 
@@ -45,13 +44,12 @@ public class DockerConnectionManager {
 		for (IDockerConnection connection : connections) {
 			try {
 				connection.open(true);
-				notifyListeners(connection,
-						IDockerConnectionManagerListener.ADD_EVENT);
 			} catch (DockerException e) {
 				Activator.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 						e.getMessage()));
 			}
 		}
+		notifyListeners(IDockerConnectionManagerListener.ADD_EVENT);
 	}
 
 	public void setConnectionSettingsFinder(
@@ -88,17 +86,18 @@ public class DockerConnectionManager {
 		}
 		connections.add(dockerConnection);
 		saveConnections();
-		notifyListeners(dockerConnection,
-				IDockerConnectionManagerListener.ADD_EVENT);
+		notifyListeners(IDockerConnectionManagerListener.ADD_EVENT);
 	}
 
-	public void removeConnection(final IDockerConnection connection) {
-		connections.remove(connection);
+	public void removeConnection(IDockerConnection d) {
+		connections.remove(d);
 		saveConnections();
-		notifyListeners(connection,
-				IDockerConnectionManagerListener.REMOVE_EVENT);
-		DockerContainerRefreshManager.getInstance()
-				.removeContainerRefreshThread(connection);
+		notifyListeners(IDockerConnectionManagerListener.REMOVE_EVENT);
+	}
+
+	public void notifyConnectionRename() {
+		saveConnections();
+		notifyListeners(IDockerConnectionManagerListener.RENAME_EVENT);
 	}
 
 	public void addConnectionManagerListener(
@@ -114,13 +113,12 @@ public class DockerConnectionManager {
 			connectionManagerListeners.remove(listener);
 	}
 
-	public void notifyListeners(final IDockerConnection connection,
-			final int type) {
+	public void notifyListeners(int type) {
 		if (connectionManagerListeners != null) {
 			Object[] listeners = connectionManagerListeners.getListeners();
 			for (int i = 0; i < listeners.length; ++i) {
 				((IDockerConnectionManagerListener) listeners[i])
-						.changeEvent(connection, type);
+						.changeEvent(type);
 			}
 		}
 	}
