@@ -170,6 +170,7 @@ In addition to these views, the '''Tracing and Monitoring Framework (TMF)''' fea
 * [[#Colors_View | Colors View]]
 * [[#Filters_View | Filters View]]
 * [[#Time_Chart_View  | Time Chart View]]
+* [[#Environment_Variables_View  | Environment Variables View]]
 * [[#State_System_Explorer_View | State System Explorer View]]
 * [[#Call_Stack_View | Call Stack View]]
 
@@ -550,19 +551,6 @@ It is possible to export the content of the trace to a text file based on the co
 
 ''Note'':  The columns in the text file are separated by tabs.
 
-=== Collapsing of Repetitive Events ===
-The implementation for collapsing of repetitive events is trace type specific and is only available for certain trace types. For example, a trace type could allow collapsing of consecutive events that have the same event content but not the same timestamp. If a trace type supports this feature then it is possible to select the '''Collapse Events''' menu item after pressing the right mouse button in the table.
-
-When the collapsing of events is executing, the table will clear all events and fill itself with all relevant events. If the collapse condition is met, the first column of the table will show the number of times this event was repeated consecutively.
-
-[[Image:images/TablePreCollapse.png]]
-
-A status row will be displayed before and after the events, dynamically showing how many non-collapsed events were found and how many events were processed so far. Once the collapsing is completed, the status row icon in the left margin will change from a 'stop' to a 'filter' icon.
-
-[[Image:images/TablePostCollapse.png]]
-
-To clear collapsing, press the right mouse button in the table and select menu item '''Clear Filters''' in the context sensitive menu. ''Note'' that collapsing is also removed when another filter is applied to the table.
-
 == Histogram View ==
 
 The Histogram View displays the trace events distribution with respect to time. When streaming a trace, this view is dynamically updated as the events are received.
@@ -681,6 +669,11 @@ When a filter is applied in the events table, the non-matching ticks are removed
 
 The Time Chart only supports traces that are opened in an editor. The use of an editor is specified in the plug-in extension for that trace type, or is enabled by default for custom traces.
 
+== Environment Variables View ==
+A new feature of CTF traces is their ability to store user defined data that is not to be placed in an event. It is generally data that is per-trace specific, such as the tracer version and the trace domain. It will be populated when a trace is loaded if the trace has environment variables. <br>
+[[Image:images/LTTng2EnvironmentsView.png]]<br>
+The above picture shows a trace loaded that was collected with the '''lttng-modules''' version '''2'''.'''0'''.'''0''' tracer. It is a '''kernel''' trace of the '''3.2.0-18-generic''' '''linux''' kernel.
+
 == State System Explorer View ==
 
 The State System Explorer view allows the user to inspect the state interval values of every attribute of a state system at a particular time.
@@ -704,8 +697,7 @@ The '''New Custom Text Parser''' wizard can be used to create a custom parser fo
 
 Fill out the first wizard page with the following information:
 
-* '''Category:''' Enter a category name for the trace type.
-* '''Trace type:''' Enter a name for the trace type, which is also the name of the custom parser.
+* '''Log type:''' Enter a name for the custom log entries, which is also the name of the custom parser.
 * '''Time Stamp format:''' Enter the date and time pattern that will be used to output the Time Stamp.<br>
 Note: information about date and time patterns can be found here: [../reference/api/org/eclipse/linuxtools/tmf/core/timestamp/TmfTimestampFormat.html TmfTimestampFormat]
 
@@ -772,8 +764,7 @@ The '''New Custom XML Parser''' wizard can be used to create a custom parser for
 
 Fill out the first wizard page with the following information:
 
-* '''Category:''' Enter a category name for the trace type.
-* '''Trace type:''' Enter a name for the trace type, which is also the name of the custom parser.
+* '''Log type:''' Enter a name for the custom log entries, which is also the name of the custom parser.
 * '''Time Stamp format:''' Enter the date and time pattern that will be used to output the Time Stamp.<br>
 
 Note: information about date and time patterns can be found here: [../reference/api/org/eclipse/linuxtools/tmf/core/timestamp/TmfTimestampFormat.html TmfTimestampFormat]
@@ -862,7 +853,7 @@ Select a custom parser from the list and click the '''Delete''' button to remove
 
 * Import...
 
-Click the '''Import...''' button and select a file from the opened file dialog to import all its custom parsers. If any parser conflicts with an existing built-in or custom trace type, the user will be prompted to skip or rename the imported parser.
+Click the '''Import...''' button and select a file from the opened file dialog to import all its custom parsers.
 
 * Export...
 
@@ -875,7 +866,7 @@ Once a custom parser has been created, any [[#Importing Traces to the Project|im
 To do so:
 
 * Select a trace in the '''Project Explorer''' view
-* Right-click the trace and select '''Select Trace Type...''' &gt; ''category name'' &gt; ''parser name''
+* Right-click the trace and select '''Select Trace Type...''' &gt; '''Custom Text''' or '''Custom XML''' &gt; ''parser name''
 * Double-click the trace or right-click it and select '''Open'''
 
 The trace will be opened in an editor showing the events table, and an entry will be added for it in the Time Chart view.
@@ -1474,8 +1465,7 @@ The states flow is usable with the mouse. The following actions are set:
 * '''middle-drag or Ctrl-left-drag horizontally''': pan left or right
 * '''right-drag horizontally''': [[#Zoom region|zoom region]]
 * '''click on a colored bar''': the associated process node is selected and the current time indicator is moved where the click happened
-* '''mouse wheel up/down''': scroll up or down
-* '''Ctrl-mouse wheel up/down''': zoom in or out
+* '''mouse wheel up/down''': zoom in or out
 * '''drag the time ruler horizontally''': zoom in or out with fixed start time
 * '''double-click the time ruler''': reset zoom to full range
 

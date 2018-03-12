@@ -257,10 +257,6 @@ public abstract class TmfXmlStateValue implements ITmfXmlStateValue {
         if (fieldName.equals(TmfXmlStrings.CPU)) {
             return TmfStateValue.newValueInt(Integer.valueOf(event.getSource()));
         }
-        /* Exception also for "TIMESTAMP", returns the timestamp of this event */
-        if (fieldName.equals(TmfXmlStrings.TIMESTAMP)) {
-            return TmfStateValue.newValueLong(event.getTimestamp().getValue());
-        }
         if (content.getField(fieldName) == null) {
             return value;
         }
@@ -383,17 +379,12 @@ public abstract class TmfXmlStateValue implements ITmfXmlStateValue {
             quark = attribute.getAttributeQuark(event, quark);
             /* the query is not valid, we stop the state change */
             if (quark == IXmlStateSystemContainer.ERROR_QUARK) {
-                throw new AttributeNotFoundException("Not found XML attribute " + attribute); //$NON-NLS-1$
+                throw new AttributeNotFoundException();
             }
         }
 
         long ts = event.getTimestamp().getValue();
         fStateValue.handleEvent(event, quark, ts);
-    }
-
-    @Override
-    public String toString() {
-        return "TmfXmlStateValue: " + fStateValue; //$NON-NLS-1$
     }
 
     /**
