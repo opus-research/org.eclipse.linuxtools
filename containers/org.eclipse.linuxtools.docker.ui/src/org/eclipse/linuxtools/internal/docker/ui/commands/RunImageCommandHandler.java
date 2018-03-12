@@ -154,9 +154,7 @@ image,
 						@Override
 						public void run() {
 							MessageDialog.openError(
-									PlatformUI.getWorkbench()
-											.getActiveWorkbenchWindow()
-											.getShell(),
+									Display.getCurrent().getActiveShell(),
 									DVMessages.getFormattedString(
 											ERROR_CREATING_CONTAINER,
 											containerConfig.image()),
@@ -198,9 +196,8 @@ image,
 								@Override
 								public void run() {
 									MessageDialog.openError(
-											PlatformUI.getWorkbench()
-													.getActiveWorkbenchWindow()
-													.getShell(),
+											Display.getCurrent()
+													.getActiveShell(),
 											DVMessages.getFormattedString(
 													ERROR_REMOVING_CONTAINER,
 													id),

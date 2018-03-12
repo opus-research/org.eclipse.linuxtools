@@ -117,9 +117,7 @@ public class BuildImageCommandHandler extends AbstractHandler {
 						@Override
 						public void run() {
 							MessageDialog.openError(
-									PlatformUI.getWorkbench()
-											.getActiveWorkbenchWindow()
-											.getShell(),
+									Display.getCurrent().getActiveShell(),
 											WizardMessages.getString(
 													"ErrorInvalidDirectory.msg"),
 									WizardMessages.getFormattedString(
@@ -146,12 +144,19 @@ public class BuildImageCommandHandler extends AbstractHandler {
 
 						@Override
 						public void run() {
-							MessageDialog.openError(PlatformUI.getWorkbench()
-									.getActiveWorkbenchWindow().getShell(),
+							MessageDialog.openError(
+									// Use the Workbench shell so we don't find
+									// the non-modal dialog that will be
+									// destroyed shortly after a failure will be
+									// reported.
+									PlatformUI.getWorkbench()
+											.getActiveWorkbenchWindow()
+											.getShell(),
+									// shell,
 									DVMessages
 									.getFormattedString(ERROR_BUILDING_IMAGE,
 											id), e.getMessage());
-
+							// shell.close();
 						}
 
 					});
