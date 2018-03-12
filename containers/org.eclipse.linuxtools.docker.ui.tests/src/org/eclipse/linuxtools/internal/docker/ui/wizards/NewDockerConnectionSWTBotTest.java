@@ -16,7 +16,6 @@ import java.io.IOException;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.SystemUtils;
@@ -103,7 +102,7 @@ public class NewDockerConnectionSWTBotTest {
 	private IDockerConnection configureTCPConnection(final String connectionName, final String host) {
 		final DockerClient client = MockDockerClientFactory.build();
 		final DockerConnection dockerConnection = MockDockerConnectionFactory.from(connectionName, client)
-				.withTCPConnectionSettings(host, null, EnumDockerConnectionState.ESTABLISHED);
+				.withTCPConnectionSettings(host, null);
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
 		return dockerConnection;
 	}
