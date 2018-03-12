@@ -19,10 +19,12 @@ import java.util.Set;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.list.IObservableList;
+import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
 import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
-import org.eclipse.core.databinding.validation.IValidator;
+import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -45,7 +47,6 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.ui.Activator;
@@ -53,7 +54,6 @@ import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.utils.IRunnableWithResult;
-import org.eclipse.linuxtools.internal.docker.ui.validators.ImageNameValidator;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumesVariablesModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ExposedPortModel;
@@ -93,19 +93,45 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		return model;
 	}
 
-	@Override
-	public void dispose() {
-		super.dispose();
-	}
+	private class ImageSelectionValidator extends MultiValidator {
 
-	@Override
-	public String getName() {
-		return LaunchMessages.getString(TAB_NAME);
+		private final IObservableValue imageSelectionObservable;
+
+		ImageSelectionValidator(
+				final IObservableValue imageSelectionObservable) {
+			this.imageSelectionObservable = imageSelectionObservable;
+		}
+
+		@Override
+		protected IStatus validate() {
+			final String selectedImageName = (String) imageSelectionObservable
+					.getValue();
+			if (selectedImageName.isEmpty()) {
+				model.setSelectedImageNeedsPulling(false);
+				return ValidationStatus.error(WizardMessages
+						.getString("ImageRunSelectionPage.specifyImageMsg")); //$NON-NLS-1$
+			}
+			if (model.getSelectedImage() != null) {
+				model.setSelectedImageNeedsPulling(false);
+				return ValidationStatus.ok();
+			}
+			model.setSelectedImageNeedsPulling(true);
+			return ValidationStatus.warning(WizardMessages.getFormattedString(
+					"ImageRunSelectionPage.imageNotFoundMessage", //$NON-NLS-1$
+					selectedImageName));
+		}
+
+		@Override
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
+			targets.add(imageSelectionObservable);
+			return targets;
+		}
 	}
 
 	@Override
 	public void createControl(Composite parent) {
- 		final Composite container = new Composite(parent, SWT.NONE);
+		final Composite container = new Composite(parent, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).span(1, 1)
 				.grab(true, false).applyTo(container);
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
@@ -131,6 +157,9 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 					.observe(model);
 			imageSelectionObservable
 					.addValueChangeListener(onImageSelectionChange());
+			final ImageSelectionValidator imageSelectionValidator = new ImageSelectionValidator(
+					imageSelectionObservable);
+			dbc.addValidationStatusProvider(imageSelectionValidator);
 		}
 		setControl(container);
 	}
@@ -582,30 +611,10 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 					"").isEmpty()) {
 				return false;
 			}
-			final IStatus imageSelectionValidationStatus = new ImageSelectionValidator()
-					.validate(model.getSelectedImageName());
-			if (!imageSelectionValidationStatus.isOK()) {
-				setErrorMessage(imageSelectionValidationStatus.getMessage());
-				return false;
-			}
-			final IStatus imageNameValidationStatus = new ImageNameValidator()
-					.validate(model.getSelectedImageName());
-			if (!imageNameValidationStatus.isOK()) {
-				setErrorMessage(imageNameValidationStatus.getMessage());
-				return false;
-			}
-			final IStatus containerNameValidationStatus = new ContainerNameValidator()
-					.validate(model.getContainerName());
-			if (!containerNameValidationStatus.isOK()) {
-				setErrorMessage(containerNameValidationStatus.getMessage());
-				return false;
-			}
-
 		} catch (CoreException e) {
 			Activator.log(e);
 		}
-		setErrorMessage(null);
-		return true;
+		return super.isValid(launchConfig);
 	}
 
 	private class LaunchConfigurationChangeListener
@@ -617,44 +626,14 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		}
 	}
 
-	private class ImageSelectionValidator implements IValidator {
-
-		@Override
-		public IStatus validate(final Object value) {
-			final String selectedImageName = (String) value;
-			if (selectedImageName.isEmpty()) {
-				model.setSelectedImageNeedsPulling(false);
-				return ValidationStatus.error(WizardMessages
-						.getString("ImageRunSelectionPage.specifyImageMsg")); //$NON-NLS-1$
-			}
-			if (model.getSelectedImage() != null) {
-				model.setSelectedImageNeedsPulling(false);
-				return ValidationStatus.ok();
-			}
-			model.setSelectedImageNeedsPulling(true);
-			return ValidationStatus.warning(WizardMessages.getFormattedString(
-					"ImageRunSelectionPage.imageNotFoundMessage", //$NON-NLS-1$
-					selectedImageName));
-		}
-
+	@Override
+	public void dispose() {
+		super.dispose();
 	}
 
-	private class ContainerNameValidator implements IValidator {
-
-		@Override
-		public IStatus validate(Object value) {
-			final String containerName = (String) value;
-
-			for (IDockerContainer container : model.getSelectedConnection()
-					.getContainers()) {
-				if (container.name().equals(containerName)) {
-					return ValidationStatus.error(WizardMessages.getString(
-							"ImageRunSelectionPage.containerWithSameName")); //$NON-NLS-1$
-				}
-			}
-			return ValidationStatus.ok();
-		}
-
+	@Override
+	public String getName() {
+		return LaunchMessages.getString(TAB_NAME);
 	}
 
 }
