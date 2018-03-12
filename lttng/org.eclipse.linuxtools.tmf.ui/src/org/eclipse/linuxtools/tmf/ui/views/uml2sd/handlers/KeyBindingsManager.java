@@ -147,8 +147,7 @@ public class KeyBindingsManager {
      */
     private void initialize() {
         fGoToMessageForKeyBinding = new MoveToMessage();
-        Object serviceObject = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(IHandlerService.class);
-        IHandlerService service = (IHandlerService) serviceObject;
+        IHandlerService service = (IHandlerService) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(IHandlerService.class);
         AbstractHandler handler = new AbstractHandler() {
             @Override
             public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -257,8 +256,7 @@ public class KeyBindingsManager {
             //During Eclipse shutdown the active workbench window is null
             return;
         }
-        Object serviceObject = window.getService(IHandlerService.class);
-        IHandlerService service = (IHandlerService) serviceObject;
+        IHandlerService service = (IHandlerService) window.getService(IHandlerService.class);
         for(IHandlerActivation activation : fHandlerActivations) {
             service.deactivateHandler(activation);
         }
