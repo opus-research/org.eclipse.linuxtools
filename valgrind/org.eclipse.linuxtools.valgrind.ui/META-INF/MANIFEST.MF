@@ -8,8 +8,7 @@ Bundle-Vendor: %Bundle-Vendor.0
 Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.core.runtime,
- org.eclipse.cdt.codan.ui.cxx,
- org.eclipse.linuxtools.valgrind.core
+ org.eclipse.cdt.codan.ui.cxx
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.linuxtools.internal.valgrind.ui;
