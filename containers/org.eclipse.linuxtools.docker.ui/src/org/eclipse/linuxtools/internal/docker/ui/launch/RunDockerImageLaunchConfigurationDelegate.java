@@ -269,10 +269,6 @@ public class RunDockerImageLaunchConfigurationDelegate
 	}
 
 	private class ConnectionSelectionLabelProvider implements ILabelProvider {
-
-		private Image CONNECTION_IMAGE = SWTImagesFactory.DESC_REPOSITORY_MIDDLE
-				.createImage();
-
 		@Override
 		public void removeListener(ILabelProviderListener listener) {
 		}
@@ -284,7 +280,6 @@ public class RunDockerImageLaunchConfigurationDelegate
 
 		@Override
 		public void dispose() {
-			CONNECTION_IMAGE.dispose();
 		}
 
 		@Override
@@ -298,7 +293,7 @@ public class RunDockerImageLaunchConfigurationDelegate
 
 		@Override
 		public Image getImage(Object element) {
-			return CONNECTION_IMAGE;
+			return SWTImagesFactory.DESC_REPOSITORY_MIDDLE.createImage();
 		}
 	}
 
