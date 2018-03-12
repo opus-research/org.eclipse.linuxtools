@@ -1197,8 +1197,8 @@ public class SDView extends ViewPart implements IPartListener {
     @Override
     public void partActivated(IWorkbenchPart part) {
         if (part == this) {
-            final Object service = PlatformUI.getWorkbench().getService(IHandlerService.class);
-            fPrintHandlerActivation = ((IHandlerService) service).activateHandler(ActionFactory.PRINT.getCommandId(), fPrintActionHandler);
+            final IHandlerService hs = (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
+            fPrintHandlerActivation = hs.activateHandler(ActionFactory.PRINT.getCommandId(), fPrintActionHandler);
         }
     }
 
@@ -1222,8 +1222,8 @@ public class SDView extends ViewPart implements IPartListener {
     @Override
     public void partDeactivated(IWorkbenchPart part) {
         if (part == this && fPrintHandlerActivation != null) {
-            final Object service = PlatformUI.getWorkbench().getService(IHandlerService.class);
-            ((IHandlerService) service).deactivateHandler(fPrintHandlerActivation);
+            final IHandlerService hs = (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
+            hs.deactivateHandler(fPrintHandlerActivation);
         }
     }
 
