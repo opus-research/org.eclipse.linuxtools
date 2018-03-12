@@ -147,7 +147,12 @@ public abstract class AbstractChartBuilder extends Composite implements IUpdateL
         maxItems = Math.min(store.getInt(GraphingPreferenceConstants.P_VIEWABLE_DATA_ITEMS),
                 store.getInt(GraphingPreferenceConstants.P_MAX_DATA_ITEMS));
 
-        propertyChangeListener = event -> updateProperties(event);
+        propertyChangeListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                updateProperties(event);
+            }
+        };
         store.addPropertyChangeListener(propertyChangeListener);
     }
 
