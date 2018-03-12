@@ -33,6 +33,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -61,7 +62,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphTimeListener;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphCombo;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphRangeUpdateEvent;
-import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphSelectionEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphTimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphViewer;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
@@ -390,7 +390,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
      * this class typically need to override the getColumnText method if they
      * have more than one column to display
      */
-    protected static class TreeLabelProvider implements ITableLabelProvider {
+    protected static class TreeLabelProvider implements ITableLabelProvider, ILabelProvider {
 
         @Override
         public void addListener(ILabelProviderListener listener) {
@@ -421,6 +421,23 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 return entry.getName();
             }
             return new String();
+        }
+
+        /**
+         * @since 3.2
+         */
+        @Override
+        public Image getImage(Object element) {
+            return null;
+        }
+
+        /**
+         * @since 3.2
+         */
+        @Override
+        public String getText(Object element) {
+            TimeGraphEntry entry = (TimeGraphEntry) element;
+            return entry.getName();
         }
 
     }
@@ -851,13 +868,6 @@ public abstract class AbstractTimeGraphView extends TmfView {
             }
         });
 
-        fTimeGraphWrapper.addSelectionListener(new ITimeGraphSelectionListener() {
-            @Override
-            public void selectionChanged(TimeGraphSelectionEvent event) {
-                // ITimeGraphEntry selection = event.getSelection();
-            }
-        });
-
         fTimeGraphWrapper.getTimeGraphViewer().setTimeFormat(TimeFormat.CALENDAR);
 
         IStatusLineManager statusLineManager = getViewSite().getActionBars().getStatusLineManager();
@@ -1037,6 +1047,7 @@ public abstract class AbstractTimeGraphView extends TmfView {
     protected void rebuild() {
         setStartTime(Long.MAX_VALUE);
         setEndTime(Long.MIN_VALUE);
+        refresh();
         synchronized (fBuildThreadMap) {
             for (ITmfTrace trace : getTracesToBuild(fTrace)) {
                 BuildThread buildThread = new BuildThread(trace, fTrace, getName());

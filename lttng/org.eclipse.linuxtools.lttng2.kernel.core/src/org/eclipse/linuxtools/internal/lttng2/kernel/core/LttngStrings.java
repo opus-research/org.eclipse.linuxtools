@@ -62,5 +62,4 @@ public interface LttngStrings {
     static final String PARENT_TID = "parent_tid";
     static final String CHILD_COMM = "child_comm";
     static final String CHILD_TID = "child_tid";
-    static final String CHILD_PID = "child_pid";
 }

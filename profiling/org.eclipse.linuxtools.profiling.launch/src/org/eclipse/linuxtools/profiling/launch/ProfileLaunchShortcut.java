@@ -76,7 +76,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
     /**
      * Locate a configuration to relaunch for the given type.  If one cannot be found, create one.
      * @param bin The binary to look launch for.
-     * @param mode
+     * @param mode Launch mode.
      *
      * @return A re-useable config or <code>null</code> if none.
      */
@@ -87,8 +87,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
         try {
             ILaunchConfiguration[] configs = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations(configType);
             candidateConfigs = new ArrayList<>(configs.length);
-            for (int i = 0; i < configs.length; i++) {
-                ILaunchConfiguration config = configs[i];
+            for (ILaunchConfiguration config : configs) {
                 IPath programPath = CDebugUtils.getProgramPath(config);
                 String projectName = CDebugUtils.getProjectName(config);
                 IPath binPath = bin.getResource().getProjectRelativePath();
@@ -134,7 +133,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
     /**
      * Set default attributes for the given configuration.
      *
-     * @param wc
+     * @param wc The launch configuration to use as default.
      * @since 1.2
      */
     public void setDefaultProfileLaunchShortcutAttributes(ILaunchConfigurationWorkingCopy wc){
@@ -189,9 +188,10 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
     }
 
     /**
-     * Method searchAndLaunch.
-     * @param elements
-     * @param mode
+     * Search and launch binary.
+     * 
+     * @param elements Binaries to search.
+     * @param mode Launch mode.
      */
     private void searchAndLaunch(final Object[] elements, String mode) {
         if (elements != null && elements.length > 0) {
@@ -217,9 +217,9 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
                                             try {
                                                 IBinary[] bins = cproject.getBinaryContainer().getBinaries();
 
-                                                for (int j = 0; j < bins.length; j++) {
-                                                    if (bins[j].isExecutable()) {
-                                                        results.add(bins[j]);
+                                                for (IBinary bin : bins) {
+                                                    if (bin.isExecutable()) {
+                                                        results.add(bin);
                                                     }
                                                 }
                                             } catch (CModelException e) {
@@ -269,20 +269,18 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 
     /**
      * Prompts the user to select a  binary
-     * @param binList
-     * @param mode
+     * @param binList The list of binaries.
+     * @param mode Old and not used parameter.
      *
      * @return the selected binary or <code>null</code> if none.
      */
+    // TODO remove unused mode parameter for 4.0
     protected IBinary chooseBinary(List<IBinary> binList, String mode) {
         ILabelProvider programLabelProvider = new CElementLabelProvider() {
             @Override
             public String getText(Object element) {
                 if (element instanceof IBinary) {
-                    IBinary bin = (IBinary)element;
-                    StringBuffer name = new StringBuffer();
-                    name.append(bin.getPath().lastSegment());
-                    return name.toString();
+                    return ((IBinary)element).getPath().lastSegment();
                 }
                 return super.getText(element);
             }
@@ -293,7 +291,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
             public String getText(Object element) {
                 if (element instanceof IBinary) {
                     IBinary bin = (IBinary)element;
-                    StringBuffer name = new StringBuffer();
+                    StringBuilder name = new StringBuilder();
                     name.append(bin.getCPU() + (bin.isLittleEndian() ? "le" : "be")); //$NON-NLS-1$ //$NON-NLS-2$
                     name.append(" - "); //$NON-NLS-1$
                     name.append(bin.getPath().toString());
@@ -320,10 +318,11 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
     /**
      * Show a selection dialog that allows the user to choose one of the specified
      * launch configurations.
-     * @param configList
-     * @param mode
+     * @param configList The list of launch configurations to choose from.
+     * @param mode Currently unused.
      * @return The chosen config, or <code>null</code> if the user cancelled the dialog.
      */
+    // TODO remove not used mode parameter for 4.0.
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList, String mode) {
         IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
         ElementListSelectionDialog dialog = new ElementListSelectionDialog(getActiveWorkbenchShell(), labelProvider);

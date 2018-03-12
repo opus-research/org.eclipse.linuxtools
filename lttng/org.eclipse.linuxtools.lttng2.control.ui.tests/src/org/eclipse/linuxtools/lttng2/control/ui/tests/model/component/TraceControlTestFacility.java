@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,15 +17,17 @@ import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.linuxtools.internal.lttng2.control.core.model.TargetNodeState;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.ControlView;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.ITraceControlComponent;
+import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TargetNodeComponent;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TraceSessionComponent;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.junit.Assert;
 
 /**
  *  Singleton class to facilitate the test cases. Creates UML2SD view and loader objects as well as provides
@@ -129,12 +131,13 @@ public class TraceControlTestFacility {
             long endTimeMillis = System.currentTimeMillis() + waitTimeMillis;
             while(System.currentTimeMillis() < endTimeMillis) {
                 if (!display.readAndDispatch()) {
-                    if ("cocoa".equals (SWT.getPlatform ())) {
-                        // The display needs to be woken up because it's possible
-                        // to get in a state where nothing will wake up the UI thread
-                        display.asyncExec(null);
+                    // We do not use Display.sleep because it might never wake up
+                    // if there is no user interaction
+                    try {
+                        Thread.sleep(Math.min(waitTimeMillis, 10));
+                    } catch (final InterruptedException e) {
+                        // Ignored
                     }
-                    display.sleep();
                 }
                 display.update();
             }
@@ -143,6 +146,19 @@ public class TraceControlTestFacility {
                 Thread.sleep(waitTimeMillis);
             } catch (InterruptedException e) {
                 // Ignored
+            }
+        }
+    }
+
+    /**
+     * Waits for a connection to be connected
+     */
+    public void waitForConnect(TargetNodeComponent node) {
+        for (int i = 1; i < 5000 && node.getTargetNodeState() == TargetNodeState.CONNECTING; i *= 2) {
+            try {
+                Thread.sleep(i);
+            } catch (InterruptedException e) {
+                Assert.fail();
             }
         }
     }
@@ -200,7 +216,8 @@ public class TraceControlTestFacility {
      * @throws NotHandledException
      */
     public void executeCommand(String commandId) throws ExecutionException, NotDefinedException, NotEnabledException, NotHandledException {
-        IHandlerService handlerService = (IHandlerService) fControlView.getSite().getService(IHandlerService.class);
+        Object handlerServiceObject = fControlView.getSite().getService(IHandlerService.class);
+        IHandlerService handlerService = (IHandlerService) handlerServiceObject;
         handlerService.executeCommand(COMMAND_CATEGORY_PREFIX + commandId, null);
         waitForJobs();
     }
