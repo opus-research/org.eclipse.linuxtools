@@ -81,9 +81,6 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 			final ContainerRefreshThread containerRefreshThread = refreshThreadMap.get(connection);
 			containerRefreshThread.stopMonitoring();
 			refreshThreadMap.remove(connection);
-		} else {
-			System.err.println("Connection not found. Existing connections: "
-					+ refreshThreadMap.keySet().toString());
 		}
 	}
 

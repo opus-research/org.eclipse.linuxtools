@@ -19,11 +19,5 @@ import java.util.List;
  */
 public interface IDockerConnectionSettingsFinder {
 
-	@Deprecated
 	List<IDockerConnectionSettings> findConnectionSettings();
-
-	IDockerConnectionSettings findDefaultConnectionSettings();
-
-	String resolveConnectionName(IDockerConnectionSettings settings);
 }
-
