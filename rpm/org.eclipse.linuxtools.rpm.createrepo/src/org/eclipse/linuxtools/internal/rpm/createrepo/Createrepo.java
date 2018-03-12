@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.rpm.core.utils.BufferedProcessInputStream;
@@ -60,8 +61,13 @@ public class Createrepo {
      * @param project The project.
      * @param commands A list of command switches to execute with the createrepo command.
      * @return The status of the execution.
+     * @throws CoreException Occurs when error trying to execute the command.
      */
-    public IStatus execute(final OutputStream os, CreaterepoProject project, List<String> commands) {
+    public IStatus execute(final OutputStream os, CreaterepoProject project, List<String> commands) throws CoreException {
+        IStatus available = checkIfAvailable();
+        if (!available.isOK()) {
+            return available;
+        }
         IStatus validVersion = isCorrectVersion();
         if (!validVersion.isOK()) {
             return validVersion;
@@ -78,10 +84,11 @@ public class Createrepo {
             os.write(commandString.getBytes());
             return Utils.runCommand(os, project.getProject(), commandSwitches.toArray(new String[commandSwitches.size()]));
         } catch (IOException e) {
-            return new Status(
+            IStatus status = new Status(
                     IStatus.ERROR,
                     FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
                     NLS.bind(Messages.Createrepo_errorExecuting, commandString), e);
+            throw new CoreException(status);
         }
     }
 
