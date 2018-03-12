@@ -26,6 +26,7 @@ public class SpecfileEditorShowOutlineActionDelegate extends AbstractHandler {
 		if (editor instanceof SpecfileEditor) {
 			SpecfileQuickOutlineDialog quickOutlinePopupDialog = new SpecfileQuickOutlineDialog(
 					editor.getSite().getShell(), SWT.NONE, (SpecfileEditor) editor);
+			quickOutlinePopupDialog.setSize(400, 200);
 			quickOutlinePopupDialog.setVisible(true);
 		}
 		return null;
