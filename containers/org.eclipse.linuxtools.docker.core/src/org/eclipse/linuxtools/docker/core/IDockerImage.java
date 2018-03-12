@@ -14,6 +14,9 @@ import java.util.List;
 
 public interface IDockerImage {
 
+	/** the literal value for the 'latest' tag on Docker images. */
+	public static final String TAG_LATEST = "latest"; //$NON-NLS-1$
+
 	public String created();
 
 	public String createdDate();
@@ -24,14 +27,8 @@ public interface IDockerImage {
 
 	public List<String> repoTags();
 	
-	/**
-	 * @return the first repo/name of the Image.
-	 */
 	public String repo();
 
-	/**
-	 * @return all tags associated with the first repo/name of this image
-	 */
 	public List<String> tags();
 
 	public Long size();
