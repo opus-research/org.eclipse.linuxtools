@@ -44,7 +44,7 @@ final class NullStateValue extends TmfStateValue {
 
     @Override
     public int hashCode() {
-       return 0;
+        return 0;
     }
 
     @Override
@@ -75,4 +75,17 @@ final class NullStateValue extends TmfStateValue {
     public String unboxStr() {
         return value;
     }
+
+    @Override
+    public int compareTo(@Nullable ITmfStateValue object) {
+        if (object == null || object instanceof NullStateValue) {
+            return 0;
+        }
+        /*
+         * We assume that every non-null state value is greater than any null
+         * state value.
+         */
+        return -1;
+    }
+
 }

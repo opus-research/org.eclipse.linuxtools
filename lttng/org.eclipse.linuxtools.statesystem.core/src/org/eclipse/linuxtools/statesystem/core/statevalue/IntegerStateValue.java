@@ -53,7 +53,8 @@ final class IntegerStateValue extends TmfStateValue {
     }
 
     @Override
-    public @Nullable String toString() {
+    public @Nullable
+    String toString() {
         return String.format("%3d", value); //$NON-NLS-1$
     }
 
@@ -71,4 +72,51 @@ final class IntegerStateValue extends TmfStateValue {
         /* It's always safe to up-cast an int into a long */
         return value;
     }
+
+    @Override
+    public int compareTo(@Nullable ITmfStateValue object) {
+        if (object == null) {
+            /*
+             * We assume that every integer state value is greater than any null
+             * state value.
+             */
+            return 1;
+        }
+        int result = 0;
+
+        switch (object.getType()) {
+        case INTEGER:
+            IntegerStateValue other = (IntegerStateValue) object;
+            result = Integer.compare(this.value, other.value);
+            break;
+        case DOUBLE:
+            double otherDoubleValue = ((DoubleStateValue) object).unboxDouble();
+            double thisDoubleValue = this.value;
+            result = Double.compare(thisDoubleValue, otherDoubleValue);
+            break;
+        case LONG:
+            long otherLongValue = ((LongStateValue) object).unboxLong();
+            result = Long.compare(this.value, otherLongValue);
+            break;
+        case NULL:
+            /*
+             * We assume that every integer state value is greater than any null
+             * state value.
+             */
+            result = 1;
+            break;
+        case STRING:
+            /*
+             * We assume that every state value is smaller than any string state
+             * value.
+             */
+            result = -1;
+            break;
+        default:
+            break;
+        }
+
+        return result;
+    }
+
 }
