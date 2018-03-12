@@ -28,7 +28,6 @@ public class ImageBuild extends Wizard {
 
 	public ImageBuild() {
 		super();
-		setWindowTitle(WizardMessages.getString("ImageBuild.title")); //$NON-NLS-1$
 	}
 
 	public String getImageName() {
