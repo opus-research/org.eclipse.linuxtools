@@ -14,6 +14,7 @@
 package org.eclipse.linuxtools.tmf.ctf.core;
 
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
+import org.eclipse.linuxtools.ctf.core.trace.CTFStreamInputReader;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTraceReader;
 import org.eclipse.linuxtools.internal.tmf.ctf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
@@ -126,11 +127,12 @@ public class CtfIterator extends CTFTraceReader
      * @return CtfTmfEvent The current event
      */
     public synchronized CtfTmfEvent getCurrentEvent() {
-        if (getTopStream() != null) {
+        final CTFStreamInputReader top = super.getPrio().peek();
+        if (top != null) {
             if (!fCurLocation.equals(fPreviousLocation)) {
                 fPreviousLocation = fCurLocation;
-                fPreviousEvent = CtfTmfEventFactory.createEvent(getTopStream().getCurrentEvent(),
-                        getTopStream().getFilename(), fTrace);
+                fPreviousEvent = CtfTmfEventFactory.createEvent(top.getCurrentEvent(),
+                        top.getFilename(), fTrace);
             }
             return fPreviousEvent;
         }
@@ -138,14 +140,15 @@ public class CtfIterator extends CTFTraceReader
     }
 
     /**
-     * Return the current timestamp location pointed to by the iterator. This is
-     * the timestamp for use in CtfLocation, not the event timestamp.
+     * Return the current timestamp location pointed to by the iterator.
+     * This is the timestamp for use in CtfLocation, not the event timestamp.
      *
      * @return long The current timestamp location
      */
     public synchronized long getCurrentTimestamp() {
-        if (getTopStream() != null) {
-            long ts = getTopStream().getCurrentEvent().getTimestamp();
+        final CTFStreamInputReader top = super.getPrio().peek();
+        if (top != null) {
+            long ts = top.getCurrentEvent().getTimestamp();
             return fTrace.getCTFTrace().timestampCyclesToNanos(ts);
         }
         return 0;
