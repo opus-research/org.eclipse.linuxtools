@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2016 STMicroelectronics and others.
+ * Copyright (c) 2009 STMicroelectronics.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -124,7 +124,7 @@ public class GcdaRecordsParser {
                             }
                         }
 
-                        if (!fnctnFound) {
+                        if (fnctnFound == false) {
                             currentFnctn = null;
                             String message = NLS.bind(Messages.GcdaRecordsParser_func_not_found, fnctnId);
                             Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
@@ -161,10 +161,9 @@ public class GcdaRecordsParser {
 
                         ArrayList<Arc> arcsExit = b.getExitArcs();
                         for (Arc extArc : arcsExit) {
-                            if (!extArc.isFake()) {
+                            if (extArc.isFake() == false)
                                 nonFakeExit++;
-                            }
-                            if (!extArc.isOnTree()) {
+                            if (extArc.isOnTree() == false) {
                                 long arcsCnts = stream.readLong();
                                 extArc.setCount(arcsCnts);
                                 extArc.setCountValid(true);
@@ -177,7 +176,7 @@ public class GcdaRecordsParser {
                         // unconditional branch.
                         if (nonFakeExit == 1) {
                             for (Arc extArc : arcsExit) {
-                                if (!extArc.isFake()) {
+                                if (extArc.isFake() == false) {
                                     extArc.setUnconditionnal(true);
 
                                     // If this block is instrumenting a call, it might be
@@ -186,11 +185,10 @@ public class GcdaRecordsParser {
                                     // arc has more than one entry. Mark the destination
                                     // block as a return site, if none of those conditions hold.
 
-									if (b.isCallSite() && extArc.isFallthrough()
-											&& extArc.getDstnatnBlock().getEntryArcs().get(0).equals(extArc)
-											&& extArc.getDstnatnBlock().getEntryArcs().size() == 1) {
-										extArc.getDstnatnBlock().setCallReturn(true);
-									}
+                                    if (b.isCallSite() == true && extArc.isFallthrough() == true
+                                            && extArc.getDstnatnBlock().getEntryArcs().get(0).equals(extArc)
+                                            && extArc.getDstnatnBlock().getEntryArcs().size() == 1)
+                                        extArc.getDstnatnBlock().setCallReturn(true);
                                 }
                             }
                         }
