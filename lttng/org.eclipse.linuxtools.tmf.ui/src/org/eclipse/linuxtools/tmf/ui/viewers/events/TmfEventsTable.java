@@ -93,7 +93,6 @@ import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest.ExecutionType;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEventFilterAppliedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfEventSearchAppliedSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfEventSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTimeSynchSignal;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
@@ -474,8 +473,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         }
                     }
                 }
-                if (e.item.getData() instanceof ITmfEvent) {
-                    broadcast(new TmfEventSelectedSignal(TmfEventsTable.this, (ITmfEvent) e.item.getData()));
+                if (e.item.getData() != null) {
                     fireSelectionChanged(new SelectionChangedEvent(TmfEventsTable.this, new StructuredSelection(e.item.getData())));
                 } else {
                     fireSelectionChanged(new SelectionChangedEvent(TmfEventsTable.this, StructuredSelection.EMPTY));
