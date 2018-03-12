@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2009 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -183,14 +184,12 @@ public class RunScriptHandler extends AbstractHandler {
                     }
                 }
                 final ScriptConsole console = ScriptConsole.getInstance(name);
-                synchronized (console) {
-                    if (!local) {
-                        console.run(script, envVars, remoteOptions, new StapErrorParser());
-                    } else {
-                        console.runLocally(script, envVars, new StapErrorParser(), getProject());
-                    }
-                    scriptConsoleInitialized(console);
+                if (!local) {
+                    console.run(script, envVars, remoteOptions, new StapErrorParser());
+                } else {
+                    console.runLocally(script, envVars, new StapErrorParser(), getProject());
                 }
+                scriptConsoleInitialized(console);
             }
         });
     }

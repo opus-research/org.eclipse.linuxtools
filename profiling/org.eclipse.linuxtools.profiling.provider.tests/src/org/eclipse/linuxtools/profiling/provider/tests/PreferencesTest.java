@@ -15,8 +15,15 @@ import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.widget
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withRegex;
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withStyle;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceDescription;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.DebugUITools;
@@ -37,7 +44,6 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotCheckBox;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotRadio;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
@@ -59,6 +65,8 @@ public class PreferencesTest extends AbstractTest{
     private static final String PROFILING_PREFS_TYPE = "timing"; //$NON-NLS-1$
     private static final String[][] PROFILING_PREFS_INFO = {
             { "Coverage", "coverage" }, { "Memory", "memory" },{ "Timing", "timing" } };  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+
+    private static final Logger fLogger = Logger.getRootLogger();
 
     private static class NodeAvailableAndSelect extends DefaultCondition {
 
@@ -102,6 +110,7 @@ public class PreferencesTest extends AbstractTest{
     public static void setUpWorkbench() throws Exception {
         // Set up is based from from GcovTest{c,CPP}.
 
+        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         SWTWorkbenchBot bot = new SWTWorkbenchBot();
         try {
             bot.viewByTitle("Welcome").close(); //$NON-NLS-1$
@@ -124,20 +133,13 @@ public class PreferencesTest extends AbstractTest{
         }
 
         // Turn off automatic building by default to avoid timing issues
-        SWTBotMenu windowsMenu = bot.menu("Window"); //$NON-NLS-1$
-        windowsMenu.menu("Preferences").click(); //$NON-NLS-1$
-        SWTBotShell shell = bot.shell("Preferences"); //$NON-NLS-1$
-        shell.activate();
-        bot.text().setText("Workspace"); //$NON-NLS-1$
-        bot.waitUntil(new NodeAvailableAndSelect(bot.tree(), "General", "Workspace")); //$NON-NLS-1$ //$NON-NLS-2$
-        SWTBotCheckBox buildAuto = bot.checkBox("Build automatically"); //$NON-NLS-1$
-        if (buildAuto != null && buildAuto.isChecked()) {
-            buildAuto.click();
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        IWorkspaceDescription desc = workspace.getDescription();
+        boolean isAutoBuilding = desc.isAutoBuilding();
+        if (isAutoBuilding) {
+            desc.setAutoBuilding(false);
+            workspace.setDescription(desc);
         }
-        bot.sleep(1000);
-        bot.button("Apply").click(); //$NON-NLS-1$
-        bot.button("OK").click(); //$NON-NLS-1$
-        bot.waitUntil(shellCloses(shell));
     }
 
     @Test
@@ -188,8 +190,6 @@ public class PreferencesTest extends AbstractTest{
         proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), PROJ_NAME);
         try {
             testProfileProjectActions(bot);
-        } catch (Exception e) {
-            throw e;
         } finally {
             deleteProject(proj);
         }

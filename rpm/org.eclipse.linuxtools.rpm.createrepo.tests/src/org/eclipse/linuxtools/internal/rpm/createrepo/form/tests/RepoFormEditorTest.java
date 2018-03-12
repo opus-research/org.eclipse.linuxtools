@@ -13,6 +13,9 @@ package org.eclipse.linuxtools.internal.rpm.createrepo.form.tests;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -29,7 +32,9 @@ import org.junit.runner.RunWith;
  * SWTBot tests for RepoFormEditor.
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class CreaterepoRepoFormEditorTest {
+public class RepoFormEditorTest {
+
+    private static final Logger fLogger = Logger.getRootLogger();
 
     private static TestCreaterepoProject testProject;
     private static SWTWorkbenchBot bot;
@@ -42,6 +47,7 @@ public class CreaterepoRepoFormEditorTest {
      */
     @BeforeClass
     public static void setUpBeforeClass() throws CoreException {
+        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         testProject = new TestCreaterepoProject();
         assertTrue(testProject.getProject().exists());
         bot = new SWTWorkbenchBot();
