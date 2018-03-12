@@ -9,21 +9,18 @@
  *     Red Hat - Initial Contribution
  *******************************************************************************/
 
-package org.eclipse.linuxtools.docker.core;
+package org.eclipse.linuxtools.internal.docker.ui.utils;
+
+import org.eclipse.jface.operation.IRunnableWithProgress;
 
 /**
- * Options to build an {@link IDockerImage}.
+ * An {@link IRunnableWithProgress} that can return a result.
  * 
  * @author xcoulon
  *
  */
-public enum EnumImageBuildParameter {
-	/** Suppress verbose build output. */
-	QUIET, /** Do not use the cache when building the image. */
-	NO_CACHE, /**
-				 * Do not remove intermediate containers after a successful build.
-				 */
-	NO_RM, /** Always remove intermediate containers. */
-	FORCE_RM;
+public interface IRunnableWithResult<T> extends IRunnableWithProgress {
+
+	public T getResult();
 
 }
