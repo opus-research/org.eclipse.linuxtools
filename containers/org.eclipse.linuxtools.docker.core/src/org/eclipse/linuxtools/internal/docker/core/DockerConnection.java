@@ -18,7 +18,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -120,7 +119,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 
 		public Builder tcpHost(String tcpHost) {
-			if (tcpHost != null && !tcpHost.isEmpty()) {
+			if (tcpHost != null) {
 				if (!tcpHost.matches("\\w+://.*")) { //$NON-NLS-1$
 					tcpHost = "tcp://" + tcpHost; //$NON-NLS-1$
 				}
@@ -281,8 +280,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void ping() throws DockerException {
 		try {
-			if (this.client != null) {
-				this.client.ping();
+			if (client != null) {
+				client.ping();
 			} else {
 				throw new DockerException(Messages.Docker_Daemon_Ping_Failure);
 			}
@@ -295,7 +294,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void close() {
 		synchronized (clientLock) {
-			if (this.client != null) {
+			if (client != null) {
 				this.client.close();
 				this.client = null;
 			}
@@ -304,12 +303,9 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public IDockerConnectionInfo getInfo() throws DockerException {
-		if (this.client == null) {
-			return null;
-		}
 		try {
-			final Info info = this.client.info();
-			final Version version = this.client.version();
+			final Info info = client.info();
+			final Version version = client.version();
 			return new DockerConnectionInfo(info, version);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
@@ -378,20 +374,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 						list);
 			}
 		}
-	}
-
-	/**
-	 * @return an fixed-size list of all {@link IDockerContainerListener}
-	 */
-	// TODO: include in IDockerConnection API
-	public List<IDockerContainerListener> getContainerListeners() {
-		final IDockerContainerListener[] result = new IDockerContainerListener[this.containerListeners
-				.size()];
-		final Object[] listeners = containerListeners.getListeners();
-		for (int i = 0; i < listeners.length; i++) {
-			result[i] = (IDockerContainerListener) listeners[i];
-		}
-		return Arrays.asList(result);
 	}
 
 	public Job getActionJob(String id) {
@@ -656,11 +638,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public IDockerImageInfo getImageInfo(String id) {
-		if (this.client == null) {
-			return null;
-		}
 		try {
-			final ImageInfo info = this.client.inspectImage(id);
+			final ImageInfo info = client.inspectImage(id);
 			return new DockerImageInfo(info);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			Activator.logErrorMessage(e.message());
@@ -693,20 +672,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				((IDockerImageListener) listeners[i]).listChanged(this, list);
 			}
 		}
-	}
-
-	/**
-	 * @return an fixed-size list of all {@link IDockerImageListener}
-	 */
-	// TODO: include in IDockerConnection API
-	public List<IDockerImageListener> getImageListeners() {
-		final IDockerImageListener[] result = new IDockerImageListener[this.imageListeners
-				.size()];
-		final Object[] listeners = imageListeners.getListeners();
-		for (int i = 0; i < listeners.length; i++) {
-			result[i] = (IDockerImageListener) listeners[i];
-		}
-		return Arrays.asList(result);
 	}
 
 	@Override
@@ -759,7 +724,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public List<IDockerImage> listImages() throws DockerException {
-		final List<IDockerImage> tempImages = new ArrayList<>();
+		final List<IDockerImage> dilist = new ArrayList<>();
 		synchronized (imageLock) {
 			List<Image> rawImages = null;
 			try {
@@ -768,7 +733,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 					// been closed but there is an async request to update the
 					// images list left in the queue
 					if (client == null)
-						return tempImages;
+						return dilist;
 					rawImages = client.listImages(
 							DockerClient.ListImagesParam.allImages());
 				}
@@ -795,25 +760,25 @@ public class DockerConnection implements IDockerConnection, Closeable {
 						&& imageParentIds.contains(rawImage.id());
 				final boolean danglingImage = !taggedImage
 						&& !intermediateImage;
-				// return one IDockerImage per raw image
-				final List<String> repoTags = new ArrayList<>(
-						rawImage.repoTags());
-				Collections.sort(repoTags);
-				final String repo = DockerImage.extractRepo(repoTags.get(0));
-				final List<String> tags = Arrays
-						.asList(DockerImage.extractTag(repoTags.get(0)));
-				tempImages.add(new DockerImage(this, repoTags, repo,
-						tags, rawImage.id(), rawImage.parentId(),
-						rawImage.created(), rawImage.size(),
-						rawImage.virtualSize(), intermediateImage,
-						danglingImage));
+				// FIXME: if an image with a unique ID belongs to multiple repos, we should
+				// probably have multiple instances of IDockerImage
+				final Map<String, List<String>> repoTags = DockerImage.extractTagsByRepo(rawImage.repoTags());
+				for(Entry<String, List<String>> entry : repoTags.entrySet()) {
+					final String repo = entry.getKey();
+					final List<String> tags = entry.getValue();
+					dilist.add(new DockerImage(this, rawImage
+							.repoTags(), repo, tags, rawImage.id(), rawImage.parentId(),
+							rawImage.created(), rawImage.size(), rawImage
+									.virtualSize(), intermediateImage,
+							danglingImage));
+				}
 			}
-			images = tempImages;
+			images = dilist;
 		}
 		// Perform notification outside of lock so that listener doesn't cause a
 		// deadlock to occur
-		notifyImageListeners(tempImages);
-		return tempImages;
+		notifyImageListeners(dilist);
+		return dilist;
 	}
 
 	@Override
@@ -844,25 +809,21 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			throw f;
 		}
 	}
-
+	
 	@Override
 	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException {
 		try {
 			final List<ImageSearchResult> searchResults = client.searchImages(term);
 			final List<IDockerImageSearchResult> results = new ArrayList<>();
 			for(ImageSearchResult r : searchResults) {
-				if (r.getName().contains(term)) {
-					results.add(new DockerImageSearchResult(r.getDescription(),
-							r.isOfficial(), r.isAutomated(), r.getName(),
-							r.getStarCount()));
-				}
+				results.add(new DockerImageSearchResult(r.getDescription(), r.isOfficial(), r.isAutomated(), r.getName(), r.getStarCount()));
 			}
 			return results;
 		} catch (com.spotify.docker.client.DockerException | InterruptedException e) {
 			throw new DockerException(e);
 		}
 	}
-
+	
 	@Override
 	public void pushImage(final String name, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {

@@ -45,7 +45,7 @@ public class SourcesFileHyperlinkDetector extends AbstractHyperlinkDetector {
         }
 
         if (editor == null) {
-			editor = this.getAdapter(SpecfileEditor.class);
+            editor = ((SpecfileEditor) this.getAdapter(SpecfileEditor.class));
             if (editor == null) {
                 return null;
             }

@@ -227,7 +227,7 @@ public class GcdaRecordsParser {
                     break;
                 }
                 }
-            } catch (EOFException e) {
+            } catch (EOFException _) {
                 break;
             }
         }
