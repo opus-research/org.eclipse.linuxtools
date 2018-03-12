@@ -1106,7 +1106,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: push image -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.tags">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.removeImages">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.pushImage"
 		          icon="icons/push.gif"
@@ -1156,7 +1156,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: tag image -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.pushImage">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.tags">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.tagImage"
 		          icon="icons/tag.gif"

@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.commands;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -48,20 +45,20 @@ public class PushImageCommandHandler extends AbstractHandler {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		final IDockerImage selectedImage = RunImageCommandHandler
 				.getSelectedImage(activePart);
-		final ImagePush wizard = new ImagePush(selectedImage,
-				selectedImage.repo() + ":" + selectedImage.tags().get(0));
+		final ImagePush wizard = new ImagePush(selectedImage);
 		final boolean pushImage = CommandUtils.openWizard(wizard,
 				HandlerUtil.getActiveShell(event));
 		if (pushImage) {
 			final IDockerConnection connection = CommandUtils
 					.getCurrentConnection(activePart);
-			performPushImage(wizard, connection);
+			IRegistry info = wizard.getRegistry();
+			performPushImage(wizard, connection, info);
 		}
 		return null;
 	}
 	
 	private void performPushImage(final ImagePush wizard,
-			final IDockerConnection connection) {
+			final IDockerConnection connection, final IRegistry info) {
 		if (connection == null) {
 			Display.getDefault()
 					.syncExec(() -> MessageDialog.openError(
@@ -78,10 +75,6 @@ public class PushImageCommandHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final String tag = wizard.getImageTag();
-				final IRegistry info = wizard.getRegistry();
-				final boolean forceTagging = wizard.isForceTagging();
-				final boolean keepTaggedImage = wizard.isKeepTaggedImage();
-
 				monitor.beginTask(DVMessages.getString(PUSH_IMAGE_JOB_TASK),
 						IProgressMonitor.UNKNOWN);
 				// push the image and let the progress
@@ -89,22 +82,10 @@ public class PushImageCommandHandler extends AbstractHandler {
 				String tmpRegistryTag = null;
 				boolean createdTag = false;
 				try {
-					// remove the scheme in the URL if any was set
-					String repo;
-					try {
-						final URL serverAddress = new URL(
-								info.getServerAddress());
-						repo = serverAddress.getHost()
-								+ (serverAddress.getPort() != -1
-										? ':' + serverAddress.getPort() : ""); //$NON-NLS-1$
-					} catch (MalformedURLException e) {
-						// assume there was no scheme, so just use the plain
-						// server address
-						repo = info.getServerAddress();
-					}
+					String repo = info.getServerAddress();
 					tmpRegistryTag = repo + '/' + tag;
 					if (!connection.hasImage(repo, tag)) {
-						connection.tagImage(tag, tmpRegistryTag, forceTagging);
+						connection.tagImage(tag, tmpRegistryTag);
 						createdTag = true;
 					}
 
@@ -129,8 +110,7 @@ public class PushImageCommandHandler extends AbstractHandler {
 				} catch (InterruptedException e) {
 					// do nothing
 				} finally {
-					if (tmpRegistryTag != null && createdTag
-							&& !keepTaggedImage) {
+					if (tmpRegistryTag != null && createdTag) {
 						try {
 							connection.removeTag(tmpRegistryTag);
 							connection.getImages(true);
