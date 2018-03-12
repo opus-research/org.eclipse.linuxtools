@@ -68,7 +68,6 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
-import org.osgi.framework.Version;
 
 public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
 
@@ -89,10 +88,6 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
         try {
             ConfigUtils configUtils = new ConfigUtils(config);
             project = configUtils.getProject();
-
-            // Set the current project that will be profiled
-            PerfCore.setProfiledProject(project);
-
             // check if Perf exists in $PATH
             if (! PerfCore.checkPerfInPath(project))
             {
@@ -125,8 +120,7 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
                 //Build the commandline string to run perf recording the given project
                 String arguments[] = getProgramArgumentsArray( config ); //Program args from launch config.
                 ArrayList<String> command = new ArrayList<>( 4 + arguments.length );
-                Version perfVersion = PerfCore.getPerfVersion(config);
-                command.addAll(Arrays.asList(PerfCore.getRecordString(config, perfVersion))); //Get the base commandline string (with flags/options based on config)
+                command.addAll(Arrays.asList(PerfCore.getRecordString(config))); //Get the base commandline string (with flags/options based on config)
                 command.add( binPath.toPortableString() ); // Add the path to the executable
                 command.set(0, perfPathString);
                 command.add(2,OUTPUT_STR + PerfPlugin.PERF_DEFAULT_DATA);
@@ -201,7 +195,7 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
                     print.println("Analysing recorded perf.data, please wait..."); //$NON-NLS-1$
                     //Possibly should pass this (the console reference) on to PerfCore.Report if theres anything we ever want to spit out to user.
                 }
-                PerfCore.report(config, getEnvironment(config), workingDirPath, monitor, null, print);
+                PerfCore.report(config, workingDirPath, monitor, null, print);
 
                 URI perfDataURI = null;
                 IRemoteFileProxy proxy = null;
