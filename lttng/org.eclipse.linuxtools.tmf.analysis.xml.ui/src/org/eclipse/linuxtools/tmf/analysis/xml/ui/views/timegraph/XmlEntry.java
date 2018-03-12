@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.tmf.analysis.xml.ui.views.timegraph;
 
 import java.util.Collections;
 import java.util.List;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.TmfXmlUiStrings;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;

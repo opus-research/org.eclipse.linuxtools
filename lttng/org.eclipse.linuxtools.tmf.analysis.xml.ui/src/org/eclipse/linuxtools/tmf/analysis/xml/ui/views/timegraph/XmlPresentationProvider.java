@@ -118,14 +118,24 @@ public class XmlPresentationProvider extends TimeGraphPresentationProvider {
 
     @Override
     public void postDrawEvent(ITimeEvent event, Rectangle bounds, GC gc) {
+
         /*
          * TODO Add the XML elements to support texts in intervals and implement
          * this
          */
+        if (bounds.width <= gc.getFontMetrics().getAverageCharWidth()) {
+            return;
+        }
+        if (!(event instanceof TimeEvent)) {
+            return;
+        }
+
     }
 
     @Override
     public void postDrawEntry(ITimeGraphEntry entry, Rectangle bounds, GC gc) {
+
+        //List<String>  labelList = ((XmlEntry)entry).getLabelList();
     }
 
     /**

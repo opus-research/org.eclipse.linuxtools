@@ -9,6 +9,7 @@
  * Contributors:
  *   Florian Wininger - Initial API and implementation
  *   Geneviève Bastien - Review of the initial implementation
+ *   Naser Ezzati - Add labels on the state system entries
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.analysis.xml.ui.views.timegraph;
@@ -70,7 +71,8 @@ import org.w3c.dom.Element;
 public class XmlTimeGraphView extends AbstractTimeGraphView {
 
     /** View ID. */
-    public static final @NonNull String ID = "org.eclipse.linuxtools.tmf.analysis.xml.ui.views.timegraph"; //$NON-NLS-1$
+    public static final @NonNull
+    String ID = "org.eclipse.linuxtools.tmf.analysis.xml.ui.views.timegraph"; //$NON-NLS-1$
 
     private static final String[] DEFAULT_COLUMN_NAMES = new String[] {
             Messages.XmlTimeGraphView_ColumnName,
@@ -89,8 +91,11 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
     private static final String SPLIT_STRING = "/"; //$NON-NLS-1$
 
-    private final @NonNull XmlViewInfo fViewInfo = new XmlViewInfo(ID);
+    private final @NonNull
+    XmlViewInfo fViewInfo = new XmlViewInfo(ID);
     private final ITmfXmlModelFactory fFactory;
+
+    /** List of all Event Handlers */
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -347,10 +352,12 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
             /* Process each quark */
             XmlEntry currentEntry = parentEntry;
             Element displayElement = null;
+
             Map<String, XmlEntry> entryMap = new HashMap<>();
             if (!displayElements.isEmpty()) {
                 displayElement = displayElements.get(0);
             }
+
             for (int quark : quarks) {
                 currentEntry = parentEntry;
                 /* Process the current entry, if specified */
@@ -376,6 +383,7 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
          * Get the start time and end time of this entry from the display
          * attribute
          */
+
         ITmfXmlStateAttribute display = fFactory.createStateAttribute(displayEl, parentEntry);
         int displayQuark = display.getAttributeQuark(quark);
         if (displayQuark == IXmlStateSystemContainer.ERROR_QUARK) {

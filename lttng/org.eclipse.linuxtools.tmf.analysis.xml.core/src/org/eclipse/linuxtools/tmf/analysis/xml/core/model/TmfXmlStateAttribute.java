@@ -54,7 +54,8 @@ public abstract class TmfXmlStateAttribute implements ITmfXmlStateAttribute {
         EVENTFIELD,
         QUERY,
         LOCATION,
-        SELF
+        SELF,
+        MATH
     }
 
     /** Type of attribute */
@@ -103,6 +104,7 @@ public abstract class TmfXmlStateAttribute implements ITmfXmlStateAttribute {
             fType = StateAttributeType.QUERY;
             fName = null;
             break;
+
         case TmfXmlStrings.NULL:
             fType = StateAttributeType.NONE;
             fName = null;
@@ -241,6 +243,48 @@ public abstract class TmfXmlStateAttribute implements ITmfXmlStateAttribute {
                 return quark;
             }
             case QUERY: {
+                int quark;
+                ITmfStateValue value = TmfStateValue.nullValue();
+                int quarkQuery = IXmlStateSystemContainer.ROOT_QUARK;
+
+                for (ITmfXmlStateAttribute attrib : fQueryList) {
+                    quarkQuery = attrib.getAttributeQuark(event, quarkQuery);
+                    if (quarkQuery == IXmlStateSystemContainer.ERROR_QUARK) {
+                        break;
+                    }
+                }
+
+                // the query may fail: for example CurrentThread if there
+                // has not been a sched_switch event
+                if (quarkQuery != IXmlStateSystemContainer.ERROR_QUARK) {
+                    value = ss.queryOngoingState(quarkQuery);
+                }
+
+                switch (value.getType()) {
+                case INTEGER: {
+                    int result = value.unboxInt();
+                    quark = getQuarkRelativeAndAdd(startQuark, String.valueOf(result));
+                    break;
+                }
+                case LONG: {
+                    long result = value.unboxLong();
+                    quark = getQuarkRelativeAndAdd(startQuark, String.valueOf(result));
+                    break;
+                }
+                case STRING: {
+                    String result = value.unboxStr();
+                    quark = getQuarkRelativeAndAdd(startQuark, result);
+                    break;
+                }
+                case DOUBLE:
+                case NULL:
+                default:
+                    quark = IXmlStateSystemContainer.ERROR_QUARK; // error
+                    break;
+                }
+                return quark;
+            }
+            case MATH: {
                 int quark;
                 ITmfStateValue value = TmfStateValue.nullValue();
                 int quarkQuery = IXmlStateSystemContainer.ROOT_QUARK;

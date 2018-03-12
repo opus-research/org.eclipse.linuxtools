@@ -34,6 +34,11 @@ public interface TmfXmlStrings {
     static final String TRACETYPE = "traceType";
     static final String ID = "id";
     static final String LABEL = "label";
+
+    /**
+     * @since 2.0
+     */
+    static final String TYPE_MATH = "math";
     static final String ANALYSIS = "analysis";
 
     /* XML String */
@@ -58,6 +63,10 @@ public interface TmfXmlStrings {
     static final String CONDITION = "condition";
     static final String THEN = "then";
     static final String ELSE = "else";
+    /**
+     * @since 2.0
+     */
+    static final String OPERATOR = "operator";
 
     /* XML event handler strings */
     static final String HANDLER_EVENT_NAME = "eventName";
@@ -81,10 +90,59 @@ public interface TmfXmlStrings {
     static final String STACK_PUSH = "push";
     static final String STACK_PEEK = "peek";
     static final String CPU = "cpu";
+    /**
+     * @since 2.0
+     */
+    static final String TIMESTAMP = "timestamp";
 
-    /* Operator type */
+    /* Boolean Operator Type */
     static final String NOT = "not";
     static final String AND = "and";
     static final String OR = "or";
 
+    /* Comparison/Condition Operator Type */
+
+    /**
+     * @since 2.0
+     */
+    static final String EQ = "eq";
+    /**
+     * @since 2.0
+     */
+    static final String NE = "ne";
+    /**
+     * @since 2.0
+     */
+    static final String GE = "ge";
+    /**
+     * @since 2.0
+     */
+    static final String GT = "gt";
+    /**
+     * @since 2.0
+     */
+    static final String LE = "le";
+    /**
+     * @since 2.0
+     */
+    static final String LT = "lt";
+
+    /* Math Operator Type */
+
+    /**
+     * @since 2.0
+     */
+    static final String ADD = "add";
+    /**
+     * @since 2.0
+     */
+    static final String SUB = "subtract";
+    /**
+     * @since 2.0
+     */
+    static final String MUL = "multiple";
+    /**
+     * @since 2.0
+     */
+    static final String DIV = "divide";
 }
