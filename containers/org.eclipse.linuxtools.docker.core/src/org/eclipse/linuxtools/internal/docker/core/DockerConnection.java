@@ -54,7 +54,6 @@ import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConfParameter;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IDockerConnection2;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionInfo;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings.BindingType;
@@ -119,8 +118,7 @@ import com.spotify.docker.client.messages.Version;
  * 
  *
  */
-public class DockerConnection
-		implements IDockerConnection, IDockerConnection2, Closeable {
+public class DockerConnection implements IDockerConnection, Closeable {
 
 	// Builder allowing different binding modes (unix socket vs TCP connection)
 	public static class Builder {
@@ -1039,24 +1037,6 @@ public class DockerConnection
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public IDockerProgressHandler getDefaultBuildImageProgressHandler(
-			String image, int lines) {
-		return new DefaultImageBuildProgressHandler(this, image, lines);
-	}
-
-	@Override
-	public IDockerProgressHandler getDefaultPullImageProgressHandler(
-			String image) {
-		return new DefaultImagePullProgressHandler(this, image);
-	}
-
-	@Override
-	public IDockerProgressHandler getDefaultPushImageProgressHandler(
-			String image) {
-		return new DefaultImagePushProgressHandler(this, image);
 	}
 
 	@Override
