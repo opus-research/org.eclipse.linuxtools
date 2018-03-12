@@ -8,8 +8,24 @@
  * Contributors:
  *     Red Hat - Initial Contribution
  *******************************************************************************/
+package org.eclipse.linuxtools.vagrant.core;
 
-/**
- * 
- */
-package org.eclipse.linuxtools.internal.docker.ui.validators;
+import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
+
+public class VagrantService {
+
+	private static VagrantConnection client;
+
+	/**
+	 * Retrieve an instance of an IVagrantConnection for calling various
+	 * 'vagrant' commands.
+	 *
+	 * @return an instance of an IVagrantConnection
+	 */
+	public static IVagrantConnection getInstance() {
+		if (client == null) {
+			client = new VagrantConnection();
+		}
+		return client;
+	}
+}
