@@ -63,14 +63,12 @@ public class PieChartPaintListener implements PaintListener {
         pieSliceAngles = new int[seriesValues.length][];
         if (seriesValues.length == 0) {
             bounds = gc.getClipping();
-        	Font oldFont = gc.getFont();
             Font font = new Font(Display.getDefault(), FONT, 15, SWT.BOLD);
             gc.setForeground(BLACK);
             gc.setFont(font);
             String text = "No data"; //$NON-NLS-1$
             Point textSize = e.gc.textExtent(text);
             gc.drawText(text, (bounds.width - textSize.x) / 2, (bounds.height - textSize.y) / 2);
-            gc.setFont(oldFont);
             font.dispose();
             return;
         }
@@ -95,14 +93,12 @@ public class PieChartPaintListener implements PaintListener {
 
         if (chart.getLegend().isVisible()) {
         	Rectangle legendBounds = ((Control) chart.getLegend()).getBounds();
-        	Font oldFont = gc.getFont();
         	Font font = new Font(Display.getDefault(), FONT, 10, SWT.BOLD);
         	gc.setForeground(BLACK);
         	gc.setFont(font);
         	String text = chart.getAxisSet().getXAxis(0).getTitle().getText();
         	Point textSize = e.gc.textExtent(text);
         	gc.drawText(text, legendBounds.x + (legendBounds.width - textSize.x) / 2, legendBounds.y - textSize.y);
-        	gc.setFont(oldFont);
         	font.dispose();
         }
 
@@ -136,8 +132,8 @@ public class PieChartPaintListener implements PaintListener {
     	String text = origTitleText;
     	for (int i = 0; i < numBlanks; ++i)
     		text += " "; //$NON-NLS-1$
-    	pe.gc.setFont(oldFont);
     	title.setText(text);
+    	pe.gc.setFont(oldFont);
     }
 
     private void drawPieChart(PaintEvent e, int chartnum, Rectangle bounds) {
@@ -151,7 +147,6 @@ public class PieChartPaintListener implements PaintListener {
         }
 
         GC gc = e.gc;
-        Font oldFont = gc.getFont();
         gc.setLineWidth(1);
 
         int pieX = bounds.x + (bounds.width - pieWidth) / 2;
@@ -193,7 +188,6 @@ public class PieChartPaintListener implements PaintListener {
         String text = seriesNames[chartnum];
         Point textSize = e.gc.textExtent(text);
         gc.drawText(text, pieX + (pieWidth - textSize.x) / 2, pieY + pieWidth + textSize.y);
-        gc.setFont(oldFont);
         font.dispose();
     }
 
