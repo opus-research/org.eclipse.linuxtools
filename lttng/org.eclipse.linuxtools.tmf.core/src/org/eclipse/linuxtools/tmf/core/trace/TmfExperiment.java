@@ -56,7 +56,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
  * @version 1.0
  * @author Francois Chouinard
  */
-public class TmfExperiment extends TmfTrace implements ITmfPersistentlyIndexable {
+public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable {
 
     // ------------------------------------------------------------------------
     // Constants

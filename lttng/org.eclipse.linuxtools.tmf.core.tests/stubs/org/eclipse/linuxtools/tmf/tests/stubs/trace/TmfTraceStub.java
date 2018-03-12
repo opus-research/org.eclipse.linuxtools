@@ -47,7 +47,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
  * <p>
  * Dummy test trace. Use in conjunction with TmfEventParserStub.
  */
-public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable {
+public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -56,8 +56,8 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
     // The actual stream
     private RandomAccessFile fTrace;
 
-    // // The associated event parser
-    // private ITmfEventParser<TmfEvent> fParser;
+//    // The associated event parser
+//    private ITmfEventParser<TmfEvent> fParser;
 
     // The synchronization lock
     private final ReentrantLock fLock = new ReentrantLock();
@@ -139,6 +139,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
         setParser(new TmfEventParserStub(this));
     }
 
+
     private void setupTrace(String path) throws TmfTraceException {
         try {
             fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
@@ -208,7 +209,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
                 if (fTrace != null) {
                     // Position the trace at the requested location and
                     // returns the corresponding context
-                    long loc = 0;
+                    long loc  = 0;
                     long rank = 0;
                     if (location != null) {
                         loc = (Long) location.getLocationInfo();
@@ -224,7 +225,8 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
                 e.printStackTrace();
             } catch (final NullPointerException e) {
                 e.printStackTrace();
-            } finally {
+            }
+            finally{
                 fLock.unlock();
             }
         } catch (final NullPointerException e) {
@@ -232,6 +234,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
         }
         return null;
     }
+
 
     @Override
     public TmfContext seekEvent(final double ratio) {
