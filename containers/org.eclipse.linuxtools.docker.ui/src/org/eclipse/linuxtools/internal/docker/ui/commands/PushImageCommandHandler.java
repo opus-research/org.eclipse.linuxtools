@@ -33,8 +33,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 public class PushImageCommandHandler extends AbstractHandler implements
 		IHandler {
 
-	private final static String PUSH_IMAGE_JOB_TITLE = "ImagePush.title"; //$NON-NLS-1$
-	private final static String PUSH_IMAGE_JOB_TASK = "ImagePush.msg"; //$NON-NLS-1$
+	private final static String PUSH_IMAGE_JOB_TITLE = "ImagePush.msg"; //$NON-NLS-1$
 	private static final String ERROR_PUSHING_IMAGE = "ImagePushError.msg"; //$NON-NLS-1$
 	
 	private IDockerConnection connection;
@@ -56,19 +55,19 @@ public class PushImageCommandHandler extends AbstractHandler implements
 	}
 	
 	private void performPushImage(final ImagePush wizard) {
-		final Job pushImageJob = new Job(DVMessages.getFormattedString(
-				PUSH_IMAGE_JOB_TITLE, wizard.getImageTag())) {
+		final Job pushImageJob = new Job(
+				DVMessages.getString(PUSH_IMAGE_JOB_TITLE)) {
 
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final String tag = wizard.getImageTag();
-				monitor.beginTask(DVMessages.getString(PUSH_IMAGE_JOB_TASK),
-						IProgressMonitor.UNKNOWN);
+				monitor.beginTask(DVMessages.getString(PUSH_IMAGE_JOB_TITLE), 1);
 				// pull the image and let the progress
 				// handler refresh the images when done
 				try {
 					((DockerConnection) connection).pushImage(tag,
 							new ImagePushProgressHandler(connection, tag));
+					monitor.worked(1);
 				} catch (final DockerException e) {
 					Display.getDefault().syncExec(new Runnable() {
 
