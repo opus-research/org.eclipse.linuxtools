@@ -12,11 +12,12 @@
 
 package org.eclipse.linuxtools.internal.tmf.core.synchronization;
 
+import java.math.BigDecimal;
+
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransformLinear;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 
 /**
  * Constant transform, just offset your timestamp with another.
@@ -29,50 +30,33 @@ public class TmfConstantTransform implements ITmfTimestampTransform {
      * Serial ID
      */
     private static final long serialVersionUID = 417299521984404532L;
-    private ITmfTimestamp fOffset;
+    private long fOffset;
 
     /**
      * Default constructor
      */
     public TmfConstantTransform() {
-        fOffset = new TmfNanoTimestamp(0);
+        fOffset = 0L;
     }
 
     /**
      * Constructor with offset
      *
      * @param offset
-     *            The offset of the linear transform in nanoseconds
-     */
-    public TmfConstantTransform(long offset) {
-        fOffset = new TmfNanoTimestamp(offset);
-    }
-
-    /**
-     * Constructor with offset timestamp
-     *
-     * @param offset
      *            The offset of the linear transform
      */
-    public TmfConstantTransform(ITmfTimestamp offset) {
+    public TmfConstantTransform(long offset) {
         fOffset = offset;
     }
 
     @Override
     public ITmfTimestamp transform(ITmfTimestamp timestamp) {
-        return fOffset.normalize(timestamp.getValue(), timestamp.getScale());
+        return timestamp.normalize(fOffset, ITmfTimestamp.NANOSECOND_SCALE);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param timestamp
-     *            the timestamp in nanoseconds
-     * @return the timestamp in nanoseconds
-     */
     @Override
     public long transform(long timestamp) {
-        return fOffset.normalize(timestamp, ITmfTimestamp.NANOSECOND_SCALE).getValue();
+        return fOffset + timestamp;
     }
 
     @Override
@@ -82,9 +66,12 @@ public class TmfConstantTransform implements ITmfTimestampTransform {
             return this;
         } else if (composeWith instanceof TmfConstantTransform) {
             TmfConstantTransform tct = (TmfConstantTransform) composeWith;
-            return new TmfConstantTransform(fOffset.getValue() + tct.fOffset.getValue());
+            return new TmfConstantTransform(fOffset + tct.getOffset());
         } else if (composeWith instanceof TmfTimestampTransformLinear) {
-            throw new UnsupportedOperationException("Cannot compose a constant and linear transform yet"); //$NON-NLS-1$
+            /* If composeWith is a linear transform, add the two together */
+            TmfTimestampTransformLinear ttl = (TmfTimestampTransformLinear) composeWith;
+            BigDecimal newBeta = ttl.getBeta().add(new BigDecimal(fOffset));
+            return new TmfTimestampTransformLinear(ttl.getAlpha(), newBeta);
         } else {
             /*
              * We do not know what to do with this kind of transform, just
@@ -92,6 +79,36 @@ public class TmfConstantTransform implements ITmfTimestampTransform {
              */
             return this;
         }
+    }
+
+    private long getOffset() {
+        return fOffset;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (fOffset ^ (fOffset >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        TmfConstantTransform other = (TmfConstantTransform) obj;
+        if (fOffset != other.fOffset) {
+            return false;
+        }
+        return true;
     }
 
     @Override
