@@ -32,7 +32,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -40,7 +39,6 @@ import org.osgi.service.prefs.BackingStoreException;
  * Tests for Createrepo class and general createrepo command
  * execution. Assumes system has "createrepo" command.
  */
-@Ignore
 public class CreaterepoTest {
 
     private static TestCreaterepoProject testProject;
