@@ -112,7 +112,8 @@ public class ContainerLinkDialog extends Dialog {
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(10, 10)
 				.applyTo(container);
 		final Label explanationLabel = new Label(container, SWT.NONE);
-		explanationLabel.setText(WizardMessages
+		explanationLabel
+.setText(WizardMessages
 				.getString("ContainerLinkDialog.explanationLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(false, false).applyTo(explanationLabel);
