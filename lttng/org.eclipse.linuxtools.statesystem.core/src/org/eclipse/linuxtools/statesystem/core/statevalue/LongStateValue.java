@@ -64,14 +64,4 @@ final class LongStateValue extends TmfStateValue {
     public long unboxLong() {
         return value;
     }
-
-    @Override
-    public int compareTo(@Nullable ITmfStateValue object) {
-        if (!(object instanceof LongStateValue)) {
-            return -1;
-        }
-        LongStateValue other = (LongStateValue) object;
-        return Long.compare(this.value, other.value);
-    }
-
 }
