@@ -119,22 +119,6 @@ public class TmfTimestampTransformLinear implements ITmfTimestampTransform {
         }
     }
 
-    /**
-     * @return the Alpha
-     * @since 3.1
-     */
-    public BigDecimal getAlpha() {
-        return fAlpha;
-    }
-
-    /**
-     * @return the Beta
-     * @since 3.1
-     */
-    public BigDecimal getBeta() {
-        return fBeta;
-    }
-
     @Override
     public boolean equals(Object other) {
         boolean result = false;
