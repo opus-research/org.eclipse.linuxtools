@@ -30,12 +30,6 @@ public class ContainerPropertyTester extends PropertyTester {
 	/** Property name to check if a given {@link IDockerContainer} is paused. */
 	public static final String IS_PAUSED = "isPaused";
 
-	/**
-	 * Property name to check if a given {@link IDockerContainer} can be
-	 * deleted.
-	 */
-	public static final String IS_REMOVABLE = "isRemovable";
-
 	@Override
 	public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
 		if (receiver instanceof IDockerContainer) {
@@ -47,11 +41,6 @@ public class ContainerPropertyTester extends PropertyTester {
 				return checkIfStateMatchesExpectation(container, EnumDockerStatus.STOPPED, expectedValue);
 			case IS_PAUSED:
 				return checkIfStateMatchesExpectation(container, EnumDockerStatus.PAUSED, expectedValue);
-			case IS_REMOVABLE:
-				return checkIfStateMatchesExpectation(container,
-						EnumDockerStatus.STOPPED, expectedValue)
-						|| checkIfStateMatchesExpectation(container,
-								EnumDockerStatus.UNKNOWN, expectedValue);
 			}
 		}
 		return false;
