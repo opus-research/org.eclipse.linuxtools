@@ -388,7 +388,10 @@ public class StapGraphParser extends SystemTapParser {
 
 
     private IStatus parseDotFile() {
-        BufferedReader buff = internalData;
+        if (!(internalData instanceof BufferedReader))
+            return Status.CANCEL_STATUS;
+
+        BufferedReader buff = (BufferedReader) internalData;
 
         HashMap <Integer, ArrayList<Integer>> outNeighbours= new HashMap<>();
         ArrayList<String> nameList = new ArrayList<>();
@@ -497,7 +500,11 @@ public class StapGraphParser extends SystemTapParser {
 
     @Override
     public IStatus realTimeParsing() {
-        BufferedReader buff = internalData;
+        if (!(internalData instanceof BufferedReader)) {
+            return Status.CANCEL_STATUS;
+        }
+
+        BufferedReader buff = (BufferedReader) internalData;
 
         String line;
         boolean draw = false;
