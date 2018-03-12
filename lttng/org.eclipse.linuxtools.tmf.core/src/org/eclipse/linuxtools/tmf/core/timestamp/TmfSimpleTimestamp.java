@@ -27,11 +27,6 @@ public class TmfSimpleTimestamp extends TmfTimestamp {
     // ------------------------------------------------------------------------
 
     /**
-     * Serial id
-     */
-    private static final long serialVersionUID = 1854609945518118375L;
-
-    /**
      * Default constructor (value = 0)
      */
     public TmfSimpleTimestamp() {
