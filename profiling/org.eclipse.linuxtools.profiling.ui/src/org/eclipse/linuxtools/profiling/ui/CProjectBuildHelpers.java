@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat, Inc.
+ * Copyright (c) 2014, 2015 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -138,7 +138,12 @@ public class CProjectBuildHelpers {
      */
     public static boolean isCppType(IProject project) {
         try {
-            return project.hasNature(CCProjectNature.CC_NATURE_ID);
+            if (project.hasNature(CCProjectNature.CC_NATURE_ID)) {
+                return true;
+            }
+            else {
+                return false;
+            }
         } catch (CoreException ex) {
             //This should almost never happen unless the user manually edited the .project file.
             MessageDialogSyncedRunnable.openErrorSyncedRunnable(ProfilingMessages.errorTitle, ProfilingMessages.errorGetProjectType);
@@ -160,8 +165,12 @@ public class CProjectBuildHelpers {
     public static boolean isCType(IProject project) {
         try {
             // has C & has not CPP
-           return project.hasNature(CProjectNature.C_NATURE_ID)
-                    && !project.hasNature(CCProjectNature.CC_NATURE_ID);
+            if (project.hasNature(CProjectNature.C_NATURE_ID)
+                    && !project.hasNature(CCProjectNature.CC_NATURE_ID)) {
+                return true;
+            } else {
+                return false;
+            }
         } catch (CoreException e) {
             // should never really reach this.
             MessageDialogSyncedRunnable.openErrorSyncedRunnable(ProfilingMessages.errorTitle, ProfilingMessages.errorGetProjectType);
@@ -177,7 +186,11 @@ public class CProjectBuildHelpers {
      */
     public static boolean isAutoTools(IProject project) {
         try {
-            return project.hasNature(AutotoolsNewProjectNature.AUTOTOOLS_NATURE_ID);
+            if (project.hasNature(AutotoolsNewProjectNature.AUTOTOOLS_NATURE_ID)) { // this guy throws.
+                return true;
+            } else {
+                return false;
+            }
         } catch (CoreException e) {
             // should never really reach this unless .cproject is broken.
             MessageDialogSyncedRunnable.openErrorSyncedRunnable(ProfilingMessages.errorTitle, ProfilingMessages.errorGetProjectType);
