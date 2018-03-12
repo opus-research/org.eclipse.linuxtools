@@ -115,7 +115,6 @@ public class PushImageCommandHandler extends AbstractHandler {
 					if (tmpRegistryTag != null && createdTag) {
 						try {
 							connection.removeTag(tmpRegistryTag);
-							connection.getImages(true);
 						} catch (Exception e) {
 							// do nothing
 						}
