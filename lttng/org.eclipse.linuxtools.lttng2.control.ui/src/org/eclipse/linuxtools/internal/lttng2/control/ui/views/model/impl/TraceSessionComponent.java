@@ -190,6 +190,9 @@ public class TraceSessionComponent extends TraceControlComponent {
      * @return <code>true</code> if streamed over network else <code>false</code>
      */
     public boolean isStreamedTrace() {
+        if (fSessionInfo.isSnapshotSession()) {
+            return fSessionInfo.getSnapshotInfo().isStreamedSnapshot();
+        }
         return fSessionInfo.isStreamedTrace();
     }
 
