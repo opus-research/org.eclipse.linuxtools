@@ -63,7 +63,7 @@ public final class GcovAnnotationModel implements IAnnotationModel {
     private static final Object KEY = new Object();
 
     /** List of GcovAnnotation elements */
-    private List<GcovAnnotation> annotations = new ArrayList<>();
+    private List<Annotation> annotations = new ArrayList<>();
 
     /** List of IAnnotationModelListener */
     private List<IAnnotationModelListener> annotationModelListeners = new ArrayList<>();
@@ -331,8 +331,8 @@ public final class GcovAnnotationModel implements IAnnotationModel {
     }
 
     private void clear(AnnotationModelEvent event) {
-        for (final GcovAnnotation ca : annotations) {
-            event.annotationRemoved(ca, ca.getPosition());
+        for (final Annotation ca : annotations) {
+            event.annotationRemoved(ca, ((GcovAnnotation)ca).getPosition());
         }
         annotations.clear();
     }
@@ -368,9 +368,9 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         if (this.document != document) {
             throw new IllegalArgumentException("Can't connect to different document."); //$NON-NLS-1$
         }
-        for (final GcovAnnotation ca : annotations) {
+        for (final Annotation ca : annotations) {
             try {
-                document.addPosition(ca.getPosition());
+                document.addPosition(((GcovAnnotation)ca).getPosition());
             } catch (BadLocationException ex) {
             }
         }
@@ -384,8 +384,10 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         if (this.document != document) {
             throw new IllegalArgumentException("Can't disconnect from different document."); //$NON-NLS-1$
         }
-        for (final GcovAnnotation ca : annotations) {
-            document.removePosition(ca.getPosition());
+        for (final Annotation ca : annotations) {
+            if (ca instanceof GcovAnnotation) {
+                document.removePosition(((GcovAnnotation) ca).getPosition());
+            }
         }
         if (--openConnections == 0) {
             document.removeDocumentListener(documentListener);
@@ -398,7 +400,7 @@ public final class GcovAnnotationModel implements IAnnotationModel {
     }
 
     @Override
-    public Iterator<?> getAnnotationIterator() {
+    public Iterator<Annotation> getAnnotationIterator() {
         return annotations.iterator();
     }
 
