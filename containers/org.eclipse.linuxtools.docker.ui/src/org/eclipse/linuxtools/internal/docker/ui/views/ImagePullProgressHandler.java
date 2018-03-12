@@ -55,10 +55,10 @@ public class ImagePullProgressHandler implements IDockerProgressHandler {
 			if (p == null) {
 				String status = message.status();
 				if (status
-						.equals(DVMessages.getString(IMAGE_DOWNLOAD_COMPLETE))
-						|| status.equals(DVMessages
+						.contains(DVMessages.getString(IMAGE_DOWNLOAD_COMPLETE))
+						|| status.contains(DVMessages
 								.getString(IMAGE_DOWNLOADING_ALREADY_EXISTS))
-						|| status.equals(DVMessages
+						|| status.contains(DVMessages
 								.getString(IMAGE_DOWNLOADING_VERIFIED))) {
 					connection.getImages(true);
 				} else {
@@ -76,10 +76,10 @@ public class ImagePullProgressHandler implements IDockerProgressHandler {
 			} else {
 				String status = message.status();
 				if (status
-						.equals(DVMessages.getString(IMAGE_DOWNLOAD_COMPLETE))
-						|| status.equals(DVMessages
+						.contains(DVMessages.getString(IMAGE_DOWNLOAD_COMPLETE))
+						|| status.contains(DVMessages
 								.getString(IMAGE_DOWNLOADING_ALREADY_EXISTS))
-						|| status.equals(DVMessages
+						|| status.contains(DVMessages
 								.getString(IMAGE_DOWNLOADING_VERIFIED))) {
 					p.setPercentageDone(100);
 					connection.getImages(true);
