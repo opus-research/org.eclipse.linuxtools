@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2013 Red Hat, Inc.
+ * Copyright (c) 2012, 2015 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,6 +28,8 @@ public class GraphSelectorEditorInput implements IEditorInput {
     }
 
     /**
+     * Creates the editor input with the given title.
+     * @param scriptTitle The title.
      * @since 2.2
      */
     public GraphSelectorEditorInput(String scriptTitle) {
@@ -35,7 +37,7 @@ public class GraphSelectorEditorInput implements IEditorInput {
     }
 
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         return null;
     }
 
