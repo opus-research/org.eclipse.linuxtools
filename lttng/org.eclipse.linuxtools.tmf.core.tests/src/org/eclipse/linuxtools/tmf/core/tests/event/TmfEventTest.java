@@ -119,7 +119,7 @@ public class TmfEventTest {
         assertNull("getType", event.getType());
         assertNull("getContent", event.getContent());
         assertNull("getReference", event.getReference());
-        assertFalse("isCollapsibleWith", ((ITmfCollapsibleEvent)event).isCollapsibleWith(event));
+        assertFalse("isCollapsibleWith", ((ITmfCollapsibleEvent) event).isCollapsibleWith(event));
     }
 
     @Test

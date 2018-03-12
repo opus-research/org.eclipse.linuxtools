@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Requests tests
+ * Filter tests.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({

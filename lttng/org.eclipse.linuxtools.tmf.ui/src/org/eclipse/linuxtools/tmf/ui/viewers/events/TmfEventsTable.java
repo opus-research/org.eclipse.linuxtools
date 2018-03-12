@@ -72,7 +72,6 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
-import org.eclipse.linuxtools.internal.tmf.core.filter.TmfCollapseFilter;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.internal.tmf.ui.commands.ExportToTextCommandHandler;
@@ -177,12 +176,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      */
     protected static final @NonNull String EMPTY_STRING = ""; //$NON-NLS-1$
 
-    /**
-     * Flag to check for Linux platform
-     * @since 3.1
-     */
-    protected static final boolean IS_LINUX = System.getProperty("os.name").contains("Linux") ? true : false; //$NON-NLS-1$ //$NON-NLS-2$
-
     private static final Image BOOKMARK_IMAGE = Activator.getDefault().getImageFromPath(
             "icons/elcl16/bookmark_obj.gif"); //$NON-NLS-1$
     private static final Image SEARCH_IMAGE = Activator.getDefault().getImageFromPath("icons/elcl16/search.gif"); //$NON-NLS-1$
@@ -272,7 +265,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     private SashForm fSashForm;
     private TmfRawEventViewer fRawViewer;
     private ITmfTrace fTrace;
-    volatile private boolean fPackDone = false;
+    private boolean fPackDone = false;
     private HeaderState fHeaderState = HeaderState.SEARCH;
     private long fSelectedRank = 0;
     private ITmfTimestamp fSelectedBeginTimestamp = null;
@@ -415,9 +408,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             fColumns.addAll(columns);
         }
 
-        TmfMarginColumn collapseCol = new TmfMarginColumn();
-        fColumns.add(0, collapseCol);
-
         // Create the UI columns in the table
         for (TmfEventTableColumn col : fColumns) {
             TableColumn column = fTable.newTableColumn(SWT.LEFT);
@@ -425,9 +415,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             column.setToolTipText(col.getHeaderTooltip());
             column.setData(Key.FIELD_ID, col.getFilterFieldId());
             column.pack();
-            if (col instanceof TmfMarginColumn) {
-                column.setResizable(false);
-            }
         }
 
         // Set the frozen row for header row
@@ -507,7 +494,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
 
                 final CachedEvent cachedEvent = fCache.getEvent(index);
                 if (cachedEvent != null) {
-                    setItemData(item, cachedEvent, cachedEvent.rank);
+                    setItemData(item, cachedEvent.event, cachedEvent.rank);
                     return;
                 }
 
@@ -580,7 +567,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                          * the method toDisplay() expects coordinates relative to an origin that includes the table header.
                          */
                         int y = event.y;
-                        if (IS_LINUX) {
+                        if (System.getProperty("os.name").contains("Linux")) { //$NON-NLS-1$ //$NON-NLS-2$
                             y += fTable.getHeaderHeight();
                         }
                         Point pt = fTable.toDisplay(event.x, y);
@@ -832,13 +819,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 try {
                     HashMap<String, Object> parameters = new HashMap<>();
                     Command command = cmdService.getCommand(ExportToTextCommandHandler.COMMAND_ID);
-                    ParameterizedCommand cmd = ParameterizedCommand.generateCommand(command, parameters);
-
+                    ParameterizedCommand cmd = ParameterizedCommand.generateCommand(command,parameters);
                     IEvaluationContext context = handlerService.getCurrentState();
-                    // Omit the margin column
-                    List<TmfEventTableColumn> exportColumns = fColumns.subList(1, fColumns.size());
-                    context.addVariable(ExportToTextCommandHandler.TMF_EVENT_TABLE_COLUMNS_ID, exportColumns);
-
+                    context.addVariable(ExportToTextCommandHandler.TMF_EVENT_TABLE_COLUMNS_ID, fColumns);
                     handlerService.executeCommandInContext(cmd, null, context);
                 } catch (ExecutionException e) {
                     displayException(e);
@@ -872,13 +855,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             @Override
             public void run() {
                 clearFilters();
-            }
-        };
-
-        final IAction collapseAction = new Action(Messages.TmfEventsTable_CollapseFilterMenuName) {
-            @Override
-            public void run() {
-                applyFilter(new TmfCollapseFilter());
             }
         };
 
@@ -965,11 +941,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                             tablePopupMenu.add(separator);
                         }
                     }
-                }
-
-                if (!(fTable.getData(Key.FILTER_OBJ) instanceof TmfCollapseFilter)) {
-                    tablePopupMenu.add(collapseAction);
-                    tablePopupMenu.add(new Separator());
                 }
 
                 tablePopupMenu.add(clearFiltersAction);
@@ -1095,8 +1066,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      *            Which rank this event has in the trace/experiment
      */
     protected void setItemData(final TableItem item, final ITmfEvent event, final long rank) {
-        String[] itemStrings = getItemStrings(fColumns, event);
-        item.setText(itemStrings);
+        item.setText(getItemStrings(fColumns, event));
         item.setData(event);
         item.setData(Key.TIMESTAMP, new TmfTimestamp(event.getTimestamp()));
         item.setData(Key.RANK, rank);
@@ -1152,10 +1122,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         } else {
             item.setImage((Image) null);
         }
-
-        if ((itemStrings[0] != null) && !itemStrings[0].isEmpty()) {
-            packMarginColumn();
-        }
     }
 
     /**
@@ -1174,8 +1140,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             txtKey = Key.FILTER_TXT;
         }
         item.setForeground(fGrayColor);
-        // Ignore collapse and image column
-        for (int i = 1; i < fTable.getColumns().length; i++) {
+        for (int i = 0; i < fTable.getColumns().length; i++) {
             final TableColumn column = fTable.getColumns()[i];
             final String filter = (String) column.getData(txtKey);
             if (filter == null) {
@@ -1201,14 +1166,14 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      *            The item to use as filter status row
      */
     protected void setFilterStatusRowItemData(final TableItem item) {
-        for (int i = 1; i < fTable.getColumns().length; i++) {
-            if (i == 1) {
+        for (int i = 0; i < fTable.getColumns().length; i++) {
+            if (i == 0) {
                 if ((fTrace == null) || (fFilterCheckCount == fTrace.getNbEvents())) {
                     item.setImage(FILTER_IMAGE);
                 } else {
                     item.setImage(STOP_IMAGE);
                 }
-                item.setText(1, fFilterMatchCount + "/" + fFilterCheckCount); //$NON-NLS-1$
+                item.setText(0, fFilterMatchCount + "/" + fFilterCheckCount); //$NON-NLS-1$
             } else {
                 item.setText(i, ""); //$NON-NLS-1$
             }
@@ -1538,10 +1503,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         }
         fireFilterApplied(null);
         updateStatusLine(null);
-
-        // Set original width
-        fTable.getColumns()[0].setWidth(0);
-        packMarginColumn();
     }
 
     /**
@@ -1582,20 +1543,13 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     if (request.isCancelled()) {
                         return;
                     }
-                    boolean refresh = false;
                     if (filter.matches(event)) {
                         final long rank = fFilterCheckCount;
                         final int index = (int) fFilterMatchCount;
                         fFilterMatchCount++;
                         fCache.storeEvent(event, rank, index);
-                        refresh = true;
-                    } else {
-                        if (filter instanceof TmfCollapseFilter) {
-                            fCache.updateCollapsedEvent((int)fFilterMatchCount);
-                        }
-                    }
-
-                    if (refresh || (fFilterCheckCount % 100) == 0) {
+                        refreshTable();
+                    } else if ((fFilterCheckCount % 100) == 0) {
                         refreshTable();
                     }
                     fFilterCheckCount++;
@@ -1934,41 +1888,28 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             return;
         }
         fTable.setRedraw(false);
-        try {
-            TableColumn tableColumns[] = fTable.getColumns();
-            for (int i = 0; i < tableColumns.length; i++) {
-                final TableColumn column = tableColumns[i];
-                packSingleColumn(i, column);
+
+        boolean isLinux = System.getProperty("os.name").contains("Linux") ? true : false; //$NON-NLS-1$ //$NON-NLS-2$
+
+        TableColumn tableColumns[] = fTable.getColumns();
+        for (int i = 0; i < tableColumns.length; i++) {
+            final TableColumn column = tableColumns[i];
+            final int headerWidth = column.getWidth();
+            column.pack();
+            // Workaround for Linux which doesn't consider the image width of
+            // search/filter row in TableColumn.pack() after having executed
+            // TableItem.setImage((Image)null) for other rows than search/filter row.
+            if (isLinux && (i == 0)) {
+                column.setWidth(column.getWidth() + SEARCH_IMAGE.getBounds().width);
             }
-        } finally {
-            // Make sure that redraw is always enabled.
-            fTable.setRedraw(true);
+
+            if (column.getWidth() < headerWidth) {
+                column.setWidth(headerWidth);
+            }
         }
+
+        fTable.setRedraw(true);
         fPackDone = true;
-    }
-
-
-    private void packMarginColumn() {
-        TableColumn[] columns = fTable.getColumns();
-        if (columns.length > 0) {
-            packSingleColumn(0, columns[0]);
-        }
-    }
-
-    private void packSingleColumn(int i, final TableColumn column) {
-        final int headerWidth = column.getWidth();
-        column.pack();
-        // Workaround for Linux which doesn't consider the image width of
-        // search/filter row in TableColumn.pack() after having executed
-        // TableItem.setImage((Image)null) for other rows than search/filter row.
-        boolean isCollapseFilter = fTable.getData(Key.FILTER_OBJ) instanceof TmfCollapseFilter;
-        if (IS_LINUX && (i == 0) && isCollapseFilter) {
-            column.setWidth(column.getWidth() + SEARCH_IMAGE.getBounds().width);
-        }
-
-        if (column.getWidth() < headerWidth) {
-            column.setWidth(headerWidth);
-        }
     }
 
     /**
@@ -1990,18 +1931,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         synchronized (columns) {
             List<String> itemStrings = new ArrayList<>(columns.size());
             for (TmfEventTableColumn column : columns) {
-                ITmfEvent passedEvent = event;
-                if (!(column instanceof TmfMarginColumn) && (event instanceof CachedEvent)) {
-                    // Make sure that the event object from the trace is passed
-                    // to all columns but the TmfMarginColumn
-                    passedEvent = ((CachedEvent) event).event;
-                }
-                if (passedEvent == null) {
-                    itemStrings.add(EMPTY_STRING);
-                } else {
-                    itemStrings.add(column.getItemString(passedEvent));
-                }
-
+                itemStrings.add(column.getItemString(event));
             }
             return itemStrings.toArray(new String[0]);
         }
@@ -2487,33 +2417,4 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fTable.refresh();
         fTable.redraw();
     }
-
-    /**
-    * Margin column for images and special text (e.g. collapse count)
-    */
-   private static final class TmfMarginColumn extends TmfEventTableColumn {
-
-       private static final @NonNull String HEADER = ""; //$NON-NLS-1$
-
-       /**
-        * Constructor
-        */
-       public TmfMarginColumn() {
-           super(HEADER);
-       }
-
-       @Override
-       public String getItemString(ITmfEvent event) {
-           if (!(event instanceof CachedEvent) || ((CachedEvent) event).repeatCount == 0) {
-               return EMPTY_STRING;
-           }
-           return "+" + ((CachedEvent) event).repeatCount; //$NON-NLS-1$
-       }
-
-       @Override
-       public String getFilterFieldId() {
-           return null;
-       }
-   }
-
 }

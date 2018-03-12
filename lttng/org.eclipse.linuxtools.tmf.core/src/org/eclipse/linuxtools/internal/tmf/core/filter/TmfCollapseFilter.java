@@ -18,11 +18,11 @@ import org.eclipse.linuxtools.tmf.core.event.collapse.ITmfCollapsibleEvent;
 import org.eclipse.linuxtools.tmf.core.filter.model.ITmfFilterTreeNode;
 
 /**
- * Statefull filter that compares consecutive events for collapsing feature.
+ * Stateful filter that compares consecutive events for collapsing feature.
  *
  * Usage of this class in conjunction with other {@link ITmfFilterTreeNode}
- * filters is not supported. Will throw {@link UnsupportedOperationException} in
- * that case.
+ * filters is not supported. Will throw {@link UnsupportedOperationException}
+ * in that case.
  *
  * @author Bernd Hufmann
  */
@@ -37,9 +37,9 @@ public class TmfCollapseFilter implements ITmfFilterTreeNode {
 
         if (fPrevEvent != null) {
             if (event instanceof ITmfCollapsibleEvent) {
-                boolean matches = fPrevEvent.isCollapsibleWith(event);
+                boolean isCollapsible = fPrevEvent.isCollapsibleWith(event);
                 fPrevEvent = (ITmfCollapsibleEvent) event;
-                if (matches) {
+                if (isCollapsible) {
                     return false;
                 }
             } else {
