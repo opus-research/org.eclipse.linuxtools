@@ -158,7 +158,7 @@ public class DockerExplorerView extends WorkbenchView {
 			String authentificationCertificatePath, String connectionName) {
 
 		activate();
-		NewDockerConnectionPage connectionWizard = new NewDockerConnectionPage(this);
+		NewDockerConnectionPage connectionWizard = new NewDockerConnectionPage();
 		connectionWizard.open();
 		connectionWizard.setConnectionName(connectionName);
 		if (AuthenticationMethod.TCP_CONNECTION.equals(authMethod)) {

@@ -44,7 +44,7 @@ public class PropertiesViewTest extends AbstractImageBotTest {
 	public void testContainerPropertiesTab() {
 		DockerImagesTab imagesTab = openDockerImagesTab();
 		imagesTab.runImage(IMAGE_NAME);
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(imagesTab);
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.finish();
 		// new WaitWhile(new ContainerIsDeployedCondition(CONTAINER_NAME,
@@ -76,7 +76,6 @@ public class PropertiesViewTest extends AbstractImageBotTest {
 		propertiesView.selectTab("Info");
 	}
 
-	@Override
 	@After
 	public void after() {
 		deleteContainerIfExists(CONTAINER_NAME);

@@ -19,7 +19,6 @@ import org.eclipse.linuxtools.docker.integration.tests.image.AbstractImageBotTes
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockDockerConnectionManager;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageSearchPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageTagSelectionPage;
-import org.eclipse.linuxtools.docker.reddeer.ui.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
@@ -60,9 +59,8 @@ public class SearchDialogTest extends AbstractImageBotTest {
 
 	@Test
 	public void testSearchDialog() {
-		DockerExplorerView explorer = new DockerExplorerView();
 		getConnection().openImageSearchDialog(IMAGE_NAME, null, REGISTRY_URL);
-		ImageSearchPage pageOne = new ImageSearchPage(explorer);
+		ImageSearchPage pageOne = new ImageSearchPage();
 		pageOne.searchImage();
 		assertFalse("Search result is empty!", pageOne.getSearchResults().isEmpty());
 		assertTrue("Search result do not contains image:" + EXPECTED_IMAGE_NAME + "!",
@@ -71,7 +69,7 @@ public class SearchDialogTest extends AbstractImageBotTest {
 
 //		new WaitUntil(new ShellIsAvailable("Progress Information"), TimePeriod.DEFAULT);
 		AbstractWait.sleep(TimePeriod.getCustom(5));
-		ImageTagSelectionPage pageTwo = new ImageTagSelectionPage(pageOne);
+		ImageTagSelectionPage pageTwo = new ImageTagSelectionPage();
 		assertFalse("Search tags are empty!", pageTwo.getTags().isEmpty());
 		new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
 		if (!pageTwo.tagsContains(IMAGE_TAG)) {
