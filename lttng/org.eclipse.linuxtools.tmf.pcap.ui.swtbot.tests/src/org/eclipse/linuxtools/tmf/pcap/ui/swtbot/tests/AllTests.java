@@ -16,10 +16,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Test suite for UI on the lttng kernel perspective
+ * Test suite for UI on the PCAP parser and networking perspective
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+    ImportAndReadPcapTest.class,
     NetworkPerspectiveChecker.class
 })
 public class AllTests {

@@ -60,7 +60,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * SWTBot Smoke test for LTTng Kernel UI.
+ * SWTBot Smoke test for Pcap UI.
  *
  * @author Matthew Khouzam
  */
@@ -157,7 +157,7 @@ public class ImportAndReadPcapTest {
                 try {
                     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(TRACE_PROJECT_NAME);
                     TmfTraceFolder destinationFolder = TmfProjectRegistry.getProject(project, true).getTracesFolder();
-                    TmfOpenTraceHelper.openTraceFromPath(destinationFolder, pttt.getTrace().getPath(), PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "org.eclipse.linuxtools.lttng2.kernel.tracetype");
+                    TmfOpenTraceHelper.openTraceFromPath(destinationFolder, pttt.getTrace().getPath(), PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "org.eclipse.linuxtools.tmf.pcap.core.pcaptrace");
                 } catch (CoreException e) {
                     exception[0] = e;
                 }
