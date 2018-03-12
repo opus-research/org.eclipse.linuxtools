@@ -21,7 +21,16 @@ public interface IDockerImage {
 
 	String createdDate();
 
+	/**
+	 * @return the full image id
+	 */
 	String id();
+
+	/**
+	 * @return the short image id, ie, the first 12 figures, excluding the
+	 *         <code>sha256:</code> prefix.
+	 */
+	String shortId();
 
 	String parentId();
 

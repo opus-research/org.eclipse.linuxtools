@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -44,7 +43,6 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
 import org.eclipse.linuxtools.docker.core.IRegistry;
@@ -294,8 +292,7 @@ public class ImageSearchPage extends WizardPage {
 							 * results over HTTP so if we're dealing with
 							 * DockerHub, we use the API.
 							 */
-							List<String> dockerHubAliases = Arrays.asList(AbstractRegistry.DOCKERHUB_REGISTRY_ALIASES);
-							if (dockerHubAliases.stream().anyMatch(a -> registry.getServerAddress().contains(a))) {
+							if (registry.isDockerHubRegistry()) {
 								searchResults = ImageSearchPage.this.model
 										.getSelectedConnection().searchImages(term);
 							} else {

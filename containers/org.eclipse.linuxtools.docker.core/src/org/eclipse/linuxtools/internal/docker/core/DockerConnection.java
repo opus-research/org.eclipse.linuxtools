@@ -1078,8 +1078,14 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void tagImage(final String name, final String newTag) throws DockerException,
 			InterruptedException {
+		tagImage(name, newTag, false);
+	}
+
+	@Override
+	public void tagImage(final String name, final String newTag,
+			final boolean force) throws DockerException, InterruptedException {
 		try {
-			client.tag(name, newTag);
+			client.tag(name, newTag, force);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
@@ -1658,7 +1664,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		try {
 			AuthConfig authConfig = AuthConfig.builder()
 					.username(new String(cfg.getUsername()))
-					.password(new String(cfg.getPassword()))
+					.password(cfg.getPassword() != null
+							? new String(cfg.getPassword()) : null)
 					.email(new String(cfg.getEmail()))
 					.serverAddress(new String(cfg.getServerAddress())).build();
 			return client.auth(authConfig);
