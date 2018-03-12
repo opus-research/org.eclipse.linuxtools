@@ -11,14 +11,9 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.testutils.swt;
 
-import static org.eclipse.swtbot.eclipse.finder.matchers.WidgetMatcherFactory.withPartName;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.instanceOf;
+import java.util.concurrent.TimeUnit;
 
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.ui.IViewReference;
-import org.eclipse.ui.PlatformUI;
 import org.junit.rules.ExternalResource;
 
 /**
@@ -28,14 +23,14 @@ public class CloseWelcomePageRule extends ExternalResource {
 
 	@Override
 	protected void before() {
-		Display.getDefault().syncExec(() -> {
-				if (PlatformUI.getWorkbench().getIntroManager().getIntro() != null) {
-					PlatformUI.getWorkbench().getIntroManager()
-							.closeIntro(PlatformUI.getWorkbench().getIntroManager().getIntro());
-				}
-		});
-		final SWTWorkbenchBot bot = new SWTWorkbenchBot();
-		bot.perspectiveById("org.eclipse.linuxtools.docker.ui.perspective").activate(); //$NON-NLS-1$
-		bot.view(allOf(instanceOf(IViewReference.class), withPartName("Docker Explorer"))); //$NON-NLS-1$
+		try {
+			final SWTWorkbenchBot bot = new SWTWorkbenchBot();
+			bot.views().stream().filter(v -> v.getReference().getTitle().equals("Welcome")).forEach(v -> v.close());
+			bot.perspectiveById("org.eclipse.linuxtools.docker.ui.perspective").activate();
+			bot.views().stream().map(v -> v.getViewReference().getId()).forEach(s -> System.err.println(s));
+			Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 }
