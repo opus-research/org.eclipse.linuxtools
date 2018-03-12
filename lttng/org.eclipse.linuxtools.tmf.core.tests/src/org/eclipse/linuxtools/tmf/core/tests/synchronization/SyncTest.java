@@ -129,7 +129,7 @@ public class SyncTest {
         ITmfTimestampTransform tt1 = syncAlgo.getTimestampTransform(t1);
 
         assertEquals(syncAlgo.getTimestampTransform(t1.getHostId()), tt1);
-        assertEquals(TimestampTransformFactory.getDefaultTransform(), tt1);
+        assertEquals(TimestampTransformFactory.getDefaultTransform(), tt2);
         assertEquals(syncAlgo.getTimestampTransform(t2.getHostId()), tt2);
 
         /* Make the two hulls intersect */
