@@ -91,7 +91,7 @@ import org.eclipse.swt.widgets.ScrollBar;
 public class TimeGraphControl extends TimeGraphBaseControl
         implements FocusListener, KeyListener, MouseMoveListener, MouseListener, MouseWheelListener,
         ControlListener, SelectionListener, MouseTrackListener, TraverseListener, ISelectionProvider,
-        MenuDetectListener, ITmfTimeGraphDrawingHelper, ITimeGraphColorListener, Listener {
+        MenuDetectListener, ITmfTimeGraphDrawingHelper, ITimeGraphColorListener {
 
     /** Max scrollbar size */
     public static final int H_SCROLLBAR_MAX = Integer.MAX_VALUE - 1;
@@ -160,6 +160,8 @@ public class TimeGraphControl extends TimeGraphBaseControl
     private int fBorderWidth = 0;
     private int fHeaderHeight = 0;
 
+    private Listener fMouseScrollFilterListener;
+
     private MouseScrollNotifier fMouseScrollNotifier;
     private final Object fMouseScrollNotifierLock = new Object();
 
@@ -221,7 +223,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
         addKeyListener(this);
         addControlListener(this);
         addMenuDetectListener(this);
-        addListener(SWT.MouseWheel, this);
         ScrollBar scrollHor = getHorizontalBar();
 
         if (scrollHor != null) {
@@ -1969,6 +1970,17 @@ public class TimeGraphControl extends TimeGraphBaseControl
     @Override
     public void focusGained(FocusEvent e) {
         fIsInFocus = true;
+        if (fMouseScrollFilterListener == null) {
+            fMouseScrollFilterListener = new Listener() {
+                // This filter is used to prevent horizontal scrolling of the view
+                // when the mouse wheel is used to zoom
+                @Override
+                public void handleEvent(Event event) {
+                    event.doit = false;
+                }
+            };
+            getDisplay().addFilter(SWT.MouseWheel, fMouseScrollFilterListener);
+        }
         redraw();
         updateStatusLine(NO_STATUS);
     }
@@ -1976,6 +1988,10 @@ public class TimeGraphControl extends TimeGraphBaseControl
     @Override
     public void focusLost(FocusEvent e) {
         fIsInFocus = false;
+        if (fMouseScrollFilterListener != null) {
+            getDisplay().removeFilter(SWT.MouseWheel, fMouseScrollFilterListener);
+            fMouseScrollFilterListener = null;
+        }
         if (DRAG_NONE != fDragState) {
             setCapture(false);
             fDragState = DRAG_NONE;
@@ -2331,7 +2347,7 @@ public class TimeGraphControl extends TimeGraphBaseControl
 
     @Override
     public void mouseScrolled(MouseEvent e) {
-        if (fDragState != DRAG_NONE) {
+        if ((fMouseScrollFilterListener == null) || fDragState != DRAG_NONE) {
             return;
         }
         boolean zoomScroll = false;
@@ -2369,18 +2385,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
             }
         } else {
             setTopIndex(getTopIndex() - e.count);
-        }
-    }
-
-    /**
-     * @since 3.2
-     */
-    @Override
-    public void handleEvent(Event event) {
-        if (event.type == SWT.MouseWheel) {
-            // prevent horizontal scrolling when the mouse wheel is used to
-            // scroll vertically or zoom
-            event.doit = false;
         }
     }
 
