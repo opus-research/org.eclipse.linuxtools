@@ -394,7 +394,6 @@ public class STSymbolManager {
         if (defaultparser == null) {
             try {
                 defaultparser = CCorePlugin.getDefault().getDefaultBinaryParser();
-                System.out.println("defaultparser is " + defaultparser);
             } catch (CoreException e) {
                 Activator.getDefault().getLog().log(e.getStatus());
             }
@@ -403,7 +402,6 @@ public class STSymbolManager {
             parsers.add(defaultparser);
         }
         IBinaryObject ret = buildBinaryObject(path, parsers);
-        System.out.println("ret is " + ret);
         if (ret == null) { // trying all BinaryParsers...
             parsers.clear();
             IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(CCorePlugin.PLUGIN_ID,
@@ -423,9 +421,7 @@ public class STSymbolManager {
                     }
                 }
             }
-            System.out.println("parsers length is " + parsers.size());
             ret = buildBinaryObject(path, parsers);
-            System.out.println("ret is " + ret);
         }
         return ret;
     }
@@ -436,12 +432,9 @@ public class STSymbolManager {
      * @return the binary object, or null.
      */
     private IBinaryObject validateBinary(IBinaryFile o) {
-    	System.out.println("o is " + o);
-    	System.out.println("o type is " + o.getClass().getName());
         if (o instanceof IBinaryObject) {
             IBinaryObject object = (IBinaryObject) o;
             String s = object.getCPU(); //
-            System.out.println("cpu is " + s);
             if (s != null && !s.isEmpty()) {
                 return object;
             }
@@ -472,11 +465,8 @@ public class STSymbolManager {
         }
         IBinaryFile bf = null;
         try {
-        	System.out.println("path is " + path.toOSString());
             bf = parser.getBinary(path);
-            System.out.println("bf is " + bf);
         } catch (IOException e) {
-        	System.out.println("IOException buildBinaryObject");
             // do nothing ?
         }
         return validateBinary(bf);
