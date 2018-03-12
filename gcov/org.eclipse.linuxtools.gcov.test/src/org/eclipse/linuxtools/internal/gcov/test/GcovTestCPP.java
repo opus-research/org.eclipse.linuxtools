@@ -1,5 +1,9 @@
 package org.eclipse.linuxtools.internal.gcov.test;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.junit.AfterClass;
@@ -17,6 +21,8 @@ public class GcovTestCPP {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        boolean gxxExist = new File("/bin/g++").isFile() || new File("/usrc/bin/g++").isFile();
+        assertTrue("This test requires g++ installed in the system", gxxExist);
         bot = GcovTest.init(PROJECT_NAME, PROJECT_TYPE);
     }
 
