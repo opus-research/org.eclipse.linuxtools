@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.eclipse.core.runtime.CoreException;
@@ -52,8 +51,6 @@ public class OSIORestConfiguration implements Serializable {
 	private final String repositoryId;
 
 	private Map<String, Space> spaces;
-	
-	private Map<String, Space> externalSpaces = new TreeMap<>();
 	
 	private Map<String, User> users;
 	
@@ -109,11 +106,7 @@ public class OSIORestConfiguration implements Serializable {
 		Ordering<String> comparator = Ordering.natural().onResultOf(comparatorFunction);
 		this.spaces = ImmutableSortedMap.copyOf(spaces, comparator);
 	}
-	
-	public Map<String, Space> getExternalSpaces() {
-		return externalSpaces;
-	}
-	
+
 	public Map<String, Space> getSpaces() {
 		return spaces;
 	}

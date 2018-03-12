@@ -16,8 +16,6 @@ public class WorkItemTypeFieldType {
 	
 	private String baseType;
 	
-	private String componentType;
-	
 	private String[] values;
 	
 	public String getKind() {
@@ -26,10 +24,6 @@ public class WorkItemTypeFieldType {
 	
 	public String getBaseType() {
 		return baseType;
-	}
-	
-	public String getComponentType() {
-		return componentType;
 	}
 	
 	public String[] getValues() {
