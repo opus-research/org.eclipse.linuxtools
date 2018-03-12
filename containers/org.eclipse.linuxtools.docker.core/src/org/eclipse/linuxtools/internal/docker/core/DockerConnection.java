@@ -174,7 +174,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	// containers sorted by name
 	private List<IDockerContainer> containers;
 	// containers indexed by id
-	private Map<String, IDockerContainer> containersById;
+	private Map<String, IDockerContainer> containersById = new HashMap<>();
 	// flag to indicate if the state of the connection to the Docker daemon
 	private EnumDockerConnectionState state = EnumDockerConnectionState.UNKNOWN;
 	private boolean containersLoaded = false;
@@ -297,6 +297,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		case CLOSED:
 			this.images = Collections.emptyList();
 			this.containers = Collections.emptyList();
+			this.containersById = new HashMap<>();
 			this.imagesLoaded = true;
 			this.containersLoaded = true;
 			notifyContainerListeners(this.containers);
@@ -924,19 +925,19 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				imageParentIds.add(rawImage.parentId());
 			}
 			for (Image rawImage : rawImages) {
-				final boolean taggedImage = !(rawImage.repoTags() != null
-						&& rawImage.repoTags().size() == 1
-						&& rawImage
-						.repoTags().contains("<none>:<none>")); //$NON-NLS-1$
+				// return one IDockerImage per raw image
+				final List<String> repoTags = rawImage.repoTags() != null
+						&& rawImage.repoTags().size() > 0
+						? new ArrayList<>(rawImage.repoTags())
+						: Arrays.asList("<none>:<none>"); //$NON-NLS-1$
+				Collections.sort(repoTags);
+				final boolean taggedImage = !(repoTags != null
+						&& repoTags.size() == 1
+						&& repoTags.contains("<none>:<none>")); //$NON-NLS-1$
 				final boolean intermediateImage = !taggedImage
 						&& imageParentIds.contains(rawImage.id());
 				final boolean danglingImage = !taggedImage
 						&& !intermediateImage;
-				// return one IDockerImage per raw image
-				final List<String> repoTags = rawImage.repoTags() != null
-						? new ArrayList<>(rawImage.repoTags())
-						: Arrays.asList("<none>:<none>"); //$NON-NLS-1$
-				Collections.sort(repoTags);
 				final String repo = DockerImage.extractRepo(repoTags.get(0));
 				final List<String> tags = Arrays
 						.asList(DockerImage.extractTag(repoTags.get(0)));
