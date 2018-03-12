@@ -238,7 +238,7 @@ public class CtfTmfEvent extends TmfEvent
     private static CtfTmfEventField[] parseFields(@NonNull EventDefinition eventDef) {
         List<CtfTmfEventField> fields = new ArrayList<>();
 
-        ICompositeDefinition structFields = eventDef.getFields();
+        ICompositeDefinition structFields = eventDef.getFieldDefinitions();
         if (structFields != null) {
             if (structFields.getFieldNames() != null) {
                 for (String curFieldName : structFields.getFieldNames()) {

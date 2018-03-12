@@ -117,7 +117,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
     }
 
     /**
-     * Get the event context defintiion
+     * Get the event context definition
      *
      * @param input
      *            the bitbuffer to read from
@@ -135,7 +135,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
     }
 
     /**
-     * Get the event context defintiion
+     * Get the event context definition
      *
      * @param input
      *            the bitbuffer to read from
@@ -152,7 +152,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
     }
 
     /**
-     * Get the stream context defintiion
+     * Get the stream context definition
      *
      * @param input
      *            the bitbuffer to read from
@@ -165,7 +165,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
     }
 
     /**
-     * Get the packet context defintiion
+     * Get the packet context definition
      *
      * @param input
      *            the bitbuffer to read from
@@ -178,7 +178,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
     }
 
     /**
-     * Get the event header defintiion
+     * Get the event header definition
      *
      * @param input
      *            the bitbuffer to read from

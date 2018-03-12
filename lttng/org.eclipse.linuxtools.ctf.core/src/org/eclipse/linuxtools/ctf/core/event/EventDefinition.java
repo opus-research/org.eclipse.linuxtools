@@ -81,6 +81,9 @@ public final class EventDefinition implements IDefinitionScope {
     /**
      * Constructs an event definition.
      *
+     * TODO: consider removal with next api. It is not very harmful so it is not
+     * deprecated.
+     *
      * @param declaration
      *            The corresponding event declaration
      * @param streamInputReader
@@ -176,12 +179,24 @@ public final class EventDefinition implements IDefinitionScope {
      * Gets the fields of a definition
      *
      * @return the fields of a definition in struct form. Can be null.
+     * @deprecated use {@Link #getFieldDefinitions}
      */
+    @Deprecated
     public StructDefinition getFields() {
-        if( fFields instanceof StructDefinition) {
-            return (StructDefinition)fFields;
+        if (fFields instanceof StructDefinition) {
+            return (StructDefinition) fFields;
         }
         return null;
+    }
+
+    /**
+     * Gets the fields of a definition
+     *
+     * @return the fields of a definition in composite form. Can be null.
+     * @since 3.1
+     */
+    public ICompositeDefinition getFieldDefinitions() {
+        return fFields;
     }
 
     /**
@@ -189,12 +204,24 @@ public final class EventDefinition implements IDefinitionScope {
      *
      * @return the context in struct form
      * @since 1.2
+     * @deprecated use {@link #getEventContextDefinition()} instead
      */
+    @Deprecated
     public StructDefinition getEventContext() {
-        if( fEventContext instanceof StructDefinition) {
+        if (fEventContext instanceof StructDefinition) {
             return (StructDefinition) fEventContext;
         }
         return null;
+    }
+
+    /**
+     * Gets the context of this event without the context of the stream
+     *
+     * @return the context in {@link ICompositeDefinition} form
+     * @since 3.1
+     */
+    public ICompositeDefinition getEventContextDefinition() {
+        return fEventContext;
     }
 
     /**
@@ -313,7 +340,7 @@ public final class EventDefinition implements IDefinitionScope {
     @Override
     public Definition lookupDefinition(String lookupPath) {
         if (lookupPath.equals("context")) { //$NON-NLS-1$
-            if( fEventContext instanceof Definition) {
+            if (fEventContext instanceof Definition) {
                 return (Definition) fEventContext;
             }
         } else if (lookupPath.equals("fields")) { //$NON-NLS-1$

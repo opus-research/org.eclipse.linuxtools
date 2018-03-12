@@ -30,6 +30,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -68,17 +69,16 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
 
     /** Path to the XML definitions file */
     protected static final String CUSTOM_XML_TRACE_DEFINITIONS_DEFAULT_PATH_NAME =
-            Platform.getInstallLocation().getURL().getPath() + "templates/org.eclipse.linuxtools.tmf.core/" + //$NON-NLS-1$
-                    CUSTOM_XML_TRACE_DEFINITIONS_DEFAULT_FILE_NAME;
+            Platform.getInstallLocation().getURL().getPath() +
+            "templates/org.eclipse.linuxtools.tmf.core/" + //$NON-NLS-1$
+            CUSTOM_XML_TRACE_DEFINITIONS_DEFAULT_FILE_NAME;
 
     /** Path to the XML definitions file */
     protected static final String CUSTOM_XML_TRACE_DEFINITIONS_PATH_NAME =
             Activator.getDefault().getStateLocation().addTrailingSeparator().append(CUSTOM_XML_TRACE_DEFINITIONS_FILE_NAME).toString();
 
-    /**
-     * Legacy path to the XML definitions file (in the UI plug-in) TODO Remove
-     * once we feel the transition phase is over.
-     */
+    /** Legacy path to the XML definitions file (in the UI plug-in)
+     * TODO Remove once we feel the transition phase is over. */
     private static final String CUSTOM_XML_TRACE_DEFINITIONS_PATH_NAME_LEGACY =
             Activator.getDefault().getStateLocation().removeLastSegments(1).addTrailingSeparator()
                     .append("org.eclipse.linuxtools.tmf.ui") //$NON-NLS-1$
@@ -324,10 +324,31 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             // The following allows xml parsing without access to the dtd
-            db.setEntityResolver(createEmptyEntityResolver());
+            EntityResolver resolver = new EntityResolver() {
+                @Override
+                public InputSource resolveEntity(String publicId, String systemId) {
+                    String empty = ""; //$NON-NLS-1$
+                    ByteArrayInputStream bais = new ByteArrayInputStream(empty.getBytes());
+                    return new InputSource(bais);
+                }
+            };
+            db.setEntityResolver(resolver);
 
             // The following catches xml parsing exceptions
-            db.setErrorHandler(createErrorHandler());
+            db.setErrorHandler(new ErrorHandler() {
+                @Override
+                public void error(SAXParseException saxparseexception) throws SAXException {
+                }
+
+                @Override
+                public void warning(SAXParseException saxparseexception) throws SAXException {
+                }
+
+                @Override
+                public void fatalError(SAXParseException saxparseexception) throws SAXException {
+                    throw saxparseexception;
+                }
+            });
 
             Document doc = null;
             File file = new File(path);
@@ -388,49 +409,19 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
 
             TmfTraceType.addCustomTraceType(TmfTraceType.CUSTOM_XML_CATEGORY, definitionName);
 
-        } catch (ParserConfigurationException | TransformerFactoryConfigurationError | TransformerException | IOException | SAXException e) {
+        } catch (ParserConfigurationException e) {
+            Activator.logError("Error saving CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
+        } catch (TransformerConfigurationException e) {
+            Activator.logError("Error saving CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
+        } catch (TransformerFactoryConfigurationError e) {
+            Activator.logError("Error saving CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
+        } catch (TransformerException e) {
+            Activator.logError("Error saving CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
+        } catch (IOException e) {
+            Activator.logError("Error saving CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
+        } catch (SAXException e) {
             Activator.logError("Error saving CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
         }
-    }
-
-    /**
-     * creates a new empty entity resolver
-     *
-     * @return a new entity resolver
-     * @since 3.1
-     */
-    protected static EntityResolver createEmptyEntityResolver() {
-        return new EntityResolver() {
-            @Override
-            public InputSource resolveEntity(String publicId, String systemId) {
-                String empty = ""; //$NON-NLS-1$
-                ByteArrayInputStream bais = new ByteArrayInputStream(empty.getBytes());
-                return new InputSource(bais);
-            }
-        };
-    }
-
-    /**
-     * Creates an error handler for parse exceptions
-     *
-     * @return a new error handler
-     * @since 3.1
-     */
-    protected static ErrorHandler createErrorHandler() {
-        return new ErrorHandler() {
-            @Override
-            public void error(SAXParseException saxparseexception) throws SAXException {
-            }
-
-            @Override
-            public void warning(SAXParseException saxparseexception) throws SAXException {
-            }
-
-            @Override
-            public void fatalError(SAXParseException saxparseexception) throws SAXException {
-                throw saxparseexception;
-            }
-        };
     }
 
     private Element createInputElementElement(InputElement inputElement, Document doc) {
@@ -521,53 +512,6 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             // The following allows xml parsing without access to the dtd
-            db.setEntityResolver(createEmptyEntityResolver());
-
-            // The following catches xml parsing exceptions
-            db.setErrorHandler(createErrorHandler());
-
-            File file = new File(path);
-            if (!file.canRead()) {
-                return new CustomXmlTraceDefinition[0];
-            }
-            Document doc = db.parse(file);
-
-            Element root = doc.getDocumentElement();
-            if (!root.getNodeName().equals(CUSTOM_XML_TRACE_DEFINITION_ROOT_ELEMENT)) {
-                return new CustomXmlTraceDefinition[0];
-            }
-
-            ArrayList<CustomXmlTraceDefinition> defList = new ArrayList<>();
-            NodeList nodeList = root.getChildNodes();
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node node = nodeList.item(i);
-                if (node instanceof Element && node.getNodeName().equals(DEFINITION_ELEMENT)) {
-                    CustomXmlTraceDefinition def = extractDefinition((Element) node);
-                    if (def != null) {
-                        defList.add(def);
-                    }
-                }
-            }
-            return defList.toArray(new CustomXmlTraceDefinition[0]);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            Activator.logError("Error loading all in CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
-        }
-        return new CustomXmlTraceDefinition[0];
-    }
-
-    /**
-     * Load the given trace definition.
-     *
-     * @param definitionName
-     *            Name of the XML trace definition to load
-     * @return The loaded trace definition
-     */
-    public static CustomXmlTraceDefinition load(String definitionName) {
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-
-            // The following allows xml parsing without access to the dtd
             EntityResolver resolver = new EntityResolver() {
                 @Override
                 public InputSource resolveEntity(String publicId, String systemId) {
@@ -594,12 +538,67 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
                 }
             });
 
+            File file = new File(path);
+            if (!file.canRead()) {
+                return new CustomXmlTraceDefinition[0];
+            }
+            Document doc = db.parse(file);
+
+            Element root = doc.getDocumentElement();
+            if (!root.getNodeName().equals(CUSTOM_XML_TRACE_DEFINITION_ROOT_ELEMENT)) {
+                return new CustomXmlTraceDefinition[0];
+            }
+
+            ArrayList<CustomXmlTraceDefinition> defList = new ArrayList<>();
+            NodeList nodeList = root.getChildNodes();
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element && node.getNodeName().equals(DEFINITION_ELEMENT)) {
+                    CustomXmlTraceDefinition def = extractDefinition((Element) node);
+                    if (def != null) {
+                        defList.add(def);
+                    }
+                }
+            }
+            return defList.toArray(new CustomXmlTraceDefinition[0]);
+        } catch (ParserConfigurationException e) {
+            Activator.logError("Error loading all in CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
+        } catch (SAXException e) {
+            Activator.logError("Error loading all in CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
+        } catch (IOException e) {
+            Activator.logError("Error loading all in CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
+        }
+        return new CustomXmlTraceDefinition[0];
+    }
+
+    /**
+     * Load the given trace definition.
+     *
+     * @param definitionName
+     *            Name of the XML trace definition to load
+     * @return The loaded trace definition
+     */
+    public static CustomXmlTraceDefinition load(String definitionName) {
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+
+            // The following allows xml parsing without access to the dtd
+            db.setEntityResolver(createEmptyEntityResolver());
+
+            // The following catches xml parsing exceptions
+            db.setErrorHandler(createErrorHandler());
+
             CustomXmlTraceDefinition value = lookupXmlDefinition(definitionName, db, CUSTOM_XML_TRACE_DEFINITIONS_PATH_NAME);
             if (value == null) {
                 value = lookupXmlDefinition(definitionName, db, CUSTOM_XML_TRACE_DEFINITIONS_DEFAULT_PATH_NAME);
             }
             return value;
-        } catch (ParserConfigurationException | SAXException | IOException e) {
+        } catch (ParserConfigurationException e) {
+            Activator.logError("Error loading CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
+        } catch (SAXException e) {
+            Activator.logError("Error loading CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
+        } catch (IOException e) {
             Activator.logError("Error loading CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
         }
         return null;
@@ -723,31 +722,10 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             // The following allows xml parsing without access to the dtd
-            EntityResolver resolver = new EntityResolver() {
-                @Override
-                public InputSource resolveEntity(String publicId, String systemId) {
-                    String empty = ""; //$NON-NLS-1$
-                    ByteArrayInputStream bais = new ByteArrayInputStream(empty.getBytes());
-                    return new InputSource(bais);
-                }
-            };
-            db.setEntityResolver(resolver);
+            db.setEntityResolver(createEmptyEntityResolver());
 
             // The following catches xml parsing exceptions
-            db.setErrorHandler(new ErrorHandler() {
-                @Override
-                public void error(SAXParseException saxparseexception) throws SAXException {
-                }
-
-                @Override
-                public void warning(SAXParseException saxparseexception) throws SAXException {
-                }
-
-                @Override
-                public void fatalError(SAXParseException saxparseexception) throws SAXException {
-                    throw saxparseexception;
-                }
-            });
+            db.setErrorHandler(createErrorHandler());
 
             File file = new File(CUSTOM_XML_TRACE_DEFINITIONS_PATH_NAME);
             Document doc = db.parse(file);
@@ -784,8 +762,56 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             // Check if default definition needs to be reloaded
             TmfTraceType.addCustomTraceType(TmfTraceType.CUSTOM_XML_CATEGORY, definitionName);
 
-        } catch (ParserConfigurationException | SAXException | IOException | TransformerFactoryConfigurationError | TransformerException e) {
+        } catch (ParserConfigurationException e) {
+            Activator.logError("Error deleteing CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
+        } catch (SAXException e) {
+            Activator.logError("Error deleteing CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
+        } catch (IOException e) {
+            Activator.logError("Error deleteing CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
+        } catch (TransformerConfigurationException e) {
+            Activator.logError("Error deleteing CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
+        } catch (TransformerFactoryConfigurationError e) {
+            Activator.logError("Error deleteing CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
+        } catch (TransformerException e) {
             Activator.logError("Error deleteing CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
         }
+    }
+
+    /**
+     * creates a new empty entity resolver
+     *
+     * @return a new entity resolver
+     */
+    private static EntityResolver createEmptyEntityResolver() {
+        return new EntityResolver() {
+            @Override
+            public InputSource resolveEntity(String publicId, String systemId) {
+                String empty = ""; //$NON-NLS-1$
+                ByteArrayInputStream bais = new ByteArrayInputStream(empty.getBytes());
+                return new InputSource(bais);
+            }
+        };
+    }
+
+    /**
+     * Creates an error handler for parse exceptions
+     *
+     * @return a new error handler
+     */
+    private static ErrorHandler createErrorHandler() {
+        return new ErrorHandler() {
+            @Override
+            public void error(SAXParseException saxparseexception) throws SAXException {
+            }
+
+            @Override
+            public void warning(SAXParseException saxparseexception) throws SAXException {
+            }
+
+            @Override
+            public void fatalError(SAXParseException saxparseexception) throws SAXException {
+                throw saxparseexception;
+            }
+        };
     }
 }

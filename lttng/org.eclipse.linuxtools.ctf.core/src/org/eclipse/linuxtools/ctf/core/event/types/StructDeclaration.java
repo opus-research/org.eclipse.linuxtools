@@ -162,19 +162,7 @@ public class StructDeclaration extends Declaration implements ICompositeDeclarat
         return structDefinition;
     }
 
-
     /**
-     * Accelerated create definition
-     *
-     * @param definitionScope
-     *            the definition scope
-     * @param fieldScope
-     *            the lexical scope of this element
-     * @param input
-     *            the {@Link BitBuffer} to read
-     * @return the Struct definition
-     * @throws CTFReaderException
-     *             read error and such
      * @since 3.1
      */
     @Override

@@ -43,7 +43,7 @@ public interface ICompositeDeclaration extends IDeclaration {
      * @param fieldScope
      *            the scope of the definition
      * @param input
-     *            a bitbuffer to read from
+     *            a {@Link BitBuffer} to read from
      * @return a reference to the definition
      * @throws CTFReaderException
      *             error in reading
