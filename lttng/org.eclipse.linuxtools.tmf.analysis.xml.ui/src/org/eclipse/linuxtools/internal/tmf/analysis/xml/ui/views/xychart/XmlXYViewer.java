@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
@@ -72,19 +73,37 @@ public class XmlXYViewer extends TmfCommonXLineChartViewer {
     private @Nullable ITmfXmlStateAttribute fSeriesName;
     private @Nullable XmlXYEntry fEntry;
 
+    private enum DisplayType {
+        ABSOLUTE,
+        DELTA
+    }
+
     /**
      * The information related to one series on the chart
      */
     private class SeriesData {
 
         private final double[] fYValues;
+        private final @Nullable double[] fYAbsoluteValues;
         private final Integer fDisplayQuark;
         private final String fName;
+        private final DisplayType fType;
 
-        public SeriesData(int length, int attributeQuark, String seriesName) {
+        public SeriesData(int length, int attributeQuark, String seriesName, DisplayType type) {
             fYValues = new double[length];
             fDisplayQuark = attributeQuark;
             fName = seriesName;
+            fType = type;
+            switch (fType) {
+            case DELTA:
+                fYAbsoluteValues = new double[length];
+                break;
+            case ABSOLUTE:
+            default:
+                fYAbsoluteValues = null;
+                break;
+            }
+
         }
 
         public double[] getYValues() {
@@ -100,18 +119,50 @@ public class XmlXYViewer extends TmfCommonXLineChartViewer {
         }
 
         public void setYValue(int i, double yvalue) {
-            fYValues[i] = yvalue;
+            switch (fType) {
+            case DELTA:
+                double[] absoluteVals = fYAbsoluteValues;
+                if (absoluteVals == null) {
+                    throw new IllegalStateException();
+                }
+                absoluteVals[i] = yvalue;
+                /*
+                 * At the first timestamp, the delta value should be 0 since we
+                 * do not have the previous values
+                 */
+                double prevValue = yvalue;
+                if (i > 0) {
+                    prevValue = absoluteVals[i - 1];
+                }
+                fYValues[i] = yvalue - prevValue;
+                break;
+            case ABSOLUTE:
+            default:
+                fYValues[i] = yvalue;
+                break;
+            }
+
         }
     }
 
-    private class XmlXYEntry implements IXmlStateSystemContainer {
+    private static class XmlXYEntry implements IXmlStateSystemContainer {
 
         private final ITmfStateSystem fStateSystem;
         private final String fPath;
+        private final DisplayType fType;
 
-        public XmlXYEntry(ITmfStateSystem stateSystem, String path) {
+        public XmlXYEntry(ITmfStateSystem stateSystem, String path, Element entryElement) {
             fStateSystem = stateSystem;
             fPath = path;
+            switch (entryElement.getAttribute(TmfXmlUiStrings.DISPLAY_TYPE)) {
+            case TmfXmlUiStrings.DISPLAY_TYPE_DELTA:
+                fType = DisplayType.DELTA;
+                break;
+            case TmfXmlUiStrings.DISPLAY_TYPE_ABSOLUTE:
+            default:
+                fType = DisplayType.ABSOLUTE;
+                break;
+            }
         }
 
         @Override
@@ -127,6 +178,10 @@ public class XmlXYViewer extends TmfCommonXLineChartViewer {
         @Override
         public @Nullable Iterable<TmfXmlLocation> getLocations() {
             return Collections.EMPTY_SET;
+        }
+
+        public DisplayType getType() {
+            return fType;
         }
 
         public List<Integer> getQuarks() {
@@ -209,7 +264,7 @@ public class XmlXYViewer extends TmfCommonXLineChartViewer {
                         try {
                             ITmfStateValue seriesNameValue = ss.querySingleState(start, seriesNameQuark).getStateValue();
                             if (!seriesNameValue.isNull()) {
-                                seriesName = seriesNameValue.unboxStr();
+                                seriesName = seriesNameValue.toString();
                             }
                             if (seriesName == null || seriesName.isEmpty()) {
                                 seriesName = ss.getAttributeName(quark);
@@ -225,7 +280,7 @@ public class XmlXYViewer extends TmfCommonXLineChartViewer {
                     if (seriesName == null) {
                         throw new IllegalStateException();
                     }
-                    fSeriesData.put(quark, new SeriesData(xvalues.length, display.getAttributeQuark(quark), seriesName));
+                    fSeriesData.put(quark, new SeriesData(xvalues.length, display.getAttributeQuark(quark), seriesName, entry.getType()));
                 }
                 double yvalue = 0.0;
                 for (int i = 0; i < xvalues.length; i++) {
@@ -303,15 +358,19 @@ public class XmlXYViewer extends TmfCommonXLineChartViewer {
 
         /* Schedule all state systems */
         for (ITmfAnalysisModuleWithStateSystems module : stateSystemModules) {
-            module.schedule();
-            if (module instanceof TmfStateSystemAnalysisModule) {
-                ((TmfStateSystemAnalysisModule) module).waitForInitialization();
-            }
-            for (ITmfStateSystem ssq : module.getStateSystems()) {
-                if (ssq != null) {
-                    ss = ssq;
-                    break;
+            IStatus status = module.schedule();
+            if (status.isOK()) {
+                if (module instanceof TmfStateSystemAnalysisModule) {
+                    ((TmfStateSystemAnalysisModule) module).waitForInitialization();
                 }
+                for (ITmfStateSystem ssq : module.getStateSystems()) {
+                    if (ssq != null) {
+                        ss = ssq;
+                        break;
+                    }
+                }
+            } else {
+                return;
             }
         }
         if (ss == null) {
@@ -328,7 +387,7 @@ public class XmlXYViewer extends TmfCommonXLineChartViewer {
         if (path.isEmpty()) {
             path = TmfXmlStrings.WILDCARD;
         }
-        XmlXYEntry entry = new XmlXYEntry(ss, path);
+        XmlXYEntry entry = new XmlXYEntry(ss, path, entryElement);
         fEntry = entry;
 
         /* Get the display element to use */
