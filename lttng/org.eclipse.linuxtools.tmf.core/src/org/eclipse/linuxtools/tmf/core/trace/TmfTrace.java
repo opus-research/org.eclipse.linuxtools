@@ -41,7 +41,6 @@ import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
 import org.eclipse.linuxtools.tmf.core.component.TmfEventProvider;
-import org.eclipse.linuxtools.tmf.core.event.ITimeshiftedTmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
@@ -54,6 +53,7 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
@@ -87,7 +87,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
  * @see ITmfTraceIndexer
  * @see ITmfEventParser
  */
-public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, ITmfTraceCompleteness {
+public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, ITmfTraceCompleteness, ITmfEventParser {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -115,15 +115,12 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
     // The trace indexer
     private ITmfTraceIndexer fIndexer;
 
-    // The trace parser
-    private ITmfEventParser fParser;
-
-    private ITmfTimestampTransform fTsTransform;
-
     private final Map<String, IAnalysisModule> fAnalysisModules =
             Collections.synchronizedMap(new LinkedHashMap<String, IAnalysisModule>());
 
     private static final String SYNCHRONIZATION_FORMULA_FILE = "sync_formula"; //$NON-NLS-1$
+
+    private ITmfTimestampTransform fTsTransform;
 
     // ------------------------------------------------------------------------
     // Construction
@@ -168,7 +165,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
         super();
         fCacheSize = (cacheSize > 0) ? cacheSize : ITmfTrace.DEFAULT_TRACE_CACHE_SIZE;
         fStreamingInterval = interval;
-        fParser = parser;
         initialize(resource, path, type);
     }
 
@@ -187,7 +183,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
         }
         fCacheSize = trace.getCacheSize();
         fStreamingInterval = trace.getStreamingInterval();
-        fParser = trace.fParser;
         initialize(trace.getResource(), trace.getPath(), trace.getEventType());
     }
 
@@ -245,13 +240,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
         String traceName = getName();
         if (traceName == null || traceName.isEmpty()) {
             traceName = (resource != null) ? resource.getName() : new Path(path).lastSegment();
-        }
-        if (fParser == null) {
-            if (this instanceof ITmfEventParser) {
-                fParser = (ITmfEventParser) this;
-            } else {
-                throw new TmfTraceException("Invalid trace parser"); //$NON-NLS-1$
-            }
         }
         super.init(traceName, type);
         // register as VIP after super.init() because TmfComponent registers to
@@ -419,7 +407,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
      * @return the trace parser
      */
     protected ITmfEventParser getParser() {
-        return fParser;
+        return this;
     }
 
     // ------------------------------------------------------------------------
@@ -461,7 +449,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
     @Override
     public ITmfTimestamp getInitialRangeOffset() {
         final long DEFAULT_INITIAL_OFFSET_VALUE = (1L * 100 * 1000 * 1000); // .1sec
-        return new TmfTimestamp(DEFAULT_INITIAL_OFFSET_VALUE, ITmfTimestamp.NANOSECOND_SCALE);
+        return new TmfNanoTimestamp(DEFAULT_INITIAL_OFFSET_VALUE);
     }
 
     /**
@@ -547,8 +535,8 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
      * @param parser
      *            the new trace parser
      */
+    @Deprecated
     protected void setParser(final ITmfEventParser parser) {
-        fParser = parser;
     }
 
     // ------------------------------------------------------------------------
@@ -622,9 +610,7 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
     @Override
     public synchronized ITmfEvent getNext(final ITmfContext context) {
         // parseEvent() does not update the context
-        final ITmfEvent parsedEvent = fParser.parseEvent(context);
-
-        final ITmfEvent event = (parsedEvent instanceof ITimeshiftedTmfEvent) ? ((ITimeshiftedTmfEvent) parsedEvent).copy(getTimestampTransform().transform(parsedEvent.getTimestamp())) : parsedEvent;
+        final ITmfEvent event = parseEvent(context);
         if (event != null) {
             updateAttributes(context, event.getTimestamp());
             context.setLocation(getCurrentLocation());
@@ -670,6 +656,59 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
                 fIndexer.updateIndex(context, timestamp);
             }
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // Timestamp transformation functions
+    // ------------------------------------------------------------------------
+
+    @Override
+    public ITmfTimestampTransform getTimestampTransform() {
+        if (fTsTransform == null) {
+            /* Check if a formula is stored somewhere in the resources */
+            File sync_file = getSyncFormulaFile();
+            if (sync_file != null && sync_file.exists()) {
+
+                try (FileInputStream fis = new FileInputStream(sync_file);
+                        ObjectInputStream ois = new ObjectInputStream(fis);) {
+
+                    fTsTransform = (ITmfTimestampTransform) ois.readObject();
+
+                } catch (ClassNotFoundException | IOException e) {
+                    fTsTransform = TmfTimestampTransform.IDENTITY;
+                }
+            } else {
+                fTsTransform = TmfTimestampTransform.IDENTITY;
+            }
+        }
+        return fTsTransform;
+    }
+
+    @Override
+    public void setTimestampTransform(final ITmfTimestampTransform tt) {
+        fTsTransform = tt;
+
+        /* Save the timestamp transform to a file */
+        File sync_file = getSyncFormulaFile();
+        if (sync_file != null) {
+            if (sync_file.exists()) {
+                sync_file.delete();
+            }
+
+            /* Save the header of the file */
+            try (FileOutputStream fos = new FileOutputStream(sync_file, false);
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);) {
+
+                oos.writeObject(fTsTransform);
+            } catch (IOException e1) {
+                Activator.logError("Error writing timestamp transform for trace", e1); //$NON-NLS-1$
+            }
+        }
+    }
+
+    @Override
+    public ITmfTimestamp createTimestamp(long ts) {
+        return new TmfTimestamp(getTimestampTransform().transform(ts));
     }
 
     // ------------------------------------------------------------------------
@@ -785,12 +824,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
         }
     }
 
-    /**
-     * Returns the file resource used to store synchronization formula. The file
-     * may not exist.
-     *
-     * @return the synchronization file
-     */
     private File getSyncFormulaFile() {
         File file = null;
         try {
@@ -804,68 +837,6 @@ public abstract class TmfTrace extends TmfEventProvider implements ITmfTrace, IT
 
         }
         return file;
-    }
-
-    // ------------------------------------------------------------------------
-    // Timestamp transformation functions
-    // ------------------------------------------------------------------------
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public ITmfTimestampTransform getTimestampTransform() {
-        if (fTsTransform == null) {
-            /* Check if a formula is stored somewhere in the resources */
-            File sync_file = getSyncFormulaFile();
-            if (sync_file != null && sync_file.exists()) {
-
-                try (FileInputStream fis = new FileInputStream(sync_file);
-                        ObjectInputStream ois = new ObjectInputStream(fis);) {
-
-                    fTsTransform = (ITmfTimestampTransform) ois.readObject();
-
-                } catch (ClassNotFoundException | IOException e) {
-                    fTsTransform = TmfTimestampTransform.IDENTITY;
-                }
-            } else {
-                fTsTransform = TmfTimestampTransform.IDENTITY;
-            }
-        }
-        return fTsTransform;
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public void setTimestampTransform(final ITmfTimestampTransform tt) {
-        fTsTransform = tt;
-
-        /* Save the timestamp transform to a file */
-        File sync_file = getSyncFormulaFile();
-        if (sync_file != null) {
-            if (sync_file.exists()) {
-                sync_file.delete();
-            }
-
-            /* Save the header of the file */
-            try (FileOutputStream fos = new FileOutputStream(sync_file, false);
-                    ObjectOutputStream oos = new ObjectOutputStream(fos);) {
-
-                oos.writeObject(fTsTransform);
-            } catch (IOException e1) {
-                Activator.logError("Error writing timestamp transform for trace", e1); //$NON-NLS-1$
-            }
-        }
-    }
-
-    /**
-     * @since 3.0
-     */
-    @Override
-    public ITmfTimestamp createTimestamp(long ts) {
-        return new TmfTimestamp(getTimestampTransform().transform(ts));
     }
 
     // ------------------------------------------------------------------------

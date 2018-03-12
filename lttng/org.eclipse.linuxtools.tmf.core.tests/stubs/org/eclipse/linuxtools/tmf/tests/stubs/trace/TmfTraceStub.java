@@ -13,10 +13,12 @@
 
 package org.eclipse.linuxtools.tmf.tests.stubs.trace;
 
+import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IProject;
@@ -25,6 +27,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
+import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
 import org.eclipse.linuxtools.tmf.core.signal.TmfTraceOpenedSignal;
@@ -47,22 +53,26 @@ import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
  * <p>
  * Dummy test trace. Use in conjunction with TmfEventParserStub.
  */
-public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable {
+public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
+    private static final int NB_TYPES = 10;
+
     // The actual stream
     private RandomAccessFile fTrace;
 
-//    // The associated event parser
-//    private ITmfEventParser<TmfEvent> fParser;
+    // // The associated event parser
+    // private ITmfEventParser<TmfEvent> fParser;
 
     // The synchronization lock
     private final ReentrantLock fLock = new ReentrantLock();
 
     private ITmfTimestamp fInitialRangeOffset = null;
+
+    private TmfEventType[] fTypes;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -73,7 +83,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
      */
     public TmfTraceStub() {
         super();
-        setParser(new TmfEventParserStub(this));
     }
 
     /**
@@ -94,7 +103,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
             final long interval) throws TmfTraceException {
         super(null, ITmfEvent.class, path, cacheSize, interval, null);
         setupTrace(path);
-        setParser(new TmfEventParserStub(this));
     }
 
     /**
@@ -119,7 +127,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
             final ITmfEventParser parser) throws TmfTraceException {
         super(null, ITmfEvent.class, path, cacheSize, 0, null);
         setupTrace(path);
-        setParser((parser != null) ? parser : new TmfEventParserStub(this));
         if (waitForCompletion) {
             indexTrace(true);
         }
@@ -136,13 +143,22 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
     public TmfTraceStub(final TmfTraceStub trace) throws TmfTraceException {
         super(trace);
         setupTrace(getPath()); // fPath will be set by the super-constructor
-        setParser(new TmfEventParserStub(this));
     }
-
 
     private void setupTrace(String path) throws TmfTraceException {
         try {
             fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
+            fTypes = new TmfEventType[NB_TYPES];
+            for (int i = 0; i < NB_TYPES; i++) {
+                final Vector<String> fields = new Vector<>();
+                for (int j = 1; j <= i; j++) {
+                    final String field = "Fmt-" + i + "-Fld-" + j;
+                    fields.add(field);
+                }
+                final String[] fieldArray = new String[i];
+                final ITmfEventField rootField = TmfEventField.makeRoot(fields.toArray(fieldArray));
+                fTypes[i] = new TmfEventType("UnitTest", "Type-" + i, rootField);
+            }
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
@@ -159,7 +175,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
         } catch (FileNotFoundException e) {
             throw new TmfTraceException(e.getMessage());
         }
-        setParser(new TmfEventParserStub(this));
         super.initTrace(resource, path, type);
     }
 
@@ -209,7 +224,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
                 if (fTrace != null) {
                     // Position the trace at the requested location and
                     // returns the corresponding context
-                    long loc  = 0;
+                    long loc = 0;
                     long rank = 0;
                     if (location != null) {
                         loc = (Long) location.getLocationInfo();
@@ -225,8 +240,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
                 e.printStackTrace();
             } catch (final NullPointerException e) {
                 e.printStackTrace();
-            }
-            finally{
+            } finally {
                 fLock.unlock();
             }
         } catch (final NullPointerException e) {
@@ -234,7 +248,6 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
         }
         return null;
     }
-
 
     @Override
     public TmfContext seekEvent(final double ratio) {
@@ -293,7 +306,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
         try {
             // parseNextEvent will update the context
             if (fTrace != null && getParser() != null && context != null) {
-                final ITmfEvent event = getParser().parseEvent(context);
+                final ITmfEvent event = parseMyEvent(context);
                 return event;
             }
         } finally {
@@ -385,5 +398,57 @@ public class TmfTraceStub extends TmfTrace implements ITmfEventParser, ITmfPersi
      */
     public void selectTrace() {
         TmfSignalManager.dispatchSignal(new TmfTraceSelectedSignal(this, this));
+    }
+
+    static final String typePrefix = "Type-";
+
+    private ITmfEvent parseMyEvent(final ITmfContext context) {
+
+        // Highly inefficient...
+        final RandomAccessFile stream = getStream();
+        if (stream == null) {
+            return null;
+        }
+
+        //           String name = eventStream.getName();
+        //           name = name.substring(name.lastIndexOf('/') + 1);
+
+        // no need to use synchronized since it's already cover by the calling method
+
+        long location = 0;
+        if (context != null && context.getLocation() != null) {
+            location = (Long) context.getLocation().getLocationInfo();
+            try {
+                stream.seek(location);
+
+                final long ts        = stream.readLong();
+                final String source  = stream.readUTF();
+                final String type    = stream.readUTF();
+                final int reference  = stream.readInt();
+                final int typeIndex  = Integer.parseInt(type.substring(typePrefix.length()));
+                final String[] fields = new String[typeIndex];
+                for (int i = 0; i < typeIndex; i++) {
+                    fields[i] = stream.readUTF();
+                }
+
+                final StringBuffer content = new StringBuffer("[");
+                if (typeIndex > 0) {
+                    content.append(fields[0]);
+                }
+                for (int i = 1; i < typeIndex; i++) {
+                    content.append(", ").append(fields[i]);
+                }
+                content.append("]");
+
+                final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString(), null);
+                final ITmfEvent event = new TmfEvent(this,
+                        new TmfTimestamp(ts, -3, 0),     // millisecs
+                        source, fTypes[typeIndex], root, String.valueOf(reference));
+                return event;
+            } catch (final EOFException e) {
+            } catch (final IOException e) {
+            }
+        }
+        return null;
     }
 }

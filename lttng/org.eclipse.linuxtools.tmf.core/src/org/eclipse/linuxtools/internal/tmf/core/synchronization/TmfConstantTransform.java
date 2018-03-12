@@ -70,8 +70,8 @@ public class TmfConstantTransform implements ITmfTimestampTransform {
         } else if (composeWith instanceof TmfTimestampTransformLinear) {
             /* If composeWith is a linear transform, add the two together */
             TmfTimestampTransformLinear ttl = (TmfTimestampTransformLinear) composeWith;
-            BigDecimal newBeta = ttl.getBeta().add(new BigDecimal(fOffset));
-            return new TmfTimestampTransformLinear(ttl.getAlpha(), newBeta);
+            BigDecimal newBeta = ttl.getOffset().add(new BigDecimal(fOffset));
+            return new TmfTimestampTransformLinear(ttl.getSlope(), newBeta);
         } else {
             /*
              * We do not know what to do with this kind of transform, just

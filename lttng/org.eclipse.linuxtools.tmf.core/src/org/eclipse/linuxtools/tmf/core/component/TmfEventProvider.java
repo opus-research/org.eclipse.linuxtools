@@ -51,8 +51,11 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
     // Constants
     // ------------------------------------------------------------------------
 
-    /** Default amount of events per request "chunk"
-     * @since 3.0 */
+    /**
+     * Default amount of events per request "chunk"
+     *
+     * @since 3.0
+     */
     public static final int DEFAULT_BLOCK_SIZE = 50000;
 
     /** Delay for coalescing background requests (in milli-seconds) */
@@ -121,7 +124,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
         fSignalDepth = 0;
 
         synchronized (fLock) {
-             fTimer = new Timer();
+            fTimer = new Timer();
         }
 
         TmfProviderManager.register(fType, this);
@@ -181,9 +184,9 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
             }
 
             /*
-             *  For the first background request in the request pending queue
-             *  a timer will be started to allow other background requests to
-             *  coalesce.
+             * For the first background request in the request pending queue a
+             * timer will be started to allow other background requests to
+             * coalesce.
              */
             boolean startTimer = (getNbPendingBackgroundRequests() == 0);
             coalesceEventRequest(request);
@@ -378,7 +381,7 @@ public abstract class TmfEventProvider extends TmfComponent implements ITmfEvent
         return requestCompleted;
     }
 
-    private static boolean isCompleted2(ITmfEventRequest request,int nbRead) {
+    private static boolean isCompleted2(ITmfEventRequest request, int nbRead) {
         return request.isCompleted() || nbRead >= request.getNbRequested();
     }
 
