@@ -18,17 +18,17 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotCombo;
 /**
  * Custom assertions on a given {@link SWTBotCheckBox}.
  */
-public class ComboAssertions extends AbstractSWTBotAssertions<ComboAssertions, SWTBotCombo> {
+public class ComboAssertion extends AbstractSWTBotAssertion<ComboAssertion, SWTBotCombo> {
 
-	protected ComboAssertions(final SWTBotCombo actual) {
-		super(actual, ComboAssertions.class);
+	protected ComboAssertion(final SWTBotCombo actual) {
+		super(actual, ComboAssertion.class);
 	}
 
-	public static ComboAssertions assertThat(final SWTBotCombo actual) {
-		return new ComboAssertions(actual);
+	public static ComboAssertion assertThat(final SWTBotCombo actual) {
+		return new ComboAssertion(actual);
 	}
 
-	public ComboAssertions itemSelected(final String expectedItem) {
+	public ComboAssertion itemSelected(final String expectedItem) {
 		notNullValue();
 		if (actual.selectionIndex() < 0) {
 			failWithMessage("Expected combo to have selection to '%s' but it had none", expectedItem);
@@ -39,7 +39,7 @@ public class ComboAssertions extends AbstractSWTBotAssertions<ComboAssertions, S
 		return this;
 	}
 
-	public ComboAssertions indexItemSelected(final int expectedItemIndex) {
+	public ComboAssertion indexItemSelected(final int expectedItemIndex) {
 		notNullValue();
 		if (actual.selectionIndex() < 0) {
 			failWithMessage("Expected combo to have selection index to '%s' but it had none", expectedItemIndex);
