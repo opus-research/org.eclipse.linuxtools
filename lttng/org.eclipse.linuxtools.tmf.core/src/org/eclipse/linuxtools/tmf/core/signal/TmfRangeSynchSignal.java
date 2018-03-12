@@ -50,4 +50,19 @@ public class TmfRangeSynchSignal extends TmfSignal {
         return fCurrentRange;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[TmfRangeSynchSignal ("); //$NON-NLS-1$
+        if (fCurrentRange != null) {
+            sb.append(fCurrentRange.getStartTime());
+            sb.append('-'); //$NON-NLS-1$
+            sb.append(fCurrentRange.getEndTime());
+        } else {
+            sb.append("null"); //$NON-NLS-1$
+        }
+        sb.append(")]"); //$NON-NLS-1$
+        return sb.toString();
+    }
+
 }
