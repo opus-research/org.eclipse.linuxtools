@@ -237,9 +237,9 @@ public class SynchronizeTracesHandler extends AbstractHandler {
                             IFolder tmpFolder = exp.getTraceSupplementaryFolder("."); //$NON-NLS-1$
                             IResource syncFile = null;
                             for (IResource resource : exp.getSupplementaryResources()) {
-                                if (resource.getName().equals(TmfExperiment.SYNCHRONIZATION_FILE_NAME)) {
+                                if (resource.getName().equals(TmfExperiment.SYNCHRONIZATION_DIRECTORY)) {
                                     try {
-                                        resource.move(tmpFolder.getFile(exp.getName() + '.' + TmfExperiment.SYNCHRONIZATION_FILE_NAME).getFullPath(), false, null);
+                                        resource.move(tmpFolder.getFolder(exp.getName() + '.' + TmfExperiment.SYNCHRONIZATION_DIRECTORY).getFullPath(), false, null);
                                         syncFile = resource;
                                         break;
                                     } catch (CoreException e) {
@@ -261,7 +261,7 @@ public class SynchronizeTracesHandler extends AbstractHandler {
                             }
 
                             // Move synchronization file back
-                            IResource resource = tmpFolder.getFile(exp.getName() + '.' + TmfExperiment.SYNCHRONIZATION_FILE_NAME);
+                            IResource resource = tmpFolder.getFolder(exp.getName() + '.' + TmfExperiment.SYNCHRONIZATION_DIRECTORY);
                             if (resource.exists() && syncFile != null) {
                                 try {
                                     resource.move(syncFile.getFullPath(), false, null);
