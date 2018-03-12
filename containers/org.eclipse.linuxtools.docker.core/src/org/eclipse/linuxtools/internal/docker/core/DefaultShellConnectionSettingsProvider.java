@@ -28,7 +28,7 @@ import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettingsProvider;
 import org.eclipse.linuxtools.docker.core.Messages;
 
-public class ShellConnectionSettingsProvider implements IDockerConnectionSettingsProvider {
+public class DefaultShellConnectionSettingsProvider implements IDockerConnectionSettingsProvider {
 
 	@Override
 	public List<IDockerConnectionSettings> getConnectionSettings() {

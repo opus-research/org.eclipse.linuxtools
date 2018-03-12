@@ -13,11 +13,11 @@
             type="default.tcp">
       </connection>
       <connection
-            provider="org.eclipse.linuxtools.internal.docker.core.SystemConnectionSettingsProvider"
+            provider="org.eclipse.linuxtools.internal.docker.core.DefaultSystemConnectionSettingsProvider"
             type="system">
       </connection>
       <connection
-            provider="org.eclipse.linuxtools.internal.docker.core.ShellConnectionSettingsProvider"
+            provider="org.eclipse.linuxtools.internal.docker.core.DefaultShellConnectionSettingsProvider"
             type="shell">
       </connection>
    </extension>

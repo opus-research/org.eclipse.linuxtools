@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Red Hat.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,7 +23,6 @@ public class DefaultTCPConnectionSettingsProvider implements IDockerConnectionSe
 	public List<IDockerConnectionSettings> getConnectionSettings() {
 		final TCPConnectionSettings tcp = new TCPConnectionSettings(
 				"127.0.0.1:2375", null); //$NON-NLS-1$
-		tcp.setName(tcp.getHost());
 		DockerConnection conn = new DockerConnection.Builder().tcpConnection(tcp);
 		try {
 			conn.open(false);
