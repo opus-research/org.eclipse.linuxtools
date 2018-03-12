@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.docker.core;
 
-import java.util.concurrent.TimeUnit;
-
 import org.assertj.core.api.Assertions;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionStorageManager;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
@@ -21,7 +19,6 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFacto
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionStorageManagerFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTUtils;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
 
@@ -41,18 +38,11 @@ public class DockerConnectionManagerTest {
 		DockerConnectionManager.getInstance().setConnectionStorageManager(new DefaultDockerConnectionStorageManager());
 	}
 
-	@After
-	public void reset() {
-		dockerContainersRefreshManager.getConnections()
-				.iterator().forEachRemaining(connection -> dockerContainersRefreshManager.removeContainerRefreshThread(connection));
-	}
-
 	@Test
 	public void shouldRegisterConnectionOnRefreshContainersManager() {
 		// given
 		final DockerClient client = MockDockerClientFactory.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client)
-				.withDefaultTCPConnectionSettings();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
 		dockerConnectionManager
 				.setConnectionStorageManager(MockDockerConnectionStorageManagerFactory.providing(dockerConnection));
 		SWTUtils.syncExec(() -> dockerConnectionManager.reloadConnections());
@@ -66,22 +56,14 @@ public class DockerConnectionManagerTest {
 	public void shouldUnregisterConnectionOnRefreshContainersManager() {
 		// given
 		final DockerClient client = MockDockerClientFactory.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client)
-				.withDefaultTCPConnectionSettings();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
 		dockerConnectionManager
 				.setConnectionStorageManager(MockDockerConnectionStorageManagerFactory.providing(dockerConnection));
-		System.err.println("Docker manager connections (0): " + dockerConnectionManager.getConnections().length);
-		System.err.println("Monitored connections (0): " + dockerContainersRefreshManager.getConnections().size());
 		SWTUtils.syncExec(() -> dockerConnectionManager.reloadConnections());
-		System.err.println("Docker manager connections (1): " + dockerConnectionManager.getConnections().length);
-		System.err.println("Monitored connections (1): " + dockerContainersRefreshManager.getConnections().size());
 		dockerConnection.getContainers();
-		System.err.println("Docker manager connections (2): " + dockerConnectionManager.getConnections().length);
-		System.err.println("Monitored connections (2): " + dockerContainersRefreshManager.getConnections().size());
-		Assertions.assertThat(dockerContainersRefreshManager.getConnections()).containsExactly(dockerConnection);
+		Assertions.assertThat(dockerContainersRefreshManager.getConnections()).contains(dockerConnection);
 		// when
 		SWTUtils.syncExec(() -> dockerConnectionManager.removeConnection(dockerConnection));
-		SWTUtils.wait(1, TimeUnit.SECONDS);
 		// then
 		Assertions.assertThat(dockerContainersRefreshManager.getConnections()).isEmpty();
 	}
