@@ -19,6 +19,7 @@ import static org.eclipse.linuxtools.docker.core.EnumDockerConnectionSettings.UN
 import static org.eclipse.linuxtools.docker.core.EnumDockerConnectionSettings.UNIX_SOCKET_PATH;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,9 +40,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -102,40 +101,67 @@ import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
 
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
+
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
  * All low-level communication is delegated to a wrapped {@link DockerClient}.
  * 
  *
  */
-public class DockerConnection implements IDockerConnection {
+public class DockerConnection implements IDockerConnection, Closeable {
 
 	public static class Defaults {
 
 		public static final String DEFAULT_UNIX_SOCKET_PATH = "unix:///var/run/docker.sock"; //$NON-NLS-1$
 
-		private String name = Messages.Default_Name;
+		private boolean settingsResolved;
+		private boolean pingSucceeded = false;
+		private String name = null;
 		private final Map<EnumDockerConnectionSettings, Object> settings = new HashMap<>();
 
-		public Defaults() throws DockerException {
-			// first, looking for a Unix socket at /var/run/docker.sock
-			if (defaultsWithUnixSocket() || defaultsWithSystemEnv()
-					|| defaultWithShellEnv()) {
-				// attempt to connect and retrieve the 'name' from the system
-				// info
-				final DockerConnection connection = new Builder()
-						.unixSocket(getUnixSocketPath()).tcpHost(getTcpHost())
-						.tcpCertPath(getTcpCertPath()).build();
-				connection.open(false);
-				final IDockerConnectionInfo info = connection.getInfo();
-				if (info != null) {
-					this.name = info.getName();
+		public Defaults() {
+			try {
+				// first, looking for a Unix socket at /var/run/docker.sock
+				if (defaultsWithUnixSocket() || defaultsWithSystemEnv()
+						|| defaultWithShellEnv()) {
+					this.settingsResolved = true;
+					// attempt to connect and retrieve the 'name' from the
+					// system
+					// info using shorter timeouts
+					try (final DockerConnection connection = new Builder()
+							.unixSocket(getUnixSocketPath())
+							.tcpHost(getTcpHost()).tcpCertPath(getTcpCertPath())
+							// using shorter timeout values for a quick attempt
+							// to connect.
+							.connectTimeoutMillis(TimeUnit.SECONDS.toMillis(1))
+							.readTimeoutMillis(TimeUnit.SECONDS.toMillis(1))
+							.build()) {
+						connection.open(false);
+						final IDockerConnectionInfo info = connection.getInfo();
+						if (info != null) {
+							this.pingSucceeded = true;
+							this.name = info.getName();
+						}
+					} catch (DockerException e) {
+						// connection to host failed
+						this.pingSucceeded = false;
+						// force custom settings in that case
+						this.settingsResolved = false;
+					}
+				} else {
+					this.settingsResolved = false;
+					Activator.log(
+							new Status(IStatus.WARNING, Activator.PLUGIN_ID,
+									Messages.Missing_Default_Settings));
 				}
-				return;
+			} catch (DockerException e) {
+				Activator.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+						Messages.Missing_Default_Settings, e));
 			}
-			Activator.log(new Status(IStatus.WARNING, Activator.PLUGIN_ID,
-					Messages.Missing_Default_Settings));
 		}
+
 
 		/**
 		 * Checks if there is a Unix socket available at the given location
@@ -349,6 +375,14 @@ public class DockerConnection implements IDockerConnection {
 			return res.length() > 0 ? res.substring(1) : "";
 		}
 
+		public boolean isSettingsResolved() {
+			return settingsResolved;
+		}
+
+		public boolean isPingSucceeded() {
+			return pingSucceeded;
+		}
+
 		public String getName() {
 			return name;
 		}
@@ -408,6 +442,8 @@ public class DockerConnection implements IDockerConnection {
 		private String name;
 		private String tcpHost;
 		private String tcpCertPath;
+		private long connectTimeoutMillis = TimeUnit.SECONDS.toMillis(5);
+		private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(30);
 
 		public Builder name(final String name) {
 			this.name = name;
@@ -441,13 +477,23 @@ public class DockerConnection implements IDockerConnection {
 			return this;
 		}
 
+		public Builder connectTimeoutMillis(final long connectTimeoutMillis) {
+			this.connectTimeoutMillis = connectTimeoutMillis;
+			return this;
+		}
+
+		public Builder readTimeoutMillis(final long readTimeoutMillis) {
+			this.readTimeoutMillis = readTimeoutMillis;
+			return this;
+		}
+
 		public DockerConnection build() {
 			if (unixSocketPath != null) {
-				return new DockerConnection(name, unixSocketPath, null, null);
+				return new DockerConnection(name, unixSocketPath, null, null,
+						connectTimeoutMillis, readTimeoutMillis);
 			} else {
 				return new DockerConnection(name, tcpHost, tcpCertPath, null,
-						null);
-
+						null, connectTimeoutMillis, readTimeoutMillis);
 			}
 		}
 	}
@@ -457,6 +503,8 @@ public class DockerConnection implements IDockerConnection {
 	private final String tcpHost;
 	private final String tcpCertPath;
 	private final String username;
+	private final long connectTimeoutMillis;
+	private final long readTimeoutMillis;
 	private final Object imageLock = new Object();
 	private final Object containerLock = new Object();
 	private final Object actionLock = new Object();
@@ -481,14 +529,16 @@ public class DockerConnection implements IDockerConnection {
 	 * Constructor for a unix socket based connection
 	 */
 	private DockerConnection(final String name, final String socketPath,
-			final String username, final String password) {
+			final String username, final String password,
+			final long connectTimeoutMillis, final long readTimeoutMillis) {
 		this.name = name;
 		this.socketPath = socketPath;
 		this.username = username;
 		this.tcpHost = null;
 		this.tcpCertPath = null;
+		this.connectTimeoutMillis = connectTimeoutMillis;
+		this.readTimeoutMillis = readTimeoutMillis;
 		storePassword(socketPath, username, password);
-
 	}
 
 	/**
@@ -496,12 +546,15 @@ public class DockerConnection implements IDockerConnection {
 	 */
 	private DockerConnection(final String name, final String tcpHost,
 			final String tcpCertPath, final String username,
-			final String password) {
+			final String password, final long connectTimeoutMillis,
+			final long readTimeoutMillis) {
 		this.name = name;
 		this.socketPath = null;
 		this.username = username;
 		this.tcpHost = tcpHost;
 		this.tcpCertPath = tcpCertPath;
+		this.connectTimeoutMillis = connectTimeoutMillis;
+		this.readTimeoutMillis = readTimeoutMillis;
 		storePassword(socketPath, username, password);
 		// Add the container refresh manager to watch the containers list
 		DockerContainerRefreshManager dcrm = DockerContainerRefreshManager
@@ -540,21 +593,26 @@ public class DockerConnection implements IDockerConnection {
 		synchronized (this) {
 			try {
 				if (this.client == null) {
+					final com.spotify.docker.client.DefaultDockerClient.Builder builder = DefaultDockerClient
+							.builder()
+							.connectTimeoutMillis(connectTimeoutMillis)
+							.readTimeoutMillis(readTimeoutMillis);
 					if (this.socketPath != null) {
-						this.client = DefaultDockerClient.builder()
-								.uri(socketPath).build();
+						this.client = builder
+								.uri(socketPath)
+								.build();
 					} else if (this.tcpHost != null) {
 						if (this.tcpCertPath != null) {
-							this.client = DefaultDockerClient
-									.builder()
+							this.client = builder
 									.uri(URI.create(tcpHost))
 									.dockerCertificates(
 											new DockerCertificates(new File(
 													tcpCertPath).toPath()))
 									.build();
 						} else {
-							this.client = DefaultDockerClient.builder()
-									.uri(URI.create(tcpHost)).build();
+							this.client = builder
+									.uri(URI.create(tcpHost))
+									.build();
 						}
 					}
 					if (registerContainerRefreshManager) {
@@ -575,7 +633,11 @@ public class DockerConnection implements IDockerConnection {
 	@Override
 	public void ping() throws DockerException {
 		try {
-			client.ping();
+			if (client != null) {
+				client.ping();
+			} else {
+				throw new DockerException(Messages.Docker_Daemon_Ping_Failure);
+			}
 		} catch (com.spotify.docker.client.DockerException
 				| InterruptedException e) {
 			throw new DockerException(Messages.Docker_Daemon_Ping_Failure, e);
@@ -595,6 +657,7 @@ public class DockerConnection implements IDockerConnection {
 	@Override
 	public IDockerConnectionInfo getInfo() throws DockerException {
 		try {
+			client.ping();
 			final Info info = client.info();
 			final Version version = client.version();
 			return new DockerConnectionInfo(info, version);
