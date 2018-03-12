@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
@@ -38,14 +37,10 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.waits.Conditions;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
-import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.Result;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
-import org.eclipse.swtbot.swt.finder.widgets.AbstractSWTBot;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTableItem;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotToolbarButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
@@ -97,6 +92,7 @@ public class SWTUtils {
 	 * @throws SWTException
 	 *             if an {@link SWTException} occurred
 	 */
+	@Deprecated
 	public static void syncAssert(final Runnable runnable) throws SWTException, ComparisonFailure {
 		final Queue<ComparisonFailure> failure = new ArrayBlockingQueue<>(1);
 		final Queue<SWTException> swtException = new ArrayBlockingQueue<>(1);
@@ -270,14 +266,6 @@ public class SWTUtils {
 			return getTreeItem(swtBotTreeItem.getItems(), remainingPath);
 		}
 		return swtBotTreeItem;
-	}
-
-	public static SWTBotTableItem getListItem(final SWTBotTable table, final String name) {
-		return Stream.iterate(0, i -> i + 1).limit(table.rowCount()).map(rowNumber -> table.getTableItem(rowNumber))
-				.filter(rowItem -> {
-					return Stream.iterate(0, j -> j + 1).limit(table.columnCount())
-							.map(colNum -> rowItem.getText(colNum)).anyMatch(colValue -> colValue.contains(name));
-				}).findFirst().orElse(null);
 	}
 
 	/**
@@ -454,8 +442,6 @@ public class SWTUtils {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T getView(final SWTWorkbenchBot bot, final String viewId) {
-		// final SWTBotView hierarchyViewBot = bot.viewById(viewId);
-		// return (T) hierarchyViewBot.getViewReference().getView(true);
 		return (T) bot.views().stream().filter(v -> v.getViewReference().getId().equals(viewId)).findFirst()
 				.map(v -> v.getReference().getView(false)).orElse(null);
 	}
@@ -472,27 +458,6 @@ public class SWTUtils {
 	public static SWTBotToolbarButton getConsoleToolbarButtonWithTooltipText(final SWTWorkbenchBot bot, final String tooltipText) {
 		return bot.viewById(IConsoleConstants.ID_CONSOLE_VIEW).getToolbarButtons().stream()
 				.filter(button -> button.getToolTipText().equals(tooltipText)).findFirst().get();
-	}
-
-	public static void closeView(final SWTWorkbenchBot bot, final String viewId) {
-		bot.views().stream().filter(v -> v.getReference().getId().equals(viewId)).forEach(v -> v.close());
-	}
-
-	/**
-	 * Creates a new {@link SWTBotMenu} from the context. This avoids some
-	 * unexpected "Widget is disposed" errors.
-	 *
-	 * @param bot
-	 *            the bot
-	 * @param menuName
-	 *            the name of the menu to find
-	 * @return the context menu
-	 * @see <a href=
-	 *      "https://www.eclipse.org/forums/index.php?t=msg&th=11863&start=0&">Eclipse
-	 *      forum</a>
-	 */
-	public static SWTBotMenu getContextMenu(final AbstractSWTBot<? extends Control> bot, final String menuName) {
-		return new SWTBotMenu(ContextMenuHelper.contextMenu(bot, menuName));
 	}
 
 }
