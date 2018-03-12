@@ -46,17 +46,4 @@ public interface ICommandResult {
      *            The output (as an array of Strings) to assign
      */
     void setOutput(String[] output);
-
-    /**
-     * @return returns the command error output.
-     */
-    String[] getErrorOutput();
-
-    /**
-     * Sets the command output.
-     *
-     * @param output
-     *            The output (as an array of Strings) to assign
-     */
-    void setErrorOutput(String[] output);
 }
