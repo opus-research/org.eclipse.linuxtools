@@ -109,10 +109,13 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
         }
         // needed since we read 5 bits
         input.position(input.position() + 3);
-        int id = (int) input.get(ID_SIZE, false);
+        long id = input.get(ID_SIZE, false);
+        if( id > Integer.MAX_VALUE){
+            throw new CTFReaderException("ID "+ id + " larger than " + Integer.MAX_VALUE + " is currently unsupported by the parser"); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
+        }
         long timestampLong = input.get(FULL_TS, false);
         input.setByteOrder(bo);
-        return new EventHeaderDefinition(this, id, timestampLong, FULL_TS);
+        return new EventHeaderDefinition(this, (int) id, timestampLong, FULL_TS);
 
     }
 
