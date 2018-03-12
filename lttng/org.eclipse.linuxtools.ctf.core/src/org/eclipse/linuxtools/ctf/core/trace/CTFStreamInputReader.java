@@ -108,10 +108,11 @@ public class CTFStreamInputReader implements AutoCloseable {
     }
 
     /**
-     * Dispose the StreamInputReader
+     * Dispose the StreamInputReader, closes the file channel and its packet
+     * reader
      *
      * @throws IOException
-     *             exceptional exception
+     *             If an I/O error occurs
      */
     @Override
     public void close() throws IOException {
@@ -442,6 +443,15 @@ public class CTFStreamInputReader implements AutoCloseable {
     }
 
     /**
+     * Get the file channel wrapped by this reader
+     *
+     * @return the file channel
+     */
+    FileChannel getFc() {
+        return fFileChannel;
+    }
+
+    /**
      * @return the packetReader
      */
     public CTFStreamInputPacketReader getPacketReader() {
@@ -482,13 +492,4 @@ public class CTFStreamInputReader implements AutoCloseable {
         return fId + ' ' + fCurrentEvent.toString();
     }
 
-    /**
-     * file channel
-     *
-     * @return filechannel
-     * @since 3.1
-     */
-    public FileChannel getFc() {
-        return fFileChannel;
-    }
 }

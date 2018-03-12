@@ -14,7 +14,7 @@ package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.StandardOpenOption;
@@ -32,7 +32,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.SafeMappedByteBuffer;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.ArrayDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndex;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
@@ -290,7 +289,7 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
          * Map the packet.
          */
         try (FileChannel fc = FileChannel.open(fFile.toPath(), StandardOpenOption.READ)) {
-            ByteBuffer map = SafeMappedByteBuffer.map(fc, MapMode.READ_ONLY, packetOffsetBytes, mapSize);
+            MappedByteBuffer map = fc.map(MapMode.READ_ONLY, packetOffsetBytes, mapSize);
             if (map == null) {
                 throw new CTFReaderException("Failed to allocate mapped byte buffer"); //$NON-NLS-1$
             }
@@ -371,10 +370,9 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
      * Gets the wrapped file
      *
      * @return the file
-     * @since 3.1
      */
     @NonNull
-    public File getFile() {
+    File getFile() {
         return fFile;
     }
 
