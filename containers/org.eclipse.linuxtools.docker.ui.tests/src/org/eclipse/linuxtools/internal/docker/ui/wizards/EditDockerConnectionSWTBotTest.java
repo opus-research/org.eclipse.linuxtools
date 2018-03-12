@@ -140,11 +140,10 @@ public class EditDockerConnectionSWTBotTest {
 		return bot.button("Finish"); //$NON-NLS-1$
 	}
 
-	private String configureRunImageLaunchConfiguration(final IDockerConnection connection, final String networkMode) {
+	private String configureRunImageLaunchConfiguration(final IDockerConnection connection) {
 		final IDockerImage image = MockDockerImageFactory.name("images").connection(connection).build();
 		final DockerContainerConfig containerConfig = MockDockerContainerConfigFactory.cmd("cmd").build();
-		final IDockerHostConfig hostConfig = MockDockerHostConfigFactory.publishAllPorts(true).networkMode(networkMode)
-				.build();
+		final IDockerHostConfig hostConfig = MockDockerHostConfigFactory.publishAllPorts(true).build();
 		final ILaunchConfiguration runImageLaunchConfiguration = LaunchConfigurationUtils
 				.createRunImageLaunchConfiguration(image, containerConfig, hostConfig, "some_container", false);
 		return runImageLaunchConfiguration.getName();
@@ -349,15 +348,12 @@ public class EditDockerConnectionSWTBotTest {
 		assertThat(buildDockerImageLaunchConfig).isNotNull();
 		assertThat(buildDockerImageLaunchConfig.getAttribute(IDockerImageBuildOptions.DOCKER_CONNECTION, ""))
 				.isEqualTo("Test");
-		final String runImageLaunchConfigurationName = configureRunImageLaunchConfiguration(connection, "bridge");
+		final String runImageLaunchConfigurationName = configureRunImageLaunchConfiguration(connection);
 		final ILaunchConfiguration runDockerImageLaunchConfig = LaunchConfigurationUtils.getLaunchConfigurationByName(
 				IRunDockerImageLaunchConfigurationConstants.CONFIG_TYPE_ID, runImageLaunchConfigurationName);
 		assertThat(runDockerImageLaunchConfig).isNotNull();
 		assertThat(runDockerImageLaunchConfig.getAttribute(IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
 				"")).isEqualTo("Test");
-		assertThat(
-				runDockerImageLaunchConfig.getAttribute(IRunDockerImageLaunchConfigurationConstants.NETWORK_MODE, ""))
-						.isEqualTo("bridge");
 
 		// when
 		openConnectionEditionWizard("Test");
@@ -377,8 +373,6 @@ public class EditDockerConnectionSWTBotTest {
 		assertThat(updatedRunDockerImageLaunchConfig).isNotNull();
 		assertThat(updatedRunDockerImageLaunchConfig
 				.getAttribute(IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME, "")).isEqualTo("foo");
-		assertThat(updatedRunDockerImageLaunchConfig
-				.getAttribute(IRunDockerImageLaunchConfigurationConstants.NETWORK_MODE, "")).isEqualTo("bridge");
 	}
 
 	@Test

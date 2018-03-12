@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2017 Red Hat, Inc.
+ * Copyright (c) 2007, 2016 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TabsToSpacesConverter;
+import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -34,12 +35,18 @@ import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.URLHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
+import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
+import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
+import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink.URLHyperlinkWithMacroDetector;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.preferences.PreferenceConstants;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfileChangelogScanner;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePackagesScanner;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePartitionScanner;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfileScanner;
 import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
@@ -50,12 +57,18 @@ import org.osgi.framework.FrameworkUtil;
 
 public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 	private SpecfileDoubleClickStrategy doubleClickStrategy;
+	private SpecfileScanner scanner;
+	private SpecfileChangelogScanner changelogScanner;
+	private SpecfilePackagesScanner packagesScanner;
+	private ColorManager colorManager;
+	private SpecfileHover specfileHover;
 	private SpecfileEditor editor;
 	private IPreferenceStore store = new ScopedPreferenceStore(InstanceScope.INSTANCE,
 			FrameworkUtil.getBundle(SpecfileConfiguration.class).getSymbolicName());
 
-	public SpecfileConfiguration(SpecfileEditor editor) {
+	public SpecfileConfiguration(ColorManager colorManager, SpecfileEditor editor) {
 		super();
+		this.colorManager = colorManager;
 		this.editor = editor;
 	}
 
@@ -72,14 +85,74 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 		return doubleClickStrategy;
 	}
 
+	private SpecfileScanner getSpecfileScanner() {
+		if (scanner == null) {
+			scanner = new SpecfileScanner(colorManager);
+			scanner.setDefaultReturnToken(
+					new Token(new TextAttribute(colorManager.getColor(ISpecfileColorConstants.DEFAULT))));
+		}
+		return scanner;
+	}
+
+	private SpecfileChangelogScanner getSpecfileChangelogScanner() {
+		if (changelogScanner == null) {
+			changelogScanner = new SpecfileChangelogScanner(colorManager);
+			changelogScanner.setDefaultReturnToken(
+					new Token(new TextAttribute(colorManager.getColor(ISpecfileColorConstants.DEFAULT))));
+		}
+		return changelogScanner;
+	}
+
+	private SpecfilePackagesScanner getSpecfilePackagesScanner() {
+		if (packagesScanner == null) {
+			packagesScanner = new SpecfilePackagesScanner(colorManager);
+			packagesScanner.setDefaultReturnToken(
+					new Token(new TextAttribute(colorManager.getColor(ISpecfileColorConstants.DEFAULT))));
+		}
+		return packagesScanner;
+	}
+
 	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-		return new SpecfileHover();
+		if (specfileHover == null) {
+			specfileHover = new SpecfileHover(this.editor);
+		}
+		return specfileHover;
 	}
 
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
-		return new SpecfilePrecentationReconciler();
+		PresentationReconciler reconciler = new PresentationReconciler();
+
+		DefaultDamagerRepairer dr = new DefaultDamagerRepairer(getSpecfileScanner());
+		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
+		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
+
+		dr = new DefaultDamagerRepairer(getSpecfilePackagesScanner());
+		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_PACKAGES);
+		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_PACKAGES);
+
+		dr = new DefaultDamagerRepairer(getSpecfileScanner());
+		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_PREP);
+		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_PREP);
+
+		dr = new DefaultDamagerRepairer(getSpecfileScanner());
+		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_SCRIPT);
+		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_SCRIPT);
+
+		dr = new DefaultDamagerRepairer(getSpecfileScanner());
+		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_FILES);
+		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_FILES);
+
+		dr = new DefaultDamagerRepairer(getSpecfileScanner());
+		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_GROUP);
+		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_GROUP);
+
+		dr = new DefaultDamagerRepairer(getSpecfileChangelogScanner());
+		reconciler.setDamager(dr, SpecfilePartitionScanner.SPEC_CHANGELOG);
+		reconciler.setRepairer(dr, SpecfilePartitionScanner.SPEC_CHANGELOG);
+
+		return reconciler;
 	}
 
 	@Override
@@ -97,7 +170,7 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 	@Override
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
 		ContentAssistant assistant = new ContentAssistant();
-		IContentAssistProcessor processor = new SpecfileCompletionProcessor();
+		IContentAssistProcessor processor = new SpecfileCompletionProcessor(editor);
 		// add content assistance to all the supported contentType
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
 		assistant.setContentAssistProcessor(processor, SpecfilePartitionScanner.SPEC_PREP);
