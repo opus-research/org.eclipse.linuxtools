@@ -15,7 +15,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
-import org.eclipse.linuxtools.docker.core.IRegistry;
 
 /**
  * 
@@ -56,10 +55,6 @@ public class ImagePull extends Wizard {
 
 	public String getImageName() {
 		return this.imagePullPage.getImageName();
-	}
-
-	public IRegistry getRegistry() {
-		return this.imagePullPage.getRegistry();
 	}
 
 }
