@@ -765,47 +765,43 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		return imagesLoaded;
 	}
 
+	// TODO: remove this method from the API
 	@Override
 	public List<IDockerImage> listImages() throws DockerException {
-		final List<IDockerImage> tempImages = new ArrayList<>();
-		synchronized (imageLock) {
-			List<Image> rawImages = null;
-			try {
-				synchronized (clientLock) {
-					// Check that client is not null as this connection may have
-					// been closed but there is an async request to update the
-					// images list left in the queue
-					if (client == null)
-						return tempImages;
-					rawImages = client.listImages(
-							DockerClient.ListImagesParam.allImages());
+		final List<IDockerImage> images = new ArrayList<>();
+		try {
+			final List<Image> nativeImages = new ArrayList<>();
+			synchronized (clientLock) {
+				// Check that client is not null as this connection may have
+				// been closed but there is an async request to update the
+				// containers list left in the queue
+				if (client == null) {
+					// in that case the list becomes empty, which is fine is
+					// there's no client.
+					return Collections.emptyList();
 				}
-			} catch (com.spotify.docker.client.DockerRequestException e) {
-				throw new DockerException(e.message());
-			} catch (com.spotify.docker.client.DockerException
-					| InterruptedException e) {
-				DockerException f = new DockerException(e);
-				throw f;
+				nativeImages.addAll(client
+						.listImages(DockerClient.ListImagesParam.allImages()));
+				this.active = true;
 			}
 			// We have a list of images. Now, we translate them to our own
 			// core format in case we decide to change the underlying engine
 			// in the future. We also look for intermediate and dangling images.
 			final Set<String> imageParentIds = new HashSet<>();
-			for (Image rawImage : rawImages) {
-				imageParentIds.add(rawImage.parentId());
+			for (Image nativeImage : nativeImages) {
+				imageParentIds.add(nativeImage.parentId());
 			}
-			for (Image rawImage : rawImages) {
-				final boolean taggedImage = !(rawImage.repoTags() != null
-						&& rawImage.repoTags().size() == 1
-						&& rawImage
-						.repoTags().contains("<none>:<none>")); //$NON-NLS-1$
+			for (Image nativeImage : nativeImages) {
+				final boolean taggedImage = !(nativeImage.repoTags() != null
+						&& nativeImage.repoTags().size() == 1
+						&& nativeImage.repoTags().contains("<none>:<none>")); //$NON-NLS-1$
 				final boolean intermediateImage = !taggedImage
-						&& imageParentIds.contains(rawImage.id());
+						&& imageParentIds.contains(nativeImage.id());
 				final boolean danglingImage = !taggedImage
 						&& !intermediateImage;
 				// return one IDockerImage per raw image
 				final List<String> repoTags = new ArrayList<>(
-						rawImage.repoTags());
+						nativeImage.repoTags());
 				Collections.sort(repoTags);
 				if (repoTags.isEmpty()) {
 					repoTags.add("<none>:<none>"); //$NON-NLS-1$
@@ -813,18 +809,36 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				final String repo = DockerImage.extractRepo(repoTags.get(0));
 				final List<String> tags = Arrays
 						.asList(DockerImage.extractTag(repoTags.get(0)));
-				tempImages.add(new DockerImage(this, repoTags, repo,
-						tags, rawImage.id(), rawImage.parentId(),
-						rawImage.created(), rawImage.size(),
-						rawImage.virtualSize(), intermediateImage,
+				images.add(new DockerImage(this, repoTags, repo, tags,
+						nativeImage.id(), nativeImage.parentId(),
+						nativeImage.created(), nativeImage.size(),
+						nativeImage.virtualSize(), intermediateImage,
 						danglingImage));
 			}
-			images = tempImages;
+		} catch (com.spotify.docker.client.DockerException
+				| InterruptedException e) {
+			if (active) {
+				active = false;
+				throw new DockerException(
+						NLS.bind(Messages.List_Docker_Images_Failure,
+								this.getName()),
+						e);
+			}
+		} finally {
+			// assign the new list of containers in a locked block of code to
+			// prevent concurrent access, even if an exception was raised.
+			synchronized (imageLock) {
+				this.images = images;
+				this.imagesLoaded = true;
+			}
 		}
-		// Perform notification outside of lock so that listener doesn't cause a
-		// deadlock to occur
-		notifyImageListeners(tempImages);
-		return tempImages;
+
+		// perform notification outside of containerLock so we don't have a View
+		// causing a deadlock
+		// TODO: we should probably notify the listeners only if the containers
+		// list changed.
+		notifyImageListeners(this.images);
+		return this.images;
 	}
 
 	@Override
