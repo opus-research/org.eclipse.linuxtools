@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.eclipse.linuxtools.releng</groupId>
     <artifactId>linuxtools-releng-parent</artifactId>
-    <version>6.1.1</version>
+    <version>6.2.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.docker-site</artifactId>
@@ -43,12 +43,12 @@
                    <target>
                     <delete includeemptydirs="false">
                        <fileset
-                         dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-docker-nightly-oxygen">
+                         dir="/home/data/httpd/download.eclipse.org/linuxtools/updates-docker-nightly">
                          <include name="**" />
                        </fileset>
                      </delete>
                      <copy includeemptydirs="false"
-                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-docker-nightly-oxygen">
+                       todir="/home/data/httpd/download.eclipse.org/linuxtools/updates-docker-nightly">
                        <fileset dir="target/repository">
                          <include name="**" />
                        </fileset>
