@@ -330,6 +330,7 @@ public class STSymbolManager {
      * @param program
      * @param project
      * @return an instance of Strings suitable for the given program
+     * @since 6.0
      */
     public synchronized STStrings getStrings(IBinaryObject program, IProject project) {
         STStrings strings = null;

@@ -12,7 +12,7 @@
 package org.eclipse.linuxtools.binutils.utils;
 
 /**
- * @since 5.0
+ * @since 6.0
  */
 public class STStrings {
 

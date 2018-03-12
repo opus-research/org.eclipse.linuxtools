@@ -115,6 +115,7 @@ public class STBinutilsFactoryManager {
      * @param project
      * @return  an instance of strings for the given program
      * @throws IOException
+     * @since 6.0
      */
     public static STStrings getStrings(String cpuType, IProject project) throws IOException {
         ISTBinutilsFactory factory = getBinutilsFactory(cpuType);

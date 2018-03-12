@@ -57,6 +57,9 @@ public class DefaultBinutilsFactory implements ISTBinutilsFactory {
         return new STNM(nm, args, path, handler, project);
     }
 
+    /**
+	 * @since 6.0
+	 */
     @Override
     public STStrings getSTRINGS(IProject project) throws IOException {
         IPreferenceStore prefsStore = Activator.getDefault().getPreferenceStore();

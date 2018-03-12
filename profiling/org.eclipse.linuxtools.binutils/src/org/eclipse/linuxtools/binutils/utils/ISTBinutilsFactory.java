@@ -29,6 +29,9 @@ public interface ISTBinutilsFactory {
 
     STNM getNM(String path, STNMSymbolsHandler handler, IProject project) throws IOException;
 
+    /**
+	 * @since 6.0
+	 */
     STStrings getSTRINGS(IProject project) throws IOException;
 
     boolean testAvailability();
