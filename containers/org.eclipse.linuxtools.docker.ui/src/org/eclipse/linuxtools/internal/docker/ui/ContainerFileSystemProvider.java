@@ -31,48 +31,20 @@ public class ContainerFileSystemProvider implements IImportStructureProvider {
 		this.containerId = containerId;
 	}
 
-	private class ReadContainerDirectoryThread extends Thread {
-		private Object element;
-		private String containerId;
-		private List<ContainerFileProxy> childList;
-
-		public ReadContainerDirectoryThread(Object element, String containerId,
-				List<ContainerFileProxy> childList) {
-			this.element = element;
-			this.containerId = containerId;
-			this.childList = childList;
-		}
-
-		@Override
-		public void run() {
-			try {
-				ContainerFileProxy proxy = (ContainerFileProxy) element;
-				if (proxy.isFolder()) {
-					List<ContainerFileProxy> children = ((DockerConnection) connection)
-							.readContainerDirectory(containerId,
-									proxy.getFullPath());
-					childList.addAll(children);
-				}
-			} catch (DockerException e) {
-				e.printStackTrace();
-			}
-
-		}
-	}
-
 	@SuppressWarnings("rawtypes")
 	@Override
 	public List getChildren(Object element) {
-		List<ContainerFileProxy> childList = new ArrayList<>();
-		Thread t = new ReadContainerDirectoryThread(element, containerId,
-				childList);
-		t.start();
 		try {
-			t.join(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			ContainerFileProxy proxy = (ContainerFileProxy) element;
+			if (proxy.isFolder()) {
+				return ((DockerConnection) connection).readContainerDirectory(
+						containerId,
+						proxy.getFullPath());
+			}
+		} catch (DockerException e) {
+			// do nothing for now
 		}
-		return childList;
+		return new ArrayList<ContainerFileProxy>();
 	}
 
 	@Override
