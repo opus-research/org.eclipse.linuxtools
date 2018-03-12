@@ -172,18 +172,19 @@ public class ContainerLinkDialog extends Dialog {
 								ContainerLinkDialogModel.CONTAINER_ALIAS)
 						.observe(model));
 		containerNameObservable.addValueChangeListener(
-onContainerLinkSettingsChanged());
+				onContainerLinkSettingsChanged(errorMessageLabel));
 		containerAliasObservable.addValueChangeListener(
-onContainerLinkSettingsChanged());
+				onContainerLinkSettingsChanged(errorMessageLabel));
 		return container;
 	}
 
-	private IValueChangeListener onContainerLinkSettingsChanged() {
+	private IValueChangeListener onContainerLinkSettingsChanged(
+			final Label errorMessageLabel) {
 		return new IValueChangeListener() {
 
 			@Override
 			public void handleValueChange(ValueChangeEvent event) {
-				validateInput();
+				validateInput(errorMessageLabel);
 			}
 		};
 	}
@@ -223,7 +224,7 @@ onContainerLinkSettingsChanged());
 		};
 	}
 
-	private void validateInput() {
+	private void validateInput(final Label errorMessageLabel) {
 		final String selectedContainerName = model.getContainerName();
 		final Object[] containerNames = model.getContainerNames().toArray();
 		final String containerAlias = model.getContainerAlias();
