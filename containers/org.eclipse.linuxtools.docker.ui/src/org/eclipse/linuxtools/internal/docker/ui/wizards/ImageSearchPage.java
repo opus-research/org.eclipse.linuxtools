@@ -452,11 +452,6 @@ public class ImageSearchPage extends WizardPage {
 			}
 		}
 
-		@Override
-		public void dispose() {
-			super.dispose();
-		}
-
 		abstract boolean doPaint(final Object element);
 	}
 

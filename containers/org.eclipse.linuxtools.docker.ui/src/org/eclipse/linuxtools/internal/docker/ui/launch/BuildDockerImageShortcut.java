@@ -197,10 +197,6 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 
 
 	private class ConnectionSelectionLabelProvider implements ILabelProvider {
-
-		private Image CONNECTION_IMAGE = SWTImagesFactory.DESC_REPOSITORY_MIDDLE
-				.createImage();
-
 		@Override
 		public void removeListener(ILabelProviderListener listener) {
 		}
@@ -212,7 +208,6 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 
 		@Override
 		public void dispose() {
-			CONNECTION_IMAGE.dispose();
 		}
 
 		@Override
@@ -226,7 +221,7 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 
 		@Override
 		public Image getImage(Object element) {
-			return CONNECTION_IMAGE;
+			return SWTImagesFactory.DESC_REPOSITORY_MIDDLE.createImage();
 		}
 	}
 

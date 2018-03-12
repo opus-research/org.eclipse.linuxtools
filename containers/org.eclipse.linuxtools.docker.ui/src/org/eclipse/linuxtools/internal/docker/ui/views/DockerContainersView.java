@@ -106,13 +106,6 @@ public class DockerContainersView extends ViewPart implements
 	private IDockerConnection connection;
 	private final HideStoppedContainersViewerFilter hideStoppedContainersViewerFilter = new HideStoppedContainersViewerFilter();
 
-	private final Image STARTED_IMAGE = SWTImagesFactory.DESC_CONTAINER_STARTED
-			.createImage();
-	private final Image PAUSED_IMAGE = SWTImagesFactory.DESC_CONTAINER_PAUSED
-			.createImage();
-	private final Image STOPPED_IMAGE = SWTImagesFactory.DESC_CONTAINER_STOPPED
-			.createImage();
-
 	private IAction pauseAction, unpauseAction, startAction, stopAction, killAction, removeAction;
 
 	@Override
@@ -130,9 +123,6 @@ public class DockerContainersView extends ViewPart implements
 				.removeSelectionListener(DockerExplorerView.VIEW_ID, this);
 		DockerConnectionManager.getInstance()
 				.removeConnectionManagerListener(this);
-		STARTED_IMAGE.dispose();
-		PAUSED_IMAGE.dispose();
-		STOPPED_IMAGE.dispose();
 		super.dispose();
 	}
 
@@ -235,11 +225,14 @@ public class DockerContainersView extends ViewPart implements
 					final EnumDockerStatus containerStatus = EnumDockerStatus
 							.fromStatusMessage(container.status());
 					if (containerStatus == EnumDockerStatus.RUNNING) {
-						return STARTED_IMAGE;
+						return SWTImagesFactory.DESC_CONTAINER_STARTED
+								.createImage();
 					} else if (containerStatus == EnumDockerStatus.PAUSED) {
-						return PAUSED_IMAGE;
+						return SWTImagesFactory.DESC_CONTAINER_PAUSED
+								.createImage();
 					} else {
-						return STOPPED_IMAGE;
+						return SWTImagesFactory.DESC_CONTAINER_STOPPED
+								.createImage();
 					}
 				}
 				return super.getImage(element);

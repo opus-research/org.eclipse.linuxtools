@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -99,7 +99,7 @@ public class EditDockerConnectionSWTBotTest {
 	public SWTBotViewRule dockerContainers = new SWTBotViewRule(DockerContainersView.VIEW_ID);
 
 	@Before
-	public void setFocusOnDockerExplorerView() {
+	public void setFocusOnDockerExplorerView() throws Exception {
 		this.dockerExplorer.bot().setFocus();
 	}
 
@@ -374,7 +374,7 @@ public class EditDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldRefreshDockerExplorerViewWhenConnectionNameChanged() {
+	public void shouldRefreshDockerExplorerViewWhenConnectionNameChanged() throws CoreException {
 		// given
 		final IDockerConnection connection = configureTCPConnection("Test");
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
@@ -390,7 +390,7 @@ public class EditDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldRefreshDockerImagesViewWhenConnectionNameChanges() {
+	public void shouldRefreshDockerImagesViewWhenConnectionNameChanges() throws CoreException {
 		// given
 		final IDockerConnection connection = configureTCPConnection("Test");
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
@@ -407,7 +407,7 @@ public class EditDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldRefreshDockerContainersViewWhenConnectionNameChanges() {
+	public void shouldRefreshDockerContainersViewWhenConnectionNameChanges() throws CoreException {
 		// given
 		final IDockerConnection connection = configureTCPConnection("Test");
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
@@ -424,7 +424,7 @@ public class EditDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldRefreshDockerExplorerViewWhenNameChangedTwice() {
+	public void shouldRefreshDockerExplorerViewWhenNameChangedTwice() throws CoreException {
 		// given
 		final IDockerConnection connection = configureTCPConnection("Test");
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
@@ -445,7 +445,8 @@ public class EditDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldRefreshDockerExplorerViewWhenUnixSockerConnectionSettingsChanged() throws IOException {
+	public void shouldRefreshDockerExplorerViewWhenUnixSockerConnectionSettingsChanged()
+			throws CoreException, IOException {
 		// given
 		dockerContainers.close();
 		dockerImages.close();
@@ -468,7 +469,7 @@ public class EditDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldRefreshDockerExplorerViewWhenTCPConnectionSettingsChanged() {
+	public void shouldRefreshDockerExplorerViewWhenTCPConnectionSettingsChanged() throws CoreException, IOException {
 		// given
 		dockerContainers.close();
 		dockerImages.close();
@@ -491,7 +492,7 @@ public class EditDockerConnectionSWTBotTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void shouldSaveConnectionWhenNameChanged() {
+	public void shouldSaveConnectionWhenNameChanged() throws CoreException {
 		// given
 		final IDockerConnection connection = configureTCPConnection("Test");
 		final IDockerConnectionStorageManager connectionStorageManager = MockDockerConnectionStorageManagerFactory
@@ -509,9 +510,8 @@ public class EditDockerConnectionSWTBotTest {
 		Mockito.verify(connectionStorageManager).saveConnections(Matchers.anyList());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void shouldSaveConnectionWhenUnixSockerConnectionSettingsChanged() throws IOException {
+	public void shouldSaveConnectionWhenUnixSockerConnectionSettingsChanged() throws CoreException, IOException {
 		// given
 		final IDockerConnection connection = configureUnixSocketConnection("Test");
 		final IDockerConnectionStorageManager connectionStorageManager = MockDockerConnectionStorageManagerFactory
@@ -532,9 +532,8 @@ public class EditDockerConnectionSWTBotTest {
 		Mockito.verify(connectionStorageManager).saveConnections(Matchers.anyList());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void shouldSaveConnectionWhenTCPConnectionSettingsChanged() {
+	public void shouldSaveConnectionWhenTCPConnectionSettingsChanged() throws CoreException {
 		// given
 		final IDockerConnection connection = configureTCPConnection("Test");
 		final IDockerConnectionStorageManager connectionStorageManager = MockDockerConnectionStorageManagerFactory
@@ -554,9 +553,8 @@ public class EditDockerConnectionSWTBotTest {
 		Mockito.verify(connectionStorageManager).saveConnections(Matchers.anyList());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void shouldSaveConnectionWhenNameAndTCPConnectionSettingsChanged() {
+	public void shouldSaveConnectionWhenNameAndTCPConnectionSettingsChanged() throws CoreException {
 		// given
 		final IDockerConnection connection = configureTCPConnection("Test");
 		final IDockerConnectionStorageManager connectionStorageManager = MockDockerConnectionStorageManagerFactory
@@ -578,7 +576,7 @@ public class EditDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldResetConnectionStateWhenUnixConnectionSettingsChanged() throws IOException {
+	public void shouldResetConnectionStateWhenUnixConnectionSettingsChanged() throws CoreException, IOException {
 		// given
 		dockerContainers.close();
 		dockerImages.close();
@@ -602,7 +600,7 @@ public class EditDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldResetConnectionStateWhenTCPConnectionSettingsChanged() {
+	public void shouldResetConnectionStateWhenTCPConnectionSettingsChanged() throws CoreException {
 		// given
 		dockerContainers.close();
 		dockerImages.close();
