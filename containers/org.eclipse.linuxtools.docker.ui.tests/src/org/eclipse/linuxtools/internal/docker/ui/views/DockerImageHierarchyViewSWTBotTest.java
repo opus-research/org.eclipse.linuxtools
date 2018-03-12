@@ -143,7 +143,7 @@ public class DockerImageHierarchyViewSWTBotTest {
 			return ((IDockerContainer) e.getElement()).id();
 		}).collect(Collectors.toList());
 	}
-
+	
 	private DockerImageHierarchyView getDockerImageHierarchyView() {
 		final SWTBotView hierarchyViewBot = bot.viewById(DockerImageHierarchyView.VIEW_ID);
 		return (DockerImageHierarchyView) hierarchyViewBot.getViewReference().getView(true);
@@ -169,7 +169,7 @@ public class DockerImageHierarchyViewSWTBotTest {
 		dockerExplorerViewBot.bot().tree().contextMenu("Open Image Hierarchy").click(); //$NON-NLS-1$
 		// then the view should be visible and selection should be on
 		// foo_container1
-		DockerImageHierarchyViewAssertion.assertThat(getDockerImageHierarchyView())
+		DockerImageHierarchyViewAssertion.assertThat(SWTUtils.getView(this.bot, DockerImageHierarchyView.VIEW_ID))
 				.hasSelectedElement(this.connection.getContainer("sha256:foo_container1"));
 	}
 

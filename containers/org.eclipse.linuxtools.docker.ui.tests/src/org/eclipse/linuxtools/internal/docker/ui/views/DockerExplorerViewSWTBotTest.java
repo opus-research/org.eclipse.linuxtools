@@ -128,8 +128,8 @@ public class DockerExplorerViewSWTBotTest {
 		// containers)
 		final SWTBotTreeItem imagesTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, connectionName, "Images");
 		SWTUtils.asyncExec(() -> imagesTreeItem.expand());
-		// select both containers
-		SWTUtils.getTreeItem(imagesTreeItem, imageNames).select();
+		// select both images
+		SWTUtils.select(imagesTreeItem, imageNames);
 	}
 
 	@Test
@@ -388,7 +388,7 @@ public class DockerExplorerViewSWTBotTest {
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
 		// open the context menu on one of the containers
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
-		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Pause");
+		final SWTBotMenu menuCommand = SWTUtils.getContextMenu(dockerExplorerViewBot.bot().tree(), "Pause");
 		// then
 		MenuAssertion.assertThat(menuCommand).isVisible().isNotEnabled();
 	}
