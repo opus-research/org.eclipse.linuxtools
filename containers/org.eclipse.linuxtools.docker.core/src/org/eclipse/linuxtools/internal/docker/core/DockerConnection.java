@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.ProcessingException;
@@ -66,7 +65,7 @@ import org.eclipse.linuxtools.docker.core.IDockerContainerListener;
 import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageBuildOptions;
-import org.eclipse.linuxtools.docker.core.IDockerImageHiearchyNode;
+import org.eclipse.linuxtools.docker.core.IDockerImageHierarchyNode;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
 import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
@@ -1888,7 +1887,7 @@ public class DockerConnection
 			final boolean isOpenStdin = info.config().openStdin();
 
 			if (isTtyEnabled) {
-				openTerminal(pty_stream, info.name(), false);
+				openTerminal(pty_stream, info.name());
 			}
 
 			// Data from the given input stream
@@ -1945,33 +1944,13 @@ public class DockerConnection
 					DockerClient.ExecStartParameter.DETACH);
 			fname.set(ExecStartParameter.DETACH, realValue);
 			final IDockerContainerInfo info = getContainerInfo(id);
-			openTerminal(pty_stream, info.name() + " [shell]", true); //$NON-NLS-1$
+			openTerminal(pty_stream, info.name());
 		} catch (Exception e) {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
 	}
 
-	private class OnTerminalClose implements ITerminalService.Done {
-		private Map<String, Object> properties;
-
-		public OnTerminalClose(Map<String, Object> properties) {
-			this.properties = properties;
-		}
-
-		@Override
-		public void done(IStatus arg0) {
-			ITerminalService service = TerminalServiceFactory.getService();
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// do nothing
-			}
-			service.openConsole(properties, null);
-		}
-	}
-
-	private void openTerminal(LogStream pty_stream, String name,
-			boolean force_new) throws DockerException {
+	private void openTerminal(LogStream pty_stream, String name) throws DockerException {
 		try {
 			OutputStream tout = noBlockingOutputStream(HttpHijackWorkaround.getOutputStream(pty_stream, getUri()));
 			InputStream tin = HttpHijackWorkaround.getInputStream(pty_stream);
@@ -1993,11 +1972,7 @@ public class DockerConnection
 			 */
 			properties.put("PREVENT_JVM_GC_FINALIZE", pty_stream);
 			ITerminalService service = TerminalServiceFactory.getService();
-			if (!force_new)
-				service.closeConsole(properties,
-						new OnTerminalClose(properties));
-			else
-				service.openConsole(properties, null);
+			service.openConsole(properties, null);
 		} catch (Exception e) {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
@@ -2144,41 +2119,18 @@ public class DockerConnection
 		return getSettings().hashCode();
 	}
 
-	/**
-	 * Retrieves the whole hierarchy for the given {@link IDockerImage}. This
-	 * includes the path to all known parent images, along with all derived
-	 * images based on the given {@code image}.
-	 * 
-	 * @param image
-	 *            the {@link IDockerImage} for which the hierarchy should be
-	 *            resolved
-	 * @return the {@link IDockerImageHiearchyNode} as a node that can be
-	 *         traversed.
-	 */
-	// @Override
-	// TODO: add this method in the IDockerConnection interface
-	public IDockerImageHiearchyNode resolveImageHierarchy(
-			final IDockerImage image) {
-		// recursively find all parents and build associated
-		// IDockerImageHiearchyNode instances
-		return new DockerImageHiearchyNode(image,
-				getImageHierarchy(image.parentId()));
+	@Override
+	public IDockerImageHierarchyNode resolveImageHierarchy(
+			final IDockerImage selectedImage) {
+		return DockerImageHierarchyNodeUtils.resolveImageHierarchy(this.images,
+				this.containers, selectedImage);
 	}
 
-	private IDockerImageHiearchyNode getImageHierarchy(final String imageId) {
-		// recursively find all parents and build associated
-		// IDockerImageHiearchyNode instances
-		final Optional<IDockerImage> optionalParentImage = this.images.stream()
-				.filter(image -> image.id().equals(imageId)).findFirst();
-		// parent image found: get its own parent image hierarchy
-		if (optionalParentImage.isPresent()) {
-			//
-			final IDockerImage parentImage = optionalParentImage.get();
-			return new DockerImageHiearchyNode(parentImage,
-					getImageHierarchy(parentImage.parentId()));
-		}
-		// no parent image found: stop here.
-		return null;
+	@Override
+	public IDockerImageHierarchyNode resolveImageHierarchy(
+			final IDockerContainer selectedContainer) {
+		return DockerImageHierarchyNodeUtils.resolveImageHierarchy(this.images,
+				selectedContainer);
 	}
 
 }
