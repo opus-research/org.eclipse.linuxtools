@@ -105,7 +105,8 @@ public abstract class SWTBotUtil {
      *            the workbench bot
      */
     public static void deleteProject(String projectName, SWTWorkbenchBot bot) {
-        // Wait for any analysis to complete because it might create supplementary files
+        // Wait for any analysis to complete because it might create
+        // supplementary files
         SWTBotUtil.waitForJobs();
         try {
             ResourcesPlugin.getWorkspace().getRoot().getProject(projectName).refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -204,6 +205,17 @@ public abstract class SWTBotUtil {
 
     }
 
+    /**
+     * Open a trace, this does not perform any validation though
+     *
+     * @param projectName
+     *            The project name
+     * @param tracePath
+     *            the path of the trace file (absolute or relative)
+     * @param traceType
+     *            the trace canonical string (eg:
+     *            org.eclipse.linuxtools.btf.trace)
+     */
     public static void openTrace(final String projectName, final String tracePath, final String traceType) {
         final Exception exception[] = new Exception[1];
         exception[0] = null;
