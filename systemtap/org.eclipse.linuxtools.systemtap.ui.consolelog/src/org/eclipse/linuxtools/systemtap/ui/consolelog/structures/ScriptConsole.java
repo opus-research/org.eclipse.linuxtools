@@ -43,9 +43,7 @@ import org.eclipse.ui.console.IOConsole;
  */
 public class ScriptConsole extends IOConsole {
 
-    private static final String STAP_CONSOLE_TYPE = "stap"; //$NON-NLS-1$
-
-	/**
+    /**
      * The command that will run in this console.
      */
     private Command cmd = null;
@@ -179,7 +177,7 @@ public class ScriptConsole extends IOConsole {
     }
 
     ScriptConsole(String name, ImageDescriptor imageDescriptor) {
-        super(name, STAP_CONSOLE_TYPE, imageDescriptor);
+        super(name, imageDescriptor);
     }
 
     /**
