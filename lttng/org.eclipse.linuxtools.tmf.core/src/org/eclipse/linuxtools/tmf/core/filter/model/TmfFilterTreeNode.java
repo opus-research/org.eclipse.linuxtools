@@ -9,6 +9,7 @@
  * Contributors:
  *   Yuriy Vashchuk (yvashchuk@gmail.com) - Initial API and implementation
  *   Patrick Tasse - Refactoring
+ *   Vincent Perot - Add subfield filtering
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.filter.model;
@@ -16,6 +17,7 @@ package org.eclipse.linuxtools.tmf.core.filter.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
@@ -28,6 +30,9 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
  * @author Patrick Tasse
  */
 public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable {
+
+    private static final Pattern SUBFIELD_SPLIT_PATTERN = Pattern.compile("(?<!/)/(?!/)"); //$NON-NLS-1$
+    private static final Pattern SUBFIELD_SLASH_PATTERN = Pattern.compile("//"); //$NON-NLS-1$
 
     private static final String[] VALID_CHILDREN = {
             TmfFilterEventTypeNode.NODE_NAME,
@@ -119,8 +124,10 @@ public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable
     public abstract boolean matches(ITmfEvent event);
 
     /**
-     * @param event the event
-     * @param field the field id
+     * @param event
+     *            the event
+     * @param field
+     *            the field id
      * @return the field value
      */
     protected Object getFieldValue(ITmfEvent event, String field) {
@@ -141,10 +148,21 @@ public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable
             value = event.getReference();
         }
         else {
-            ITmfEventField eventField = event.getContent().getField(field);
+            ITmfEventField eventField;
+            if (!(field.startsWith("/"))) { //$NON-NLS-1$
+                eventField = event.getContent().getField(field);
+            } else {
+                String[] array = SUBFIELD_SPLIT_PATTERN.split(field.substring(1));
+                for (int i = 0; i < array.length; i++) {
+                    array[i] = SUBFIELD_SLASH_PATTERN.matcher(array[i]).replaceAll("/"); //$NON-NLS-1$
+                }
+                eventField = event.getContent().getSubField(array);
+            }
+
             if (eventField != null) {
                 value = eventField.getValue();
             }
+
         }
         return value;
     }
