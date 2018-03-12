@@ -41,12 +41,6 @@ public interface ISessionInfo extends ITraceInfo {
     void setSessionState(String stateName);
 
     /**
-     * Sets the event state to the value specified by the given boolean
-     * @param enabled - state to set
-     */
-    void setSessionState(boolean enabled);
-
-    /**
      * @return path string where session is located.
      */
     String getSessionPath();

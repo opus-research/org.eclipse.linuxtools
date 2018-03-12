@@ -11,7 +11,6 @@
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.core.model;
 
-
 /**
  * <p>
  * Trace event type enumeration.
@@ -44,23 +43,6 @@ public enum TraceEventType {
      */
     public String getInName() {
         return fInName;
-    }
-
-    /**
-     * Return the corresponding {@link TraceEventType} of string miName
-     * @param name name of the Event type to look for
-     * @return the corresponding {@link TraceEventType}
-     */
-    public static TraceEventType valueOfString(String name){
-        if ( name == null) {
-            throw new NullPointerException();
-        }
-        for (TraceEventType teType : TraceEventType.values()) {
-            if (teType.getInName().equalsIgnoreCase(name)) {
-                return teType;
-            }
-        }
-        return UNKNOWN;
     }
 }
 
