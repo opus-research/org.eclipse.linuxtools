@@ -14,6 +14,8 @@ import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IHandler;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
@@ -21,13 +23,14 @@ import org.eclipse.linuxtools.internal.docker.ui.views.DockerContainersView;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-public class RemoveContainerLogCommandHandler extends AbstractHandler {
+public class RemoveContainerLogCommandHandler extends AbstractHandler implements
+		IHandler {
 
 	private IDockerConnection connection;
 	private IDockerContainer container;
 
 	@Override
-	public Object execute(final ExecutionEvent event) {
+	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		List<IDockerContainer> selectedContainers = CommandUtils
 				.getSelectedContainers(activePart);

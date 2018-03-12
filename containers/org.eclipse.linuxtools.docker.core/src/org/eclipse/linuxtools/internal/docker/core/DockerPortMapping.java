@@ -52,22 +52,18 @@ public class DockerPortMapping implements IDockerPortMapping {
 		this.ip = ip;
 	}
 
-	@Override
 	public int getPrivatePort() {
 		return privatePort;
 	}
 
-	@Override
 	public int getPublicPort() {
 		return publicPort;
 	}
 
-	@Override
 	public String getType() {
 		return type;
 	}
 
-	@Override
 	public String getIp() {
 		return ip;
 	}
