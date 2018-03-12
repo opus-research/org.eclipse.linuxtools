@@ -72,8 +72,7 @@ public class ImageRemovePage extends WizardPage {
 					error = true;
 				} else {
 					if (name.contains(":")) { //$NON-NLS-$
-						if (name.substring(name.indexOf(':') + 1)
-								.contains(":")) { //$NON-NLS-1$
+						if (name.substring(name.indexOf(":") + 1).contains(":")) { //$NON-NLS-1$ //$NON-NLS-2$
 							setErrorMessage(WizardMessages
 									.getString(INVALID_ID));
 							error = true;

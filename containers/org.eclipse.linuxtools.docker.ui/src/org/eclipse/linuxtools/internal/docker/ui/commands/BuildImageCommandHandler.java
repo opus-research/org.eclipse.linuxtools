@@ -30,14 +30,16 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.internal.docker.ui.DockerConnectionWatcher;
-import org.eclipse.linuxtools.internal.docker.ui.jobs.BuildDockerImageJob;
+import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
+import org.eclipse.linuxtools.internal.docker.ui.views.ImageBuildProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageBuild;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.WizardMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -51,21 +53,16 @@ public class BuildImageCommandHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(final ExecutionEvent event) {
+		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		final ImageBuild wizard = new ImageBuild();
 		final WizardDialog wizardDialog = new NonModalWizardDialog(HandlerUtil.getActiveShell(event), wizard);
 		wizardDialog.create();
-		connection = DockerConnectionWatcher.getInstance().getConnection();
-		if (connection == null || !connection.isActive()) {
-			// if no active connection, issue error message dialog and return
-			Display.getDefault().syncExec(() -> MessageDialog.openError(
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getShell(),
-					WizardMessages.getString("ErrorNoActiveConnection.msg"), //$NON-NLS-1$
-					WizardMessages.getString("ErrorNoActiveConnection.desc"))); //$NON-NLS-1$
-			return null;
-		}
 		final boolean buildImage = wizardDialog.open() == Window.OK;
 		if (buildImage) {
+			if (activePart instanceof DockerImagesView) {
+				connection = ((DockerImagesView) activePart)
+						.getConnection();
+			}
 			performBuildImage(wizard);
 		}
 		return null;
@@ -120,9 +117,9 @@ public class BuildImageCommandHandler extends AbstractHandler {
 							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 									.getShell(),
 							WizardMessages
-									.getString("ErrorInvalidDirectory.msg"), //$NON-NLS-1$
+									.getString("ErrorInvalidDirectory.msg"),
 							WizardMessages.getFormattedString(
-									"ErrorInvalidPermissions.msg", //$NON-NLS-1$
+									"ErrorInvalidPermissions.msg",
 									path.toString())));
 					return Status.OK_STATUS;
 				}
@@ -133,9 +130,10 @@ public class BuildImageCommandHandler extends AbstractHandler {
 				try {
 					monitor.subTask(
 							DVMessages.getString(BUILD_IMAGE_JOB_TITLE));
-					final Job buildImageJob = new BuildDockerImageJob(
-							connection, path, id, null);
-					buildImageJob.schedule();
+					((DockerConnection) connection)
+							.buildImage(path, id,
+									new ImageBuildProgressHandler(connection,
+											id, lines));
 					monitor.worked(1);
 				} catch (final DockerException e) {
 					Display.getDefault().syncExec(() -> MessageDialog.openError(
@@ -149,6 +147,8 @@ public class BuildImageCommandHandler extends AbstractHandler {
 									id),
 							e.getMessage()));
 					// for now
+				} catch (InterruptedException e) {
+					// do nothing
 				} finally {
 					monitor.done();
 				}

@@ -49,11 +49,10 @@ import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerContainerNotFoundException;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
+import org.eclipse.linuxtools.docker.core.IDockerAuthConfig;
 import org.eclipse.linuxtools.docker.core.IDockerConfParameter;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionInfo;
-import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
-import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings.BindingType;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerConfig;
 import org.eclipse.linuxtools.docker.core.IDockerContainerExit;
@@ -118,44 +117,58 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	// Builder allowing different binding modes (unix socket vs TCP connection)
 	public static class Builder {
 
+		private String unixSocketPath;
 		private String name;
+		private String tcpHost;
+		private String tcpCertPath;
 
 		public Builder name(final String name) {
 			this.name = name;
 			return this;
+
 		}
 
-		/**
-		 * Creates a new {@link DockerConnection} using a Unix socket.
-		 * 
-		 * @param unixSocketConnectionSettings
-		 *            the connection settings.
-		 * @return a new {@link DockerConnection}
-		 */
-		public DockerConnection unixSocketConnection(
-				final UnixSocketConnectionSettings unixSocketConnectionSettings) {
-			return new DockerConnection(name, unixSocketConnectionSettings,
-					null, null);
+		public Builder unixSocket(String unixSocketPath) {
+			if (unixSocketPath != null && !unixSocketPath.matches("\\w+://.*")) { //$NON-NLS-1$
+				unixSocketPath = "unix://" + unixSocketPath; //$NON-NLS-1$
+			}
+			this.unixSocketPath = unixSocketPath;
+			return this;
 		}
 
-		/**
-		 * Creates a {@link DockerConnection} using a TCP connection.
-		 * 
-		 * @param tcpConnectionSettings
-		 *            the {@link TCPConnectionSettings}
-		 * @return a new {@link DockerConnection}
-		 */
-		public DockerConnection tcpConnection(
-				final TCPConnectionSettings tcpConnectionSettings) {
-			return new DockerConnection(name,
-					tcpConnectionSettings, null,
-					null);
+		public Builder tcpHost(String tcpHost) {
+			if (tcpHost != null && !tcpHost.isEmpty()) {
+				if (!tcpHost.matches("\\w+://.*")) { //$NON-NLS-1$
+					tcpHost = "tcp://" + tcpHost; //$NON-NLS-1$
+				}
+				this.tcpHost = tcpHost.replace("tcp://", "http://"); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+			return this;
 		}
 
+		public Builder tcpCertPath(final String tcpCertPath) {
+			this.tcpCertPath = tcpCertPath;
+			if (this.tcpHost != null && this.tcpCertPath != null) {
+				this.tcpHost = tcpHost.replace("http://", "https://");
+			}
+			return this;
+		}
+
+		public DockerConnection build() {
+			if (unixSocketPath != null) {
+				return new DockerConnection(name, unixSocketPath, null, null);
+			} else {
+				return new DockerConnection(name, tcpHost, tcpCertPath, null,
+						null);
+
+			}
+		}
 	}
 
-	private String name;
-	private IDockerConnectionSettings connectionSettings;
+	private final String name;
+	private final String socketPath;
+	private final String tcpHost;
+	private final String tcpCertPath;
 	private final String username;
 	private final Object imageLock = new Object();
 	private final Object containerLock = new Object();
@@ -182,28 +195,31 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	ListenerList<IDockerImageListener> imageListeners;
 
 	/**
-	 * Constructor for a Unix socket based connection
+	 * Constructor for a unix socket based connection
 	 */
-	private DockerConnection(final String name,
-			final UnixSocketConnectionSettings connectionSettings,
+	private DockerConnection(final String name, final String socketPath,
 			final String username, final String password) {
 		this.name = name;
-		this.connectionSettings = connectionSettings;
+		this.socketPath = socketPath;
 		this.username = username;
-		storePassword(connectionSettings.getPath(), username, password);
+		this.tcpHost = null;
+		this.tcpCertPath = null;
+		storePassword(socketPath, username, password);
+
 	}
 
 	/**
-	 * Constructor for a TCP-based connection
+	 * Constructor for a REST-based connection
 	 */
-	private DockerConnection(final String name,
-			final TCPConnectionSettings connectionSettings,
-			final String username,
+	private DockerConnection(final String name, final String tcpHost,
+			final String tcpCertPath, final String username,
 			final String password) {
 		this.name = name;
-		this.connectionSettings = connectionSettings;
+		this.socketPath = null;
 		this.username = username;
-		storePassword(connectionSettings.getHost(), username, password);
+		this.tcpHost = tcpHost;
+		this.tcpCertPath = tcpCertPath;
+		storePassword(socketPath, username, password);
 		// Add the container refresh manager to watch the containers list
 		DockerContainerRefreshManager dcrm = DockerContainerRefreshManager
 				.getInstance();
@@ -241,8 +257,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		synchronized (this) {
 			if (this.client == null) {
 				try {
-					setClient(dockerClientFactory
-							.getClient(this.connectionSettings));
+					setClient(dockerClientFactory.getClient(this.socketPath,
+							this.tcpHost, this.tcpCertPath));
 					if (registerContainerRefreshManager) {
 						// Add the container refresh manager to watch the
 						// containers
@@ -288,8 +304,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		active = false;
 		images = Collections.emptyList();
 		containers = Collections.emptyList();
-		imagesLoaded = true;
-		containersLoaded = true;
 		notifyContainerListeners(containers);
 		notifyImageListeners(images);
 	}
@@ -348,52 +362,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public boolean setName(final String name) {
-		if (!this.name.equals(name)) {
-			this.name = name;
-			return true;
-		}
-		return false;
-	}
-
-	@Override
 	public String getUri() {
-		if (this.connectionSettings
-				.getType() == BindingType.UNIX_SOCKET_CONNECTION) {
-			return ((UnixSocketConnectionSettings) this.connectionSettings)
-					.getPath();
-		} else {
-			return ((TCPConnectionSettings) this.connectionSettings).getHost();
-		}
-	}
-
-	@Override
-	public IDockerConnectionSettings getSettings() {
-		return this.connectionSettings;
-	}
-
-	@Override
-	public boolean setSettings(
-			final IDockerConnectionSettings connectionSettings) {
-		if (!this.connectionSettings.equals(connectionSettings)) {
-			// make sure no other operation using the underneath client occurs
-			// while switching the connection settings.
-			synchronized (clientLock) {
-				this.connectionSettings = connectionSettings;
-				this.client.close();
-				this.client = null;
-				try {
-					// no need to register again
-					open(false);
-				} catch (DockerException e) {
-					Activator.log(e);
-				}
-			}
-			getContainers(true);
-			getImages(true);
-			return true;
-		}
-		return false;
+		return this.socketPath != null ? this.socketPath : this.tcpHost;
 	}
 
 	@Override
@@ -438,7 +408,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	 */
 	private DockerClient getClientCopy() throws DockerException {
 		try {
-			return dockerClientFactory.getClient(this.connectionSettings);
+			return dockerClientFactory.getClient(this.socketPath, this.tcpHost,
+					this.tcpCertPath);
 		} catch (DockerCertificateException e) {
 			throw new DockerException(
 					NLS.bind(Messages.Open_Connection_Failure, this.name));
@@ -593,9 +564,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			} catch (com.spotify.docker.client.DockerException | IOException e) {
 				Activator.logErrorMessage(e.getMessage());
 				throw new InterruptedException();
-			} catch (InterruptedException e) {
-				kill = true;
-				Thread.currentThread().interrupt();
 			} catch (Exception e) {
 				Activator.logErrorMessage(e.getMessage());
 			} finally {
@@ -935,13 +903,32 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public void pullImage(final String imageId, final IRegistryAccount info, final IDockerProgressHandler handler)
+	public void pullImage(final String id, final DockerAuthConfig config,
+			final IDockerProgressHandler handler)
+			throws DockerException, InterruptedException {
+		try {
+			AuthConfig authConfig = AuthConfig.builder()
+					.username(new String(config.username()))
+					.password(new String(config.password()))
+					.email(new String(config.email()))
+					.serverAddress(new String(config.serverAddress())).build();
+			DockerProgressHandler d = new DockerProgressHandler(handler);
+			client.pull(id, authConfig, d);
+		} catch (com.spotify.docker.client.DockerRequestException e) {
+			throw new DockerException(e.message());
+		} catch (com.spotify.docker.client.DockerException e) {
+			DockerException f = new DockerException(e);
+			throw f;
+		}
+	}
+
+	@Override
+	public void pullImage(final String id, final IRegistryAccount info, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException, DockerCertificateException {
 		try {
-			final DockerClient client = dockerClientFactory
-					.getClient(this.connectionSettings, info);
-			final DockerProgressHandler d = new DockerProgressHandler(handler);
-			client.pull(imageId, d);
+			DockerClient client = dockerClientFactory.getClient(null, getUri(), getTcpCertPath(), info);
+			DockerProgressHandler d = new DockerProgressHandler(handler);
+			client.pull(id, d);
 			listImages();
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
@@ -987,9 +974,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	public void pushImage(final String name, final IRegistryAccount info, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException, DockerCertificateException {
 		try {
-			final DockerClient client = dockerClientFactory
-					.getClient(this.connectionSettings, info);
-			final DockerProgressHandler d = new DockerProgressHandler(handler);
+			DockerClient client = dockerClientFactory.getClient(null, getUri(), getTcpCertPath(), info);
+			DockerProgressHandler d = new DockerProgressHandler(handler);
 			client.push(name, d);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
@@ -1151,19 +1137,14 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	/**
 	 * Converts the given {@link Map} of build options into an array of
-	 * {@link BuildParameter} when the build options are set a value different
-	 * from the default value.
+	 * {@link BuildParameter} when the build options are set a value different from the default value.
 	 * 
 	 * @param buildOptions
 	 *            the build options
-	 * @return an array of relevant {@link BuildParameter}, an empty array if
-	 *         the given {@code buildOptions} is empty or <code>null</code>.
+	 * @return an array of relevant {@link BuildParameter}
 	 */
 	private BuildParam[] getBuildParameters(
 			final Map<String, Object> buildOptions) {
-		if (buildOptions == null) {
-			return new BuildParam[0];
-		}
 		final List<BuildParam> buildParameters = new ArrayList<>();
 		for (Entry<String, Object> entry : buildOptions.entrySet()) {
 			final Object optionName = entry.getKey();
@@ -1602,14 +1583,15 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public int auth(IRegistryAccount cfg)
+	public int auth(IDockerAuthConfig cfg)
 			throws DockerException, InterruptedException {
 		try {
+			DockerAuthConfig config = (DockerAuthConfig) cfg;
 			AuthConfig authConfig = AuthConfig.builder()
-					.username(new String(cfg.getUsername()))
-					.password(new String(cfg.getPassword()))
-					.email(new String(cfg.getEmail()))
-					.serverAddress(new String(cfg.getServerAddress())).build();
+					.username(new String(config.username()))
+					.password(new String(config.password()))
+					.email(new String(config.email()))
+					.serverAddress(new String(config.serverAddress())).build();
 			return client.auth(authConfig);
 		} catch (com.spotify.docker.client.DockerException e) {
 			throw new DockerException(e.getMessage(), e.getCause());
@@ -1805,11 +1787,32 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public String getTcpCertPath() {
-		if (this.connectionSettings.getType() == BindingType.TCP_CONNECTION) {
-			return ((TCPConnectionSettings) this.connectionSettings)
-					.getPathToCertificates();
-		}
-		return null;
+		return tcpCertPath;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DockerConnection other = (DockerConnection) obj;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
 	}
 
 	@Override
@@ -1929,6 +1932,5 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
 	}
-
 
 }

@@ -21,6 +21,6 @@ public interface IDockerConnectionManagerListener2
 	 * @param type
 	 *            the type of change
 	 */
-	void changeEvent(IDockerConnection connection, int type);
+	public void changeEvent(IDockerConnection connection, int type);
 
 }
