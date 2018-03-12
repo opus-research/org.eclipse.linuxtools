@@ -90,11 +90,6 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				containersCategory.getConnection().getContainers(true);
 				return Status.OK_STATUS;
 			}
-
-			@Override
-			public boolean belongsTo(Object family) {
-				return family == DockerExplorerView.class;
-			}
 		};
 		loadContainersJob.addJobChangeListener(new JobChangeAdapter() {
 			@Override
@@ -122,12 +117,6 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				imagesCategory.getConnection().getImages(true);
 				return Status.OK_STATUS;
 			}
-
-			@Override
-			public boolean belongsTo(Object family) {
-				return family == DockerExplorerView.class;
-			}
-
 		};
 		loadImagesJob.addJobChangeListener(new JobChangeAdapter() {
 			@Override
