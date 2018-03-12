@@ -248,18 +248,6 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
      * @since 2.0
      */
     public void addTrace(TmfTraceElement trace) {
-        addTrace(trace, true);
-    }
-
-    /**
-     * Adds a trace to the experiment
-     *
-     * @param trace The trace element to add
-     * @param refresh Flag for refreshing the project
-     *
-     * @since 3.1
-     */
-    public void addTrace(TmfTraceElement trace, boolean refresh) {
         /**
          * Create a link to the actual trace and set the trace type
          */
@@ -278,7 +266,7 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
                 if (result.isOK() || result.matches(IStatus.INFO | IStatus.WARNING)) {
                     folder.createLink(location, IResource.REPLACE, null);
                     if (traceType != null) {
-                        TmfTraceTypeUIUtils.setTraceType(folder, traceType, refresh);
+                        TmfTraceTypeUIUtils.setTraceType(folder, traceType);
                     }
 
                 } else {
@@ -291,7 +279,7 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
                 if (result.isOK() || result.matches(IStatus.INFO | IStatus.WARNING)) {
                     file.createLink(location, IResource.REPLACE, null);
                     if (traceType != null) {
-                        TmfTraceTypeUIUtils.setTraceType(file, traceType, refresh);
+                        TmfTraceTypeUIUtils.setTraceType(file, traceType);
                     }
                 } else {
                     Activator.getDefault().logError("Error creating link. Invalid trace location " + location); //$NON-NLS-1$
