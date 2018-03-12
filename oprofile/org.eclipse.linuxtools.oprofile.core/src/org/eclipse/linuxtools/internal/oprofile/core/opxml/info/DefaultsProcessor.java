@@ -36,6 +36,9 @@ public class DefaultsProcessor extends XMLProcessor {
         map.clear();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.oprofile.core.opxml.XMLProcessor#endElement(java.lang.String, java.lang.Object)
+     */
     @Override
     public void endElement(String name, Object callData) {
         if (name.equals(OpInfoProcessor.DEFAULTS_TAG)) {

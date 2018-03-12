@@ -21,6 +21,11 @@ import org.eclipse.linuxtools.internal.javadocs.ui.JavaDocPlugin;
  */
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
+     */
     @Override
     public void initializeDefaultPreferences() {
         IPreferenceStore store = JavaDocPlugin.getDefault().getPreferenceStore();
