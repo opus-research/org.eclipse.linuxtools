@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
@@ -280,12 +279,8 @@ public class JavaAppInContainerLaunchDelegate extends AbstractJavaLaunchConfigur
 	}
 
 	private boolean isListening (String addr, int port) {
-		try (Socket s = new Socket())
+		try (Socket s = new Socket(addr, port))
 		{
-			InetSocketAddress host = addr != null
-					? new InetSocketAddress(addr, port)
-					: new InetSocketAddress(InetAddress.getByName(null), port);
-			s.connect(host, 1000);
 			return true;
 		} catch (IOException e) {
 			return false;
