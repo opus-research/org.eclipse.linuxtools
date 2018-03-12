@@ -347,7 +347,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fTable.setLinesVisible(true);
 
         // Set the columns
-        setColumnHeaders(columnData);
+        createColumns(columnData);
 
         // Set the default column field ids if this is not a subclass
         if (Arrays.equals(columnData, COLUMN_DATA)) {
@@ -996,8 +996,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      *
      * FIXME: Add support for column selection
      */
-    protected void setColumnHeaders(final ColumnData[] columnData) {
-        fTable.setColumnHeaders(columnData);
+    protected void createColumns(final ColumnData[] columnData) {
+        fTable.createColumns(columnData);
     }
 
     /**

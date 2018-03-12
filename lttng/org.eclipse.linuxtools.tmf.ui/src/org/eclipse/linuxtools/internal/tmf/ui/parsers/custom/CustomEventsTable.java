@@ -61,7 +61,7 @@ public class CustomEventsTable extends TmfEventsTable {
             ColumnData column = new ColumnData(outputColumn.name, 0, SWT.LEFT);
             columnData.add(column);
         }
-        setColumnHeaders(columnData.toArray(new ColumnData[0]));
+        createColumns(columnData.toArray(new ColumnData[0]));
     }
 
     @Override

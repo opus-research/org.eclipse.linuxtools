@@ -895,7 +895,7 @@ public class TmfVirtualTable extends Composite {
      * Method setColumnHeaders.
      * @param columnData ColumnData[] the columndata array.
      */
-    public void setColumnHeaders(ColumnData columnData[]) {
+    public void createColumns(ColumnData columnData[]) {
         for (int i = 0; i < columnData.length; i++) {
             TableColumn column = new TableColumn(fTable, columnData[i].alignment, i);
             column.setText(columnData[i].header);
