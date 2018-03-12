@@ -19,7 +19,6 @@ import java.io.PrintWriter;
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.statesystem.core.backend.historytree.CoreNode;
 import org.eclipse.linuxtools.internal.statesystem.core.backend.historytree.HTConfig;
 import org.eclipse.linuxtools.internal.statesystem.core.backend.historytree.HTInterval;
@@ -210,7 +209,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public @Nullable ITmfStateInterval doSingularQuery(long t, int attributeQuark)
+    public ITmfStateInterval doSingularQuery(long t, int attributeQuark)
             throws TimeRangeException, StateSystemDisposedException {
         return getRelevantInterval(t, attributeQuark);
     }
@@ -226,9 +225,9 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
      *
      * @param t
      * @param key
-     * @return The interval containing the information we want
+     * @return The node containing the information we want
      */
-    private @Nullable HTInterval getRelevantInterval(long t, int key)
+    private HTInterval getRelevantInterval(long t, int key)
             throws TimeRangeException, StateSystemDisposedException {
         if (!checkValidTime(t)) {
             throw new TimeRangeException();
@@ -239,12 +238,17 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         try {
             while (interval == null && currentNode.getNodeType() == HTNode.NodeType.CORE) {
-                currentNode = sht.selectNextChild((CoreNode) currentNode, t);
+                currentNode = sht.selectNextChild((CoreNode)currentNode, t);
                 interval = currentNode.getRelevantInterval(key, t);
             }
         } catch (ClosedChannelException e) {
             throw new StateSystemDisposedException(e);
         }
+        /*
+         * Since we should now have intervals at every attribute/timestamp
+         * combination, it should NOT be null here.
+         */
+        assert (interval != null);
         return interval;
     }
 

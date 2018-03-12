@@ -17,7 +17,6 @@ import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
@@ -165,8 +164,7 @@ public interface IStateHistoryBackend {
      *            The target timestamp of the query.
      * @param attributeQuark
      *            The single attribute for which you want the state interval
-     * @return The state interval matching this timestamp/attribute pair, or
-     *         'null' if the backend does not contain this information.
+     * @return The state interval matching this timestamp/attribute pair
      * @throws TimeRangeException
      *             If the timestamp was invalid
      * @throws AttributeNotFoundException
@@ -174,7 +172,7 @@ public interface IStateHistoryBackend {
      * @throws StateSystemDisposedException
      *             If the state system is disposed while a request is ongoing.
      */
-    @Nullable ITmfStateInterval doSingularQuery(long t, int attributeQuark)
+    ITmfStateInterval doSingularQuery(long t, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException;
 
