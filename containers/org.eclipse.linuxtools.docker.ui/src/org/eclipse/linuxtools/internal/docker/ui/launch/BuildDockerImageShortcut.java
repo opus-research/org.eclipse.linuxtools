@@ -25,6 +25,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut;
@@ -86,9 +87,7 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 	 */
 	protected ILaunchConfiguration findLaunchConfiguration(IResource resource) {
 		ILaunchConfiguration configuration = null;
-		ILaunchConfigurationType configType = LaunchConfigurationUtils
-				.getLaunchConfigType(
-						IBuildDockerImageLaunchConfigurationConstants.CONFIG_TYPE_ID);
+		ILaunchConfigurationType configType = getLaunchConfigType();
 		List<ILaunchConfiguration> candidateConfigs = Collections.emptyList();
 		try {
 			ILaunchConfiguration[] configs = DebugPlugin.getDefault()
@@ -132,6 +131,16 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 			configuration = chooseConfiguration(candidateConfigs);
 		}
 		return configuration;
+	}
+
+	/**
+	 * Method getLaunchConfigType.
+	 * 
+	 * @return ILaunchConfigurationType
+	 */
+	protected ILaunchConfigurationType getLaunchConfigType() {
+		return getLaunchManager().getLaunchConfigurationType(
+				IBuildDockerImageLaunchConfigurationConstants.CONFIG_TYPE_ID);
 	}
 
 	/**
@@ -252,6 +261,15 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 		}
 		return "Dockerfile [" //$NON-NLS-1$
 				+ resource.getProject().getName() + "]"; //$NON-NLS-1$
+	}
+
+	/**
+	 * Get the Debug launch manager.
+	 * 
+	 * @return the launch manager
+	 */
+	protected ILaunchManager getLaunchManager() {
+		return DebugPlugin.getDefault().getLaunchManager();
 	}
 
 	private class ConnectionSelectionLabelProvider implements ILabelProvider {

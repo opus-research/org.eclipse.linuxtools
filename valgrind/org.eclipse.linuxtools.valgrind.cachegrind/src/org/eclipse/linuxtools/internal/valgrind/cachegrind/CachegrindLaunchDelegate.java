@@ -32,7 +32,12 @@ import org.osgi.framework.Version;
 public class CachegrindLaunchDelegate implements IValgrindLaunchDelegate {
     protected static final String OUT_PREFIX = "cachegrind_"; //$NON-NLS-1$
     protected static final String OUT_FILE = OUT_PREFIX + "%p.txt"; //$NON-NLS-1$
-    protected static final FileFilter CACHEGRIND_FILTER = pathname -> pathname.getName().startsWith(OUT_PREFIX);
+    protected static final FileFilter CACHEGRIND_FILTER = new FileFilter() {
+        @Override
+        public boolean accept(File pathname) {
+            return pathname.getName().startsWith(OUT_PREFIX);
+        }
+    };
 
     private static final String COMMA = ","; //$NON-NLS-1$
     private static final String EQUALS = "="; //$NON-NLS-1$
@@ -72,7 +77,7 @@ public class CachegrindLaunchDelegate implements IValgrindLaunchDelegate {
     public String[] getCommandArray(ILaunchConfiguration config, Version ver, IPath logDir) throws CoreException {
         ArrayList<String> opts = new ArrayList<>();
 
-        opts.add(CachegrindCommandConstants.OPT_CACHEGRIND_OUTFILE + EQUALS + logDir.append(OUT_FILE).toPortableString());
+        opts.add(CachegrindCommandConstants.OPT_CACHEGRIND_OUTFILE + EQUALS + logDir.append(OUT_FILE).toOSString());
         opts.add(CachegrindCommandConstants.OPT_CACHE_SIM + EQUALS + (config.getAttribute(CachegrindLaunchConstants.ATTR_CACHEGRIND_CACHE_SIM, CachegrindLaunchConstants.DEFAULT_CACHEGRIND_CACHE_SIM) ? YES : NO));
         opts.add(CachegrindCommandConstants.OPT_BRANCH_SIM + EQUALS + (config.getAttribute(CachegrindLaunchConstants.ATTR_CACHEGRIND_BRANCH_SIM, CachegrindLaunchConstants.DEFAULT_CACHEGRIND_BRANCH_SIM) ? YES : NO));
         if (config.getAttribute(CachegrindLaunchConstants.ATTR_CACHEGRIND_I1, CachegrindLaunchConstants.DEFAULT_CACHEGRIND_I1)) {

@@ -132,7 +132,7 @@
             name="%DanglingImagesViewFilter.name">
       </commonFilter>
       <commonFilter
-            activeByDefault="false"
+            activeByDefault="true"
             class="org.eclipse.linuxtools.internal.docker.ui.views.HideStoppedContainersViewerFilter"
             id="org.eclipse.linuxtools.docker.ui.stoppedContainersViewerFilter"
             name="%StoppedContainerViewFilter.name">
@@ -1454,13 +1454,5 @@
           </enablement>
        </contextualLaunch>
     </shortcut>
- </extension>
- <extension
-       point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-    <launchConfigurationTabGroup
-          class="org.eclipse.linuxtools.internal.docker.ui.launch.RunImageLaunchConfigurationTabGroup"
-          id="org.eclipse.linuxtools.docker.ui.runLaunchConfigurationTabGroup"
-          type="org.eclipse.linuxtools.docker.ui.runDockerImageLaunchConfigurationType">
-    </launchConfigurationTabGroup>
  </extension>
 </plugin>

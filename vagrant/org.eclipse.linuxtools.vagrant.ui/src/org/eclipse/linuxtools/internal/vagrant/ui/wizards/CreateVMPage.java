@@ -267,7 +267,7 @@ public class CreateVMPage extends WizardPage {
 		}
 	}
 
-	private class CreateVMValidationStatusProvider extends MultiValidator {
+	public class CreateVMValidationStatusProvider extends MultiValidator {
 
 		private IObservableValue vmNameOb, boxRefOb, boxLocOb;
 

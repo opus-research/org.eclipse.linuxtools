@@ -259,7 +259,12 @@ public class LaunchWizard extends SystemTapLaunchShortcut {
         });
 
         //TODO: Verify that this works
-        Display.getCurrent().asyncExec(() -> sh.open());
+        Display.getCurrent().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                sh.open();
+            }
+        });
     }
 
     @Override

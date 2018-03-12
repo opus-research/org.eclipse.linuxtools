@@ -10,13 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
-import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.MB;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.list.WritableList;
@@ -30,6 +24,8 @@ import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingMode
 /**
  * Databinding model for the {@link ImageRunResourceVolumesVariablesPage}
  *
+ * @author xcoulon
+ *
  */
 public class ImageRunResourceVolumesVariablesModel
 		extends BaseDatabindingModel {
@@ -39,16 +35,13 @@ public class ImageRunResourceVolumesVariablesModel
 	}
 
 	/** the 'low' CPU share weight variableValue. */
-	public static final long CPU_LOW = 512l;
+	public static final int LOW = 512;
 
 	/** the default 'medium' CPU share weight variableValue. */
-	public static final long CPU_MEDIUM = 1024l;
+	public static final int MEDIUM = 1024;
 
 	/** the 'high' CPU share weight variableValue. */
-	public static final long CPU_HIGH = 2048l;
-
-	/** default memory limit (in MB) */
-	public static final int DEFAULT_MEMORY = 512;
+	public static final int HIGH = 2048;
 
 	public static final String ENABLE_RESOURCE_LIMITATIONS = "enableResourceLimitations"; //$NON-NLS-1$
 
@@ -70,9 +63,9 @@ public class ImageRunResourceVolumesVariablesModel
 
 	private IDockerImageInfo imageInfo = null;
 
-	private long memoryLimit = DEFAULT_MEMORY;
+	private int memoryLimit = 512;
 
-	private long cpuShareWeighting = CPU_MEDIUM;
+	private int cpuShareWeighting = 1024;
 
 	private Set<DataVolumeModel> selectedDataVolumes = new HashSet<>();
 
@@ -88,12 +81,6 @@ public class ImageRunResourceVolumesVariablesModel
 		this.info = connection.getInfo();
 	}
 
-	public ImageRunResourceVolumesVariablesModel(
-			final IDockerImage selectedImage) throws DockerException {
-		this(selectedImage.getConnection());
-		this.selectedImage = selectedImage;
-	}
-
 	public IDockerConnection getConnection() {
 		return connection;
 	}
@@ -104,29 +91,21 @@ public class ImageRunResourceVolumesVariablesModel
 	 * @param selectedImage
 	 */
 	public void setSelectedImage(final IDockerImage selectedImage) {
-		if (this.selectedImage == null
-				|| !this.selectedImage.equals(selectedImage)) {
+		if (this.selectedImage != selectedImage) {
 			this.selectedImage = selectedImage;
+			final WritableList newDataVolumes = new WritableList();
 			if (selectedImage != null) {
 				this.imageInfo = selectedImage.getConnection()
 						.getImageInfo(selectedImage.id());
 				if (this.imageInfo.config() != null
 						&& this.imageInfo.config().volumes() != null) {
-					final List<DataVolumeModel> volumes = new ArrayList<>();
 					for (String volume : this.imageInfo.config().volumes()) {
-						volumes.add(new DataVolumeModel(volume));
+						newDataVolumes.add(new DataVolumeModel(volume));
 					}
-					setDataVolumes(volumes);
 				}
-			} else {
-				setDataVolumes(Collections.<DataVolumeModel> emptyList());
 			}
+			setDataVolumes(newDataVolumes);
 		}
-
-	}
-
-	public IDockerImage getSelectedImage() {
-		return selectedImage;
 	}
 
 	public IDockerImageInfo getSelectedImageInfo() {
@@ -137,11 +116,9 @@ public class ImageRunResourceVolumesVariablesModel
 		return dataVolumes;
 	}
 
-	public void setDataVolumes(final Collection<DataVolumeModel> volumes) {
+	public void setDataVolumes(final WritableList dataVolumes) {
 		this.dataVolumes.clear();
-		if (volumes != null) {
-			this.dataVolumes.addAll(volumes);
-		}
+		this.dataVolumes.addAll(dataVolumes);
 	}
 
 	public void removeDataVolume(final DataVolumeModel dataVolume) {
@@ -163,34 +140,11 @@ public class ImageRunResourceVolumesVariablesModel
 	}
 
 	public void setEnvironmentVariables(
-			final List<String> environmentVariables) {
-		this.environmentVariables.clear();
-		if (environmentVariables != null) {
-			for (String envVariable : environmentVariables) {
-				// pattern is "<name>=<value>"
-				final String[] items = envVariable.split("=");
-				if (items.length == 2) {
-					this.environmentVariables.add(
-							new EnvironmentVariableModel(items[0], items[1]));
-				}
-			}
-		}
-	}
-
-	public void setEnvironmentVariables(
 			final WritableList environmentVariables) {
-		firePropertyChange(ENVIRONMENT_VARIABLES, this.environmentVariables,
-				this.environmentVariables = environmentVariables);
-	}
-
-	public void addEnvironmentVariable(
-			final EnvironmentVariableModel variable) {
-		this.environmentVariables.add(variable);
-	}
-
-	public void removeEnvironmentVariables() {
 		this.environmentVariables.clear();
+		this.environmentVariables.addAll(environmentVariables);
 	}
+
 	public void removeEnvironmentVariable(
 			final EnvironmentVariableModel variable) {
 		this.environmentVariables.remove(variable);
@@ -201,7 +155,7 @@ public class ImageRunResourceVolumesVariablesModel
 	 * @throws DockerException
 	 */
 	public int getTotalMemory() {
-		return (int) (this.info.getTotalMemory() / MB);
+		return (int) (this.info.getTotalMemory() / 1048576);
 	}
 
 	public boolean isEnableResourceLimitations() {
@@ -220,26 +174,31 @@ public class ImageRunResourceVolumesVariablesModel
 	 * 
 	 * @return
 	 */
-	public long getMemoryLimit() {
+	public int getMemoryLimit() {
 		return memoryLimit;
 	}
 
-	public void setMemoryLimit(final long memoryLimit) {
+	/**
+	 * The memory allocated for the container, in Bytes.
+	 * 
+	 * @return
+	 */
+	public long getMemory() {
+		return memoryLimit * 1048576;
+	}
+
+	public void setMemoryLimit(final int memoryLimit) {
 		firePropertyChange(MEMORY_LIMIT, this.memoryLimit,
 				this.memoryLimit = memoryLimit);
 	}
 
-	public long getCpuShareWeight() {
+	public int getCpuShareWeight() {
 		return cpuShareWeighting;
 	}
 
-	public void setCpuShareWeight(final long cpuShareWeighting) {
-		// '0l' value is sent by a button that gets unselected but it should be
-		// ignored here.
-		if (cpuShareWeighting != 0l) {
-			firePropertyChange(CPU_SHARE_WEIGHT, this.cpuShareWeighting,
-					this.cpuShareWeighting = cpuShareWeighting);
-		}
+	public void setCpuShareWeight(final int cpuShareWeighting) {
+		firePropertyChange(CPU_SHARE_WEIGHT, this.cpuShareWeighting,
+				this.cpuShareWeighting = cpuShareWeighting);
 	}
 
 }
