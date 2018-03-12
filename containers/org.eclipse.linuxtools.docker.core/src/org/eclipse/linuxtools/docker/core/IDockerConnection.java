@@ -17,6 +17,8 @@ import java.util.List;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
 
+import com.spotify.docker.client.DockerClient;
+
 public interface IDockerConnection {
 
 	public void addContainerListener(IDockerContainerListener listener);
@@ -65,7 +67,8 @@ public interface IDockerConnection {
 	/**
 	 * @return the {@link IDockerImageInfo} for the {@link IDockerImage}
 	 *         identified by the given {@code id} or <code>null</code> if none
-	 *         was found.
+	 *         was found or if the underlying {@link DockerClient} was not
+	 *         initialized
 	 * @param id
 	 *            the {@link IDockerImage} id
 	 */
@@ -157,8 +160,11 @@ public interface IDockerConnection {
 	public void close();
 
 	/**
-	 * @return the {@link IDockerConnectionInfo} associated with this {@link IDockerConnection}
-	 * @throws DockerException if info retrieval failed
+	 * @return the {@link IDockerConnectionInfo} associated with this
+	 *         {@link IDockerConnection} or <code>null</code> if the underlying
+	 *         {@link DockerClient} was not initialized.
+	 * @throws DockerException
+	 *             if info retrieval failed
 	 */
 	public IDockerConnectionInfo getInfo() throws DockerException;
 
