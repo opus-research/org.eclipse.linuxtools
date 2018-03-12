@@ -91,16 +91,11 @@ public class LTTngControlService implements ILttngControlService {
     // ------------------------------------------------------------------------
 
     @Override
-    public String getVersionString() {
+    public String getVersion() {
         if (fVersion == null) {
             return "Unknown"; //$NON-NLS-1$
         }
         return fVersion.toString();
-    }
-
-    @Override
-    public LttngVersion getVersion() {
-        return fVersion;
     }
 
     /**
@@ -109,14 +104,6 @@ public class LTTngControlService implements ILttngControlService {
      */
     public void setVersion(String version) {
         fVersion = new LttngVersion(version);
-    }
-
-    /**
-     * Sets the version of the LTTng 2.x control service.
-     * @param version - a version to set
-     */
-    public void setVersion(LttngVersion version) {
-        fVersion = version;
     }
 
     @Override
@@ -309,7 +296,7 @@ public class LTTngControlService implements ILttngControlService {
 
         List<IBaseEventInfo> events = new ArrayList<>();
 
-        if (result.getErrorOutput() != null) {
+        if (result.getOutput() != null) {
             // Ignore the following 2 cases:
             // Spawning a session daemon
             // Error: Unable to list kernel events
@@ -317,8 +304,8 @@ public class LTTngControlService implements ILttngControlService {
             // Error: Unable to list kernel events
             //
             int index = 0;
-            while (index < result.getErrorOutput().length) {
-                String line = result.getErrorOutput()[index];
+            while (index < result.getOutput().length) {
+                String line = result.getOutput()[index];
                 Matcher matcher = LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(line);
                 if (matcher.matches()) {
                     return events;
@@ -360,7 +347,7 @@ public class LTTngControlService implements ILttngControlService {
             return allProviders;
         }
 
-        if (result.getErrorOutput() != null) {
+        if (result.getOutput() != null) {
             // Ignore the following 2 cases:
             // Spawning a session daemon
             // Error: Unable to list UST events: Listing UST events failed
@@ -368,8 +355,8 @@ public class LTTngControlService implements ILttngControlService {
             // Error: Unable to list UST events: Listing UST events failed
             //
             int index = 0;
-            while (index < result.getErrorOutput().length) {
-                String line = result.getErrorOutput()[index];
+            while (index < result.getOutput().length) {
+                String line = result.getOutput()[index];
                 Matcher matcher = LTTngControlServiceConstants.LIST_UST_NO_UST_PROVIDER_PATTERN.matcher(line);
                 if (matcher.matches()) {
                     return allProviders;
@@ -588,13 +575,13 @@ public class LTTngControlService implements ILttngControlService {
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_DESTROY_SESSION, newName);
 
         ICommandResult result = executeCommand(command.toString(), monitor, false);
-        String[] errorOutput = result.getErrorOutput();
+        String[] output = result.getOutput();
 
         boolean isError = isError(result);
-        if (isError && (errorOutput != null)) {
+        if (isError && (output != null)) {
             int index = 0;
-            while (index < errorOutput.length) {
-                String line = errorOutput[index];
+            while (index < output.length) {
+                String line = output[index];
                 Matcher matcher = LTTngControlServiceConstants.SESSION_NOT_FOUND_ERROR_PATTERN.matcher(line);
                 if (matcher.matches()) {
                     // Don't treat this as an error
@@ -1045,15 +1032,14 @@ public class LTTngControlService implements ILttngControlService {
      */
     protected boolean isError(ICommandResult result) {
         // Check return code and length of returned strings
-
-        if ((result.getResult()) != 0) {
+        if ((result.getResult()) != 0 || (result.getOutput().length < 1)) {
             return true;
         }
 
         // Look for error pattern
         int index = 0;
-        while (index < result.getErrorOutput().length) {
-            String line = result.getErrorOutput()[index];
+        while (index < result.getOutput().length) {
+            String line = result.getOutput()[index];
             Matcher matcher = LTTngControlServiceConstants.ERROR_PATTERN.matcher(line);
             if (matcher.matches()) {
                 return true;
@@ -1072,21 +1058,16 @@ public class LTTngControlService implements ILttngControlService {
      * @return - the formatted output
      */
     public static String formatOutput(ICommandResult result) {
-        if ((result == null) || ((result.getOutput() == null || result.getOutput().length == 0) && (result.getErrorOutput() == null || result.getErrorOutput().length == 0))) {
+        if ((result == null) || result.getOutput() == null || result.getOutput().length == 0) {
             return ""; //$NON-NLS-1$
         }
         String[] output = result.getOutput();
-        String[] errorOutput = result.getErrorOutput();
         StringBuffer ret = new StringBuffer();
         ret.append("Return Value: "); //$NON-NLS-1$
         ret.append(result.getResult());
         ret.append("\n"); //$NON-NLS-1$
         for (int i = 0; i < output.length; i++) {
             ret.append(output[i]).append("\n"); //$NON-NLS-1$
-        }
-        ret.append("Error stream:\n"); //$NON-NLS-1$
-        for (int i = 0; i < errorOutput.length; i++) {
-           ret.append(errorOutput[i]).append("\n"); //$NON-NLS-1$
         }
         return ret.toString();
     }

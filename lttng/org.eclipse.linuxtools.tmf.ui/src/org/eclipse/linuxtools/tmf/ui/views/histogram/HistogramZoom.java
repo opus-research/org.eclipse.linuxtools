@@ -14,8 +14,6 @@
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
 
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
 
@@ -26,7 +24,7 @@ import org.eclipse.swt.events.MouseWheelListener;
  * @author Francois Chouinard
  * <p>
  */
-public class HistogramZoom implements MouseWheelListener, KeyListener {
+public class HistogramZoom implements MouseWheelListener {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -70,9 +68,6 @@ public class HistogramZoom implements MouseWheelListener, KeyListener {
 
         fRangeStartTime = fAbsoluteStartTime;
         fRangeDuration = fAbsoluteStartTime + fMinWindowSize;
-
-        histogram.addMouseWheelListener(this);
-        histogram.addKeyListener(this);
     }
 
     // ------------------------------------------------------------------------
@@ -149,27 +144,8 @@ public class HistogramZoom implements MouseWheelListener, KeyListener {
     // ------------------------------------------------------------------------
 
     @Override
-    public void mouseScrolled(MouseEvent event) {
+    public synchronized void mouseScrolled(MouseEvent event) {
         zoom(event.count);
-    }
-
-    /**
-     * @since 3.1
-     */
-    @Override
-    public void keyPressed(KeyEvent e) {
-        if (e.character == '+') {
-            zoom(1);
-        } else if (e.character == '-') {
-            zoom(-1);
-        }
-    }
-
-    /**
-     * @since 3.1
-     */
-    @Override
-    public void keyReleased(KeyEvent e) {
     }
 
     private synchronized void zoom(int nbClicks) {
