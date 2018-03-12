@@ -25,7 +25,6 @@ import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLa
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.IMAGE_ID;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.IMAGE_NAME;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.INTERACTIVE;
-import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.LABELS;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.LINKS;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.MB;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.MEMORY_LIMIT;
@@ -171,8 +170,6 @@ public class LaunchConfigurationUtils {
 			workingCopy.setAttribute(LINKS, hostConfig.links());
 			// env variables
 			workingCopy.setAttribute(ENV_VARIABLES, containerConfig.env());
-			// labels
-			workingCopy.setAttribute(LABELS, containerConfig.labels());
 			// volumes
 			final List<String> volumes = new ArrayList<>();
 			// volumes from other containers
