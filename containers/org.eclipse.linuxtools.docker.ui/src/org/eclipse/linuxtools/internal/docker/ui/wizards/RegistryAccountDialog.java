@@ -82,8 +82,6 @@ public class RegistryAccountDialog extends Dialog {
 				.grab(true, false).applyTo(emailText);
 		if (email != null) {
 			emailText.setText(email);
-		} else {
-			email = ""; //$NON-NLS-1$
 		}
 		emailText.addModifyListener(e -> {
 			email = emailText.getText();

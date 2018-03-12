@@ -10,14 +10,12 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.linuxtools.internal.docker.core.DockerAuthConfig;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
 
 public interface IDockerConnection {
@@ -190,10 +188,6 @@ public interface IDockerConnection {
 
 	void pullImage(String id, IDockerProgressHandler handler) throws DockerException, InterruptedException;
 
-	void pullImage(String id, DockerAuthConfig authConfig,
-			IDockerProgressHandler handler)
-			throws DockerException, InterruptedException;
-
 	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException;
 	
 	void pushImage(String name, IDockerProgressHandler handler) throws DockerException, InterruptedException;
@@ -229,24 +223,6 @@ public interface IDockerConnection {
 			throws DockerException, InterruptedException;
 
 	/**
-	 * Copy a directory from the Host into a Container's file system.
-	 * 
-	 * @param directory
-	 *            the Host directory to copy to the Container
-	 * @param id
-	 *            the Container id
-	 * @param path
-	 *            the directory to place the Host files in the Container
-	 *
-	 * @throws DockerException
-	 *             in case of underlying problem
-	 * @throws InterruptedException
-	 *             if the thread was interrupted
-	 */
-	void copyToContainer(final String directory, String id, String path)
-			throws DockerException, InterruptedException, IOException;
-
-	/**
 	 * Determine if authorization is valid.
 	 * 
 	 * @param config
@@ -257,7 +233,7 @@ public interface IDockerConnection {
 	 * @throws InterruptedException
 	 *             if the thread was interrupted
 	 */
-	int auth(final IDockerAuthConfig config)
+	int auth(final DockerAuthConfig config)
 			throws DockerException, InterruptedException;
 
 	String buildImage(IPath path, IDockerProgressHandler handler)
@@ -315,24 +291,6 @@ public interface IDockerConnection {
 	void stopLoggingThread(String id);
 
 	void logContainer(String id, OutputStream stream)
-			throws DockerException, InterruptedException;
-
-	IDockerNetworkCreation createNetwork(IDockerNetworkConfig config)
-			throws DockerException, InterruptedException;
-
-	IDockerNetwork inspectNetwork(String networkId)
-			throws DockerException, InterruptedException;
-
-	List<IDockerNetwork> listNetworks()
-			throws DockerException, InterruptedException;
-
-	void removeNetwork(String networkId)
-			throws DockerException, InterruptedException;
-
-	void connectNetwork(String id, String networkId)
-			throws DockerException, InterruptedException;
-
-	void disconnectNetwork(String id, String networkId)
 			throws DockerException, InterruptedException;
 
 	void removeImage(String name) throws DockerException, InterruptedException;

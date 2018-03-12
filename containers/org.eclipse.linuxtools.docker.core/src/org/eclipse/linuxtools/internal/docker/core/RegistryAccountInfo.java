@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.core;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.linuxtools.docker.core.IRegistryAccount;
 
 public class RegistryAccountInfo extends RegistryInfo
@@ -41,17 +38,6 @@ public class RegistryAccountInfo extends RegistryInfo
 
 	@Override
 	public char [] getPassword() {
-		if (password != null) {
-			return password;
-		}
-		char[] password = null;
-		ISecurePreferences preferences = SecurePreferencesFactory.getDefault();
-		ISecurePreferences dockerNode = preferences.node("org.eclipse.linuxtools.docker.ui.accounts"); //$NON-NLS-1$
-		String key = getServerAddress() + "_" + getUsername() + "_" + getEmail();
-		try {
-			password = dockerNode.get(key, null).toCharArray();
-		} catch (StorageException e) {
-		}
 		return password;
 	}
 

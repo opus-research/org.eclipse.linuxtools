@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.docker.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
@@ -19,6 +20,8 @@ import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.linuxtools.docker.core.IRegistryAccount;
 
 public class RegistryAccountManager {
+
+	private static String DOCKER_NODE = "org.eclipse.linuxtools.docker.ui.accounts";
 
 	private static RegistryAccountManager instance;
 
@@ -33,19 +36,28 @@ public class RegistryAccountManager {
 	}
 
 	public List<IRegistryAccount> getAccounts() {
+		return getAccounts(true);
+	}
+
+	public List<IRegistryAccount> getAccounts(boolean loadPassword) {
 		List<IRegistryAccount> accounts = new ArrayList<>();
 		ISecurePreferences preferences = SecurePreferencesFactory.getDefault();
-		ISecurePreferences dockerNode = preferences.node("org.eclipse.linuxtools.docker.ui.accounts"); //$NON-NLS-1$
+		ISecurePreferences dockerNode = preferences.node(DOCKER_NODE);
 		for (String key : dockerNode.keys()) {
-			String[] tokens = key.split("_"); //$NON-NLS-1$
-			String serverAddress = tokens[0];
-			String username = tokens[1];
-			String email = ""; //$NON-NLS-1$
-			if (tokens.length > 2) {
-				email = tokens[2];
+			try {
+				String[] tokens = key.split("_"); //$NON-NLS-1$
+				String serverAddress = tokens[0];
+				String username = tokens[1];
+				String email = tokens[2];
+				char[] password = null;
+				if (loadPassword) {
+					password = dockerNode.get(key, null).toCharArray();
+				}
+				RegistryAccountInfo account = new RegistryAccountInfo(serverAddress, username, email, password);
+				accounts.add(account);
+			} catch (StorageException e) {
+				// Ignore the account
 			}
-			RegistryAccountInfo account = new RegistryAccountInfo(serverAddress, username, email, null);
-			accounts.add(account);
 		}
 		return accounts;
 	}
@@ -66,10 +78,19 @@ public class RegistryAccountManager {
 		preferences.remove(key);
 	}
 
+	public IRegistryAccount getAccount(String serverAddress, String username,
+			String email) {
+		List<IRegistryAccount> accounts = getAccounts(true).stream()
+				.filter(e -> e.getServerAddress().equals(serverAddress)
+						&& e.getUsername().equals(username)
+						&& e.getEmail().equals(email))
+				.collect(Collectors.toList());
+		return accounts.get(0);
+	}
+
 	private ISecurePreferences getDockerNode() {
 		ISecurePreferences preferences = SecurePreferencesFactory.getDefault();
-		ISecurePreferences dockerNode = preferences
-				.node("org.eclipse.linuxtools.docker.ui.accounts"); //$NON-NLS-1$
+		ISecurePreferences dockerNode = preferences.node(DOCKER_NODE);
 		return dockerNode;
 	}
 

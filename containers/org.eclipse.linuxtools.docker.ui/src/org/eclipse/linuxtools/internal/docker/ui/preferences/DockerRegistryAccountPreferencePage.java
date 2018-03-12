@@ -215,15 +215,15 @@ public class DockerRegistryAccountPreferencePage extends PreferencePage
 		// Server Address column
 		TableColumn hostnameColumn = new TableColumn(pwdTable, SWT.NONE);
 		hostnameColumn
-				.setText("Server Address");
+				.setText(Messages.getString("DockerRegistryAccountPreferencePage.serverAddress.label")); //$NON-NLS-1$
 
 		// Username column
 		TableColumn sysTypeColumn = new TableColumn(pwdTable, SWT.NONE);
-		sysTypeColumn.setText("Username");
+		sysTypeColumn.setText(Messages.getString("DockerRegistryAccountPreferencePage.username.label")); //$NON-NLS-1$
 
 		// Email column
 		TableColumn useridColumn = new TableColumn(pwdTable, SWT.NONE);
-		useridColumn.setText("Email");
+		useridColumn.setText(Messages.getString("DockerRegistryAccountPreferencePage.email.label")); //$NON-NLS-1$
 
 		pwdTableViewer = new TableViewer(pwdTable);
 		pwdTableViewer.setContentProvider(provider);
@@ -237,14 +237,14 @@ public class DockerRegistryAccountPreferencePage extends PreferencePage
 		gd.grabExcessVerticalSpace = true;
 
 		addButton = createPushButton(buttonBar, this,
-				"Add",
-				"Add a new Docker registry account.");
+				Messages.getString("DockerRegistryAccountPreferencePage.add.label"), //$NON-NLS-1$
+				Messages.getString("DockerRegistryAccountPreferencePage.add.desc")); //$NON-NLS-1$
 		changeButton = createPushButton(buttonBar, this,
-				"Edit",
-				"Edit an existing Docker registry account.");
+				Messages.getString("DockerRegistryAccountPreferencePage.edit.label"), //$NON-NLS-1$
+				Messages.getString("DockerRegistryAccountPreferencePage.edit.desc")); //$NON-NLS-1$
 		removeButton = createPushButton(buttonBar, this,
-				"Remove",
-				"Remove an existing Docker registry account.");
+				Messages.getString("DockerRegistryAccountPreferencePage.remove.label"), //$NON-NLS-1$
+				Messages.getString("DockerRegistryAccountPreferencePage.remove.desc")); //$NON-NLS-1$
 
 		changeButton.setEnabled(false);
 		removeButton.setEnabled(false);
@@ -257,7 +257,7 @@ public class DockerRegistryAccountPreferencePage extends PreferencePage
 	@Override
 	public void init(IWorkbench workbench) {
 		// reinit passwords list
-		passwords = RegistryAccountManager.getInstance().getAccounts();
+		passwords = RegistryAccountManager.getInstance().getAccounts(false);
 
 		// refresh password table
 		if (pwdTableViewer != null) {
@@ -274,7 +274,7 @@ public class DockerRegistryAccountPreferencePage extends PreferencePage
 			if (event.widget == addButton) {
 				RegistryAccountDialog dialog = new RegistryAccountDialog(
 						getShell(),
-						"New Registry Account");
+						Messages.getString("DockerRegistryAccountPreferencePage.new.title")); //$NON-NLS-1$
 				if (dialog.open() == Window.OK) {
 					IRegistryAccount info = dialog
 							.getSignonInformation();
@@ -290,7 +290,7 @@ public class DockerRegistryAccountPreferencePage extends PreferencePage
 			} else if (event.widget == changeButton) {
 				RegistryAccountDialog dialog = new RegistryAccountDialog(
 						getShell(),
-						"Edit Registry Account");
+						Messages.getString("DockerRegistryAccountPreferencePage.edit.title")); //$NON-NLS-1$
 				int index = pwdTable.getSelectionIndex();
 				IRegistryAccount info = passwords
 						.get(index);
