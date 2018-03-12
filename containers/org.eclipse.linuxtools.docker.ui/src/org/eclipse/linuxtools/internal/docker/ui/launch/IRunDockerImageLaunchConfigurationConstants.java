@@ -40,18 +40,10 @@ public interface IRunDockerImageLaunchConfigurationConstants {
 
 	public static final String DATA_VOLUME = "volumes"; //$NON-NLS-1$
 
-	public static final String SELECTED_VOLUMES = "selectedVolumes"; //$NON-NLS-1$
-
-	public static final String VOLUMES_FROM = "volumesFrom"; //$NON-NLS-1$
-
-	public static final String BINDS = "binds"; //$NON-NLS-1$
-
 	public static final String ENV_VARIABLES = "envVariables"; //$NON-NLS-1$
 
 	public static final String CPU_PRIORITY = "cpuPriority"; //$NON-NLS-1$
 
 	public static final String MEMORY_LIMIT = "memoryLimit"; //$NON-NLS-1$
-
-	public static final String CONNECTION_NAME = "connectionName"; //$NON-NLS-1$
 
 }
