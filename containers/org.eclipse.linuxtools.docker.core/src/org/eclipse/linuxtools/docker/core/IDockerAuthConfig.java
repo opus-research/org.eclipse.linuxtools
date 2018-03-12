@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,12 +10,42 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
-public interface IDockerProgressDetail {
+/**
+ * Docker Authorization Config
+ * 
+ * Used to authorize actions for a registry
+ * 
+ * @author jjohnstn
+ *
+ */
+public interface IDockerAuthConfig {
 
-	long current();
+	/**
+	 * Get username
+	 * 
+	 * @return user name
+	 */
+	char[] username();
 
-	long start();
+	/**
+	 * Get password
+	 * 
+	 * @return password
+	 */
+	char[] password();
 
-	long total();
+	/**
+	 * Get email
+	 * 
+	 * @return email
+	 */
+	char[] email();
+
+	/**
+	 * Get server address
+	 * 
+	 * @return server address
+	 */
+	char[] serverAddress();
 
 }

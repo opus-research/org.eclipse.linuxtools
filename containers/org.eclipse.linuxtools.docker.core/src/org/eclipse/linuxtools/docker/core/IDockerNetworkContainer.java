@@ -10,14 +10,40 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
+/**
+ * Container Network info
+ * 
+ * @author jjohnstn
+ *
+ */
 public interface IDockerNetworkContainer {
 
-	public String endpointId();
+	/**
+	 * Get endpoint id
+	 * 
+	 * @return endpoint id
+	 */
+	String endpointId();
 
-	public String macAddress();
+	/**
+	 * Get mac address
+	 * 
+	 * @return mac address
+	 */
+	String macAddress();
 
-	public String ipv4address();
+	/**
+	 * Get ipv4 address
+	 * 
+	 * @return ipv4 address
+	 */
+	String ipv4address();
 
-	public String ipv6address();
+	/**
+	 * Get ipv6 address
+	 * 
+	 * @return ipv6 address
+	 */
+	String ipv6address();
 
 }

@@ -49,6 +49,7 @@ import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerContainerNotFoundException;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
+import org.eclipse.linuxtools.docker.core.IDockerAuthConfig;
 import org.eclipse.linuxtools.docker.core.IDockerConfParameter;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionInfo;
@@ -597,7 +598,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			for (Container nativeContainer : nativeContainers) {
 				// For containers that have exited, make sure we aren't tracking
 				// them with a logging thread.
-				if (nativeContainer.status()
+				if (nativeContainer.status() != null && nativeContainer.status()
 						.startsWith(Messages.Exited_specifier)) {
 					synchronized (loggingThreads) {
 						if (loggingThreads.containsKey(nativeContainer.id())) {
@@ -608,7 +609,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 					}
 				}
 				// skip containers that are being removed
-				if (nativeContainer.status()
+				if (nativeContainer.status() != null && nativeContainer.status()
 						.equals(Messages.Removal_In_Progress_specifier)) {
 					continue;
 				}
@@ -851,12 +852,10 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				final boolean danglingImage = !taggedImage
 						&& !intermediateImage;
 				// return one IDockerImage per raw image
-				final List<String> repoTags = new ArrayList<>(
-						rawImage.repoTags());
+				final List<String> repoTags = rawImage.repoTags() != null
+						? new ArrayList<>(rawImage.repoTags())
+						: Arrays.asList("<none>:<none>"); //$NON-NLS-1$
 				Collections.sort(repoTags);
-				if (repoTags.isEmpty()) {
-					repoTags.add("<none>:<none>"); //$NON-NLS-1$
-				}
 				final String repo = DockerImage.extractRepo(repoTags.get(0));
 				final List<String> tags = Arrays
 						.asList(DockerImage.extractTag(repoTags.get(0)));
@@ -895,6 +894,26 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			DockerProgressHandler d = new DockerProgressHandler(handler);
 			client.pull(id, d);
 			listImages();
+		} catch (com.spotify.docker.client.DockerRequestException e) {
+			throw new DockerException(e.message());
+		} catch (com.spotify.docker.client.DockerException e) {
+			DockerException f = new DockerException(e);
+			throw f;
+		}
+	}
+
+	@Override
+	public void pullImage(final String id, final DockerAuthConfig config,
+			final IDockerProgressHandler handler)
+			throws DockerException, InterruptedException {
+		try {
+			AuthConfig authConfig = AuthConfig.builder()
+					.username(new String(config.username()))
+					.password(new String(config.password()))
+					.email(new String(config.email()))
+					.serverAddress(new String(config.serverAddress())).build();
+			DockerProgressHandler d = new DockerProgressHandler(handler);
+			client.pull(id, authConfig, d);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
@@ -1564,14 +1583,15 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public int auth(IRegistryAccount cfg)
+	public int auth(IDockerAuthConfig cfg)
 			throws DockerException, InterruptedException {
 		try {
+			DockerAuthConfig config = (DockerAuthConfig) cfg;
 			AuthConfig authConfig = AuthConfig.builder()
-					.username(new String(cfg.getUsername()))
-					.password(new String(cfg.getPassword()))
-					.email(new String(cfg.getEmail()))
-					.serverAddress(new String(cfg.getServerAddress())).build();
+					.username(new String(config.username()))
+					.password(new String(config.password()))
+					.email(new String(config.email()))
+					.serverAddress(new String(config.serverAddress())).build();
 			return client.auth(authConfig);
 		} catch (com.spotify.docker.client.DockerException e) {
 			throw new DockerException(e.getMessage(), e.getCause());

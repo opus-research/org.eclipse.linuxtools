@@ -19,8 +19,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IRegistry;
-import org.eclipse.linuxtools.docker.core.IRegistryAccount;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
@@ -30,8 +28,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-
-import com.spotify.docker.client.DockerCertificateException;
 
 /**
  * Command handler that opens the {@link ImageSearch} wizard and pulls the
@@ -63,15 +59,14 @@ public class PullImageCommandHandler extends AbstractHandler {
 			final boolean pullImage = CommandUtils.openWizard(wizard,
 					HandlerUtil.getActiveShell(event));
 			if (pullImage) {
-				performPullImage(connection, wizard.getImageName(),
-						wizard.getRegistry());
+				performPullImage(connection, wizard.getImageName());
 			}
 		}
 		return null;
 	}
 
 	private void performPullImage(final IDockerConnection connection,
-			final String imageName, final IRegistry registry) {
+			final String imageName) {
 		final Job pullImageJob = new Job(DVMessages
 				.getFormattedString(PULL_IMAGE_JOB_TITLE, imageName)) {
 
@@ -82,23 +77,9 @@ public class PullImageCommandHandler extends AbstractHandler {
 				// pull the image and let the progress
 				// handler refresh the images when done
 				try {
-					if (registry == null) {
-						((DockerConnection) connection).pullImage(imageName,
-								new ImagePullProgressHandler(connection,
-										imageName));
-					} else {
-						String fullImageName = registry.getServerAddress() + '/' + imageName;
-						if (registry instanceof IRegistryAccount) {
-							IRegistryAccount account = (IRegistryAccount) registry;
-							((DockerConnection) connection).pullImage(fullImageName,
-									account, new ImagePullProgressHandler(
-											connection, fullImageName));
-						} else {
-							((DockerConnection) connection).pullImage(fullImageName,
-									new ImagePullProgressHandler(connection,
-											fullImageName));
-						}
-					}
+					((DockerConnection) connection).pullImage(imageName,
+							new ImagePullProgressHandler(connection,
+									imageName));
 				} catch (final DockerException e) {
 					Display.getDefault().syncExec(() -> MessageDialog.openError(
 							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
@@ -107,7 +88,7 @@ public class PullImageCommandHandler extends AbstractHandler {
 									imageName),
 							e.getMessage()));
 					// for now
-				} catch (InterruptedException | DockerCertificateException e) {
+				} catch (InterruptedException e) {
 					// do nothing
 				} finally {
 					monitor.done();
