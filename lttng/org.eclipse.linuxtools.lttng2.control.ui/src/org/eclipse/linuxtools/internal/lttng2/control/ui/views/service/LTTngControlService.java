@@ -91,11 +91,16 @@ public class LTTngControlService implements ILttngControlService {
     // ------------------------------------------------------------------------
 
     @Override
-    public String getVersion() {
+    public String getVersionString() {
         if (fVersion == null) {
             return "Unknown"; //$NON-NLS-1$
         }
         return fVersion.toString();
+    }
+
+    @Override
+    public LttngVersion getVersion() {
+        return fVersion;
     }
 
     /**
@@ -104,6 +109,14 @@ public class LTTngControlService implements ILttngControlService {
      */
     public void setVersion(String version) {
         fVersion = new LttngVersion(version);
+    }
+
+    /**
+     * Sets the version of the LTTng 2.x control service.
+     * @param version - a version to set
+     */
+    public void setVersion(LttngVersion version) {
+        fVersion = version;
     }
 
     @Override
@@ -418,19 +431,7 @@ public class LTTngControlService implements ILttngControlService {
             return createStreamedSession(sessionInfo, monitor);
         }
 
-        String newName = formatParameter(sessionInfo.getName());
-        String newPath = formatParameter(sessionInfo.getSessionPath());
-
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
-
-        if (newPath != null && !"".equals(newPath)) { //$NON-NLS-1$
-            command.append(LTTngControlServiceConstants.OPTION_OUTPUT_PATH);
-            command.append(newPath);
-        }
-
-        if (sessionInfo.isSnapshotSession()) {
-            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
-        }
+        StringBuffer command = prepareSessionCreationCommand(sessionInfo);
 
         ICommandResult result = executeCommand(command.toString(), monitor);
 
@@ -483,30 +484,30 @@ public class LTTngControlService implements ILttngControlService {
 
     }
 
-    private ISessionInfo createStreamedSession(ISessionInfo sessionInfo, IProgressMonitor monitor) throws ExecutionException {
-
+    /**
+     * @param sessionInfo
+     * @return
+     */
+    protected StringBuffer prepareSessionCreationCommand(ISessionInfo sessionInfo) {
         String newName = formatParameter(sessionInfo.getName());
+        String newPath = formatParameter(sessionInfo.getSessionPath());
+
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
+
+        if (newPath != null && !"".equals(newPath)) { //$NON-NLS-1$
+            command.append(LTTngControlServiceConstants.OPTION_OUTPUT_PATH);
+            command.append(newPath);
+        }
 
         if (sessionInfo.isSnapshotSession()) {
             command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
-        } else if (sessionInfo.isLive()) {
-            command.append(LTTngControlServiceConstants.OPTION_LIVE);
-            if (sessionInfo.getLiveDelay() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                command.append(sessionInfo.getLiveDelay());
-            }
         }
+        return command;
+    }
 
-        if (sessionInfo.getNetworkUrl() != null) {
-            command.append(LTTngControlServiceConstants.OPTION_NETWORK_URL);
-            command.append(sessionInfo.getNetworkUrl());
-        } else {
-            command.append(LTTngControlServiceConstants.OPTION_CONTROL_URL);
-            command.append(sessionInfo.getControlUrl());
+    private ISessionInfo createStreamedSession(ISessionInfo sessionInfo, IProgressMonitor monitor) throws ExecutionException {
 
-            command.append(LTTngControlServiceConstants.OPTION_DATA_URL);
-            command.append(sessionInfo.getDataUrl());
-        }
+        StringBuffer command = prepareStreamedSessionCreationCommand(sessionInfo);
 
         ICommandResult result = executeCommand(command.toString(), monitor);
 
@@ -566,6 +567,36 @@ public class LTTngControlService implements ILttngControlService {
         // and will be set later on when listing the session
 
         return sessionInfo;
+    }
+
+    /**
+     * @param sessionInfo
+     * @return
+     */
+    protected StringBuffer prepareStreamedSessionCreationCommand(ISessionInfo sessionInfo) {
+        String newName = formatParameter(sessionInfo.getName());
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
+
+        if (sessionInfo.isSnapshotSession()) {
+            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
+        } else if (sessionInfo.isLive()) {
+            command.append(LTTngControlServiceConstants.OPTION_LIVE);
+            if (sessionInfo.getLiveDelay() != LTTngControlServiceConstants.UNUSED_VALUE) {
+                command.append(sessionInfo.getLiveDelay());
+            }
+        }
+
+        if (sessionInfo.getNetworkUrl() != null) {
+            command.append(LTTngControlServiceConstants.OPTION_NETWORK_URL);
+            command.append(sessionInfo.getNetworkUrl());
+        } else {
+            command.append(LTTngControlServiceConstants.OPTION_CONTROL_URL);
+            command.append(sessionInfo.getControlUrl());
+
+            command.append(LTTngControlServiceConstants.OPTION_DATA_URL);
+            command.append(sessionInfo.getDataUrl());
+        }
+        return command;
     }
 
     @Override
@@ -1065,15 +1096,15 @@ public class LTTngControlService implements ILttngControlService {
         String[] output = result.getOutput();
         String[] errorOutput = result.getErrorOutput();
         StringBuffer ret = new StringBuffer();
+        ret.append("Error Ouptut:\n"); //$NON-NLS-1$
+        for (int i = 0; i < errorOutput.length; i++) {
+           ret.append(errorOutput[i]).append("\n"); //$NON-NLS-1$
+        }
         ret.append("Return Value: "); //$NON-NLS-1$
         ret.append(result.getResult());
         ret.append("\n"); //$NON-NLS-1$
         for (int i = 0; i < output.length; i++) {
             ret.append(output[i]).append("\n"); //$NON-NLS-1$
-        }
-        ret.append("Error stream:\n"); //$NON-NLS-1$
-        for (int i = 0; i < errorOutput.length; i++) {
-           ret.append(errorOutput[i]).append("\n"); //$NON-NLS-1$
         }
         return ret.toString();
     }
