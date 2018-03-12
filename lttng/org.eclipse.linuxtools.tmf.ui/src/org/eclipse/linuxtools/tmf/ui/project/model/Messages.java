@@ -76,10 +76,6 @@ public class Messages extends NLS {
      * @since 3.0*/
     public static String TmfTraceElement_SourceLocation;
 
-    /** The descriptor for the time offset property
-     * @since 3.2*/
-    public static String TmfTraceElement_TimeOffset;
-
     /** Trace text
      * @since 3.0*/
     public static String TmfTraceElement_TypeName;
