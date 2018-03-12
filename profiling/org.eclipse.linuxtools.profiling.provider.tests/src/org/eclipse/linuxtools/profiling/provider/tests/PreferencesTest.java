@@ -50,7 +50,6 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.eclipse.ui.PlatformUI;
 import org.hamcrest.Matcher;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.FrameworkUtil;
@@ -183,7 +182,6 @@ public class PreferencesTest extends AbstractTest{
         bot.button("OK").click(); //$NON-NLS-1$
     }
 
-    @Ignore
     @Test
     public void testProfileProject() throws Exception {
         SWTWorkbenchBot bot = new SWTWorkbenchBot();
