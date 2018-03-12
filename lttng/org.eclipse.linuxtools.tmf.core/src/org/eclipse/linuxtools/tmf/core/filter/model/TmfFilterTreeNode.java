@@ -9,12 +9,14 @@
  * Contributors:
  *   Yuriy Vashchuk (yvashchuk@gmail.com) - Initial API and implementation
  *   Patrick Tasse - Refactoring
+ *   Vincent Perot - Add subfield filtering
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.filter.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -28,6 +30,9 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
  * @author Patrick Tasse
  */
 public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable {
+
+    private static final char SLASH_CHAR = '/';
+    private static final String SLASH_STRING = "/"; //$NON-NLS-1$
 
     private static final String[] VALID_CHILDREN = {
             TmfFilterEventTypeNode.NODE_NAME,
@@ -141,12 +146,79 @@ public abstract class TmfFilterTreeNode implements ITmfFilterTreeNode, Cloneable
             value = event.getReference();
         }
         else {
-            ITmfEventField eventField = event.getContent().getField(field);
+            ITmfEventField eventField;
+            if (!(field.startsWith(SLASH_STRING))) {
+                eventField = event.getContent().getField(field);
+            } else {
+                List<String> list = getPathList(field);
+                ITmfEventField topField = event.getContent();
+                eventField = getSubField(topField, list);
+            }
+
             if (eventField != null) {
                 value = eventField.getValue();
             }
         }
         return value;
+    }
+
+    private static ITmfEventField getSubField(ITmfEventField field, Collection<String> list) {
+        ITmfEventField subfield = field;
+        for (String name : list) {
+            subfield = subfield.getField(name);
+            if (subfield == null) {
+                return null;
+            }
+        }
+        return subfield;
+
+    }
+
+    private static List<String> getPathList(String field) {
+
+        StringBuilder sb = new StringBuilder();
+        List<String> list = new ArrayList<>();
+
+        // We start at 1 since the first character is a slash that we want to
+        // ignore.
+        for (int i = 1; i < field.length(); i++) {
+            char charAt = field.charAt(i);
+            if (charAt == SLASH_CHAR) {
+
+                // Count slashes
+                int startIndex = i;
+                while (charAt == SLASH_CHAR && i < field.length() - 1) {
+                    i++;
+                    charAt = field.charAt(i);
+                }
+                // Calculate slashes
+                int nbSlashes = ((charAt == SLASH_CHAR) ? i - startIndex + 1 : i - startIndex);
+
+                // Reposition index
+                if (i != field.length() - 1) {
+                    i--;
+                }
+
+                // Add half of the slashes
+                for (int j = 0; j < nbSlashes / 2; j++) {
+                    sb.append(SLASH_CHAR);
+                }
+
+                // Cut if uneven.
+                if (nbSlashes % 2 != 0) {
+                    list.add(sb.toString());
+                    sb = new StringBuilder();
+                    continue;
+                }
+            } else {
+                sb.append(charAt);
+            }
+        }
+
+        // Last block. add it to list.
+        list.add(sb.toString());
+
+        return list;
     }
 
     @Override
