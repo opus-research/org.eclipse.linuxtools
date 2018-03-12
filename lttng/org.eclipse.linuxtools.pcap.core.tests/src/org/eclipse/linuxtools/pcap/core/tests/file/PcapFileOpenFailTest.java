@@ -41,7 +41,8 @@ public class PcapFileOpenFailTest {
         PcapTestTrace trace = PcapTestTrace.BAD_PCAPFILE;
         assumeTrue(trace.exists());
 
-        try (PcapFile file = new PcapFile(trace.getPath());) {
+        String path = trace.getPath();
+        try (PcapFile file = new PcapFile(path);) {
             fail("The pcap was accepted even though the magic number is invalid!");
         } catch (BadPcapFileException e) {
             assertEquals("c3d4a1b2 is not a known magic number.", e.getMessage());
@@ -59,10 +60,11 @@ public class PcapFileOpenFailTest {
         PcapTestTrace trace = PcapTestTrace.KERNEL_TRACE;
         assumeTrue(trace.exists());
 
-        try (PcapFile file = new PcapFile(trace.getPath());) {
+        String path = trace.getPath();
+        try (PcapFile file = new PcapFile(path);) {
             fail("The file was accepted even though it is not a pcap file!");
         } catch (BadPcapFileException e) {
-            assertEquals("c11ffcc1 is not a known magic number.", e.getMessage());
+            assertEquals("Bad Pcap File.", e.getMessage());
         }
     }
 
@@ -77,7 +79,8 @@ public class PcapFileOpenFailTest {
         PcapTestTrace trace = PcapTestTrace.KERNEL_DIRECTORY;
         assumeTrue(trace.exists());
 
-        try (PcapFile file = new PcapFile(trace.getPath());) {
+        String path = trace.getPath();
+        try (PcapFile file = new PcapFile(path);) {
             fail("The file was accepted even though it is not a pcap file!");
         } catch (BadPcapFileException e) {
             assertEquals("Bad Pcap File.", e.getMessage());

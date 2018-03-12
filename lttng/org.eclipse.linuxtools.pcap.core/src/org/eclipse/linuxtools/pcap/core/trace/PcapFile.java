@@ -13,12 +13,12 @@
 package org.eclipse.linuxtools.pcap.core.trace;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.channels.FileChannel;
 import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -38,9 +38,10 @@ public class PcapFile implements Closeable {
     // TODO add pcapng support.
     // TODO Make parsing faster by buffering the data.
 
-    private final Path fPcapFilePath;
+    private final String fPcapFilePath;
     private final ByteOrder fByteOrder;
-    private final SeekableByteChannel fFileChannel;
+    private final FileChannel fFileChannel;
+    private final FileInputStream fFileInputStream;
     private final PcapTimestampScale fTimestampPrecision;
 
     private final int fMajorVersion;
@@ -66,7 +67,7 @@ public class PcapFile implements Closeable {
      * @throws IOException
      *             Thrown if there is an IO error while reading the file.
      */
-    public PcapFile(Path filePath) throws BadPcapFileException, IOException {
+    public PcapFile(String filePath) throws BadPcapFileException, IOException {
 
         fFileIndex = new TreeMap<>();
         fCurrentRank = 0;
@@ -74,19 +75,22 @@ public class PcapFile implements Closeable {
         fPcapFilePath = filePath;
 
         // Check file validity
-        if (Files.notExists(fPcapFilePath) || !Files.isRegularFile(fPcapFilePath) ||
-                Files.size(fPcapFilePath) < PcapFileValues.GLOBAL_HEADER_SIZE) {
+        File pcapFile = new File(fPcapFilePath);
+        if ((!fPcapFilePath.endsWith(".cap") && !fPcapFilePath.endsWith(".pcap")) || //$NON-NLS-1$ //$NON-NLS-2$
+                !pcapFile.exists() || !pcapFile.isFile() || pcapFile.length() < PcapFileValues.GLOBAL_HEADER_SIZE) {
             throw new BadPcapFileException("Bad Pcap File."); //$NON-NLS-1$
         }
 
-        if (!Files.isReadable(fPcapFilePath)) {
+        if (!pcapFile.canRead()) {
             throw new BadPcapFileException("File is not readable."); //$NON-NLS-1$
         }
 
         // File is not empty. Try to open.
+        fFileInputStream = new FileInputStream(fPcapFilePath);
+
         @SuppressWarnings("null")
-        @NonNull SeekableByteChannel channel = Files.newByteChannel(fPcapFilePath);
-        fFileChannel = channel;
+        @NonNull FileChannel fileChannel = fFileInputStream.getChannel();
+        fFileChannel = fileChannel;
 
         // Parse the global header.
         // Read the magic number (4 bytes) from the input stream
@@ -345,7 +349,7 @@ public class PcapFile implements Closeable {
      *
      * @return The path of the file.
      */
-    public Path getPath() {
+    public String getPath() {
         return fPcapFilePath;
     }
 
@@ -396,6 +400,7 @@ public class PcapFile implements Closeable {
     @Override
     public void close() throws IOException {
         fFileChannel.close();
+        fFileInputStream.close();
     }
 
 }

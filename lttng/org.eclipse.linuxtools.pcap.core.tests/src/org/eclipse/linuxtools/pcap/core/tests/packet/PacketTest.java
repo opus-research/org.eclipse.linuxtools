@@ -90,7 +90,8 @@ public class PacketTest {
     public void GenericPacketTest() throws BadPacketException, IOException, BadPcapFileException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        try (PcapFile dummy = new PcapFile(trace.getPath())) {
+        String file = trace.getPath();
+        try (PcapFile dummy = new PcapFile(file)) {
             ByteBuffer byteBuffer = fEthernetPacket;
             if (byteBuffer == null) {
                 fail("GenericPacketTest has failed!");
