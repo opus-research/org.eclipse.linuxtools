@@ -259,12 +259,15 @@ public class RunImageEnvironmentTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
+		if (model == null) {
+			return;
+		}
 		try {
 			model.removeEnvironmentVariables();
 			final List<String> environmentVariables = configuration
 					.getAttribute(
-					IRunDockerImageLaunchConfigurationConstants.ENV_VARIABLES,
-					new ArrayList<String>());
+							IRunDockerImageLaunchConfigurationConstants.ENV_VARIABLES,
+							new ArrayList<String>());
 			for (String environmenVariable : environmentVariables) {
 				model.addEnvironmentVariable(EnvironmentVariableModel
 						.createEnvironmentVariableModel(environmenVariable));
@@ -293,6 +296,9 @@ public class RunImageEnvironmentTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
+		if (model == null) {
+			return;
+		}
 		ArrayList<String> envList = new ArrayList<>();
 		for (Object o : model.getEnvironmentVariables()) {
 			EnvironmentVariableModel m = (EnvironmentVariableModel) o;
