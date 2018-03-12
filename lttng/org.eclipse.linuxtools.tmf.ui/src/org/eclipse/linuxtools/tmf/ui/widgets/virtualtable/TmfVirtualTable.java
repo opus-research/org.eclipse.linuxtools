@@ -891,19 +891,6 @@ public class TmfVirtualTable extends Composite {
         }
     }
 
-    private final Listener fColMoveListener = new Listener() {
-        @Override
-        public void handleEvent(Event e) {
-            /*
-             * Work around a display glitch (probably a GTK glitch) where the
-             * moved column's header becomes invisible and unselectable until
-             * you focus on another one.
-             */
-            fTable.setHeaderVisible(false);
-            fTable.setHeaderVisible(true);
-        }
-    };
-
     /**
      * Method setColumnHeaders.
      * @param columnData ColumnData[] the columndata array.
@@ -924,9 +911,6 @@ public class TmfVirtualTable extends Composite {
             } else {
                 column.pack();
             }
-
-            column.setMoveable(true);
-            column.addListener(SWT.Move, fColMoveListener);
         }
     }
 
