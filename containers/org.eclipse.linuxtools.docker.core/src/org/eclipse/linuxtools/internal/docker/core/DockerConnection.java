@@ -68,7 +68,6 @@ import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
 import org.eclipse.linuxtools.docker.core.IDockerContainerListener;
 import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
-import org.eclipse.linuxtools.docker.core.IDockerImageBuildOptions;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
 import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
@@ -112,6 +111,7 @@ import jnr.unixsocket.UnixSocketChannel;
  */
 public class DockerConnection implements IDockerConnection, Closeable {
 
+	@Deprecated
 	public static class Defaults {
 
 		public static final String DEFAULT_UNIX_SOCKET_PATH = "unix:///var/run/docker.sock"; //$NON-NLS-1$
@@ -586,7 +586,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 					}
 				}
 			} catch (DockerCertificateException e) {
-				throw new DockerException(Messages.Open_Connection_Failure, e);
+				throw new DockerException(
+						NLS.bind(Messages.Open_Connection_Failure, this.name));
 			}
 		}
 	}
@@ -1175,61 +1176,35 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 	}
 
-	@Override
-	public String buildImage(final IPath path, final String name,
-			final IDockerProgressHandler handler,
-			final Map<String, Object> buildOptions)
-					throws DockerException, InterruptedException {
-		try {
-			final DockerProgressHandler d = new DockerProgressHandler(handler);
-			final java.nio.file.Path p = FileSystems.getDefault()
-					.getPath(path.makeAbsolute().toOSString());
-			return client.build(p, name, d, getBuildParameters(buildOptions));
-		} catch (com.spotify.docker.client.DockerRequestException e) {
-			throw new DockerException(e.message());
-		} catch (com.spotify.docker.client.DockerException | IOException e) {
-			DockerException f = new DockerException(e);
-			throw f;
-		}
-	}
-
-	/**
-	 * Converts the given {@link Map} of build options into an array of
-	 * {@link BuildParameter} when the build options are set a value different from the default value.
-	 * 
-	 * @param buildOptions
-	 *            the build options
-	 * @return an array of relevant {@link BuildParameter}
-	 */
-	private BuildParameter[] getBuildParameters(
-			final Map<String, Object> buildOptions) {
-		final List<BuildParameter> buildParameters = new ArrayList<>();
-		for (Entry<String, Object> entry : buildOptions.entrySet()) {
-			final Object optionName = entry.getKey();
-			final Object optionValue = entry.getValue();
-
-			if (optionName.equals(IDockerImageBuildOptions.QUIET_BUILD)
-					&& optionValue.equals(true)) {
-				buildParameters.add(BuildParameter.QUIET);
-			} else if (optionName.equals(IDockerImageBuildOptions.NO_CACHE)
-					&& optionValue.equals(true)) {
-				buildParameters.add(BuildParameter.NO_CACHE);
-			} else if (optionName
-					.equals(IDockerImageBuildOptions.RM_INTERMEDIATE_CONTAINERS)
-					&& optionValue.equals(false)) {
-				buildParameters.add(BuildParameter.NO_RM);
-			} else if (optionName
-					.equals(IDockerImageBuildOptions.FORCE_RM_INTERMEDIATE_CONTAINERS)
-					&& optionValue.equals(true)) {
-				buildParameters.add(BuildParameter.FORCE_RM);
-			}
-		}
-		return buildParameters.toArray(new BuildParameter[0]);
-	}
-
 	public void save() {
 		// Currently we have to save all clouds instead of just this one
 		DockerConnectionManager.getInstance().saveConnections();
+	}
+
+	@Override
+	@Deprecated
+	public String createContainer(IDockerContainerConfig c)
+			throws DockerException, InterruptedException {
+		IDockerHostConfig hc = new DockerHostConfig(HostConfig.builder()
+				.build());
+		return createContainer(c, hc);
+	}
+
+	@Override
+	@Deprecated
+	public String createContainer(final IDockerContainerConfig c,
+			final String containerName)
+			throws DockerException, InterruptedException {
+		IDockerHostConfig hc = new DockerHostConfig(HostConfig.builder()
+				.build());
+		return createContainer(c, hc, containerName);
+	}
+
+	@Override
+	public String createContainer(final IDockerContainerConfig c,
+			final IDockerHostConfig hc) throws DockerException,
+			InterruptedException {
+		return createContainer(c, hc, null);
 	}
 
 	@Override

@@ -29,7 +29,6 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -37,10 +36,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IDockerImageBuildOptions;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
-import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageBuildDialog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -70,7 +67,7 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 	}
 
 	public void launch(IResource resource, String mode) {
-		ILaunchConfiguration config = findLaunchConfiguration(resource);
+		ILaunchConfiguration config = findLaunchConfiguration(resource, mode);
 		if (config != null) {
 			DebugUITools.launch(config, mode);
 		}
@@ -82,10 +79,13 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 	 * 
 	 * @param resource
 	 *            The Dockerfile to look up launch for.
+	 * @param mode
+	 *            Launch mode.
 	 *
 	 * @return A re-useable config or <code>null</code> if none.
 	 */
-	protected ILaunchConfiguration findLaunchConfiguration(IResource resource) {
+	protected ILaunchConfiguration findLaunchConfiguration(IResource resource,
+			String mode) {
 		ILaunchConfiguration configuration = null;
 		ILaunchConfigurationType configType = getLaunchConfigType();
 		List<ILaunchConfiguration> candidateConfigs = Collections.emptyList();
@@ -97,9 +97,8 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 				String sourcePath = config.getAttribute(
 						IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_LOCATION,
 						""); //$NON-NLS-1$
-				boolean workspaceRelative = config.getAttribute(
-						IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION,
-						false);
+				boolean workspaceRelative = config
+						.getAttribute(IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION, false);
 				IPath dockerfilePath = getPath(sourcePath, workspaceRelative);
 				if (dockerfilePath
 						.equals(resource.getLocation().removeLastSegments(1))) {
@@ -119,7 +118,7 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 		// one.
 		int candidateCount = candidateConfigs.size();
 		if (candidateCount < 1) {
-			configuration = createConfiguration(resource);
+			configuration = createConfiguration(resource, mode, true);
 		} else if (candidateCount == 1) {
 			configuration = candidateConfigs.get(0);
 		} else {
@@ -167,12 +166,29 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 	 *
 	 * @param resource
 	 *            a Dockerfile file to build
+	 * @param save
+	 *            true if the configuration should be saved to the underlying
+	 *            resource, and false if it should not be saved.
 	 * @return a launch configuration generated for the Dockerfile build.
 	 */
-	protected ILaunchConfiguration createConfiguration(
-			final IResource resource) {
+	protected ILaunchConfiguration createConfiguration(IResource resource,
+			@SuppressWarnings("unused") String mode, boolean save) {
+		ILaunchConfiguration config = null;
 		try {
-			final IDockerConnection[] connections = DockerConnectionManager
+			ILaunchConfigurationType configType = getLaunchConfigType();
+			ILaunchConfigurationWorkingCopy wc = configType.newInstance(null,
+					getLaunchManager()
+							.generateLaunchConfigurationName("Dockerfile[" //$NON-NLS-1$
+									+ resource.getProject().getName() + "]")); //$NON-NLS-1$
+
+			wc.setAttribute(
+					IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_LOCATION,
+					resource.getFullPath().removeLastSegments(1).toString());
+			wc.setAttribute(
+					IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION,
+					true);
+
+			IDockerConnection[] connections = DockerConnectionManager
 					.getInstance().getConnections();
 			if (connections.length == 0) {
 				Display.getDefault().syncExec(new Runnable() {
@@ -189,76 +205,27 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 
 				});
 				return null;
+			} else if (connections.length == 1) {
+				wc.setAttribute(
+					IBuildDockerImageLaunchConfigurationConstants.DOCKER_CONNECTION,
+					connections[0].getName());
 			} else {
-				final ImageBuildDialog dialog = new ImageBuildDialog(
-						getActiveWorkbenchShell());
-				final int result = dialog.open();
-				if (result == IDialogConstants.OK_ID) {
-					final ILaunchConfigurationType configType = getLaunchConfigType();
-					final ILaunchConfigurationWorkingCopy wc = configType
-							.newInstance(null,
-									getLaunchManager()
-											.generateLaunchConfigurationName(
-													createLaunchConfigurationName(
-															dialog.getRepoName(),
-															resource))); // $NON-NLS-1$
-					wc.setAttribute(
-							IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_LOCATION,
-							resource.getFullPath().removeLastSegments(1)
-									.toString());
-					wc.setAttribute(
-							IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION,
-							true);
-
-					final IDockerConnection connection = dialog.getConnection();
-					final String repoName = dialog.getRepoName();
-					wc.setAttribute(IDockerImageBuildOptions.DOCKER_CONNECTION,
-							connection.getName());
-					wc.setAttribute(IDockerImageBuildOptions.REPO_NAME,
-							repoName);
-					return wc.doSave();
-				}
+				IDockerConnection connection = chooseConnection(connections);
+				if (connection == null)
+					return null;
+				wc.setAttribute(
+						IBuildDockerImageLaunchConfigurationConstants.DOCKER_CONNECTION,
+						connection.getName());
+			}
+			if (save) {
+				config = wc.doSave();
+			} else {
+				config = wc;
 			}
 		} catch (CoreException e) {
-			Activator.log(e);
+			e.printStackTrace();
 		}
-		return null;
-	}
-
-	/**
-	 * Creates a Launch Configuration name from the given repoName or from the
-	 * given resource's project if the repoName was <code>null</code>.
-	 * 
-	 * @param imageName the full image name
-	 * @param resource the Dockerfile to use to build the image
-	 * @return the {@link ILaunchConfiguration} name
-	 */
-	public static String createLaunchConfigurationName(final String imageName,
-			final IResource resource) {
-		if (imageName != null) {
-			final String repository = BuildDockerImageUtils
-					.getRepository(imageName);
-			final String name = BuildDockerImageUtils.getName(imageName);
-			final String tag = BuildDockerImageUtils.getTag(imageName);
-			final StringBuilder configNameBuilder = new StringBuilder();
-			// image name is the minimum requirement
-			if (name != null) {
-				if (repository != null) {
-					configNameBuilder.append(repository).append('_'); // $NON-NLS-1$
-				}
-				if (name != null) {
-					configNameBuilder.append(name);
-				}
-				if (tag != null) {
-					configNameBuilder.append(" [").append(tag).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
-				} else {
-					configNameBuilder.append(" [latest]"); //$NON-NLS-1$
-				}
-				return configNameBuilder.toString();
-			}
-		}
-		return "Dockerfile [" //$NON-NLS-1$
-				+ resource.getProject().getName() + "]"; //$NON-NLS-1$
+		return config;
 	}
 
 	/**

@@ -10,6 +10,6 @@
  *******************************************************************************/
 
 /**
- * 
+ * Placeholder for the org.hamcrest package
  */
-package org.eclipse.linuxtools.internal.docker.ui.validators;
+package org.hamcrest;

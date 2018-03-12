@@ -12,4 +12,4 @@
 /**
  * 
  */
-package org.eclipse.linuxtools.internal.docker.ui.validators;
+package org.eclipse.linuxtools.internal.docker.ui.testutils;

@@ -20,10 +20,9 @@ public interface IDockerContainerListener {
 	 * 
 	 * @param connection
 	 *            - the Docker connection
-	 * @param containers
-	 *            the new list of containers
+	 * @param list
+	 *            - the new list of {@link IDockerContainer}
 	 */
-	void listChanged(IDockerConnection connection,
-			List<IDockerContainer> containers);
+	void listChanged(IDockerConnection connection, List<IDockerContainer> list);
 
 }
