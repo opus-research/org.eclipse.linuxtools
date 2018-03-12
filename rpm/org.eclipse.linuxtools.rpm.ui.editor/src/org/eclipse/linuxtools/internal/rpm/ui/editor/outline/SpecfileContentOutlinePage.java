@@ -48,16 +48,19 @@ public class SpecfileContentOutlinePage extends ContentOutlinePage {
             final Control control = viewer.getControl();
             if (control != null && !control.isDisposed())
             {
-                control.getDisplay().asyncExec(() -> {
-				    if (!control.isDisposed()) {
-				        control.setRedraw(false);
-				        if (input != null) {
-				            viewer.setInput(input);
-				        }
-				        viewer.expandAll();
-				        control.setRedraw(true);
-				    }
-				});
+                control.getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!control.isDisposed()) {
+                            control.setRedraw(false);
+                            if (input != null) {
+                                viewer.setInput(input);
+                            }
+                            viewer.expandAll();
+                            control.setRedraw(true);
+                        }
+                    }
+                });
             }
         }
     }

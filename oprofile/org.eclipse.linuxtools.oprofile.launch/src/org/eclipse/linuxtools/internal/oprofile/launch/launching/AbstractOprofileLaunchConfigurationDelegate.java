@@ -283,7 +283,12 @@ public abstract class AbstractOprofileLaunchConfigurationDelegate extends Abstra
                 		
                 		// Open the OCount View and display output from ocount
                 		final String text = buffer.toString();
-                       	Display.getDefault().syncExec(() -> refreshOcountView(text));
+                       	Display.getDefault().syncExec(new Runnable() {
+                    		@Override
+                    		public void run() {
+                    			refreshOcountView(text);
+                    		}
+                    	});
                 	} catch (IOException e) {
                 		// TODO Auto-generated catch block
                 		e.printStackTrace();
