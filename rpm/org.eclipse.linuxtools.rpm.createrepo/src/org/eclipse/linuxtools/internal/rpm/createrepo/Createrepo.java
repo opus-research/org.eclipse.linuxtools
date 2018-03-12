@@ -96,9 +96,8 @@ public class Createrepo {
      * Check if the createrepo command is available in the system.
      *
      * @return The status of whether or not createrepo was found.
-     * @throws CoreException Occurs when createrepo is not found or executing the command failed.
      */
-    public static IStatus checkIfAvailable() throws CoreException {
+    public static IStatus checkIfAvailable() {
         try {
             BufferedProcessInputStream bpis = Utils.runCommandToInputStream("which", ICreaterepoConstants.CREATEREPO_COMMAND); //$NON-NLS-1$
             // error executing "which createrepo", most likely due to it not being found
@@ -109,17 +108,15 @@ public class Createrepo {
             }
             return Status.OK_STATUS;
         } catch (IOException e) {
-            IStatus status = new Status(
+            return new Status(
                     IStatus.WARNING,
                     FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
                     Messages.Createrepo_errorTryingToFindCommand, e);
-            throw new CoreException(status);
         } catch (InterruptedException e) {
-            IStatus status = new Status(
+            return new Status(
                     IStatus.CANCEL,
                     FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
                     Messages.Createrepo_jobCancelled, e);
-            throw new CoreException(status);
         }
     }
 
@@ -132,9 +129,12 @@ public class Createrepo {
      *         requires: yum version >= 3.2.23
      *
      * @return True if version is supported, false otherwise.
-     * @throws CoreException Occurs when failure to get version number.
      */
-    public static IStatus isCorrectVersion() throws CoreException {
+    public static IStatus isCorrectVersion() {
+        IStatus available = checkIfAvailable();
+        if (!available.isOK()) {
+            return available;
+        }
         final String CREATEREPO_VALID_VERSION = "0.9.8"; //$NON-NLS-1$
         final String YUM_VALID_VERSION = "3.2.23"; //$NON-NLS-1$
         String createrepoVersion = ICreaterepoConstants.EMPTY_STRING;
@@ -179,17 +179,15 @@ public class Createrepo {
                                 YUM_VALID_VERSION, yumVersion}), null);
             }
         } catch (IOException e) {
-            IStatus status = new Status(
+            return new Status(
                     IStatus.CANCEL,
                     FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
                     Messages.Createrepo_errorCancelled, e);
-            throw new CoreException(status);
         } catch (ArrayIndexOutOfBoundsException e) {
-            IStatus status = new Status(
+            return new Status(
                     IStatus.ERROR,
                     FrameworkUtil.getBundle(CreaterepoProject.class).getSymbolicName(),
                     NLS.bind(Messages.Createrepo_errorPasingVersion, new String[] {createrepoVersion, yumVersion}), e);
-            throw new CoreException(status);
         }
     }
 
