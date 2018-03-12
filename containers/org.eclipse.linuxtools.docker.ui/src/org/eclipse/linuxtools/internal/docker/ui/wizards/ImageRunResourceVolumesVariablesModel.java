@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -76,9 +76,9 @@ public class ImageRunResourceVolumesVariablesModel
 
 	private Set<DataVolumeModel> selectedDataVolumes = new HashSet<>();
 
-	private WritableList<DataVolumeModel> dataVolumes = new WritableList<>();
+	private WritableList dataVolumes = new WritableList();
 
-	private WritableList<EnvironmentVariableModel> environmentVariables = new WritableList<>();
+	private WritableList environmentVariables = new WritableList();
 
 	private IDockerImage selectedImage;
 
@@ -133,7 +133,7 @@ public class ImageRunResourceVolumesVariablesModel
 		return imageInfo;
 	}
 
-	public WritableList<DataVolumeModel> getDataVolumes() {
+	public WritableList getDataVolumes() {
 		return dataVolumes;
 	}
 
@@ -158,7 +158,7 @@ public class ImageRunResourceVolumesVariablesModel
 				this.selectedDataVolumes = selectedDataVolumes);
 	}
 
-	public WritableList<EnvironmentVariableModel> getEnvironmentVariables() {
+	public WritableList getEnvironmentVariables() {
 		return environmentVariables;
 	}
 
@@ -178,7 +178,7 @@ public class ImageRunResourceVolumesVariablesModel
 	}
 
 	public void setEnvironmentVariables(
-			final WritableList<EnvironmentVariableModel> environmentVariables) {
+			final WritableList environmentVariables) {
 		firePropertyChange(ENVIRONMENT_VARIABLES, this.environmentVariables,
 				this.environmentVariables = environmentVariables);
 	}
@@ -197,14 +197,11 @@ public class ImageRunResourceVolumesVariablesModel
 	}
 
 	/**
-	 * @return the total memory of the Docker daemon, in MB, or <code>-1</code>
-	 *         if the data is not available.
+	 * @return the total memory of the Docker daemon, in MB
+	 * @throws DockerException
 	 */
 	public int getTotalMemory() {
-		if (this.info != null) {
-			return (int) (this.info.getTotalMemory() / MB);
-		}
-		return -1;
+		return (int) (this.info.getTotalMemory() / MB);
 	}
 
 	public boolean isEnableResourceLimitations() {

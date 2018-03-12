@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,11 +33,12 @@ import org.eclipse.linuxtools.internal.vagrant.core.EnvironmentsManager;
 import org.eclipse.linuxtools.internal.vagrant.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
@@ -87,13 +88,12 @@ public class CreateVMPage extends WizardPage {
 
 	@Override
 	public void createControl(Composite parent) {
-		ScrolledComposite scrollTop = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
-		scrollTop.setExpandVertical(true);
-		scrollTop.setExpandHorizontal(true);
-
-		final Composite container = new Composite(scrollTop, SWT.NONE);
+		parent.setLayout(new GridLayout());
+		final Composite container = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(3).margins(6, 6)
 				.applyTo(container);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(1, 1)
+				.grab(true, false).applyTo(container);
 
 		// VM Name
 		final Label vmNameLabel = new Label(container, SWT.NONE);
@@ -172,7 +172,12 @@ public class CreateVMPage extends WizardPage {
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxLocText),
 				boxLocObservable);
-		boxLocText.addModifyListener(e -> vmFileChanged(boxLocText.getText()));
+		boxLocText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				vmFileChanged(boxLocText.getText());
+			}
+		});
 
 		// Vagrantfile search
 		final Button vgFilesearchButton = new Button(container, SWT.NONE);
@@ -181,7 +186,7 @@ public class CreateVMPage extends WizardPage {
 		vgFilesearchButton.setEnabled(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(vgFilesearchButton);
-		vgFilesearchButton.addSelectionListener(onSearchVMFile());
+		vgFilesearchButton.addSelectionListener(onSearchImage());
 
 		customVMFileButton.addSelectionListener(
 				onCheckCustomVMFile(vmNameText, boxRefText, boxLocText, vgFilesearchButton, boxSearchButton));
@@ -190,17 +195,12 @@ public class CreateVMPage extends WizardPage {
 				boxRefObservable, boxLocObservable));
 
 		advanced = new CreateVMAdvancedComposite(
-				container, scrollTop, model);
+				container, model);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(3, 1)
 				.grab(true, false).applyTo(advanced);
 
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
-
-		scrollTop.setContent(container);
-		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		scrollTop.setSize(point);
-		scrollTop.setMinSize(point);
 		setControl(container);
 	}
 
@@ -233,28 +233,25 @@ public class CreateVMPage extends WizardPage {
 		};
 	}
 
+	/**
+	 * Opens the {@link ImageSearch} dialog with current image name pre-filled.
+	 * 
+	 * @return
+	 */
 	private SelectionListener onSearchImage() {
 		return new SelectionAdapter() {
-			@Override
-			public void widgetSelected(final SelectionEvent e) {
-				FileDialog fd = new FileDialog(getShell());
-				String location = fd.open();
-				if (location != null && !location.isEmpty()) {
-					model.setBoxRef(location);
-				}
-			}
-		};
-	}
 
-	private SelectionListener onSearchVMFile() {
-		return new SelectionAdapter() {
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
 				FileDialog fd = new FileDialog(getShell());
 				String location = fd.open();
 				if (location != null && !location.isEmpty()) {
-					model.setVMFile(location);
-					vmFileChanged(location);
+					if (location.endsWith("box")) { //$NON-NLS-1$
+						model.setBoxRef(location);
+					} else {
+						model.setVMFile(location);
+						vmFileChanged(location);
+					}
 				}
 			}
 		};

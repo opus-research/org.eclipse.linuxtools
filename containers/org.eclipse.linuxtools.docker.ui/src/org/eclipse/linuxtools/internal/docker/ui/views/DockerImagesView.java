@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.internal.docker.ui.views;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -91,11 +92,6 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	
 	@Override
 	public void dispose() {
-		// remove this listener instance registered on the Docker connection
-		if (connection != null) {
-			connection.removeImageListener(this);
-		}
-
 		// stop tracking selection changes in the Docker Explorer view (only)
 		getSite().getWorkbenchWindow().getSelectionService()
 				.removeSelectionListener(DockerExplorerView.VIEW_ID, this);
@@ -187,16 +183,12 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 			@Override
 			public String getText(final Object element) {
 				if (element instanceof IDockerImage) {
-					final String imageId = ((IDockerImage) element).id();
-					if (imageId.length() > 12) {
-						return imageId.substring(0, 12);
-					}
-					return imageId;
+					return ((IDockerImage) element).id();
 				}
 				return super.getText(element);
 			}
 		});
-		// 'Repo/Tags' column
+		// 'Tags' column
 		final TableViewerColumn tagsColumn = createColumn(DVMessages
 				.getString("TAGS")); //$NON-NLS-1$
 		setLayout(tagsColumn, tableLayout, 150);
@@ -204,17 +196,19 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 			@Override
 			public String getText(final Object element) {
 				if (element instanceof IDockerImage) {
-					final IDockerImage image = (IDockerImage) element;
-					final StringBuilder messageBuilder = new StringBuilder();
-					for (Iterator<String> iterator = image.repoTags()
-							.iterator(); iterator.hasNext();) {
-						final String repoTag = iterator.next();
-						messageBuilder.append(repoTag);
+					final StringBuilder tags = new StringBuilder();
+					List<String> repoTags = new ArrayList<>();
+					repoTags.addAll(((IDockerImage) element).repoTags());
+					Collections.sort(repoTags);
+					for (Iterator<String> iterator = repoTags.iterator(); iterator
+							.hasNext();) {
+						final String tag = iterator.next();
+						tags.append(tag);
 						if (iterator.hasNext()) {
-							messageBuilder.append('\n');
+							tags.append(System.getProperty("line.separator")); //$NON-NLS-1$
 						}
 					}
-					return messageBuilder.toString();
+					return tags.toString();
 				}
 				return super.getText(element);
 			}
@@ -276,8 +270,8 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		viewer.setComparator(comparator);
 		// apply search filter
 		this.viewer.addFilter(getImagesFilter());
-		final IDockerConnection[] connections = DockerConnectionManager
-				.getInstance()
+
+		IDockerConnection[] connections = DockerConnectionManager.getInstance()
 				.getConnections();
 		if (connections.length > 0) {
 			setConnection(connections[0]);
@@ -372,22 +366,8 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 			Display.getDefault().asyncExec(new Runnable() {
 				@Override
 				public void run() {
-					if (DockerImagesView.this.viewer != null
-							&& !DockerImagesView.this.viewer.getTable()
-									.isDisposed()) {
-						// following is to force Image property testers
-						// to run again after list is updated. They won't do so by
-						// default.
-						final ISelection currentSelection = DockerImagesView.this.viewer
-								.getSelection();
-						DockerImagesView.this.viewer.refresh();
-						// restore the selection
-						if (currentSelection != null) {
-							DockerImagesView.this.viewer
-									.setSelection(currentSelection);
-						}
-						refreshViewTitle();
-					}
+					DockerImagesView.this.viewer.refresh();
+					refreshViewTitle();
 				}
 			});
 		}

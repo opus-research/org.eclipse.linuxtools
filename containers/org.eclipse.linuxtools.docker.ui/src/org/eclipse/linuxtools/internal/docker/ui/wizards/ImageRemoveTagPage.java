@@ -18,8 +18,6 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -33,7 +31,7 @@ public class ImageRemoveTagPage extends WizardPage {
 	private final static String REMOVE_TAG_LABEL = "ImageRemoveTagName.label"; //$NON-NLS-1$
 	private final static String REMOVE_TAG_TOOLTIP = "ImageRemoveTagName.toolTip"; //$NON-NLS-1$
 
-	private String selectedTag;
+	private Combo tagCombo;
 	private IDockerImage image;
 
 	public ImageRemoveTagPage(IDockerImage image) {
@@ -45,7 +43,7 @@ public class ImageRemoveTagPage extends WizardPage {
 	}
 
 	public String getTag() {
-		return selectedTag;
+		return tagCombo.getText();
 	}
 
 	@Override
@@ -61,24 +59,18 @@ public class ImageRemoveTagPage extends WizardPage {
 		repoLabel.setText(WizardMessages.getString(REMOVE_TAG_LABEL));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(repoLabel);
-		final Combo tagCombo = new Combo(container, SWT.BORDER | SWT.READ_ONLY);
+		tagCombo = new Combo(container, SWT.BORDER | SWT.READ_ONLY);
 		tagCombo.setToolTipText(WizardMessages.getString(REMOVE_TAG_TOOLTIP));
-		tagCombo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				selectedTag = tagCombo.getText();
-			}
-		});
 		// Set up combo with repoTags that can be removed
 		final List<String> repoTags = image.repoTags();
 		tagCombo.setItems(repoTags.toArray(new String[0]));
 		tagCombo.select(0);
-		selectedTag = tagCombo.getItem(0);
 
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).applyTo(tagCombo);
 
 		setControl(container);
+		setPageComplete(false);
 	}
 
 }

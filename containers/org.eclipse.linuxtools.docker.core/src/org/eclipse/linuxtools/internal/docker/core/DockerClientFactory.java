@@ -15,11 +15,9 @@ import java.io.File;
 import java.net.URI;
 
 import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.messages.AuthConfig;
 
 /**
  * Factory for {@link DockerClient}. Decoupling from {@link DockerConnection}
@@ -43,28 +41,17 @@ public class DockerClientFactory {
 	 */
 	public DockerClient getClient(final String socketPath, final String tcpHost,
 			final String tcpCertPath) throws DockerCertificateException {
-		final boolean validSocketPath = socketPath != null
-				&& !socketPath.isEmpty();
-		final boolean validTcpHost = tcpHost != null && !tcpHost.isEmpty();
-		final boolean validTcpCertPath = tcpCertPath != null
-				&& !tcpCertPath.isEmpty();
-		Builder builder = DefaultDockerClient.builder();
-		try {
-			builder.authConfig(AuthConfig.fromDockerConfig().build());
-		} catch (Exception e) {
-			// AuthConfig can't be found, continue
-		}
-		if (validSocketPath) {
-			return builder.uri(socketPath).build();
-		} else if (validTcpCertPath && validTcpHost) {
-			return builder.uri(URI.create(tcpHost))
+		if (socketPath != null) {
+			return DefaultDockerClient.builder().uri(socketPath).build();
+		} else if (tcpCertPath != null) {
+			return DefaultDockerClient.builder().uri(URI.create(tcpHost))
 					.dockerCertificates(new DockerCertificates(
 							new File(tcpCertPath).toPath()))
 					.build();
-		} else if (validTcpHost) {
-			return builder.uri(URI.create(tcpHost))
+		} else {
+			return DefaultDockerClient.builder().uri(URI.create(tcpHost))
 					.build();
 		}
-		return null;
+
 	}
 }
