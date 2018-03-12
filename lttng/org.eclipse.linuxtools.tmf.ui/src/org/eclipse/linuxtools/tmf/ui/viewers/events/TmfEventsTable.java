@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2014 Ericsson
+ * Copyright (c) 2010, 2015 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -650,9 +650,16 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 }
                 final TableItem[] selection = fTable.getSelection();
                 if ((selection != null) && (selection.length > 0)) {
-                    final TmfTimestamp ts = (TmfTimestamp) fTable.getSelection()[0].getData(Key.TIMESTAMP);
+                    TableItem item = fTable.getSelection()[0];
+                    final TmfTimestamp ts = (TmfTimestamp) item.getData(Key.TIMESTAMP);
                     if (ts != null) {
                         broadcast(new TmfTimeSynchSignal(TmfEventsTable.this, ts));
+                    }
+                    if (item.getData() instanceof ITmfEvent) {
+                        broadcast(new TmfEventSelectedSignal(TmfEventsTable.this, (ITmfEvent) item.getData()));
+                        fireSelectionChanged(new SelectionChangedEvent(TmfEventsTable.this, new StructuredSelection(item.getData())));
+                    } else {
+                        fireSelectionChanged(new SelectionChangedEvent(TmfEventsTable.this, StructuredSelection.EMPTY));
                     }
                 }
             }
@@ -831,8 +838,10 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             @Override
             public void run() {
                 IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                IHandlerService handlerService = (IHandlerService) activePage.getActiveEditor().getSite().getService(IHandlerService.class);
-                ICommandService cmdService = (ICommandService) activePage.getActiveEditor().getSite().getService(ICommandService.class);
+                Object handlerServiceObject = activePage.getActiveEditor().getSite().getService(IHandlerService.class);
+                IHandlerService handlerService = (IHandlerService) handlerServiceObject;
+                Object cmdServiceObject = activePage.getActiveEditor().getSite().getService(ICommandService.class);
+                ICommandService cmdService = (ICommandService) cmdServiceObject;
                 try {
                     HashMap<String, Object> parameters = new HashMap<>();
                     Command command = cmdService.getCommand(ExportToTextCommandHandler.COMMAND_ID);
@@ -1113,9 +1122,15 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      */
     protected void setItemData(final TableItem item, final ITmfEvent event, final long rank) {
         String[] itemStrings = getItemStrings(fColumns, event);
+
+        // Get the actual ITmfEvent from the CachedEvent
+        ITmfEvent tmfEvent = event;
+        if (event instanceof CachedEvent) {
+            tmfEvent = ((CachedEvent) event).event;
+        }
         item.setText(itemStrings);
-        item.setData(event);
-        item.setData(Key.TIMESTAMP, new TmfTimestamp(event.getTimestamp()));
+        item.setData(tmfEvent);
+        item.setData(Key.TIMESTAMP, new TmfTimestamp(tmfEvent.getTimestamp()));
         item.setData(Key.RANK, rank);
 
         final Collection<Long> markerIds = fBookmarksMap.get(rank);
@@ -1142,14 +1157,13 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         boolean searchNoMatch = false;
         final ITmfFilter searchFilter = (ITmfFilter) fTable.getData(Key.SEARCH_OBJ);
         if (searchFilter != null) {
-            if (searchFilter.matches(event)) {
+            if (searchFilter.matches(tmfEvent)) {
                 searchMatch = true;
             } else {
                 searchNoMatch = true;
             }
         }
-
-        final ColorSetting colorSetting = ColorSettingsManager.getColorSetting(event);
+        final ColorSetting colorSetting = ColorSettingsManager.getColorSetting(tmfEvent);
         if (searchNoMatch) {
             item.setForeground(colorSetting.getDimmedForegroundColor());
             item.setBackground(colorSetting.getDimmedBackgroundColor());

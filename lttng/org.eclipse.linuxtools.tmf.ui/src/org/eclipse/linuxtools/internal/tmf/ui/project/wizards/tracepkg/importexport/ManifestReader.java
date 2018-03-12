@@ -111,48 +111,50 @@ public class ManifestReader {
      */
     public static TracePackageElement[] loadElementsFromManifest(InputStream inputStream) throws IOException, SAXException, ParserConfigurationException {
 
-        List<TracePackageElement> packageElements = new ArrayList<>();
-        TracePackageElement element = null;
         Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+        Element rootElement = doc.getDocumentElement();
+        return loadElementsFromNode(rootElement);
+    }
 
-        NodeList traceElements = doc.getDocumentElement().getElementsByTagName(ITracePackageConstants.TRACE_ELEMENT);
+    /**
+     * Load package elements from a manifest (XML element)
+     *
+     * @param rootElement
+     *            the root element to start loading from
+     * @return the loaded elements
+     */
+    public static TracePackageElement[] loadElementsFromNode(Element rootElement) {
+        List<TracePackageElement> packageElements = new ArrayList<>();
+        NodeList traceElements = rootElement.getElementsByTagName(ITracePackageConstants.TRACE_ELEMENT);
         for (int i = 0; i < traceElements.getLength(); i++) {
             Node traceNode = traceElements.item(i);
             if (traceNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element traceElement = (Element) traceNode;
                 String traceName = traceElement.getAttribute(ITracePackageConstants.TRACE_NAME_ATTRIB);
                 String traceType = traceElement.getAttribute(ITracePackageConstants.TRACE_TYPE_ATTRIB);
-                element = new TracePackageTraceElement(null, traceName, traceType);
-
-                List<TracePackageElement> children = new ArrayList<>();
+                TracePackageElement element = new TracePackageTraceElement(null, traceName, traceType);
                 NodeList fileElements = traceElement.getElementsByTagName(ITracePackageConstants.TRACE_FILE_ELEMENT);
                 for (int j = 0; j < fileElements.getLength(); j++) {
                     Node fileNode = fileElements.item(j);
                     if (fileNode.getNodeType() == Node.ELEMENT_NODE) {
                         Element fileElement = (Element) fileNode;
                         String fileName = fileElement.getAttribute(ITracePackageConstants.TRACE_FILE_NAME_ATTRIB);
-                        children.add(new TracePackageFilesElement(element, fileName));
+                        new TracePackageFilesElement(element, fileName);
                     }
                 }
-
-                TracePackageSupplFilesElement supplFilesElement = new TracePackageSupplFilesElement(element);
 
                 // Supplementary files
-                List<TracePackageSupplFileElement> suppFiles = new ArrayList<>();
                 NodeList suppFilesElements = traceElement.getElementsByTagName(ITracePackageConstants.SUPPLEMENTARY_FILE_ELEMENT);
-                for (int j = 0; j < suppFilesElements.getLength(); j++) {
-                    Node suppFileNode = suppFilesElements.item(j);
-                    if (suppFileNode.getNodeType() == Node.ELEMENT_NODE) {
-                        Element suppFileElement = (Element) suppFileNode;
-                        String fileName = suppFileElement.getAttribute(ITracePackageConstants.SUPPLEMENTARY_FILE_NAME_ATTRIB);
-                        TracePackageSupplFileElement supplFile = new TracePackageSupplFileElement(fileName, supplFilesElement);
-                        suppFiles.add(supplFile);
+                if (suppFilesElements.getLength() > 0) {
+                    TracePackageSupplFilesElement supplFilesElement = new TracePackageSupplFilesElement(element);
+                    for (int j = 0; j < suppFilesElements.getLength(); j++) {
+                        Node suppFileNode = suppFilesElements.item(j);
+                        if (suppFileNode.getNodeType() == Node.ELEMENT_NODE) {
+                            Element suppFileElement = (Element) suppFileNode;
+                            String fileName = suppFileElement.getAttribute(ITracePackageConstants.SUPPLEMENTARY_FILE_NAME_ATTRIB);
+                            new TracePackageSupplFileElement(fileName, supplFilesElement);
+                        }
                     }
-                }
-
-                if (!suppFiles.isEmpty()) {
-                    supplFilesElement.setChildren(suppFiles.toArray(EMPTY_ARRAY));
-                    children.add(supplFilesElement);
                 }
 
                 // bookmarks
@@ -178,10 +180,9 @@ public class ManifestReader {
                     }
                 }
                 if (!bookmarkAttribs.isEmpty()) {
-                    children.add(new TracePackageBookmarkElement(element, bookmarkAttribs));
+                    new TracePackageBookmarkElement(element, bookmarkAttribs);
                 }
 
-                element.setChildren(children.toArray(EMPTY_ARRAY));
                 packageElements.add(element);
             }
         }
