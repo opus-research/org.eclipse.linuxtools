@@ -8,12 +8,4 @@
             </message_arguments>
         </filter>
     </resource>
-    <resource path="src/org/eclipse/linuxtools/tmf/ui/widgets/timegraph/dialogs/FilteredCheckboxTree.java" type="org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs.FilteredCheckboxTree$FilterableCheckboxTreeViewer">
-        <filter comment="Extending the CheckboxTreeViewer to keep the check state of all the tree nodes, even if filtered." id="571473929">
-            <message_arguments>
-                <message_argument value="CheckboxTreeViewer"/>
-                <message_argument value="FilterableCheckboxTreeViewer"/>
-            </message_arguments>
-        </filter>
-    </resource>
 </component>
