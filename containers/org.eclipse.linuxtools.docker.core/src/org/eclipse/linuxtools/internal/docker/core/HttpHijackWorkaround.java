@@ -65,14 +65,7 @@ public class HttpHijackWorkaround {
 		if (uri.startsWith("unix:")) {
 			list.add(new String[] { "sun.nio.ch.ChannelInputStream", "ch" });
 		} else if (uri.startsWith("https:")) {
-			float jvmVersion = Float.parseFloat(System.getProperty("java.specification.version"));
-			String fName;
-			if (jvmVersion < 1.9) {
-				fName = "c";
-			} else {
-				fName = "socket";
-			}
-			list.add(new String[] { "sun.security.ssl.AppInputStream", fName });
+			list.add(new String[] { "sun.security.ssl.AppInputStream", "c" });
 		} else {
 			list.add(new String[] { "java.net.SocketInputStream", "socket" });
 		}
