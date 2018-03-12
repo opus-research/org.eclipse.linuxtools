@@ -17,6 +17,7 @@
 package org.eclipse.linuxtools.internal.gprof.launch;
 
 import java.io.File;
+import java.net.URI;
 
 import org.eclipse.cdt.debug.core.CDebugUtils;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
@@ -327,7 +328,7 @@ public class GprofLaunchConfigurationDelegate extends AbstractCLaunchDelegate {
       * @throws CoreException
       * @since 1.1
       */
-    private static IPath getExePath(ILaunchConfiguration config) throws CoreException{
+    private IPath getExePath(ILaunchConfiguration config) throws CoreException{
         return CDebugUtils.verifyProgramPath( config );
     }
 
