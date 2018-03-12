@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,17 +12,21 @@
 package org.eclipse.linuxtools.docker.core;
 
 /**
- * A tag (or version) for a given repository.
+ * Exception thrown when the Docker command to run was not found (eg: usually because of wrong settings)
  */
-public interface IRepositoryTag {
+public class DockerCommandNotFoundException extends DockerException {
+
+	private static final long serialVersionUID = -7118879033799481279L;
 
 	/**
-	 * @return Name of the tag.
+	 * Constructor.
+	 * 
+	 * @param message
+	 *            the error message
 	 */
-	String getName();
+	public DockerCommandNotFoundException(final String message) {
+		super(message);
+	}
 
-	/**
-	 * @return The corresponding image layer for this specific tag
-	 */
-	String getLayer();
+
 }
