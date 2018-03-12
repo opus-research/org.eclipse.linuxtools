@@ -664,9 +664,8 @@ public class NewDockerConnectionPage extends WizardPage {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (!DockerMachine
-						.checkPathToDockerMachine(getDockerMachineInstallDir())
-						|| getVMDriverInstallDir().equals("")) { //$NON-NLS-1$
+				if (getDockerMachineInstallDir().equals("")
+						|| getVMDriverInstallDir().equals("")) {
 					final boolean confirm = MessageDialog.openConfirm(
 							getShell(),
 									WizardMessages.getString(
@@ -680,8 +679,8 @@ public class NewDockerConnectionPage extends WizardPage {
 										DOCKER_MACHINE_PREFERENCE_PAGE_ID },
 								null).open();
 						// after user input data, check again
-						if (getDockerMachineInstallDir().equals("") //$NON-NLS-1$
-								|| getVMDriverInstallDir().equals("")) { //$NON-NLS-1$
+						if (getDockerMachineInstallDir().equals("")
+								|| getVMDriverInstallDir().equals("")) {
 							return;
 						}
 					} else {
