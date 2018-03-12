@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.internal.lttng2.control.ui.views.service;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -843,10 +842,17 @@ public class LTTngControlServiceMI extends LTTngControlService {
                     }
 
                     Node rawDataNode = null;
-                    TraceEventType eventType = probeEvent.getEventType();
-                    if (eventType == TraceEventType.FUNCTION || eventType == TraceEventType.PROBE) {
+                    switch (probeEvent.getEventType()) {
+                    case PROBE:
                         rawDataNode = getFirstOf(rawAttributes.getChildNodes(), MIStrings.PROBE_ATTRIBUTES);
-                    } else if (eventType == TraceEventType.SYSCALL || eventType == TraceEventType.TRACEPOINT || eventType == TraceEventType.UNKNOWN || true) {
+                        break;
+                    case FUNCTION:
+                        rawDataNode = getFirstOf(rawAttributes.getChildNodes(), MIStrings.FUNCTION_ATTRIBUTES);
+                        break;
+                    case SYSCALL:
+                    case TRACEPOINT:
+                    case UNKNOWN:
+                    default:
                         throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
                     }
 
@@ -863,10 +869,10 @@ public class LTTngControlServiceMI extends LTTngControlService {
                             probeEvent.setSymbol(rawData.getTextContent());
                             break;
                         case MIStrings.ADDRESS:
-                            probeEvent.setAddress(String.format("%#016x", new BigInteger(rawData.getTextContent()))); //$NON-NLS-1$
+                            probeEvent.setAddress(rawData.getTextContent());
                             break;
                         case MIStrings.OFFSET:
-                            probeEvent.setOffset(String.format("%#016x", new BigInteger(rawData.getTextContent()))); //$NON-NLS-1$
+                            probeEvent.setOffset(rawData.getTextContent());
                             break;
                         default:
                             break;
