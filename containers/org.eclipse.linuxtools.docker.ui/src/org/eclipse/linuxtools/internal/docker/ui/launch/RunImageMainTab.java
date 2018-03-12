@@ -488,6 +488,10 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
+		// Don't attempt to continue if model is null since it means there are
+		// no connections
+		if (model == null)
+			return;
 		final IDockerConnection[] connections = DockerConnectionManager
 				.getInstance()
 				.getConnections();
