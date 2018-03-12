@@ -316,8 +316,6 @@ public class DockerContainersView extends ViewPart implements
 		this.viewer.setComparator(comparator);
 		// apply search filter
 		this.viewer.addFilter(getContainersFilter());
-		// default to first active connection or currently selected connection
-		// in Explorer View
 		setConnection(CommandUtils.getCurrentConnection(null));
 		this.viewer.addSelectionChangedListener(onContainerSelection());
 		// get the current selection in the tableviewer
@@ -454,7 +452,7 @@ public class DockerContainersView extends ViewPart implements
 			return;
 		}
 		final Object firstSegment = treeSelection.getPaths()[0].getFirstSegment();
-		if(firstSegment instanceof IDockerConnection) {
+		if (firstSegment instanceof IDockerConnection) {
 			final IDockerConnection connection = (IDockerConnection) firstSegment;
 			setConnection(connection);
 		}
