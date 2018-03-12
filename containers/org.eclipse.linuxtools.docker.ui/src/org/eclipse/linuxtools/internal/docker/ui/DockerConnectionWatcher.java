@@ -75,7 +75,9 @@ public class DockerConnectionWatcher implements ISelectionListener {
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		final ITreeSelection treeSelection = (ITreeSelection) selection;
 		if (treeSelection.isEmpty()) {
-			setConnection(null);
+			if (!connection.isOpen()) {
+				setConnection(null);
+			}
 			return;
 		}
 		final Object firstSegment = treeSelection.getPaths()[0]
