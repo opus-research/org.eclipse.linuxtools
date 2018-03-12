@@ -9,7 +9,6 @@
  * Contributors:
  *   Florian Wininger - Initial API and implementation
  *   Geneviève Bastien - Review of the initial implementation
- *   Naser Ezzati - Add labels on the state system entries
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.analysis.xml.ui.views.timegraph;
@@ -39,7 +38,6 @@ import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.ITmfXmlModelFactory;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.ITmfXmlStateAttribute;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.model.TmfXmlValueChange;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.readonly.TmfXmlReadOnlyModelFactory;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.IXmlStateSystemContainer;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
@@ -59,7 +57,6 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
 import org.eclipse.swt.widgets.Display;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * This view displays state system data in a time graph view. It uses an XML
@@ -94,11 +91,6 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
 
     private final @NonNull XmlViewInfo fViewInfo = new XmlViewInfo(ID);
     private final ITmfXmlModelFactory fFactory;
-
-    /** List of all Event Handlers */
-
-    //private final List<TmfXmlValueChange> fValueChangeList = new ArrayList<>();
-    private TmfXmlValueChange valueChange;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -326,18 +318,6 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
         List<Element> displayElements = XmlUtils.getChildElements(entryElement, TmfXmlUiStrings.DISPLAY_ELEMENT);
         List<Element> entryElements = XmlUtils.getChildElements(entryElement, TmfXmlUiStrings.ENTRY_ELEMENT);
 
-
-        /* load state changes here */
-        NodeList nodesChanges = entryElement.getElementsByTagName(TmfXmlStrings.ENTRYLABEL);
-
-
-
-        if (nodesChanges.getLength() > 0) {
-            valueChange = fFactory.createValueChange((Element) nodesChanges.item(0), parentEntry);
-        } else {
-            valueChange = null;
-        }
-
         if (displayElements.isEmpty() && entryElements.isEmpty()) {
             Activator.logWarning(String.format("XML view: entry for %s should have either a display element or entry elements", path)); //$NON-NLS-1$
             return;
@@ -367,17 +347,15 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
             /* Process each quark */
             XmlEntry currentEntry = parentEntry;
             Element displayElement = null;
-
             Map<String, XmlEntry> entryMap = new HashMap<>();
             if (!displayElements.isEmpty()) {
                 displayElement = displayElements.get(0);
             }
-
             for (int quark : quarks) {
                 currentEntry = parentEntry;
                 /* Process the current entry, if specified */
                 if (displayElement != null) {
-                    currentEntry = processEntry(entryElement, displayElement, valueChange, parentEntry,  quark, ss);
+                    currentEntry = processEntry(entryElement, displayElement, parentEntry, quark, ss);
                     entryMap.put(currentEntry.getId(), currentEntry);
                 }
                 /* Process the children entry of this entry */
@@ -392,13 +370,12 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
         }
     }
 
-    private XmlEntry processEntry(@NonNull Element entryElement, @NonNull Element displayEl,  TmfXmlValueChange valueChangeList,
+    private XmlEntry processEntry(@NonNull Element entryElement, @NonNull Element displayEl,
             XmlEntry parentEntry, int quark, ITmfStateSystem ss) {
         /*
          * Get the start time and end time of this entry from the display
          * attribute
          */
-
         ITmfXmlStateAttribute display = fFactory.createStateAttribute(displayEl, parentEntry);
         int displayQuark = display.getAttributeQuark(quark);
         if (displayQuark == IXmlStateSystemContainer.ERROR_QUARK) {
@@ -437,7 +414,7 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
         } catch (AttributeNotFoundException | StateSystemDisposedException e) {
         }
 
-        return new XmlEntry(quark, displayQuark, valueChangeList, parentEntry.getTrace(), ss.getAttributeName(quark),
+        return new XmlEntry(quark, displayQuark, parentEntry.getTrace(), ss.getAttributeName(quark),
                 entryStart, entryEnd, EntryDisplayType.DISPLAY, ss, entryElement);
     }
 

@@ -22,7 +22,6 @@ import org.eclipse.linuxtools.tmf.analysis.xml.core.model.TmfXmlCondition;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.TmfXmlEventHandler;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.TmfXmlLocation;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.TmfXmlStateChange;
-import org.eclipse.linuxtools.tmf.analysis.xml.core.model.TmfXmlValueChange;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.IXmlStateSystemContainer;
 import org.w3c.dom.Element;
 
@@ -83,15 +82,6 @@ public class TmfXmlReadWriteModelFactory implements ITmfXmlModelFactory {
     @Override
     public TmfXmlLocation createLocation(Element node, IXmlStateSystemContainer container) {
         return new TmfXmlLocation(this, node, container);
-    }
-
-    /**
-     * @since 2.0
-     */
-    @Override
-    public TmfXmlValueChange createValueChange(Element node, IXmlStateSystemContainer container) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }
