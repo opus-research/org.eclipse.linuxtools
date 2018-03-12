@@ -237,12 +237,12 @@ public class StreamInputPacketIndex implements List<StreamInputPacketIndexEntry>
 
     @Override
     public Object[] toArray() {
-        throw new UnsupportedOperationException();
+        return fEntries.toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        throw new UnsupportedOperationException();
+        return fEntries.toArray(a);
     }
 
     @Override
@@ -252,12 +252,26 @@ public class StreamInputPacketIndex implements List<StreamInputPacketIndexEntry>
 
     @Override
     public boolean addAll(Collection<? extends StreamInputPacketIndexEntry> c) {
-        throw new UnsupportedOperationException();
+        return fEntries.addAll(c);
     }
 
     @Override
     public boolean addAll(int index, Collection<? extends StreamInputPacketIndexEntry> c) {
-        throw new UnsupportedOperationException();
+        return fEntries.addAll(index, c);
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        return fEntries.lastIndexOf(o);
+    }
+
+    @Override
+    public boolean add(StreamInputPacketIndexEntry e) {
+        try {
+            return addEntry(e);
+        } catch (CTFReaderException e1) {
+        }
+        return false;
     }
 
     @Override
@@ -291,21 +305,7 @@ public class StreamInputPacketIndex implements List<StreamInputPacketIndexEntry>
     }
 
     @Override
-    public int lastIndexOf(Object o) {
-        return fEntries.lastIndexOf(o);
-    }
-
-    @Override
     public List<StreamInputPacketIndexEntry> subList(int fromIndex, int toIndex) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean add(StreamInputPacketIndexEntry e) {
-        try {
-            return addEntry(e);
-        } catch (CTFReaderException e1) {
-        }
-        return false;
     }
 }
