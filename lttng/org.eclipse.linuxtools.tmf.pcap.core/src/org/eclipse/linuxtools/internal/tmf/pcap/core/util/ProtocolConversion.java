@@ -12,6 +12,7 @@
 
 package org.eclipse.linuxtools.internal.tmf.pcap.core.util;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
 import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
 
@@ -31,7 +32,11 @@ public class ProtocolConversion {
      * @return The TmfProtocol.
      */
     public static TmfProtocol wrap(Protocol protocol) {
-        return TmfProtocol.getProtocol(protocol);
+        @SuppressWarnings("null")
+        @NonNull String name = protocol.name();
+
+        @NonNull TmfProtocol wrappedProtocol = TmfProtocol.valueOf(name);
+        return wrappedProtocol;
     }
 
     /**
@@ -42,7 +47,9 @@ public class ProtocolConversion {
      * @return The Protocol.
      */
     public static Protocol unwrap(TmfProtocol protocol) {
-        return Protocol.lookupName(protocol.getName());
+        @SuppressWarnings("null")
+        @NonNull String name = protocol.name();
+        return Protocol.valueOf(name);
     }
 
 }
