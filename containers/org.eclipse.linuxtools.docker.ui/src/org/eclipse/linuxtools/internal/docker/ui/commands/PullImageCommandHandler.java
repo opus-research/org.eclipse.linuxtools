@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IRegistry;
@@ -26,6 +27,7 @@ import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.linuxtools.internal.docker.ui.views.ImagePullProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImagePull;
+import org.eclipse.linuxtools.internal.docker.ui.wizards.NewDockerConnection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -43,21 +45,40 @@ public class PullImageCommandHandler extends AbstractHandler {
 	private final static String PULL_IMAGE_JOB_TITLE = "ImagePull.title"; //$NON-NLS-1$
 	private final static String PULL_IMAGE_JOB_TASK = "ImagePull.msg"; //$NON-NLS-1$
 	private static final String ERROR_PULLING_IMAGE = "ImagePullError.msg"; //$NON-NLS-1$
-	private static final String ERROR_PULLING_IMAGE_NO_CONNECTION = "command.pullImage.failure.no_connection"; //$NON-NLS-1$
-	private static final String MISSING_CONNECTION = "missing_connection"; //$NON-NLS-1$
 
 	@Override
 	public Object execute(final ExecutionEvent event) {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		final IDockerConnection connection = CommandUtils
 				.getCurrentConnection(activePart);
-		if (connection == null) {
+		if (connection == null || !connection.isOpen()) {
+			if (DockerConnectionManager.getInstance().getConnections().length == 0) {
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						boolean confirm = MessageDialog.openQuestion(
+								PlatformUI.getWorkbench()
+										.getActiveWorkbenchWindow().getShell(),
+								CommandMessages.getString(
+										"BuildImageCommandHandler.no.connections.msg"), //$NON-NLS-1$
+								CommandMessages.getString(
+										"BuildImageCommandHandler.no.connections.desc")); // $NON-NLS-1$
+						if (confirm) {
+							NewDockerConnection newConnWizard = new NewDockerConnection();
+							CommandUtils.openWizard(newConnWizard,
+									HandlerUtil.getActiveShell(event));
+						}
+					}
+				});
+			} else {
 			MessageDialog.openError(
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 							.getShell(),
-					CommandMessages.getString(MISSING_CONNECTION),
-					CommandMessages
-							.getString(ERROR_PULLING_IMAGE_NO_CONNECTION));
+						CommandMessages
+								.getString("ErrorNoActiveConnection.msg"), //$NON-NLS-1$
+						CommandMessages
+								.getString("ErrorNoActiveConnection.desc")); //$NON-NLS-1$
+			}
 		} else {
 			final ImagePull wizard = new ImagePull(connection);
 			final boolean pullImage = CommandUtils.openWizard(wizard,
