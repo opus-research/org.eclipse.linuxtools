@@ -42,9 +42,8 @@ public class VagrantBox implements IVagrantBox {
 
 	@Override
 	public String toString() {
-		return "Name: " + this.name //$NON-NLS-1$
-				+ "Provider : " + this.provider //$NON-NLS-1$
-				+ "Version : " + this.version; //$NON-NLS-1$
+		return "Name: " + this.name + "Provider : " + this.provider
+				+ "Version : " + this.version;
 	}
 
 	@Override
