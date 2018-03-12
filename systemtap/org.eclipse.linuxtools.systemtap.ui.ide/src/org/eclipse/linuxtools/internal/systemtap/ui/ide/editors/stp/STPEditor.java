@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2017 Phil Muldoon and others.
+ * Copyright (c) 2008 Phil Muldoon <pkmuldoon@picobot.org>.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -26,6 +26,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.linuxtools.systemtap.ui.editor.ColorManager;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.linuxtools.systemtap.ui.editor.SimpleEditor;
 import org.eclipse.swt.widgets.Composite;
@@ -35,6 +36,8 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 
 public class STPEditor extends SimpleEditor {
 
+    private ColorManager colorManager;
+
     private Annotation[] stpOldAnnotations;
     private ProjectionAnnotationModel stpAnnotationModel;
 
@@ -42,12 +45,14 @@ public class STPEditor extends SimpleEditor {
 
     public STPEditor() {
         super();
-        setSourceViewerConfiguration(new STPConfiguration(this));
+        colorManager = new ColorManager();
+        setSourceViewerConfiguration(new STPConfiguration(colorManager,this));
     }
 
     @Override
     protected void internalInit() {
         configureInsertMode(SMART_INSERT, false);
+        setDocumentProvider(new STPDocumentProvider());
     }
 
     @Override
@@ -79,29 +84,40 @@ public class STPEditor extends SimpleEditor {
     }
 
 
-	public void updateFoldingStructure(ArrayList<Position> updatedPositions) {
-		ProjectionAnnotation annotation;
-		Annotation[] updatedAnnotations = new Annotation[updatedPositions.size()];
-		HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<>();
-		for (int i = 0; i < updatedPositions.size(); i++) {
-			annotation = new ProjectionAnnotation();
-			newAnnotations.put(annotation, updatedPositions.get(i));
-			updatedAnnotations[i] = annotation;
-		}
-		stpAnnotationModel.modifyAnnotations(stpOldAnnotations, newAnnotations, null);
-		stpOldAnnotations = updatedAnnotations;
-	}
+    public void updateFoldingStructure(ArrayList<Position> updatedPositions)
+    {
+        ProjectionAnnotation annotation;
+        Annotation[] updatedAnnotations = new Annotation[updatedPositions.size()];
+        HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<>();
+        for(int i =0;i<updatedPositions.size();i++)
+        {
+            annotation = new ProjectionAnnotation();
+            newAnnotations.put(annotation,updatedPositions.get(i));
+            updatedAnnotations[i]=annotation;
+        }
+        stpAnnotationModel.modifyAnnotations(stpOldAnnotations,newAnnotations,null);
+        stpOldAnnotations = updatedAnnotations;
+    }
 
-	public ISourceViewer getMySourceViewer() {
-		return this.getSourceViewer();
-	}
+    public ISourceViewer getMySourceViewer() {
+        return this.getSourceViewer();
+    }
 
     @Override
-	protected void editorContextMenuAboutToShow(IMenuManager menu) {
-		super.editorContextMenuAboutToShow(menu);
-		addAction(menu, ITextEditorActionConstants.GROUP_EDIT, ITextEditorActionConstants.SHIFT_RIGHT);
-		addAction(menu, ITextEditorActionConstants.GROUP_EDIT, ITextEditorActionConstants.SHIFT_LEFT);
+    public void dispose() {
+        colorManager.dispose();
+        super.dispose();
+    }
 
-	}
+    @Override
+    protected void editorContextMenuAboutToShow(IMenuManager menu) {
+
+        super.editorContextMenuAboutToShow(menu);
+        addAction(menu, ITextEditorActionConstants.GROUP_EDIT,
+                ITextEditorActionConstants.SHIFT_RIGHT);
+        addAction(menu, ITextEditorActionConstants.GROUP_EDIT,
+                ITextEditorActionConstants.SHIFT_LEFT);
+
+    }
 
 }
