@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Red Hat, Inc.
+ * Copyright (c) 2013, 2016 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.RPMHandlerUtils;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.RPMUtils;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.UiUtils;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.parser.SpecfileSource;
@@ -37,7 +38,6 @@ import org.eclipse.linuxtools.rpm.core.RPMProject;
 import org.eclipse.linuxtools.rpm.core.utils.DownloadJob;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileParser;
-import org.eclipse.linuxtools.rpm.ui.editor.utils.RPMUtils;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -94,8 +94,7 @@ public class SpecfileEditorPrepareSourcesActionDelegate extends AbstractHandler 
 
     public boolean downloadFile(Shell shell, RPMProject rpj, Specfile specfile) {
         // retrieve source(s) from specfile
-        final List<SpecfileSource> sourceURLList = specfile != null ? (List<SpecfileSource>) specfile
-                .getSources() : null;
+		final List<SpecfileSource> sourceURLList = specfile != null ? specfile.getSources() : null;
         for (final SpecfileSource sourceurls : sourceURLList) {
             try {
                 String resolvedURL = UiUtils.resolveDefines(specfile, sourceurls.getFileName());
