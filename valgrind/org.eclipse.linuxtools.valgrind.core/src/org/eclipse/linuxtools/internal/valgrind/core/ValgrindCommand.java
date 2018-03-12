@@ -116,9 +116,9 @@ public class ValgrindCommand {
 		}
 		// We need to get the inputs before calling waitFor
 		try (InputStream err = p.getErrorStream(); InputStream input = p.getInputStream()) {
-			boolean success = (p.waitFor() == 0);
+			boolean success;
 			InputStream in;
-			if (success) {
+			if (success = (p.waitFor() == 0)) {
 				in = input;
 			} else {
 				in = err;
