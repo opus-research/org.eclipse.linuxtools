@@ -66,9 +66,7 @@ public class Utils {
     }
 
     /**
-     * Runs the given command and parameters. Note that the command's process can
-     * be terminated by interrupting the thread this method runs in, but only after
-     * the process' execution has begun.
+     * Runs the given command and parameters.
      *
      * @param outStream
      *            The stream to write the output to.
@@ -76,27 +74,14 @@ public class Utils {
      *               The project which is executing this command.
      * @param command
      *            The command with all parameters.
-     * @return An IStatus indicating the result of the command.
+     * @return int The return value of the command.
      * @throws IOException If an IOException occurs.
      * @since 1.1
      */
     public static IStatus runCommand(final OutputStream outStream, IProject project,
             String... command) throws IOException {
-        return watchProcess(outStream, RuntimeProcessFactory.getFactory().exec(command, project));
-    }
+        Process child = RuntimeProcessFactory.getFactory().exec(command, project);
 
-    /**
-     * Watches the streams of the given running process. Note that the process can
-     * be terminated at any time by interrupting the thread this method runs in.
-     *
-     * @param outStream
-     *            The stream to write the output to.
-     * @param child
-     *            The process to watch the output of.
-     * @return An IStatus indicating the result of the command.
-     * @since 2.2
-     */
-    public static IStatus watchProcess(final OutputStream outStream, Process child) {
         final BufferedInputStream in = new BufferedInputStream(
                 new SequenceInputStream(child.getInputStream(),
                         child.getErrorStream()));
@@ -123,29 +108,23 @@ public class Utils {
         readinJob.schedule();
 
         try {
-            // Catch interrupt attempts made before the wait
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException();
-            }
             child.waitFor();
+            readinJob.join();
         } catch (InterruptedException e) {
             child.destroy();
+            readinJob.cancel();
         }
-
-        while (readinJob.getResult() == null) {
-            try {
-                readinJob.join();
-            } catch (InterruptedException e) {}
-        }
-
-        if (child.exitValue() != 0) {
-            return new Status(
+        IStatus result;
+        if (child.exitValue() != 0){
+            result = new Status(
                     IStatus.ERROR,
                     FrameworkUtil.getBundle(Utils.class).getSymbolicName(),
                     NLS.bind(
                             Messages.Utils_NON_ZERO_RETURN_CODE, child.exitValue()), null);
+        } else{
+            result = Status.OK_STATUS;
         }
-        return Status.OK_STATUS;
+        return result;
     }
 
     /**
