@@ -58,8 +58,6 @@ public interface IRunDockerImageLaunchConfigurationConstants {
 
 	String ENV_VARIABLES = "envVariables"; //$NON-NLS-1$
 
-	String LABELS = "labels"; //$NON-NLS-1$
-
 	String ENABLE_LIMITS = "enableLimits"; //$NON-NLS-1$
 
 	String CPU_PRIORITY = "cpuPriority"; //$NON-NLS-1$

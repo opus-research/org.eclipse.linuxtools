@@ -17,15 +17,13 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IRegistry;
-import org.eclipse.linuxtools.docker.core.IRegistryAccount;
 import org.eclipse.linuxtools.internal.docker.core.RegistryAccountManager;
 import org.eclipse.linuxtools.internal.docker.core.RegistryInfo;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
+import org.eclipse.linuxtools.internal.docker.ui.preferences.DockerRegistryAccountPreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -37,6 +35,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 
 public class ImagePushPage extends WizardPage {
 
@@ -151,13 +150,13 @@ public class ImagePushPage extends WizardPage {
 			accountCombo.select(0);
 		}
 
-		// Add
-		final Button addButton = new Button(container, SWT.NONE);
-		addButton.setText(
-				WizardMessages.getString("ImagePullPushPage.add.label")); //$NON-NLS-1$
+		// Browse
+		final Button browseButton = new Button(container, SWT.NONE);
+		browseButton.setText(WizardMessages
+				.getString("ImagePullPushPage.browse.label")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(addButton);
-		addButton.addSelectionListener(onAdd(accountCombo));
+				.grab(false, false).applyTo(browseButton);
+		browseButton.addSelectionListener(onBrowse(accountCombo));
 
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).applyTo(accountCombo);
@@ -165,25 +164,16 @@ public class ImagePushPage extends WizardPage {
 		validate();
 	}
 
-	private SelectionListener onAdd(Combo combo) {
+	private SelectionListener onBrowse(Combo combo) {
 		return new SelectionAdapter() {
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				String selected = combo.getText();
-				RegistryAccountDialog dialog = new RegistryAccountDialog(
-						getShell(),
-						WizardMessages.getString(
-								"ImagePullPushPage.login.title"), //$NON-NLS-1$
-						AbstractRegistry.DOCKERHUB_REGISTRY,
-						WizardMessages.getString(
-								"RegistryAccountDialog.add.explanation")); ///$NON-NLS-1$
-				if (dialog.open() == Window.OK) {
-					IRegistryAccount acc = dialog.getSignonInformation();
-					RegistryAccountManager.getInstance().add(acc);
-					selected = acc.getUsername() + "@" + acc.getServerAddress(); //$NON-NLS-1$
-				}
+				PreferencesUtil.createPreferenceDialogOn(getShell(),
+						DockerRegistryAccountPreferencePage.ACCOUNT_PREFERENCE_PAGE_ID,
+						new String[] { DockerRegistryAccountPreferencePage.ACCOUNT_PREFERENCE_PAGE_ID },
+						null)
+				.open();
 				combo.setItems(getAccountComboItems());
-				combo.setText(selected);
 			}
 		};
 	}

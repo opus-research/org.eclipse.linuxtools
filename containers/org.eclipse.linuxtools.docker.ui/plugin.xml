@@ -377,9 +377,7 @@
               class="org.eclipse.linuxtools.internal.docker.ui.commands.StopContainersCommandHandler">
      		<enabledWhen>
 	     		<with variable="selection">
-	              <iterate
-                     ifEmpty="false"
-                     operator="or">
+	              <iterate ifEmpty="false">
 				    <and>
 	                  <instanceof value="org.eclipse.linuxtools.docker.core.IDockerContainer"></instanceof>
 	                  <or>
@@ -400,9 +398,7 @@
               class="org.eclipse.linuxtools.internal.docker.ui.commands.KillContainersCommandHandler">
      		<enabledWhen>
 	     		<with variable="selection">
-	              <iterate
-                     ifEmpty="false"
-                     operator="or">
+	              <iterate ifEmpty="false">
 				    <and>
 	                  <instanceof value="org.eclipse.linuxtools.docker.core.IDockerContainer"></instanceof>
 	                  <or>
