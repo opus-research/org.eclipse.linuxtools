@@ -386,7 +386,7 @@ public class BtfTrace extends TmfTrace implements ITmfPersistentlyIndexable, ITm
         ITmfEventField content = type.generateContent(event, sourceInstance, targetInstance);
 
         return new BtfEvent(this, rank,
-                fTsFormat.createTimestamp(timestamp + fTsOffset),
+                fTsFormat.createTimestamp(getTimestampTransform().transform(timestamp + fTsOffset)),
                 source,
                 type,
                 type.getDescription(),
