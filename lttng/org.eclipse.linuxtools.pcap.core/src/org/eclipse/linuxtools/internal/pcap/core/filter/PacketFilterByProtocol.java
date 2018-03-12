@@ -13,7 +13,7 @@
 package org.eclipse.linuxtools.internal.pcap.core.filter;
 
 import org.eclipse.linuxtools.internal.pcap.core.packet.Packet;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.Protocol;
 
 /**
  * Class used to filter the packets by protocol. This is used, for instance, to
@@ -23,7 +23,7 @@ import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
  */
 public class PacketFilterByProtocol implements IPacketFilter {
 
-    private final PcapProtocol fProtocol;
+    private final Protocol fProtocol;
 
     /**
      * Constructor of the PacketFilterByProtocol class.
@@ -31,7 +31,7 @@ public class PacketFilterByProtocol implements IPacketFilter {
      * @param protocol
      *            The protocol that the incoming packets must contain.
      */
-    public PacketFilterByProtocol(PcapProtocol protocol) {
+    public PacketFilterByProtocol(Protocol protocol) {
         fProtocol = protocol;
     }
 
@@ -45,7 +45,7 @@ public class PacketFilterByProtocol implements IPacketFilter {
      *
      * @return The protocol of this filter.
      */
-    public PcapProtocol getProtocol() {
+    public Protocol getProtocol() {
         return fProtocol;
     }
 

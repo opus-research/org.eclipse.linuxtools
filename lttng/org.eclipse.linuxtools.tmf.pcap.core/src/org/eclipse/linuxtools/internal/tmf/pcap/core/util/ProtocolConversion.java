@@ -12,8 +12,8 @@
 
 package org.eclipse.linuxtools.internal.tmf.pcap.core.util;
 
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.protocol.TmfPcapProtocol;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.Protocol;
+import org.eclipse.linuxtools.internal.tmf.pcap.core.protocol.TmfProtocol;
 
 /**
  * Helper class that allows the conversion between Protocol and TmfProtocol.
@@ -26,52 +26,52 @@ public final class ProtocolConversion {
     private ProtocolConversion() {}
 
     /**
-     * Wrap a {@link PcapProtocol} into a {@link TmfPcapProtocol}.
+     * Wrap a {@link Protocol} into a {@link TmfProtocol}.
      *
      * @param protocol
-     *            The {@link PcapProtocol} to match
+     *            The {@link Protocol} to match
      * @return The TmfProtocol
      */
-    public static TmfPcapProtocol wrap(PcapProtocol protocol) {
+    public static TmfProtocol wrap(Protocol protocol) {
         switch (protocol) {
         case ETHERNET_II:
-            return TmfPcapProtocol.ETHERNET_II;
+            return TmfProtocol.ETHERNET_II;
         case IPV4:
-            return TmfPcapProtocol.IPV4;
+            return TmfProtocol.IPV4;
         case PCAP:
-            return TmfPcapProtocol.PCAP;
+            return TmfProtocol.PCAP;
         case TCP:
-            return TmfPcapProtocol.TCP;
+            return TmfProtocol.TCP;
         case UDP:
-            return TmfPcapProtocol.UDP;
+            return TmfProtocol.UDP;
         case UNKNOWN:
-            return TmfPcapProtocol.UNKNOWN;
+            return TmfProtocol.UNKNOWN;
         default:
             throw new IllegalArgumentException();
         }
     }
 
     /**
-     * Unwrap a {@link TmfPcapProtocol} from a {@link PcapProtocol}.
+     * Unwrap a {@link TmfProtocol} from a {@link Protocol}.
      *
      * @param protocol
      *            The TmfProtocol
      * @return The Protocol
      */
-    public static PcapProtocol unwrap(TmfPcapProtocol protocol) {
+    public static Protocol unwrap(TmfProtocol protocol) {
         switch (protocol) {
         case ETHERNET_II:
-            return PcapProtocol.ETHERNET_II;
+            return Protocol.ETHERNET_II;
         case IPV4:
-            return PcapProtocol.IPV4;
+            return Protocol.IPV4;
         case PCAP:
-            return PcapProtocol.PCAP;
+            return Protocol.PCAP;
         case TCP:
-            return PcapProtocol.TCP;
+            return Protocol.TCP;
         case UDP:
-            return PcapProtocol.UDP;
+            return Protocol.UDP;
         case UNKNOWN:
-            return PcapProtocol.UNKNOWN;
+            return Protocol.UNKNOWN;
         default:
             throw new IllegalArgumentException();
         }

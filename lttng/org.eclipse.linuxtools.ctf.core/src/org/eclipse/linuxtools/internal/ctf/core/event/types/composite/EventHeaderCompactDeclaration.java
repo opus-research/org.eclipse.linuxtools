@@ -16,8 +16,13 @@ import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
+import org.eclipse.linuxtools.ctf.core.event.types.Declaration;
+import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
+import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
@@ -44,7 +49,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  *
  * @author Matthew Khouzam
  */
-public class EventHeaderCompactDeclaration extends AbstactEventHeaderDeclaration implements IEventHeaderDeclaration{
+public class EventHeaderCompactDeclaration extends Declaration implements IEventHeaderDeclaration {
 
     private static final int COMPACT_SIZE = 1;
     private static final int VARIANT_SIZE = 2;
@@ -132,6 +137,73 @@ public class EventHeaderCompactDeclaration extends AbstactEventHeaderDeclaration
      * @return true if the struct is a compact event header
      */
     public static boolean isCompactEventHeader(StructDeclaration declaration) {
-        return isEventHeaderDeclaration(declaration, ID, COMPACT_ID, V, VARIANT_SIZE, MAX_SIZE, TIMESTAMP, COMPACT, COMPACT_SIZE, COMPACT_TS, EXTENDED, EXTENDED_FIELD_SIZE, ID_SIZE, FULL_TS);
+
+        IDeclaration iDeclaration = declaration.getFields().get(ID);
+        if (!(iDeclaration instanceof EnumDeclaration)) {
+            return false;
+        }
+        EnumDeclaration eId = (EnumDeclaration) iDeclaration;
+        if (eId.getContainerType().getLength() != COMPACT_ID) {
+            return false;
+        }
+        iDeclaration = declaration.getFields().get(V);
+
+        if (!(iDeclaration instanceof VariantDeclaration)) {
+            return false;
+        }
+        VariantDeclaration vDec = (VariantDeclaration) iDeclaration;
+        if (!vDec.hasField(COMPACT) || !vDec.hasField(EXTENDED)) {
+            return false;
+        }
+        if (vDec.getFields().size() != VARIANT_SIZE) {
+            return false;
+        }
+        iDeclaration = vDec.getFields().get(COMPACT);
+        if (!(iDeclaration instanceof StructDeclaration)) {
+            return false;
+        }
+        StructDeclaration compactDec = (StructDeclaration) iDeclaration;
+        if (compactDec.getFields().size() != COMPACT_SIZE) {
+            return false;
+        }
+        if (!compactDec.hasField(TIMESTAMP)) {
+            return false;
+        }
+        iDeclaration = compactDec.getFields().get(TIMESTAMP);
+        if (!(iDeclaration instanceof IntegerDeclaration)) {
+            return false;
+        }
+        IntegerDeclaration tsDec = (IntegerDeclaration) iDeclaration;
+        if (tsDec.getLength() != COMPACT_TS || tsDec.isSigned()) {
+            return false;
+        }
+        iDeclaration = vDec.getFields().get(EXTENDED);
+        if (!(iDeclaration instanceof StructDeclaration)) {
+            return false;
+        }
+        StructDeclaration extendedDec = (StructDeclaration) iDeclaration;
+        if (!extendedDec.hasField(TIMESTAMP)) {
+            return false;
+        }
+        if (extendedDec.getFields().size() != EXTENDED_FIELD_SIZE) {
+            return false;
+        }
+        iDeclaration = extendedDec.getFields().get(TIMESTAMP);
+        if (!(iDeclaration instanceof IntegerDeclaration)) {
+            return false;
+        }
+        tsDec = (IntegerDeclaration) iDeclaration;
+        if (tsDec.getLength() != FULL_TS || tsDec.isSigned()) {
+            return false;
+        }
+        iDeclaration = extendedDec.getFields().get(ID);
+        if (!(iDeclaration instanceof IntegerDeclaration)) {
+            return false;
+        }
+        IntegerDeclaration iId = (IntegerDeclaration) iDeclaration;
+        if (iId.getLength() != ID_SIZE || iId.isSigned()) {
+            return false;
+        }
+        return true;
     }
 }

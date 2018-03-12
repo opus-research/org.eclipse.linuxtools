@@ -12,7 +12,7 @@
 
 package org.eclipse.linuxtools.internal.pcap.core.util;
 
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.Protocol;
 
 // TODO finish this
 // TODO maybe match it to protocol instead of string.
@@ -65,9 +65,9 @@ public final class IPProtocolNumberHelper {
         case PROTOCOL_NUMBER_IGMP:
             return "IGMP"; //$NON-NLS-1$
         case PROTOCOL_NUMBER_TCP:
-            return PcapProtocol.TCP.getName();
+            return Protocol.TCP.getName();
         case PROTOCOL_NUMBER_UDP:
-            return PcapProtocol.UDP.getName();
+            return Protocol.UDP.getName();
         case PROTOCOL_NUMBER_ENCAP_IPV6:
             return "IPv6"; //$NON-NLS-1$
         case PROTOCOL_NUMBER_OSPF:
