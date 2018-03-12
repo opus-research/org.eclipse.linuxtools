@@ -20,9 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -33,7 +30,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
 import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProject;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Messages;
-import org.eclipse.linuxtools.internal.rpm.createrepo.tests.CreaterepoProjectTest;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -48,7 +44,6 @@ import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.FrameworkUtil;
@@ -58,13 +53,10 @@ import org.osgi.framework.FrameworkUtil;
  * SWTBot not supporting native dialogs (File dialogs).
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
-@Ignore
 public class ImportRPMsPageTest {
 
     private static final String TEST_RPM_LOC1 = ICreaterepoTestConstants.RPM_RESOURCE_LOC
             .concat(ICreaterepoTestConstants.RPM1);
-
-    private static final Logger fLogger = Logger.getRootLogger();
 
     private static TestCreaterepoProject testProject;
     private static SWTWorkbenchBot bot;
@@ -80,7 +72,6 @@ public class ImportRPMsPageTest {
      */
     @BeforeClass
     public static void setUpBeforeClass() throws CoreException {
-        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         testProject = new TestCreaterepoProject();
         assertTrue(testProject.getProject().exists());
         bot = new SWTWorkbenchBot();
