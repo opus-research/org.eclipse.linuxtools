@@ -1003,8 +1003,8 @@ public class ImageRunSelectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList getTargets() {
-			WritableList targets = new WritableList();
+		public IObservableList<IObservableValue<String>> getTargets() {
+			WritableList<IObservableValue<String>> targets = new WritableList<>();
 			targets.add(imageSelectionObservable);
 			return targets;
 		}
@@ -1037,8 +1037,8 @@ public class ImageRunSelectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList getTargets() {
-			WritableList targets = new WritableList();
+		public IObservableList<IObservableValue<String>> getTargets() {
+			WritableList<IObservableValue<String>> targets = new WritableList<>();
 			targets.add(containerNameObservable);
 			return targets;
 		}
