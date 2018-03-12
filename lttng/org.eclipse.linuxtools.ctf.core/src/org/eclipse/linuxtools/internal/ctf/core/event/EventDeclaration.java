@@ -62,6 +62,11 @@ public class EventDeclaration implements IEventDeclaration {
     private StructDeclaration fFields = null;
 
     /**
+     * Event id (can be null if only event in the stream).
+     */
+    private Long fId = UNSET_EVENT_ID;
+
+    /**
      * Stream to which belongs this event.
      */
     private CTFStream fStream = null;
@@ -73,8 +78,6 @@ public class EventDeclaration implements IEventDeclaration {
 
     /** Map of this event type's custom CTF attributes */
     private final Map<String, String> fCustomAttributes = new HashMap<>();
-
-    private int fId = (int) UNSET_EVENT_ID;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -119,7 +122,7 @@ public class EventDeclaration implements IEventDeclaration {
         String[] fieldNames = new String[] { CTFStrings.LOST_EVENTS_FIELD, CTFStrings.LOST_EVENTS_DURATION };
         Declaration[] fieldDeclarations = new Declaration[] { IntegerDeclaration.UINT_32B_DECL, IntegerDeclaration.UINT_64B_DECL };
         lostEvent.fFields = new StructDeclaration(fieldNames, fieldDeclarations);
-        lostEvent.fId = (int) LOST_EVENT_ID;
+        lostEvent.fId = LOST_EVENT_ID;
         lostEvent.fName = CTFStrings.LOST_EVENT_NAME;
         return lostEvent;
     }
@@ -180,23 +183,11 @@ public class EventDeclaration implements IEventDeclaration {
      *            the id
      */
     public void setId(long id) {
-        if (id < 0 || id > Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("id out of range"); //$NON-NLS-1$
-        }
-        fId = (int) id;
+        fId = id;
     }
 
     @Override
     public Long getId() {
-        return Long.valueOf(fId);
-    }
-
-    /**
-     * Faster get id assuming you have less than a billion event types
-     *
-     * @return the event id
-     */
-    public int id() {
         return fId;
     }
 
@@ -249,7 +240,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the id set?
      */
     public boolean idIsSet() {
-        return (fId  != UNSET_EVENT_ID);
+        return (fId != null && fId != UNSET_EVENT_ID);
     }
 
     /**
@@ -329,7 +320,11 @@ public class EventDeclaration implements IEventDeclaration {
         } else if (!fFields.equals(other.fFields)) {
             return false;
         }
-        if (fId != (other.fId)) {
+        if (fId == null) {
+            if (other.fId != null) {
+                return false;
+            }
+        } else if (!fId.equals(other.fId)) {
             return false;
         }
         if (fName == null) {
@@ -359,7 +354,7 @@ public class EventDeclaration implements IEventDeclaration {
         result = (prime * result)
                 + ((fContext == null) ? 0 : fContext.hashCode());
         result = (prime * result) + ((fFields == null) ? 0 : fFields.hashCode());
-        result = (prime * result) + fId;
+        result = (prime * result) + ((fId == null) ? 0 : fId.hashCode());
         result = (prime * result) + ((fName == null) ? 0 : fName.hashCode());
         result = (prime * result) + ((fStream == null) ? 0 : fStream.hashCode());
         result = (prime * result) + fCustomAttributes.hashCode();
