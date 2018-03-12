@@ -37,16 +37,17 @@ public class Activator extends Plugin {
     /**
      * The shared instance
      */
-    private static @Nullable Activator plugin;
+    private static @Nullable Activator fPlugin;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * The constructor
+     * Constructor
      */
     public Activator() {
+        setDefault(this);
     }
 
     // ------------------------------------------------------------------------
@@ -54,85 +55,158 @@ public class Activator extends Plugin {
     // ------------------------------------------------------------------------
 
     /**
-     * Returns the shared instance
+     * Returns the TMF Core plug-in instance.
      *
-     * @return the shared instance
+     * @return the TMF Core plug-in instance.
      */
     public static @Nullable Activator getDefault() {
-        return plugin;
+        return fPlugin;
+    }
+
+    // Sets plug-in instance
+    private static void setDefault(@Nullable Activator plugin) {
+        fPlugin = plugin;
     }
 
     // ------------------------------------------------------------------------
-    // Operators
+    // Plugin
     // ------------------------------------------------------------------------
 
     @Override
     public void start(@Nullable BundleContext context) throws Exception {
         super.start(context);
-        plugin = this;
+        setDefault(this);
     }
 
     @Override
     public void stop(@Nullable BundleContext context) throws Exception {
-        plugin = null;
+        setDefault(null);
         super.stop(context);
     }
+
+
+    // ------------------------------------------------------------------------
+    // Log an IStatus
+    // ------------------------------------------------------------------------
+
+    /**
+     * Log an IStatus object directly
+     *
+     * @param status
+     *            The status to log
+     */
+    public static void log(IStatus status) {
+        Activator activator = fPlugin;
+        if (activator == null) {
+            return;
+        }
+        activator.getLog().log(status);
+    }
+
+    // ------------------------------------------------------------------------
+    // Log INFO
+    // ------------------------------------------------------------------------
 
     /**
      * Logs a message with severity INFO in the runtime log of the plug-in.
      *
-     * @param message A message to log
+     * @param message
+     *            A message to log
      */
-    public void logInfo(String message) {
-        getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));
+    public static void logInfo(String message) {
+        Activator activator = fPlugin;
+        if (activator == null) {
+            return;
+        }
+        activator.getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));
     }
 
     /**
-     * Logs a message and exception with severity INFO in the runtime log of the plug-in.
+     * Logs a message and exception with severity INFO in the runtime log of the
+     * plug-in.
      *
-     * @param message A message to log
-     * @param exception A exception to log
+     * @param message
+     *            A message to log
+     * @param exception
+     *            The corresponding exception
      */
-    public void logInfo(String message, Throwable exception) {
-        getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message, exception));
+    public static void logInfo(String message, Throwable exception) {
+        Activator activator = fPlugin;
+        if (activator == null) {
+            return;
+        }
+        activator.getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message, exception));
+    }
+
+    // ------------------------------------------------------------------------
+    // Log WARNING
+    // ------------------------------------------------------------------------
+
+    /**
+     * Logs a message and exception with severity WARNING in the runtime log of
+     * the plug-in.
+     *
+     * @param message
+     *            A message to log
+     */
+    public static void logWarning(String message) {
+        Activator activator = fPlugin;
+        if (activator == null) {
+            return;
+        }
+        activator.getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, message));
     }
 
     /**
-     * Logs a message and exception with severity WARNING in the runtime log of the plug-in.
+     * Logs a message and exception with severity WARNING in the runtime log of
+     * the plug-in.
      *
-     * @param message A message to log
+     * @param message
+     *            A message to log
+     * @param exception
+     *            The corresponding exception
      */
-    public void logWarning(String message) {
-        getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, message));
+    public static void logWarning(String message, Throwable exception) {
+        Activator activator = fPlugin;
+        if (activator == null) {
+            return;
+        }
+        activator.getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, message, exception));
+    }
+
+    // ------------------------------------------------------------------------
+    // Log ERROR
+    // ------------------------------------------------------------------------
+
+    /**
+     * Logs a message and exception with severity ERROR in the runtime log of
+     * the plug-in.
+     *
+     * @param message
+     *            A message to log
+     */
+    public static void logError(String message) {
+        Activator activator = fPlugin;
+        if (activator == null) {
+            return;
+        }
+        activator.getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message));
     }
 
     /**
-     * Logs a message and exception with severity WARNING in the runtime log of the plug-in.
+     * Logs a message and exception with severity ERROR in the runtime log of
+     * the plug-in.
      *
-     * @param message A message to log
-     * @param exception A exception to log
+     * @param message
+     *            A message to log
+     * @param exception
+     *            The corresponding exception
      */
-    public void logWarning(String message, Throwable exception) {
-        getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, message, exception));
+    public static void logError(String message, Throwable exception) {
+        Activator activator = fPlugin;
+        if (activator == null) {
+            return;
+        }
+        activator.getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message, exception));
     }
-
-    /**
-     * Logs a message and exception with severity ERROR in the runtime log of the plug-in.
-     *
-     * @param message A message to log
-     */
-    public void logError(String message) {
-        getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message));
-    }
-
-    /**
-     * Logs a message and exception with severity ERROR in the runtime log of the plug-in.
-     *
-     * @param message A message to log
-     * @param exception A exception to log
-     */
-    public void logError(String message, Throwable exception) {
-        getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message, exception));
-    }
-
 }

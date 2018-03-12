@@ -13,11 +13,9 @@
 package org.eclipse.linuxtools.tmf.pcap.ui.editor;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.linuxtools.pcap.core.packet.Packet;
-import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
-import org.eclipse.linuxtools.pcap.core.protocol.pcap.PcapPacket;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEvent;
+import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
 import org.eclipse.linuxtools.tmf.ui.widgets.virtualtable.ColumnData;
 import org.eclipse.swt.SWT;
@@ -36,12 +34,12 @@ public class PcapEventsTable extends TmfEventsTable {
 
     // Table column names
     private static final String[] COLUMN_NAMES = new String[] {
-        Messages.PcapEventsTable_Timestamp,
-        Messages.PcapEventsTable_Source,
-        Messages.PcapEventsTable_Destination,
-        Messages.PcapEventsTable_Reference,
-        Messages.PcapEventsTable_Protocol,
-        Messages.PcapEventsTable_Content
+            Messages.PcapEventsTable_Timestamp,
+            Messages.PcapEventsTable_Source,
+            Messages.PcapEventsTable_Destination,
+            Messages.PcapEventsTable_Reference,
+            Messages.PcapEventsTable_Protocol,
+            Messages.PcapEventsTable_Content
     };
 
     private static final ColumnData[] COLUMN_DATA = new ColumnData[] {
@@ -78,31 +76,20 @@ public class PcapEventsTable extends TmfEventsTable {
     @Override
     public String[] getItemStrings(@Nullable ITmfEvent event) {
 
-        if (event == null) {
-            final String[] array = EMPTY_STRING_ARRAY;
-            if (array != null) {
-                return array;
-            }
-            return new String[0];
+        if (event == null || !(event instanceof PcapEvent)) {
+            return EMPTY_STRING_ARRAY;
         }
 
-        PcapPacket packet = (PcapPacket) (((PcapEvent) event).getPacket().getPacket(Protocol.PCAP));
-        if (packet == null) {
-            final String[] array = EMPTY_STRING_ARRAY;
-            if (array != null) {
-                return array;
-            }
-            return new String[0];
-        }
-        Packet encapsulatedPacket = packet.getMostEcapsulatedPacket();
+        PcapEvent pcapEvent = (PcapEvent) event;
+        TmfProtocol protocol = pcapEvent.getMostEncapsulatedProtocol();
 
         return new String[] {
-                event.getTimestamp().toString(),
-                encapsulatedPacket.getSourceEndpoint().toString(),
-                encapsulatedPacket.getDestinationEndpoint().toString(),
-                event.getReference(),
-                encapsulatedPacket.getProtocol().getShortName().toUpperCase(),
-                event.getContent().toString()
+                pcapEvent.getTimestamp().toString(),
+                pcapEvent.getSourceEndpoint(protocol),
+                pcapEvent.getDestinationEndpoint(protocol),
+                pcapEvent.getReference(),
+                protocol.getShortName().toUpperCase(),
+                pcapEvent.getContent().toString()
         };
     }
 }

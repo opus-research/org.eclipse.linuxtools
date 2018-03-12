@@ -20,9 +20,6 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.tmf.pcap.ui.Activator;
-import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
-import org.eclipse.linuxtools.pcap.core.stream.PacketStream;
-import org.eclipse.linuxtools.pcap.core.stream.PacketStreamBuilder;
 import org.eclipse.linuxtools.tmf.core.filter.model.ITmfFilterTreeNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterAndNode;
 import org.eclipse.linuxtools.tmf.core.filter.model.TmfFilterContainsNode;
@@ -37,8 +34,12 @@ import org.eclipse.linuxtools.tmf.core.signal.TmfTraceSelectedSignal;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.pcap.core.analysis.StreamListAnalysis;
 import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEvent;
-import org.eclipse.linuxtools.tmf.pcap.core.signal.TmfPacketStreamUpdatedSignal;
+import org.eclipse.linuxtools.tmf.pcap.core.event.TmfPacketStream;
+import org.eclipse.linuxtools.tmf.pcap.core.event.TmfPacketStreamBuilder;
+import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
+import org.eclipse.linuxtools.tmf.pcap.core.signal.TmfNewPacketStreamSignal;
 import org.eclipse.linuxtools.tmf.pcap.core.trace.PcapTrace;
+import org.eclipse.linuxtools.tmf.ui.TmfUiRefreshHandler;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.views.filter.FilterManager;
@@ -49,7 +50,6 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
@@ -63,16 +63,16 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-/* TODO Investigate if the multithreading handling is adequate.
- I feel like it is possible that an UpdateUI is called after a resetView
- (which is bad in case of a trace closed). */
-
-// FIXME analysis is leaking ressource. Alex told me not to worry about it
-// since AnalysisModule will not be autocloseable later.
-
 /**
  * Class that represents the Stream List View. Such a view lists all the
- * available streams from the current experiment.
+ * available streams from the current experiment. <br>
+ * <br>
+ * TODO Investigate if the multithreading handling is adequate. I feel like it
+ * is possible that an UpdateUI is called after a resetView (which is bad in
+ * case of a trace closed). <br>
+ * <br>
+ * FIXME analysis is leaking ressource. Alex told me not to worry about it since
+ * AnalysisModule will not be autocloseable later.
  *
  * @author Vincent Perot
  */
@@ -91,10 +91,12 @@ public class StreamListView extends TmfView {
 
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
-    private @Nullable CTabFolder fTabFolder;
-    private @Nullable Map<Protocol, Table> fTables;
+    private static final long WAIT_TIME = 1000;
 
-    private @Nullable PacketStream fCurrentStream;
+    private @Nullable CTabFolder fTabFolder;
+    private @Nullable Map<TmfProtocol, Table> fTableMap;
+
+    private @Nullable TmfPacketStream fCurrentStream;
     private @Nullable ITmfTrace fCurrentTrace;
 
     private volatile boolean fStopThread;
@@ -159,28 +161,21 @@ public class StreamListView extends TmfView {
                 if (trace == null || (!(trace instanceof PcapTrace))) {
                     return;
                 }
-                StreamListAnalysis analysis = (StreamListAnalysis) trace.getAnalysisModule(StreamListAnalysis.ID);
+                StreamListAnalysis analysis = trace.getAnalysisModuleOfClass(StreamListAnalysis.class, StreamListAnalysis.ID);
                 if (analysis == null) {
                     return;
                 }
                 while (!analysis.isFinished() && !fStopThread) {
-
-                    // Update UI
                     updateUI();
-
-                    // Wait
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(WAIT_TIME);
                     } catch (InterruptedException e) {
-                        Activator activator = Activator.getDefault();
-                        if (activator == null) {
-                            return;
-                        }
                         String message = e.getMessage();
                         if (message == null) {
                             message = EMPTY_STRING;
                         }
-                        activator.logError(message, e);
+                        Activator.logError(message, e);
+                        return;
                     }
                 }
                 // Update UI one more time (daft punk)
@@ -201,17 +196,17 @@ public class StreamListView extends TmfView {
         fStopThread = true;
 
         // Remove all content in tables
-        Display.getDefault().asyncExec(new Runnable() {
+        TmfUiRefreshHandler.getInstance().queueUpdate(this, new Runnable() {
 
             @Override
             public void run() {
-                Map<Protocol, Table> tables = fTables;
-                if (tables == null) {
+                Map<TmfProtocol, Table> tableMap = fTableMap;
+                if (tableMap == null) {
                     return;
                 }
-                for (Protocol protocol : tables.keySet()) {
-                    if (!(tables.get(protocol).isDisposed())) {
-                        tables.get(protocol).removeAll();
+                for (TmfProtocol protocol : tableMap.keySet()) {
+                    if (!(tableMap.get(protocol).isDisposed())) {
+                        tableMap.get(protocol).removeAll();
                     }
                 }
             }
@@ -219,7 +214,7 @@ public class StreamListView extends TmfView {
     }
 
     private void updateUI() {
-        Display.getDefault().asyncExec(new Runnable() {
+        TmfUiRefreshHandler.getInstance().queueUpdate(this, new Runnable() {
 
             @Override
             public void run() {
@@ -228,23 +223,21 @@ public class StreamListView extends TmfView {
                     return;
                 }
 
-                StreamListAnalysis analysis = (StreamListAnalysis) trace.getAnalysisModule(StreamListAnalysis.ID);
+                StreamListAnalysis analysis = trace.getAnalysisModuleOfClass(StreamListAnalysis.class, StreamListAnalysis.ID);
                 if (analysis == null) {
                     return;
                 }
 
-                Map<Protocol, Table> tables = fTables;
+                Map<TmfProtocol, Table> tables = fTableMap;
                 if (tables == null) {
                     return;
                 }
-                for (Protocol p : tables.keySet()) {
-
+                for (TmfProtocol p : tables.keySet()) {
                     @SuppressWarnings("null")
-                    @NonNull
-                    Protocol protocol = p;
-                    PacketStreamBuilder builder = analysis.getBuilder(protocol);
+                    @NonNull TmfProtocol protocol = p;
+                    TmfPacketStreamBuilder builder = analysis.getBuilder(protocol);
                     if (builder != null && !(tables.get(protocol).isDisposed())) {
-                        for (PacketStream stream : builder.getStreams()) {
+                        for (TmfPacketStream stream : builder.getStreams()) {
 
                             TableItem item;
                             if (stream.getID() < tables.get(protocol).getItemCount()) {
@@ -253,8 +246,8 @@ public class StreamListView extends TmfView {
                                 item = new TableItem(tables.get(protocol), SWT.NONE);
                             }
                             item.setText(0, String.valueOf(stream.getID()));
-                            item.setText(1, stream.getEndpointPair().getFirstEndpoint().toString());
-                            item.setText(2, stream.getEndpointPair().getSecondEndpoint().toString());
+                            item.setText(1, stream.getFirstEndpoint().toString());
+                            item.setText(2, stream.getSecondEndpoint().toString());
                             item.setText(3, String.valueOf(stream.size()));
                             item.setData(KEY_STREAM, stream);
                         }
@@ -268,7 +261,7 @@ public class StreamListView extends TmfView {
     @Override
     public void createPartControl(@Nullable Composite parent) {
         // Initialize
-        fTables = new HashMap<>();
+        fTableMap = new HashMap<>();
         fCurrentTrace = getActiveTrace();
         fCurrentStream = null;
 
@@ -278,11 +271,11 @@ public class StreamListView extends TmfView {
 
             @Override
             public void widgetSelected(@Nullable SelectionEvent e) {
-                Map<Protocol, Table> tables = fTables;
+                Map<TmfProtocol, Table> tables = fTableMap;
                 if (tables == null || e == null) {
                     return;
                 }
-                Protocol protocol = (Protocol) e.item.getData(KEY_PROTOCOL);
+                TmfProtocol protocol = (TmfProtocol) e.item.getData(KEY_PROTOCOL);
                 tables.get(protocol).deselectAll();
                 fCurrentStream = null;
             }
@@ -290,7 +283,7 @@ public class StreamListView extends TmfView {
         });
 
         // Add items and tables for each protocol
-        for (Protocol protocol : Protocol.getAllProtocols()) {
+        for (TmfProtocol protocol : TmfProtocol.getAllProtocols()) {
             if (protocol.supportsStream()) {
                 CTabItem item = new CTabItem(fTabFolder, SWT.NONE);
                 item.setText(protocol.getName());
@@ -313,12 +306,12 @@ public class StreamListView extends TmfView {
                         if (e == null) {
                             return;
                         }
-                        fCurrentStream = (PacketStream) e.item.getData(KEY_STREAM);
+                        fCurrentStream = (TmfPacketStream) e.item.getData(KEY_STREAM);
                     }
 
                 });
 
-                Map<Protocol, Table> tables = fTables;
+                Map<TmfProtocol, Table> tables = fTableMap;
                 if (tables == null) {
                     return;
                 }
@@ -333,7 +326,7 @@ public class StreamListView extends TmfView {
 
                     @Override
                     public void handleEvent(@Nullable Event event) {
-                        TmfSignal signal = new TmfPacketStreamUpdatedSignal(this, 0, fCurrentStream);
+                        TmfSignal signal = new TmfNewPacketStreamSignal(this, 0, fCurrentStream);
                         TmfSignalManager.dispatchSignal(signal);
                     }
                 });
@@ -343,7 +336,7 @@ public class StreamListView extends TmfView {
 
                     @Override
                     public void handleEvent(@Nullable Event event) {
-                        TmfSignal signal = new TmfPacketStreamUpdatedSignal(this, 0, null);
+                        TmfSignal signal = new TmfNewPacketStreamSignal(this, 0, null);
                         TmfSignalManager.dispatchSignal(signal);
 
                     }
@@ -387,25 +380,21 @@ public class StreamListView extends TmfView {
                             filterView.addFilter(filter);
                         } catch (final PartInitException e) {
                             TraceUtils.displayErrorMsg(Messages.StreamListView_ExtractAsFilter, "Error opening view " + getName() + e.getMessage()); //$NON-NLS-1$
-                            Activator activator = Activator.getDefault();
-                            if (activator == null) {
-                                return;
-                            }
-                            activator.logError("Error opening view " + getName(), e); //$NON-NLS-1$
+                            Activator.logError("Error opening view " + getName(), e); //$NON-NLS-1$
                             return;
                         }
 
                     }
 
                     private @Nullable ITmfFilterTreeNode generateFilter() {
-                        PacketStream stream = fCurrentStream;
+                        TmfPacketStream stream = fCurrentStream;
                         if (stream == null) {
                             return null;
                         }
 
                         // First stage - root
-                        String name = Messages.StreamListView_FilterName_Stream + stream.getProtocol().getShortName() + ' ' + stream.getEndpointPair().getFirstEndpoint().toString()
-                                + Messages.StreamListView_FilterName_Between + stream.getEndpointPair().getSecondEndpoint().toString();
+                        String name = Messages.StreamListView_FilterName_Stream + ' ' + stream.getProtocol().getShortName() + ' ' + stream.getFirstEndpoint().toString()
+                                + " <--> " + stream.getSecondEndpoint().toString(); //$NON-NLS-1$
                         TmfFilterNode root = new TmfFilterNode(name);
 
                         // Second stage - and
@@ -424,16 +413,16 @@ public class StreamListView extends TmfView {
                         // Fourth stage - endpoints
                         TmfFilterContainsNode endpointAAndA = new TmfFilterContainsNode(andA);
                         endpointAAndA.setField(PcapEvent.EVENT_FIELD_PACKET_SOURCE);
-                        endpointAAndA.setValue(stream.getEndpointPair().getFirstEndpoint().toString());
+                        endpointAAndA.setValue(stream.getFirstEndpoint().toString().toString());
                         TmfFilterContainsNode endpointBAndA = new TmfFilterContainsNode(andA);
                         endpointBAndA.setField(PcapEvent.EVENT_FIELD_PACKET_DESTINATION);
-                        endpointBAndA.setValue(stream.getEndpointPair().getSecondEndpoint().toString());
+                        endpointAAndA.setValue(stream.getSecondEndpoint().toString().toString());
                         TmfFilterContainsNode endpointAAndB = new TmfFilterContainsNode(andB);
                         endpointAAndB.setField(PcapEvent.EVENT_FIELD_PACKET_SOURCE);
-                        endpointAAndB.setValue(stream.getEndpointPair().getSecondEndpoint().toString());
+                        endpointAAndA.setValue(stream.getSecondEndpoint().toString().toString());
                         TmfFilterContainsNode endpointBAndB = new TmfFilterContainsNode(andB);
                         endpointBAndB.setField(PcapEvent.EVENT_FIELD_PACKET_DESTINATION);
-                        endpointBAndB.setValue(stream.getEndpointPair().getFirstEndpoint().toString());
+                        endpointAAndA.setValue(stream.getFirstEndpoint().toString().toString());
 
                         return root;
                     }
@@ -458,9 +447,9 @@ public class StreamListView extends TmfView {
     public void dispose() {
         super.dispose();
 
-        Map<Protocol, Table> tables = fTables;
+        Map<TmfProtocol, Table> tables = fTableMap;
         if (tables != null) {
-            for (Protocol p : tables.keySet()) {
+            for (TmfProtocol p : tables.keySet()) {
                 if (!(tables.get(p).isDisposed())) {
                     tables.get(p).dispose();
                 }

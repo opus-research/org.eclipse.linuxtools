@@ -17,6 +17,7 @@ public class NetworkGraphView extends TmfView {
      * The network graph view ID.
      */
     public static final String ID = "org.eclipse.linuxtools.tmf.pcap.ui.view.graph"; //$NON-NLS-1$
+
     private @Nullable Label fLabel;
 
     /**

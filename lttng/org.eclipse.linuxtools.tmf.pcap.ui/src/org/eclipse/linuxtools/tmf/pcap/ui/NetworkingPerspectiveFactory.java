@@ -47,14 +47,10 @@ public class NetworkingPerspectiveFactory implements IPerspectiveFactory {
     private static final @NonNull String PROPERTIES_VIEW_ID = IPageLayout.ID_PROP_SHEET;
     @SuppressWarnings("null")
     private static final @NonNull String BOOKMARKS_VIEW_ID = IPageLayout.ID_BOOKMARKS;
-    @SuppressWarnings("null")
-    private static final @NonNull String FILTER_VIEW_ID = FilterView.ID;
-    @SuppressWarnings("null")
-    private static final @NonNull String HISTOGRAM_VIEW_ID = HistogramView.ID;
-    @SuppressWarnings("null")
-    private static final @NonNull String STATISTICS_VIEW_ID = TmfStatisticsView.ID;
-    @SuppressWarnings("null")
-    private static final @NonNull String COLOR_VIEW_ID = ColorsView.ID;
+    private static final String FILTER_VIEW_ID = FilterView.ID;
+    private static final String HISTOGRAM_VIEW_ID = HistogramView.ID;
+    private static final String STATISTICS_VIEW_ID = TmfStatisticsView.ID;
+    private static final String COLOR_VIEW_ID = ColorsView.ID;
     private static final String STREAM_LIST_VIEW_ID = StreamListView.ID;
     private static final String STREAM_DIAGRAM_VIEW_ID = StreamDiagramView.ID;
     private static final String NETWORK_GRAPH_VIEW_ID = NetworkGraphView.ID;

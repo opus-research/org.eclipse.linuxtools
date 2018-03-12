@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.linuxtools.tmf.ui.tracetypeui">
       <type
-            icon="rsc/pcap.png"
+            icon="icons/pcap.png"
             tracetype="org.eclipse.linuxtools.tmf.pcap.core.pcaptrace">
          <eventsTableType
                class="org.eclipse.linuxtools.tmf.pcap.ui.editor.PcapEventsTable">
@@ -15,33 +15,33 @@
          point="org.eclipse.ui.views">
       <category
             id="org.eclipse.linuxtools.tmf.pcap.ui.view.category.network"
-            name="Networking">
+            name="%category.networking">
       </category>
       <view
             allowMultiple="false"
             category="org.eclipse.linuxtools.tmf.pcap.ui.view.category.network"
             class="org.eclipse.linuxtools.tmf.pcap.ui.stream.StreamListView"
-            icon="rsc/events_view.gif"
+            icon="icons/stream_list_view.gif"
             id="org.eclipse.linuxtools.tmf.pcap.ui.view.stream.list"
-            name="Stream List"
+            name="%view.stream.list"
             restorable="true">
       </view>
       <view
             allowMultiple="false"
             category="org.eclipse.linuxtools.tmf.pcap.ui.view.category.network"
             class="org.eclipse.linuxtools.tmf.pcap.ui.graph.NetworkGraphView"
-            icon="rsc/graph.png"
+            icon="icons/graph.png"
             id="org.eclipse.linuxtools.tmf.pcap.ui.view.graph"
-            name="Network Graph"
+            name="%view.network.graph"
             restorable="true">
       </view>
       <view
             allowMultiple="false"
             category="org.eclipse.linuxtools.tmf.pcap.ui.view.category.network"
             class="org.eclipse.linuxtools.tmf.pcap.ui.stream.StreamDiagramView"
-            icon="rsc/sequencediagram_view.gif"
+            icon="icons/stream_diagram_view.gif"
             id="org.eclipse.linuxtools.tmf.pcap.ui.view.stream.diagram"
-            name="Stream Diagram"
+            name="%view.stream.diagram"
             restorable="true">
       </view>
    </extension>
@@ -50,9 +50,9 @@
       <perspective
             class="org.eclipse.linuxtools.tmf.pcap.ui.NetworkingPerspectiveFactory"
             fixed="false"
-            icon="rsc/network.svg"
+            icon="icons/network.svg"
             id="org.eclipse.linuxtools.tmf.pcap.ui.perspective.network"
-            name="Networking">
+            name="%perspective.networking">
       </perspective>
    </extension>
    <extension

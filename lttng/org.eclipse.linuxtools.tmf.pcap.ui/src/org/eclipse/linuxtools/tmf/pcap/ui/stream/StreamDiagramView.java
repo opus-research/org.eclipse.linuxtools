@@ -29,6 +29,7 @@ public class StreamDiagramView extends TmfView {
      * The Stream Diagram View ID.
      */
     public static final String ID = "org.eclipse.linuxtools.tmf.pcap.ui.view.stream.diagram"; //$NON-NLS-1$
+
     private @Nullable Label fLabel;
 
     /**

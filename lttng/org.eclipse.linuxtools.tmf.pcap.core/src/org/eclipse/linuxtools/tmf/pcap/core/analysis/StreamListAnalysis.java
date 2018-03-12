@@ -17,11 +17,7 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
-import org.eclipse.linuxtools.pcap.core.protocol.pcap.PcapPacket;
-import org.eclipse.linuxtools.pcap.core.stream.PacketStreamBuilder;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAbstractAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
@@ -31,6 +27,8 @@ import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEvent;
+import org.eclipse.linuxtools.tmf.pcap.core.event.TmfPacketStreamBuilder;
+import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
 import org.eclipse.linuxtools.tmf.pcap.core.trace.PcapTrace;
 
 /**
@@ -46,7 +44,7 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
     public static final String ID = "org.eclipse.linuxtools.tmf.pcap.core.analysis.stream"; //$NON-NLS-1$
 
     private final ITmfEventRequest fRequest;
-    private final Map<Protocol, PacketStreamBuilder> fBuilders;
+    private final Map<TmfProtocol, TmfPacketStreamBuilder> fBuilders;
 
     /**
      * The default constructor. It initializes all variables.
@@ -54,18 +52,14 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
     public StreamListAnalysis() {
         super();
         fBuilders = new HashMap<>();
-        for (Protocol protocol : Protocol.getAllProtocols()) {
+        for (TmfProtocol protocol : TmfProtocol.getAllProtocols()) {
             if (protocol.supportsStream()) {
-                fBuilders.put(protocol, new PacketStreamBuilder(protocol));
+                fBuilders.put(protocol, new TmfPacketStreamBuilder(protocol));
             }
         }
 
-        @SuppressWarnings("null")
-        @NonNull
-        TmfTimeRange eternity = TmfTimeRange.ETERNITY;
-
         fRequest = new TmfEventRequest(PcapEvent.class,
-                eternity, 0L, ITmfEventRequest.ALL_DATA,
+                TmfTimeRange.ETERNITY, 0L, ITmfEventRequest.ALL_DATA,
                 ITmfEventRequest.ExecutionType.BACKGROUND) {
 
             @Override
@@ -75,13 +69,9 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
                 if (!(data instanceof PcapEvent)) {
                     return;
                 }
-
-                PcapPacket packet = (PcapPacket) (((PcapEvent) data).getPacket().getPacket(Protocol.PCAP));
-                if (packet == null) {
-                    return;
-                }
-                for (Protocol protocol : fBuilders.keySet()) {
-                    fBuilders.get(protocol).addPacketToStream(packet);
+                PcapEvent event = (PcapEvent) data;
+                for (TmfProtocol protocol : fBuilders.keySet()) {
+                    fBuilders.get(protocol).addEventToStream(event);
                 }
 
             }
@@ -147,7 +137,7 @@ public class StreamListAnalysis extends TmfAbstractAnalysisModule {
      *            The specified protocol.
      * @return The builder.
      */
-    public @Nullable PacketStreamBuilder getBuilder(Protocol protocol) {
+    public @Nullable TmfPacketStreamBuilder getBuilder(TmfProtocol protocol) {
         return fBuilders.get(protocol);
     }
 

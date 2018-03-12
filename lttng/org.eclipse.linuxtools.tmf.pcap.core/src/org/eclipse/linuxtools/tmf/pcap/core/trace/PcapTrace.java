@@ -13,9 +13,7 @@
 package org.eclipse.linuxtools.tmf.pcap.core.trace;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.nio.channels.ClosedChannelException;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
@@ -25,20 +23,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.internal.tmf.pcap.core.Activator;
+import org.eclipse.linuxtools.internal.tmf.pcap.core.util.PcapEventFactory;
 import org.eclipse.linuxtools.pcap.core.packet.BadPacketException;
-import org.eclipse.linuxtools.pcap.core.packet.Packet;
-import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
 import org.eclipse.linuxtools.pcap.core.protocol.pcap.PcapPacket;
 import org.eclipse.linuxtools.pcap.core.trace.BadPcapFileException;
 import org.eclipse.linuxtools.pcap.core.trace.PcapFile;
 import org.eclipse.linuxtools.pcap.core.util.LinkTypeHelper;
-import org.eclipse.linuxtools.pcap.core.util.PcapTimestampScale;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
-import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
@@ -48,25 +40,24 @@ import org.eclipse.linuxtools.tmf.core.trace.TraceValidationStatus;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEvent;
-import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEventField;
 
 import com.google.common.collect.ImmutableMap;
-
-// TODO handle fields in TmfEventType for the filter view.
 
 /**
  * Class that represents a TMF Pcap Trace. It is used to make the glue between
  * the Pcap parser and TMF.
  *
+ * TODO handle fields in TmfEventType for the filter view.
+ *
  * @author Vincent Perot
  */
 public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTraceProperties, AutoCloseable {
 
+    @SuppressWarnings("null")
+    private static final Map<String, String> EMPTY_MAP = ImmutableMap.of();
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
     private static final int CONFIDENCE = 50;
-    private final Map<Protocol, TmfEventType> fEventTypes = new HashMap<>();
-    private @Nullable PcapFile fPcapFile; // can't be final since it's set in
-                                          // initTrace();
+    private @Nullable PcapFile fPcapFile; // not final because of initTrace();
     private @Nullable ImmutableMap<String, String> fTraceProperties = null;
 
     @Override
@@ -87,18 +78,14 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
         }
         try {
             // I have some doubt about what happens during indexing. Should I
-            // use this.getNbEvents() instead of fPcapFile.getTotalNbPackets()?
+            // use this.getNbEvents() instead of pcap.getTotalNbPackets()?
             return (pcap.getTotalNbPackets() == 0 ? 0 : ((double) loc.getLocationInfo()) / pcap.getTotalNbPackets());
         } catch (IOException | BadPcapFileException e) {
-            Activator activator = Activator.getDefault();
-            if (activator == null) {
-                return 0;
-            }
             String message = e.getMessage();
             if (message == null) {
                 message = EMPTY_STRING;
             }
-            activator.logError(message, e);
+            Activator.logError(message, e);
             return 0;
         }
 
@@ -124,7 +111,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
         }
 
         long rank = context.getRank();
-        Packet packet = null;
+        PcapPacket packet = null;
         PcapFile pcap = fPcapFile;
         if (pcap == null) {
             return null;
@@ -132,16 +119,19 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
         try {
             pcap.seekPacket(rank);
             packet = pcap.parseNextPacket();
+        } catch (ClosedChannelException e) {
+            /*
+             * This is handled independently and happens when the user closes
+             * the trace while it is being parsed. It simply stops the parsing.
+             * No need to log a error.
+             */
+            return null;
         } catch (IOException | BadPcapFileException | BadPacketException e) {
-            Activator activator = Activator.getDefault();
-            if (activator == null) {
-                return null;
-            }
             String message = e.getMessage();
             if (message == null) {
                 message = EMPTY_STRING;
             }
-            activator.logError(message, e);
+            Activator.logError(message, e);
             return null;
         }
 
@@ -149,75 +139,9 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
             return null;
         }
 
-        packet = packet.getPacket(Protocol.PCAP);
-        if (packet == null) {
-            return null;
-        }
+        // Generate an event from this packet and return it.
+        return PcapEventFactory.createEvent(packet, pcap, this);
 
-        long timestamp = ((PcapPacket) packet).getTimestamp();
-        PcapTimestampScale scale = ((PcapPacket) packet).getTimestampScale();
-        ITmfTimestamp tmfTimestamp;
-        switch (scale) {
-        case MICROSECOND:
-            tmfTimestamp = new TmfTimestamp(timestamp, ITmfTimestamp.MICROSECOND_SCALE, (int) pcap.getTimeAccuracy());
-            break;
-        case NANOSECOND:
-            tmfTimestamp = new TmfTimestamp(timestamp, ITmfTimestamp.NANOSECOND_SCALE, (int) pcap.getTimeAccuracy());
-            break;
-        default:
-            throw new IllegalArgumentException("The timestamp precision is not valid!"); //$NON-NLS-1$
-        }
-        String fileName = pcap.getPath().substring(pcap.getPath().lastIndexOf('/') + 1);
-        if (fileName == null) {
-            fileName = EMPTY_STRING;
-        }
-        String dataLink = "linktype:" + LinkTypeHelper.toString((int) packet.getPcapFile().getDataLinkType()); //$NON-NLS-1$
-
-        ITmfEventField[] fields = generatePacketFields(packet);
-        ITmfEventField field = new PcapEventField(ITmfEventField.ROOT_FIELD_ID, EMPTY_STRING, fields, packet);
-        packet = packet.getMostEcapsulatedPacket();
-        if (!fEventTypes.containsKey(packet.getProtocol())) {
-            String contextString = "Network/Pcap Event"; //$NON-NLS-1$
-            String typeIdString = "packet:" + packet.getProtocol().getShortName(); //$NON-NLS-1$
-            fEventTypes.put(packet.getProtocol(), new TmfEventType(contextString, typeIdString, null));
-        }
-        TmfEventType eventType = fEventTypes.get(packet.getProtocol());
-        if (eventType == null) {
-            eventType = new TmfEventType();
-        }
-        return new PcapEvent(this, rank, tmfTimestamp, dataLink, eventType, field, fileName, packet);
-    }
-
-    private static ITmfEventField[] generatePacketFields(Packet packet) {
-        // TODO This is SOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO slow. Must find a
-        // way to use less intermediate data structures.
-        List<ITmfEventField> fieldList = new ArrayList<>();
-        List<ITmfEventField> subfieldList = new ArrayList<>();
-        Packet localPacket = packet.getPacket(Protocol.PCAP);
-
-        while (localPacket != null) {
-            subfieldList.clear();
-            for (Map.Entry<String, String> entry : localPacket.getFields().entrySet()) {
-
-                @SuppressWarnings("null")
-                @NonNull
-                String key = entry.getKey();
-
-                @SuppressWarnings("null")
-                @NonNull
-                String value = entry.getValue();
-                subfieldList.add(new PcapEventField(key, value, null, localPacket));
-            }
-            ITmfEventField[] subfieldArray = subfieldList.toArray(new ITmfEventField[subfieldList.size()]);
-            fieldList.add(new PcapEventField(localPacket.getProtocol().getName(), EMPTY_STRING, subfieldArray, localPacket));
-            localPacket = localPacket.getChildPacket();
-        }
-
-        ITmfEventField[] fieldArray = fieldList.toArray(new ITmfEventField[fieldList.size()]);
-        if (fieldArray == null) {
-            return new ITmfEventField[0];
-        }
-        return fieldArray;
     }
 
     @Override
@@ -229,17 +153,17 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
         }
 
         try {
+            /*
+             * The ratio is between 0 and 1. We multiply it by the total number
+             * of packets to get the position.
+             */
             position = (long) (ratio * pcap.getTotalNbPackets());
         } catch (IOException | BadPcapFileException e) {
-            Activator activator = Activator.getDefault();
-            if (activator == null) {
-                return new TmfContext(new TmfLongLocation(0), 0);
-            }
             String message = e.getMessage();
             if (message == null) {
                 message = EMPTY_STRING;
             }
-            activator.logError(message, e);
+            Activator.logError(message, e);
             return new TmfContext(new TmfLongLocation(0), 0);
         }
         TmfLongLocation loc = new TmfLongLocation(position);
@@ -272,23 +196,19 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
 
     @Override
     public synchronized void dispose() {
+        super.dispose();
         PcapFile pcap = fPcapFile;
         if (pcap == null) {
             return;
         }
-        super.dispose();
         try {
             pcap.close();
         } catch (IOException e) {
-            Activator activator = Activator.getDefault();
-            if (activator == null) {
-                return;
-            }
             String message = e.getMessage();
             if (message == null) {
                 message = EMPTY_STRING;
             }
-            activator.logError(message, e);
+            Activator.logError(message, e);
             return;
         }
     }
@@ -297,14 +217,13 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     public Map<String, String> getTraceProperties() {
         PcapFile pcap = fPcapFile;
         if (pcap == null) {
-            return new HashMap<>();
+            return EMPTY_MAP;
         }
 
         ImmutableMap<String, String> properties = fTraceProperties;
         if (properties == null) {
             @SuppressWarnings("null")
-            @NonNull
-            ImmutableMap<String, String> newProperties = ImmutableMap.<String, String> builder()
+            @NonNull ImmutableMap<String, String> newProperties = ImmutableMap.<String, String> builder()
                     .put(Messages.PcapTrace_Version, String.format("%d%c%d", pcap.getMajorVersion(), '.', pcap.getMinorVersion())) //$NON-NLS-1$
                     .put(Messages.PcapTrace_TimeZoneCorrection, pcap.getTimeZoneCorrection() + " second") //$NON-NLS-1$
                     .put(Messages.PcapTrace_TimestampAccuracy, String.valueOf(pcap.getTimeAccuracy()))

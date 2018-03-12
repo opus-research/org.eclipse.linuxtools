@@ -22,7 +22,6 @@ public class Messages extends NLS {
     public static @Nullable String StreamListView_EndpointA;
     public static @Nullable String StreamListView_EndpointB;
     public static @Nullable String StreamListView_ExtractAsFilter;
-    public static @Nullable String StreamListView_FilterName_Between;
     public static @Nullable String StreamListView_FilterName_Stream;
     public static @Nullable String StreamListView_FollowStream;
     public static @Nullable String StreamListView_ID;
