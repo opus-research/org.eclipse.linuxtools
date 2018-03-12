@@ -204,9 +204,9 @@ A new dialog will show for selecting a trace to open. Select a trace file and th
 
 Note that a trace type is an extension point of the '''Tracing and Monitoring Framework (TMF)'''. Depending on the which features are loaded, the list of available trace types can vary.
 
-==== Importing ====
+==== Batch Importing ====
 
-To import a set of traces to a trace folder, right-click on the target folder and select '''Import...''' from the context-sensitive menu.
+To import a set of traces to a trace folder, right-click on the target folder and select '''Batch Import...''' from the context-sensitive menu.
 
 [[Image:images/ProjectImportTraceAction.png]]
 

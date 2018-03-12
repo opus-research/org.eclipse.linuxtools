@@ -43,10 +43,6 @@
                   label="%command.OpenFile.label"
                   style="push">
             </command>
-            <separator
-                  name="OpenSeparator"
-                  visible="true">
-            </separator>
             <command
                   commandId="org.eclipse.linuxtools.tmf.ui.import"
                   label="%command.import"
