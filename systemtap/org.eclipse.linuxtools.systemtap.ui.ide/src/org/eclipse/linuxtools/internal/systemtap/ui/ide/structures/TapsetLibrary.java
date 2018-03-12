@@ -170,9 +170,9 @@ public final class TapsetLibrary {
      * This method will get all of the tree information from
      * the TreeSettings xml file.
      */
-    public static void readTreeFile() {
-        functionParser.setTree(TreeSettings.getFunctionTree());
-        probeParser.setTree(TreeSettings.getProbeTree());
+    private static void readTreeFile() {
+        functionTree = TreeSettings.getFunctionTree();
+        probeTree = TreeSettings.getProbeTree();
     }
 
     /**

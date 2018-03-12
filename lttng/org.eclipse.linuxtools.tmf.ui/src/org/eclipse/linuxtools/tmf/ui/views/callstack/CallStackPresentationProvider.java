@@ -13,7 +13,6 @@
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
@@ -67,8 +66,14 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
     }
 
     @Override
+    public String getStateTypeName() {
+        // Empty string since no generic name
+        return ""; //$NON-NLS-1$
+    }
+
+    @Override
     public String getStateTypeName(ITimeGraphEntry entry) {
-        return Messages.CallStackPresentationProvider_Thread;
+        return ""; //$NON-NLS-1$
     }
 
     @Override
