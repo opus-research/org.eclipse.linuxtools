@@ -22,6 +22,8 @@ import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.DefaultLineTracker;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TabsToSpacesConverter;
@@ -46,6 +48,7 @@ import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePackagesSc
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfilePartitionScanner;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfileScanner;
 import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.eclipse.ui.texteditor.HyperlinkDetectorDescriptor;
@@ -185,11 +188,21 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
                 SpecfilePartitionScanner.SPEC_GROUP);
         // configure content assistance
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
-        assistant.setInformationControlCreator(parent -> new DefaultInformationControl(parent, false));
+        IInformationControlCreator controlCreator= getInformationControlCreator();
+        assistant.setInformationControlCreator(controlCreator);
         assistant.enableAutoInsert(true);
         assistant.setStatusLineVisible(true);
         assistant.setStatusMessage(Messages.SpecfileConfiguration_0);
         return assistant;
+    }
+
+    private IInformationControlCreator getInformationControlCreator() {
+        return new IInformationControlCreator() {
+            @Override
+            public IInformationControl createInformationControl(Shell parent) {
+                return new DefaultInformationControl(parent, false);
+            }
+        };
     }
 
     @Override
@@ -228,8 +241,8 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
     }
 
     @Override
-    protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
-        Map<String, IAdaptable> targets= super.getHyperlinkDetectorTargets(sourceViewer);
+    protected Map getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
+        Map<String, Object> targets= super.getHyperlinkDetectorTargets(sourceViewer);
         targets.put("org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditorTarget", editor); //$NON-NLS-1$
         targets.put("org.eclipse.ui.DefaultTextEditor", editor); //$NON-NLS-1$
         return targets;
