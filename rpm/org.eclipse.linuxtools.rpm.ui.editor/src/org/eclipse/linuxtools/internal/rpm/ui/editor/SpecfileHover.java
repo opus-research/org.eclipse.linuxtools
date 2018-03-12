@@ -12,6 +12,9 @@
 
 package org.eclipse.linuxtools.internal.rpm.ui.editor;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IDocument;
@@ -21,6 +24,8 @@ import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.parser.SpecfileSource;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.preferences.PreferenceConstants;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileDefine;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileParser;
@@ -55,14 +60,14 @@ public class SpecfileHover implements ITextHover, ITextHoverExtension {
 
 		// If there's no such define we try to see if it corresponds to
 		// a Source or Patch declaration
-		String retrivedValue = RPMUtils.getSourceOrPatchValue(spec, macroLower);
+		String retrivedValue = getSourceOrPatchValue(spec, macroLower);
 		if (retrivedValue != null) {
 			return value + retrivedValue;
 		} else {
 			// If it does not correspond to a Patch or Source macro, try to find
 			// it
 			// in the macro proposals list.
-			retrivedValue = RPMUtils.getMacroValueFromMacroList(currentSelection);
+			retrivedValue = getMacroValueFromMacroList(currentSelection);
 			if (retrivedValue != null) {
 				return value + retrivedValue;
 			} else {
@@ -217,4 +222,51 @@ public class SpecfileHover implements ITextHover, ITextHoverExtension {
 		return null;
 	}
 
+	public static String getSourceOrPatchValue(Specfile spec, String patchOrSourceName) {
+		String value = null;
+		Pattern p = Pattern.compile("(source|patch)(\\d*)"); //$NON-NLS-1$
+		Matcher m = p.matcher(patchOrSourceName);
+
+		if (m.matches()) {
+			String digits = m.group(2);
+
+			SpecfileSource source = null;
+			int number = -1;
+
+			if (digits != null && digits.isEmpty()) {
+				number = 0;
+			} else if (digits != null && !digits.isEmpty()) {
+				number = Integer.parseInt(digits);
+			}
+
+			if (number != -1) {
+				if (m.group(1).equals("source")) {//$NON-NLS-1$
+					source = spec.getSource(number);
+				} else if (m.group(1).equals("patch")) {//$NON-NLS-1$
+					source = spec.getPatch(number);
+				}
+
+				if (source != null) {
+					value = source.getFileName();
+				}
+			}
+		}
+		return value;
+	}
+
+	public static String getMacroValueFromMacroList(String macroName) {
+		String value = null;
+		if (Activator.getDefault().getRpmMacroList().findKey("%" + macroName)) { //$NON-NLS-1$
+			String currentConfig = Activator.getDefault().getPreferenceStore()
+					.getString(PreferenceConstants.P_MACRO_HOVER_CONTENT);
+			// Show content of the macro according with the configuration set
+			// in the macro preference page.
+			if (currentConfig.equals(PreferenceConstants.P_MACRO_HOVER_CONTENT_VIEWDESCRIPTION)) {
+				value = Activator.getDefault().getRpmMacroList().getValue(macroName);
+			} else {
+				value = RpmMacroProposalsList.getMacroEval("%" + macroName); //$NON-NLS-1$
+			}
+		}
+		return value;
+	}
 }
