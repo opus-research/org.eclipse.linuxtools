@@ -187,7 +187,6 @@
     <module>systemtap</module>
     <module>valgrind</module>
     <module>containers</module>
-    <module>vagrant</module>
     <module>releng</module>
   </modules>
 
