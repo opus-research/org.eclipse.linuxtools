@@ -30,7 +30,6 @@ public class CustomXmlParserWizard extends Wizard implements INewWizard {
     CustomXmlParserOutputWizardPage outputPage;
     private ISelection selection;
     CustomXmlTraceDefinition definition;
-    String initialCategoryName;
     String initialDefinitionName;
 
     /**
@@ -49,18 +48,14 @@ public class CustomXmlParserWizard extends Wizard implements INewWizard {
     public CustomXmlParserWizard(CustomXmlTraceDefinition definition) {
         super();
         this.definition = definition;
-        if (definition != null) {
-            initialCategoryName = definition.categoryName;
-            initialDefinitionName = definition.definitionName;
-        }
+        this.initialDefinitionName = definition.definitionName;
     }
 
     @Override
     public boolean performFinish() {
         CustomXmlTraceDefinition def = outputPage.getDefinition();
-        if (definition != null && (!initialCategoryName.equals(def.categoryName) ||
-                !initialDefinitionName.equals(def.definitionName))) {
-            CustomXmlTraceDefinition.delete(initialCategoryName, initialDefinitionName);
+        if (definition != null && !initialDefinitionName.equals(def.definitionName)) {
+            CustomXmlTraceDefinition.delete(initialDefinitionName);
         }
         def.save();
         return true;
