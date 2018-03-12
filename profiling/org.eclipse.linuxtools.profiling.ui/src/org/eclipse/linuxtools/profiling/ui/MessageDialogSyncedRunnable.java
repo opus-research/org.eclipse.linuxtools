@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    lufimtse :  Leo Ufimtsev lufimtse@redhat.com
+ *    Red Hat Inc. :  Initial Implementation
  *******************************************************************************/
 
 package org.eclipse.linuxtools.profiling.ui;
@@ -30,7 +30,7 @@ import org.eclipse.ui.PlatformUI;
  * </p>
  *
  * <p> Note, methods in this subclass have a postfix of 'SyncedRunnable'.
- *  @since 3.1.0
+ *  @since 3.1
  */
 public class MessageDialogSyncedRunnable extends MessageDialog {
 
