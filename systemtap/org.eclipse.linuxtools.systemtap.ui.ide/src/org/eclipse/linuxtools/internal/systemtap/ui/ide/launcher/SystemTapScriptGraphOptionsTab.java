@@ -43,6 +43,7 @@ import org.eclipse.linuxtools.systemtap.graphing.ui.wizards.graph.GraphFactory;
 import org.eclipse.linuxtools.systemtap.graphing.ui.wizards.graph.SelectGraphAndSeriesWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -168,38 +169,47 @@ public class SystemTapScriptGraphOptionsTab extends
      */
     private List<GraphData> badGraphs = new LinkedList<>();
 
-    private ModifyListener regexListener = event -> {
-	    if (!textListenersEnabled || regularExpressionCombo.getSelectionIndex() != -1) {
-	        return;
-	    }
-	    regularExpressionCombo.setItem(selectedRegex, regularExpressionCombo.getText());
-	    regularExpressionCombo.select(selectedRegex);
-	    refreshRegexRows();
-	    updateLaunchConfigurationDialog();
-	};
+    private ModifyListener regexListener = new ModifyListener() {
+        @Override
+        public void modifyText(ModifyEvent event) {
+            if (!textListenersEnabled || regularExpressionCombo.getSelectionIndex() != -1) {
+                return;
+            }
+            regularExpressionCombo.setItem(selectedRegex, regularExpressionCombo.getText());
+            regularExpressionCombo.select(selectedRegex);
+            refreshRegexRows();
+            updateLaunchConfigurationDialog();
+        }
+    };
 
-    private ModifyListener sampleOutputListener = event -> {
-	    if (!textListenersEnabled) {
-	        return;
-	    }
-	    outputList.set(selectedRegex, sampleOutputText.getText());
-	    refreshRegexRows();
-	    updateLaunchConfigurationDialog();
-	};
+    private ModifyListener sampleOutputListener = new ModifyListener() {
+        @Override
+        public void modifyText(ModifyEvent event) {
+            if (!textListenersEnabled) {
+                return;
+            }
+            outputList.set(selectedRegex, sampleOutputText.getText());
+            refreshRegexRows();
+            updateLaunchConfigurationDialog();
+        }
+    };
 
-    private ModifyListener columnNameListener = event -> {
-	    if (!textListenersEnabled) {
-	        return;
-	    }
+    private ModifyListener columnNameListener = new ModifyListener() {
+        @Override
+        public void modifyText(ModifyEvent event) {
+            if (!textListenersEnabled) {
+                return;
+            }
 
-	    ArrayList<String> columnNames = new ArrayList<>();
-	    Control[] children = textFieldsComposite.getChildren();
-	    for (int i = 0; i < numberOfVisibleColumns; i++) {
-	        columnNames.add(((Text)children[i*4 + 2]).getText());
-	    }
-	    columnNamesList.set(selectedRegex, columnNames);
-	    updateLaunchConfigurationDialog();
-	};
+            ArrayList<String> columnNames = new ArrayList<>();
+            Control[] children = textFieldsComposite.getChildren();
+            for (int i = 0; i < numberOfVisibleColumns; i++) {
+                columnNames.add(((Text)children[i*4 + 2]).getText());
+            }
+            columnNamesList.set(selectedRegex, columnNames);
+            updateLaunchConfigurationDialog();
+        }
+    };
 
     private SelectionAdapter regexGenerator = new SelectionAdapter() {
         @Override

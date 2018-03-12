@@ -261,14 +261,14 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 				if (key.equals(vm.identityFile())) {
 					vmFound = true;
 					if (!EnumVMStatus.RUNNING.equals(EnumVMStatus.fromStatusMessage(vm.state()))) {
-						newKeys = removeFromKeys(keys, key);
+						newKeys = keys.replaceAll("(,)?" + key + "(,)?", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 						removeFromTrackedKeys(key);
 						break;
 					}
 				}
 			}
 			if (!vmFound && isTrackedKey(key)) {
-				newKeys = removeFromKeys(keys, key);
+				newKeys = keys.replaceAll("(,)?" + key + "(,)?", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				removeFromTrackedKeys(key);
 			}
 		}
@@ -286,18 +286,7 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		trackedKeys.remove(key);
 	}
 
-	private String removeFromKeys(String keys, String key) {
-		StringBuffer res = new StringBuffer();
-		for (String k : keys.split(",")) {
-			if (!key.equals(k)) {
-				res.append(","); //$NON-NLS-1$
-				res.append(k);
-			}
-		}
-		return res.substring(1);
-	}
-
-	public boolean isTrackedKey(String key) {
+	private boolean isTrackedKey(String key) {
 		return trackedKeys.contains(key);
 	}
 
@@ -406,11 +395,6 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	@Override
 	public void removeBox(String name) {
 		call(new String[] { "--machine-readable", "box", "remove", name }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	}
-
-	@Override
-	public void packageVM(IVagrantVM vm, String name) {
-		rtCall(new String[] { "package", vm.id(), "--output", name}, vm.directory(), null); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	@Override
