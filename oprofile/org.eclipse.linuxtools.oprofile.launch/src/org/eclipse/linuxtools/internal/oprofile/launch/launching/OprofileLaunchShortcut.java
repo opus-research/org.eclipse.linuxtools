@@ -53,6 +53,7 @@ public class OprofileLaunchShortcut extends ProfileLaunchShortcut {
 
         try {
             ILaunchConfigurationWorkingCopy wc = config.getWorkingCopy();
+            wc.setAttribute(OprofileLaunchPlugin.ATTR_MANUAL_PROFILE, false);
             wc.doSave();
         } catch (CoreException e) {
             e.printStackTrace();
