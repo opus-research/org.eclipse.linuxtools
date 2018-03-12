@@ -3690,14 +3690,14 @@ Used Java Heap: It is the difference between the memory used at the beginning of
 
 == Adding a protocol ==
 
-Supporting a new network protocol in TMF is straightforward. The architecture is made so that minimal effort is needed to support new protocols. In this tutorial, the UDP protocol will be added to the list of supported protocols.
+Supporting a new network protocol in TMF is straightforward. The architecture is made so that minimal effort is required to support new protocols. In this tutorial, the UDP protocol will be added to the list of supported protocols.
 
 === Architecture ===
 
 All the TMF pcap-related code is divided in three projects (not considering the tests plugins):
-* org.eclipse.linuxtools.pcap.core, which contains the parser that will read pcap files and constructs the different packets from a ByteBuffer. It also contains means to build packet streams, which are conversation (list of packets) between two endpoints. To add a protocol, almost all of the work will be in that project.
-* org.eclipse.linuxtools.tmf.pcap.core, which contains TMF-specific concepts and act as a wrapper between TMF and the pcap parsing library. It only depends on org.eclipse.linuxtools.tmf.core and org.eclipse.pcap.core. To add a protocol, one file must be edited in this project.
-* org.eclipse.linuxtools.tmf.pcap.ui, which contains all TMF pcap UI-specific concepts, such as the views and perspectives. No work is needed in that project.
+* <b>org.eclipse.linuxtools.pcap.core</b>, which contains the parser that will read pcap files and constructs the different packets from a ByteBuffer. It also contains means to build packet streams, which are conversation (list of packets) between two endpoints. To add a protocol, almost all of the work will be in that project.
+* <b>org.eclipse.linuxtools.tmf.pcap.core</b>, which contains TMF-specific concepts and act as a wrapper between TMF and the pcap parsing library. It only depends on org.eclipse.linuxtools.tmf.core and org.eclipse.pcap.core. To add a protocol, one file must be edited in this project.
+* <b>org.eclipse.linuxtools.tmf.pcap.ui</b>, which contains all TMF pcap UI-specific concepts, such as the views and perspectives. No work is needed in that project.
 
 === UDP Packet Structure ===
 
@@ -3728,23 +3728,23 @@ Knowing that, we can define an UDPPacket class that contains those fields.
 
 === Creating the UDPPacket ===
 
-First, in org.eclipse.linuxtools.pcap.core, create a new package named org.eclipse.linuxtools.pcap.core.protocol.name with name being the name of the new protocol. In our case name is udp so we create the package org.eclipse.linuxtools.pcap.core.protocol.udp. All our work is going in this package.
+First, in org.eclipse.linuxtools.pcap.core, create a new package named <b>org.eclipse.linuxtools.pcap.core.protocol.name</b> with name being the name of the new protocol. In our case name is udp so we create the package <b>org.eclipse.linuxtools.pcap.core.protocol.udp</b>. All our work is going in this package.
 
 In this package, we create a new class named UDPPacket that extends Packet. All new protocol must define a packet type that extends the abstarct class Packet. We also add different fields:
-* Packet fChildPacket, which is the packet encapsulated by this UDP packet, if it exists. This field will be initialized by findChildPacket().
-* ByteBuffer fPayload, which is the payload of this packet. Basically, it is the UDP packet without its header.
-* int fSourcePort, which is an unsigned 16-bits field, that contains the source port of the packet (see packet structure).
-* int fDestinationPort, which is an unsigned 16-bits field, that contains the destination port of the packet (see packet structure).
-* int fTotalLength, which is an unsigned 16-bits field, that contains the total length (header + payload) of the packet.
-* int fChecksum, which is an unsigned 16-bits field, that contains a checksum to verify the integrity of the data.
-* UDPEndpoint fSourceEndpoint, which contains the source endpoint of the UDPPacket. The UDPEndpoint class will be created later in this tutorial.
-* UDPEndpoint fDestinationEndpoint, which contains the destination endpoint of the UDPPacket.
-* ImmutableMap<String, String> fFields, which is a map that contains all the packet fields (see in data structure) which assign a field name with its value. Those values will be displayed on the UI.
+* <i>Packet</i> <b>fChildPacket</b>, which is the packet encapsulated by this UDP packet, if it exists. This field will be initialized by findChildPacket().
+* <i>ByteBuffer</i> <b>fPayload</b>, which is the payload of this packet. Basically, it is the UDP packet without its header.
+* <i>int</i> <b>fSourcePort</b>, which is an unsigned 16-bits field, that contains the source port of the packet (see packet structure).
+* <i>int</i> <b>fDestinationPort</b>, which is an unsigned 16-bits field, that contains the destination port of the packet (see packet structure).
+* <i>int</i> <b>fTotalLength</b>, which is an unsigned 16-bits field, that contains the total length (header + payload) of the packet.
+* <i>int</i> <b>fChecksum</b>, which is an unsigned 16-bits field, that contains a checksum to verify the integrity of the data.
+* <i>UDPEndpoint</i> <b>fSourceEndpoint</b>, which contains the source endpoint of the UDPPacket. The UDPEndpoint class will be created later in this tutorial.
+* <i>UDPEndpoint</i> <b>fDestinationEndpoint</b>, which contains the destination endpoint of the UDPPacket.
+* <i>ImmutableMap<String, String></i> <b>fFields</b>, which is a map that contains all the packet fields (see in data structure) which assign a field name with its value. Those values will be displayed on the UI.
 
 We also create the UDPPacket(PcapFile file, @Nullable Packet parent, ByteBuffer packet) constructor. The parameters are:
-* PcapFile file, which is the pcap file to which this packet belongs.
-* Packet parent, which is the packet encasulating this UDPPacket
-* ByteBuffer packet, which is a ByteBuffer that contains all the data necessary to initialize the fields of this UDPPacket. We will retrieve bytes from it during object construction.
+* <i>PcapFile</i> <b>file</b>, which is the pcap file to which this packet belongs.
+* <i>Packet</i> <b>parent</b>, which is the packet encasulating this UDPPacket
+* <i>ByteBuffer</i> <b>packet</b>, which is a ByteBuffer that contains all the data necessary to initialize the fields of this UDPPacket. We will retrieve bytes from it during object construction.
 
 The following class is obtained:
 
@@ -3906,17 +3906,17 @@ The following constructor is obtained:
 </pre>
 
 Then, we implement the methods:
-* public Packet getChildPacket(): simple getter of fChildPacket
-* public ByteBuffer getPayload(): simple getter of fPayload
-* public boolean validate(): method that checks if the packet is valid. In our case, the packet is valid if the retrieved checksum fChecksum and the real checksum (that we can compute using the fields and payload of UDPPacket) are the same.
-* protected Packet findChildPacket(): method that create a new packet if a encapsulated protocol is found. For instance, based on the fDestinationPort, it could determine what the encapsulated protocol is and create a new packet object.
-* public ProtocolEndpoint getSourceEndpoint(): method that initialize and returns the source endpoint.
-* public ProtocolEndpoint getDestinationEndpoint(): method that initialize and returns the destination endpoint.
-* public Map<String, String> getFields(): method that initialize and returns the map containing the fields matched to their value.
-* public String getLocalSummaryString(): method that returns a string summarizing the most important fields of the packet. There is no need to list all the fields, just the most important one. This will be displayed on UI.
-* protected String getSignificationString(): method that returns a string describing the meaning of the packet. If there is no particular meaning, it is possible to return getLocalSummaryString().
-* public boolean equals(Object obj): Object's equals method.
-* public int hashCode(): Object's hashCode method.
+* <i>public Packet</i> <b>getChildPacket()</b>: simple getter of fChildPacket
+* <i>public ByteBuffer</i> <b>getPayload()</b>: simple getter of fPayload
+* <i>public boolean</i> <b>validate()</b>: method that checks if the packet is valid. In our case, the packet is valid if the retrieved checksum fChecksum and the real checksum (that we can compute using the fields and payload of UDPPacket) are the same.
+* <i>protected Packet</i> <b>findChildPacket()</b>: method that create a new packet if a encapsulated protocol is found. For instance, based on the fDestinationPort, it could determine what the encapsulated protocol is and create a new packet object.
+* <i>public ProtocolEndpoint</i> <b>getSourceEndpoint()</b>: method that initialize and returns the source endpoint.
+* <i>public ProtocolEndpoint</i> <b>getDestinationEndpoint()</b>: method that initialize and returns the destination endpoint.
+* <i>public Map<String, String></i> <b>getFields()</b>: method that initialize and returns the map containing the fields matched to their value.
+* <i>public String</i> <b>getLocalSummaryString()</b>: method that returns a string summarizing the most important fields of the packet. There is no need to list all the fields, just the most important one. This will be displayed on UI.
+* <i>protected String</i> <b>getSignificationString()</b>: method that returns a string describing the meaning of the packet. If there is no particular meaning, it is possible to return getLocalSummaryString().
+* public boolean</i> <b>equals(Object obj)</b>: Object's equals method.
+* public int</i> <b>hashCode()</b>: Object's hashCode method.
 
 We get the following code:
 <pre>
@@ -4098,11 +4098,11 @@ The UDPPacket class is implemented. We now have the define the UDPEndpoint.
 
 === Creating the UDPEndpoint ===
 
-For the UDP protocol, a endpoint will be its source or its destination port, depending if it is the source endpoint or destination endpoint. Knowing that, we can create our UDPEndpoint class.
+For the UDP protocol, an endpoint will be its source or its destination port, depending if it is the source endpoint or destination endpoint. Knowing that, we can create our UDPEndpoint class.
 
 We create in our package a new class named UDPEndpoint that extends ProtocolEndpoint. We also add a field: fPort, which contains the source or destination port. We finally add a constructor public ExampleEndpoint(Packet packet, boolean isSourceEndpoint):
-* Packet packet: the packet to build the endpoint from.
-* boolean isSourceEndpoint: whether the endpoint is the source endpoint or destination endpoint.
+* <i>Packet</i> <b>packet</b>: the packet to build the endpoint from.
+* <i>boolean</i> <b>isSourceEndpoint</b>: whether the endpoint is the source endpoint or destination endpoint.
 
 We obtain the following unimplemented class:
 
@@ -4164,9 +4164,9 @@ For the constructor, we simply initialize fPort. If isSourceEndpoint is true, th
 </pre>
 
 Then we implement the methods:
-* public int hashCode(): method that returns an integer based on the fields value. In our case, it will return an integer depending on fPort, and the parent endpoint that we can retrieve with getParentEndpoint().
-* public boolean equals(Object obj): method that returns true if two objects are equals. In our case, two UDPEndpoints are equal if they both have the same fPort and have the same parent endpoint that we can retrieve with getParentEndpoint().
-* public String toString(): method that returns a description of the UDPEndpoint as a string. In our case, it will be a concatenation of the string of the parent endpoint and fPort as a string.
+* <i>public int</i> <b>hashCode()</b>: method that returns an integer based on the fields value. In our case, it will return an integer depending on fPort, and the parent endpoint that we can retrieve with getParentEndpoint().
+* <i>public boolean</i> <b>equals(Object obj)</b>: method that returns true if two objects are equals. In our case, two UDPEndpoints are equal if they both have the same fPort and have the same parent endpoint that we can retrieve with getParentEndpoint().
+* <i>public String</i> <b>toString()</b>: method that returns a description of the UDPEndpoint as a string. In our case, it will be a concatenation of the string of the parent endpoint and fPort as a string.
 
 <pre>
     @Override
@@ -4223,17 +4223,17 @@ Then we implement the methods:
 === Registering the UDP protocol ===
 
 The last step is to register the new protocol. There are three places where the protocol has to be registered.First, the parser has to know that a new protocol has been added. This is defined in the enum org.eclipse.linuxtools.pcap.core.protocol.Protocol. Simply add the protocol name here, along with a few arguments:
-* String longname, which is the long version of name of the protocol. In our case, it is "User Datagram Protocol".
-* String shortName, which is the shortened name of the protocol. In our case, it is "UDP".
-* int layer, which is the layer to which the protocol belongs in the OSI model. In our case, this is the layer 4.
-* boolean supportsStream, which defines whether or not the protocol supports packet streams. In our case, this is set to true.
+* <i>String</i> <b>longname</b>, which is the long version of name of the protocol. In our case, it is "User Datagram Protocol".
+* <i>String</i> <b>shortName</b>, which is the shortened name of the protocol. In our case, it is "UDP".
+* <i>int</i> <b>layer</b>, which is the layer to which the protocol belongs in the OSI model. In our case, this is the layer 4.
+* <i>boolean</i> <b>supportsStream</b>, which defines whether or not the protocol supports packet streams. In our case, this is set to true.
 
 Thus, the following line is added in the Prtotocol enum:
 <pre>
     UDP("User Datagram Protocol", "udp", ProtocolValues.LAYER_4, true),
 </pre>
 
-Also, TMF has to know about the new protocol. This is defined in org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol. We simply add it with the EXACT SAME NAME as in the Protocol enum. Thus, the following line is added in the TmfProtocol enum:
+Also, TMF has to know about the new protocol. This is defined in org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol. We simply add it with the <b>EXACT SAME NAME</b> as in the Protocol enum. Thus, the following line is added in the TmfProtocol enum:
 <pre>
     UDP,
 </pre>
