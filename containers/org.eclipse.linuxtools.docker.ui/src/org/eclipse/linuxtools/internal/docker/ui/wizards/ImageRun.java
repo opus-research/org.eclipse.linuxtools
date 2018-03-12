@@ -21,8 +21,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
@@ -32,8 +34,11 @@ import org.eclipse.linuxtools.internal.docker.core.DockerContainerConfig;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerConfig.Builder;
 import org.eclipse.linuxtools.internal.docker.core.DockerHostConfig;
 import org.eclipse.linuxtools.internal.docker.core.DockerPortBinding;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ContainerLinkModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ExposedPortModel;
+import org.eclipse.ui.INewWizard;
+import org.eclipse.ui.IWorkbench;
 
 /**
  * Wizard to 'docker run' a given {@link IDockerImage}.
@@ -41,10 +46,10 @@ import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.
  * @author xcoulon
  *
  */
-public class ImageRun extends Wizard {
+public class ImageRun extends Wizard implements INewWizard {
 
-	private final ImageRunSelectionPage imageRunSelectionPage;
-	private final ImageRunResourceVolumesVariablesPage imageRunResourceVolumesPage;
+	private ImageRunSelectionPage imageRunSelectionPage;
+	private ImageRunResourceVolumesVariablesPage imageRunResourceVolumesPage;
 
 	/**
 	 * Constructor when an {@link IDockerConnection} has been selected to run an
@@ -55,10 +60,8 @@ public class ImageRun extends Wizard {
 	 *            daemon/host.
 	 * @throws DockerException
 	 */
-	public ImageRun(final IDockerConnection connection) throws DockerException {
-		super();
-		setWindowTitle(WizardMessages.getString("ImageRun.title")); //$NON-NLS-1$
-		setNeedsProgressMonitor(true);
+	public ImageRun(final IDockerConnection connection) {
+		this();
 		this.imageRunSelectionPage = new ImageRunSelectionPage(connection);
 		this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
 				connection);
@@ -71,12 +74,73 @@ public class ImageRun extends Wizard {
 	 *            the {@link IDockerImage} to use to fill the wizard pages
 	 * @throws DockerException
 	 */
-	public ImageRun(final IDockerImage selectedImage) throws DockerException {
-		setWindowTitle(WizardMessages.getString("ImageRun.title")); //$NON-NLS-1$
-		setNeedsProgressMonitor(true);
+	public ImageRun(final IDockerImage selectedImage) {
+		this();
 		this.imageRunSelectionPage = new ImageRunSelectionPage(selectedImage);
 		this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
 				selectedImage.getConnection());
+	}
+
+	/**
+	 * Empty constructor (when called from "File>New")
+	 * 
+	 */
+	public ImageRun() {
+		super();
+		setWindowTitle(WizardMessages.getString("ImageRun.title")); //$NON-NLS-1$
+		setNeedsProgressMonitor(true);
+	}
+
+	@Override
+	public void init(final IWorkbench workbench,
+			final IStructuredSelection selection) {
+		final Object selectedDockerElement = getSelectedDockerElement(
+				workbench, selection);
+		if (selectedDockerElement instanceof IDockerConnection) {
+			this.imageRunSelectionPage = new ImageRunSelectionPage(
+					(IDockerConnection) selectedDockerElement);
+			this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
+					(IDockerConnection) selectedDockerElement);
+		} else if (selectedDockerElement instanceof IDockerImage) {
+			this.imageRunSelectionPage = new ImageRunSelectionPage(
+					(IDockerImage) selectedDockerElement);
+			this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
+					(IDockerImage) selectedDockerElement);
+		} else {
+			this.imageRunSelectionPage = new ImageRunSelectionPage();
+			this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage();
+		}
+	}
+
+	private Object getSelectedDockerElement(final IWorkbench workbench,
+			final IStructuredSelection selection) {
+		final Object firstElement = selection.getFirstElement();
+		if (firstElement instanceof IDockerConnection
+				|| firstElement instanceof IDockerConnection) {
+			return firstElement;
+		}
+		final DockerExplorerView dockerExplorerView = (DockerExplorerView) workbench
+				.getActiveWorkbenchWindow().getActivePage()
+				.findView(DockerExplorerView.VIEW_ID);
+		if (dockerExplorerView != null) {
+			final IDockerImage selectedImage = dockerExplorerView
+					.getSelectedDockerElement(IDockerImage.class);
+			if (selectedImage != null) {
+				return selectedImage;
+			}
+			final IDockerConnection selectedConnection = dockerExplorerView
+					.getSelectedDockerElement(IDockerConnection.class);
+			if (selectedConnection != null) {
+				return selectedConnection;
+			}
+		}
+		final IDockerConnection[] connections = DockerConnectionManager
+				.getInstance().getConnections();
+		if (connections.length > 0) {
+			return connections[0];
+		}
+		return null;
+
 	}
 
 	@Override
@@ -97,6 +161,10 @@ public class ImageRun extends Wizard {
 	@Override
 	public boolean performFinish() {
 		return true;
+	}
+
+	public IDockerConnection getSelectedConnection() {
+		return this.imageRunSelectionPage.getModel().getSelectedConnection();
 	}
 
 	public String getDockerContainerName() {

@@ -35,8 +35,8 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumesVariablesModel.MountType;
 import org.eclipse.swt.SWT;
@@ -68,13 +68,23 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 	private final DataBindingContext dbc = new DataBindingContext();
 	private final ImageRunResourceVolumesVariablesModel model;
 
-	public ImageRunResourceVolumesVariablesPage(
-			final IDockerConnection connection) throws DockerException {
+	public ImageRunResourceVolumesVariablesPage() {
 		super("ImageSelectionPage", //$NON-NLS-1$
 				WizardMessages.getString("ImageRunResourceVolVarPage.title"), //$NON-NLS-1$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
 		setPageComplete(true);
-		this.model = new ImageRunResourceVolumesVariablesModel(connection);
+		this.model = new ImageRunResourceVolumesVariablesModel();
+	}
+
+	public ImageRunResourceVolumesVariablesPage(
+			final IDockerConnection connection) {
+		this();
+		this.model.setSelectedConnection(connection);
+	}
+
+	public ImageRunResourceVolumesVariablesPage(final IDockerImage image) {
+		this();
+		this.model.setSelectedImage(image);
 	}
 
 	public ImageRunResourceVolumesVariablesModel getModel() {

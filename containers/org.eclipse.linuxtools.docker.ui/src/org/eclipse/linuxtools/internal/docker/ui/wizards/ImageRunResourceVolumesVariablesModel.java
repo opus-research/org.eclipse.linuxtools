@@ -14,12 +14,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.list.WritableList;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingModel;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * Databinding model for the {@link ImageRunResourceVolumesVariablesPage}
@@ -57,9 +59,9 @@ public class ImageRunResourceVolumesVariablesModel
 
 	private boolean enableResourceLimitations = false;
 
-	private final IDockerConnection connection;
+	private IDockerConnection connection;
 
-	private final IDockerConnectionInfo info;
+	private IDockerConnectionInfo info;
 
 	private IDockerImageInfo imageInfo = null;
 
@@ -74,14 +76,29 @@ public class ImageRunResourceVolumesVariablesModel
 	private WritableList environmentVariables = new WritableList();
 
 	public ImageRunResourceVolumesVariablesModel(
-			final IDockerConnection connection) throws DockerException {
-		this.connection = connection;
-		this.info = connection.getInfo();
+) {
 	}
 
 	public IDockerConnection getConnection() {
 		return connection;
 	}
+
+	public void setSelectedConnection(final IDockerConnection connection) {
+		this.connection = connection;
+		if (this.connection != null) {
+			try {
+				this.info = connection.getInfo();
+			} catch (DockerException e) {
+				MessageDialog.openError(Display.getCurrent().getActiveShell(),
+						null,
+						WizardMessages.getFormattedString(
+								"ImageRunResourceVolVarPage.connectionInfo.errorMsg", //$NON-NLS-1$
+								e.getMessage()));
+
+			}
+		}
+	}
+
 
 	/**
 	 * Refreshes the list of Volumes to display in the for the given
@@ -149,7 +166,10 @@ public class ImageRunResourceVolumesVariablesModel
 	 * @throws DockerException
 	 */
 	public int getTotalMemory() {
-		return (int) (this.info.getTotalMemory() / 1048576);
+		if (this.info != null) {
+			return (int) (this.info.getTotalMemory() / 1048576);
+		}
+		return -1;
 	}
 
 	public boolean isEnableResourceLimitations() {

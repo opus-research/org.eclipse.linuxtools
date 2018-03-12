@@ -19,6 +19,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -117,7 +118,30 @@ public class DockerExplorerView extends CommonNavigator implements
 		getCommonViewer().addFilter(containersAndImagesSearchFilter);
 		DockerConnectionManager.getInstance()
 				.addConnectionManagerListener(this);
+	}
 
+	/**
+	 * @return the first selected element of the given <code>targetType</code>,
+	 *         or <code>null</code> if it was not found.
+	 * @param targetType
+	 *            the expected target type
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T getSelectedDockerElement(final Class<T> targetType) {
+		final ITreeSelection selection = getCommonViewer()
+				.getStructuredSelection();
+		if (selection.isEmpty()) {
+			return null;
+		}
+		final TreePath selectedPath = selection.getPaths()[0];
+		for (int i = selectedPath.getSegmentCount() - 1; i >= 0; i--) {
+			final Object element = selectedPath.getSegment(i);
+			if (targetType.isAssignableFrom(element.getClass())) {
+				return (T) element;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -242,9 +266,11 @@ public class DockerExplorerView extends CommonNavigator implements
 		switch(type) {
 		case IDockerConnectionManagerListener.ADD_EVENT:
 			registerListeners();
+			getCommonViewer().refresh();
 			break;
 		case IDockerConnectionManagerListener.REMOVE_EVENT:
 			unregisterListeners();
+			getCommonViewer().refresh();
 			break;
 		}
 	}

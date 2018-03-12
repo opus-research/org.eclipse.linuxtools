@@ -1336,4 +1336,17 @@
        </launchMode>
     </launchConfigurationTabGroup>
  </extension>
+ <extension
+       point="org.eclipse.ui.newWizards">
+    <category
+          id="org.eclipse.linuxtools.docker.ui.newWizardCategory"
+          name="%DockerWizards.name">
+    </category>
+    <wizard
+          category="org.eclipse.linuxtools.docker.ui.newWizardCategory"
+          class="org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRun"
+          id="org.eclipse.linuxtools.docker.ui.newImageRun"
+          name="Run a Docker image">
+    </wizard>
+ </extension>
 </plugin>

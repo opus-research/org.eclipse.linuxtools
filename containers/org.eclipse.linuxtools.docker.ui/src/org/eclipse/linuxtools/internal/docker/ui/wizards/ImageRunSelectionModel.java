@@ -21,7 +21,9 @@ import java.util.UUID;
 
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingModel;
 
@@ -31,15 +33,18 @@ import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingMode
  * @author xcoulon
  *
  */
-public class ImageRunSelectionModel extends BaseDatabindingModel {
+public class ImageRunSelectionModel extends BaseDatabindingModel
+		implements IDockerConnectionManagerListener {
+
+	public static final String CONNECTION_NAMES = "connectionNames"; //$NON-NLS-1$
+
+	public static final String SELECTED_CONNECTION_NAME = "selectedConnectionName"; //$NON-NLS-1$
+
+	public static final String IMAGE_NAMES = "imageNames"; //$NON-NLS-1$
 
 	public static final String SELECTED_IMAGE_NAME = "selectedImageName"; //$NON-NLS-1$
 
-	public static final String SELECTED_IMAGE = "selectedImage"; //$NON-NLS-1$
-
 	public static final String SELECTED_IMAGE_NEEDS_PULLING = "selectedImageNeedsPulling"; //$NON-NLS-1$
-
-	public static final String IMAGE_NAMES = "imageNames"; //$NON-NLS-1$
 
 	public static final String CONTAINER_NAME = "containerName"; //$NON-NLS-1$
 
@@ -61,7 +66,9 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public static final String REMOVE_WHEN_EXITS = "removeWhenExits"; //$NON-NLS-1$
 
-	private final IDockerConnection selectedConnection;
+	private List<String> connectionNames;
+
+	private String selectedConnectionName;
 
 	private String selectedImageName;
 
@@ -91,38 +98,76 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	private boolean removeWhenExits = false;
 
-	public ImageRunSelectionModel(
-			final IDockerConnection selectedConnection) {
-		this.selectedConnection = selectedConnection;
-		refreshImageNames();
+	public ImageRunSelectionModel() {
+		DockerConnectionManager.getInstance()
+				.addConnectionManagerListener(this);
+		setConnectionNames(
+				DockerConnectionManager.getInstance().getConnectionNames());
+
 	}
 
 	public void refreshImageNames() {
-		this.imageNames = new ArrayList<>();
 		this.images = new HashMap<>();
-		for (IDockerImage image : this.selectedConnection.getImages()) {
-			if (!image.isIntermediateImage() && !image.isDangling()) {
-				for (String tag : image.tags()) {
-					final String imageName = ImageRunSelectionModel
-							.getImageName(image.repo(), tag);
-					images.put(imageName, image);
-					imageNames.add(imageName);
+		final List<String> names = new ArrayList<>();
+		if (getSelectedConnection() != null) {
+			for (IDockerImage image : getSelectedConnection().getImages()) {
+				if (!image.isIntermediateImage() && !image.isDangling()) {
+					for (String tag : image.tags()) {
+						final String imageName = ImageRunSelectionModel
+								.getImageName(image.repo(), tag);
+						this.images.put(imageName, image);
+						names.add(imageName);
+					}
 				}
 			}
 		}
+		// if there is no connection, the list of image names will be empty.
+		setImageNames(names);
+
 	}
 
-	public ImageRunSelectionModel(final IDockerImage selectedImage) {
-		this(selectedImage.getConnection());
-		if (selectedImage.tags().contains("latest")) { //$NON-NLS-1$
-			setSelectedImageName(ImageRunSelectionModel
-					.getImageName(selectedImage.repo(), "latest")); //$NON-NLS-1$
-		} else {
-			final String lastTag = selectedImage.tags()
-					.get(selectedImage.tags().size() - 1);
-			setSelectedImageName(ImageRunSelectionModel
-					.getImageName(selectedImage.repo(), lastTag)); // $NON-NLS-1$
+	public void dispose() {
+		DockerConnectionManager.getInstance()
+				.removeConnectionManagerListener(this);
+	}
+
+	@Override
+	public void changeEvent(int type) {
+		setConnectionNames(
+				DockerConnectionManager.getInstance().getConnectionNames());
+	}
+
+	public List<String> getConnectionNames() {
+		return this.connectionNames;
+	}
+
+	public void setConnectionNames(List<String> connectionNames) {
+		firePropertyChange(CONNECTION_NAMES, this.containerName,
+				this.connectionNames = connectionNames);
+	}
+
+	public String getSelectedConnectionName() {
+		return selectedConnectionName;
+	}
+
+	public IDockerConnection getSelectedConnection() {
+		return DockerConnectionManager.getInstance()
+				.findConnection(getSelectedConnectionName());
+	}
+
+	public void setSelectedConnectionName(
+			final IDockerConnection selectedConnection) {
+		if (selectedConnection != null) {
+			setSelectedConnectionName(selectedConnection.getName());
+			refreshImageNames();
 		}
+	}
+
+	public void setSelectedConnectionName(final String selectedConnectionName) {
+		firePropertyChange(SELECTED_CONNECTION_NAME,
+				this.selectedConnectionName,
+				this.selectedConnectionName = selectedConnectionName);
+		refreshImageNames();
 	}
 
 	public boolean isPublishAllPorts() {
@@ -141,10 +186,11 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	public void setImageNames(final List<String> imageNames) {
 		firePropertyChange(IMAGE_NAMES, this.imageNames,
 				this.imageNames = imageNames);
-	}
-
-	public IDockerConnection getSelectedConnection() {
-		return selectedConnection;
+		// reset the current image name if not found in the current list of
+		// images
+		if (!this.imageNames.contains(this.selectedImageName)) {
+			setSelectedImageName("");
+		}
 	}
 
 	public String getSelectedImageName() {
@@ -162,6 +208,22 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 				this.selectedImageNeedsPulling = selectedImageNeedsPulling);
 	}
 
+	public void setImages(final Map<String, IDockerImage> images) {
+		this.images = images;
+	}
+
+	public void setSelectedImageName(final IDockerImage selectedImage) {
+		if (selectedImage.tags().contains("latest")) { //$NON-NLS-1$
+			setSelectedImageName(ImageRunSelectionModel
+					.getImageName(selectedImage.repo(), "latest")); //$NON-NLS-1$
+		} else {
+			final String lastTag = selectedImage.tags()
+					.get(selectedImage.tags().size() - 1);
+			setSelectedImageName(ImageRunSelectionModel
+					.getImageName(selectedImage.repo(), lastTag)); // $NON-NLS-1$
+		}
+	}
+
 	public void setSelectedImageName(final String selectedImageName) {
 		firePropertyChange(SELECTED_IMAGE_NAME, this.selectedImageName,
 				this.selectedImageName = selectedImageName);
@@ -172,7 +234,10 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	 *         was found.
 	 */
 	public IDockerImage getSelectedImage() {
-		return this.images.get(selectedImageName);
+		if (this.images != null) {
+			return this.images.get(selectedImageName);
+		}
+		return null;
 	}
 
 	public String getContainerName() {
@@ -456,14 +521,16 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		}
 
 		public void setContainerAlias(String alias) {
-			firePropertyChange(CONTAINER_ALIAS, this.containerAlias, this.containerAlias = alias);
+			firePropertyChange(CONTAINER_ALIAS, this.containerAlias,
+					this.containerAlias = alias);
 		}
 
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((containerAlias == null) ? 0 : containerAlias.hashCode());
+			result = prime * result + ((containerAlias == null) ? 0
+					: containerAlias.hashCode());
 			result = prime * result
 					+ ((containerName == null) ? 0 : containerName.hashCode());
 			return result;
