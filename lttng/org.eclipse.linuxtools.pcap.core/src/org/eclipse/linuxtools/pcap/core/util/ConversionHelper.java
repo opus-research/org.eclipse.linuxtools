@@ -16,7 +16,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.pcap.core.protocol.ethernet2.EthernetIIValues;
 import org.eclipse.linuxtools.pcap.core.protocol.ipv4.IPv4Values;
 
@@ -27,8 +26,9 @@ import org.eclipse.linuxtools.pcap.core.protocol.ipv4.IPv4Values;
  */
 public final class ConversionHelper {
 
+
     @SuppressWarnings("null")
-    private static final @NonNull char[] HEX_ARRAY = "0123456789abcdef".toCharArray(); //$NON-NLS-1$
+    private static final char[] HEX_ARRAY = "0123456789abcdef".toCharArray(); //$NON-NLS-1$
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
     private static final String DEFAULT_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS"; //$NON-NLS-1$
     private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(DEFAULT_TIME_PATTERN);
