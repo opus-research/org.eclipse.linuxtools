@@ -137,7 +137,6 @@ public class CommandShell implements ICommandShell {
                 @Override
                 public CommandResult call() throws IOException, CancellationException {
                     final ArrayList<String> result = new ArrayList<>();
-                    final ArrayList<String> errorResult = new ArrayList<>();
 
                     synchronized (fHostShell) {
                         // Initialize return value which will be updated in isAliasEchoResult()
@@ -190,12 +189,12 @@ public class CommandShell implements ICommandShell {
                         if (fReturnValue != 0) {
                             while(fErrorBufferReader.ready()) {
                                 if ((nextLine = fErrorBufferReader.readLine()) != null)  {
-                                    errorResult.add(nextLine);
+                                    result.add(nextLine);
                                 }
                             }
                         }
                     }
-                    return new CommandResult(fReturnValue, result.toArray(new String[result.size()]), errorResult.toArray(new String[errorResult.size()]));
+                    return new CommandResult(fReturnValue, result.toArray(new String[result.size()]));
                 }
             });
 
