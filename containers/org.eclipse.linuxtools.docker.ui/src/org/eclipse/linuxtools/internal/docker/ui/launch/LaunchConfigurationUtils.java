@@ -146,11 +146,8 @@ public class LaunchConfigurationUtils {
 			if (hostConfig.publishAllPorts()) {
 				final IDockerImageInfo imageInfo = image.getConnection()
 						.getImageInfo(image.id());
-				if (imageInfo != null) {
-					workingCopy.setAttribute(PUBLISHED_PORTS,
-							serializePortBindings(imageInfo.containerConfig()
-									.exposedPorts()));
-				}
+				workingCopy.setAttribute(PUBLISHED_PORTS, serializePortBindings(
+						imageInfo.containerConfig().exposedPorts()));
 			} else {
 				workingCopy.setAttribute(PUBLISHED_PORTS,
 						serializePortBindings(hostConfig.portBindings()));
