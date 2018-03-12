@@ -438,8 +438,45 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public ISnapshotInfo getSnapshotInfo(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        // TODO JRJ - STUB
-        return null;
+        // TODO A session can have multiple snapshot output. This need to be
+        // supported in the future.
+        // Currently the SessionInfo object does not support multiple snashot
+        // output.
+        // For now only keep the last one.
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_SNAPSHOT_OUTPUT, LTTngControlServiceConstants.OPTION_SESSION, sessionName);
+        ICommandResult result = executeCommand(command.toString(), monitor);
+        Document doc = getDocumentFromStrings(result.getOutput());
+        NodeList rawSnapshotsOutputs = doc.getElementsByTagName(MIStrings.SNAPSHOT_OUTPUTS);
+
+        ISnapshotInfo snapshotInfo = new SnapshotInfo(""); //$NON-NLS-1$
+
+        for (int i = 0; i < rawSnapshotsOutputs.getLength(); i++) {
+            NodeList rawSnapshotOutput = rawSnapshotsOutputs.item(i).getChildNodes();
+            for (int j = 0; j < rawSnapshotOutput.getLength(); j++) {
+                Node rawInfo = rawSnapshotOutput.item(j);
+                switch (rawInfo.getNodeName()) {
+                case MIStrings.ID:
+                    snapshotInfo.setId(Integer.parseInt(rawInfo.getTextContent()));
+                    break;
+                case MIStrings.NAME:
+                    snapshotInfo.setName(rawInfo.getTextContent());
+                    break;
+                case MIStrings.SNAPSHOT_CTRL_URL:
+                    snapshotInfo.setSnapshotPath(rawInfo.getTextContent());
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        // Check if the snapshot output is Streamed
+        Matcher matcher2 = LTTngControlServiceConstants.SNAPSHOT_NETWORK_PATH_PATTERN.matcher(snapshotInfo.getSnapshotPath());
+        if (matcher2.matches()) {
+            snapshotInfo.setStreamedSnapshot(true);
+        }
+
+        return snapshotInfo;
     }
 
     @Override
