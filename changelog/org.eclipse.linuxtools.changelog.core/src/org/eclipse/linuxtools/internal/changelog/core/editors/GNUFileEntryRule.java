@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2016 Red Hat, Inc.
+ * Copyright (c) 2006 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -40,7 +40,12 @@ public class GNUFileEntryRule implements IPredicateRule {
 
     private boolean started = false;
 
-    private IWhitespaceDetector fWsDetector = character -> Character.isWhitespace(character);
+    private IWhitespaceDetector fWsDetector = new IWhitespaceDetector() {
+        @Override
+        public boolean isWhitespace(char character) {
+            return Character.isWhitespace(character);
+        }
+    };
 
     /** Internal setting for the un-initialized column constraint */
     protected static final int UNDEFINED = -1;
@@ -63,7 +68,7 @@ public class GNUFileEntryRule implements IPredicateRule {
     public IToken evaluate(ICharacterScanner scanner, boolean resume) {
         int c = scanner.read();
         fBuffer.setLength(0);
-        if (!started) {
+        if (started == false) {
             for (int i = 0; i < fStartingSequence.length(); i++) {
                 fBuffer.append((char) c);
                 if (fStartingSequence.charAt(i) != c) {

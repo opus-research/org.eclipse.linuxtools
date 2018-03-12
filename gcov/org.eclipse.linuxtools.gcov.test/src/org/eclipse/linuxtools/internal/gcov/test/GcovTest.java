@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2016 STMicroelectronics and others.
+ * Copyright (c) 2011 STMicroelectronics.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
- *    Red Hat Inc. - ongoing maintenance
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.test;
 
@@ -69,24 +68,26 @@ public abstract class GcovTest extends AbstractTest {
 
     abstract protected String getTestProjectName();
     abstract protected String getBinName();
-    abstract protected boolean useDefaultBin();
     abstract protected boolean getTestProducedReference();
 
     @BeforeClass
     public static void init() {
         display = Display.getDefault();
-        display.syncExec(() -> {
-		    try {
-		        window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		        IWorkbenchPart part = window.getActivePage().getActivePart();
-		        if (part.getTitle().equals("Welcome")) {
-		            part.dispose();
-		        }
-		        PlatformUI.getWorkbench().showPerspective(CUIPlugin.ID_CPERSPECTIVE, window);
-		    } catch (WorkbenchException e) {
-		        Assert.fail("Couldn't open C/C++ perspective.");
-		    }
-		});
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                    IWorkbenchPart part = window.getActivePage().getActivePart();
+                    if (part.getTitle().equals("Welcome")) {
+                        part.dispose();
+                    }
+                    PlatformUI.getWorkbench().showPerspective(CUIPlugin.ID_CPERSPECTIVE, window);
+                } catch (WorkbenchException e) {
+                    Assert.fail("Couldn't open C/C++ perspective.");
+                }
+            }
+        });
     }
 
     @Before
@@ -109,16 +110,19 @@ public abstract class GcovTest extends AbstractTest {
 
     @After
     public void cleanUp() {
-        display.syncExec(() -> {
-		    Shell[] shells = Display.getCurrent().getShells();
-		    for (final Shell shell : shells) {
-		        String shellTitle = shell.getText();
-		        if (!shellTitle.isEmpty() && !shellTitle.startsWith("Quick Access")
-		                && shell.getParent() != null) {
-		            shell.close();
-		        }
-		    }
-		});
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                Shell[] shells = Display.getCurrent().getShells();
+                for (final Shell shell : shells) {
+                    String shellTitle = shell.getText();
+                    if (!shellTitle.isEmpty() && !shellTitle.startsWith("Quick Access")
+                            && shell.getParent() != null) {
+                        shell.close();
+                    }
+                }
+            }
+        });
     }
 
     @AfterClass
@@ -134,48 +138,48 @@ public abstract class GcovTest extends AbstractTest {
 
     @Test
     public void testOpenGcovFileDetails() {
-        final String binPath = getBinPathOrDefault();
         for (String string : gcovFiles) {
-            testGcovFileDetails(string, binPath);
+            testGcovFileDetails(string);
         }
     }
 
-    private void testGcovFileDetails(final String filename, final String binPath) {
-        openGcovResult(project.getFile(filename), binPath, false);
+    private void testGcovFileDetails(final String filename) {
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                openGcovResult(project.getFile(filename), false);
 
-        display.syncExec(() -> {
-		    final IWorkbenchPage page = window.getActivePage();
-		    final IEditorPart editorPart = page.getActiveEditor();
-		    final IFile openedFile = project.getFile(editorPart.getEditorInput().getName());
-		    final IFile targetFile = project.getFile(
-		            new Path(filename).removeFileExtension().addFileExtension(
-		                    isCppProject ? "cpp" : "c"));
-		    if (!targetFile.equals(openedFile)) {
-		        System.err.println("WARNING: editor for " + targetFile
-		                + " is not in focus.");
-		        for (IEditorReference ref : page.getEditorReferences()) {
-		            if (targetFile.equals(project.getFile(ref.getName()))) {
-		                return;
-		            }
-		        }
-		        Assert.fail("Editor for file " + targetFile + " was not opened,"
-		                + " instead opened " + openedFile + ".");
-		    }
-		});
+                final IWorkbenchPage page = window.getActivePage();
+                final IEditorPart editorPart = page.getActiveEditor();
+                final IFile openedFile = project.getFile(editorPart.getEditorInput().getName());
+                final IFile targetFile = project.getFile(
+                        new Path(filename).removeFileExtension().addFileExtension(
+                                isCppProject ? "cpp" : "c"));
+                if (!targetFile.equals(openedFile)) {
+                    System.err.println("WARNING: editor for " + targetFile
+                            + " is not in focus.");
+                    for (IEditorReference ref : page.getEditorReferences()) {
+                        if (targetFile.equals(project.getFile(ref.getName()))) {
+                            return;
+                        }
+                    }
+                    Assert.fail("Editor for file " + targetFile + " was not opened,"
+                            + " instead opened " + openedFile + ".");
+                }
+            }
+        });
     }
 
     @Test
     public void testOpenGcovSummary() {
-        final String binPath = getBinPathOrDefault();
-        final boolean testProducedReference = getTestProducedReference();
         for (String string : gcovFiles) {
-            testGcovSummary(string, binPath, testProducedReference);
+            testGcovSummary(string, getBinName(), getTestProducedReference());
         }
     }
 
-    private void testGcovSummary(final String filename, String binPath,
+    private void testGcovSummary(final String filename, String binName,
             final boolean testProducedReference) {
-        openGcovResult(project.getFile(filename), binPath, true);
+        openGcovResult(project.getFile(filename), true);
         IViewPart vp = window.getActivePage().findView("org.eclipse.linuxtools.gcov.view");
 
         // No IDs on toolbar items, so explicitly check each one for tooltip texts
@@ -208,7 +212,12 @@ public abstract class GcovTest extends AbstractTest {
     }
 
     private void dumpCSV(final IAction sortAction, final STExportToCSVAction csvAction, String type, boolean testProducedReference) {
-        display.asyncExec(() -> sortAction.run());
+        display.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                sortAction.run();
+            }
+        });
 
         String s = project.getLocation() + "/" + type + "-dump.csv";
         new File(s).delete();
@@ -226,12 +235,17 @@ public abstract class GcovTest extends AbstractTest {
 
         if (testProducedReference) {
             String ref = STJunitUtils.getAbsolutePath(FrameworkUtil.getBundle(GcovTest.class).getSymbolicName(), "csv/" + project.getName() + "/" + type + ".csv");
-            // STJunitUtils.compareIgnoreEOL(project.getLocation() + "/" + type + "-dump.csv", ref, false);
+            STJunitUtils.compareIgnoreEOL(project.getLocation() + "/" + type + "-dump.csv", ref, false);
         }
     }
 
-    private void openGcovResult(final IFile file, String binaryPath, final boolean isCompleteCoverageResultWanted) {
-        new OpenGCAction().autoOpen(file.getLocation(), binaryPath, isCompleteCoverageResultWanted);
+    private void openGcovResult(final IFile file, final boolean isCompleteCoverageResultWanted) {
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                new OpenGCAction().autoOpen(file.getLocation(), isCompleteCoverageResultWanted);
+            }
+        });
     }
 
     private class ProfileContextualLaunchAction extends ContextualLaunchAction {
@@ -243,27 +257,30 @@ public abstract class GcovTest extends AbstractTest {
 
     @Test
     public void testGcovSummaryByLaunch() {
-        display.syncExec(() -> {
-		    try {
-		        CommonNavigator vc = (CommonNavigator) window.getActivePage().showView(ProjectExplorer.VIEW_ID);
-		        vc.selectReveal(new StructuredSelection(project.getFile(getBinName())));
-		        Menu menu = new MenuManager().createContextMenu(vc.getCommonViewer().getControl());
-		        new ProfileContextualLaunchAction(menu);
-		        for (MenuItem item : menu.getItems()) {
-		            if (item.getText().endsWith("Profile Code Coverage")) {
-		                ((ActionContributionItem) item.getData()).getAction().run();
-		                break;
-		            }
-		        }
-		    } catch (PartInitException e1) {
-		        Assert.fail("Cannot show Project Explorer.");
-		    }
-		    try {
-		        window.getActivePage().showView("org.eclipse.linuxtools.gcov.view");
-		    } catch (PartInitException e2) {
-		        Assert.fail("Cannot show GCov View.");
-		    }
-		});
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    CommonNavigator vc = (CommonNavigator) window.getActivePage().showView(ProjectExplorer.VIEW_ID);
+                    vc.selectReveal(new StructuredSelection(project.getFile(getBinName())));
+                    Menu menu = new MenuManager().createContextMenu(vc.getCommonViewer().getControl());
+                    new ProfileContextualLaunchAction(menu);
+                    for (MenuItem item : menu.getItems()) {
+                        if (item.getText().endsWith("Profile Code Coverage")) {
+                            ((ActionContributionItem) item.getData()).getAction().run();
+                            break;
+                        }
+                    }
+                } catch (PartInitException e) {
+                    Assert.fail("Cannot show Project Explorer.");
+                }
+                try {
+                    window.getActivePage().showView("org.eclipse.linuxtools.gcov.view");
+                } catch (PartInitException e) {
+                    Assert.fail("Cannot show GCov View.");
+                }
+            }
+        });
 
         // Wait for the build job to finish (note: DebugUIPlugin doesn't put launch jobs in a family)
         Job[] jobs = Job.getJobManager().find(null);
@@ -284,9 +301,5 @@ public abstract class GcovTest extends AbstractTest {
 
     @Override
     protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
-    }
-
-    private String getBinPathOrDefault() {
-        return !useDefaultBin() ? project.getFile(getBinName()).getLocation().toOSString() : "";
     }
 }

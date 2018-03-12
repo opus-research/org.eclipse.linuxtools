@@ -149,6 +149,8 @@ public abstract class TapsetParser extends Job {
         if (!remote) {
             try {
                 return runLocalStap(args, getErrors);
+            } catch (InterruptedException e) {
+                return ""; //$NON-NLS-1$
             } catch (IOException e) {
                 return null;
             }
@@ -171,7 +173,7 @@ public abstract class TapsetParser extends Job {
         return IStatus.OK;
     }
 
-    private String runLocalStap(String[] args, boolean getErrors) throws IOException {
+    private String runLocalStap(String[] args, boolean getErrors) throws IOException, InterruptedException {
         Process process = RuntimeProcessFactory.getFactory().exec(
                 args, EnvironmentVariablesPreferencePage.getEnvironmentVariables(), null);
         // An IOException should be thrown if there's a problem with exec, but to cover possible error
@@ -187,11 +189,7 @@ public abstract class TapsetParser extends Job {
             egobbler = new StringStreamGobbler(process.getErrorStream());
             egobbler.start();
         }
-        try {
-            process.waitFor();
-        } catch (InterruptedException e) {
-            process.destroy();
-        }
+        process.waitFor();
         gobbler.stop();
         if (egobbler == null) {
             return gobbler.getOutput().toString();
@@ -236,23 +234,25 @@ public abstract class TapsetParser extends Job {
             return null;
         }
         channel.getSession().disconnect();
-        channel.disconnect();
         return (!getErrors ? str : strErr).toString();
     }
 
     private void askIfEditCredentials() {
         if (displayingCredentialDialog.compareAndSet(false, true)) {
-            PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
-			    Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-			    MessageBox dialog = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-			    dialog.setText(Messages.TapsetParser_RemoteCredentialErrorTitle);
-			    dialog.setMessage(Messages.TapsetParser_RemoteCredentialErrorMessage);
-			    if (dialog.open() == SWT.YES) {
-			        String pageID = "org.eclipse.linuxtools.systemtap.prefs.consoleLog"; //$NON-NLS-1$
-			        PreferencesUtil.createPreferenceDialogOn(shell, pageID, new String[]{pageID}, null).open();
-			    }
-			    displayingCredentialDialog.set(false);
-			});
+            PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+                    MessageBox dialog = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+                    dialog.setText(Messages.TapsetParser_RemoteCredentialErrorTitle);
+                    dialog.setMessage(Messages.TapsetParser_RemoteCredentialErrorMessage);
+                    if (dialog.open() == SWT.YES) {
+                        String pageID = "org.eclipse.linuxtools.systemtap.prefs.consoleLog"; //$NON-NLS-1$
+                        PreferencesUtil.createPreferenceDialogOn(shell, pageID, new String[]{pageID}, null).open();
+                    }
+                    displayingCredentialDialog.set(false);
+                }
+            });
         }
     }
 

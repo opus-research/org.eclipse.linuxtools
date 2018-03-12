@@ -20,6 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -61,6 +64,8 @@ public class ImportRPMsPageTest {
     private static final String TEST_RPM_LOC1 = ICreaterepoTestConstants.RPM_RESOURCE_LOC
             .concat(ICreaterepoTestConstants.RPM1);
 
+    private static final Logger fLogger = Logger.getRootLogger();
+
     private static TestCreaterepoProject testProject;
     private static SWTWorkbenchBot bot;
     private static NullProgressMonitor monitor;
@@ -75,6 +80,7 @@ public class ImportRPMsPageTest {
      */
     @BeforeClass
     public static void setUpBeforeClass() throws CoreException {
+        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         testProject = new TestCreaterepoProject();
         assertTrue(testProject.getProject().exists());
         bot = new SWTWorkbenchBot();
@@ -127,27 +133,29 @@ public class ImportRPMsPageTest {
     @Test
     public void testRemoveRPMs() {
         // run in UI thread because accessing the tree in the import RPMs page
-		Display.getDefault().syncExec(() -> {
-			Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
-			assertNotNull(tree);
-			// current item count should be 1 (from the imported RPM)
-			assertEquals(1, tree.getItemCount());
-			importPageBot.button(Messages.ImportRPMsPage_buttonRemoveRPMs).click();
-			// not selecting a treeitem should do nothing to the tree contents
-			assertEquals(1, tree.getItemCount());
-			// select the first item
-			tree.select(tree.getItem(0));
-			importPageBot.button(Messages.ImportRPMsPage_buttonRemoveRPMs).click();
-			// item count should be 0 after selecting a tree item and pressing
-			// remove
-			assertEquals(0, tree.getItemCount());
-			try {
-				// make sure that the RPM was actually deleted from the project
-				assertEquals(0, project.getRPMs().size());
-			} catch (CoreException e) {
-				fail("Failed to get the RPMs from project"); //$NON-NLS-1$
-			}
-		});
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
+                assertNotNull(tree);
+                // current item count should be 1 (from the imported RPM)
+                assertEquals(1, tree.getItemCount());
+                importPageBot.button(Messages.ImportRPMsPage_buttonRemoveRPMs).click();
+                // not selecting a treeitem should do nothing to the tree contents
+                assertEquals(1, tree.getItemCount());
+                // select the first item
+                tree.select(tree.getItem(0));
+                importPageBot.button(Messages.ImportRPMsPage_buttonRemoveRPMs).click();
+                // item count should be 0 after selecting a tree item and pressing remove
+                assertEquals(0, tree.getItemCount());
+                try {
+                    // make sure that the RPM was actually deleted from the project
+                    assertEquals(0, project.getRPMs().size());
+                } catch (CoreException e) {
+                    fail("Failed to get the RPMs from project"); //$NON-NLS-1$
+                }
+            }
+        });
     }
 
     /**
@@ -185,12 +193,15 @@ public class ImportRPMsPageTest {
             resource.delete(true, monitor);
         }
         // run in UI thread because accessing the tree in the import RPMs page
-		Display.getDefault().syncExec(() -> {
-			Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
-			assertNotNull(tree);
-			// check items in tree are gone
-			assertEquals(0, tree.getItemCount());
-		});
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
+                assertNotNull(tree);
+                // check items in tree are gone
+                assertEquals(0, tree.getItemCount());
+            }
+        });
         // import a file again into the content folder
         URL rpmURL = FileLocator.find(FrameworkUtil
                 .getBundle(CreaterepoProjectTest.class), new Path(TEST_RPM_LOC1), null);
@@ -198,13 +209,16 @@ public class ImportRPMsPageTest {
         assertTrue(rpmFile.exists());
         project.importRPM(rpmFile);
         // run in UI thread because accessing the tree in the import RPMs page
-		Display.getDefault().syncExec(() -> {
-			Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
-			assertNotNull(tree);
-			// check if items are in tree
-			assertEquals(1, tree.getItemCount());
-			assertEquals(rpmFile.getName(), tree.getItem(0).getText());
-		});
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                Tree tree = importPageBot.widget(WidgetMatcherFactory.widgetOfType(Tree.class));
+                assertNotNull(tree);
+                // check if items are in tree
+                assertEquals(1, tree.getItemCount());
+                assertEquals(rpmFile.getName(), tree.getItem(0).getText());
+            }
+        });
     }
 
     /**

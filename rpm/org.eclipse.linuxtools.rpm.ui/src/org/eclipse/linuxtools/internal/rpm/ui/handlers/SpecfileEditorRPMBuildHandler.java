@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Red Hat, Inc.
+ * Copyright (c) 2013 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.rpm.ui.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -47,7 +48,7 @@ public class SpecfileEditorRPMBuildHandler extends AbstractHandler {
     protected RPMProject rpj;
 
     @Override
-    public Object execute(ExecutionEvent event) {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         final IResource resource = getResource(event);
         rpj = getRPMProject(resource);
         if (rpj != null) {
@@ -102,7 +103,7 @@ public class SpecfileEditorRPMBuildHandler extends AbstractHandler {
                 return (IResource) element;
             } else if (element instanceof IAdaptable) {
                 IAdaptable adaptable = (IAdaptable) element;
-                return adaptable.getAdapter(IResource.class);
+                return (IResource) adaptable.getAdapter(IResource.class);
             } else {
                 return null;
             }

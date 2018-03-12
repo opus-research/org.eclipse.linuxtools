@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2016 Red Hat, Inc.
+ * Copyright (c) 2009 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -104,8 +104,15 @@ public class StapGraphParser extends SystemTapParser {
         try {
             buff = new BufferedReader(new FileReader(sourcePath));
         } catch (FileNotFoundException e1) {
-            Display.getDefault().asyncExec(() -> MessageDialog.openError(new Shell(), Messages.getString("StapGraphParser.FileNotFound"),  //$NON-NLS-1$
-			        Messages.getString("StapGraphParser.CouldNotOpen") + sourcePath)); //$NON-NLS-1$
+            Display.getDefault().asyncExec(new Runnable() {
+
+                @Override
+                public void run(){
+                    MessageDialog.openError(new Shell(), Messages.getString("StapGraphParser.FileNotFound"),  //$NON-NLS-1$
+                            Messages.getString("StapGraphParser.CouldNotOpen") + sourcePath); //$NON-NLS-1$
+
+                }
+            });
             return Status.CANCEL_STATUS;
         }
         internalData = buff;
@@ -116,9 +123,9 @@ public class StapGraphParser extends SystemTapParser {
     private void parseEnd() {
 
         //CHECK FOR EXIT() CALL
-        for (Map.Entry<Integer, List<Integer>> entry : idMaps.entrySet()) {
-            List<Integer> idList = entry.getValue();
-            int lastFunctionCalled = lastFunctionMap.get(entry.getKey());
+        for (int key : idMaps.keySet()) {
+            List<Integer> idList = idMaps.get(key);
+            int lastFunctionCalled = lastFunctionMap.get(key);
             if (idList.size() > 1) {
                 for (int val : idList) {
                     String name = serialMap.get(val);
@@ -388,7 +395,10 @@ public class StapGraphParser extends SystemTapParser {
 
 
     private IStatus parseDotFile() {
-        BufferedReader buff = internalData;
+        if (!(internalData instanceof BufferedReader))
+            return Status.CANCEL_STATUS;
+
+        BufferedReader buff = (BufferedReader) internalData;
 
         HashMap <Integer, ArrayList<Integer>> outNeighbours= new HashMap<>();
         ArrayList<String> nameList = new ArrayList<>();
@@ -497,7 +507,11 @@ public class StapGraphParser extends SystemTapParser {
 
     @Override
     public IStatus realTimeParsing() {
-        BufferedReader buff = internalData;
+        if (!(internalData instanceof BufferedReader)) {
+            return Status.CANCEL_STATUS;
+        }
+
+        BufferedReader buff = (BufferedReader) internalData;
 
         String line;
         boolean draw = false;

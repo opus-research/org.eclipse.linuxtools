@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009-2015 STMicroelectronics and others.
+ * Copyright (c) 2009 STMicroelectronics.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
- *    Red Hat Inc. - ongoing maintenance
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.view;
 
@@ -44,6 +43,8 @@ import org.eclipse.linuxtools.internal.gcov.parser.SourceFile;
 import org.eclipse.linuxtools.internal.gcov.view.annotatedsource.OpenSourceFileAction;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -128,10 +129,13 @@ public class CovView extends AbstractSTDataView {
         fFilterText.setMessage(Messages.CovView_type_filter_text);
         fFilterText.setToolTipText(Messages.CovView_filter_by_name);
         fFilterText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        fFilterText.addModifyListener(e -> {
-		    String text = fFilterText.getText();
-		    fViewerFilter.setMatchingText(text);
-		});
+        fFilterText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                String text = fFilterText.getText();
+                fViewerFilter.setMatchingText(text);
+            }
+        });
     }
 
     private static void setCovViewTitle(CovView view, String title, String binaryPath, String timestamp) {
@@ -140,7 +144,7 @@ public class CovView extends AbstractSTDataView {
         view.label.getParent().layout(true);
     }
 
-    public static void displayCovDetailedResult(String binaryPath, String gcda) {
+    public static void displayCovDetailedResult(String binaryPath, String gcdaFile) {
         try {
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
             IFile binary = root.getFileForLocation(new Path(binaryPath));
@@ -152,8 +156,8 @@ public class CovView extends AbstractSTDataView {
             // parse and process coverage data
             CovManager cvrgeMnger = new CovManager(binaryPath, project);
             List<String> gcdaPaths = new LinkedList<>();
-            gcdaPaths.add(gcda);
-            cvrgeMnger.processCovFiles(gcdaPaths, gcda);
+            gcdaPaths.add(gcdaFile);
+            cvrgeMnger.processCovFiles(gcdaPaths, gcdaFile);
             // generate model for view
             cvrgeMnger.fillGcovView();
 
@@ -170,9 +174,8 @@ public class CovView extends AbstractSTDataView {
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
             IFile binary = root.getFileForLocation(new Path(binaryPath));
             IProject project = null;
-            if (binary != null) {
+            if (binary != null)
                 project = binary.getProject();
-            }
 
             // parse and process coverage data
             CovManager cvrgeMnger = new CovManager(binaryPath, project);
@@ -202,16 +205,18 @@ public class CovView extends AbstractSTDataView {
         Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR, message, ex);
 
         Activator.getDefault().getLog().log(status);
-        PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
-		    Shell s = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-		    MessageDialog.openError(s, Messages.CovView_parsing_error, message);
-		});
+        PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                Shell s = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+                MessageDialog.openError(s, Messages.CovView_parsing_error, message);
+            }
+        });
     }
 
     /**
      * Used by Test engine and OpenSerAction
      * @param cvrgeMnger
-     * @throws PartInitException
      */
     private static CovView displayCovResults(CovManager cvrgeMnger, String timestamp) throws PartInitException {
         // load an Eclipse view
@@ -230,6 +235,10 @@ public class CovView extends AbstractSTDataView {
         return cvrgeView;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView#createExportToCSVAction()
+     */
     @Override
     protected IAction createExportToCSVAction() {
         IAction action = new STExportToCSVAction(this.getSTViewer()) {

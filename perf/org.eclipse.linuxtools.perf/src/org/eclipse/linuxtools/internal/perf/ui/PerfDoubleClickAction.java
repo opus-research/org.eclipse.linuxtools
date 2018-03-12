@@ -47,7 +47,7 @@ public class PerfDoubleClickAction extends Action {
                 // Open in editor
                 PMLineRef line = (PMLineRef) obj;
                 PMFile file = (PMFile) ((PMSymbol) line.getParent()).getParent();
-                ProfileUIUtils.openEditorAndSelect(file.getPath(),Integer.parseInt(line.getName()), PerfPlugin.getDefault().getProfiledProject());
+                ProfileUIUtils.openEditorAndSelect(file.getPath(),Integer.parseInt(line.getName()));
             } else if (obj instanceof PMFile) {
                 PMFile file = (PMFile) obj;
                 ProfileUIUtils.openEditorAndSelect(file.getName(), 1);
@@ -69,7 +69,7 @@ public class PerfDoubleClickAction extends Action {
                     bFound = true;
                 }
                 if (!bFound) {
-                    ProfileUIUtils.openEditorAndSelect(file.getPath(), 1, ResourcesPlugin.getWorkspace().getRoot().getProject(dso.getName()));
+                	ProfileUIUtils.openEditorAndSelect(file.getPath(), 1, ResourcesPlugin.getWorkspace().getRoot().getProject(dso.getName()));
                 }
             }
         // if we encounter an exception, act as though no corresponding source exists

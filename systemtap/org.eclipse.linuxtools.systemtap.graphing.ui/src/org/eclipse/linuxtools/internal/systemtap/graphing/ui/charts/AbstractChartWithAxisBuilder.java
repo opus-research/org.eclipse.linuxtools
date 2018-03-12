@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010-2015 IBM Corporation and others.
+ * Copyright (c) 2010, 2014 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,7 @@
  *
  * Contributors:
  *    IBM Corporation - initial API and implementation
- *    Red Hat Inc. - modified to handle SWTChart 0.9.0 vs 0.8.0; ongoing maintenance
+ *    Red Hat Inc - modified to handle SWTChart 0.9.0 vs 0.8.0
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.systemtap.graphing.ui.charts;
@@ -17,6 +17,7 @@ import org.eclipse.linuxtools.internal.systemtap.graphing.ui.charts.listeners.Ch
 import org.eclipse.linuxtools.internal.systemtap.graphing.ui.preferences.GraphingPreferenceConstants;
 import org.eclipse.linuxtools.systemtap.graphing.core.adapters.IAdapter;
 import org.eclipse.linuxtools.systemtap.graphing.ui.charts.AbstractChartBuilder;
+import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
@@ -30,7 +31,8 @@ import org.swtchart.LineStyle;
 import org.swtchart.Range;
 
 /**
- * A {@link AbstractChartBuilder} for building a chart with axes.
+ * Builds the chart with axis.
+ *
  * @author Qi Liang
  */
 public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder {
@@ -38,28 +40,24 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
     private PaintListener titleBoundsPaintListener;
     private double defaultMargin = 0.04;
     /**
-     * @return The size of the chart's left margin.
      * @since 3.0
      */
     protected double getChartMarginXL() {
         return defaultMargin;
     }
     /**
-     * @return The size of the chart's right margin.
      * @since 3.0
      */
     protected double getChartMarginXU() {
         return defaultMargin;
     }
     /**
-     * @return The size of the chart's top margin.
      * @since 3.0
      */
     protected double getChartMarginYL() {
         return defaultMargin;
     }
     /**
-     * @return The size of the chart's bottom margin.
      * @since 3.0
      */
     protected double getChartMarginYU() {
@@ -73,9 +71,7 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
     protected int xSeriesTicks, ySeriesTicks;
 
     /**
-     * Creates a chart series for this chart.
-     * @param i The index of the series to create.
-     * @return The newly created series.
+     * Create a chart series for that chart.
      */
     protected abstract ISeries createChartISeries(int i);
 
@@ -99,12 +95,8 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
     }
 
     /**
-     * Constructs a builder for a chart with axes and associates it to one data set.
-     * @param adapter An {@link IAdapter} for reading from the chart's data set.
-     * @param parent The parent {@link Composite} that will contain this chart builder.
-     * @param style The style of the chart to construct.
-     * @param title The title of the chart to construct.
-     */
+     * Constructor.
+    */
     public AbstractChartWithAxisBuilder(IAdapter adapter, Composite parent, int style, String title) {
         super(adapter, parent, style, title);
         xLineGrid = store.getBoolean(GraphingPreferenceConstants.P_SHOW_X_GRID_LINES);
@@ -115,7 +107,7 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
 
     @Override
     protected void createChart() {
-        super.createChart();
+    	super.createChart();
         applyTitleBoundsListener();
         chartMouseMoveListener = new ChartWithAxisMouseMoveListener(chart, chart.getPlotArea());
     }
@@ -125,43 +117,50 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
      * @since 3.0
      */
     protected void applyTitleBoundsListener() {
-        ITitle title = chart.getTitle();
-        // Underlying SWT Chart implementation changes from the title being a Control to just
-        // a PaintListener.  In the Control class case, we can move it's location to
-        // center over a PieChart, but in the latter case, we need to alter the title
-        // with blanks in the PaintListener and have the title paint after it
-        // once the title has been altered.
-        if (title instanceof Control) {
-            titleBoundsPaintListener = e -> {
-			    Rectangle bounds = chart.getPlotArea().getBounds();
-			    Control title1 = (Control) chart.getTitle();
-			    Rectangle titleBounds = title1.getBounds();
-			    title1.setLocation(new Point(bounds.x + (bounds.width - titleBounds.width) / 2, title1.getLocation().y));
-			};
-            chart.addPaintListener(titleBoundsPaintListener);
-        } else {
-            // move title paint listener to end
-            chart.removePaintListener((PaintListener)title);
-            titleBoundsPaintListener = e -> {
-			    ITitle title1 = chart.getTitle();
-			    Font font = title1.getFont();
-			    Font oldFont = e.gc.getFont();
-			    e.gc.setFont(font);
-			    Control legend = (Control)chart.getLegend();
-			    Rectangle legendBounds = legend.getBounds();
-			    int adjustment = legendBounds.width - 15;
-			    Point blankSize = e.gc.textExtent(" "); //$NON-NLS-1$
-			    int numBlanks = ((adjustment / blankSize.x) >> 1) << 1;
-			    String text = title1.getText().trim();
-			    for (int i = 0; i < numBlanks; ++i) {
-			        text += " "; //$NON-NLS-1$
-			    }
-			    e.gc.setFont(oldFont);
-			    title1.setText(text);
-			};
-            chart.addPaintListener(titleBoundsPaintListener);
-            chart.addPaintListener((PaintListener)title);
-        }
+    	ITitle title = chart.getTitle();
+    	// Underlying SWT Chart implementation changes from the title being a Control to just
+    	// a PaintListener.  In the Control class case, we can move it's location to
+    	// center over a PieChart, but in the latter case, we need to alter the title
+    	// with blanks in the PaintListener and have the title paint after it
+    	// once the title has been altered.
+    	if (title instanceof Control) {
+    		titleBoundsPaintListener = new PaintListener() {
+
+    			@Override
+    			public void paintControl(PaintEvent e) {
+    				Rectangle bounds = chart.getPlotArea().getBounds();
+    				Control title = (Control) chart.getTitle();
+    				Rectangle titleBounds = title.getBounds();
+    				title.setLocation(new Point(bounds.x + (bounds.width - titleBounds.width) / 2, title.getLocation().y));
+    			}
+    		};
+    		chart.addPaintListener(titleBoundsPaintListener);
+    	} else {
+    		// move title paint listener to end
+    		chart.removePaintListener((PaintListener)title);
+    		titleBoundsPaintListener = new PaintListener() {
+
+    			@Override
+    			public void paintControl(PaintEvent e) {
+    				ITitle title = chart.getTitle();
+    				Font font = title.getFont();
+    				Font oldFont = e.gc.getFont();
+    				e.gc.setFont(font);
+    				Control legend = (Control)chart.getLegend();
+    				Rectangle legendBounds = legend.getBounds();
+    				int adjustment = legendBounds.width - 15;
+    				Point blankSize = e.gc.textExtent(" "); //$NON-NLS-1$
+    				int numBlanks = ((adjustment / blankSize.x) >> 1) << 1;
+    				String text = title.getText().trim();
+    				for (int i = 0; i < numBlanks; ++i)
+    					text += " "; //$NON-NLS-1$
+    				e.gc.setFont(oldFont);
+    				title.setText(text);
+    			}
+    		};
+    		chart.addPaintListener(titleBoundsPaintListener);
+    		chart.addPaintListener((PaintListener)title);
+    	}
     }
 
     /**
@@ -300,9 +299,7 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
     }
 
     /**
-     * Updates the visible range of the chart's x-axis.
-     * @param min The smallest x-value that should be in range.
-     * @param max The largest x-value that should be in range.
+     * This updates the visible range of the chart's x-axis.
      */
     private void applyRangeX(double min, double max) {
         IAxis axis = chart.getAxisSet().getXAxis(0);
@@ -316,9 +313,7 @@ public abstract class AbstractChartWithAxisBuilder extends AbstractChartBuilder 
     }
 
     /**
-     * Updates the visible range of the chart's y-axis.
-     * @param min The smallest y-value that should be in range.
-     * @param max The largest y-value that should be in range.
+     * This updates the visible range of the chart's y-axis.
      * @since 3.0
      */
     protected void applyRangeY(double min, double max) {

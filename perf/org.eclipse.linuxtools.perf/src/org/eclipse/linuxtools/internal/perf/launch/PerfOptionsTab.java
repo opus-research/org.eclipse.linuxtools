@@ -22,9 +22,10 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.linuxtools.internal.perf.PerfCore;
 import org.eclipse.linuxtools.internal.perf.PerfPlugin;
-import org.eclipse.linuxtools.internal.perf.PerfVersion;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -33,14 +34,17 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Version;
 
 public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
     private ILaunchConfiguration lastConfig;
@@ -61,8 +65,11 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
     private Composite top;
     private ScrolledComposite scrollTop;
 
-    private final PerfVersion multiplexEventsVersion = new PerfVersion (2, 6, 35);
+    protected final Version multiplexEventsVersion = new Version (2, 6, 35);
 
+    /**
+     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getImage()
+     */
     @Override
     public Image getImage() {
         return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
@@ -113,7 +120,12 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
         txtKernelLocation = new Text(kernelComp, SWT.SINGLE | SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
         txtKernelLocation.setLayoutData(data);
-        txtKernelLocation.addModifyListener(mev -> handleKernelImageFileTextModify(txtKernelLocation));
+        txtKernelLocation.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent mev) {
+                handleKernelImageFileTextModify(txtKernelLocation);
+            }
+        });
 
         Button button = createPushButton(kernelComp, Messages.PerfOptionsTab_Browse, null);
         final Shell shell = top.getShell();
@@ -146,13 +158,19 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
         chkShowStat.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent se) {
-                handleShowStatSelection();
+                Version perfVersion = PerfCore.getPerfVersion(lastConfig);
+                handleShowStatSelection(perfVersion);
             }
         });
         statRunCount = new Spinner(showStatComp, SWT.BORDER);
         statRunCount.setEnabled(false);
         statRunCount.setMinimum(1);
-        statRunCount.addModifyListener(e -> updateLaunchConfigurationDialog());
+        statRunCount.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateLaunchConfigurationDialog();
+            }
+        });
 
         chkSourceLineNumbers.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -179,12 +197,22 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
         rtPriority = new Spinner(realtimeComp, SWT.BORDER);
         rtPriority.setEnabled(chkRecordRealtime.getSelection());
         rtPriority.setMinimum(1);
-        rtPriority.addModifyListener(e -> updateLaunchConfigurationDialog());
+        rtPriority.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateLaunchConfigurationDialog();
+            }
+        });
 
         // A disabled button does not respond to mouse events so use a composite.
         final Composite multiplexEventsComp = new Composite(chkBoxComp, SWT.NONE);
         multiplexEventsComp.setLayout(chkBoxLayout);
-        multiplexEventsComp.addListener(SWT.MouseHover, event -> multiplexEventsComp.setToolTipText(Messages.PerfOptionsTab_Requires_LTE + multiplexEventsVersion));
+        multiplexEventsComp.addListener(SWT.MouseHover, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                multiplexEventsComp.setToolTipText(Messages.PerfOptionsTab_Requires_LTE + multiplexEventsVersion);
+            }
+        });
         chkMultiplexEvents = createCheckButtonHelper(multiplexEventsComp, PerfPlugin.STRINGS_Multiplex);
 
         scrollTop.setContent(top);
@@ -232,13 +260,13 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
     /**
      * Handle selection of show stat button
      */
-    private void handleShowStatSelection() {
+    private void handleShowStatSelection(Version version) {
         if (chkShowStat.getSelection()) {
             statRunCount.setEnabled(true);
-            toggleButtonsEnablement(false);
+            toggleButtonsEnablement(false, version);
         } else {
             statRunCount.setEnabled(false);
-            toggleButtonsEnablement(true);
+            toggleButtonsEnablement(true, version);
         }
     }
 
@@ -276,14 +304,13 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
      * Toggle enablement of all buttons, excluding the stat button.
      * @param enable enablement of buttons
      */
-    private void toggleButtonsEnablement(boolean enable) {
-    	PerfVersion version = PerfCore.getPerfVersion(lastConfig);
+    private void toggleButtonsEnablement(boolean enable, Version version) {
         txtKernelLocation.setEnabled(enable);
         chkRecordRealtime.setEnabled(enable);
         chkRecordVerbose.setEnabled(enable);
         chkSourceLineNumbers.setEnabled(enable);
         chkKernelSourceLineNumbers.setEnabled(enable);
-        if (version != null && multiplexEventsVersion.isNewer(version)) {
+        if (version != null && multiplexEventsVersion.compareTo(version) > 0) {
             chkMultiplexEvents.setEnabled(enable);
         } else {
             chkMultiplexEvents.setEnabled(false);
@@ -303,11 +330,11 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
 
         // Keep track of the last configuration loaded
         lastConfig = config;
-        PerfVersion perfVersion = PerfCore.getPerfVersion(config);
+        Version perfVersion = PerfCore.getPerfVersion(config);
 
         try {
 
-            if (perfVersion != null && multiplexEventsVersion.isNewer(perfVersion)) {
+            if (perfVersion != null && multiplexEventsVersion.compareTo(perfVersion) > 0) {
                 chkMultiplexEvents.setSelection(config.getAttribute(PerfPlugin.ATTR_Multiplex, PerfPlugin.ATTR_Multiplex_default));
             }
 
@@ -326,7 +353,7 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
             chkShowStat.setSelection(config.getAttribute(PerfPlugin.ATTR_ShowStat, PerfPlugin.ATTR_ShowStat_default));
             int runCount = config.getAttribute(PerfPlugin.ATTR_StatRunCount, PerfPlugin.ATTR_StatRunCount_default);
             statRunCount.setSelection(runCount);
-            handleShowStatSelection();
+            handleShowStatSelection(perfVersion);
         } catch (CoreException e) {
             // do nothing
         }
@@ -335,9 +362,9 @@ public class PerfOptionsTab extends AbstractLaunchConfigurationTab {
     @Override
     public void performApply(ILaunchConfigurationWorkingCopy wconfig) {
 
-        PerfVersion perfVersion = PerfCore.getPerfVersion(wconfig);
+        Version perfVersion = PerfCore.getPerfVersion(wconfig);
 
-        if (perfVersion != null && multiplexEventsVersion.isNewer(perfVersion)) {
+        if (perfVersion != null && multiplexEventsVersion.compareTo(perfVersion) > 0) {
             wconfig.setAttribute(PerfPlugin.ATTR_Multiplex, chkMultiplexEvents.getSelection());
         }
 

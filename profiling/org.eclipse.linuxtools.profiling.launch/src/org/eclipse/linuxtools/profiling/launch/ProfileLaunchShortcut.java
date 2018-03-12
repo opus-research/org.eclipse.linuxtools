@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2016 QNX Software Systems and others.
+ * Copyright (c) 2005, 2007 QNX Software Systems and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,7 +29,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -189,7 +189,7 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
 
     /**
      * Search and launch binary.
-     *
+     * 
      * @param elements Binaries to search.
      * @param mode Launch mode.
      */
@@ -201,40 +201,43 @@ public abstract class ProfileLaunchShortcut implements ILaunchShortcut {
             } else {
                 final List<IBinary> results = new ArrayList<>();
                 ProgressMonitorDialog dialog = new ProgressMonitorDialog(getActiveWorkbenchShell());
-                IRunnableWithProgress runnable = pm -> {
-				    int nElements = elements.length;
-				    pm.beginTask(Messages.ProfileLaunchShortcut_Looking_for_executables, nElements);
-				    try {
-				        IProgressMonitor sub = SubMonitor.convert(pm, 1);
-				        for (int i = 0; i < nElements; i++) {
-				            if (elements[i] instanceof IAdaptable) {
-				                IResource r = ((IAdaptable) elements[i]).getAdapter(IResource.class);
-				                if (r != null) {
-				                    ICProject cproject = CoreModel.getDefault().create(r.getProject());
-				                    if (cproject != null) {
-				                        try {
-				                            IBinary[] bins = cproject.getBinaryContainer().getBinaries();
+                IRunnableWithProgress runnable = new IRunnableWithProgress() {
+                    @Override
+                    public void run(IProgressMonitor pm) throws InterruptedException {
+                        int nElements = elements.length;
+                        pm.beginTask(Messages.ProfileLaunchShortcut_Looking_for_executables, nElements);
+                        try {
+                            IProgressMonitor sub = new SubProgressMonitor(pm, 1);
+                            for (int i = 0; i < nElements; i++) {
+                                if (elements[i] instanceof IAdaptable) {
+                                    IResource r = (IResource) ((IAdaptable) elements[i]).getAdapter(IResource.class);
+                                    if (r != null) {
+                                        ICProject cproject = CoreModel.getDefault().create(r.getProject());
+                                        if (cproject != null) {
+                                            try {
+                                                IBinary[] bins = cproject.getBinaryContainer().getBinaries();
 
-				                            for (IBinary bin1 : bins) {
-				                                if (bin1.isExecutable()) {
-				                                    results.add(bin1);
-				                                }
-				                            }
-				                        } catch (CModelException e) {
-				                            // TODO should this be simply ignored ?
-				                        }
-				                    }
-				                }
-				            }
-				            if (pm.isCanceled()) {
-				                throw new InterruptedException();
-				            }
-				            sub.done();
-				        }
-				    } finally {
-				        pm.done();
-				    }
-				};
+                                                for (IBinary bin : bins) {
+                                                    if (bin.isExecutable()) {
+                                                        results.add(bin);
+                                                    }
+                                                }
+                                            } catch (CModelException e) {
+                                                // TODO should this be simply ignored ?
+                                            }
+                                        }
+                                    }
+                                }
+                                if (pm.isCanceled()) {
+                                    throw new InterruptedException();
+                                }
+                                sub.done();
+                            }
+                        } finally {
+                            pm.done();
+                        }
+                    }
+                };
                 try {
                     dialog.run(true, true, runnable);
                 } catch (InterruptedException e) {

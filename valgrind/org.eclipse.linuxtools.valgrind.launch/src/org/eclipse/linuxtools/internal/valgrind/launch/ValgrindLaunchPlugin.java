@@ -34,8 +34,6 @@ import org.eclipse.linuxtools.valgrind.launch.IValgrindLaunchDelegate;
 import org.eclipse.linuxtools.valgrind.launch.IValgrindOutputDirectoryProvider;
 import org.eclipse.linuxtools.valgrind.launch.IValgrindToolPage;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
@@ -77,12 +75,20 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
     // The shared instance
     private static ValgrindLaunchPlugin plugin;
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     */
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     */
     @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
@@ -224,22 +230,6 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
      */
     public ILaunch getCurrentLaunch() {
         return launch;
-    }
-
-    public static Shell getActiveWorkbenchShell() {
-        IWorkbenchWindow window = getDefault().getWorkbench().getActiveWorkbenchWindow();
-        if (window != null) {
-            return window.getShell();
-        }
-        return null;
-    }
-
-    public static Shell getShell() {
-        if (getActiveWorkbenchShell() != null) {
-            return getActiveWorkbenchShell();
-        }
-        IWorkbenchWindow[] windows = getDefault().getWorkbench().getWorkbenchWindows();
-        return windows[0].getShell();
     }
 
     IPath parseWSPath(String strpath) throws CoreException {

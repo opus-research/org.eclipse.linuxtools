@@ -36,13 +36,17 @@ public class MailHyperlinkDetector extends AbstractHyperlinkDetector {
 
     private SpecfileEditor editor;
 
+    /*
+     * @see org.eclipse.jface.text.hyperlink.IHyperlinkDetector#detectHyperlinks(org.eclipse.jface.text.ITextViewer,
+     *      org.eclipse.jface.text.IRegion, boolean)
+     */
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks) {
         if (region == null || textViewer == null) {
             return null;
         }
         if (editor == null) {
-			editor = this.getAdapter(SpecfileEditor.class);
+            editor = ((SpecfileEditor) this.getAdapter(SpecfileEditor.class));
             if (editor == null) {
                 return null;
             }
@@ -205,7 +209,7 @@ public class MailHyperlinkDetector extends AbstractHyperlinkDetector {
     private String getBody() {
         String body = null;
         // Get current selection
-        IDocument document= editor.getAdapter(IDocument.class);
+        IDocument document= (IDocument) editor.getAdapter(IDocument.class);
         ISelection currentSelection= editor.getSpecfileSourceViewer().getSelection();
         if (currentSelection instanceof ITextSelection) {
             ITextSelection selection= (ITextSelection) currentSelection;

@@ -15,11 +15,13 @@ import java.util.Arrays;
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.ISourceRange;
 import org.eclipse.cdt.core.model.ISourceReference;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
@@ -33,7 +35,6 @@ import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindFunct
 import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindLine;
 import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.CachegrindOutput;
 import org.eclipse.linuxtools.internal.valgrind.cachegrind.model.ICachegrindElement;
-import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindUIPlugin;
 import org.eclipse.linuxtools.profiling.ui.ProfileUIUtils;
 import org.eclipse.linuxtools.valgrind.ui.CollapseAction;
 import org.eclipse.linuxtools.valgrind.ui.ExpandAction;
@@ -48,6 +49,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
@@ -65,13 +67,13 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
     // Events - Cache
     private static final String IR = "Ir"; //$NON-NLS-1$
     private static final String I1MR = "I1mr"; //$NON-NLS-1$
-    private static final String ILMR = "ILmr"; //$NON-NLS-1$
+    private static final String I2MR = "I2mr"; //$NON-NLS-1$
     private static final String DR = "Dr"; //$NON-NLS-1$
     private static final String D1MR = "D1mr"; //$NON-NLS-1$
-    private static final String DLMR = "DLmr"; //$NON-NLS-1$
+    private static final String D2MR = "D2mr"; //$NON-NLS-1$
     private static final String DW = "Dw"; //$NON-NLS-1$
     private static final String D1MW = "D1mw"; //$NON-NLS-1$
-    private static final String DLMW = "DLmw"; //$NON-NLS-1$
+    private static final String D2MW = "D2mw"; //$NON-NLS-1$
 
     // Events - Branch
     private static final String BC = "Bc"; //$NON-NLS-1$
@@ -109,54 +111,60 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(labelProvider);
         viewer.setAutoExpandLevel(2);
-        doubleClickListener = event -> {
-		    Object selection = ((StructuredSelection) event.getSelection()).getFirstElement();
-		    String path = null;
-		    int line = 0;
-		    if (selection instanceof CachegrindFile) {
-		        path = ((CachegrindFile) selection).getPath();
-		    } else if (selection instanceof CachegrindLine) {
-		        CachegrindLine element = (CachegrindLine) selection;
-		        CachegrindFile file = (CachegrindFile) element.getParent().getParent();
-		        path = file.getPath();
-		        line = element.getLine();
-		    } else if (selection instanceof CachegrindFunction) {
-		        CachegrindFunction function = (CachegrindFunction) selection;
-		        path = ((CachegrindFile) function.getParent()).getPath();
-		        if (function.getModel() instanceof ISourceReference) {
-		            ISourceReference model = (ISourceReference) function.getModel();
-		            try {
-		                ISourceRange sr = model.getSourceRange();
-		                if (sr != null) {
-		                    line = sr.getStartLine();
-		                }
-		            } catch (CModelException e1) {
-		                e1.printStackTrace();
-		            }
-		        }
-		    }
-		    if (path != null) {
-		        try {
-		        	ProfileUIUtils.openEditorAndSelect(path, line, ValgrindUIPlugin.getDefault().getProfiledProject());
-		        } catch (BadLocationException | CoreException e2) {
-		            e2.printStackTrace();
-		        }
-		    }
-		};
+        doubleClickListener = new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                Object selection = ((StructuredSelection) event.getSelection()).getFirstElement();
+                String path = null;
+                int line = 0;
+                if (selection instanceof CachegrindFile) {
+                    path = ((CachegrindFile) selection).getPath();
+                } else if (selection instanceof CachegrindLine) {
+                    CachegrindLine element = (CachegrindLine) selection;
+                    CachegrindFile file = (CachegrindFile) element.getParent().getParent();
+                    path = file.getPath();
+                    line = element.getLine();
+                } else if (selection instanceof CachegrindFunction) {
+                    CachegrindFunction function = (CachegrindFunction) selection;
+                    path = ((CachegrindFile) function.getParent()).getPath();
+                    if (function.getModel() instanceof ISourceReference) {
+                        ISourceReference model = (ISourceReference) function.getModel();
+                        try {
+                            ISourceRange sr = model.getSourceRange();
+                            if (sr != null) {
+                                line = sr.getStartLine();
+                            }
+                        } catch (CModelException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                if (path != null) {
+                    try {
+                        ProfileUIUtils.openEditorAndSelect(path, line);
+                    } catch (PartInitException|BadLocationException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
         viewer.addDoubleClickListener(doubleClickListener);
 
         expandAction = new ExpandAction(viewer);
         collapseAction = new CollapseAction(viewer);
 
         MenuManager manager = new MenuManager();
-        manager.addMenuListener(manager1 -> {
-		    ITreeSelection selection = (ITreeSelection) viewer.getSelection();
-		    ICachegrindElement element = (ICachegrindElement) selection.getFirstElement();
-		    if (contentProvider.hasChildren(element)) {
-		        manager1.add(expandAction);
-		        manager1.add(collapseAction);
-		    }
-		});
+        manager.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager) {
+                ITreeSelection selection = (ITreeSelection) viewer.getSelection();
+                ICachegrindElement element = (ICachegrindElement) selection.getFirstElement();
+                if (contentProvider.hasChildren(element)) {
+                    manager.add(expandAction);
+                    manager.add(collapseAction);
+                }
+            }
+        });
 
         manager.setRemoveAllWhenShown(true);
         Menu contextMenu = manager.createContextMenu(viewer.getTree());
@@ -278,19 +286,19 @@ public class CachegrindViewPart extends ViewPart implements IValgrindToolView {
             result = Messages.getString("CachegrindViewPart.Ir_long"); //$NON-NLS-1$
         } else if (event.equals(I1MR)) {
             result = Messages.getString("CachegrindViewPart.I1mr_long"); //$NON-NLS-1$
-        } else if (event.equals(ILMR)) {
+        } else if (event.equals(I2MR)) {
             result = Messages.getString("CachegrindViewPart.I2mr_long"); //$NON-NLS-1$
         } else if (event.equals(DR)) {
             result = Messages.getString("CachegrindViewPart.Dr_long"); //$NON-NLS-1$
         } else if (event.equals(D1MR)) {
             result = Messages.getString("CachegrindViewPart.D1mr_long"); //$NON-NLS-1$
-        } else if (event.equals(DLMR)) {
+        } else if (event.equals(D2MR)) {
             result = Messages.getString("CachegrindViewPart.D2mr_long"); //$NON-NLS-1$
         } else if (event.equals(DW)) {
             result = Messages.getString("CachegrindViewPart.Dw_long"); //$NON-NLS-1$
         } else if (event.equals(D1MW)) {
             result = Messages.getString("CachegrindViewPart.D1mw_long"); //$NON-NLS-1$
-        } else if (event.equals(DLMW)) {
+        } else if (event.equals(D2MW)) {
             result = Messages.getString("CachegrindViewPart.D2mw_long"); //$NON-NLS-1$
         } else if (event.equals(BC)) {
             result = Messages.getString("CachegrindViewPart.Bc_long"); //$NON-NLS-1$

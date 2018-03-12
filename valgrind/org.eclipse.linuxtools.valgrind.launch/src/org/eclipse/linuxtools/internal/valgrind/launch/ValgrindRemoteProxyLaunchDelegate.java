@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindUIPlugin;
@@ -140,7 +141,6 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
 
             this.configUtils = new ConfigUtils(config);
             IProject project = configUtils.getProject();
-            ValgrindUIPlugin.getDefault().setProfiledProject(project);
             URI exeURI = new URI(configUtils.getExecutablePath());
             RemoteConnection exeRC = new RemoteConnection(exeURI);
             monitor.worked(1);
@@ -164,7 +164,7 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
                     exeURI = new URI(exeURI.getScheme(), exeURI.getAuthority(), newExePath.toString(), exeURI.getQuery(), exeURI.getFragment());
                     exeFS = exeRFP.getResource(exeURI.getPath());
                 }
-                copyExeFS.copy(exeFS, EFS.OVERWRITE | EFS.SHALLOW, SubMonitor.convert(monitor, 1));
+                copyExeFS.copy(exeFS, EFS.OVERWRITE | EFS.SHALLOW, new SubProgressMonitor(monitor, 1));
                 // Note: assume that we don't need to create a new exeRC since the
                 // scheme and authority remain the same between the original exeURI and the new one.
             }
@@ -188,11 +188,10 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
             IPath remoteLogDir = Path.fromOSString("/tmp/"); //$NON-NLS-1$
             outputPath = remoteLogDir.append("eclipse-valgrind-" + System.currentTimeMillis()); //$NON-NLS-1$
 
-            exeRC.createFolder(outputPath, SubMonitor.convert(monitor, 1));
+            exeRC.createFolder(outputPath, new SubProgressMonitor(monitor, 1));
 
             // create/empty local output directory
             IValgrindOutputDirectoryProvider provider = getPlugin().getOutputDirectoryProvider();
-            setOutputPath(config, provider.getOutputPath());
             IPath localOutputDir = null;
             try {
                 localOutputDir = provider.getOutputPath();
@@ -254,10 +253,10 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
             }
 
             // move remote log files to local directory
-            exeRC.download(outputPath, localOutputDir, SubMonitor.convert(monitor, 1));
+            exeRC.download(outputPath, localOutputDir, new SubProgressMonitor(monitor, 1));
 
             // remove remote log dir and all files under it
-            exeRC.delete(outputPath, SubMonitor.convert(monitor, 1));
+            exeRC.delete(outputPath, new SubProgressMonitor(monitor, 1));
 
             // store these for use by other classes
             getPlugin().setCurrentLaunchConfiguration(config);

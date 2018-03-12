@@ -89,37 +89,37 @@ public class ProfileUIUtils {
         }
     }
 
-    /**
-     * Open a file in the Editor at the specified offset, highlighting the given length
-     *
-     * @param path : Absolute path pointing to the file which will be opened.
-     * @param line - line number to select, 0 to not select a line
-     * @param project - current project object
-     * @throws BadLocationException - Line number not valid in file
-     * @throws PartInitException if the editor could not be initialized
-     * @throws CoreException if the proxy cannot be initialized
-     * @since 3.1
-     */
-    public static void openEditorAndSelect(String path, int line, IProject project) throws PartInitException, BadLocationException, CoreException {
-        IWorkbenchPage activePage = ProfileUIPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        IRemoteFileProxy proxy = null;
-        proxy = RemoteProxyManager.getInstance().getFileProxy(project);
-        IFileStore file = proxy.getResource(path);
-        if (file.fetchInfo().exists()) {
-            IEditorPart editor = IDE.openEditorOnFileStore(activePage, file);
-            if (editor instanceof ITextEditor) {
-                ITextEditor textEditor = (ITextEditor) editor;
+	/**
+	 * Open a file in the Editor at the specified offset, highlighting the given length
+	 *
+	 * @param path : Absolute path pointing to the file which will be opened.
+	 * @param line - line number to select, 0 to not select a line
+	 * @param project - current project object
+	 * @throws BadLocationException - Line number not valid in file
+	 * @throws PartInitException if the editor could not be initialized
+	 * @throws CoreException if the proxy cannot be initialized
+	 * @since 3.1
+	 */
+	public static void openEditorAndSelect(String path, int line, IProject project) throws PartInitException, BadLocationException, CoreException {
+		IWorkbenchPage activePage = ProfileUIPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		IRemoteFileProxy proxy = null;
+		proxy = RemoteProxyManager.getInstance().getFileProxy(project);
+		IFileStore file = proxy.getResource(path);
+		if (file.fetchInfo().exists()) {
+			IEditorPart editor = IDE.openEditorOnFileStore(activePage, file);
+			if (editor instanceof ITextEditor) {
+				ITextEditor textEditor = (ITextEditor) editor;
 
-                if (line > 0) {
-                    IDocumentProvider provider = textEditor.getDocumentProvider();
-                    IDocument document = provider.getDocument(textEditor.getEditorInput());
+				if (line > 0) {
+					IDocumentProvider provider = textEditor.getDocumentProvider();
+					IDocument document = provider.getDocument(textEditor.getEditorInput());
 
-                    int start = document.getLineOffset(line - 1); //zero-indexed
-                    textEditor.selectAndReveal(start, 0);
-                }
-            }
-        }
-    }
+					int start = document.getLineOffset(line - 1); //zero-indexed
+					textEditor.selectAndReveal(start, 0);
+				}
+			}
+		}
+	}
 
 
     /**
@@ -240,15 +240,17 @@ public class ProfileUIUtils {
         final ArrayList<ICProject> ret = new ArrayList<>();
 
         // visitor object to check for the matching path string
-        ICElementVisitor vis = element -> {
-		    if (element.getElementType() == ICElement.C_CCONTAINER
-		            || element.getElementType() == ICElement.C_PROJECT){
-		        return true;
-		    }else if (absPath.equals(workspaceLoc+element.getPath().toFile().getAbsolutePath())){
-		        ret.add(element.getCProject());
-		    }
-		    return false;
-      };
+        ICElementVisitor vis = new ICElementVisitor() {
+            @Override
+            public boolean visit(ICElement element) {
+                if (element.getElementType() == ICElement.C_CCONTAINER
+                        || element.getElementType() == ICElement.C_PROJECT){
+                    return true;
+                }else if (absPath.equals(workspaceLoc+element.getPath().toFile().getAbsolutePath())){
+                    ret.add(element.getCProject());
+                }
+                return false;
+        }};
 
         ICProject[] cProjects = CCorePlugin.getDefault().getCoreModel().getCModel().getCProjects();
         for (ICProject proj : cProjects){

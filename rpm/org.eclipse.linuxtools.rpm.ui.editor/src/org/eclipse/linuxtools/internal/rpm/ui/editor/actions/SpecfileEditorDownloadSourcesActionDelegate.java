@@ -26,7 +26,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.RPMHandlerUtils;
-import org.eclipse.linuxtools.internal.rpm.ui.editor.RPMUtils;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.SpecfileLog;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.UiUtils;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.parser.SpecfileSource;
@@ -34,6 +33,7 @@ import org.eclipse.linuxtools.rpm.core.RPMProject;
 import org.eclipse.linuxtools.rpm.core.utils.DownloadJob;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.Specfile;
 import org.eclipse.linuxtools.rpm.ui.editor.parser.SpecfileParser;
+import org.eclipse.linuxtools.rpm.ui.editor.utils.RPMUtils;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -47,7 +47,7 @@ public class SpecfileEditorDownloadSourcesActionDelegate extends AbstractHandler
         final IResource resource = RPMHandlerUtils.getResource(event);
         final RPMProject rpj = RPMHandlerUtils.getRPMProject(resource);
         final IFile workFile = (IFile) rpj.getSpecFile();
-        final Specfile specfile = workFile != null ? specparser.parse(workFile) : null;
+        final Specfile specfile = specparser.parse(workFile);
 
         // retrieve source(s) from specfile
         final List<SpecfileSource> sourceURLList = specfile != null ? (List<SpecfileSource>) specfile

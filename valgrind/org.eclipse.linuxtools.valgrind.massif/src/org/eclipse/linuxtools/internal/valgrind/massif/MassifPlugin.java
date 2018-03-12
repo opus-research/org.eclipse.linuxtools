@@ -10,15 +10,11 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.massif;
 
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.resources.IStorage;
 import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.sourcelookup.ISourceLookupDirector;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindUIPlugin;
-import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
-import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.profiling.ui.ProfileUIUtils;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
@@ -48,12 +44,20 @@ public class MassifPlugin extends AbstractUIPlugin {
     public MassifPlugin() {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     */
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     */
     @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
@@ -69,37 +73,24 @@ public class MassifPlugin extends AbstractUIPlugin {
     }
 
     public void openEditorForNode(MassifHeapTreeNode element) {
-    	IRemoteFileProxy proxy = null;
-    	try {
-    		proxy = RemoteProxyManager.getInstance().getFileProxy(ValgrindUIPlugin.getDefault().getProfiledProject());
-    	} catch (CoreException e1) {
-    		e1.printStackTrace();
-    		return;
-    	}
-    	IFileStore fs = proxy.getResource(element.getFilename());
-
-    	// New versions of massif (e.g. 3.10) prints the full path
-    	if(fs.fetchInfo().exists()) {
-    		try {
-    			ProfileUIUtils.openEditorAndSelect(element.getFilename(), element.getLine(), ValgrindUIPlugin.getDefault().getProfiledProject());
-    		} catch (BadLocationException | CoreException e) {
-    			// do nothing, the editor will not open.
-    			e.printStackTrace();
-    		}
-    	}
-    	else {
-    		// do source lookup
-    		if (locator instanceof ISourceLookupDirector) {
-    			Object obj = ((ISourceLookupDirector) locator).getSourceElement(element.getFilename());
-    			try {
-    				if (obj instanceof IFile) {
-    					ProfileUIUtils.openEditorAndSelect(((IFile)obj), element.getLine());
-    				}
-    			} catch (PartInitException|BadLocationException e) {
-    				e.printStackTrace();
-    			}
-    		}
-    	}
+        // do source lookup
+        if (locator instanceof ISourceLookupDirector) {
+            Object obj = ((ISourceLookupDirector) locator).getSourceElement(element.getFilename());
+            if (obj instanceof IStorage){
+                try {
+                    // Most likely a remote project
+                    if (obj instanceof IFile) {
+                        ProfileUIUtils.openEditorAndSelect(((IFile)obj), element.getLine());
+                    // Local projects
+                    } else {
+                        String fullFilePath = ((IStorage) obj).getFullPath().toOSString();
+                        ProfileUIUtils.openEditorAndSelect(fullFilePath, element.getLine());
+                    }
+                } catch (PartInitException|BadLocationException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     protected void setSourceLocator(ISourceLocator locator) {

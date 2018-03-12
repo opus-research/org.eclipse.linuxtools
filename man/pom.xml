@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>5.1.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.man</groupId>
@@ -44,7 +44,6 @@
 
   <modules>
     <module>org.eclipse.linuxtools.man.core</module>
-    <module>org.eclipse.linuxtools.man.help</module>
     <module>org.eclipse.linuxtools.man-feature</module>
   </modules>
 

@@ -35,8 +35,8 @@ public class STDataViewersSortAction extends Action {
      */
     public STDataViewersSortAction(AbstractSTViewer stViewer) {
         super(STDataViewersMessages.sortAction_title,
-                AbstractUIPlugin.imageDescriptorFromPlugin(STDataViewersActivator.PLUGIN_ID,
-                        "icons/sort.gif")); //$NON-NLS-1$
+        		AbstractUIPlugin.imageDescriptorFromPlugin(STDataViewersActivator.PLUGIN_ID,
+        				"icons/sort.gif")); //$NON-NLS-1$
         super.setToolTipText(STDataViewersMessages.sortAction_tooltip);
         this.stViewer = stViewer;
 
@@ -49,7 +49,12 @@ public class STDataViewersSortAction extends Action {
     @Override
     public void run() {
         if (dialog.open() == Window.OK && dialog.isDirty()) {
-            BusyIndicator.showWhile(null, () -> stViewer.setComparator(dialog.getSorter()));
+            BusyIndicator.showWhile(null, new Runnable() {
+                @Override
+                public void run() {
+                    stViewer.setComparator(dialog.getSorter());
+                }
+            });
 
         }
     }

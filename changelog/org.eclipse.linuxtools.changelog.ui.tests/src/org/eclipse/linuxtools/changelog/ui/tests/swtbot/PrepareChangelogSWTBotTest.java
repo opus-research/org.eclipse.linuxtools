@@ -36,7 +36,6 @@ import org.hamcrest.Matcher;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -45,7 +44,6 @@ import org.junit.Test;
  * (CTRL+ALT+V).
  *
  */
-@Ignore
 public class PrepareChangelogSWTBotTest extends AbstractSWTBotTest {
 
     private SVNProject subversionProject;
@@ -81,8 +79,8 @@ public class PrepareChangelogSWTBotTest extends AbstractSWTBotTest {
      *
      * @throws Exception
      */
+    @SuppressWarnings("unchecked")
     @Test
-    @Ignore
     public void canPrepareChangeLog() throws Exception {
         // Find manifest file
         IResource manifest = project.findMember(new Path("/META-INF/MANIFEST.MF"));
@@ -101,11 +99,11 @@ public class PrepareChangelogSWTBotTest extends AbstractSWTBotTest {
         long oldTimeout = SWTBotPreferences.TIMEOUT;
         SWTBotPreferences.TIMEOUT = 3 * 5000;
         // Wait for ChangeLog editor to open
-        Matcher<IEditorReference> editorMatcher = allOf(
+        Matcher<?> editorMatcher = allOf(
                 IsInstanceOf.instanceOf(IEditorReference.class),
                 withPartName("ChangeLog")
                 );
-        bot.waitUntil(Conditions.waitForEditor(editorMatcher));
+        bot.waitUntil(Conditions.waitForEditor((Matcher<IEditorReference>) editorMatcher));
         SWTBotPreferences.TIMEOUT = oldTimeout;
 
         SWTBotEditor swtBoteditor = bot.activeEditor();
@@ -123,7 +121,6 @@ public class PrepareChangelogSWTBotTest extends AbstractSWTBotTest {
      * @throws Exception
      */
     @Test
-    @Ignore
     public void canPrepareChangeLogAndSaveChangesInChangeLogFileToClipboard() throws Exception {
         // Find manifest file
         IResource manifest = project.findMember(new Path("/META-INF/MANIFEST.MF"));

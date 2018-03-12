@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2012 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -59,6 +61,9 @@ public class StapNewWizardPage extends WizardPage {
         this.selection = selection;
     }
 
+    /**
+     * @see WizardPage#createControl(Composite)
+     */
     @Override
     public void createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NULL);
@@ -73,7 +78,12 @@ public class StapNewWizardPage extends WizardPage {
         fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         fileText.setLayoutData(gd);
-        fileText.addModifyListener(e -> dialogChanged());
+        fileText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                dialogChanged();
+            }
+        });
         new Label(container, SWT.NULL); // XXX just create a new layout with different width
 
         label = new Label(container, SWT.NULL);
@@ -82,7 +92,12 @@ public class StapNewWizardPage extends WizardPage {
         containerText = new Text(container, SWT.BORDER | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         containerText.setLayoutData(gd);
-        containerText.addModifyListener(e -> dialogChanged());
+        containerText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                dialogChanged();
+            }
+        });
 
         Button button = new Button(container, SWT.PUSH);
         button.setText(resourceBundle.getString("StapNewWizardPage.Browse")); //$NON-NLS-1$
@@ -102,7 +117,8 @@ public class StapNewWizardPage extends WizardPage {
      */
 
     private void initialize() {
-		if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
+        if (selection != null && selection.isEmpty() == false
+                && selection instanceof IStructuredSelection) {
             IStructuredSelection ssel = (IStructuredSelection) selection;
             if (ssel.size() > 1) {
                 return;
@@ -163,7 +179,7 @@ public class StapNewWizardPage extends WizardPage {
         int dotLoc = fileName.lastIndexOf('.');
         if (dotLoc != -1) {
             String ext = fileName.substring(dotLoc + 1);
-            if (!ext.equalsIgnoreCase("stp")) { //$NON-NLS-1$
+            if (ext.equalsIgnoreCase("stp") == false) { //$NON-NLS-1$
                 updateStatus(resourceBundle.getString("StapNewWizardPage.UpdateStatus.5")); //$NON-NLS-1$
                 return;
             }

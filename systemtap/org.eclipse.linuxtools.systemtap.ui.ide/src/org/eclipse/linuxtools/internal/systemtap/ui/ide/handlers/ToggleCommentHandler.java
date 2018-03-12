@@ -82,7 +82,12 @@ public class ToggleCommentHandler extends AbstractHandler {
             display = shell.getDisplay();
         }
 
-        BusyIndicator.showWhile(display, () -> operationTarget.doOperation(operationCode));
+        BusyIndicator.showWhile(display, new Runnable() {
+            @Override
+            public void run() {
+                operationTarget.doOperation(operationCode);
+            }
+        });
 
         return null;
     }
@@ -297,7 +302,8 @@ public class ToggleCommentHandler extends AbstractHandler {
      */
     private void updateOpTarget(ITextEditor editor) {
         if (editor != null) {
-            operationTarget = editor.getAdapter(ITextOperationTarget.class);
+            operationTarget = (ITextOperationTarget) editor
+                    .getAdapter(ITextOperationTarget.class);
         }
     }
 }

@@ -49,6 +49,8 @@ import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
 import org.eclipse.linuxtools.profiling.launch.ui.ResourceSelectorWidget;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -126,6 +128,13 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         fSpecifyCoreFile = (flags & SPECIFY_CORE_FILE) != 0;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse
+     * .swt.widgets.Composite)
+     */
     @Override
     public void createControl(Composite parent) {
         Composite comp = new Composite(parent, SWT.NONE);
@@ -184,6 +193,13 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         fTerminalButton.setEnabled(PTY.isSupported());
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.debug.ui.ILaunchConfigurationTab#initializeFrom(org.eclipse
+     * .debug.core.ILaunchConfiguration)
+     */
     @Override
     public void initializeFrom(ILaunchConfiguration config) {
         filterPlatform = getPlatform(config);
@@ -376,13 +392,17 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         fProjText = new Text(projComp, SWT.SINGLE | SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         fProjText.setLayoutData(gd);
-        fProjText.addModifyListener(evt -> {
-		    // if project changes, invalidate program name cache
-		    fPreviouslyCheckedProgram = null;
+        fProjText.addModifyListener(new ModifyListener() {
 
-		    updateBuildConfigCombo(""); //$NON-NLS-1$
-		    updateLaunchConfigurationDialog();
-		});
+            @Override
+            public void modifyText(ModifyEvent evt) {
+                // if project changes, invalidate program name cache
+                fPreviouslyCheckedProgram = null;
+
+                updateBuildConfigCombo(""); //$NON-NLS-1$
+                updateLaunchConfigurationDialog();
+            }
+        });
 
         fProjButton = createPushButton(projComp,
                 LaunchMessages.Launch_common_Browse_1, null);
@@ -473,7 +493,12 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         });
 
         copyFromExeText = copyFromExeSelector.getURIText();
-        copyFromExeText.addModifyListener(evt -> updateLaunchConfigurationDialog());
+        copyFromExeText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent evt) {
+                updateLaunchConfigurationDialog();
+            }
+        });
     }
 
 
@@ -491,7 +516,12 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
                 ResourceSelectorWidget.ResourceType.FILE,
                 2, "C/C++ executable", null); //$NON-NLS-1$
         fProgText = exeSelector.getURIText();
-        fProgText.addModifyListener(evt -> updateLaunchConfigurationDialog());
+        fProgText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent evt) {
+                updateLaunchConfigurationDialog();
+            }
+        });
     }
 
     protected void updateWorkingDirFromConfig(ILaunchConfiguration config) {
@@ -532,7 +562,12 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
                 ResourceSelectorWidget.ResourceType.DIRECTORY,
                 2, "Working directory", null); //$NON-NLS-1$
         workingDirText = workingDirSelector.getURIText();
-        workingDirText.addModifyListener(evt -> updateLaunchConfigurationDialog());
+        workingDirText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent evt) {
+                updateLaunchConfigurationDialog();
+            }
+        });
     }
 
     private boolean checkCopyFromExe(IProject project) {
@@ -947,6 +982,13 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.
+     * debug.core.ILaunchConfigurationWorkingCopy)
+     */
     @Override
     public void setDefaults(ILaunchConfigurationWorkingCopy config) {
         // We set empty attributes for project & program so that when one config
@@ -1076,11 +1118,21 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         return TAB_ID;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getName()
+     */
     @Override
     public String getName() {
         return LaunchMessages.CMainTab_Main;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getImage()
+     */
     @Override
     public Image getImage() {
         return LaunchImages.get(LaunchImages.IMG_VIEW_MAIN_TAB);

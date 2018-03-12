@@ -42,13 +42,13 @@ public class RPMExportOperation extends Job {
         this.exportType = BuildType.valueOf(exportType);
     }
 
+    /**
+     * @see org.eclipse.jface.operation.IRunnableWithProgress#run(IProgressMonitor)
+     *
+     */
     @Override
     public IStatus run(IProgressMonitor monitor) {
         IStatus result = null;
-        if (rpmProject.getSpecFile() == null) {
-			return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
-					Messages.getString("RPMExportOperation.No_Spec_File")); //$NON-NLS-1$
-        }
         IOConsoleOutputStream out = RpmConsole.findConsole(rpmProject).linkJob(this);
         if (out == null) {
             return Status.CANCEL_STATUS;
@@ -96,19 +96,22 @@ public class RPMExportOperation extends Job {
      */
     @Override
     protected void canceling() {
-        Thread pollThread = new Thread(() -> {
-		    while (getResult() == null) {
-		        Thread thread = getThread();
-		        if (thread != null) {
-		            thread.interrupt();
-		        }
-		        try {
-		            Thread.sleep(1000);
-		        } catch (InterruptedException e) {
-		            break;
-		        }
-		    }
-		});
+        Thread pollThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (getResult() == null) {
+                    Thread thread = getThread();
+                    if (thread != null) {
+                        thread.interrupt();
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            }
+        });
         pollThread.start();
     }
 }

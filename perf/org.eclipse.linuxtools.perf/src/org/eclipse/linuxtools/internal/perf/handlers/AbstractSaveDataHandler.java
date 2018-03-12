@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.internal.perf.handlers;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -72,10 +73,6 @@ public abstract class AbstractSaveDataHandler extends BaseDataManipulator implem
         return PerfPlugin.getDefault().getWorkingDir();
     }
 
-    protected URI getWorkingDirURI() {
-        return PerfPlugin.getDefault().getWorkingDirURI();
-    }
-
     /**
      * New data location based on specified name, which the specified
      * extension will be appended to.
@@ -98,12 +95,16 @@ public abstract class AbstractSaveDataHandler extends BaseDataManipulator implem
      */
     public boolean canSave(IPath file) {
         IRemoteFileProxy proxy = null;
+        URI fileURI = null;
         try {
-            proxy = RemoteProxyManager.getInstance().getFileProxy(getWorkingDirURI());
+            fileURI = new URI(file.toPortableString());
+            proxy = RemoteProxyManager.getInstance().getFileProxy(fileURI);
+        } catch (URISyntaxException e) {
+            MessageDialog.openError(Display.getCurrent().getActiveShell(), Messages.MsgProxyError, Messages.MsgProxyError);
         } catch (CoreException e) {
             MessageDialog.openError(Display.getCurrent().getActiveShell(), Messages.MsgProxyError, Messages.MsgProxyError);
         }
-        IFileStore fileStore = proxy.getResource(file.toPortableString());
+        IFileStore fileStore = proxy.getResource(fileURI.getPath());
         if (fileStore.fetchInfo().exists()) {
             String msg = MessageFormat.format(
                     Messages.PerfSaveSession_file_exists_msg,
@@ -119,13 +120,18 @@ public abstract class AbstractSaveDataHandler extends BaseDataManipulator implem
      * Open error dialog informing user of saving failure.
      * @param filename
      */
-    public void openErroDialog(final String title, String pattern, String arg) {
-        final String errorMsg = MessageFormat.format(pattern, new Object[] { arg });
-        if (Display.getCurrent() != null) {
-            MessageDialog.openError(Display.getCurrent().getActiveShell(), title, errorMsg);
-        } else {
-            Display.getDefault().syncExec(() -> MessageDialog.openError(Display.getCurrent().getActiveShell(), title, errorMsg));
-        }
+	public void openErroDialog(final String title, String pattern, String arg) {
+		final String errorMsg = MessageFormat.format(pattern, new Object[] { arg });
+		if (Display.getCurrent() != null) {
+			MessageDialog.openError(Display.getCurrent().getActiveShell(), title, errorMsg);
+		} else {
+			Display.getDefault().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					MessageDialog.openError(Display.getCurrent().getActiveShell(), title, errorMsg);
+				}
+			});
+		}
     }
 
     /**

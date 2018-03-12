@@ -117,7 +117,7 @@ public final class GraphFactory {
         return true;
     }
 
-    public static AbstractChartBuilder createGraph(GraphComposite comp,
+    public static final AbstractChartBuilder createGraph(GraphComposite comp,
             int style, GraphData gd, IDataSet data) {
         AbstractChartBuilder builder = null;
 

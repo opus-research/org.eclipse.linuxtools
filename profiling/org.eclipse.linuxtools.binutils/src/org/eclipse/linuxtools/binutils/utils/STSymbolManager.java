@@ -1,14 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2009-2016 STMicroelectronics and others.
+ * Copyright (c) 2009 STMicroelectronics.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
- *    Red Hat Inc. - ongoing maintenance
- *    Ingenico - Vincent Guignot <vincent.guignot@ingenico.com> - Add binutils strings
+ *   Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.binutils.utils;
 
@@ -84,21 +82,24 @@ public class STSymbolManager {
      * Constructor
      */
     private STSymbolManager() {
-        Runnable worker = () -> {
-		    try {
-		        do {
-		            try {
-		                Thread.sleep(AUTO_DISPOSE_TIMEOUT);
-		            } catch (InterruptedException e1) {
-		                break;
-		            }
-		            cleanup();
-		        } while (true);
-		    } catch (Exception e2) {
-		        Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, e2.getMessage(), e2);
-		        Activator.getDefault().getLog().log(s);
-		    }
-		};
+        Runnable worker = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    do {
+                        try {
+                            Thread.sleep(AUTO_DISPOSE_TIMEOUT);
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                        cleanup();
+                    } while (true);
+                } catch (Exception e) {
+                    Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
+                    Activator.getDefault().getLog().log(s);
+                }
+            }
+        };
         new Thread(worker, "ST System Analysis Symbol Manager").start(); //$NON-NLS-1$
         // TODO: perhaps this thread has to be lazy-created ?
         // and perhaps this thread has to destroy itself when it is no longer
@@ -213,9 +214,8 @@ public class STSymbolManager {
      */
     public synchronized int getLineNumber(IBinaryObject program, IAddress address, IProject project) {
         Addr2line addr2line = getAddr2line(program, project);
-        if (addr2line == null) {
+        if (addr2line == null)
             return -1;
-        }
         try {
             return addr2line.getLineNumber(address);
         } catch (IOException e) {
@@ -245,9 +245,8 @@ public class STSymbolManager {
      */
     public synchronized String getFileName(IBinaryObject program, IAddress address, IProject project) {
         Addr2line addr2line = getAddr2line(program, project);
-        if (addr2line == null) {
+        if (addr2line == null)
             return null;
-        }
         try {
             return addr2line.getFileName(address);
         } catch (IOException e) {
@@ -326,24 +325,6 @@ public class STSymbolManager {
     }
 
     /**
-     * Gets the strings support for the given program.
-     * @param program
-     * @param project
-     * @return an instance of Strings suitable for the given program
-     * @since 6.0
-     */
-    public synchronized STStrings getStrings(IBinaryObject program, IProject project) {
-        STStrings strings = null;
-        try {
-            strings = STBinutilsFactoryManager.getStrings(program.getCPU(), project);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return strings;
-    }
-
-	/**
      * Gets the IBinaryObject corresponding to the given path (absolute path in filesystem). If a IBinaryObject
      * corresponding to the given path has been already built by eclipse, return it. Otherwise build a new
      * IBinaryObject, according to project preferences. Note that it may return null if the path is invalid, or is not a
@@ -383,9 +364,8 @@ public class STSymbolManager {
         List<IBinaryParser> parsers;
         if (c != null) {
             IBinaryObject object = getAlreadyExistingBinaryObject(c);
-            if (object != null) {
+            if (object != null)
                 return object;
-            }
             parsers = getBinaryParser(c.getProject());
         } else {
             parsers = new LinkedList<>();
@@ -487,7 +467,7 @@ public class STSymbolManager {
                     for (IBinary binary : b) {
                         IResource r = binary.getResource();
                         if (r.equals(c)) {
-                            IBinaryObject binaryObject = binary.getAdapter(IBinaryObject.class);
+                            IBinaryObject binaryObject = (IBinaryObject) binary.getAdapter(IBinaryObject.class);
                             return validateBinary(binaryObject);
                         }
                     }
@@ -507,9 +487,8 @@ public class STSymbolManager {
         List<IBinaryParser> parsers = new LinkedList<>();
 
         ICProjectDescription projDesc = CCorePlugin.getDefault().getProjectDescription(project);
-        if (projDesc == null) {
+        if (projDesc == null)
             return parsers;
-        }
         ICConfigurationDescription[] cfgs = projDesc.getConfigurations();
         String[] binaryParserIds = CoreModelUtil.getBinaryParserIds(cfgs);
 

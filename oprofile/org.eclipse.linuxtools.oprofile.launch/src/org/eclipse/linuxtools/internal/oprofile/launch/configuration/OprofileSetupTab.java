@@ -12,7 +12,6 @@
 package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,6 +31,8 @@ import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -60,7 +61,6 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
     protected LaunchOptions options = null;
 
     protected Spinner executionsSpinner;
-    protected Label executionsSpinnerLabel;
 
     private IRemoteFileProxy proxy;
 
@@ -93,6 +93,17 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
         }
         controlCombo.setText(options.getOprofileComboText());
 
+        if(controlCombo.getText().equals(OprofileProject.OPERF_BINARY)) {
+            checkSeparateLibrary.setEnabled(false);
+            checkSeparateKernel.setEnabled(false);
+            kernelImageFileText.setEnabled(false);
+            kernelLabel.setEnabled(false);
+        } else {
+            checkSeparateLibrary.setEnabled(true);
+            checkSeparateKernel.setEnabled(true);
+            kernelImageFileText.setEnabled(true);
+            kernelLabel.setEnabled(true);
+        }
         kernelImageFileText.setText(options.getKernelImageFile());
         executionsSpinner.setSelection(options.getExecutionsNumber());
 
@@ -108,7 +119,6 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
             if ((separate & OprofileDaemonOptions.SEPARATE_KERNEL) != 0)
                 checkSeparateKernel.setSelection(true);
         }
-        enableOptionWidgets();
     }
 
     @Override
@@ -151,33 +161,37 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
         l2.setLayoutData(data);
 
         controlCombo = new CCombo(p, SWT.DROP_DOWN|SWT.READ_ONLY|SWT.BORDER);
-        List<String> tools = new ArrayList<>(Arrays.asList(OprofileProject.OPERF_BINARY));
-        try {
-            Process proc = RuntimeProcessFactory.getFactory().exec(
-                    new String [] {"which", OprofileProject.OPCONTROL_BINARY }, //$NON-NLS-1$
-                    null);
-            if  (proc.waitFor() == 0) {
-                tools.add(OprofileProject.OPCONTROL_BINARY);
-            }
-        } catch (Exception e) {
-        }
-        try {
-            Process proc = RuntimeProcessFactory.getFactory().exec(
-                    new String [] {"which", OprofileProject.OCOUNT_BINARY }, //$NON-NLS-1$
-                    null);
-            if  (proc.waitFor() == 0) {
-                tools.add(OprofileProject.OCOUNT_BINARY);
-            }
-        } catch (Exception e) {
-        }
-        controlCombo.setItems(tools.toArray(new String [0]));
+        List<String> tools = Arrays.asList(OprofileProject.OPERF_BINARY);
+		try {
+			Process proc = RuntimeProcessFactory.getFactory().exec(
+					new String [] {"which", OprofileProject.OPCONTROL_BINARY }, //$NON-NLS-1$
+					null);
+			if  (proc.waitFor() == 0) {
+				tools.add(OprofileProject.OPCONTROL_BINARY);
+			}
+		} catch (Exception e) {
+		}
+		controlCombo.setItems(tools.toArray(new String [0]));
         controlCombo.select(0);
-        controlCombo.addModifyListener(mev -> {
-		    OprofileProject.setProfilingBinary(controlCombo.getText());
-		    options.setOprofileComboText(controlCombo.getText());
-		    enableOptionWidgets();
-		    updateLaunchConfigurationDialog();
-		});
+        controlCombo.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent mev) {
+                OprofileProject.setProfilingBinary(controlCombo.getText());
+                options.setOprofileComboText(controlCombo.getText());
+                if(controlCombo.getText().equals(OprofileProject.OPERF_BINARY)) {
+                    checkSeparateLibrary.setEnabled(false);
+                    checkSeparateKernel.setEnabled(false);
+                    kernelImageFileText.setEnabled(false);
+                    kernelLabel.setEnabled(false);
+                } else {
+                    checkSeparateLibrary.setEnabled(true);
+                    checkSeparateKernel.setEnabled(true);
+                    kernelImageFileText.setEnabled(true);
+                    kernelLabel.setEnabled(true);
+                }
+                updateLaunchConfigurationDialog();
+            }
+        });
         data = new GridData();
         data.horizontalSpan = 2;
         controlCombo.setLayoutData(data);
@@ -192,7 +206,12 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
         kernelImageFileText = new Text(p, SWT.SINGLE | SWT.BORDER);
         data = new GridData(GridData.FILL_HORIZONTAL);
         kernelImageFileText.setLayoutData(data);
-        kernelImageFileText.addModifyListener(mev -> handleKernelImageFileTextModify(kernelImageFileText));
+        kernelImageFileText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent mev) {
+                handleKernelImageFileTextModify(kernelImageFileText);
+            };
+        });
 
         Button button = createPushButton(p, OprofileLaunchMessages.getString("tab.global.kernelImage.browse.button.text"), null); //$NON-NLS-1$
         final Shell shell = top.getShell();
@@ -223,15 +242,18 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
         Composite executionsComposite = new Composite(top, SWT.NONE);
         GridLayout gridLayout = new GridLayout(2, false);
         executionsComposite.setLayout(gridLayout);
-        executionsSpinnerLabel = new Label(executionsComposite, SWT.LEFT);
-        executionsSpinnerLabel.setText(OprofileLaunchMessages.getString("tab.global.executionsNumber.label.text")); //$NON-NLS-1$
-        executionsSpinnerLabel.setToolTipText(OprofileLaunchMessages.getString("tab.global.executionsNumber.label.tooltip")); //$NON-NLS-1$
+        Label executionsLabel = new Label(executionsComposite, SWT.LEFT);
+        executionsLabel.setText(OprofileLaunchMessages.getString("tab.global.executionsNumber.label.text")); //$NON-NLS-1$
+        executionsLabel.setToolTipText(OprofileLaunchMessages.getString("tab.global.executionsNumber.label.tooltip")); //$NON-NLS-1$
         executionsSpinner = new Spinner(executionsComposite, SWT.BORDER);
         executionsSpinner.setMinimum(1);
-        executionsSpinner.addModifyListener(e -> {
-		    options.setExecutionsNumber(executionsSpinner.getSelection());
-		    updateLaunchConfigurationDialog();
-		});
+        executionsSpinner.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                options.setExecutionsNumber(executionsSpinner.getSelection());
+                updateLaunchConfigurationDialog();
+            }
+        });
     }
 
 
@@ -342,31 +364,6 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
             } else {
                 kernelImageFileText.setText(newKernel);
             }
-        }
-    }
-    // Enable/disable widgets options according to the tool selected.
-    private void enableOptionWidgets() {
-        if (controlCombo.getText().equals(OprofileProject.OPCONTROL_BINARY)) {
-            checkSeparateLibrary.setEnabled(true);
-            checkSeparateKernel.setEnabled(true);
-            kernelImageFileText.setEnabled(true);
-            kernelLabel.setEnabled(true);
-            executionsSpinnerLabel.setEnabled(true);
-            executionsSpinner.setEnabled(true);
-        } else if (controlCombo.getText().equals(OprofileProject.OCOUNT_BINARY)) {
-            checkSeparateLibrary.setEnabled(false);
-            checkSeparateKernel.setEnabled(false);
-            kernelImageFileText.setEnabled(false);
-            kernelLabel.setEnabled(false);
-            executionsSpinnerLabel.setEnabled(false);
-            executionsSpinner.setEnabled(false);
-        } else {
-            checkSeparateLibrary.setEnabled(false);
-            checkSeparateKernel.setEnabled(false);
-            kernelImageFileText.setEnabled(false);
-            kernelLabel.setEnabled(false);
-            executionsSpinnerLabel.setEnabled(true);
-            executionsSpinner.setEnabled(true);
         }
     }
 

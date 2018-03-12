@@ -43,7 +43,7 @@ public class LibhoverPlugin extends AbstractUIPlugin {
     private static IPreferenceStore preferenceStore;
 
     static {
-        plugin = new LibhoverPlugin();
+    	plugin = new LibhoverPlugin();
     }
 
     /**
@@ -52,6 +52,10 @@ public class LibhoverPlugin extends AbstractUIPlugin {
     public LibhoverPlugin() {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     */
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
@@ -77,19 +81,23 @@ public class LibhoverPlugin extends AbstractUIPlugin {
     }
 
     private void save() {
-        if (stateLocation == null)
-            stateLocation = this.getStateLocation();
-        if (preferenceStore == null)
-            preferenceStore = this.getPreferenceStore();
-        LibHover.saveLibraries(stateLocation, preferenceStore);
+    	if (stateLocation == null)
+    		stateLocation = this.getStateLocation();
+    	if (preferenceStore == null)
+    		preferenceStore = this.getPreferenceStore();
+    	LibHover.saveLibraries(stateLocation, preferenceStore);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     */
     @Override
     public void stop(BundleContext context) throws Exception {
-        stateLocation = this.getStateLocation();
-        preferenceStore = this.getPreferenceStore();
-        plugin = null;
-        super.stop(context);
+    	stateLocation = this.getStateLocation();
+    	preferenceStore = this.getPreferenceStore();
+    	plugin = null;
+    	super.stop(context);
     }
 
     /**

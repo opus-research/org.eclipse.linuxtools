@@ -73,7 +73,7 @@ public class GNUHyperlinkDetector extends AbstractHyperlinkDetector {
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer,
             IRegion region, boolean canShowMultipleHyperlinks) {
         if (documentLocation == null) {
-            ITextEditor ed = this.getAdapter(ITextEditor.class);
+            ITextEditor ed = (ITextEditor) this.getAdapter(ITextEditor.class);
             documentLocation = getDocumentLocation(ed);
         }
 
@@ -155,12 +155,11 @@ public class GNUHyperlinkDetector extends AbstractHyperlinkDetector {
             // Replace any escape characters added to name
             line = line.replaceAll("\\\\(.)", "$1");
 
-            IFile fileLoc = ResourcesPlugin.getWorkspace().getRoot()
-                    .getFileForLocation(documentLocation.append(line));
-            if (fileLoc.exists()) {
-                return new IHyperlink[] { new FileHyperlink(pathRegion, fileLoc) };
-            }
+            IPath filePath = documentLocation.append(line);
 
+            return new IHyperlink[] { new FileHyperlink(pathRegion,
+                    ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(
+                            filePath)) };
 
         }
 

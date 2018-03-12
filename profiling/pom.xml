@@ -16,7 +16,7 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>5.1.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.profiling</groupId>
@@ -41,7 +41,6 @@
 
   <modules>
     <module>org.eclipse.linuxtools.tools.launch.core</module>
-    <module>org.eclipse.linuxtools.tools.launch.core.tests</module>
     <module>org.eclipse.linuxtools.tools.launch.ui</module>
     <module>org.eclipse.linuxtools.binutils</module>
     <module>org.eclipse.linuxtools.dataviewers</module>
@@ -58,9 +57,7 @@
     <module>org.eclipse.linuxtools.profiling.ui</module>
     <module>org.eclipse.linuxtools.profiling.ui.capability</module>
     <module>org.eclipse.linuxtools.rdt.proxy</module>
-    <module>org.eclipse.linuxtools.rdt.proxy.tests</module>
     <module>org.eclipse.linuxtools.ssh.proxy</module>
-    <module>org.eclipse.linuxtools.remote.proxy.tests</module>
   </modules>
 
 </project>

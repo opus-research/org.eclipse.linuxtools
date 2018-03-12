@@ -16,14 +16,14 @@ public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.perf.launch.messages"; //$NON-NLS-1$
     public static String MsgProxyError;
     public static String PerfEventsTab_Add;
-    public static String PerfEventsTab_Events;
-    public static String PerfEventsTab_ForExample;
-    public static String PerfEventsTab_ForExampleR1A8;
-    public static String PerfEventsTab_HardwareBreakpoint;
-    public static String PerfEventsTab_Note;
-    public static String PerfEventsTab_RawRegisterEncoding;
-    public static String PerfEventsTab_RemoveSelectedEvents;
-    public static String PerfLaunchConfigDelegate_perf_not_found;
+	public static String PerfEventsTab_Events;
+	public static String PerfEventsTab_ForExample;
+	public static String PerfEventsTab_ForExampleR1A8;
+	public static String PerfEventsTab_HardwareBreakpoint;
+	public static String PerfEventsTab_Note;
+	public static String PerfEventsTab_RawRegisterEncoding;
+	public static String PerfEventsTab_RemoveSelectedEvents;
+	public static String PerfLaunchConfigDelegate_perf_not_found;
     public static String PerfLaunchConfigDelegate_analyzing;
     public static String PerfLaunchConfigDelegate_stat_title;
     public static String PerfOptionsTab_Browse;
@@ -32,7 +32,6 @@ public class Messages extends NLS {
     public static String PerfOptionsTab_Loc_DNE;
     public static String PerfOptionsTab_Options;
     public static String PerfOptionsTab_Requires_LTE;
-    public static String PerfOptionsTab_EventsCantBeEmpty;
 
     static {
         // initialize resource bundle

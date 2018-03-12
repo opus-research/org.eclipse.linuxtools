@@ -348,23 +348,31 @@ public class ScriptConsole extends IOConsole {
 
     }
 
-    private final Runnable onCmdStop = () -> {
-	    try {
-	        synchronized (cmd) {
-	            while (cmd.isRunning()) {
-	                cmd.wait();
-	            }
-	            onCmdStopActions();
-	        }
-	    } catch (InterruptedException e) {
-	        return;
-	    }
-	};
+    private final Runnable onCmdStop = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                synchronized (cmd) {
+                    while (cmd.isRunning()) {
+                        cmd.wait();
+                    }
+                    onCmdStopActions();
+                }
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
+    };
 
     private void onCmdStopActions() {
         notifyConsoleObservers();
         final String name = super.getName();
-        Display.getDefault().asyncExec(() -> setName(Localization.getString("ScriptConsole.Terminated") + name)); //$NON-NLS-1$
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                setName(Localization.getString("ScriptConsole.Terminated") + name); //$NON-NLS-1$
+            }
+        });
     }
 
     /**
@@ -424,7 +432,7 @@ public class ScriptConsole extends IOConsole {
 
     /**
      * Add observer to the script console.
-     *
+     * 
      * @param observer The observer to be added.
      * @since 2.0
      */

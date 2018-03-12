@@ -21,9 +21,9 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
-import org.eclipse.linuxtools.internal.rpm.ui.editor.RPMUtils;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.UiUtils;
 import org.eclipse.linuxtools.rpm.ui.editor.SpecfileEditor;
+import org.eclipse.linuxtools.rpm.ui.editor.utils.RPMUtils;
 import org.eclipse.ui.part.FileEditorInput;
 
 /**
@@ -37,6 +37,10 @@ public class SourcesFileHyperlinkDetector extends AbstractHyperlinkDetector {
     private static final String SOURCE_IDENTIFIER = "Source"; //$NON-NLS-1$
     private static final String URL_IDENTIFIER = "URL"; //$NON-NLS-1$
 
+    /**
+     * @see org.eclipse.jface.text.hyperlink.IHyperlinkDetector#detectHyperlinks(org.eclipse.jface.text.ITextViewer,
+     *      org.eclipse.jface.text.IRegion, boolean)
+     */
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer,
             IRegion region, boolean canShowMultipleHyperlinks) {
@@ -45,7 +49,7 @@ public class SourcesFileHyperlinkDetector extends AbstractHyperlinkDetector {
         }
 
         if (editor == null) {
-			editor = this.getAdapter(SpecfileEditor.class);
+            editor = ((SpecfileEditor) this.getAdapter(SpecfileEditor.class));
             if (editor == null) {
                 return null;
             }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2016 STMicroelectronics and others.
+ * Copyright (c) 2009 STMicroelectronics.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
- *    Ingenico  - Vincent Guignot <vincent.guignot@ingenico.com> - Add binutils strings
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.gcov.parser;
 
@@ -37,7 +36,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.binutils.utils.STStrings;
 import org.eclipse.linuxtools.binutils.utils.STSymbolManager;
 import org.eclipse.linuxtools.internal.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.model.CovFileTreeElement;
@@ -59,9 +57,9 @@ public class CovManager implements Serializable {
      *
      */
     private static final long serialVersionUID = 5582066617970911413L;
-
+    
     private static String winOSType = ""; //$NON-NLS-1$
-
+    
     // input
     private final String binaryPath;
     // results
@@ -95,8 +93,10 @@ public class CovManager implements Serializable {
 
     /**
      * parse coverage files, execute resolve graph algorithm, process counts for functions, lines and folders.
-     * @param List of coverage files paths
-     * @throws CoreException, IOException, InterruptedException
+     * @param List
+     *            of coverage files paths
+     * @throws CoreException
+     *             , IOException, InterruptedException
      */
 
     public void processCovFiles(List<String> covFilesPaths, String initialGcda) throws CoreException, IOException {
@@ -144,9 +144,8 @@ public class CovManager implements Serializable {
 
             // parse GCDA file
             traceFile = openTraceFileStream(gcdaPath, ".gcda", sourcePath); //$NON-NLS-1$
-            if (traceFile == null) {
+            if (traceFile == null)
                 return;
-            }
             if (noRcrd.getFnctns().isEmpty()) {
                 String message = NLS.bind(Messages.CovManager_No_Funcs_Error, gcnoPath);
                 Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
@@ -162,9 +161,8 @@ public class CovManager implements Serializable {
         }
 
         // to fill the view title
-        if (daRcrd != null) {
-            nbrPgmRuns = daRcrd.getPgmSmryNbrPgmRuns();
-        }
+        if (daRcrd != null)
+        	nbrPgmRuns = daRcrd.getPgmSmryNbrPgmRuns();
 
         /* process counts from data parsed */
 
@@ -194,9 +192,8 @@ public class CovManager implements Serializable {
         for (SourceFile sf : allSrcs) {
             File srcFile = new File(sf.getName());
             String folderName = srcFile.getParent();
-            if (folderName == null) {
+            if (folderName == null)
                 folderName = "?"; //$NON-NLS-1$
-            }
             Folder folder = null;
             for (Folder f : allFolders) {
                 if (f.getPath().equals(folderName)) {
@@ -218,7 +215,8 @@ public class CovManager implements Serializable {
 
     /**
      * fill the model by count results
-     * @throws CoreException, IOException, InterruptedException
+     * @throws CoreException
+     *             , IOException, InterruptedException
      */
 
     public void fillGcovView() {
@@ -260,94 +258,96 @@ public class CovManager implements Serializable {
     // Get the Windows OS Type.  We might have to change a path over to Windows format
     // and this is different on Cygwin vs MingW.
     private String getWinOSType() {
-        if (winOSType.equals("")) { //$NON-NLS-1$
-            try {
-                Process process = Runtime.getRuntime().exec(new String[] {"sh", "-c", "echo $OSTYPE"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                
-                String firstLine = null;
-                try (BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    firstLine = stdout.readLine();
-                }
-                if (firstLine != null) {
-                    winOSType = firstLine.trim();
-                }
-            } catch (IOException e) {
-                // ignore
-            }
-        }
-        return winOSType;
+    	if (winOSType.equals("")) { //$NON-NLS-1$
+    		try {
+    			Process process = Runtime.getRuntime().exec(new String[] {"sh", "-c", "echo $OSTYPE"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    			@SuppressWarnings("resource")
+				BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+    			String firstLine = null;
+    			try {
+    				firstLine = stdout.readLine();
+    			} finally {
+    				stdout.close();
+    			}
+    			if (firstLine != null)
+    				winOSType = firstLine.trim();
+    		} catch (IOException e) {
+    			// ignore
+    		}
+    	}
+    	return winOSType;
     }
 
     // Get the OS path string.  For Cygwin, translate We add a Win check to handle MingW.
     // For MingW, we would rather represent C:\a\b as /C/a/b which
     // doesn't cause Makefile to choke. For Cygwin we use /cygdrive/C/a/b
     private String getTransformedPathString(IPath path) {
-        String s = path.toOSString();
-        if (Platform.getOS().equals(Platform.OS_WIN32)) {
-            if (getWinOSType().equals("cygwin")) { //$NON-NLS-1$
-                s = s.replaceAll("^\\\\cygdrive\\\\([a-zA-Z])", "$1:"); //$NON-NLS-1$ //$NON-NLS-2$
-            } else {
-                s = s.replaceAll("^\\\\([a-zA-Z])", "$1:"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-        }
-        return s;
+    	String s = path.toOSString();
+    	if (Platform.getOS().equals(Platform.OS_WIN32)) {
+    		if (getWinOSType().equals("cygwin")) { //$NON-NLS-1$
+    			s = s.replaceAll("^\\\\cygdrive\\\\([a-zA-Z])", "$1:"); //$NON-NLS-1$ //$NON-NLS-2$            		
+    		} else {
+    			s = s.replaceAll("^\\\\([a-zA-Z])", "$1:"); //$NON-NLS-1$ //$NON-NLS-2$            		
+    		}
+    	}
+    	return s;
     }
 
     // transform String path to stream
     private DataInput openTraceFileStream(String filePath, String extension, Map<File, File> sourcePath)
-            throws FileNotFoundException {
-        Path p = new Path(filePath);
-        // get the file path transformed to work on local OS (e.g. Windows)
-        filePath = getTransformedPathString(p);
-        File f = new File(filePath).getAbsoluteFile();
-        String filename = f.getName();
-        if (f.isFile() && f.canRead()) {
-            FileInputStream fis = new FileInputStream(f);
-            InputStream inputStream = new BufferedInputStream(fis);
-            return new DataInputStream(inputStream);
-        } else {
-            String postfix = ""; //$NON-NLS-1$
-            File dir = null;
-            do {
-                if (postfix.isEmpty()) {
-                    postfix = f.getName();
-                } else {
-                    postfix = f.getName() + File.separator + postfix;
-                }
-                f = f.getParentFile();
-                if (f != null) {
-                    dir = sourcePath.get(f);
-                } else {
-                    break;
-                }
-            } while (dir == null);
+    		throws FileNotFoundException {
+    	Path p = new Path(filePath);
+    	// get the file path transformed to work on local OS (e.g. Windows)
+    	filePath = getTransformedPathString(p);
+    	File f = new File(filePath).getAbsoluteFile();
+    	String filename = f.getName();
+    	if (f.isFile() && f.canRead()) {
+    		FileInputStream fis = new FileInputStream(f);
+    		InputStream inputStream = new BufferedInputStream(fis);
+    		return new DataInputStream(inputStream);
+    	} else {
+    		String postfix = ""; //$NON-NLS-1$
+    		File dir = null;
+    		do {
+    			if (postfix.isEmpty()) {
+    				postfix = f.getName();
+    			} else {
+    				postfix = f.getName() + File.separator + postfix;
+    			}
+    			f = f.getParentFile();
+    			if (f != null) {
+    				dir = sourcePath.get(f);
+    			} else {
+    				break;
+    			}
+    		} while (dir == null);
 
-            if (dir != null) {
-                f = new File(dir, postfix);
-                if (f.isFile() && f.canRead()) {
-                    return openTraceFileStream(f.getAbsolutePath(), extension, sourcePath);
-                }
-            }
+    		if (dir != null) {
+    			f = new File(dir, postfix);
+    			if (f.isFile() && f.canRead()) {
+    				return openTraceFileStream(f.getAbsolutePath(), extension, sourcePath);
+    			}
+    		}
 
-            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            FileDialog fg = new FileDialog(shell, SWT.OPEN);
-            fg.setFilterExtensions(new String[] { "*" + extension, "*.*", "*" }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            fg.setFileName(filename);
-            fg.setText(NLS.bind(Messages.CovManager_No_FilePath_Error, new Object[] { filePath, filename }));
-            String s = fg.open();
-            if (s == null) {
-                return null;
-            } else {
-                f = new File(s).getAbsoluteFile();
-                addSourceLookup(sourcePath, f, new File(filePath).getAbsoluteFile());
-                if (f.isFile() && f.canRead()) {
-                    FileInputStream fis = new FileInputStream(f);
-                    InputStream inputStream = new BufferedInputStream(fis);
-                    return new DataInputStream(inputStream);
-                }
-            }
-        }
-        return null;
+    		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+    		FileDialog fg = new FileDialog(shell, SWT.OPEN);
+    		fg.setFilterExtensions(new String[] { "*" + extension, "*.*", "*" }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    		fg.setFileName(filename);
+    		fg.setText(NLS.bind(Messages.CovManager_No_FilePath_Error, new Object[] { filePath, filename }));
+    		String s = fg.open();
+    		if (s == null) {
+    			return null;
+    		} else {
+    			f = new File(s).getAbsoluteFile();
+    			addSourceLookup(sourcePath, f, new File(filePath).getAbsoluteFile());
+    			if (f.isFile() && f.canRead()) {
+    				FileInputStream fis = new FileInputStream(f);
+    				InputStream inputStream = new BufferedInputStream(fis);
+    				return new DataInputStream(inputStream);
+    			}
+    		}
+    	}
+    	return null;
     }
 
     public ArrayList<SourceFile> getAllSrcs() {
@@ -382,10 +382,9 @@ public class CovManager implements Serializable {
     public List<String> getGCDALocations() throws InterruptedException {
         IBinaryObject binaryObject = STSymbolManager.sharedInstance.getBinaryObject(new Path(binaryPath));
         String binaryPath = binaryObject.getPath().toOSString();
-        STStrings strings = STSymbolManager.sharedInstance.getStrings(binaryObject, project);
         List<String> l = new LinkedList<>();
         Process p;
-        p = getStringsProcess(strings.getName(), strings.getArgs(), binaryPath);
+        p = getStringsProcess(Messages.CovManager_Strings, binaryPath);
         if (p == null) {
             Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.ERROR,
                     Messages.CovManager_Retrieval_Error, new IOException());
@@ -399,13 +398,9 @@ public class CovManager implements Serializable {
         return l;
     }
 
-    private Process getStringsProcess(String stringsTool, String[] stringsArgs, String binaryPath) {
-        String[] runtimeStr = new String[stringsArgs.length + 2];
-        System.arraycopy(stringsArgs, 0, runtimeStr, 1, stringsArgs.length);
-        runtimeStr[0] = stringsTool;
-        runtimeStr[runtimeStr.length-1] = binaryPath;
+    private Process getStringsProcess(String stringsTool, String binaryPath) {
         try {
-            return Runtime.getRuntime().exec(runtimeStr);
+            return Runtime.getRuntime().exec(new String[] { stringsTool, binaryPath });
         } catch (IOException e) {
             return null;
         }

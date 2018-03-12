@@ -27,6 +27,9 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.List;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.handlers.ImportDataSetHandler;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.launcher.Messages;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
@@ -49,6 +52,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
@@ -57,6 +61,7 @@ import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
+import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
@@ -87,6 +92,7 @@ import org.swtchart.Range;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class TestCreateSystemtapScript {
     private static final String SYSTEMTAP_PROJECT_NAME = "SystemtapTest";
+    private static final Logger fLogger = Logger.getRootLogger();
 
     private static SWTWorkbenchBot bot;
     private static SWTBotView projectExplorer;
@@ -259,6 +265,7 @@ public class TestCreateSystemtapScript {
     @BeforeClass
     public static void beforeClass() {
         SWTBotPreferences.TIMEOUT = 20000;
+        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         bot = new SWTWorkbenchBot();
 
         try {
@@ -276,7 +283,7 @@ public class TestCreateSystemtapScript {
         bot.perspectiveByLabel("SystemTap IDE").activate();
         bot.sleep(500);
         for (SWTBotShell sh : bot.shells()) {
-            if (sh.getText().contains("SystemTap IDE")) {
+            if (sh.getText().startsWith("SystemTap IDE")) {
                 mainShell = sh;
                 sh.activate();
                 bot.sleep(500);
@@ -358,11 +365,14 @@ public class TestCreateSystemtapScript {
             if (shellTitle.length() > 0
                     && !shellTitle.startsWith("SystemTap IDE")
                     && !shellTitle.startsWith("Quick Access")) {
-				UIThreadRunnable.syncExec(() -> {
-					if (shell.widget.getParent() != null) {
-						shell.close();
-					}
-				});
+                UIThreadRunnable.syncExec(new VoidResult() {
+                    @Override
+                    public void run() {
+                        if (shell.widget.getParent() != null) {
+                            shell.close();
+                        }
+                    }
+                });
             }
         }
         bot.closeAllEditors();
@@ -624,11 +634,15 @@ public class TestCreateSystemtapScript {
         assertTrue(runButton.isEnabled());
 
         // Perform tests when graphs have an invalid graphID.
-		UIThreadRunnable.syncExec(() -> {
-			GraphData gd = (GraphData) table.getTableItem(0).widget.getData();
-			gd.graphID = "invalidID";
-			table.getTableItem(0).widget.setData(gd);
-		});
+        UIThreadRunnable.syncExec(new VoidResult() {
+
+            @Override
+            public void run() {
+                GraphData gd = (GraphData) table.getTableItem(0).widget.getData();
+                gd.graphID = "invalidID";
+                table.getTableItem(0).widget.setData(gd);
+            }
+        });
 
         combo.setText(combo.getText().concat(" ")); // Just to refresh the dialog
         assertFalse(runButton.isEnabled());
@@ -1293,19 +1307,25 @@ public class TestCreateSystemtapScript {
                 final Event event = new Event();
                 event.type = SWT.MouseMove;
                 // Jitter the mouse before moving to the data point
-				UIThreadRunnable.syncExec(() -> {
-					event.x = 0;
-					event.y = 0;
-					bot.getDisplay().post(event);
-				});
+                UIThreadRunnable.syncExec(new VoidResult() {
+                    @Override
+                    public void run() {
+                        event.x = 0;
+                        event.y = 0;
+                        bot.getDisplay().post(event);
+                    }
+                });
                 bot.sleep(100);
-				UIThreadRunnable.syncExec(() -> {
-					Point mousePoint = cb.getChart().getPlotArea()
-							.toDisplay(cb.getChart().getSeriesSet().getSeries()[0].getPixelCoordinates(dataPoint));
-					event.x = mousePoint.x;
-					event.y = mousePoint.y;
-					bot.getDisplay().post(event);
-				});
+                UIThreadRunnable.syncExec(new VoidResult() {
+                    @Override
+                    public void run() {
+                        Point mousePoint = cb.getChart().getPlotArea().toDisplay(
+                                cb.getChart().getSeriesSet().getSeries()[0].getPixelCoordinates(dataPoint));
+                        event.x = mousePoint.x;
+                        event.y = mousePoint.y;
+                        bot.getDisplay().post(event);
+                    }
+                });
             }
 
             bot.sleep(500); // Give some time for the tooltip to appear/change
@@ -1391,11 +1411,14 @@ public class TestCreateSystemtapScript {
         } else {
             // The "Add Graph" button is actually a tab that doesn't get activated when clicked.
             // Use a background thread to supress the wait for tab activation.
-            new Thread(() -> {
-			    try {
-			        bot.activeEditor().bot().cTabItem(1).activate();
-			    } catch (TimeoutException e) {}
-			}).start();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        bot.activeEditor().bot().cTabItem(1).activate();
+                    } catch (TimeoutException e) {}
+                }
+            }).start();
         }
     }
 
@@ -1426,9 +1449,12 @@ public class TestCreateSystemtapScript {
             return;
         }
 
-		UIThreadRunnable.syncExec(() -> {
-			new ImportDataSetHandler().execute(dataFile.getPath());
-		});
+        UIThreadRunnable.syncExec(new VoidResult() {
+            @Override
+            public void run() {
+                new ImportDataSetHandler().execute(dataFile.getPath());
+            }
+        });
         String editorName = dataFile.getName().concat(" Graphs");
         bot.waitUntil(new EditorIsActive(editorName));
     }
@@ -1439,12 +1465,15 @@ public class TestCreateSystemtapScript {
      * @param currSelection The index of the radiobutton to deselect
      */
     private static void deselectDefaultSelection(final int currSelection) {
-		UIThreadRunnable.syncExec(() -> {
-			@SuppressWarnings("unchecked")
-			Matcher<Button> matcher = allOf(widgetOfType(Button.class), withStyle(SWT.RADIO, "SWT.RADIO"));
-			Button b = bot.widget(matcher, currSelection);
-			b.setSelection(false);
-		});
+        UIThreadRunnable.syncExec(new VoidResult() {
+            @Override
+            public void run() {
+                @SuppressWarnings("unchecked")
+                Matcher<Widget> matcher = allOf(widgetOfType(Button.class), withStyle(SWT.RADIO, "SWT.RADIO"));
+                Button b = (Button) bot.widget(matcher, currSelection);
+                b.setSelection(false);
+            }
+        });
     }
 
 }

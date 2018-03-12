@@ -23,7 +23,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -55,6 +54,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.Version;
 
 public class ModelTest extends AbstractTest {
     private ILaunchConfiguration config;
@@ -68,7 +68,7 @@ public class ModelTest extends AbstractTest {
         Class<?>[] klassList = new Class<?>[] { PMSymbol.class, PMFile.class,
                 PMDso.class, PMCommand.class, PMEvent.class };
         stack = new Stack<>();
-        Collections.addAll(stack, klassList);
+        stack.addAll(Arrays.asList(klassList));
     }
 
     @After
@@ -323,10 +323,9 @@ public class ModelTest extends AbstractTest {
                 "symbol", "resources/defaultevent-data/perf.data", false);
 
         String[] expectedString = new String[] { PerfPlugin.PERF_COMMAND,
-                "annotate", "--stdio", "-d", "dso", "-s", "symbol", "-l", "-P",
+                "annotate", "-d", "dso", "-s", "symbol", "-l", "-P",
                 "--vmlinux", "/boot/kernel", "-m", "-i",
-                "resources/defaultevent-data/perf.data",
-                "<", "/dev/null" };
+                "resources/defaultevent-data/perf.data" };
 
         assertArrayEquals(expectedString, annotateString);
     }
@@ -347,7 +346,7 @@ public class ModelTest extends AbstractTest {
 
         tempConfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, false);
 
-        String[] recordString = PerfCore.getRecordString(tempConfig);
+        String[] recordString = PerfCore.getRecordString(tempConfig, new Version(0, 0, 0));
         assertNotNull(recordString);
 
         String[] expectedString = { PerfPlugin.PERF_COMMAND, "record",
@@ -410,7 +409,7 @@ public class ModelTest extends AbstractTest {
                 assertTrue(klass.isAssignableFrom(tp.getClass()));
                 // each sibling needs its own stack
                 Stack<Class<?>> newStack = new Stack<>();
-                newStack.addAll(stack);
+                newStack.addAll(Arrays.asList(stack.toArray(new Class<?> [] {})));
                 checkChildrenStructure(tp, newStack);
             }
         }
