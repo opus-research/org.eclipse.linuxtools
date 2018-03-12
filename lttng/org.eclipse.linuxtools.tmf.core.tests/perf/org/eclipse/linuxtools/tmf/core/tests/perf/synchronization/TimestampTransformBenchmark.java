@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.tmf.core.tests.perf.synchronization;
 
-import java.math.BigDecimal;
-
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.TimestampTransformFactory;
 import org.eclipse.test.performance.Dimension;
@@ -47,9 +45,6 @@ public class TimestampTransformBenchmark {
 
         transform = TimestampTransformFactory.createLinear(Math.PI, 1234);
         doTimestampTransformRun("Linear transform", transform, 5);
-
-        transform = TimestampTransformFactory.createLinearFast(BigDecimal.valueOf(Math.PI), BigDecimal.valueOf(1234));
-        doTimestampTransformRun("Linear fast transform", transform, 5);
 
         transform = TimestampTransformFactory.createLinear(10000.1234545565635, -4312278758437L);
         doTimestampTransformRun("Linear transform with larger slope and negative offset", transform, 5);

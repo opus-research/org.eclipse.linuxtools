@@ -20,7 +20,6 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.internal.tmf.core.synchronization.TmfTimestampTransform;
 import org.eclipse.linuxtools.internal.tmf.core.synchronization.TmfTimestampTransformLinear;
-import org.eclipse.linuxtools.internal.tmf.core.synchronization.TmfTimestampTransformLinearFast;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -142,51 +141,4 @@ public class TsTransformTest {
         assertEquals(312, tc1.transform(t));
 
     }
-    long maxError = 0;
-    long minError = 0;
-
-    /**
-     * Test the precision of the fast timestamp transform compared to the
-     * original transform.
-     */
-    @Test
-    public void testFastTransformPrecision() {
-        TmfTimestampTransformLinear precise = new TmfTimestampTransformLinear(Math.PI, 0);
-        TmfTimestampTransformLinearFast fast = new TmfTimestampTransformLinearFast(precise);
-        long start = (long) Math.pow(10, 18);
-
-        int samples = 100;
-        simulateTime(precise, fast, samples, start, Long.MAX_VALUE / samples);
-        assertEquals(samples, fast.getCacheMisses());
-
-        // check that rescale is done only when required
-        // assumes tsBitWidth == 30
-        // test forward and backward timestamps
-        samples = 1000;
-        int[] directions = new int[] { 1, -1 };
-        for (Integer direction: directions) {
-            for (int i = 0; i <= 30; i++) {
-                fast.resetScaleStats();
-                long step = (1 << i) * direction;
-                simulateTime(precise, fast, samples, start, step);
-                assertTrue(String.format("samples: %d scale misses: %d",
-                        samples, fast.getCacheMisses()), samples > fast.getCacheMisses());
-            }
-        }
-
-    }
-
-    private void simulateTime(ITmfTimestampTransform precise, ITmfTimestampTransform fast,
-            int samples, long start, long step) {
-        for (int i = 0; i < samples; i++) {
-            long time = start + i * step;
-            long exp = precise.transform(time);
-            long act = fast.transform(time);
-            long err = act - exp;
-            maxError = Math.max(err, maxError);
-            minError = Math.min(err, minError);
-            assertTrue("[" + minError + "," + maxError + "]", Math.abs(err) < 3); // allow only two ns of error
-        }
-    }
-
 }

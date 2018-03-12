@@ -147,18 +147,4 @@ public class TmfTimestampTransformLinear implements ITmfTimestampTransformInvert
         return TimestampTransformFactory.createLinear(BigDecimal.ONE.divide(fAlpha, fMc), BigDecimal.valueOf(-1).multiply(fBeta).divide(fAlpha, fMc));
     }
 
-    /**
-     * @return the slope alpha
-     */
-    public BigDecimal getAlpha() {
-        return fAlpha;
-    }
-
-    /**
-     * @return the offset beta
-     */
-    public BigDecimal getBeta() {
-        return fBeta;
-    }
-
 }

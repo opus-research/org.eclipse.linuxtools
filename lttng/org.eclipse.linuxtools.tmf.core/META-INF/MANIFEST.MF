@@ -49,5 +49,4 @@ Export-Package: org.eclipse.linuxtools.internal.tmf.core;x-friends:="org.eclipse
  org.eclipse.linuxtools.tmf.core.uml2sd,
  org.eclipse.linuxtools.tmf.core.util
 Import-Package: com.google.common.base,
- com.google.common.collect,
- com.google.common.hash
+ com.google.common.collect
