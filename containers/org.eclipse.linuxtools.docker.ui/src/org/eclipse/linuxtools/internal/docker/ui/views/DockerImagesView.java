@@ -34,6 +34,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
@@ -65,7 +66,7 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
  *
  */
 public class DockerImagesView extends ViewPart implements IDockerImageListener,
-		ISelectionListener,
+		ISelectionListener, IDockerConnectionManagerListener,
 		ITabbedPropertySheetPageContributor {
 
 	public static final String VIEW_ID = "org.eclipse.linuxtools.docker.ui.dockerImagesView";
@@ -95,6 +96,8 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		// stop tracking selection changes in the Docker Explorer view (only)
 		getSite().getWorkbenchWindow().getSelectionService()
 				.removeSelectionListener(DockerExplorerView.VIEW_ID, this);
+		DockerConnectionManager.getInstance().removeConnectionManagerListener(
+				this);
 		super.dispose();
 	}
 
@@ -137,6 +140,8 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		// track selection changes in the Docker Explorer view (only)
 		getSite().getWorkbenchWindow().getSelectionService()
 				.addSelectionListener(DockerExplorerView.VIEW_ID, this);
+		DockerConnectionManager.getInstance()
+				.addConnectionManagerListener(this);
 		hookContextMenu();
 		// Look at stored preference to determine if all images should be
 		// shown or just top-level images. By default, only show
@@ -473,4 +478,31 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		refreshViewTitle();
 	}
 
+	@Override
+	public void changeEvent(int type) {
+		String currUri = null;
+		int currIndex = 0;
+		IDockerConnection[] connections = DockerConnectionManager.getInstance()
+				.getConnections();
+		if (connection != null) {
+			currUri = connection.getUri();
+		}
+		int index = 0;
+		for (int i = 0; i < connections.length; ++i) {
+			if (connections[i].getUri() != null
+					&& connections[i].getUri().equals(currUri)) {
+				index = i;
+			}
+		}
+		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
+			index = currIndex; // no change in connection displayed
+		}
+		if (connections.length > 0
+				&& type != IDockerConnectionManagerListener.REMOVE_EVENT) {
+			setConnection(connections[index]);
+		} else {
+			setConnection(null);
+		}
+	}
+	
 }
