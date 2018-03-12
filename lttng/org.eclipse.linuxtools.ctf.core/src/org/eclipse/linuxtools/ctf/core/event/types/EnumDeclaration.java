@@ -174,7 +174,7 @@ public final class EnumDeclaration extends Declaration implements ISimpleDatatyp
         public String query(long value) {
             for (LabelAndRange r : ranges) {
                 if (r.intersects(value)) {
-                    return r.getLabel();
+                    return r.fLabel;
                 }
             }
             return null;
@@ -182,19 +182,10 @@ public final class EnumDeclaration extends Declaration implements ISimpleDatatyp
 
     }
 
-    static private class LabelAndRange {
+    private class LabelAndRange {
 
         private final long low, high;
         private final String fLabel;
-
-        /**
-         * Get the label
-         *
-         * @return the label
-         */
-        public String getLabel() {
-            return fLabel;
-        }
 
         public LabelAndRange(long low, long high, String str) {
             this.low = low;
