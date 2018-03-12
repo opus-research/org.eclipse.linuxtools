@@ -27,7 +27,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.CompoundDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
@@ -88,7 +87,7 @@ public class ArrayDefinition2Test {
 
     private ArrayDefinition setUpDeclaration(IDeclaration decl,
             @NonNull List<Definition> defs) {
-        CompoundDeclaration ad = new ArrayDeclaration(0, decl);
+        ArrayDeclaration ad = new ArrayDeclaration(0, decl);
         ArrayDefinition temp = new ArrayDefinition(ad, this.trace, "Testx", defs);
         return temp;
     }
@@ -122,7 +121,7 @@ public class ArrayDefinition2Test {
      */
     @Test
     public void testArrayDefinition_baseDeclaration() {
-        CompoundDeclaration declaration = (CompoundDeclaration) charArrayFixture.getDeclaration();
+        ArrayDeclaration declaration = (ArrayDeclaration) charArrayFixture.getDeclaration();
         String fieldName = "";
 
         @SuppressWarnings("null")
@@ -136,7 +135,7 @@ public class ArrayDefinition2Test {
      */
     @Test
     public void testArrayDefinition_newDeclaration() {
-        CompoundDeclaration declaration = new ArrayDeclaration(0,
+        ArrayDeclaration declaration = new ArrayDeclaration(0,
                 new StringDeclaration());
         IDefinitionScope definitionScope = getDefinitionScope();
 
@@ -151,7 +150,7 @@ public class ArrayDefinition2Test {
      */
     @Test
     public void testGetDeclaration() {
-        CompoundDeclaration result = (CompoundDeclaration) charArrayFixture.getDeclaration();
+        ArrayDeclaration result = (ArrayDeclaration) charArrayFixture.getDeclaration();
 
         assertNotNull(result);
     }
@@ -162,7 +161,7 @@ public class ArrayDefinition2Test {
     @Test
     public void testgetElem_noDefs() {
         int i = 0;
-        IDefinition result = charArrayFixture.getDefinitions().get(i);
+        Definition result = charArrayFixture.getDefinitions().get(i);
 
         assertNotNull(result);
     }
@@ -177,7 +176,7 @@ public class ArrayDefinition2Test {
         ArrayDefinition ad = new ArrayDefinition((CompoundDeclaration) charArrayFixture.getDeclaration(), definitionScope, "test", defs);
         int j = 1;
 
-        IDefinition result = ad.getDefinitions().get(j);
+        Definition result = ad.getDefinitions().get(j);
 
         assertNotNull(result);
     }

@@ -15,13 +15,11 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
-import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
@@ -35,7 +33,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class StructDeclaration extends Declaration implements ICompositeDeclaration {
+public class StructDeclaration extends Declaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -115,19 +113,27 @@ public class StructDeclaration extends Declaration implements ICompositeDeclarat
     }
 
     /**
+     * Get the field declaration corresponding to a field name.
+     *
+     * @param fieldName
+     *            The field name
+     * @return The declaration of the field, or null if there is no such field.
      * @since 3.1
      */
-    @Override
     @Nullable
     public IDeclaration getField(String fieldName) {
         return fFieldMap.get(fieldName);
     }
 
-    @Override
+    /**
+     * Gets the field list. Very important since the map of fields does not
+     * retain the order of the fields.
+     *
+     * @return the field list.
+     * @since 3.0
+     */
     public Iterable<String> getFieldsList() {
-        @SuppressWarnings("null")
-        final @NonNull Set<String> keySet = fFieldMap.keySet();
-        return keySet;
+        return fFieldMap.keySet();
     }
 
     @Override
@@ -159,21 +165,17 @@ public class StructDeclaration extends Declaration implements ICompositeDeclarat
             String fieldName, BitBuffer input) throws CTFReaderException {
         alignRead(input);
         final Definition[] myFields = new Definition[fFieldMap.size()];
-        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldName, getFieldsList(), myFields);
-        fillStruct(input, myFields, structDefinition);
-        return structDefinition;
-    }
+        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldName, fFieldMap.keySet(), myFields);
 
-    /**
-     * @since 3.1
-     */
-    @NonNull
-    @Override
-    public StructDefinition createDefinition(@Nullable IDefinitionScope definitionScope, LexicalScope fieldScope, BitBuffer input) throws CTFReaderException {
-        alignRead(input);
-        final Definition[] myFields = new Definition[fFieldMap.size()];
-        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldScope, fieldScope.getName(), getFieldsList(), myFields);
-        fillStruct(input, myFields, structDefinition);
+        Iterator<Map.Entry<String, IDeclaration>> iter = fFieldMap.entrySet().iterator();
+        for (int i = 0; i < fFieldMap.size(); i++) {
+            Map.Entry<String, IDeclaration> entry = iter.next();
+            String name = entry.getKey();
+            if (name == null) {
+                throw new IllegalStateException();
+            }
+            myFields[i] = entry.getValue().createDefinition(structDefinition, name, input);
+        }
         return structDefinition;
     }
 
@@ -188,15 +190,6 @@ public class StructDeclaration extends Declaration implements ICompositeDeclarat
     public void addField(String name, IDeclaration declaration) {
         fFieldMap.put(name, declaration);
         fMaxAlign = Math.max(fMaxAlign, declaration.getAlignment());
-    }
-
-    @SuppressWarnings("null")
-    private void fillStruct(@NonNull BitBuffer input, final Definition[] myFields, StructDefinition structDefinition) throws CTFReaderException {
-        Iterator<Map.Entry<String, IDeclaration>> iter = fFieldMap.entrySet().iterator();
-        for (int i = 0; i < fFieldMap.size(); i++) {
-            Map.Entry<String, IDeclaration> entry = iter.next();
-            myFields[i] = entry.getValue().createDefinition(structDefinition, entry.getKey(), input);
-        }
     }
 
     @Override

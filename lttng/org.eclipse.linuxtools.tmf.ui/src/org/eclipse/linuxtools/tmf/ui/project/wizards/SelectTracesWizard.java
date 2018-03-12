@@ -56,7 +56,6 @@ public class SelectTracesWizard extends Wizard implements IImportWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(Messages.SelectTracesWizard_WindowTitle);
-        setNeedsProgressMonitor(true);
     }
 
     @Override

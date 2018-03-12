@@ -18,7 +18,9 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.CommentRemover;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata.FuncparamNodeData;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata.FunctionNodeData;
 import org.eclipse.linuxtools.systemtap.structures.TreeDefinitionNode;
@@ -35,6 +37,7 @@ import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 public final class FunctionParser extends TreeTapsetParser {
 
     private static FunctionParser parser = null;
+    private TreeNode functions;
 
     /**
      * The descriptor used for unresolvable types.
@@ -59,46 +62,51 @@ public final class FunctionParser extends TreeTapsetParser {
         super("Function Parser"); //$NON-NLS-1$
     }
 
-    /**
-     * Runs stap to collect all available tapset functions.
-     */
     @Override
-    protected IStatus runAction(IProgressMonitor monitor) {
-        addFunctions(monitor);
-        return super.runAction(monitor);
+    public synchronized TreeNode getTree() {
+        return functions;
+    }
+
+    @Override
+    public void dispose() {
+        functions.dispose();
+    }
+
+    @Override
+    protected IStatus run(IProgressMonitor monitor) {
+        boolean cancelled = runPass2Functions();
+        functions.sortTree();
+        fireUpdateEvent(); //Inform listeners that everything is done
+        return new Status(!cancelled ? IStatus.OK : IStatus.CANCEL, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
     }
 
     /**
      * This method is used to build up the list of functions that were found
-     * during the first pass of stap.
+     * during the first pass of stap.  Stap is invoked by: $stap -v -p1 -e
+     * 'probe begin{}' and parsing the output.
      *
      * FunctionTree organized as:
      *    Root->Functions->Parameters
      *
-     * @return <code>false</code> if a cancelation prevented all functions from being added;
+     * @return <code>false</code> if a cancellation prevented all probes from being added;
      * <code>true</code> otherwise.
      */
-    private boolean addFunctions(IProgressMonitor monitor) {
-        if (monitor.isCanceled()) {
-            return false;
-        }
-
+    private boolean runPass2Functions() {
         String tapsetContents = SharedParser.getInstance().getTapsetContents();
+        // Create a new function tree each time, so as to not add duplicates
+        functions = new TreeNode(null, false);
         if (tapsetContents == null) {
             // Functions are only drawn from the tapset dump, so exit if it's empty.
             return true;
         }
-
-        boolean canceled = false;
         try (Scanner st = new Scanner(tapsetContents)) {
             String filename = null;
             String scriptText = null;
 
             SharedParser sparser = SharedParser.getInstance();
             while (st.hasNextLine()) {
-                if (monitor.isCanceled()) {
-                    canceled = true;
-                    break;
+                if (isCancelRequested()) {
+                    return false;
                 }
                 String tok = st.nextLine();
                 Matcher mFilename = sparser.filePattern.matcher(tok);
@@ -121,9 +129,8 @@ public final class FunctionParser extends TreeTapsetParser {
                     }
                 }
             }
+            return true;
         }
-        tree.sortTree();
-        return !canceled;
     }
 
     private void addFunctionFromScript(String functionName, String scriptText, String scriptFilename) {
@@ -140,7 +147,7 @@ public final class FunctionParser extends TreeTapsetParser {
             TreeDefinitionNode function = new TreeDefinitionNode(
                     new FunctionNodeData(functionLine, functionType),
                     functionName, scriptFilename, true);
-            tree.add(function);
+            functions.add(function);
             addParamsFromString(mScript.group(2), function);
         }
     }

@@ -14,6 +14,9 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -55,14 +58,8 @@ public class IOStructGen {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private static final int INTEGER_BASE_16 = 16;
-    private static final int INTEGER_BASE_10 = 10;
-    private static final int INTEGER_BASE_8 = 8;
-    private static final int INTEGER_BASE_2 = 2;
-    private static final long DEFAULT_ALIGNMENT = 8;
-    private static final int DEFAULT_FLOAT_EXPONENT = 8;
-    private static final int DEFAULT_FLOAT_MANTISSA = 24;
-    private static final int DEFAULT_INT_BASE = 10;
+    private static final boolean DEBUG = false;
+
     /**
      * The trace
      */
@@ -144,6 +141,20 @@ public class IOStructGen {
     private void parseRoot(CommonTree root) throws ParseException {
 
         List<CommonTree> children = root.getChildren();
+        java.io.FileOutputStream fos = null;
+        java.io.OutputStreamWriter out = null;
+        if (DEBUG) {
+            try {
+                fos = new java.io.FileOutputStream("/tmp/astInfo.txt"); //$NON-NLS-1$
+                out = new java.io.OutputStreamWriter(fos, "UTF-8"); //$NON-NLS-1$
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                return;
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
 
         CommonTree traceNode = null;
         List<CommonTree> streams = new ArrayList<>();
@@ -156,67 +167,113 @@ public class IOStructGen {
         /* Create a new declaration scope with no parent. */
         pushScope();
 
-        for (CommonTree child : children) {
-            final int type = child.getType();
-            switch (type) {
-            case CTFParser.DECLARATION:
-                declarations.add(child);
-                break;
-            case CTFParser.TRACE:
-                if (traceNode != null) {
-                    throw new ParseException("Only one trace block is allowed"); //$NON-NLS-1$
+        try {
+            for (CommonTree child : children) {
+                final int type = child.getType();
+                if (DEBUG) {
+                    out.write(child.toString()
+                            + " -> " + type + '\n'); //$NON-NLS-1$
                 }
-                traceNode = child;
-                break;
-            case CTFParser.STREAM:
-                streams.add(child);
-                break;
-            case CTFParser.EVENT:
-                events.add(child);
-                break;
-            case CTFParser.CLOCK:
-                clocks.add(child);
-                break;
-            case CTFParser.ENV:
-                environments.add(child);
-                break;
-            case CTFParser.CALLSITE:
-                callsites.add(child);
-                break;
-            default:
-                childTypeError(child);
+                switch (type) {
+                case CTFParser.DECLARATION:
+                    declarations.add(child);
+                    break;
+                case CTFParser.TRACE:
+                    if (traceNode != null) {
+                        throw new ParseException("Only one trace block is allowed"); //$NON-NLS-1$
+                    }
+                    traceNode = child;
+                    break;
+                case CTFParser.STREAM:
+                    streams.add(child);
+                    break;
+                case CTFParser.EVENT:
+                    events.add(child);
+                    break;
+                case CTFParser.CLOCK:
+                    clocks.add(child);
+                    break;
+                case CTFParser.ENV:
+                    environments.add(child);
+                    break;
+                case CTFParser.CALLSITE:
+                    callsites.add(child);
+                    break;
+                default:
+                    childTypeError(child);
+                }
             }
-        }
-        for (CommonTree decl : declarations) {
-            parseRootDeclaration(decl);
-        }
-        if (traceNode == null) {
-            throw new ParseException("Missing trace block"); //$NON-NLS-1$
-        }
-
-        parseTrace(traceNode);
-
-        for (CommonTree environment : environments) {
-            parseEnvironment(environment);
-        }
-        for (CommonTree clock : clocks) {
-            parseClock(clock);
-        }
-        for (CommonTree callsite : callsites) {
-            parseCallsite(callsite);
-        }
-
-        if (streams.size() > 0) {
-            for (CommonTree stream : streams) {
-                parseStream(stream);
+            if (DEBUG) {
+                out.write("Declarations\n"); //$NON-NLS-1$
             }
-        } else {
-            /* Add an empty stream that will have a null id */
-            fTrace.addStream(new CTFStream(fTrace));
-        }
+            for (CommonTree decl : declarations) {
+                if (DEBUG) {
+                    out.write(decl.toString() + '\n');
+                }
+                parseRootDeclaration(decl);
+            }
+            if (traceNode == null) {
+                throw new ParseException("Missing trace block"); //$NON-NLS-1$
+            }
 
-        for (CommonTree event : events) {
-            parseEvent(event);
+            parseTrace(traceNode);
+
+            if (DEBUG) {
+                out.write("Environments\n"); //$NON-NLS-1$
+            }
+            for (CommonTree environment : environments) {
+                parseEnvironment(environment);
+            }
+            if (DEBUG) {
+                out.write("Clocks\n"); //$NON-NLS-1$
+            }
+            for (CommonTree clock : clocks) {
+                parseClock(clock);
+            }
+            if (DEBUG) {
+                out.write("Callsites\n"); //$NON-NLS-1$
+            }
+            for (CommonTree callsite : callsites) {
+                parseCallsite(callsite);
+            }
+
+            if (DEBUG) {
+                out.write("Streams\n"); //$NON-NLS-1$
+            }
+            if (streams.size() > 0) {
+                for (CommonTree stream : streams) {
+                    if (DEBUG) {
+                        try {
+                            out.write(stream.toString() + '\n');
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    parseStream(stream);
+                }
+            } else {
+                /* Add an empty stream that will have a null id */
+                fTrace.addStream(new CTFStream(fTrace));
+            }
+
+            if (DEBUG) {
+                out.write("Events\n"); //$NON-NLS-1$
+            }
+            for (CommonTree event : events) {
+                parseEvent(event);
+                if (DEBUG) {
+                    CommonTree name = (CommonTree) event.getChild(0).getChild(1).getChild(0).getChild(0);
+                    CommonTree id = (CommonTree) event.getChild(1).getChild(1).getChild(0).getChild(0);
+                    out.write("Name = " + name + " Id = " + id + '\n'); //$NON-NLS-1$ //$NON-NLS-2$
+                }
+            }
+
+            if (DEBUG) {
+                out.close();
+                fos.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         popScope();
         fHasBeenParsed = true;
@@ -225,7 +282,7 @@ public class IOStructGen {
     private void parseIncompleteRoot(CommonTree root) throws ParseException {
         List<CommonTree> children = root.getChildren();
 
-        if (!fHasBeenParsed) {
+        if (fHasBeenParsed == false) {
             throw new ParseException("You need to run generate first"); //$NON-NLS-1$
         }
         List<CommonTree> streams = new ArrayList<>();
@@ -333,14 +390,13 @@ public class IOStructGen {
         }
     }
 
-    private void parseClock(CommonTree clock) throws ParseException {
+    private void parseClock(CommonTree clock) {
         List<CommonTree> children = clock.getChildren();
         CTFClock ctfClock = new CTFClock();
         for (CommonTree child : children) {
             final String key = child.getChild(0).getChild(0).getChild(0).getText();
             final CommonTree value = (CommonTree) child.getChild(1).getChild(0).getChild(0);
             final int type = value.getType();
-            final String text = value.getText();
             switch (type) {
             case CTFParser.INTEGER:
             case CTFParser.DECIMAL_LITERAL:
@@ -356,14 +412,14 @@ public class IOStructGen {
                  */
                 Long numValue;
                 try {
-                    numValue = Long.parseLong(text);
-                } catch (NumberFormatException e) {
-                    throw new ParseException("Number conversion issue with " + text, e); //$NON-NLS-1$
+                    numValue = Long.parseLong(value.getText());
+                } catch (Exception e) {
+                    numValue = 1330938566783103277L;
                 }
                 ctfClock.addAttribute(key, numValue);
                 break;
             default:
-                ctfClock.addAttribute(key, text);
+                ctfClock.addAttribute(key, value.getText());
             }
 
         }
@@ -521,24 +577,22 @@ public class IOStructGen {
             ByteOrder byteOrder) throws ParseException {
 
         for (String s : sd.getFieldsList()) {
-            if (s != null) {
-                IDeclaration d = sd.getField(s);
+            IDeclaration d = sd.getField(s);
 
-                if (d instanceof StructDeclaration) {
-                    setAlign(parentScope, (StructDeclaration) d, byteOrder);
+            if (d instanceof StructDeclaration) {
+                setAlign(parentScope, (StructDeclaration) d, byteOrder);
 
-                } else if (d instanceof VariantDeclaration) {
-                    setAlign(parentScope, (VariantDeclaration) d, byteOrder);
-                } else if (d instanceof IntegerDeclaration) {
-                    IntegerDeclaration decl = (IntegerDeclaration) d;
-                    if (decl.getByteOrder() != byteOrder) {
-                        IntegerDeclaration newI;
-                        newI = IntegerDeclaration.createDeclaration(decl.getLength(),
-                                decl.isSigned(), decl.getBase(), byteOrder,
-                                decl.getEncoding(), decl.getClock(),
-                                decl.getAlignment());
-                        sd.getFields().put(s, newI);
-                    }
+            } else if (d instanceof VariantDeclaration) {
+                setAlign(parentScope, (VariantDeclaration) d, byteOrder);
+            } else if (d instanceof IntegerDeclaration) {
+                IntegerDeclaration decl = (IntegerDeclaration) d;
+                if (decl.getByteOrder() != byteOrder) {
+                    IntegerDeclaration newI;
+                    newI = IntegerDeclaration.createDeclaration(decl.getLength(),
+                            decl.isSigned(), decl.getBase(), byteOrder,
+                            decl.getEncoding(), decl.getClock(),
+                            decl.getAlignment());
+                    sd.getFields().put(s, newI);
                 }
             }
         }
@@ -594,9 +648,11 @@ public class IOStructGen {
             }
         }
 
-        if (stream.isIdSet() &&
-                (!fTrace.packetHeaderIsSet() || !fTrace.getPacketHeader().hasField(MetadataStrings.STREAM_ID))) {
-            throw new ParseException("Stream has an ID, but there is no stream_id field in packet header."); //$NON-NLS-1$
+        if (stream.isIdSet()) {
+            if (!fTrace.packetHeaderIsSet()
+                    || !fTrace.getPacketHeader().hasField(MetadataStrings.STREAM_ID)) {
+                throw new ParseException("Stream has an ID, but there is no stream_id field in packet header."); //$NON-NLS-1$
+            }
         }
 
         fTrace.addStream(stream);
@@ -1284,9 +1340,8 @@ public class IOStructGen {
         FloatDeclaration floatDeclaration = null;
         ByteOrder byteOrder = fTrace.getByteOrder();
         long alignment = 0;
-
-        int exponent = DEFAULT_FLOAT_EXPONENT;
-        int mantissa = DEFAULT_FLOAT_MANTISSA;
+        int exponent = 8;
+        int mantissa = 24;
 
         /* Iterate on all integer children */
         for (CommonTree child : children) {
@@ -1330,7 +1385,11 @@ public class IOStructGen {
         }
 
         if (alignment == 0) {
-            alignment = ((size % DEFAULT_ALIGNMENT) == 0) ? 1 : DEFAULT_ALIGNMENT;
+            if ((size % 8) == 0) {
+                alignment = 1;
+            } else {
+                alignment = 8;
+            }
         }
 
         floatDeclaration = new FloatDeclaration(exponent, mantissa, byteOrder, alignment);
@@ -1396,7 +1455,7 @@ public class IOStructGen {
         ByteOrder byteOrder = fTrace.getByteOrder();
         long size = 0;
         long alignment = 0;
-        int base = DEFAULT_INT_BASE;
+        int base = 10;
         @NonNull
         String clock = ""; //$NON-NLS-1$
 
@@ -1450,7 +1509,11 @@ public class IOStructGen {
         }
 
         if (alignment == 0) {
-            alignment = ((size % DEFAULT_ALIGNMENT) == 0) ? 1 : DEFAULT_ALIGNMENT;
+            if ((size % 8) == 0) {
+                alignment = 1;
+            } else {
+                alignment = 8;
+            }
         }
 
         integerDeclaration = IntegerDeclaration.createDeclaration((int) size, signed, base,
@@ -2371,7 +2434,7 @@ public class IOStructGen {
         try {
             intval = Long.decode(strval);
         } catch (NumberFormatException e) {
-            throw new ParseException("Invalid integer format: " + strval, e); //$NON-NLS-1$
+            throw new ParseException("Invalid integer format: " + strval); //$NON-NLS-1$
         }
 
         /* The rest of children are sign */
@@ -2416,7 +2479,7 @@ public class IOStructGen {
             try {
                 return UUID.fromString(uuidstr);
             } catch (IllegalArgumentException e) {
-                throw new ParseException("Invalid format for UUID", e); //$NON-NLS-1$
+                throw new ParseException("Invalid format for UUID"); //$NON-NLS-1$
             }
         }
         throw new ParseException("Invalid value for UUID"); //$NON-NLS-1$
@@ -2591,8 +2654,8 @@ public class IOStructGen {
             }
 
             long intval = parseUnaryInteger(firstChild);
-            if ((intval == INTEGER_BASE_2) || (intval == INTEGER_BASE_8) || (intval == INTEGER_BASE_10)
-                    || (intval == INTEGER_BASE_16)) {
+            if ((intval == 2) || (intval == 8) || (intval == 10)
+                    || (intval == 16)) {
                 return (int) intval;
             }
             throw new ParseException("Invalid value for base"); //$NON-NLS-1$
@@ -2604,20 +2667,20 @@ public class IOStructGen {
                     || strval.equals(MetadataStrings.DEC_CTE)
                     || strval.equals(MetadataStrings.INT_MOD)
                     || strval.equals(MetadataStrings.UNSIGNED_CTE)) {
-                return INTEGER_BASE_10;
+                return 10;
             } else if (strval.equals(MetadataStrings.HEXADECIMAL)
                     || strval.equals(MetadataStrings.HEX)
                     || strval.equals(MetadataStrings.X)
                     || strval.equals(MetadataStrings.X2)
                     || strval.equals(MetadataStrings.POINTER)) {
-                return INTEGER_BASE_16;
+                return 16;
             } else if (strval.equals(MetadataStrings.OCTAL)
                     || strval.equals(MetadataStrings.OCT)
                     || strval.equals(MetadataStrings.OCTAL_CTE)) {
-                return INTEGER_BASE_8;
+                return 8;
             } else if (strval.equals(MetadataStrings.BINARY)
                     || strval.equals(MetadataStrings.BIN)) {
-                return INTEGER_BASE_2;
+                return 2;
             } else {
                 throw new ParseException("Invalid value for base"); //$NON-NLS-1$
             }

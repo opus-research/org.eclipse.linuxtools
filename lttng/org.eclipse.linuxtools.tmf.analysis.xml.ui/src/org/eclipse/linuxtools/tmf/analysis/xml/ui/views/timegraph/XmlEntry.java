@@ -244,7 +244,7 @@ public class XmlEntry extends TimeGraphEntry implements IXmlStateSystemContainer
         }
 
         entry.setParent(this);
-        addChild(index, entry);
+        getChildren().add(index, entry);
     }
 
     /**

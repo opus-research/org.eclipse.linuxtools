@@ -19,10 +19,9 @@ import java.util.List;
  * A structure for containing extra information of SystemTap probe variables.
  * @since 3.0
  */
-public class ProbevarNodeData implements IMultiTypedNode, ICompletable {
+public class ProbevarNodeData implements IMultiTypedNode {
     static final String ID = "ProbevarNodeData"; //$NON-NLS-1$
     private String text;
-    private String name;
     private List<String> types;
 
     /**
@@ -32,11 +31,6 @@ public class ProbevarNodeData implements IMultiTypedNode, ICompletable {
     @Override
     public String toString() {
         return text;
-    }
-
-    @Override
-    public String getCompletionText() {
-        return name;
     }
 
     /**
@@ -56,10 +50,8 @@ public class ProbevarNodeData implements IMultiTypedNode, ICompletable {
         text = info.trim();
         int colonIndex = text.indexOf(':');
         if (colonIndex == -1) {
-            name = text;
             types = Collections.emptyList();
         } else {
-            name = text.substring(0, colonIndex);
             types = Arrays.asList(text.substring(colonIndex+1).split(" ")); //$NON-NLS-1$
         }
     }

@@ -210,13 +210,10 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         Long[] counts = tmp.toArray(new Long[0]);
         Arrays.sort(counts);
 
-        float outlierThreshold = 0;
-        if (!tmp.isEmpty()) {
-            // Formula for outlier (upper quartile)
-            final int q1 = (int) Math.floor(0.25 * counts.length);
-            final int q3 = (int) Math.floor(0.75 * counts.length);
-            outlierThreshold = counts[q3] + (1.5f * (counts[q3] - counts[q1]));
-        }
+        // Formula for outlier (upper quartile)
+        final int q1 = (int) Math.floor(0.25 * counts.length);
+        final int q3 = (int) Math.ceil(0.75 * counts.length);
+        final float outlierThreshold = counts[q3] + (1.5f * (counts[q3] - counts[q1]));
 
         for (int i = 0; i < lines.size(); i++) {
             try {

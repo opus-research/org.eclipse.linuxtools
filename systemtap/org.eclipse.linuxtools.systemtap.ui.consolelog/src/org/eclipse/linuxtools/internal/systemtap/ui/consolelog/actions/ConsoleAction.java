@@ -6,8 +6,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Jeff Briggs, Henry Hughes, Ryan Morse, Anithra P j
- *     Roland Grunberg
+ *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
+ *     Red Hat - Roland Grunberg, Anithra P Janakiraman
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.systemtap.ui.consolelog.actions;

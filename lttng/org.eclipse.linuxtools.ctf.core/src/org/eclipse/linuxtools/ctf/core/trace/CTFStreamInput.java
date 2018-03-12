@@ -29,7 +29,6 @@ import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
@@ -351,7 +350,7 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
 
     private void parseTracePacketHeader(StructDeclaration tracePacketHeaderDecl,
             @NonNull BitBuffer bitBuffer) throws CTFReaderException {
-        StructDefinition tracePacketHeaderDef = tracePacketHeaderDecl.createDefinition(fStream.getTrace(), LexicalScope.TRACE_PACKET_HEADER, bitBuffer);
+        StructDefinition tracePacketHeaderDef = tracePacketHeaderDecl.createDefinition(fStream.getTrace(), LexicalScope.TRACE_PACKET_HEADER.getName(), bitBuffer);
 
         /*
          * Check the CTF magic number
@@ -406,11 +405,11 @@ public class CTFStreamInput implements IDefinitionScope, AutoCloseable {
     private void parsePacketContext(long fileSizeBytes,
             StructDeclaration streamPacketContextDecl, @NonNull BitBuffer bitBuffer,
             StreamInputPacketIndexEntry packetIndex) throws CTFReaderException {
-        StructDefinition streamPacketContextDef = streamPacketContextDecl.createDefinition(this, LexicalScope.STREAM_PACKET_CONTEXT, bitBuffer);
+        StructDefinition streamPacketContextDef = streamPacketContextDecl.createDefinition(null, LexicalScope.STREAM_PACKET_CONTEXT.getName(), bitBuffer);
 
         for (String field : streamPacketContextDef.getDeclaration()
                 .getFieldsList()) {
-            IDefinition id = streamPacketContextDef.lookupDefinition(field);
+            Definition id = streamPacketContextDef.lookupDefinition(field);
             if (id instanceof IntegerDefinition) {
                 packetIndex.addAttribute(field,
                         ((IntegerDefinition) id).getValue());

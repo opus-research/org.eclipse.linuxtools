@@ -21,7 +21,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
@@ -85,7 +84,7 @@ public class CTFEventFieldTest {
             byb.put((byte) i);
         }
         BitBuffer bb = new BitBuffer(byb);
-        IDefinition fieldDef = sd.createDefinition(structDef, "fff-fffield", bb);
+        Definition fieldDef = sd.createDefinition(structDef, "fff-fffield", bb);
 
         assertNotNull(fieldDef);
     }
@@ -108,7 +107,7 @@ public class CTFEventFieldTest {
         final StringDeclaration elemType = new StringDeclaration();
         byte[] bytes = { 'T', 'e', 's', 't', '\0' };
         ByteBuffer bb = testMemory(ByteBuffer.wrap(bytes));
-        IDefinition fieldDef = elemType.createDefinition(null, fieldName, new BitBuffer(bb));
+        Definition fieldDef = elemType.createDefinition(null, fieldName, new BitBuffer(bb));
 
         assertNotNull(fieldDef);
     }

@@ -114,20 +114,16 @@ public class Command implements Runnable {
     /**
      * Starts the <code>Thread</code> that the new <code>Process</code> will run in.
      * This must be called in order to get the process to start running.
-     * Note that this method only takes effect the first time it is called.
      * @throws CoreException
      */
     public void start() throws CoreException {
-        if (started || stopped) {
-            return;
-        }
         IStatus status = init();
         if (status.isOK()) {
             Thread t = new Thread(this, cmd[0]);
             t.start();
             started = true;
         } else {
-            cleanUpAfterStop();
+            stop();
             returnVal = Integer.MIN_VALUE;
             throw new CoreException(status);
         }
@@ -182,23 +178,16 @@ public class Command implements Runnable {
         inputGobbler.start();
         try {
             process.waitFor();
-            cleanUpAfterStop();
-        } catch (InterruptedException e) {
-            // This thread was interrupted while waiting for
-            // the process to exit. Destroy the process just
-            // to make sure it exits.
-            stop();
-        }
+        } catch (InterruptedException e) {}
+        stop();
     }
 
     /**
-     * Performs cleanup operations for when the process ends:
-     * Stops the <code>StreamGobblers</code> from monitering
-     * the dead process and unregisters the StreamListener.
-     * Also wakes up any threads waiting on this command.
-     * @since 3.1
+     * Stops the process from running and stops the <code>StreamGobblers</code> from monitering
+     * the dead process and unregisters the StreamListener. Also wakes up any threads waiting
+     * on this command.
      */
-    protected synchronized void cleanUpAfterStop() {
+    public synchronized void stop() {
         if (!stopped) {
             if (errorGobbler != null) {
                 errorGobbler.stop();
@@ -206,21 +195,19 @@ public class Command implements Runnable {
             if (inputGobbler != null) {
                 inputGobbler.stop();
             }
+            try {
+                if (process != null) {
+                    process.waitFor();
+                }
+            } catch (InterruptedException e) {
+                // This thread was interrupted while waiting for
+                // the process to exit. Destroy the process just
+                // to make sure it exits.
+                process.destroy();
+            }
             removeInputStreamListener(logger);
             stopped = true;
             notifyAll(); // Wake up threads waiting for this command to stop.
-        }
-    }
-
-    /**
-     * Stops the process from running and performs post-stop cleanup if necessary.
-     */
-    public synchronized void stop() {
-        if (!stopped) {
-            if (process != null) {
-                process.destroy();
-            }
-            cleanUpAfterStop();
         }
     }
 
@@ -324,15 +311,12 @@ public class Command implements Runnable {
     public synchronized void dispose() {
         if (!disposed) {
             stop();
+            disposed = true;
 
-            if (inputListeners != null) {
-                inputListeners.clear();
-            }
+            inputListeners.clear();
+            errorListeners.clear();
+
             inputListeners = null;
-
-            if (errorListeners != null) {
-                errorListeners.clear();
-            }
             errorListeners = null;
 
             if (inputGobbler != null) {
@@ -344,10 +328,7 @@ public class Command implements Runnable {
                 errorGobbler.dispose();
             }
             errorGobbler = null;
-
             logger.dispose();
-            process = null;
-            disposed = true;
         }
     }
 

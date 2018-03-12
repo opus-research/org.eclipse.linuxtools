@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
-import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -37,7 +36,7 @@ import com.google.common.collect.ImmutableMap.Builder;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public final class StructDefinition extends ScopedDefinition implements ICompositeDefinition {
+public final class StructDefinition extends ScopedDefinition {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -101,36 +100,7 @@ public final class StructDefinition extends ScopedDefinition implements IComposi
         super(declaration, definitionScope, structFieldName);
         fFieldNames = ImmutableList.copyOf(fieldNames);
         fDefinitions = definitions;
-        if (fFieldNames.isEmpty()) {
-            fDefinitionsMap = Collections.EMPTY_MAP;
-        }
-    }
-
-    /**
-     * Constructor This one takes the scope and thus speeds up definition
-     * creation
-     *
-     * @param declaration
-     *            the parent declaration
-     * @param definitionScope
-     *            the parent scope
-     * @param scope
-     *            the scope of this variable
-     * @param structFieldName
-     *            the field name
-     * @param fieldNames
-     *            the list of fields
-     * @param definitions
-     *            the definitions
-     * @since 3.1
-     */
-    public StructDefinition(@NonNull StructDeclaration declaration,
-            IDefinitionScope definitionScope, @NonNull LexicalScope scope,
-            @NonNull String structFieldName, @NonNull Iterable<String> fieldNames, Definition[] definitions) {
-        super(declaration, definitionScope, structFieldName, scope);
-        fFieldNames = ImmutableList.copyOf(fieldNames);
-        fDefinitions = definitions;
-        if (fFieldNames.isEmpty()) {
+        if (fFieldNames == null) {
             fDefinitionsMap = Collections.EMPTY_MAP;
         }
     }
@@ -139,7 +109,14 @@ public final class StructDefinition extends ScopedDefinition implements IComposi
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
 
-    @Override
+    /**
+     * Gets the definition of the field
+     *
+     * @param fieldName
+     *            the fieldname
+     * @return The definitions of all the fields
+     * @since 3.0
+     */
     public Definition getDefinition(String fieldName) {
         if (fDefinitionsMap == null) {
             /* Build the definitions map */
@@ -151,10 +128,16 @@ public final class StructDefinition extends ScopedDefinition implements IComposi
             }
             fDefinitionsMap = mapBuilder.build();
         }
+
         return fDefinitionsMap.get(fieldName);
     }
 
-    @Override
+    /**
+     * Gets an array of the field names
+     *
+     * @return the field names array
+     * @since 3.0
+     */
     public List<String> getFieldNames() {
         return fFieldNames;
     }
