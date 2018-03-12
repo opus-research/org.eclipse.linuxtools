@@ -29,7 +29,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.io.BufferedRandomAccessFile;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TraceValidationStatus;
 import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfPersistentlyIndexable;
@@ -51,7 +50,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
  *
  * @since 3.0
  */
-public abstract class TextTrace<T extends TextTraceEvent> extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable {
+public abstract class TextTrace<T extends TextTraceEvent> extends TmfTrace implements ITmfPersistentlyIndexable {
 
     private static final TmfLongLocation NULL_LOCATION = new TmfLongLocation(-1L);
     private static final int MAX_LINES = 100;
@@ -107,6 +106,7 @@ public abstract class TextTrace<T extends TextTraceEvent> extends TmfTrace imple
         return new TraceValidationStatus(confidence, Activator.PLUGIN_ID);
 
     }
+
     @Override
     public void initTrace(IResource resource, String path, Class<? extends ITmfEvent> type) throws TmfTraceException {
         super.initTrace(resource, path, type);
@@ -317,7 +317,7 @@ public abstract class TextTrace<T extends TextTraceEvent> extends TmfTrace imple
      * @return The string without quotes
      */
     protected static String replaceQuotes(String input) {
-        String out = input.replaceAll("^\"|(\"\\s*)$", "");  //$NON-NLS-1$//$NON-NLS-2$
+        String out = input.replaceAll("^\"|(\"\\s*)$", ""); //$NON-NLS-1$//$NON-NLS-2$
         return out;
     }
 
@@ -329,7 +329,7 @@ public abstract class TextTrace<T extends TextTraceEvent> extends TmfTrace imple
      * @return The string without brackets
      */
     protected static String replaceBrackets(String input) {
-        String out = input.replaceAll("^\\{|(\\}\\s*)$", "");  //$NON-NLS-1$//$NON-NLS-2$
+        String out = input.replaceAll("^\\{|(\\}\\s*)$", ""); //$NON-NLS-1$//$NON-NLS-2$
         return out;
     }
 
