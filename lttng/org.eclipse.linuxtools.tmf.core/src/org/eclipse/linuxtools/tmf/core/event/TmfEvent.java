@@ -15,6 +15,7 @@
 package org.eclipse.linuxtools.tmf.core.event;
 
 import org.eclipse.core.runtime.PlatformObject;
+import org.eclipse.linuxtools.tmf.core.event.collapse.ITmfCollapsibleEvent;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -30,7 +31,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @see ITmfEventField
  * @see ITmfTrace
  */
-public class TmfEvent extends PlatformObject implements ITmfEvent2 {
+public class TmfEvent extends PlatformObject implements ITmfEvent, ITmfCollapsibleEvent {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -158,14 +159,6 @@ public class TmfEvent extends PlatformObject implements ITmfEvent2 {
         return fReference;
     }
 
-    /**
-     * @since 3.1
-     */
-    @Override
-    public boolean isCollapsibleWith(ITmfEvent2 otherEvent) {
-        return false;
-    }
-
     // ------------------------------------------------------------------------
     // Object
     // ------------------------------------------------------------------------
@@ -252,6 +245,14 @@ public class TmfEvent extends PlatformObject implements ITmfEvent2 {
                 + ", fSource=" + getSource() + ", fType=" + getType()
                 + ", fContent=" + getContent() + ", fReference=" + getReference()
                 + "]";
+    }
+
+    /**
+     * @since 3.1
+     */
+    @Override
+    public boolean isCollapsibleWith(ITmfEvent otherEvent) {
+        return false;
     }
 
 }

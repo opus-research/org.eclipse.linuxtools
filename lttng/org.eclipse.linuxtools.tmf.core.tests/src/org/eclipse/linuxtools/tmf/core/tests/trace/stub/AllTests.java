@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Ericsson
+ * Copyright (c) 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,20 +7,20 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Bernd Hufmann - Initial API and implementation
+ *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.tmf.core.tests.filter;
+package org.eclipse.linuxtools.tmf.core.tests.trace.stub;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Requests tests
+ * Unit tests for the development trace package.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    TmfCollapseFilterTest.class,
+        XmlStubTraceTest.class
 })
 public class AllTests {
 
