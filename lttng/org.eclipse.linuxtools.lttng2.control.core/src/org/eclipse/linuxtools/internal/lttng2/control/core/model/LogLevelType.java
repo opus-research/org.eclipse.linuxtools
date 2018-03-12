@@ -11,6 +11,8 @@
  *********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.core.model;
 
+import java.security.InvalidParameterException;
+
 /**
  * <p>
  * Type of log Level enumeration.
@@ -84,7 +86,7 @@ public enum LogLevelType {
      */
     public static LogLevelType valueOfString(String name) {
         if (name == null) {
-            throw new NullPointerException();
+            throw new InvalidParameterException();
         }
         for (LogLevelType lltype : LogLevelType.values()) {
             boolean isEqual = lltype.fShortName.equalsIgnoreCase(name) || lltype.fMiName.equalsIgnoreCase(name);
@@ -94,7 +96,6 @@ public enum LogLevelType {
         }
 
         // No match
-        // Should this throw and exception or log it to the activator ?
         return LogLevelType.LOGLEVEL_NONE;
     }
 }

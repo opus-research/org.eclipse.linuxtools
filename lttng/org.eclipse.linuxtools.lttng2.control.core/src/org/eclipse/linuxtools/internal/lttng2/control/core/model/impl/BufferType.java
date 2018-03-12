@@ -61,9 +61,11 @@ public enum BufferType {
 
     /**
      * Private constructor
-     * @param name the name of state
+     *
+     * @param name
+     *            the name of state
      */
-    private BufferType(String name, String miName ) {
+    private BufferType(String name, String miName) {
         fInName = name;
         fInMiName = miName;
     }
@@ -84,28 +86,31 @@ public enum BufferType {
     }
 
     /**
-     * @return mi buffer name
+     * @return machine interface buffer name
      */
     public String getInMiName() {
         return fInMiName;
     }
 
-    /// ------------------------------------------------------------------------
+    // /
+    // ------------------------------------------------------------------------
     // Utility function
     // -------------------------------------------------------------------------
     /**
-     * @param miName the string representation of the type
+     * @param name
+     *            the string representation of the type
      * @return enum BufferType of the corresponding type
      */
-    public static BufferType valueOfMi(String miName){
-        if (miName == null) {
-            throw new NullPointerException();
+    public static BufferType valueOfString(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException();
         }
         for (BufferType bufferType : BufferType.values()) {
-            if (bufferType.getInMiName().equalsIgnoreCase(miName)) {
+            boolean isEqual = bufferType.getInName().equalsIgnoreCase(name) || bufferType.getInMiName().equalsIgnoreCase(name);
+            if (isEqual) {
                 return bufferType;
             }
         }
-        throw new IllegalArgumentException();
+        return BUFFER_TYPE_UNKNOWN;
     }
 }

@@ -63,10 +63,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * <p>
  * Service for sending LTTng trace control commands to remote host via machine
  * interface mode.
- * </p>
  *
  * @author Jonathan Rajotte
  */
@@ -76,9 +74,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final DocumentBuilderFactory fDocBuilderFactory;
     private final DocumentBuilder fDocumentBuilder;
-    private final SchemaFactory fSchemaFactory;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -98,20 +94,20 @@ public class LTTngControlServiceMI extends LTTngControlService {
     public LTTngControlServiceMI(ICommandShell shell, URL xsdUrl) throws ExecutionException {
         super(shell);
 
-        fDocBuilderFactory = DocumentBuilderFactory.newInstance();
-        fDocBuilderFactory.setValidating(false);
+        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+        docBuilderFactory.setValidating(false);
 
         // Schema factory for validation
-        fSchemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
         try {
-            fDocBuilderFactory.setSchema(fSchemaFactory.newSchema(xsdUrl));
+            docBuilderFactory.setSchema(schemaFactory.newSchema(xsdUrl));
         } catch (SAXException e) {
             throw new ExecutionException(Messages.TraceControl_InvalidSchemaError, e);
         }
 
         try {
-            fDocumentBuilder = fDocBuilderFactory.newDocumentBuilder();
+            fDocumentBuilder = docBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             throw new ExecutionException(Messages.TraceControl_XmlDocumentBuilderError, e);
         }
@@ -261,7 +257,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
      * @throws ExecutionException
      */
     private void parseSession(ISessionInfo sessionInfo, Node rawSession) throws ExecutionException {
-        if (!rawSession.getNodeName().equalsIgnoreCase(MIStrings.SESSION)){
+        if (!rawSession.getNodeName().equalsIgnoreCase(MIStrings.SESSION)) {
             throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
         }
         NodeList rawSessionInfos = rawSession.getChildNodes();
@@ -275,7 +271,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 sessionInfo.setSessionPath(rawInfo.getTextContent());
                 break;
             case MIStrings.ENABLED:
-                sessionInfo.setSessionState(Boolean.parseBoolean(rawInfo.getTextContent()));
+                sessionInfo.setSessionState(rawInfo.getTextContent());
                 break;
             case MIStrings.SNAPSHOT_MODE:
                 if (rawInfo.getTextContent().equals(LTTngControlServiceConstants.TRUE_NUMERICAL)) {
@@ -316,7 +312,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
         // Get the type
         Node rawType = getFirstOf(rawDomain.getChildNodes(), MIStrings.TYPE);
         if (rawType == null) {
-            throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+            throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
         }
         String rawTypeString = rawType.getTextContent().toLowerCase();
         TraceDomainType domainType = TraceDomainType.valueOfString(rawTypeString);
@@ -331,12 +327,15 @@ public class LTTngControlServiceMI extends LTTngControlService {
             break;
         case JUL:
             /**
-             * TODO: Support for JUL
-             * JUL substructure and semantic is not the same as a regular UST or Kernel Domain
-             * There is no channel under JUL domain only events.
-             * The channel is activated in UST Channel
+             * TODO: Support for JUL JUL substructure and semantic is not the
+             * same as a regular UST or Kernel Domain There is no channel under
+             * JUL domain only events. The channel is activated in UST Channel
              */
             domain = new DomainInfo(Messages.TraceControl_JULDomainDisplayName);
+            domain.setIsKernel(false);
+            break;
+        case UNKNOWN:
+            domain = new DomainInfo(Messages.TraceControl_UnknownDomainDisplayName);
             domain.setIsKernel(false);
             break;
         default:
@@ -348,7 +347,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             Node rawInfo = rawInfos.item(i);
             switch (rawInfo.getNodeName()) {
             case MIStrings.BUFFER_TYPE:
-                BufferType bufferType = BufferType.valueOfMi(rawInfo.getTextContent());
+                BufferType bufferType = BufferType.valueOfString(rawInfo.getTextContent());
                 domain.setBufferType(bufferType);
                 break;
             case MIStrings.CHANNELS:
@@ -439,9 +438,11 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public ISnapshotInfo getSnapshotInfo(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        // TODO A session can have multiple snapshot output. This need to be supported in the future.
-        //      Currently the SessionInfo object does not support multiple snashot output.
-        //      For now only keep the last one.
+        // TODO A session can have multiple snapshot output. This need to be
+        // supported in the future.
+        // Currently the SessionInfo object does not support multiple snashot
+        // output.
+        // For now only keep the last one.
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_SNAPSHOT_OUTPUT, LTTngControlServiceConstants.OPTION_SESSION, sessionName);
         ICommandResult result = executeCommand(command.toString(), monitor);
         Document doc = getDocumentFromStrings(result.getOutput());
@@ -452,20 +453,20 @@ public class LTTngControlServiceMI extends LTTngControlService {
         for (int i = 0; i < rawSnapshotsOutputs.getLength(); i++) {
             NodeList rawSnapshotOutput = rawSnapshotsOutputs.item(i).getChildNodes();
             for (int j = 0; j < rawSnapshotOutput.getLength(); j++) {
-               Node rawInfo = rawSnapshotOutput.item(j);
-               switch (rawInfo.getNodeName()) {
-            case MIStrings.ID:
-                snapshotInfo.setId(Integer.parseInt(rawInfo.getTextContent()));
-                break;
-            case MIStrings.NAME:
-                snapshotInfo.setName(rawInfo.getTextContent());
-                break;
-            case MIStrings.SNAPSHOT_CTRL_URL:
-                snapshotInfo.setSnapshotPath(rawInfo.getTextContent());
-                break;
-            default:
-                break;
-            }
+                Node rawInfo = rawSnapshotOutput.item(j);
+                switch (rawInfo.getNodeName()) {
+                case MIStrings.ID:
+                    snapshotInfo.setId(Integer.parseInt(rawInfo.getTextContent()));
+                    break;
+                case MIStrings.NAME:
+                    snapshotInfo.setName(rawInfo.getTextContent());
+                    break;
+                case MIStrings.SNAPSHOT_CTRL_URL:
+                    snapshotInfo.setSnapshotPath(rawInfo.getTextContent());
+                    break;
+                default:
+                    break;
+                }
             }
         }
 
@@ -599,9 +600,9 @@ public class LTTngControlServiceMI extends LTTngControlService {
         NodeList sessions = document.getElementsByTagName(MIStrings.SESSION);
 
         // Number of session should be equal to 1
-        if (sessions.getLength() != 1 ) {
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n"  //$NON-NLS-1$//$NON-NLS-2$
-                    + NLS.bind(Messages.TraceControl_UnexpectedNumberOfElementError, MIStrings.SESSION ) + " " + sessions.getLength()); //$NON-NLS-1$
+        if (sessions.getLength() != 1) {
+            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" //$NON-NLS-1$//$NON-NLS-2$
+                    + NLS.bind(Messages.TraceControl_UnexpectedNumberOfElementError, MIStrings.SESSION) + " " + sessions.getLength()); //$NON-NLS-1$
         }
 
         // Fetch a session from output
@@ -665,9 +666,9 @@ public class LTTngControlServiceMI extends LTTngControlService {
         NodeList sessions = document.getElementsByTagName(MIStrings.SESSION);
 
         // Number of session should be equal to 1
-        if (sessions.getLength() != 1 ) {
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n"  //$NON-NLS-1$//$NON-NLS-2$
-                    + NLS.bind(Messages.TraceControl_UnexpectedNumberOfElementError, MIStrings.SESSION ) + " " + sessions.getLength()); //$NON-NLS-1$
+        if (sessions.getLength() != 1) {
+            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" //$NON-NLS-1$//$NON-NLS-2$
+                    + NLS.bind(Messages.TraceControl_UnexpectedNumberOfElementError, MIStrings.SESSION) + " " + sessions.getLength()); //$NON-NLS-1$
         }
 
         // Fetch a session from output
@@ -703,11 +704,13 @@ public class LTTngControlServiceMI extends LTTngControlService {
             }
         }
 
-        // When using controlUrl and dataUrl the full session path is not known yet
+        // When using controlUrl and dataUrl the full session path is not known
+        // yet
         // and will be set later on when listing the session
 
         return sessionInfo;
     }
+
     @Override
     public void destroySession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
         String newName = formatParameter(sessionName);
@@ -740,13 +743,85 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
         Node rawSessionName = getFirstOf(sessions.item(0).getChildNodes(), MIStrings.NAME);
         if (rawSessionName == null) {
-            throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+            throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
         }
 
         // Validity check
         if (!rawSessionName.getTextContent().equals(sessionName)) {
             throw new ExecutionException(NLS.bind(Messages.TraceControl_UnexpectedValueError, rawSessionName.getTextContent(), sessionName));
         }
+    }
+
+    @Override
+    public void enableChannels(String sessionName, List<String> channelNames, boolean isKernel, IChannelInfo info, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void disableChannels(String sessionName, List<String> channelNames, boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void enableEvents(String sessionName, String channelName, List<String> eventNames, boolean isKernel, String filterExpression, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void enableSyscalls(String sessionName, String channelName, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void enableProbe(String sessionName, String channelName, String eventName, boolean isFunction, String probe, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void enableLogLevel(String sessionName, String channelName, String eventName, LogLevelType logLevelType, TraceLogLevel level, String filterExpression, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void disableEvent(String sessionName, String channelName, List<String> eventNames, boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public List<String> getContextList(IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void addContexts(String sessionName, String channelName, String eventName, boolean isKernel, List<String> contexts, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void calibrate(boolean isKernel, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void recordSnapshot(String sessionName, IProgressMonitor monitor) throws ExecutionException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void runCommands(IProgressMonitor monitor, List<String> commands) throws ExecutionException {
+        // TODO Auto-generated method stub
+
     }
 
     /**
@@ -782,7 +857,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             if (xmlBaseEvents.item(i).getNodeName().equalsIgnoreCase(MIStrings.EVENT)) {
                 Node rawName = getFirstOf(rawInfos, MIStrings.NAME);
                 if (rawName == null) {
-                    throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+                    throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                 }
                 eventInfo = new BaseEventInfo(rawName.getTextContent());
 
@@ -827,7 +902,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             if (xmlEvents.item(i).getNodeName().equalsIgnoreCase(MIStrings.EVENT)) {
                 Node rawName = getFirstOf(rawInfos, MIStrings.NAME);
                 if (rawName == null) {
-                    throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+                    throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                 }
 
                 eventInfo = new EventInfo(rawName.getTextContent());
@@ -852,12 +927,12 @@ public class LTTngControlServiceMI extends LTTngControlService {
                         // TODO
                         // See bug 334 http://bugs.lttng.org/issues/334 from
                         // LTTng
-                        // For now we emulate the non-mi behavior and simply put
+                        // For now we emulate the a behavior, and simply put
                         // "with filter"
                         eventInfo.setFilterExpression("with filter"); //$NON-NLS-1$
                         break;
                     case MIStrings.EXCLUSION:
-                        // TODO: Currently not supported by tmf
+                        // TODO:Currently not supported by tmf
                         // ExclusionS element is ignored
                         break;
                     default:
@@ -872,7 +947,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                     // get attributes
                     Node rawAttributes = getFirstOf(rawInfos, MIStrings.ATTRIBUTES);
                     if (rawAttributes == null) {
-                        throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+                        throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                     }
 
                     Node rawDataNode = null;
@@ -936,7 +1011,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 // Get name
                 Node name = getFirstOf(field.getChildNodes(), MIStrings.NAME);
                 if (name == null) {
-                    throw new ExecutionException(Messages.TraceControl_MiMissingRequieredError);
+                    throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                 }
                 fieldInfo = new FieldInfo(name.getTextContent());
 
