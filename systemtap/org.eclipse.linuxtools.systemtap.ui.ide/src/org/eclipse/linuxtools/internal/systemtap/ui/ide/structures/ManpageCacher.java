@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.linuxtools.internal.profiling.launch.ui.rdt.proxy.RDTConnection;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.man.parser.ManPage;
@@ -76,9 +77,11 @@ public class ManpageCacher {
                 manpage = new ManPage(fullElement);
             } else {
                 p = ConsoleLogPlugin.getDefault().getPreferenceStore();
-                String user = p.getString(ConsoleLogPreferenceConstants.SCP_USER);
-                String host = p.getString(ConsoleLogPreferenceConstants.HOST_NAME);
-                String password = p.getString(ConsoleLogPreferenceConstants.SCP_PASSWORD);
+                String connName = p.getString(ConsoleLogPreferenceConstants.CONNECTION_NAME);
+                String user = RDTConnection.getInstance().getConnectionUser(connName);
+                String host = RDTConnection.getInstance().getConnectionHost(connName);
+                String password = RDTConnection.getInstance().getConnectionPasswd(connName);
+
                 manpage = new ManPage(fullElement, user, host, password);
             }
             documentation = manpage.getStrippedTextPage().toString();

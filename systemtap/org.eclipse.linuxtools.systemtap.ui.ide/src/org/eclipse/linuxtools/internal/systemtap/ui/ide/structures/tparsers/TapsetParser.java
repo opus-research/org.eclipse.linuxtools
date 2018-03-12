@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.linuxtools.internal.profiling.launch.ui.rdt.proxy.RDTConnection;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.EnvironmentVariablesPreferencePage;
@@ -78,10 +79,14 @@ public abstract class TapsetParser extends Job {
         case IStatus.ERROR:
             if (ps.getBoolean(IDEPreferenceConstants.P_REMOTE_PROBES)) {
                 IPreferenceStore p = ConsoleLogPlugin.getDefault().getPreferenceStore();
+                String connName = p.getString(ConsoleLogPreferenceConstants.CONNECTION_NAME);
+                String host = RDTConnection.getInstance().getConnectionHost(connName);
+                String user = RDTConnection.getInstance().getConnectionUser(connName);
+
                 message = MessageFormat.format(
                         Messages.TapsetParser_ErrorCannotRunRemoteStap,
-                        p.getString(ConsoleLogPreferenceConstants.SCP_USER),
-                        p.getString(ConsoleLogPreferenceConstants.HOST_NAME));
+                        user,
+                        host);
             } else {
                 message = Messages.TapsetParser_ErrorCannotRunStap;
             }
@@ -225,10 +230,11 @@ public abstract class TapsetParser extends Job {
         StringOutputStream strErr = new StringOutputStream();
 
         IPreferenceStore p = ConsoleLogPlugin.getDefault().getPreferenceStore();
-        String user = p.getString(ConsoleLogPreferenceConstants.SCP_USER);
-        String host = p.getString(ConsoleLogPreferenceConstants.HOST_NAME);
-        String password = p.getString(ConsoleLogPreferenceConstants.SCP_PASSWORD);
-        int port = p.getInt(ConsoleLogPreferenceConstants.PORT_NUMBER);
+        String connName = p.getString(ConsoleLogPreferenceConstants.CONNECTION_NAME);
+        String host = RDTConnection.getInstance().getConnectionHost(connName);
+        String user = RDTConnection.getInstance().getConnectionUser(connName);
+        int port = RDTConnection.getInstance().getConnectionPort(connName);
+        String password = RDTConnection.getInstance().getConnectionPasswd(connName);
 
         Channel channel = LinuxtoolsProcessFactory.execRemoteAndWait(args, str, strErr, user, host, password,
                 port, EnvironmentVariablesPreferencePage.getEnvironmentVariables());
