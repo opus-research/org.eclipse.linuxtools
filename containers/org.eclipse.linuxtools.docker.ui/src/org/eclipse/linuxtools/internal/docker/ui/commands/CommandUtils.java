@@ -88,7 +88,7 @@ public class CommandUtils {
 					.getInstance().getConnections();
 			if (connections != null && connections.length > 0) {
 				for (int i = 0; i < connections.length; ++i) {
-					if (connections[i].isOpen())
+					if (connections[i].isActive())
 						return connections[i];
 				}
 			}
