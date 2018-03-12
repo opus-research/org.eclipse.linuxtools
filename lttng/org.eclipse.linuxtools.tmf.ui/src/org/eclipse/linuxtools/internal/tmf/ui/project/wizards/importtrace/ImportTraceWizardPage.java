@@ -152,24 +152,24 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
      * detection will occur instead of setting a specific trace type when
      * importing the traces.
      */
-    public static final String TRACE_TYPE_AUTO_DETECT = Messages.ImportTraceWizard_AutoDetection;
+    protected static final String TRACE_TYPE_AUTO_DETECT = Messages.ImportTraceWizard_AutoDetection;
 
     /**
      * Preserve the folder structure of the import traces.
      */
-    public static final int OPTION_PRESERVE_FOLDER_STRUCTURE = 1 << 1;
+    protected static final int OPTION_PRESERVE_FOLDER_STRUCTURE = 1 << 1;
     /**
      * Create links to the trace files instead of copies.
      */
-    public static final int OPTION_CREATE_LINKS_IN_WORKSPACE = 1 << 2;
+    protected static final int OPTION_CREATE_LINKS_IN_WORKSPACE = 1 << 2;
     /**
      * Import files that were not recognized as the selected trace type.
      */
-    public static final int OPTION_IMPORT_UNRECOGNIZED_TRACES = 1 << 3;
+    protected static final int OPTION_IMPORT_UNRECOGNIZED_TRACES = 1 << 3;
     /**
      * Overwrite existing resources without prompting.
      */
-    public static final int OPTION_OVERWRITE_EXISTING_RESOURCES = 1 << 4;
+    protected static final int OPTION_OVERWRITE_EXISTING_RESOURCES = 1 << 4;
 
     // ------------------------------------------------------------------------
     // Attributes
