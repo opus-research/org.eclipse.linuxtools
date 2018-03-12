@@ -129,10 +129,6 @@ public class SWTUtils {
 		final SWTBotTree tree = viewBot.bot().tree();
 		return getTreeItem(tree.getAllItems(), path);
 	}
-	
-	public static SWTBotTreeItem getTreeItem(final SWTBotTreeItem parentTreeItem, final String path) {
-		return parentTreeItem.getNode(path);
-	}
 
 	private static SWTBotTreeItem getTreeItem(final SWTBotTreeItem[] treeItems, final String[] path) {
 		final SWTBotTreeItem swtBotTreeItem = Stream.of(treeItems).filter(item -> item.getText().startsWith(path[0])).findFirst().get();
@@ -144,5 +140,4 @@ public class SWTUtils {
 		return swtBotTreeItem;
 	}
 
-	
 }

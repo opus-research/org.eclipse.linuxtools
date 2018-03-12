@@ -11,8 +11,8 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.testutils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
@@ -21,7 +21,6 @@ import org.mockito.Mockito;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerException;
 import com.spotify.docker.client.messages.Container;
-import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.Image;
 
 /**
@@ -44,8 +43,6 @@ public class MockDockerClientFactory {
 		
 		private final DockerClient dockerClient;
 		
-		private final List<Container> containers = new ArrayList<>();
-		
 		private Builder() {
 			this.dockerClient = Mockito.mock(DockerClient.class);
 		}
@@ -59,33 +56,25 @@ public class MockDockerClientFactory {
 			return this;
 		}
 		
-		
-		public Builder container(final Container container) {
-			this.containers.add(container);
-			return this;
+		public Builder noImages() {
+			return images(Collections.emptyList());
 		}
-
-		public Builder container(final Container container, final ContainerInfo containerInfo)  {
-			this.containers.add(container);
+		
+		public DockerClient containers(final List<Container> containers) {
 			try {
-				Mockito.when(this.dockerClient.inspectContainer(container.id())).thenReturn(containerInfo);
+				Mockito.when(dockerClient.listContainers(Mockito.any())).thenReturn(containers);
 			} catch (DockerException | InterruptedException e) {
 				// rest assured, nothing will happen while mocking the DockerClient
 			}
-			return this;
+			return this.dockerClient;
 		}
 		
-		public DockerClient build() {
-			try {
-				Mockito.when(this.dockerClient.listContainers(Mockito.any())).thenReturn(this.containers);
-			} catch (DockerException | InterruptedException e) {
-				// nothing may happen when mocking the method call 
-			}
-			return this.dockerClient;
+		public DockerClient containers(final Container... containers) {
+			return containers(Arrays.asList(containers));
 		}
-
+		
 		public DockerClient noContainers() {
-			return this.dockerClient;
+			return containers(Collections.emptyList());
 		}
 		
 	}
