@@ -31,7 +31,6 @@ import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
 import org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerContainersView;
-import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProvider.DockerContainersCategory;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProvider.DockerImagesCategory;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
@@ -84,9 +83,6 @@ public class CommandUtils {
 				return ((IDockerContainer) firstElement).getConnection();
 			} else if (firstElement instanceof IDockerImage) {
 				return ((IDockerImage) firstElement).getConnection();
-			} else if (firstElement instanceof DockerContainersCategory) {
-				return ((DockerContainersCategory) firstElement)
-						.getConnection();
 			} else if (firstElement instanceof DockerImagesCategory) {
 				return ((DockerImagesCategory) firstElement).getConnection();
 			}
