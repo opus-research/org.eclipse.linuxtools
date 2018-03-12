@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -125,7 +125,6 @@ public class ImageRun extends Wizard {
 		return this.imageRunSelectionPage.getModel().isRemoveWhenExits();
 	}
 
-	@SuppressWarnings("unchecked")
 	public IDockerHostConfig getDockerHostConfig() {
 		final ImageRunSelectionModel selectionModel = this.imageRunSelectionPage
 				.getModel();
@@ -224,7 +223,6 @@ public class ImageRun extends Wizard {
 		return unixPath;
 	}
 
-	@SuppressWarnings("unchecked")
 	public DockerContainerConfig getDockerContainerConfig() {
 		final ImageRunSelectionModel selectionModel = this.imageRunSelectionPage
 				.getModel();

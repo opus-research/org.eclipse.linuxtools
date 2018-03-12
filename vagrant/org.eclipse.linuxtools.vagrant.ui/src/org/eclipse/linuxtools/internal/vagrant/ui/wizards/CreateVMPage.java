@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,12 +33,11 @@ import org.eclipse.linuxtools.internal.vagrant.core.EnvironmentsManager;
 import org.eclipse.linuxtools.internal.vagrant.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
@@ -88,12 +87,13 @@ public class CreateVMPage extends WizardPage {
 
 	@Override
 	public void createControl(Composite parent) {
-		parent.setLayout(new GridLayout());
-		final Composite container = new Composite(parent, SWT.NONE);
+		ScrolledComposite scrollTop = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
+		scrollTop.setExpandVertical(true);
+		scrollTop.setExpandHorizontal(true);
+
+		final Composite container = new Composite(scrollTop, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(3).margins(6, 6)
 				.applyTo(container);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(1, 1)
-				.grab(true, false).applyTo(container);
 
 		// VM Name
 		final Label vmNameLabel = new Label(container, SWT.NONE);
@@ -108,7 +108,7 @@ public class CreateVMPage extends WizardPage {
 		vmNameText.setToolTipText(
 				WizardMessages.getString("CreateVMPage.name.tooltip")); //$NON-NLS-1$
 		// VM Name binding
-		final IObservableValue vmmNameObservable = BeanProperties
+		final IObservableValue<String> vmmNameObservable = BeanProperties
 				.value(CreateVMPageModel.class, CreateVMPageModel.VM_NAME)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(vmNameText),
@@ -127,7 +127,7 @@ public class CreateVMPage extends WizardPage {
 		boxRefText.setToolTipText(
 				WizardMessages.getString("CreateVMPage.boxRef.tooltip")); //$NON-NLS-1$
 		// Box Name binding
-		final IObservableValue boxRefObservable = BeanProperties
+		final IObservableValue<String> boxRefObservable = BeanProperties
 				.value(CreateVMPageModel.class, CreateVMPageModel.BOX_REF)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxRefText),
@@ -147,7 +147,7 @@ public class CreateVMPage extends WizardPage {
 				.setText(WizardMessages.getString("CreateVMPage.File.CheckBox")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).span(3, 1).applyTo(customVMFileButton);
-		final IObservableValue customVMFileObservable = BeanProperties
+		final IObservableValue<String> customVMFileObservable = BeanProperties
 				.value(CreateVMPageModel.class, CreateVMPageModel.V_FILE_MODE)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.selection().observe(customVMFileButton),
@@ -167,17 +167,12 @@ public class CreateVMPage extends WizardPage {
 				WizardMessages.getString("CreateVMPage.loc.tooltip")); //$NON-NLS-1$
 		boxLocText.setEnabled(false);
 		// Location binding
-		final IObservableValue boxLocObservable = BeanProperties
+		final IObservableValue<String> boxLocObservable = BeanProperties
 				.value(CreateVMPageModel.class, CreateVMPageModel.VM_FILE)
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxLocText),
 				boxLocObservable);
-		boxLocText.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				vmFileChanged(boxLocText.getText());
-			}
-		});
+		boxLocText.addModifyListener(e -> vmFileChanged(boxLocText.getText()));
 
 		// Vagrantfile search
 		final Button vgFilesearchButton = new Button(container, SWT.NONE);
@@ -195,12 +190,17 @@ public class CreateVMPage extends WizardPage {
 				boxRefObservable, boxLocObservable));
 
 		advanced = new CreateVMAdvancedComposite(
-				container, model);
+				container, scrollTop, model);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(3, 1)
 				.grab(true, false).applyTo(advanced);
 
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
+
+		scrollTop.setContent(container);
+		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		scrollTop.setSize(point);
+		scrollTop.setMinSize(point);
 		setControl(container);
 	}
 
@@ -272,26 +272,28 @@ public class CreateVMPage extends WizardPage {
 
 	private class CreateVMValidationStatusProvider extends MultiValidator {
 
-		private IObservableValue vmNameOb, boxRefOb, boxLocOb;
+		private IObservableValue<String> vmNameOb, boxRefOb, boxLocOb;
 
-		public CreateVMValidationStatusProvider(IObservableValue vmNameOb,
-				IObservableValue boxRefOb, IObservableValue boxLocOb) {
+		public CreateVMValidationStatusProvider(
+				IObservableValue<String> vmNameOb,
+				IObservableValue<String> boxRefOb,
+				IObservableValue<String> boxLocOb) {
 			this.vmNameOb = vmNameOb;
 			this.boxRefOb = boxRefOb;
 			this.boxLocOb = boxLocOb;
 		}
 
 		@Override
-		public IObservableList getTargets() {
+		public IObservableList<String> getTargets() {
 			// Work around for NPE triggered by DialogPageSupport.dispose()
-			return new WritableList();
+			return new WritableList<>();
 		}
 
 		@Override
 		protected IStatus validate() {
-			String vmName = (String) vmNameOb.getValue();
-			String boxRef = (String) boxRefOb.getValue();
-			String boxLoc = (String) boxLocOb.getValue();
+			String vmName = vmNameOb.getValue();
+			String boxRef = boxRefOb.getValue();
+			String boxLoc = boxLocOb.getValue();
 			if (!model.getVFileMode()) {
 				if (vmName == null || vmName.isEmpty()) {
 					return ValidationStatus.error(WizardMessages

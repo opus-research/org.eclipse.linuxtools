@@ -91,7 +91,7 @@ public class DockerMachinePreferencePage extends FieldEditorPreferencePage
 		if (!DockerMachine.checkPathToDockerMachine(
 				this.dockerMachineInstallDir.getStringValue())) {
 			setErrorMessage(NLS.bind(
-					org.eclipse.linuxtools.internal.docker.core.Messages.Docker_Machine_Command_Not_Found,
+					org.eclipse.linuxtools.docker.core.Messages.Docker_Machine_Command_Not_Found,
 					this.dockerMachineInstallDir.getStringValue()));
 			return false;
 		}
