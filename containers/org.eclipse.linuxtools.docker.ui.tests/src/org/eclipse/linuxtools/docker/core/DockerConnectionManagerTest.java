@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.docker.core;
 
-import java.util.concurrent.TimeUnit;
-
 import org.assertj.core.api.Assertions;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionStorageManager;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
@@ -44,7 +42,7 @@ public class DockerConnectionManagerTest {
 	public void shouldRegisterConnectionOnRefreshContainersManager() {
 		// given
 		final DockerClient client = MockDockerClientFactory.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
 		dockerConnectionManager
 				.setConnectionStorageManager(MockDockerConnectionStorageManagerFactory.providing(dockerConnection));
 		SWTUtils.syncExec(() -> dockerConnectionManager.reloadConnections());
@@ -58,17 +56,14 @@ public class DockerConnectionManagerTest {
 	public void shouldUnregisterConnectionOnRefreshContainersManager() {
 		// given
 		final DockerClient client = MockDockerClientFactory.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
 		dockerConnectionManager
 				.setConnectionStorageManager(MockDockerConnectionStorageManagerFactory.providing(dockerConnection));
 		SWTUtils.syncExec(() -> dockerConnectionManager.reloadConnections());
-		System.err.println("Docker manager connections (1): " + dockerConnectionManager.getConnections());
 		dockerConnection.getContainers();
-		System.err.println("Docker manager connections (2): " + dockerConnectionManager.getConnections());
 		Assertions.assertThat(dockerContainersRefreshManager.getConnections()).contains(dockerConnection);
 		// when
 		SWTUtils.syncExec(() -> dockerConnectionManager.removeConnection(dockerConnection));
-		SWTUtils.wait(1, TimeUnit.SECONDS);
 		// then
 		Assertions.assertThat(dockerContainersRefreshManager.getConnections()).isEmpty();
 	}
