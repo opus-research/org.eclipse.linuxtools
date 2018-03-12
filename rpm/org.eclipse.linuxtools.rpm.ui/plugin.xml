@@ -224,6 +224,11 @@
               name="buildType"
               optional="false">
         </commandParameter>
+        <commandParameter
+              id="actOnEditor"
+              name="actOnEditor"
+              optional="true">
+        </commandParameter>
      </command>
   </extension>
   <extension
@@ -265,6 +270,10 @@
                     name="buildType"
                     value="ALL">
               </parameter>
+              <parameter
+                    name="actOnEditor"
+                    value="true">
+              </parameter>
            </command>
         </toolbar>
      </menuContribution>
@@ -280,6 +289,10 @@
                  name="buildType"
                  value="SOURCE">
            </parameter>
+           <parameter
+                 name="actOnEditor"
+                 value="true">
+           </parameter>
         </command>
         <command
               commandId="rpmEditor.build.command"
@@ -290,6 +303,10 @@
            <parameter
                  name="buildType"
                  value="BINARY">
+           </parameter>
+           <parameter
+                 name="actOnEditor"
+                 value="true">
            </parameter>
         </command>
         <command
@@ -302,7 +319,23 @@
                  name="buildType"
                  value="ALL">
            </parameter>
+           <parameter
+                 name="actOnEditor"
+                 value="true">
+           </parameter>
         </command>
      </menuContribution>
+  </extension>
+  <extension
+        point="org.eclipse.ui.console.consolePageParticipants">
+     <consolePageParticipant
+           class="org.eclipse.linuxtools.internal.rpm.ui.RpmConsolePageParticipant"
+           id="org.eclipse.linuxtools.rpm.ui.rpmConsolePageParticipant">
+        <enablement>
+           <instanceof
+                 value="org.eclipse.linuxtools.internal.rpm.ui.RpmConsole">
+           </instanceof>
+        </enablement>
+     </consolePageParticipant>
   </extension>
 </plugin>
