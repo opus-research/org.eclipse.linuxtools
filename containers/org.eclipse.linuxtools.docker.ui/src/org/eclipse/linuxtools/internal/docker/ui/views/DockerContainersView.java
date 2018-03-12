@@ -93,10 +93,6 @@ public class DockerContainersView extends ViewPart implements
 	
 	@Override
 	public void dispose() {
-		// remove this listener instance registered on the Docker connection
-		if (connection != null) {
-			connection.removeContainerListener(this);
-		}
 		// stop tracking selection changes in the Docker Explorer view (only)
 		getSite().getWorkbenchWindow().getSelectionService()
 				.removeSelectionListener(DockerExplorerView.VIEW_ID, this);
@@ -156,7 +152,7 @@ public class DockerContainersView extends ViewPart implements
 	}
 	
 	private void createTableViewer(final Composite container) {
-		this.search = new Text(container, SWT.SEARCH | SWT.ICON_SEARCH);
+		search = new Text(container, SWT.SEARCH | SWT.ICON_SEARCH);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, false).applyTo(search);
 		search.addModifyListener(onSearch());
 		Composite tableArea = new Composite(container, SWT.NONE);
@@ -167,7 +163,7 @@ public class DockerContainersView extends ViewPart implements
 		tableArea.setLayout(tableLayout);
 		this.viewer = new TableViewer(tableArea, SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		this.viewer.setContentProvider(new DockerContainersContentProvider());
-		final Table table = this.viewer.getTable();
+		final Table table = viewer.getTable();
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(0,  0).applyTo(table);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(table);
 		table.setLinesVisible(true);
@@ -279,7 +275,7 @@ public class DockerContainersView extends ViewPart implements
 		// Set column a second time so we reverse the order and default to most
 		// currently created containers first
 		comparator.setColumn(creationDateColumn.getColumn());
-		this.viewer.setComparator(comparator);
+		viewer.setComparator(comparator);
 		// apply search filter
 		this.viewer.addFilter(getContainersFilter());
 		IDockerConnection[] connections = DockerConnectionManager.getInstance()
@@ -289,7 +285,7 @@ public class DockerContainersView extends ViewPart implements
 			connection.addContainerListener(this);
 		}
 		// get the current selection in the tableviewer
-		getSite().setSelectionProvider(this.viewer);
+		getSite().setSelectionProvider(viewer);
 	}
 
 	private TableViewerColumn createColumn(final String title) {
@@ -326,9 +322,7 @@ public class DockerContainersView extends ViewPart implements
 			
 			@Override
 			public void modifyText(final ModifyEvent e) {
-				if (DockerContainersView.this.viewer != null) {
-					DockerContainersView.this.viewer.refresh();
-				}
+				DockerContainersView.this.viewer.refresh();
 			}
 		};
 	}
@@ -377,12 +371,8 @@ public class DockerContainersView extends ViewPart implements
 			Display.getDefault().asyncExec(new Runnable() {
 				@Override
 				public void run() {
-					if (DockerContainersView.this.viewer != null
-							&& !DockerContainersView.this.viewer.getTable()
-									.isDisposed()) {
-						DockerContainersView.this.viewer.refresh();
-						refreshViewTitle();
-					}
+					DockerContainersView.this.viewer.refresh();
+					refreshViewTitle();
 				}
 			});
 		}
@@ -397,10 +387,10 @@ public class DockerContainersView extends ViewPart implements
 
 	public void setConnection(IDockerConnection conn) {
 		this.connection = conn;
-		if (conn != null && this.viewer != null) {
-			this.viewer.setInput(conn);
+		if (conn != null) {
+			viewer.setInput(conn);
 			refreshViewTitle();
-		} else if (this.viewer != null) {
+		} else {
 			viewer.setInput(new IDockerContainer[0]);
 			form.setText(DVMessages.getString(DaemonMissing));
 		}
@@ -428,9 +418,6 @@ public class DockerContainersView extends ViewPart implements
 	 * @param enabled the argument to enable/disable the filter.
 	 */
 	public void showAllContainers(boolean enabled) {
-		if (DockerContainersView.this.viewer == null) {
-			return;
-		}
 		if(!enabled) {
 			this.viewer.addFilter(hideStoppedContainersViewerFilter);
 
