@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -40,7 +41,6 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerNetworkSettings;
 import org.eclipse.linuxtools.docker.core.IDockerPortBinding;
 import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
-import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainer;
 import org.eclipse.linuxtools.internal.docker.core.DockerImage;
 import org.eclipse.linuxtools.internal.docker.core.DockerPortMapping;
@@ -182,9 +182,14 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 					connection.ping();
 					return Status.OK_STATUS;
 				} catch (DockerException e) {
-					Activator.log(
-							new DockerException(DVMessages.getFormattedString(
-									"PingJobError.msg", connection.getUri()))); //$NON-NLS-1$
+					Display.getDefault().asyncExec(() -> {
+						MessageDialog.openError(
+								Display.getDefault().getActiveShell(),
+								DVMessages.getString("Error"), //$NON-NLS-1$
+								DVMessages.getFormattedString(
+										"PingJobError.msg.withExplanation", //$NON-NLS-1$
+										connection.getName(), e.getMessage()));
+					});
 					return Status.CANCEL_STATUS;
 				}
 			}
