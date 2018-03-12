@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.docker.reddeer.ui;
 import org.eclipse.reddeer.swt.api.CTabFolder;
 import org.eclipse.reddeer.swt.api.CTabItem;
 import org.eclipse.reddeer.swt.impl.ctab.DefaultCTabFolder;
-import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 
 /**
  * 

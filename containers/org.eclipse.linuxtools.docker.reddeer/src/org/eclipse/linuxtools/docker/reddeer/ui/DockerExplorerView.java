@@ -26,7 +26,6 @@ import org.eclipse.reddeer.jface.exception.JFaceLayerException;
 import org.eclipse.reddeer.jface.handler.TreeViewerHandler;
 import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
-import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 
 /**
  * 
