@@ -36,6 +36,5 @@ public class CloseWelcomePageRule extends ExternalResource {
 		});
 		final SWTWorkbenchBot bot = new SWTWorkbenchBot();
 		bot.perspectiveById("org.eclipse.linuxtools.docker.ui.perspective").activate(); //$NON-NLS-1$
-		bot.view(allOf(instanceOf(IViewReference.class), withPartName("Docker Explorer"))); //$NON-NLS-1$
 	}
 }
