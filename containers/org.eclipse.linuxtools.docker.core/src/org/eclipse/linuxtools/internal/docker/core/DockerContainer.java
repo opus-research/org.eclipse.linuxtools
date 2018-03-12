@@ -51,7 +51,6 @@ public class DockerContainer implements IDockerContainer {
 		this.ports = ports;
 	}
 
-	@Override
 	public DockerConnection getConnection() {
 		return parent;
 	}

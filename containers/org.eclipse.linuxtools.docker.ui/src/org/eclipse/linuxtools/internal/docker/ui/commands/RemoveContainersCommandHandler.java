@@ -77,7 +77,7 @@ public class RemoveContainersCommandHandler extends BaseContainersCommandHandler
 	@Override
 	boolean confirmed(List<IDockerContainer> selectedContainers) {
 		// ask for confirmation before deleting images
-		List<String> containersToRemove = new ArrayList<>();
+		List<String> containersToRemove = new ArrayList<String>();
 		for (IDockerContainer container : selectedContainers) {
 			containersToRemove.add(container.name());
 		}
