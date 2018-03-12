@@ -62,9 +62,6 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 	@Override
 	public void dispose() {
-		for (Job job : openRetryJobs.values()) {
-			job.getThread().interrupt();
-		}
 	}
 
 	@Override
@@ -97,13 +94,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				return new Object[] { new LoadingStub(connection) };
 			} else if (connection
 					.getState() == EnumDockerConnectionState.CLOSED) {
-				Job openRetryJob = null;
-				synchronized (openRetryJobs) {
-					openRetryJob = openRetryJobs.get(connection);
-				}
-				if (openRetryJob == null) {
-					openRetry(connection);
-				}
+				openRetry(connection);
 				return new Object[] { new LoadingStub(connection) };
 			}
 			return new Object[0];
@@ -226,13 +217,6 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				long sleepTime = 3000; // 3 second default
 				for (;;) {
 					try {
-						// verify that the connection is still present before
-						// opening it
-						if (DockerConnectionManager.getInstance()
-								.getConnectionByUri(
-										connection.getUri()) == null) {
-							return Status.CANCEL_STATUS;
-						}
 						connection.open(true);
 						connection.ping();
 						synchronized (openRetryJobs) {
