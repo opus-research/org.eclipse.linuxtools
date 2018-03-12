@@ -189,8 +189,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 		private final IDockerConnection connection;
 
 		/**
-		 * @param connection
-		 *            - Docker connection
+		 * @param parent
 		 */
 		public DockerImagesCategory(final IDockerConnection connection) {
 			this.connection = connection;
@@ -208,7 +207,6 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 		/**
 		 * @param connection
-		 *            - Docker connection
 		 */
 		public DockerContainersCategory(final IDockerConnection connection) {
 			this.connection = connection;

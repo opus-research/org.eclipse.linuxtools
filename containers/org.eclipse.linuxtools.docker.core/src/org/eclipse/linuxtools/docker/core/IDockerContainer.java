@@ -22,9 +22,6 @@ public interface IDockerContainer {
 
 	public Long created();
 
-	/**
-	 * @return The status string for the container
-	 */
 	public String status();
 
 	public List<IDockerPortMapping> ports();

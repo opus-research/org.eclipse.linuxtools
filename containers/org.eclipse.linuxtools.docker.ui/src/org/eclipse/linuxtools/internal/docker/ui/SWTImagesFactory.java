@@ -155,13 +155,6 @@ public class SWTImagesFactory {
 
 	/**
 	 * Sets all available image descriptors for the given action.
-	 * 
-	 * @param action
-	 *            - action
-	 * @param type
-	 *            - type of image descriptor
-	 * @param relPath
-	 *            - relative path
 	 */
 	public static void setImageDescriptors(IAction action, String type,
 			String relPath) {

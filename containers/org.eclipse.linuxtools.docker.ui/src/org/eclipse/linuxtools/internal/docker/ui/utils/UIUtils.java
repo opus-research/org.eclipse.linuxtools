@@ -241,6 +241,8 @@ public class UIUtils {
 	 * 
 	 * @param editor
 	 *            the editor
+	 * @return
+	 * 
 	 * @return the page
 	 * 
 	 * @see IWorkbenchPage

@@ -35,9 +35,7 @@ public abstract class AbstractKillableThread extends Thread {
 	 * is TRUE.
 	 * 
 	 * @throws InterruptedException
-	 *             interrupted exception
 	 * @throws IOException
-	 *             I/O exception
 	 */
 	public abstract void execute() throws InterruptedException, IOException;
 
