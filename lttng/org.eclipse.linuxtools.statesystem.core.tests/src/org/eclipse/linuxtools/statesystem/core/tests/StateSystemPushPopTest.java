@@ -14,7 +14,6 @@
 package org.eclipse.linuxtools.statesystem.core.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -24,7 +23,6 @@ import java.util.List;
 
 import org.eclipse.linuxtools.internal.statesystem.core.StateSystem;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystemBuilder;
-import org.eclipse.linuxtools.statesystem.core.StateSystemUtils;
 import org.eclipse.linuxtools.statesystem.core.backend.IStateHistoryBackend;
 import org.eclipse.linuxtools.statesystem.core.backend.historytree.HistoryTreeBackend;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
@@ -203,22 +201,20 @@ public class StateSystemPushPopTest {
      */
     @Test
     public void testStackTop() {
-        final ITmfStateSystemBuilder ss2 = ss;
-        assertNotNull(ss2);
-
         try {
+            interval = ss.querySingleStackTop(10, attribute);
             assertEquals(value5, interval.getStateValue());
 
-            interval = StateSystemUtils.querySingleStackTop(ss2, 9, attribute);
+            interval = ss.querySingleStackTop(9, attribute);
             assertEquals(value4, interval.getStateValue());
 
-            interval = StateSystemUtils.querySingleStackTop(ss2, 13, attribute);
+            interval = ss.querySingleStackTop(13, attribute);
             assertEquals(value3, interval.getStateValue());
 
-            interval = StateSystemUtils.querySingleStackTop(ss2, 16, attribute);
+            interval = ss.querySingleStackTop(16, attribute);
             assertEquals(value1, interval.getStateValue());
 
-            interval = StateSystemUtils.querySingleStackTop(ss2, 25, attribute);
+            interval = ss.querySingleStackTop(25, attribute);
             assertEquals(value1, interval.getStateValue());
 
         } catch (AttributeNotFoundException e) {
@@ -237,26 +233,23 @@ public class StateSystemPushPopTest {
      */
     @Test
     public void testEmptyStack() {
-        final ITmfStateSystemBuilder ss2 = ss;
-        assertNotNull(ss2);
-
         try {
             /* At the start */
             interval = ss.querySingleState(1, attribute);
             assertTrue(interval.getStateValue().isNull());
-            interval = StateSystemUtils.querySingleStackTop(ss2, 1, attribute);
+            interval = ss.querySingleStackTop(1, attribute);
             assertEquals(null, interval);
 
             /* Between the two "stacks" in the state history */
             interval = ss.querySingleState(19, attribute);
             assertTrue(interval.getStateValue().isNull());
-            interval = StateSystemUtils.querySingleStackTop(ss2, 19, attribute);
+            interval = ss.querySingleStackTop(19, attribute);
             assertEquals(null, interval);
 
             /* At the end */
             interval = ss.querySingleState(27, attribute);
             assertTrue(interval.getStateValue().isNull());
-            interval = StateSystemUtils.querySingleStackTop(ss2, 27, attribute);
+            interval = ss.querySingleStackTop(27, attribute);
             assertEquals(null, interval);
 
         } catch (AttributeNotFoundException e) {
