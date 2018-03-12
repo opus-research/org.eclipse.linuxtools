@@ -27,4 +27,9 @@ public class GcovTestCPP extends GcovTest {
         return false;
     }
 
+    @Override
+    protected boolean useDefaultBin() {
+        return true;
+    }
+
 }

@@ -213,8 +213,7 @@ public abstract class AbstractTest {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    curProject
-                            .build(IncrementalProjectBuilder.FULL_BUILD, null);
+                    curProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
                 } catch (CoreException e) {
                     fail(e.getStatus().getMessage());
                 } catch (OperationCanceledException e) {

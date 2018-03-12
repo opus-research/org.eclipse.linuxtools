@@ -27,4 +27,9 @@ public class GcovTestC extends GcovTest {
         return true;
     }
 
+    @Override
+    protected boolean useDefaultBin() {
+        return true;
+    }
+
 }
