@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Test suite for UI on the PCAP parser and networking perspective
+ * Test suite for UI on the lttng kernel perspective
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
