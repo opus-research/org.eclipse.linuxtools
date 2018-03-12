@@ -24,8 +24,8 @@ import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 /**
  * State system tests using the in-memory back-end.
@@ -34,13 +34,13 @@ import org.junit.Before;
  */
 public class StateSystemInMemoryTest extends StateSystemTest {
 
-    private TestLttngKernelAnalysisModule module;
+    private static TestLttngKernelAnalysisModule module;
 
     /**
      * Initialization
      */
-    @Before
-    public void initialize() {
+    @BeforeClass
+    public static void initialize() {
         assumeTrue(testTrace.exists());
 
         module = new TestLttngKernelAnalysisModule();
@@ -58,8 +58,8 @@ public class StateSystemInMemoryTest extends StateSystemTest {
     /**
      * Class cleanup
      */
-    @After
-    public void cleanupClass() {
+    @AfterClass
+    public static void cleanupClass() {
         module.close();
     }
 
