@@ -13,11 +13,13 @@
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.cpuusage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.Attributes;
@@ -29,6 +31,7 @@ import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedExc
 import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.viewers.tree.AbstractTmfTreeViewer;
 import org.eclipse.linuxtools.tmf.ui.viewers.tree.ITmfTreeColumnDataProvider;
 import org.eclipse.linuxtools.tmf.ui.viewers.tree.ITmfTreeViewerEntry;
@@ -47,7 +50,11 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class CpuUsageComposite extends AbstractTmfTreeViewer {
 
+    // Timeout between to wait for in the updateElements method
+    private static final long BUILD_UPDATE_TIMEOUT = 500;
+
     private LttngKernelCpuUsageAnalysis fModule = null;
+    private String fSelectedThread = null;
 
     private static final String[] COLUMN_NAMES = new String[] {
             Messages.CpuUsageComposite_ColumnTID,
@@ -167,6 +174,24 @@ public class CpuUsageComposite extends AbstractTmfTreeViewer {
     // ------------------------------------------------------------------------
 
     @Override
+    protected void contentChanged(ITmfTreeViewerEntry rootEntry) {
+        String selectedThread = fSelectedThread;
+        if (selectedThread != null) {
+            /* Find the selected thread among the inputs */
+            for (ITmfTreeViewerEntry entry : rootEntry.getChildren()) {
+                if (entry instanceof CpuUsageEntry) {
+                    if (selectedThread.equals(((CpuUsageEntry) entry).getTid())) {
+                        @SuppressWarnings("null")
+                        @NonNull List<ITmfTreeViewerEntry> list = Collections.singletonList(entry);
+                        super.setSelection(list);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public void initializeDataSource() {
         fModule = getTrace().getAnalysisModuleOfClass(LttngKernelCpuUsageAnalysis.class, LttngKernelCpuUsageAnalysis.ID);
         if (fModule == null) {
@@ -185,10 +210,18 @@ public class CpuUsageComposite extends AbstractTmfTreeViewer {
         if (getTrace() == null || fModule == null) {
             return null;
         }
+        fModule.waitForInitialization();
         ITmfStateSystem ss = fModule.getStateSystem();
-        /* Don't wait for the module completion, when it's ready, we'll know */
         if (ss == null) {
             return null;
+        }
+
+        boolean complete = false;
+        long currentEnd = start;
+
+        while (!complete && currentEnd < end) {
+            complete = ss.waitUntilBuilt(BUILD_UPDATE_TIMEOUT);
+            currentEnd = ss.getCurrentEndTime();
         }
 
         /* Initialize the data */
@@ -228,16 +261,11 @@ public class CpuUsageComposite extends AbstractTmfTreeViewer {
         if (execName != null) {
             return execName;
         }
-        TmfStateSystemAnalysisModule module = getTrace().getAnalysisModuleOfClass(TmfStateSystemAnalysisModule.class, LttngKernelAnalysisModule.ID);
-        if (module == null) {
+        ITmfTrace trace = getTrace();
+        if (trace == null) {
             return tid;
         }
-        /*
-         * Do not schedule the analysis here. It should have been executed when
-         * the CPU usage analysis was executed. If it's not available, there
-         * might be a good reason (disk space?) so don't force it.
-         */
-        ITmfStateSystem kernelSs = module.getStateSystem();
+        ITmfStateSystem kernelSs = TmfStateSystemAnalysisModule.getStateSystem(trace, LttngKernelAnalysisModule.ID);
         if (kernelSs == null) {
             return tid;
         }
@@ -278,6 +306,16 @@ public class CpuUsageComposite extends AbstractTmfTreeViewer {
             /* can't find the process name, just return the tid instead */
         }
         return tid;
+    }
+
+    /**
+     * Set the currently selected thread ID
+     *
+     * @param tid
+     *            The selected thread ID
+     */
+    public void setSelectedThread(String tid) {
+        fSelectedThread = tid;
     }
 
 }

@@ -13,11 +13,13 @@ package org.eclipse.linuxtools.ctf.core.tests.types;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Definition;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
+import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
@@ -71,8 +73,11 @@ public class SequenceDefinition2Test {
         structDef = new StructDefinition(structDec, null, "x", wrap(lengthName), new Definition[] { new IntegerDefinition(id, null, lengthName, seqLen) });
 
         SequenceDeclaration sd = new SequenceDeclaration(lengthName, id);
-        BitBuffer input = new BitBuffer(
-                java.nio.ByteBuffer.allocateDirect(seqLen * len));
+        ByteBuffer allocateDirect = java.nio.ByteBuffer.allocateDirect(seqLen * len);
+        if( allocateDirect == null){
+            throw new IllegalStateException("Failed to allocate memory");
+        }
+        BitBuffer input = new BitBuffer(allocateDirect);
         for (int i = 0; i < seqLen; i++) {
             input.putInt(i);
         }
@@ -106,7 +111,7 @@ public class SequenceDefinition2Test {
     @Test
     public void testGetElem() {
         int i = 1;
-        Definition result = fixture.getDefinitions().get(i);
+        IDefinition result = fixture.getDefinitions().get(i);
         assertNotNull(result);
     }
 

@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
+import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -36,7 +37,7 @@ import com.google.common.collect.ImmutableMap.Builder;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public final class StructDefinition extends ScopedDefinition {
+public final class StructDefinition extends ScopedDefinition implements ICompositeDefinition {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -51,6 +52,33 @@ public final class StructDefinition extends ScopedDefinition {
     // ------------------------------------------------------------------------
 
     /**
+     * *DEPRECATED* TODO: To remove once we break the API...
+     *
+     * Not marked with the annotation to not annoy callers using a List, which
+     * is still as valid with the new constructor. But the compiler gives an
+     * error even though a Iterable is a List too...
+     *
+     * @param declaration
+     *            the parent declaration
+     * @param definitionScope
+     *            the parent scope
+     * @param structFieldName
+     *            the field name
+     * @param fieldNames
+     *            the list of fields
+     * @param definitions
+     *            the definitions
+     * @since 3.1
+     */
+    public StructDefinition(@NonNull StructDeclaration declaration,
+            IDefinitionScope definitionScope,
+            @NonNull String structFieldName,
+            List<String> fieldNames,
+            Definition[] definitions) {
+        this(declaration, definitionScope, structFieldName, (Iterable<String>) fieldNames, definitions);
+    }
+
+    /**
      * Constructor
      *
      * @param declaration
@@ -63,14 +91,46 @@ public final class StructDefinition extends ScopedDefinition {
      *            the list of fields
      * @param definitions
      *            the definitions
-     * @since 3.0
+     * @since 3.1
      */
     public StructDefinition(@NonNull StructDeclaration declaration,
-            IDefinitionScope definitionScope, @NonNull String structFieldName, List<String> fieldNames, Definition[] definitions) {
+            IDefinitionScope definitionScope,
+            @NonNull String structFieldName,
+            Iterable<String> fieldNames,
+            Definition[] definitions) {
         super(declaration, definitionScope, structFieldName);
         fFieldNames = ImmutableList.copyOf(fieldNames);
         fDefinitions = definitions;
-        if (fFieldNames == null) {
+        if (fFieldNames.isEmpty()) {
+            fDefinitionsMap = Collections.EMPTY_MAP;
+        }
+    }
+
+    /**
+     * Constructor This one takes the scope and thus speeds up definition
+     * creation
+     *
+     * @param declaration
+     *            the parent declaration
+     * @param definitionScope
+     *            the parent scope
+     * @param scope
+     *            the scope of this variable
+     * @param structFieldName
+     *            the field name
+     * @param fieldNames
+     *            the list of fields
+     * @param definitions
+     *            the definitions
+     * @since 3.1
+     */
+    public StructDefinition(@NonNull StructDeclaration declaration,
+            IDefinitionScope definitionScope, @NonNull LexicalScope scope,
+            @NonNull String structFieldName, @NonNull Iterable<String> fieldNames, Definition[] definitions) {
+        super(declaration, definitionScope, structFieldName, scope);
+        fFieldNames = ImmutableList.copyOf(fieldNames);
+        fDefinitions = definitions;
+        if (fFieldNames.isEmpty()) {
             fDefinitionsMap = Collections.EMPTY_MAP;
         }
     }
@@ -79,37 +139,22 @@ public final class StructDefinition extends ScopedDefinition {
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
 
-    /**
-     * Gets the definition of the field
-     *
-     * @param fieldName
-     *            the fieldname
-     * @return The definitions of all the fields
-     * @since 3.0
-     */
+    @Override
     public Definition getDefinition(String fieldName) {
         if (fDefinitionsMap == null) {
-            buildFieldsMap();
+            /* Build the definitions map */
+            Builder<String, Definition> mapBuilder = new ImmutableMap.Builder<>();
+            for (int i = 0; i < fFieldNames.size(); i++) {
+                if (fDefinitions[i] != null) {
+                    mapBuilder.put(fFieldNames.get(i), fDefinitions[i]);
+                }
+            }
+            fDefinitionsMap = mapBuilder.build();
         }
         return fDefinitionsMap.get(fieldName);
     }
 
-    private void buildFieldsMap() {
-        Builder<String, Definition> mapBuilder = new ImmutableMap.Builder<>();
-        for (int i = 0; i < fFieldNames.size(); i++) {
-            if (fDefinitions[i] != null) {
-                mapBuilder.put(fFieldNames.get(i), fDefinitions[i]);
-            }
-        }
-        fDefinitionsMap = mapBuilder.build();
-    }
-
-    /**
-     * Gets an array of the field names
-     *
-     * @return the field names array
-     * @since 3.0
-     */
+    @Override
     public List<String> getFieldNames() {
         return fFieldNames;
     }

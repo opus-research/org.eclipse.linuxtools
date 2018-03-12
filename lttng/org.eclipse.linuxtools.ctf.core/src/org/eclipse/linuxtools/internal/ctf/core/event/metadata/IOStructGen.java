@@ -47,6 +47,7 @@ import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.ArrayDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.SequenceDeclaration;
+import org.eclipse.linuxtools.internal.ctf.core.event.types.StructDeclarationFlattener;
 
 /**
  * IOStructGen
@@ -576,14 +577,13 @@ public class IOStructGen {
             ByteOrder byteOrder) throws ParseException {
 
         for (String s : sd.getFieldsList()) {
-            IDeclaration d = sd.getFields().get(s);
+            IDeclaration d = sd.getField(s);
 
             if (d instanceof StructDeclaration) {
                 setAlign(parentScope, (StructDeclaration) d, byteOrder);
 
             } else if (d instanceof VariantDeclaration) {
                 setAlign(parentScope, (VariantDeclaration) d, byteOrder);
-
             } else if (d instanceof IntegerDeclaration) {
                 IntegerDeclaration decl = (IntegerDeclaration) d;
                 if (decl.getByteOrder() != byteOrder) {
@@ -1695,8 +1695,7 @@ public class IOStructGen {
                 throw new ParseException("struct with no name and no body"); //$NON-NLS-1$
             }
         }
-
-        return structDeclaration;
+        return StructDeclarationFlattener.tryFlattenStruct(structDeclaration);
     }
 
     /**
