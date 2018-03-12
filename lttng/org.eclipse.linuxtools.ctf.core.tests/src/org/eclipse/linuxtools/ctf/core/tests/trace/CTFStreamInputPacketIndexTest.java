@@ -14,7 +14,6 @@ package org.eclipse.linuxtools.ctf.core.tests.trace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Collection;
 import java.util.ListIterator;
 
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
@@ -44,7 +43,7 @@ public class CTFStreamInputPacketIndexTest {
     @Before
     public void setUp() throws CTFReaderException {
         fixture = new StreamInputPacketIndex();
-        fixture.addEntry(new StreamInputPacketIndexEntry(1L));
+        fixture.add(new StreamInputPacketIndexEntry(1L));
         entry = new StreamInputPacketIndexEntry(1L);
     }
 
@@ -65,7 +64,7 @@ public class CTFStreamInputPacketIndexTest {
     @Test
     public void testAddEntry_1param() throws CTFReaderException {
         entry.setPacketSizeBits(0);
-        fixture.addEntry(entry);
+        fixture.add(entry);
     }
 
     /**
@@ -78,7 +77,7 @@ public class CTFStreamInputPacketIndexTest {
     public void testAddEntry_2params() throws CTFReaderException {
         entry.setPacketSizeBits(1);
         entry.setContentSizeBits(0);
-        fixture.addEntry(entry);
+        fixture.add(entry);
     }
 
     /**
@@ -93,18 +92,7 @@ public class CTFStreamInputPacketIndexTest {
         entry.setPacketSizeBits(1);
         entry.setContentSizeBits(1);
         entry.setTimestampEnd(1L);
-        fixture.addEntry(entry);
-    }
-
-    /**
-     * Run the Collection<StreamInputPacketIndexEntry> getEntries() method test.
-     */
-    @Test
-    public void testGetEntries() {
-        Collection<StreamInputPacketIndexEntry> result = fixture.getEntries();
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
+        fixture.add(entry);
     }
 
     /**
