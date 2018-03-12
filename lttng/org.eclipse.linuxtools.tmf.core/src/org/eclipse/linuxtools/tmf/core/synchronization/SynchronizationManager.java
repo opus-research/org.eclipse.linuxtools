@@ -50,11 +50,11 @@ public abstract class SynchronizationManager extends TmfComponent {
 
         SynchronizationAlgorithm syncAlgo;
         if (doSync) {
-            syncAlgo = synchronize(syncFile, traces, SynchronizationAlgorithmFactory.getDefaultAlgorithm());
+            syncAlgo = synchronize(syncFile, traces, new SyncAlgorithmFullyIncremental());
         } else {
             syncAlgo = openExisting(syncFile);
             if (syncAlgo == null) {
-                syncAlgo = SynchronizationAlgorithmFactory.getDefaultAlgorithm();
+                syncAlgo = new SyncAlgorithmFullyIncremental();
             }
         }
         return syncAlgo;
@@ -90,7 +90,7 @@ public abstract class SynchronizationManager extends TmfComponent {
                 if (algo != null) {
                     syncAlgo = algo;
                 } else {
-                    syncAlgo = SynchronizationAlgorithmFactory.getDefaultAlgorithm();
+                    syncAlgo = new SyncAlgorithmFullyIncremental();
                 }
             }
         }
