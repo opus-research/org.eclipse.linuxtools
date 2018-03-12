@@ -97,7 +97,7 @@ public class DockerExplorerView extends WorkbenchView {
 	 */
 	public void createDockerConnectionSearch(String connectionName) {
 		activate();
-		NewDockerConnectionPage connectionWizard = new NewDockerConnectionPage(this);
+		NewDockerConnectionPage connectionWizard = new NewDockerConnectionPage();
 		connectionWizard.open();
 		connectionWizard.search(connectionName);
 		connectionWizard.finish();

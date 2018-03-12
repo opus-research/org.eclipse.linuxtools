@@ -43,6 +43,10 @@ public class NewDockerConnectionPage extends WizardPage {
 		super(referencedComposite);
 	}
 
+	public NewDockerConnectionPage() {
+		super(null);
+	}
+
 	public void open() {
 		new DockerExplorerView().open();
 		new DefaultToolItem("Add Connection").click();
