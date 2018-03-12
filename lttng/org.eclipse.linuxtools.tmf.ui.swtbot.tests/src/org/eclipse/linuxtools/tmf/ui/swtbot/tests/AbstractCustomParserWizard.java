@@ -17,8 +17,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
-import org.apache.log4j.varia.NullAppender;
+import org.apache.log4j.SimpleLayout;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.junit.BeforeClass;
@@ -45,7 +46,7 @@ public class AbstractCustomParserWizard {
         Thread.currentThread().setName("SWTBot Thread"); // for the debugger
         /* set up for swtbot */
         SWTBotPreferences.TIMEOUT = 20000; /* 20 second timeout */
-        fLogger.addAppender(new NullAppender());
+        fLogger.addAppender(new ConsoleAppender(new SimpleLayout()));
         fBot = new SWTWorkbenchBot();
 
         SWTBotUtil.closeView("welcome", fBot);
