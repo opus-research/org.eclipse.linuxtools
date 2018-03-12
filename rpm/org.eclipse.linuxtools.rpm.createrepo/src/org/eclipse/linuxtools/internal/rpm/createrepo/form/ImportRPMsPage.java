@@ -395,7 +395,12 @@ public class ImportRPMsPage extends FormPage implements IResourceChangeListener 
                 return false;
             }
             // deals with updating the UI of the page
-            PlatformUI.getWorkbench().getDisplay().asyncExec(() -> refreshTree());
+            PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    refreshTree();
+                }
+            });
             return false;
         }
     }

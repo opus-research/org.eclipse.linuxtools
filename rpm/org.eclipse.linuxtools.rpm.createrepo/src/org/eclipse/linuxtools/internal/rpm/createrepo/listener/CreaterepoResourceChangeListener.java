@@ -44,7 +44,12 @@ public class CreaterepoResourceChangeListener implements
         case IResourceChangeEvent.POST_CHANGE:
         case IResourceChangeEvent.PRE_CLOSE:
         case IResourceChangeEvent.PRE_DELETE:
-            PlatformUI.getWorkbench().getDisplay().asyncExec(() -> closeEditors());
+            PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    closeEditors();
+                }
+            });
             break;
         }
     }
