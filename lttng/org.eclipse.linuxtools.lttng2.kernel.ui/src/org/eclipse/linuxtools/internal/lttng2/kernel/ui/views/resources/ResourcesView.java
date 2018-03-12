@@ -259,7 +259,20 @@ public class ResourcesView extends AbstractTimeGraphView {
                         eventList.add(new TimeEvent(entry, time, duration, cpu));
                         lastIsNull = false;
                     } else {
-                        lastIsNull = handleIrqInterval(entry, endTime, eventList, lastEndTime, lastIsNull, time, duration);
+                        if (lastEndTime == -1) {
+                            // add null event if it intersects the start time
+                            eventList.add(new NullTimeEvent(entry, time, duration));
+                        } else {
+                            if (lastEndTime != time && lastIsNull) {
+                                /* This is a special case where we want to show IRQ_ACTIVE state but we don't know the CPU (it is between two null samples) */
+                                eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime, -1));
+                            }
+                            if (time + duration >= endTime) {
+                                // add null event if it intersects the end time
+                                eventList.add(new NullTimeEvent(entry, time, duration));
+                            }
+                        }
+                        lastIsNull = true;
                     }
                     lastEndTime = time + duration;
                 }
@@ -278,7 +291,20 @@ public class ResourcesView extends AbstractTimeGraphView {
                         int cpu = softIrqInterval.getStateValue().unboxInt();
                         eventList.add(new TimeEvent(entry, time, duration, cpu));
                     } else {
-                        lastIsNull = handleIrqInterval(entry, endTime, eventList, lastEndTime, lastIsNull, time, duration);
+                        if (lastEndTime == -1) {
+                            // add null event if it intersects the start time
+                            eventList.add(new NullTimeEvent(entry, time, duration));
+                        } else {
+                            if (lastEndTime != time && lastIsNull) {
+                                /* This is a special case where we want to show IRQ_ACTIVE state but we don't know the CPU (it is between two null samples) */
+                                eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime, -1));
+                            }
+                            if (time + duration >= endTime) {
+                                // add null event if it intersects the end time
+                                eventList.add(new NullTimeEvent(entry, time, duration));
+                            }
+                        }
+                        lastIsNull = true;
                     }
                     lastEndTime = time + duration;
                 }
@@ -290,23 +316,6 @@ public class ResourcesView extends AbstractTimeGraphView {
             /* Ignored */
         }
         return eventList;
-    }
-
-    private static boolean handleIrqInterval(TimeGraphEntry entry, long endTime, List<ITimeEvent> eventList, long lastEndTime, boolean lastIsNull, long time, long duration) {
-        if (lastEndTime == -1) {
-            // add null event if it intersects the start time
-            eventList.add(new NullTimeEvent(entry, time, duration));
-        } else {
-            if (lastEndTime != time && lastIsNull) {
-                /* This is a special case where we want to show IRQ_ACTIVE state but we don't know the CPU (it is between two null samples) */
-                eventList.add(new TimeEvent(entry, lastEndTime, time - lastEndTime, -1));
-            }
-            if (time + duration >= endTime) {
-                // add null event if it intersects the end time
-                eventList.add(new NullTimeEvent(entry, time, duration));
-            }
-        }
-        return true;
     }
 
 }
