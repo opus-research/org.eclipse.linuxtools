@@ -34,7 +34,7 @@ public class CTFStreamInputPacketIndexEntryTest {
      */
     @Before
     public void setUp() {
-        fixture = new StreamInputPacketIndexEntry(1L);
+        fixture = new StreamInputPacketIndexEntry(1L, 1L, 1L);
     }
 
     /**
