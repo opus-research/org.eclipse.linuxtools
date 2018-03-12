@@ -11,11 +11,12 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 
 /**
  * A helper class for performing tapset-loading operations,
@@ -25,30 +26,13 @@ import org.eclipse.core.runtime.IStatus;
  */
 public final class SharedParser extends TapsetParser {
 
+    static final String TAG_FILE = "# file"; //$NON-NLS-1$
     private static final String[] STAP_OPTIONS = new String[] {"-v", "-p1", "-e"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     private static final String STAP_DUMMYPROBE = "probe begin{}"; //$NON-NLS-1$
-
-    static final String TAG_FILE = "# file "; //$NON-NLS-1$
-    private static final Pattern FILE_PATTERN = Pattern.compile(TAG_FILE.concat("(/.*\\.stp)")); //$NON-NLS-1$
-
     /**
-     * @param fileName The name of the file (or a regex string) to get a tag for.
-     * @return The header for the given file's script dump as it appears in the tapset contents.
+     * A pattern that can be used to locate file paths listed in stap tapset dumps.
      */
-    static String makeFileTag(String fileName) {
-        return TAG_FILE.concat(fileName);
-    }
-
-    /**
-     * Searches a string of tapset contents for a file tag and extracts the filename
-     * found in the tag.
-     * @param contents The tapset contents to search through. Preferably pass just a file tag here.
-     * @return The file name found.
-     */
-    static String findFileNameInTag(String contents) {
-        Matcher matcher = FILE_PATTERN.matcher(contents);
-        return matcher.find() ? matcher.group(1) : null;
-    }
+    final Pattern filePattern = Pattern.compile("# file (/.*\\.stp)"); //$NON-NLS-1$
 
     private String tapsetContents = null;
 
@@ -62,7 +46,7 @@ public final class SharedParser extends TapsetParser {
     }
 
     private SharedParser() {
-        super(Messages.SharedParser_name);
+        super("Shared Parser"); //$NON-NLS-1$
     }
 
     /**
@@ -91,9 +75,8 @@ public final class SharedParser extends TapsetParser {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
         String contents = runStap(STAP_OPTIONS, STAP_DUMMYPROBE, false);
-        int result = verifyRunResult(contents);
-        if (result != IStatus.OK) {
-            return createStatus(result);
+        if (contents == null) {
+            return new Status(IStatus.ERROR, IDEPlugin.PLUGIN_ID, Messages.SharedParser_NoOutput);
         }
         // Exclude the dump of the test script by excluding everything before the second pathname
         // (which is the first actual tapset file, not the input script).
@@ -104,7 +87,7 @@ public final class SharedParser extends TapsetParser {
                 tapsetContents = contents.substring(beginIndex);
             }
         }
-        return createStatus(IStatus.OK);
+        return new Status(IStatus.OK, IDEPlugin.PLUGIN_ID, ""); //$NON-NLS-1$
     }
 
 }

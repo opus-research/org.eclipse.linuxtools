@@ -45,7 +45,7 @@ public final class FunctionParser extends TreeTapsetParser {
     private static final Pattern P_FUNCTION = Pattern.compile("function (?!_)(\\w+) \\(.*?\\)"); //$NON-NLS-1$
     private static final Pattern P_PARAM = Pattern.compile("(\\w+)(?:\\s*:\\s*(\\w+))?"); //$NON-NLS-1$
     private static final Pattern P_ALL_CAP = Pattern.compile("[A-Z_1-9]*"); //$NON-NLS-1$
-    private static final Pattern P_RETURN = Pattern.compile("(?<!\\w)return\\W"); //$NON-NLS-1$
+    private static final Pattern P_RETURN = Pattern.compile("\\sreturn\\W"); //$NON-NLS-1$
 
     public static FunctionParser getInstance() {
         if (parser != null) {
@@ -56,7 +56,16 @@ public final class FunctionParser extends TreeTapsetParser {
     }
 
     private FunctionParser() {
-        super(Messages.FunctionParser_name);
+        super("Function Parser"); //$NON-NLS-1$
+    }
+
+    /**
+     * Runs stap to collect all available tapset functions.
+     */
+    @Override
+    protected IStatus runAction(IProgressMonitor monitor) {
+        addFunctions(monitor);
+        return super.runAction(monitor);
     }
 
     /**
@@ -65,54 +74,56 @@ public final class FunctionParser extends TreeTapsetParser {
      *
      * FunctionTree organized as:
      *    Root->Functions->Parameters
+     *
+     * @return <code>false</code> if a cancelation prevented all functions from being added;
+     * <code>true</code> otherwise.
      */
-    @Override
-    protected int runAction(IProgressMonitor monitor) {
+    private boolean addFunctions(IProgressMonitor monitor) {
         if (monitor.isCanceled()) {
-            return IStatus.CANCEL;
+            return false;
         }
 
         String tapsetContents = SharedParser.getInstance().getTapsetContents();
-        int result = verifyRunResult(tapsetContents);
-        if (result != IStatus.OK) {
-            return result;
+        if (tapsetContents == null) {
+            // Functions are only drawn from the tapset dump, so exit if it's empty.
+            return true;
         }
 
         boolean canceled = false;
-        try (Scanner scanner = new Scanner(tapsetContents)) {
-            scanner.useDelimiter("(?=" + SharedParser.TAG_FILE + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-            while (scanner.hasNext()) {
+        try (Scanner st = new Scanner(tapsetContents)) {
+            String filename = null;
+            String scriptText = null;
+
+            SharedParser sparser = SharedParser.getInstance();
+            while (st.hasNextLine()) {
                 if (monitor.isCanceled()) {
                     canceled = true;
                     break;
                 }
-                addFunctionsFromFile(scanner.next());
+                String tok = st.nextLine();
+                Matcher mFilename = sparser.filePattern.matcher(tok);
+                if (mFilename.matches()) {
+                    filename = mFilename.group(1).toString();
+                    scriptText = null;
+                } else if (filename != null) {
+                    Matcher mFunction = P_FUNCTION.matcher(tok);
+                    if (mFunction.matches()) {
+                        String functionName = mFunction.group(1);
+                        if (P_ALL_CAP.matcher(functionName).matches()) {
+                            // Ignore ALL_CAPS functions, since they are not meant for end-user use.
+                            continue;
+                        }
+                        if (scriptText == null) {
+                            // If this is the first time seeing this file, remove its comments.
+                            scriptText = CommentRemover.execWithFile(filename);
+                        }
+                        addFunctionFromScript(functionName, scriptText, filename);
+                    }
+                }
             }
         }
-        tree.sortLevel();
-        return !canceled ? IStatus.OK : IStatus.CANCEL;
-    }
-
-    private void addFunctionsFromFile(String fileContents) {
-        String filename;
-        try (Scanner st = new Scanner(fileContents)) {
-            filename = SharedParser.findFileNameInTag(st.nextLine());
-        }
-
-        Matcher matcher = P_FUNCTION.matcher(fileContents);
-        String scriptText = null;
-        while (matcher.find()) {
-            String functionName = matcher.group(1);
-            if (P_ALL_CAP.matcher(functionName).matches()) {
-                // Ignore ALL_CAPS functions, since they are not meant for end-user use.
-                continue;
-            }
-            if (scriptText == null) {
-                // If this is the first time seeing this file, remove its comments.
-                scriptText = CommentRemover.execWithFile(filename);
-            }
-            addFunctionFromScript(functionName, scriptText, filename);
-        }
+        tree.sortTree();
+        return !canceled;
     }
 
     private void addFunctionFromScript(String functionName, String scriptText, String scriptFilename) {
@@ -157,56 +168,6 @@ public final class FunctionParser extends TreeTapsetParser {
                         mParams.group(1), false));
             }
         }
-        parentFunction.sortLevel();
-    }
-
-    @Override
-    protected int delTapsets(String[] deletions, IProgressMonitor monitor) {
-        for (int i = 0; i < deletions.length; i++) {
-            for (int f = 0, fn = tree.getChildCount(); f < fn; f++) {
-                if (monitor.isCanceled()) {
-                    return IStatus.CANCEL;
-                }
-                String definition = ((TreeDefinitionNode) tree.getChildAt(f)).getDefinition();
-                if (definition != null && definition.startsWith(deletions[i])) {
-                    tree.remove(f--);
-                    fn--;
-                }
-            }
-        }
-        return IStatus.OK;
-    }
-
-    @Override
-    protected int addTapsets(String[] additions, IProgressMonitor monitor) {
-        String tapsetContents = SharedParser.getInstance().getTapsetContents();
-        boolean canceled = false;
-
-        for (int i = 0; i < additions.length; i++) {
-            int firstTagIndex = 0;
-            while (true) {
-                firstTagIndex = tapsetContents.indexOf(
-                        SharedParser.makeFileTag(additions[i]), firstTagIndex);
-                if (firstTagIndex == -1) {
-                    break;
-                }
-                int nextTagIndex = tapsetContents.indexOf(SharedParser.TAG_FILE, firstTagIndex + 1);
-                String fileContents = nextTagIndex != -1
-                        ? tapsetContents.substring(firstTagIndex, nextTagIndex)
-                                : tapsetContents.substring(firstTagIndex);
-
-                if (monitor.isCanceled()) {
-                    canceled = true;
-                    break;
-                }
-                addFunctionsFromFile(fileContents);
-                // Remove the file that was just examined from the total contents
-                tapsetContents = tapsetContents.substring(0, firstTagIndex).concat(
-                        tapsetContents.substring(firstTagIndex + fileContents.length()));
-            }
-        }
-        tree.sortLevel();
-        return !canceled ? IStatus.OK : IStatus.CANCEL;
     }
 
 }
