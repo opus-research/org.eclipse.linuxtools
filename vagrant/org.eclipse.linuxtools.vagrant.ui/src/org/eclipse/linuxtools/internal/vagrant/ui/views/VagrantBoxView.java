@@ -208,19 +208,10 @@ public class VagrantBoxView extends ViewPart implements IVagrantBoxListener {
 	@Override
 	public void listChanged(final IVagrantConnection connection,
 			final List<IVagrantBox> images) {
-		if (!viewer.getControl().isDisposed()) {
-			Display.getDefault().asyncExec(() -> {
-				// remember the current selection before the viewer is refreshed
-				final ISelection currentSelection = VagrantBoxView.this.viewer
-						.getSelection();
-				VagrantBoxView.this.viewer.refresh();
-				// restore the selection
-				if (currentSelection != null) {
-					VagrantBoxView.this.viewer.setSelection(currentSelection);
-				}
-				refreshViewTitle();
+		Display.getDefault().asyncExec(() -> {
+			VagrantBoxView.this.viewer.refresh();
+			refreshViewTitle();
 			});
-		}
 	}
 
 	private void refreshViewTitle() {
