@@ -29,7 +29,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.messages.Messages;
-import org.eclipse.linuxtools.internal.lttng2.control.ui.views.preferences.ControlPreferences;
 import org.eclipse.rse.services.shells.HostShellProcessAdapter;
 import org.eclipse.rse.services.shells.IHostShell;
 import org.eclipse.rse.services.shells.IShellService;
@@ -193,6 +192,11 @@ public class CommandShell implements ICommandShell {
                                     errorResult.add(nextLine);
                                 }
                             }
+                            // Workaround if error stream is not available and stderr output is written
+                            // in standard output above. This is true for SshTerminalShell implementation.
+                            if (errorResult.isEmpty()) {
+                                errorResult.addAll(result);
+                            }
                         }
                     }
                     return new CommandResult(fReturnValue, result.toArray(new String[result.size()]), errorResult.toArray(new String[errorResult.size()]));
@@ -202,7 +206,8 @@ public class CommandShell implements ICommandShell {
             fExecutor.execute(future);
 
             try {
-                return future.get(ControlPreferences.getInstance().getCommandTimeout(), TimeUnit.SECONDS);
+//                return future.get(ControlPreferences.getInstance().getCommandTimeout(), TimeUnit.SECONDS);
+                return future.get(600, TimeUnit.SECONDS);
             } catch (java.util.concurrent.ExecutionException ex) {
                 throw new ExecutionException(Messages.TraceControl_ExecutionFailure, ex);
             } catch (InterruptedException ex) {
