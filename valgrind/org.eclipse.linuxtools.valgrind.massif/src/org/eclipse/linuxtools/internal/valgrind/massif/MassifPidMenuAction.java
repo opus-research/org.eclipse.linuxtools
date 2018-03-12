@@ -60,7 +60,12 @@ public class MassifPidMenuAction extends Action implements IMenuCreator {
                             }
                             setChecked(true);
                             view.setPid(pid);
-                            Display.getDefault().syncExec(() -> view.refreshView());
+                            Display.getDefault().syncExec(new Runnable() {
+                                @Override
+                                public void run() {
+                                    view.refreshView();
+                                }
+                            });
                         }
                     });
                     item.fill(menu, -1);
