@@ -18,7 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -48,13 +48,12 @@ public class ContainerCommandProcess extends Process {
 	private String imageName;
 	private PipedInputStream stdout;
 	private PipedInputStream stderr;
-	private Map<String, String> remoteVolumes;
+	private Set<String> remoteVolumes;
 	private boolean keepContainer;
 	private Thread thread;
 
 	public ContainerCommandProcess(IDockerConnection connection,
-			String imageName, String containerId,
-			Map<String, String> remoteVolumes,
+			String imageName, String containerId, Set<String> remoteVolumes,
 			boolean keepContainer) {
 		this.connection = connection;
 		this.imageName = imageName;
@@ -156,12 +155,12 @@ public class ContainerCommandProcess extends Process {
 		private static final String COPY_VOLUMES_FROM_DESC = "ContainerLaunch.copyVolumesFromJob.desc"; //$NON-NLS-1$
 		private static final String COPY_VOLUMES_FROM_TASK = "ContainerLaunch.copyVolumesFromJob.task"; //$NON-NLS-1$
 
-		private final Map<String, String> remoteVolumes;
+		private final Set<String> remoteVolumes;
 		private final IDockerConnection connection;
 		private final String imageName;
 
 		public CopyVolumesFromImageJob(IDockerConnection connection,
-				String imageName, Map<String, String> remoteVolumes) {
+				String imageName, Set<String> remoteVolumes) {
 			super(Messages.getString(COPY_VOLUMES_FROM_JOB_TITLE));
 			this.remoteVolumes = remoteVolumes;
 			this.connection = connection;
@@ -181,15 +180,14 @@ public class ContainerCommandProcess extends Process {
 				IDockerHostConfig hostConfig = hostBuilder.build();
 				containerId = ((DockerConnection) connection)
 						.createContainer(config, hostConfig, null);
-				for (String volume : remoteVolumes.keySet()) {
+				for (String volume : remoteVolumes) {
 					try {
 						monitor.setTaskName(Messages.getFormattedString(
 								COPY_VOLUMES_FROM_TASK, volume));
 						monitor.worked(1);
 
 						InputStream in = ((DockerConnection) connection)
-								.copyContainer(containerId,
-										remoteVolumes.get(volume));
+								.copyContainer(containerId, volume);
 
 						/*
 						 * The input stream from copyContainer might be
