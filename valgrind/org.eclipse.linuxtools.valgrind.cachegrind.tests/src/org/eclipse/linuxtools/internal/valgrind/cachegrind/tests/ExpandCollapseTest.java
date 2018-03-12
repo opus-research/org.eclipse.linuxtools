@@ -35,7 +35,6 @@ public class ExpandCollapseTest extends AbstractCachegrindTest {
 
     @Before
     public void prep() throws Exception {
-        assumeCpp();
         proj = createProjectAndBuild("cpptest"); //$NON-NLS-1$
     }
 

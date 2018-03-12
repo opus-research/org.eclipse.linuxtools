@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    lufimtse :  Leo Ufimtsev lufimtse@redhat.com
+ *    Red Hat Inc.
  *******************************************************************************/
 
 package org.eclipse.linuxtools.profiling.ui;
@@ -60,7 +60,7 @@ import org.eclipse.swt.widgets.Display;
  *      <li> Continue with launch. </li>
  * </ol>
  * For an example, see <code> org.eclipse.linuxtools.internal.gprof.launch.GprofLaunchConfigurationDelegate  </code>.
- * @since 3.1.0
+ * @since 3.1
  */
 public class CProjectBuildHelpers {
 
@@ -395,11 +395,11 @@ public class CProjectBuildHelpers {
                 //Code copied from private methd: SetAutotoolsStringOptionValue.setOptionValue()
                 //Except I added a line to save the configuration to disk as well.
                 AutotoolsConfigurationManager.getInstance().syncConfigurations(project);
-                ICConfigurationDescription[] cfgds = CoreModel.getDefault()
-                        .getProjectDescription(project).getConfigurations();
-                if (cfgds != null && cfgds.length >= 1) {
+                ICConfigurationDescription cfgds = CoreModel.getDefault()
+                        .getProjectDescription(project).getActiveConfiguration();
+                if (cfgds != null) {
                     IAConfiguration iaConfig = AutotoolsConfigurationManager.getInstance()
-                            .getConfiguration(project, cfgds[0].getId());
+                            .getConfiguration(project, cfgds.getId());
 
                     //Read option value
                     IConfigureOption option = iaConfig.getOption(optionId);
@@ -439,11 +439,12 @@ public class CProjectBuildHelpers {
                 //Code copied from private methd: SetAutotoolsStringOptionValue.setOptionValue()
                 //Except I added a line to save the configuration to disk as well.
                 AutotoolsConfigurationManager.getInstance().syncConfigurations(project);
-                ICConfigurationDescription[] cfgds = CoreModel.getDefault()
-                        .getProjectDescription(project).getConfigurations();
-                if (cfgds != null && cfgds.length >= 1) {
+                ICConfigurationDescription cfgds = CoreModel.getDefault().
+                		getProjectDescription(project).getActiveConfiguration();
+                
+                if (cfgds != null) {
                     IAConfiguration iaConfig = AutotoolsConfigurationManager.getInstance()
-                            .getConfiguration(project, cfgds[0].getId());
+                            .getConfiguration(project, cfgds.getId());
 
                     //Set option value.
                     iaConfig.setOption(optId, optVal);
