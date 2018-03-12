@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -81,7 +81,6 @@ import org.eclipse.linuxtools.internal.docker.ui.views.ImagePullProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ContainerLinkModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ExposedPortModel;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -170,11 +169,7 @@ public class ImageRunSelectionPage extends WizardPage {
 
 	@Override
 	public void createControl(final Composite parent) {
-		final ScrolledComposite scrollTop = new ScrolledComposite(parent,
-				SWT.H_SCROLL | SWT.V_SCROLL);
-		scrollTop.setExpandVertical(true);
-		scrollTop.setExpandHorizontal(true);
-		final Composite container = new Composite(scrollTop, SWT.NONE);
+		final Composite container = new Composite(parent, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).span(1, 1)
 				.grab(true, false).applyTo(container);
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
@@ -217,12 +212,7 @@ public class ImageRunSelectionPage extends WizardPage {
 		// attach the Databinding context status to this wizard page.
 		WizardPageSupport.create(this, this.dbc);
 		setStatusMessage(containerstatus);
-
-		scrollTop.setContent(container);
-		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		scrollTop.setSize(point);
-		scrollTop.setMinSize(point);
-		setControl(scrollTop);
+		setControl(container);
 	}
 
 	private void setStatusMessage(final Object containerstatus) {
@@ -466,11 +456,12 @@ public class ImageRunSelectionPage extends WizardPage {
 				removeButton);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void checkAllElements(
 			final CheckboxTableViewer exposedPortsTableViewer) {
 		exposedPortsTableViewer.setAllChecked(true);
 		model.setSelectedPorts(
-				new HashSet<>(model.getExposedPorts()));
+				new HashSet<ExposedPortModel>(model.getExposedPorts()));
 	}
 
 	private ISelectionChangedListener onSelectionChanged(
@@ -986,16 +977,16 @@ public class ImageRunSelectionPage extends WizardPage {
 
 	private class ImageSelectionValidator extends MultiValidator {
 
-		private final IObservableValue<String> imageSelectionObservable;
+		private final IObservableValue imageSelectionObservable;
 
 		ImageSelectionValidator(
-				final IObservableValue<String> imageSelectionObservable) {
+				final IObservableValue imageSelectionObservable) {
 			this.imageSelectionObservable = imageSelectionObservable;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final String selectedImageName = imageSelectionObservable
+			final String selectedImageName = (String) imageSelectionObservable
 					.getValue();
 			if (selectedImageName.isEmpty()) {
 				model.setSelectedImageNeedsPulling(false);
@@ -1025,17 +1016,18 @@ public class ImageRunSelectionPage extends WizardPage {
 
 		private final IDockerConnection connection;
 
-		private final IObservableValue<String> containerNameObservable;
+		private final IObservableValue containerNameObservable;
 
 		ContainerNameValidator(final IDockerConnection connection,
-				final IObservableValue<String> containerNameObservable) {
+				final IObservableValue containerNameObservable) {
 			this.connection = connection;
 			this.containerNameObservable = containerNameObservable;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final String containerName = containerNameObservable.getValue();
+			final String containerName = (String) containerNameObservable
+					.getValue();
 
 			for (IDockerContainer container : connection.getContainers()) {
 				if (container.name().equals(containerName)) {

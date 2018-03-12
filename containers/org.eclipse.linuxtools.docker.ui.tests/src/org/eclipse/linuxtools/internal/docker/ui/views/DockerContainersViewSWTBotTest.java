@@ -41,6 +41,7 @@ public class DockerContainersViewSWTBotTest {
 
 	private SWTWorkbenchBot bot = new SWTWorkbenchBot();
 	private SWTBotView dockerContainersViewBot;
+	private DockerContainersView dockerContainersView;
 	private SWTBotView dockerExplorerBotView;
 
 	@ClassRule
@@ -58,13 +59,12 @@ public class DockerContainersViewSWTBotTest {
 		SWTUtils.asyncExec(() -> {try {
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 					.showView(DockerContainersView.VIEW_ID);
-			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-			.showView(DockerExplorerView.VIEW_ID);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail("Failed to open Docker Explorer view: " + e.getMessage());
 		}});
 		this.dockerContainersViewBot = bot.viewById(DockerContainersView.VIEW_ID);
+		this.dockerContainersView = (DockerContainersView) (dockerContainersViewBot.getViewReference().getView(true));
 		this.dockerExplorerBotView = bot.viewById(DockerExplorerView.VIEW_ID);
 	}
 	
@@ -78,8 +78,9 @@ public class DockerContainersViewSWTBotTest {
 		// remove the DockerContainerRefreshManager
 		dockerConnection.removeContainerListener(DockerContainerRefreshManager
 								.getInstance());
+		// DockerExplorerView inner classes
 		assertThat(dockerConnection.getContainerListeners()).hasSize(2);
-		// close the Docker Containers View
+		// close the Docker Explorer View
 		dockerContainersViewBot.close();
 		// there should be one listener left: DockerExplorerView
 		assertThat(dockerConnection.getContainerListeners()).hasSize(1);
@@ -96,8 +97,9 @@ public class DockerContainersViewSWTBotTest {
 		// remove the DockerContainerRefreshManager
 		dockerConnection.removeContainerListener(DockerContainerRefreshManager
 								.getInstance());
+		// DockerExplorerView inner classes
 		assertThat(dockerConnection.getContainerListeners()).hasSize(0);
-		// close the Docker Containers View
+		// close the Docker Explorer View
 		dockerContainersViewBot.close();
 		// there should be one listener left: DockerExplorerView
 		assertThat(dockerConnection.getContainerListeners()).hasSize(0);
