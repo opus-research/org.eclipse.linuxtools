@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
+import org.eclipse.linuxtools.internal.docker.core.DockerImage;
 import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingModel;
 
 /**
@@ -88,11 +89,11 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	private boolean publishAllPorts = true;
 
-	private final WritableList<ExposedPortModel> exposedPorts = new WritableList<>();
+	private final WritableList exposedPorts = new WritableList();
 
 	private Set<ExposedPortModel> selectedPorts;
 
-	private final WritableList<ContainerLinkModel> links = new WritableList<>();
+	private final WritableList links = new WritableList();
 
 	private boolean interactiveMode = false;
 
@@ -137,9 +138,9 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public ImageRunSelectionModel(final IDockerImage selectedImage) {
 		this(selectedImage.getConnection());
-		if (selectedImage.tags().contains(IDockerImage.TAG_LATEST)) {
+		if (selectedImage.tags().contains(DockerImage.TAG_LATEST)) {
 			setSelectedImageName(ImageRunSelectionModel.getImageName(
-					selectedImage.repo(), IDockerImage.TAG_LATEST));
+					selectedImage.repo(), DockerImage.TAG_LATEST));
 		} else {
 			final String lastTag = selectedImage.tags()
 					.get(selectedImage.tags().size() - 1);
@@ -264,7 +265,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		setEntrypoint(entrypointBuilder.toString());
 	}
 
-	public WritableList<ExposedPortModel> getExposedPorts() {
+	public WritableList getExposedPorts() {
 		return exposedPorts;
 	}
 
@@ -305,7 +306,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 				this.selectedPorts = ports);
 	}
 
-	public WritableList<ContainerLinkModel> getLinks() {
+	public WritableList getLinks() {
 		return links;
 	}
 
@@ -331,7 +332,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		this.links.clear();
 	}
 
-	public void setLinks(final WritableList<ContainerLinkModel> links) {
+	public void setLinks(final WritableList links) {
 		this.links.clear();
 		this.links.addAll(links);
 	}

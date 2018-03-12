@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Kalray.eu and others
+ * Copyright (c) 2013 Kalray.eu
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *    Xavier Raynaud <xavier.raynaud@kalray.eu> - initial API and implementation
- *    Ingenico - Vincent Guignot <vincent.guignot@ingenico.com> - Add binutils strings
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.binutils.preferences;
 
@@ -23,8 +22,6 @@ public class Messages extends NLS {
     public static String BinutilsPreferencePage_nm;
     public static String BinutilsPreferencePage_nm_flags;
     public static String BinutilsPreferencePage_title;
-    public static String BinutilsPreferencePage_strings;
-    public static String BinutilsPreferencePage_strings_flags;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

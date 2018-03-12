@@ -139,9 +139,7 @@ public class DockerContainer implements IDockerContainer {
 
 	@Override
 	public String name() {
-		if (names != null && names.size() > 0)
-			return names.get(0);
-		return ""; //$NON-NLS-1$
+		return names.get(0);
 	}
 
 	@Override

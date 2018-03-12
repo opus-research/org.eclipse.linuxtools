@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.valgrind.launch.IValgrindToolPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -110,20 +111,22 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
         this(true);
     }
 
-	public ValgrindOptionsTab(boolean checkVersion) {
-		this.checkVersion = checkVersion;
-		this.tools = ValgrindLaunchPlugin.getDefault().getRegisteredToolIDs();
-		if (tools != null && tools.length > 0)
-			this.tool = tools[0];
-	}
+    public ValgrindOptionsTab(boolean checkVersion) {
+        this.checkVersion = checkVersion;
+    }
 
-	private SelectionListener selectListener = new SelectionAdapter() {
+    private SelectionListener selectListener = new SelectionAdapter() {
         @Override
         public void widgetSelected(SelectionEvent e) {
             updateLaunchConfigurationDialog();
         }
     };
-    private ModifyListener modifyListener = e -> updateLaunchConfigurationDialog();
+    private ModifyListener modifyListener = new ModifyListener() {
+        @Override
+        public void modifyText(ModifyEvent e) {
+            updateLaunchConfigurationDialog();
+        }
+    };
 
 
 
@@ -210,6 +213,7 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
         Label toolLabel = new Label(comboTop, SWT.NONE);
         toolLabel.setText(Messages.getString("ValgrindOptionsTab.Tool_to_run")); //$NON-NLS-1$
         toolsCombo = new Combo(comboTop, SWT.READ_ONLY);
+        tools = getPlugin().getRegisteredToolIDs();
 
         String[] names = new String[tools.length];
         for (int i = 0; i < names.length; i++) {
@@ -217,16 +221,19 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
         }
         toolsCombo.setItems(names);
 
-        toolsCombo.addModifyListener(e -> {
-		    // user selected change, set defaults in new tool
-		    if (!isInitializing) {
-		        initDefaults = true;
-		        int ix = toolsCombo.getSelectionIndex();
-		        tool = tools[ix];
-		        handleToolChanged();
-		        updateLaunchConfigurationDialog();
-		    }
-		});
+        toolsCombo.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                // user selected change, set defaults in new tool
+                if (!isInitializing) {
+                    initDefaults = true;
+                    int ix = toolsCombo.getSelectionIndex();
+                    tool = tools[ix];
+                    handleToolChanged();
+                    updateLaunchConfigurationDialog();
+                }
+            }
+        });
     }
 
     private String capitalize(String str) {
@@ -354,17 +361,15 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
     }
 
     private void updateErrorOptions() {
-        if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_4_0) >= 0) {
+        if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_4_0) >= 0)
             mainStackSizeTop.setVisible(true);
-        } else {
+        else
             mainStackSizeTop.setVisible(false);
-        }
 
-        if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0) {
+        if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0)
             dSymUtilButton.setVisible(true);
-        } else {
+        else
             dSymUtilButton.setVisible(false);
-        }
     }
 
     private void createSuppressionsOption(Composite top) {
@@ -480,12 +485,8 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
     }
 
     private void loadDynamicTab() throws CoreException {
-         dynamicTab = getToolPage(tool);
+         dynamicTab = getPlugin().getToolPage(tool);
     }
-
-	protected IValgrindToolPage getToolPage(String tool) throws CoreException {
-		return getPlugin().getToolPage(tool);
-	}
 
     public IValgrindToolPage getDynamicTab() {
         return dynamicTab;
