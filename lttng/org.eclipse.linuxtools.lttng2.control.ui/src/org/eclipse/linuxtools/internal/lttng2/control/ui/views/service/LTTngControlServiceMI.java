@@ -481,6 +481,9 @@ public class LTTngControlServiceMI extends LTTngControlService {
                     snapshotInfo.setName(rawInfo.getTextContent());
                     break;
                 case MIStrings.SNAPSHOT_CTRL_URL:
+                    // TODO: tmf does not have a notion of a ctrl url.
+                    break;
+                case MIStrings.SNAPSHOT_DATA_URL:
                     snapshotInfo.setSnapshotPath(rawInfo.getTextContent());
                     break;
                 default:
@@ -490,7 +493,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
         }
 
         // Check if the snapshot output is Streamed
-        Matcher matcher2 = LTTngControlServiceConstants.SNAPSHOT_NETWORK_PATH_PATTERN.matcher(snapshotInfo.getSnapshotPath());
+        Matcher matcher2 = LTTngControlServiceConstants.TRACE_NETWORK_PATTERN.matcher(snapshotInfo.getSnapshotPath());
         if (matcher2.matches()) {
             snapshotInfo.setStreamedSnapshot(true);
         }
