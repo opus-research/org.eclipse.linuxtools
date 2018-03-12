@@ -173,11 +173,6 @@ public abstract class ChangeLogAction extends Action {
     }
 
     protected IEditorPart getChangelog(String currentEditorloc) {
-        IFile changelog = getChangelogFile(currentEditorloc);
-        return changelog != null ? openEditor(changelog) : null;
-    }
-
-    protected IFile getChangelogFile(String currentEditorloc) {
         // Scenario 1: The Changelog is in in the current project file
         IWorkspaceRoot myWorkspaceRoot = getWorkspaceRoot();
         IResource given_resource = myWorkspaceRoot.findMember(currentEditorloc);
@@ -201,7 +196,7 @@ public abstract class ChangeLogAction extends Action {
                     IFile change_log_file = proj_loc
                             .getFile(modified_changelog_path);
 
-                    return change_log_file;
+                    return openEditor(change_log_file);
                 }
 
                 parent_dec = parent_dec.getParent();
