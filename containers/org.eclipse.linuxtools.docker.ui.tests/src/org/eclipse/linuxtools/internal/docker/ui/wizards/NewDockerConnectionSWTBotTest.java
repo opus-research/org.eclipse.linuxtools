@@ -17,14 +17,12 @@ import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionSettin
 import org.eclipse.linuxtools.internal.docker.ui.BaseSWTBotTest;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CheckBoxAssertion;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.RadioAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.TextAssertion;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotToolbarButton;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Test;
 
 /**
@@ -34,9 +32,6 @@ public class NewDockerConnectionSWTBotTest extends BaseSWTBotTest {
 
 	private SWTBotToolbarButton addConnectionButton;
 
-	@ClassRule
-	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(); 
-	
 	@Override
 	@Before
 	public void setup() {
@@ -52,7 +47,7 @@ public class NewDockerConnectionSWTBotTest extends BaseSWTBotTest {
 		DockerConnectionManager.getInstance().setConnectionSettingsFinder(new DefaultDockerConnectionSettingsFinder());
 	}
 
-	private SWTBotToolbarButton getAddConnectionButton() {
+	private static SWTBotToolbarButton getAddConnectionButton() {
 		final SWTBotToolbarButton button = bot.toolbarButtonWithTooltip("&Add Connection");
 		if (button == null) {
 			Assert.fail("Failed to find the 'Add Connection' button");
