@@ -17,9 +17,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.linuxtools.internal.docker.core.DockerAuthConfig;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
-
-import com.spotify.docker.client.DockerCertificateException;
 
 public interface IDockerConnection {
 
@@ -194,19 +193,10 @@ public interface IDockerConnection {
 	void pullImage(String id, DockerAuthConfig authConfig,
 			IDockerProgressHandler handler)
 			throws DockerException, InterruptedException;
-	/**
-	 * @since 2.0
-	 */
-	void pullImage(String id, IRegistryAccount info, IDockerProgressHandler handler) throws DockerException, InterruptedException, DockerCertificateException;
 
 	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException;
-
+	
 	void pushImage(String name, IDockerProgressHandler handler) throws DockerException, InterruptedException;
-
-	/**
-	 * @since 2.0
-	 */
-	void pushImage(String name, IRegistryAccount info, IDockerProgressHandler handler) throws DockerException, InterruptedException, DockerCertificateException;
 
 	/**
 	 * Adds a tag to an existing image
@@ -267,7 +257,7 @@ public interface IDockerConnection {
 	 * @throws InterruptedException
 	 *             if the thread was interrupted
 	 */
-	int auth(final DockerAuthConfig config)
+	int auth(final IDockerAuthConfig config)
 			throws DockerException, InterruptedException;
 
 	String buildImage(IPath path, IDockerProgressHandler handler)
@@ -325,6 +315,24 @@ public interface IDockerConnection {
 	void stopLoggingThread(String id);
 
 	void logContainer(String id, OutputStream stream)
+			throws DockerException, InterruptedException;
+
+	IDockerNetworkCreation createNetwork(IDockerNetworkConfig config)
+			throws DockerException, InterruptedException;
+
+	IDockerNetwork inspectNetwork(String networkId)
+			throws DockerException, InterruptedException;
+
+	List<IDockerNetwork> listNetworks()
+			throws DockerException, InterruptedException;
+
+	void removeNetwork(String networkId)
+			throws DockerException, InterruptedException;
+
+	void connectNetwork(String id, String networkId)
+			throws DockerException, InterruptedException;
+
+	void disconnectNetwork(String id, String networkId)
 			throws DockerException, InterruptedException;
 
 	void removeImage(String name) throws DockerException, InterruptedException;
