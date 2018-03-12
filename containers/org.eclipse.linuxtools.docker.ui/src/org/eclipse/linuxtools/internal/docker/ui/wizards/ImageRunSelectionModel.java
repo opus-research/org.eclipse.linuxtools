@@ -66,8 +66,6 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public static final String REMOVE_WHEN_EXITS = "removeWhenExits"; //$NON-NLS-1$
 
-	public static final String PRIVILEGED = "privileged"; //$NON-NLS-1$
-
 	private String selectedConnectionName;
 
 	private List<String> connectionNames;
@@ -101,8 +99,6 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	private boolean allocatePseudoTTY = false;
 
 	private boolean removeWhenExits = false;
-
-	private boolean privileged = false;
 
 	public ImageRunSelectionModel(
 			final IDockerConnection selectedConnection) {
@@ -385,15 +381,6 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	public void setRemoveWhenExits(boolean removeWhenExits) {
 		firePropertyChange(REMOVE_WHEN_EXITS, this.removeWhenExits,
 				this.removeWhenExits = removeWhenExits);
-	}
-
-	public boolean isPrivileged() {
-		return privileged;
-	}
-
-	public void setPrivileged(boolean privileged) {
-		firePropertyChange(PRIVILEGED, this.privileged,
-				this.privileged = privileged);
 	}
 
 	public static class ExposedPortModel extends BaseDatabindingModel

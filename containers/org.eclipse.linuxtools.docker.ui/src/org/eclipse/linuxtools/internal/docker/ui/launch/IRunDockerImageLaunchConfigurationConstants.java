@@ -48,8 +48,6 @@ public interface IRunDockerImageLaunchConfigurationConstants {
 
 	public static final String AUTO_REMOVE = "autoRemove"; //$NON-NLS-1$
 
-	public static final String PRIVILEGED = "privileged"; //$NON-NLS-1$
-
 	public static final String DATA_VOLUMES = "volumes"; //$NON-NLS-1$
 
 	public static final String VOLUMES_FROM = "volumesFrom"; //$NON-NLS-1$

@@ -97,11 +97,10 @@ public class DockerExplorerView extends CommonNavigator implements
 		return getSite().getId();
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T getAdapter(final Class<T> adapter) {
+    public Object getAdapter(@SuppressWarnings("rawtypes") final Class adapter) {
 		if (IPropertySheetPage.class.isAssignableFrom(adapter)) {
-			return (T) new TabbedPropertySheetPage(this, true);
+            return new TabbedPropertySheetPage(this, true);
         }
         return super.getAdapter(adapter);
     }

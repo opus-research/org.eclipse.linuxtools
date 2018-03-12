@@ -446,18 +446,6 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 						.value(ImageRunSelectionModel.class,
 								ImageRunSelectionModel.REMOVE_WHEN_EXITS)
 						.observe(model));
-
-		// privileged
-		final Button privilegedButton = new Button(container, SWT.CHECK);
-		privilegedButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.privileged")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.span(COLUMNS, 1).grab(true, false).applyTo(privilegedButton);
-		dbc.bindValue(WidgetProperties.selection().observe(privilegedButton),
-				BeanProperties
-						.value(ImageRunSelectionModel.class,
-								ImageRunSelectionModel.PRIVILEGED)
-						.observe(model));
 	}
 
 	private SelectionListener onSearchImage() {
@@ -523,10 +511,6 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 					IRunDockerImageLaunchConfigurationConstants.ALLOCATE_PSEUDO_CONSOLE,
 					false);
 			model.setAllocatePseudoTTY(useTTY);
-			boolean privileged = configuration.getAttribute(
-					IRunDockerImageLaunchConfigurationConstants.PRIVILEGED,
-					false);
-			model.setPrivileged(privileged);
 		} catch (CoreException e) {
 			Activator.logErrorMessage(
 					LaunchMessages.getString(
@@ -573,9 +557,6 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.INTERACTIVE,
 				model.isInteractiveMode());
-		configuration.setAttribute(
-				IRunDockerImageLaunchConfigurationConstants.PRIVILEGED,
-				model.isPrivileged());
 	}
 
 	@Override

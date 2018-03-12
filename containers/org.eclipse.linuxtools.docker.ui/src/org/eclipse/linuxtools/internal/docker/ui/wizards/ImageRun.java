@@ -191,7 +191,6 @@ public class ImageRun extends Wizard {
 		}
 		hostConfigBuilder.binds(binds);
 		hostConfigBuilder.volumesFrom(volumesFrom);
-		hostConfigBuilder.privileged(selectionModel.isPrivileged());
 		// memory constraints (in bytes)
 		if (resourcesModel.isEnableResourceLimitations()) {
 			hostConfigBuilder.memory(resourcesModel.getMemoryLimit() * MB);
