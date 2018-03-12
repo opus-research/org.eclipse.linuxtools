@@ -11,10 +11,10 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.commands;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.IHandler;
@@ -75,70 +75,22 @@ public class CommandUtils {
 	 * @param activePart
 	 *            - active Workbench part
 	 */
-	public static IDockerConnection getCurrentConnection(
-			final IWorkbenchPart activePart) {
+	public static IDockerConnection getCurrentConnection(final IWorkbenchPart activePart) {
 		if (DockerConnectionWatcher.getInstance().getConnection() != null)
 			return DockerConnectionWatcher.getInstance().getConnection();
 		else if (activePart instanceof DockerContainersView) {
 			return ((DockerContainersView) activePart).getConnection();
 		} else if (activePart instanceof DockerImagesView) {
 			return ((DockerImagesView) activePart).getConnection();
-		}
-		// fall back to first active connection in list if one exists
-		return Stream.of(DockerConnectionManager.getInstance().getConnections())
-				.filter(c -> c.isOpen()).findFirst().orElse(null);
-	}
-
-	/**
-	 * @param activePart
-	 *            the active {@link IWorkbenchPart}
-	 * @return the {@link List} of selected elements in the given active part or
-	 *         {@link Collections#emptyList()} if none was selected
-	 */
-	public static List<Object> getSelectedElements(
-			final IWorkbenchPart activePart) {
-		return getSelectedElements(activePart, Object.class);
-	}
-
-	/**
-	 * @param activePart
-	 *            the active {@link IWorkbenchPart}
-	 * @return the of selected element in the given active part or
-	 *         <code>null</code> if none was found
-	 */
-	public static Object getSelectedElement(final IWorkbenchPart activePart) {
-		final List<Object> selectedElements = getSelectedElements(activePart,
-				Object.class);
-		if (selectedElements != null && !selectedElements.isEmpty()) {
-			return selectedElements.get(0);
+		} else {
+			// fall back to first active connection in list if one exists
+			if (DockerConnectionManager.getInstance().hasConnections()) {
+				return DockerConnectionManager.getInstance().getAllConnections()
+						.stream().filter(c -> c.isOpen()).findFirst()
+						.orElse(null);
+			}
 		}
 		return null;
-	}
-
-	/**
-	 * @param activePart
-	 *            the active {@link IWorkbenchPart}
-	 * @param targetClass
-	 * @return the {@link List} of selected {@link IDockerContainer} in the
-	 *         given active part of {@link Collections#emptyList()} if none was
-	 *         selected
-	 */
-	private static <T> List<T> getSelectedElements(
-			final IWorkbenchPart activePart, final Class<T> targetClass) {
-		if (activePart instanceof DockerContainersView) {
-			final ISelection selection = ((DockerContainersView) activePart)
-					.getSelection();
-			return convertSelectionTo(selection, targetClass);
-		} else if (activePart instanceof DockerImagesView) {
-			final ISelection selection = ((DockerImagesView) activePart)
-					.getSelection();
-			return convertSelectionTo(selection, targetClass);
-		} else if (activePart instanceof DockerExplorerView) {
-			final ISelection selection = ((DockerExplorerView) activePart)
-					.getCommonViewer().getSelection();
-			return convertSelectionTo(selection, targetClass);
-		}
-		return Collections.emptyList();
 	}
 
 	/**
@@ -149,7 +101,15 @@ public class CommandUtils {
 	 *         selected
 	 */
 	public static List<IDockerContainer> getSelectedContainers(final IWorkbenchPart activePart) {
-		return getSelectedElements(activePart, IDockerContainer.class);
+		if (activePart instanceof DockerContainersView) {
+			final ISelection selection = ((DockerContainersView) activePart).getSelection();
+			return convertSelectionTo(selection, IDockerContainer.class);
+		} else if (activePart instanceof DockerExplorerView) {
+			final ISelection selection = ((DockerExplorerView) activePart)
+					.getCommonViewer().getSelection();
+			return convertSelectionTo(selection, IDockerContainer.class);
+		}
+		return Collections.emptyList();
 	}
 
 	/**
@@ -161,7 +121,16 @@ public class CommandUtils {
 	 */
 	public static List<IDockerPortMapping> getSelectedPortMappings(
 			final IWorkbenchPart activePart) {
-		return getSelectedElements(activePart, IDockerPortMapping.class);
+		if (activePart instanceof DockerContainersView) {
+			final ISelection selection = ((DockerContainersView) activePart)
+					.getSelection();
+			return convertSelectionTo(selection, IDockerPortMapping.class);
+		} else if (activePart instanceof DockerExplorerView) {
+			final ISelection selection = ((DockerExplorerView) activePart)
+					.getCommonViewer().getSelection();
+			return convertSelectionTo(selection, IDockerPortMapping.class);
+		}
+		return Collections.emptyList();
 	}
 
 	/**
@@ -173,7 +142,16 @@ public class CommandUtils {
 	 */
 	public static List<DockerContainerVolume> getSelectedVolumes(
 			final IWorkbenchPart activePart) {
-		return getSelectedElements(activePart, DockerContainerVolume.class);
+		if (activePart instanceof DockerContainersView) {
+			final ISelection selection = ((DockerContainersView) activePart)
+					.getSelection();
+			return convertSelectionTo(selection, DockerContainerVolume.class);
+		} else if (activePart instanceof DockerExplorerView) {
+			final ISelection selection = ((DockerExplorerView) activePart)
+					.getCommonViewer().getSelection();
+			return convertSelectionTo(selection, DockerContainerVolume.class);
+		}
+		return Collections.emptyList();
 	}
 
 	/**
@@ -198,21 +176,6 @@ public class CommandUtils {
 	}
 
 	/**
-	 * @param activePart
-	 *            the active {@link IWorkbenchPart}
-	 * @return the selected {@link IDockerImage} in the given active part of
-	 *         <code>null</code> if none was selected
-	 */
-	public static IDockerImage getSelectedImage(
-			final IWorkbenchPart activePart) {
-		final List<IDockerImage> selectedImages = getSelectedImages(activePart);
-		if (selectedImages == null || selectedImages.isEmpty()) {
-			return null;
-		}
-		return selectedImages.get(0);
-	}
-
-	/**
 	 * 
 	 * @param selection
 	 *            the current selection
@@ -224,12 +187,16 @@ public class CommandUtils {
 	private static <T> List<T> convertSelectionTo(final ISelection selection,
 			final Class<T> targetClass) {
 		if (selection instanceof IStructuredSelection) {
+			final List<T> selectedContainers = new ArrayList<>();
 			final IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-			return (List<T>) structuredSelection.toList().stream()
-					.filter(selectedElement -> targetClass
-							.isAssignableFrom(selectedElement.getClass()))
-					.map(selectedElement -> (T) selectedElement)
-					.collect(Collectors.toList());
+			for (Iterator<?> iterator = structuredSelection.iterator(); iterator
+					.hasNext();) {
+				final Object selectedElement = iterator.next();
+				if (targetClass.isAssignableFrom(selectedElement.getClass())) {
+					selectedContainers.add((T) selectedElement);
+				}
+			}
+			return Collections.unmodifiableList(selectedContainers);
 		}
 		return Collections.emptyList();
 	}

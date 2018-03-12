@@ -13,10 +13,11 @@ package org.eclipse.linuxtools.internal.docker.ui.commands;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.linuxtools.docker.core.Activator;
-import org.eclipse.linuxtools.docker.core.IDockerConnection2;
+import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.ui.jobs.RetrieveImageHierarchyJob;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImageHierarchyView;
 import org.eclipse.swt.widgets.Display;
@@ -26,19 +27,19 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
- * Handler for the Images and Containers Hierarchy View
+ * Handler for the 
  */
-public class OpenInHierarchyViewCommandHandler extends AbstractHandler {
+public class OpenImageHierarchyViewCommandHandler extends AbstractHandler {
 
 	@Override
-	public Object execute(ExecutionEvent event) {
+	public Object execute(ExecutionEvent event) throws ExecutionException {
 		// retrieve the selected image
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-		final IDockerConnection2 currentConnection = (IDockerConnection2) CommandUtils
-				.getCurrentConnection(activePart);
+		final IDockerImage selectedImage = RunImageCommandHandler
+				.getSelectedImage(activePart);
 		// run a job to retrieve the image hierarchy
 		final RetrieveImageHierarchyJob retrieveImageHierarchyJob = new RetrieveImageHierarchyJob(
-				currentConnection, CommandUtils.getSelectedElement(activePart));
+				selectedImage);
 		retrieveImageHierarchyJob.addJobChangeListener(new JobChangeAdapter() {
 			@Override
 			public void done(IJobChangeEvent event) {

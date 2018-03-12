@@ -13,12 +13,9 @@ package org.eclipse.linuxtools.internal.docker.ui.views;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
-import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
-import org.eclipse.linuxtools.docker.core.IDockerImageHierarchyNode;
+import org.eclipse.linuxtools.docker.core.IDockerImageHiearchyNode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -45,9 +42,7 @@ public class DockerImageHierarchyView extends CommonNavigator
 	private Control explanationsPane;
 	private PageBook pageBook;
 
-	private IDockerImageHierarchyNode selectedImageHierarchy = null;
-
-	private Control currentPane;
+	private IDockerImageHiearchyNode selectedImageHierarchy = null;
 
 	@Override
 	protected Object getInitialInput() {
@@ -60,16 +55,12 @@ public class DockerImageHierarchyView extends CommonNavigator
 	 * 
 	 * @param selectedImageHierarchy
 	 *            the hierarchy to display in this view
-	 * @param selectedElement
-	 *            the element to select in the view
 	 */
-	public void show(final IDockerImageHierarchyNode selectedImageHierarchy) {
+	public void show(final IDockerImageHiearchyNode selectedImageHierarchy) {
 		this.selectedImageHierarchy = selectedImageHierarchy;
 		this.getCommonViewer().setInput(
 				new DockerImageHiearchy(this.selectedImageHierarchy.getRoot()));
 		this.getCommonViewer().expandAll();
-		this.getCommonViewer()
-				.setSelection(new StructuredSelection(selectedImageHierarchy));
 		showHierarchyOrExplanations();
 	}
 
@@ -141,34 +132,22 @@ public class DockerImageHierarchyView extends CommonNavigator
 	 */
 	public void showHierarchyOrExplanations() {
 		if (this.selectedImageHierarchy == null) {
-			this.currentPane = explanationsPane;
 			pageBook.showPage(explanationsPane);
 		} else {
-			this.currentPane = hierarchyPane;
 			pageBook.showPage(hierarchyPane);
 		}
 	}
 
-	/**
-	 * @return <code>true</code> if the current panel is the one containing a
-	 *         {@link TreeViewer} of {@link IDockerConnection}s,
-	 *         <code>false</code> otherwise.
-	 */
-	public boolean isShowingConnectionsPane() {
-		return this.currentPane == hierarchyPane;
-	}
-
 	static class DockerImageHiearchy {
 
-		private final IDockerImageHierarchyNode root;
+		private final IDockerImageHiearchyNode root;
 
-		public DockerImageHiearchy(final IDockerImageHierarchyNode root) {
+		public DockerImageHiearchy(final IDockerImageHiearchyNode root) {
 			this.root = root;
 		}
 
-		public IDockerImageHierarchyNode getRoot() {
+		public IDockerImageHiearchyNode getRoot() {
 			return this.root;
 		}
 	}
-
 }
