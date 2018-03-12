@@ -87,11 +87,6 @@
           id="org.eclipse.linuxtools.vagrant.ui.commands.sshVM"
           name="SSH VMs">
     </command>
-    <command
-          description="Add Specified Box"
-          id="org.eclipse.linuxtools.vagrant.ui.commands.addBox"
-          name="Add Box">
-    </command>
  </extension>
  <extension
        point="org.eclipse.ui.handlers">
@@ -191,10 +186,6 @@
           </with>
        </enabledWhen>
     </handler>
-    <handler
-          class="org.eclipse.linuxtools.internal.vagrant.ui.commands.AddBoxCommandHandler"
-          commandId="org.eclipse.linuxtools.vagrant.ui.commands.addBox">
-    </handler>
  </extension>
  <extension
        point="org.eclipse.ui.menus">
@@ -259,16 +250,6 @@
              icon="icons/stopped.gif"
              id="org.eclipse.linuxtools.vagrant.ui.commands.stopVM"
              mnemonic="S"
-             style="push">
-       </command>
-    </menuContribution>
-    <menuContribution
-          locationURI="toolbar:org.eclipse.linuxtools.vagrant.ui.vagrantBoxView">
-       <command
-             commandId="org.eclipse.linuxtools.vagrant.ui.commands.addBox"
-             icon="icons/pull.gif"
-             id="org.eclipse.linuxtools.vagrant.ui.commands.addBox"
-             mnemonic="P"
              style="push">
        </command>
     </menuContribution>

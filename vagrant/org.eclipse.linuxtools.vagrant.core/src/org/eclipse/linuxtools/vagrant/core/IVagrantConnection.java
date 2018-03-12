@@ -38,8 +38,6 @@ public interface IVagrantConnection {
 
 	public List<IVagrantBox> getBoxes(boolean force);
 
-	void addBox(String name, String location) throws VagrantException, InterruptedException;
-
 	void destroyVM(String id) throws VagrantException, InterruptedException;
 
 	void haltVM(String id) throws VagrantException, InterruptedException;
