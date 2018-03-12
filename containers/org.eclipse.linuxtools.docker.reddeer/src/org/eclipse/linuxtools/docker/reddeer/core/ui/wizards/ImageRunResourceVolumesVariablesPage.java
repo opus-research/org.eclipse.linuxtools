@@ -18,7 +18,6 @@ import org.jboss.reddeer.core.matcher.WithTextMatcher;
 import org.jboss.reddeer.jface.wizard.WizardPage;
 import org.jboss.reddeer.swt.impl.button.CheckBox;
 import org.jboss.reddeer.swt.impl.button.FinishButton;
-import org.jboss.reddeer.swt.impl.button.NextButton;
 import org.jboss.reddeer.swt.impl.button.OkButton;
 import org.jboss.reddeer.swt.impl.button.PushButton;
 import org.jboss.reddeer.swt.impl.button.RadioButton;
@@ -40,10 +39,6 @@ public class ImageRunResourceVolumesVariablesPage extends WizardPage {
 	public void finish() {
 		new FinishButton().click();
 		new WaitWhile(new JobIsRunning(), TimePeriod.VERY_LONG);
-	}
-	
-	public void next() {
-		new NextButton().click();
 	}
 
 	public void addDataVolumeNoExternalMount(String containerPath) {
