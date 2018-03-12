@@ -435,11 +435,9 @@ public class ImageSearchPage extends WizardPage {
 
 		@Override
 		protected void measure(Event event, Object element) {
-			if (!ICON.isDisposed()) {
-				final Rectangle rectangle = ICON.getBounds();
-				event.setBounds(new Rectangle(event.x, event.y,
-						rectangle.width + 200, rectangle.height));
-			}
+			Rectangle rectangle = ICON.getBounds();
+			event.setBounds(new Rectangle(event.x, event.y,
+					rectangle.width + 200, rectangle.height));
 
 		}
 
