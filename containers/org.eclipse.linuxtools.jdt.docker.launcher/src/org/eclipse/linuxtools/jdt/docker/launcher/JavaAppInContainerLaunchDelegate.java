@@ -27,7 +27,6 @@ import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -103,10 +102,8 @@ public class JavaAppInContainerLaunchDelegate extends AbstractJavaLaunchConfigur
 
 			// Classpath
 			String[] classpath = getClasspath(configuration);
-			if (Platform.OS_WIN32.equals(Platform.getOS())) {
-				for (int i = 0; i < classpath.length; i++) {
-					classpath[i] = UnixFile.convertDOSPathToUnixPath(classpath[i]);
-				}
+			for (int i = 0; i < classpath.length; i++) {
+				classpath[i] = UnixFile.convertDOSPathToUnixPath(classpath[i]);
 			}
 
 			// Create VM config
