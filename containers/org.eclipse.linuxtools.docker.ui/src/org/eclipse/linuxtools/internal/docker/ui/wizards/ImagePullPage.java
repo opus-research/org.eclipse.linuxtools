@@ -25,7 +25,6 @@ import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
@@ -161,6 +160,14 @@ public class ImagePullPage extends WizardPage {
 
 		// Set the Default registry and ensure it is observed
 		accountCombo.select(0);
+		accountCombo.addModifyListener((e) -> {
+			// TODO: We only support searches on the Default Registry
+			if (!DOCKER_DAEMON_DEFAULT.equals(ImagePullPage.this.model.getRegistry())) {
+				searchButton.setEnabled(false);
+			} else {
+				searchButton.setEnabled(true);
+			}
+		});
 
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
@@ -177,21 +184,9 @@ public class ImagePullPage extends WizardPage {
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				IRegistry reg;
-				String [] tokens = model.getRegistry().split("@");
-				if (tokens.length > 1) {
-					reg = new RegistryInfo(tokens[1]);
-				} else {
-					if (DOCKER_DAEMON_DEFAULT.equals(model.getRegistry())) {
-						reg = new RegistryInfo(AbstractRegistry.DOCKERHUB_REGISTRY);
-					} else {
-						reg = new RegistryInfo(model.getRegistry());
-					}
-				}
 				final ImageSearch imageSearchWizard = new ImageSearch(
 						ImagePullPage.this.connection,
-						ImagePullPage.this.model.getImageName(),
-						reg);
+						ImagePullPage.this.model.getImageName());
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {
