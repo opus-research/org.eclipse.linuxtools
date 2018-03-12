@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.validation.SchemaFactory;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -95,7 +97,15 @@ public class LTTngControlServiceMI extends LTTngControlService {
         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setValidating(false);
 
-        // TODO: Add xsd validation for machine interface via mi_lttng.xsd from LTTng
+        // Schema factory for validation
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+        try {
+            docBuilderFactory.setSchema(schemaFactory.newSchema(xsdUrl));
+        } catch (SAXException e) {
+            throw new ExecutionException(Messages.TraceControl_InvalidSchemaError, e);
+        }
+
         try {
             fDocumentBuilder = docBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
