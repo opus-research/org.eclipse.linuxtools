@@ -52,12 +52,6 @@ public class OSIORestTaskEditorPage extends AbstractTaskEditorPage {
 					editor = new OSIOAssigneeAttributeEditor(getModel(), taskAttribute);
 				} else if (IOSIORestConstants.EDITOR_TYPE_LABELS.equals(type)) {
 					editor = new OSIOLabelAttributeEditor(getModel(), taskAttribute);
-				} else if (IOSIORestConstants.EDITOR_TYPE_LINKS.equals(type)) {
-					editor = new OSIOLinksAttributeEditor(getModel(), taskAttribute);
-				} else if (IOSIORestConstants.EDITOR_TYPE_ADD_LINKS.equals(type)) {
-					editor = new OSIOAddLinksAttributeEditor(getModel(), getConnector(), taskAttribute);
-				} else if (IOSIORestConstants.EDITOR_TYPE_ADD_LABELS.equals(type)) {
-					editor = new OSIOLabelsAttributeEditor(getModel(), taskAttribute);
 				} else if (IOSIORestConstants.EDITOR_TYPE_KEYWORD.equals(type)) {
 					editor = new OSIOKeywordAttributeEditor(getModel(), taskAttribute);
 				} else {
@@ -69,10 +63,6 @@ public class OSIORestTaskEditorPage extends AbstractTaskEditorPage {
 				}
 				if (editor != null
 						&& OSIORestTaskSchema.getDefault().ADD_LABEL.getKey().equals(taskAttribute.getId())) {
-					editor.setLayoutHint(new LayoutHint(RowSpan.SINGLE, ColumnSpan.SINGLE));
-				}
-				if (editor != null
-						&& OSIORestTaskSchema.getDefault().ADD_LINK.getKey().equals(taskAttribute.getId())) {
 					editor.setLayoutHint(new LayoutHint(RowSpan.SINGLE, ColumnSpan.SINGLE));
 				}
 
@@ -88,23 +78,13 @@ public class OSIORestTaskEditorPage extends AbstractTaskEditorPage {
 		// remove unnecessary default editor parts
 		ArrayList<TaskEditorPartDescriptor> descriptorsToRemove = new ArrayList<TaskEditorPartDescriptor>(2);
 		for (TaskEditorPartDescriptor taskEditorPartDescriptor : descriptors) {
-			if (taskEditorPartDescriptor.getId().equals(ID_PART_PEOPLE) ||
-					taskEditorPartDescriptor.getId().equals(ID_PART_ATTRIBUTES)) {
+			if (taskEditorPartDescriptor.getId().equals(ID_PART_PEOPLE)) {
 				descriptorsToRemove.add(taskEditorPartDescriptor);
 				continue;
 			}
 		}
 		descriptors.removeAll(descriptorsToRemove);
 
-		// Add the updated OSIO attributes part
-		descriptors.add(new TaskEditorPartDescriptor(ID_PART_ATTRIBUTES) {
-			@Override
-			public AbstractTaskEditorPart createPart() {
-				return new OSIORestTaskEditorAttributePart();
-			}
-	
-		}.setPath(PATH_ATTRIBUTES));
-		
 		// Add the updated OSIO people part
 		descriptors.add(new TaskEditorPartDescriptor(ID_PART_PEOPLE) {
 			@Override

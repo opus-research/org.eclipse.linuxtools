@@ -38,7 +38,7 @@ public class OSIOLabelAttributeEditor extends AbstractAttributeEditor {
 
 	public OSIOLabelAttributeEditor(TaskDataModel manager, TaskAttribute taskAttribute) {
 		super(manager, taskAttribute);
-		setLayoutHint(new LayoutHint(RowSpan.MULTIPLE, ColumnSpan.MULTIPLE));
+		setLayoutHint(new LayoutHint(RowSpan.MULTIPLE, ColumnSpan.SINGLE));
 	}
 
 	@Override
