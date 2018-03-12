@@ -236,34 +236,6 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
                 Integer formerThreadNode = ss.getQuarkRelativeAndAdd(getNodeThreads(), prevTid.toString());
                 Integer newCurrentThreadNode = ss.getQuarkRelativeAndAdd(getNodeThreads(), nextTid.toString());
 
-                /**
-                 * From the linux kernel's include/linux/sched.h
-                 *
-                 * <pre>
-                 * #define TASK_RUNNING     0
-                 * #define TASK_INTERRUPTIBLE  1
-                 * #define TASK_UNINTERRUPTIBLE    2
-                 * #define __TASK_STOPPED      4
-                 * #define __TASK_TRACED       8
-                 * #define EXIT_DEAD       16
-                 * #define EXIT_ZOMBIE     32
-                 * #define EXIT_TRACE      (EXIT_ZOMBIE | EXIT_DEAD)
-                 * #define TASK_DEAD       64
-                 * #define TASK_WAKEKILL       128
-                 * #define TASK_WAKING     256
-                 * #define TASK_PARKED     512
-                 * #define TASK_STATE_MAX      1024
-                 * </pre>
-                 */
-                /*
-                 * TODO: Ideally, we should add a state for every possible
-                 * process state, or else, we get wait_blocked that are not
-                 * really blocked
-                 *
-                 * For now, we just ignore the TASK_STATE_MAX
-                 */
-                prevState = prevState & ~1024;
-
                 /* Set the status of the process that got scheduled out. */
                 quark = ss.getQuarkRelativeAndAdd(formerThreadNode, Attributes.STATUS);
                 if (prevState != 0) {
