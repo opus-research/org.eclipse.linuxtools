@@ -112,9 +112,7 @@ public abstract class ImagePullPushPage<M extends ImagePullPushPageModel>
 			defaultRegistry = allRegistryAccounts.get(0);
 		}
 		IRegistry selectedRegistry = allRegistryAccounts.stream()
-				.filter(x -> ((RegistryInfo) x).getRegistryId()
-						.equals(lastRegistry))
-				.findFirst()
+				.filter(x -> x.toString().equals(lastRegistry)).findFirst()
 				.orElse(defaultRegistry);
 		registryAccountComboViewer.setInput(allRegistryAccounts);
 		if (selectedRegistry != null) {
