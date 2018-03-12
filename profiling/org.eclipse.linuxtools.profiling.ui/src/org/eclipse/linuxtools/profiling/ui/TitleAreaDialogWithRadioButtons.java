@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Red Hat Inc.
+ *    Red Hat Inc. :  Initial Implementation
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.ui;
 
