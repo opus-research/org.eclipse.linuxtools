@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2017 Alphonse Van Assche and others.
+ * Copyright (c) 2007 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,15 +13,14 @@ package org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.ColorManager;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.ISpecfileColorConstants;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfileScanner;
 import org.eclipse.linuxtools.rpm.ui.editor.tests.AScannerTest;
-import org.eclipse.ui.PlatformUI;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -32,12 +31,10 @@ public class SpecfileScannerTest extends AScannerTest {
     private TextAttribute ta;
 
     private static SpecfileScanner scanner;
-    private static ColorRegistry colors;
 
     @BeforeClass
     public static void init() {
-        scanner = new SpecfileScanner();
-        colors = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+        scanner = new SpecfileScanner(new ColorManager());
     }
 
     @Override
@@ -57,7 +54,7 @@ public class SpecfileScannerTest extends AScannerTest {
         assertEquals(20, rulesBasedScanner.getTokenLength());
         assertEquals(0, rulesBasedScanner.getTokenOffset());
         ta = (TextAttribute) token.getData();
-        assertEquals(colors.get(ISpecfileColorConstants.COMMENT), ta.getForeground());
+        assertEquals(ISpecfileColorConstants.COMMENT, ta.getForeground().getRGB());
     }
 
     @Test
@@ -67,7 +64,7 @@ public class SpecfileScannerTest extends AScannerTest {
         assertEquals(5, rulesBasedScanner.getTokenLength());
         assertEquals(20, rulesBasedScanner.getTokenOffset());
         ta = (TextAttribute) token.getData();
-        assertEquals(colors.get(ISpecfileColorConstants.TAGS), ta.getForeground());
+        assertEquals(ISpecfileColorConstants.TAGS, ta.getForeground().getRGB());
     }
 
     @Test
@@ -77,7 +74,7 @@ public class SpecfileScannerTest extends AScannerTest {
         assertEquals(5, rulesBasedScanner.getTokenLength());
         assertEquals(31, rulesBasedScanner.getTokenOffset());
         ta = (TextAttribute) token.getData();
-        assertEquals(colors.get(ISpecfileColorConstants.SECTIONS), ta.getForeground());
+        assertEquals(ISpecfileColorConstants.SECTIONS, ta.getForeground().getRGB());
     }
 
     @Test
@@ -87,7 +84,7 @@ public class SpecfileScannerTest extends AScannerTest {
         assertEquals(7, rulesBasedScanner.getTokenLength());
         assertEquals(37, rulesBasedScanner.getTokenOffset());
         ta = (TextAttribute) token.getData();
-        assertEquals(colors.get(ISpecfileColorConstants.MACROS), ta.getForeground());
+        assertEquals(ISpecfileColorConstants.MACROS, ta.getForeground().getRGB());
     }
 
     @Test
@@ -97,7 +94,7 @@ public class SpecfileScannerTest extends AScannerTest {
         assertEquals(7, rulesBasedScanner.getTokenLength());
         assertEquals(45, rulesBasedScanner.getTokenOffset());
         ta = (TextAttribute) token.getData();
-        assertEquals(colors.get(ISpecfileColorConstants.MACROS), ta.getForeground());
+        assertEquals(ISpecfileColorConstants.MACROS, ta.getForeground().getRGB());
     }
 
     @Test
@@ -107,7 +104,7 @@ public class SpecfileScannerTest extends AScannerTest {
         assertEquals(3, rulesBasedScanner.getTokenLength());
         assertEquals(53, rulesBasedScanner.getTokenOffset());
         ta = (TextAttribute) token.getData();
-        assertEquals(colors.get(ISpecfileColorConstants.KEYWORDS), ta.getForeground());
+        assertEquals(ISpecfileColorConstants.KEYWORDS, ta.getForeground().getRGB());
     }
 
     /**
