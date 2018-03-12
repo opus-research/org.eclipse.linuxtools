@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.docker.reddeer.ui;
 
 import org.eclipse.reddeer.workbench.api.View;
+import org.eclipse.reddeer.workbench.impl.view.AbstractView;
 
 
 /**
