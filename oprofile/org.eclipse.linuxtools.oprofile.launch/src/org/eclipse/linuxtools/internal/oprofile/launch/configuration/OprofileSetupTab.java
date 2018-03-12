@@ -12,8 +12,6 @@
 package org.eclipse.linuxtools.internal.oprofile.launch.configuration;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
 
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
@@ -28,7 +26,6 @@ import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchMessages;
 import org.eclipse.linuxtools.internal.oprofile.launch.OprofileLaunchPlugin;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
-import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.ModifyEvent;
@@ -161,17 +158,7 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
         l2.setLayoutData(data);
 
         controlCombo = new CCombo(p, SWT.DROP_DOWN|SWT.READ_ONLY|SWT.BORDER);
-        List<String> tools = Arrays.asList(OprofileProject.OPERF_BINARY);
-		try {
-			Process proc = RuntimeProcessFactory.getFactory().exec(
-					new String [] {"which", OprofileProject.OPCONTROL_BINARY }, //$NON-NLS-1$
-					null);
-			if  (proc.waitFor() == 0) {
-				tools.add(OprofileProject.OPCONTROL_BINARY);
-			}
-		} catch (Exception e) {
-		}
-		controlCombo.setItems(tools.toArray(new String [0]));
+        controlCombo.setItems(new String[]{OprofileProject.OPERF_BINARY, OprofileProject.OPCONTROL_BINARY});
         controlCombo.select(0);
         controlCombo.addModifyListener(new ModifyListener() {
             @Override

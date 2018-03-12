@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.ctf.core.trace;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel.MapMode;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -34,7 +33,6 @@ import org.eclipse.linuxtools.ctf.core.event.types.SimpleDatatypeDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
-import org.eclipse.linuxtools.internal.ctf.core.SafeMappedByteBuffer;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.types.composite.EventHeaderDefinition;
 import org.eclipse.linuxtools.internal.ctf.core.trace.StreamInputPacketIndexEntry;
@@ -219,14 +217,6 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
     // Operations
     // ------------------------------------------------------------------------
 
-    @NonNull
-    private ByteBuffer getByteBufferAt(long position, long size) throws CTFReaderException, IOException {
-        ByteBuffer map = SafeMappedByteBuffer.map(fStreamInputReader.getFc(), MapMode.READ_ONLY, position, size);
-        if (map == null) {
-            throw new CTFReaderException("Failed to allocate mapped byte buffer"); //$NON-NLS-1$
-        }
-        return map;
-    }
     /**
      * Changes the current packet to the given one.
      *
@@ -245,7 +235,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
              */
             ByteBuffer bb = null;
             try {
-                bb = getByteBufferAt(
+                bb = fStreamInputReader.getStreamInput().getByteBufferAt(
                         fCurrentPacket.getOffsetBytes(),
                         (fCurrentPacket.getPacketSizeBits() + 7) / 8);
             } catch (IOException e) {
