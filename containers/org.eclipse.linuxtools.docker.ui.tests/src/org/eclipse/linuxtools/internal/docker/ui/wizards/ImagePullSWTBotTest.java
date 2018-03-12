@@ -35,7 +35,6 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.spotify.docker.client.DockerClient;
@@ -118,8 +117,8 @@ public class ImagePullSWTBotTest {
 		bot.text(0).setText("jboss/wildfly:latest");
 		bot.button("Finish").click();
 		// then
-		Mockito.verify(client, Mockito.times(1)).pull(Matchers.eq("jboss/wildfly:latest"),
-				Matchers.any(DockerProgressHandler.class));
+		Mockito.verify(client, Mockito.times(1)).pull(Mockito.eq("jboss/wildfly:latest"),
+				Mockito.any(DockerProgressHandler.class));
 	}
 
 	@Test
@@ -136,7 +135,7 @@ public class ImagePullSWTBotTest {
 		bot.text(0).setText("jboss/wildfly:latest");
 		bot.button("Finish").click();
 		// then
-		Mockito.verify(client, Mockito.times(1)).pull(Matchers.eq("foo.com/jboss/wildfly:latest"),
-				Matchers.any(DockerProgressHandler.class));
+		Mockito.verify(client, Mockito.times(1)).pull(Mockito.eq("foo.com/jboss/wildfly:latest"),
+				Mockito.any(DockerProgressHandler.class));
 	}
 }
