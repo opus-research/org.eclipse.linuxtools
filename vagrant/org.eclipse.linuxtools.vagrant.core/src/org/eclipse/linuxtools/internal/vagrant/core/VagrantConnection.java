@@ -15,8 +15,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,17 +24,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.linuxtools.vagrant.core.EnumVMStatus;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBoxListener;
@@ -346,11 +337,12 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	}
 
 	@Override
-	public void up(File vagrantDir, String provider) {
+	public Process up(File vagrantDir, String provider) {
 		if (provider != null) {
-			rtCall(new String[] { "up", "--provider", provider }, vagrantDir);
+			return rtCall(new String[] { "up", "--provider", provider },
+					vagrantDir);
 		} else {
-			rtCall(new String[] { "up" }, vagrantDir);
+			return rtCall(new String[] { "up" }, vagrantDir);
 		}
 	}
 
@@ -411,46 +403,15 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		return result.toArray(new String[0]);
 	}
 
-	private void rtCall(String[] args, File vagrantDir) {
-		// org.eclipse.core.externaltools.internal.IExternalToolConstants
-		final String EXTERNAL_TOOLS = "org.eclipse.ui.externaltools.ProgramLaunchConfigurationType"; //$NON-NLS-1$
-		final String UI_PLUGIN_ID = "org.eclipse.ui.externaltools"; //$NON-NLS-1$
-		final String ATTR_LOCATION = UI_PLUGIN_ID + ".ATTR_LOCATION"; //$NON-NLS-1$
-		final String ATTR_TOOL_ARGUMENTS = UI_PLUGIN_ID + ".ATTR_TOOL_ARGUMENTS"; //$NON-NLS-1$
-		final String ATTR_WORKING_DIRECTORY = UI_PLUGIN_ID + ".ATTR_WORKING_DIRECTORY"; //$NON-NLS-1$
-
-		String arguments = Arrays.asList(args).stream().map(u -> u.toString())
-				.collect(Collectors.joining(" ")); //$NON-NLS-1$
-		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-		ILaunchConfigurationType type = manager.getLaunchConfigurationType(EXTERNAL_TOOLS);
+	private static Process rtCall(String[] args, File vagrantDir) {
 		try {
-			String vagrantPath = findVagrantPath();
-			ILaunchConfigurationWorkingCopy wc = type.newInstance(null, VG);
-			wc.setAttribute(ATTR_LOCATION, vagrantPath);
-			wc.setAttribute(ATTR_TOOL_ARGUMENTS, arguments);
-			wc.setAttribute(ATTR_WORKING_DIRECTORY, vagrantDir.getAbsolutePath());
-			wc.launch(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-		} catch (CoreException e1) {
-			Activator.log(e1);
-		}
-	}
-
-	/**
-	 * Find the location of 'vagrant' on the system by looking under the
-	 * environment PATH.
-	 *
-	 * @return The location of 'vagrant' as a string if it exists under
-	 * the PATH, or null if it could not be found.
-	 */
-	private String findVagrantPath() {
-		final String envPath = System.getenv("PATH"); //$NON-NLS-1$
-		if (envPath != null) {
-			for (String dir : envPath.split(File.pathSeparator)) {
-				Path vgPath = Paths.get(dir, VG);
-				if (vgPath.toFile().exists()) {
-					return vgPath.toString();
-				}
-			}
+			List<String> cmd = new ArrayList<>();
+			cmd.add(VG);
+			cmd.addAll(Arrays.asList(args));
+			Process p = Runtime.getRuntime().exec(cmd.toArray(new String[0]),
+					null, vagrantDir);
+			return p;
+		} catch (IOException e) {
 		}
 		return null;
 	}
