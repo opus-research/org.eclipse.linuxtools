@@ -14,6 +14,7 @@
  *          align the selection buttons to the right
  *      François Rajotte - Support for multiple columns + selection control
  *      Patrick Tasse - Fix Sonar warnings
+ *      Generoso Pagano - Add tree filter
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.widgets.timegraph.dialogs;
@@ -37,6 +38,8 @@ import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -46,16 +49,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ISelectionStatusValidator;
 import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
- * Filter dialog for the time graphs
- * This class is derived from the CheckedTreeSelectionDialog
- * It was necessary to develop this similar dialog to allow multiple columns
+ * Filter dialog for the time graphs This class is derived from the
+ * CheckedTreeSelectionDialog It was necessary to develop this similar dialog to
+ * allow multiple columns
  *
  * @version 1.0
  * @since 2.0
@@ -69,6 +74,12 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
 
     private static final int DEFAULT_WIDTH = 60;
     private static final int DEFAULT_HEIGHT = 18;
+
+    private Text fFilterText;
+
+    private TreePatternFilter fPatternFilter;
+
+    private TimeGraphCheckedTree fCheckedTree;
 
     private CheckboxTreeViewer fViewer;
 
@@ -205,21 +216,24 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
     }
 
     /**
-     * @param contentProvider The content provider for the table
+     * @param contentProvider
+     *            The content provider for the table
      */
     public void setContentProvider(ITreeContentProvider contentProvider) {
         fContentProvider = contentProvider;
     }
 
     /**
-     * @param labelProvider The label provider for the table
+     * @param labelProvider
+     *            The label provider for the table
      */
     public void setLabelProvider(IBaseLabelProvider labelProvider) {
         fLabelProvider = labelProvider;
     }
 
     /**
-     * @param columnNames An array of column names to display
+     * @param columnNames
+     *            An array of column names to display
      */
     public void setColumnNames(String[] columnNames) {
         if (columnNames != null) {
@@ -236,7 +250,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
     protected void updateOKStatus() {
         if (!fIsEmpty) {
             if (fValidator != null) {
-                fCurrStatus = fValidator.validate(fViewer.getCheckedElements());
+                fCurrStatus = fValidator.validate(fCheckedTree.getCheckedElements());
                 updateStatus(fCurrStatus);
             } else if (!fCurrStatus.isOK()) {
                 fCurrStatus = new Status(IStatus.OK, PlatformUI.PLUGIN_ID,
@@ -265,7 +279,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
 
     @Override
     protected void computeResult() {
-        setResult(Arrays.asList(fViewer.getCheckedElements()));
+        setResult(Arrays.asList(fCheckedTree.getCheckedElements()));
     }
 
     @Override
@@ -274,8 +288,8 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
             @Override
             public void run() {
                 TimeGraphFilterDialog.super.create();
-                fViewer.setCheckedElements(getInitialElementSelections()
-                        .toArray());
+                fCheckedTree.checkElements(getInitialElementSelections().toArray());
+                updateTreeCheck();
                 if (fExpandedElements != null) {
                     fViewer.setExpandedElements(fExpandedElements);
                 }
@@ -288,8 +302,12 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         Label messageLabel = createMessageArea(composite);
+        Text filterText = createFilterText(composite);
         CheckboxTreeViewer treeViewer = createTreeViewer(composite);
         Control buttonComposite = createSelectionButtons(composite);
+        GridData filterData = new GridData(GridData.FILL_HORIZONTAL);
+        filterData.widthHint = convertWidthInCharsToPixels(fWidth);
+        filterText.setLayoutData(filterData);
         GridData data = new GridData(GridData.FILL_BOTH);
         data.widthHint = convertWidthInCharsToPixels(fWidth);
         data.heightHint = convertHeightInCharsToPixels(fHeight);
@@ -298,10 +316,83 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         treeWidget.setFont(parent.getFont());
         if (fIsEmpty) {
             messageLabel.setEnabled(false);
+            filterText.setEnabled(false);
             treeWidget.setEnabled(false);
             buttonComposite.setEnabled(false);
         }
         return composite;
+    }
+
+    /**
+     * Creates the filter text.
+     *
+     * @param parent
+     *            the parent composite
+     * @return the filter text
+     * @since 3.1
+     */
+    private Text createFilterText(Composite parent) {
+
+        // create the filter and add it to the viewer
+        fPatternFilter = new TreePatternFilter();
+
+        // create the filter text
+        fFilterText = new Text(parent, SWT.SINGLE | SWT.BORDER | SWT.SEARCH
+                | SWT.ICON_CANCEL);
+        fFilterText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                if (fViewer == null || fFilterText == null ||
+                        fPatternFilter == null || fViewer.getControl().isDisposed()) {
+                    return;
+                }
+                String text = fFilterText.getText();
+                if (text == null) {
+                    return;
+                }
+                fPatternFilter.setPattern(text);
+                fViewer.refresh(true);
+                updateTreeCheck();
+            }
+
+        });
+
+        return fFilterText;
+    }
+
+    /**
+     * Update the check status of tree items. The method manually sets the check
+     * status in order to be more efficient than using the viewer
+     * setCheckedElements() method. It uses the information in the
+     * <code>TimeGraphCheckedTree</code> object.
+     *
+     * @since 3.1
+     */
+    private void updateTreeCheck() {
+        // collapse than expand in order to force the redrawing of all
+        // the tree items before changing their check status
+        fViewer.collapseAll();
+        fViewer.expandAll();
+        for (TreeItem item : fViewer.getTree().getItems()) {
+            recursiveCheck(item);
+        }
+    }
+
+    /**
+     * Recursively set the check status for the item, using the information in
+     * the <code>TimeGraphCheckedTree</code> object.
+     *
+     * @param item
+     *            tree item
+     * @since 3.1
+     */
+    private void recursiveCheck(TreeItem item) {
+        item.setChecked(fCheckedTree.isChecked(item.getData()));
+        boolean canceled = false;
+        TreeItem[] items = item.getItems();
+        for (int i = 0; !canceled && i < items.length; i++) {
+            recursiveCheck(items[i]);
+        }
     }
 
     /**
@@ -332,6 +423,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
             }
         });
         fViewer.setComparator(fComparator);
+        fViewer.addFilter(fPatternFilter);
         if (fFilters != null) {
             for (int i = 0; i != fFilters.size(); i++) {
                 fViewer.addFilter(fFilters.get(i));
@@ -339,10 +431,17 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         }
         fViewer.setInput(fInput);
 
-        //pack the columns again for a nice view...
+        // pack the columns again for a nice view...
         for (TreeColumn column : tree.getColumns()) {
             column.pack();
         }
+
+        fCheckedTree = new TimeGraphCheckedTree();
+        fCheckedTree.setViewer(fViewer);
+        fCheckedTree.setPatternFilter(fPatternFilter);
+        fCheckedTree.setContentProvider(fContentProvider);
+        fCheckedTree.setInput(fInput);
+
         return fViewer;
     }
 
@@ -395,7 +494,6 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
                 IDialogConstants.DESELECT_ALL_ID, Messages.TmfTimeFilterDialog_UNCHECK_ALL,
                 false);
 
-
         /*
          * Apply the layout again after creating the buttons to override
          * createButton messing with the columns
@@ -435,6 +533,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
 
                 for (int i = 0; i < viewerElements.length; i++) {
                     fViewer.setSubtreeChecked(viewerElements[i], true);
+                    fCheckedTree.checkSubtree(viewerElements[i]);
                 }
 
                 updateOKStatus();
@@ -471,6 +570,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 fViewer.setCheckedElements(new Object[0]);
+                fCheckedTree.uncheckAll();
                 updateOKStatus();
             }
         });
@@ -486,6 +586,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
      */
     private void checkElement(Object element) {
         fViewer.setChecked(element, true);
+        fCheckedTree.setChecked(element, true);
 
         Object parent = fContentProvider.getParent(element);
 
@@ -495,7 +596,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
     }
 
     /**
-     * Check an element, all its parents and all its children.
+     * Check an element, all its parents and all its visible children.
      *
      * @param element
      *            The element to check.
@@ -504,7 +605,9 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
         checkElement(element);
 
         for (Object child : fContentProvider.getChildren(element)) {
-            checkElementAndSubtree(child);
+            if (fPatternFilter.isElementVisible(fViewer, child)) {
+                checkElementAndSubtree(child);
+            }
         }
     }
 
@@ -516,6 +619,7 @@ public class TimeGraphFilterDialog extends SelectionStatusDialog {
      */
     private void uncheckElement(Object element) {
         fViewer.setChecked(element, false);
+        fCheckedTree.setChecked(element, false);
 
         for (Object child : fContentProvider.getChildren(element)) {
             uncheckElement(child);
