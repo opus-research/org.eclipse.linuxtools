@@ -1505,7 +1505,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	}
 
 	@Override
-	public InputStream copyContainer(final String id, final String path)
+	public InputStream copyContainer(String id, String path)
 			throws DockerException, InterruptedException {
 		InputStream stream;
 		try {
@@ -1514,21 +1514,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
 		return stream;
-	}
-
-	@Override
-	public void copyToContainer(final String directory, final String id,
-			final String path)
-			throws DockerException, InterruptedException, IOException {
-		try {
-			DockerClient copy = getClientCopy();
-			java.nio.file.Path dirPath = FileSystems.getDefault()
-					.getPath(directory);
-			copy.copyToContainer(dirPath, id, path);
-			copy.close(); /* dispose of client copy now that we are done */
-		} catch (com.spotify.docker.client.DockerException e) {
-			throw new DockerException(e.getMessage(), e.getCause());
-		}
 	}
 
 	@Override
