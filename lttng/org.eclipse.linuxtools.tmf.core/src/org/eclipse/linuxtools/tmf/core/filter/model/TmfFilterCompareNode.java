@@ -51,8 +51,8 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
     private int fResult;
     private Type fType = Type.NUM;
     private String fValue;
-    private transient Number fValueNumber;
-    private transient TmfTimestamp fValueTimestamp;
+    private Number fValueNumber;
+    private TmfTimestamp fValueTimestamp;
 
     /**
      * @param parent the parent node
@@ -218,6 +218,9 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
         return clone;
     }
 
+    // FIXME Number does not implements hashCode and equals which is bad. It
+    // might declare two filter equals even if they have different pattern.
+    // ATM, this is really not an issue.
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -227,6 +230,8 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
         result = prime * result + fResult;
         result = prime * result + ((fType == null) ? 0 : fType.hashCode());
         result = prime * result + ((fValue == null) ? 0 : fValue.hashCode());
+        result = prime * result + ((fValueNumber == null) ? 0 : fValueNumber.hashCode());
+        result = prime * result + ((fValueTimestamp == null) ? 0 : fValueTimestamp.hashCode());
         return result;
     }
 
@@ -263,6 +268,20 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
                 return false;
             }
         } else if (!fValue.equals(other.fValue)) {
+            return false;
+        }
+        if (fValueNumber == null) {
+            if (other.fValueNumber != null) {
+                return false;
+            }
+        } else if (!fValueNumber.equals(other.fValueNumber)) {
+            return false;
+        }
+        if (fValueTimestamp == null) {
+            if (other.fValueTimestamp != null) {
+                return false;
+            }
+        } else if (!fValueTimestamp.equals(other.fValueTimestamp)) {
             return false;
         }
         return true;
