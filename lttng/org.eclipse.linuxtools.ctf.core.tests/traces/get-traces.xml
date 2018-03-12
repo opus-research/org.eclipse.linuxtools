@@ -98,7 +98,15 @@
 
 <target name="pullTestSuite" if="testSuiteExists">
   <exec executable = "git" failifexecutionfails="false" dir="ctf-testsuite" timeout="20000">
+    <arg value = "checkout"/>
+    <arg value = "master"/>
+  </exec>
+  <exec executable = "git" failifexecutionfails="false" dir="ctf-testsuite" timeout="20000">
     <arg value = "pull"/>
+  </exec>
+  <exec executable = "git" failifexecutionfails="false" dir="ctf-testsuite" timeout="20000">
+    <arg value = "checkout"/>
+    <arg value = "1f096f5356d09"/>
   </exec>
 </target>
 
