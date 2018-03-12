@@ -354,7 +354,6 @@ public class DockerContainersView extends ViewPart implements
 		removeAction = createAction(DVMessages.getString("DockerContainersView.remove.label"), //$NON-NLS-1$
 				"org.eclipse.linuxtools.docker.ui.commands.removeContainers", //$NON-NLS-1$
 				SWTImagesFactory.DESC_REMOVE);
-
 		mgr.add(startAction);
 		mgr.add(pauseAction);
 		mgr.add(unpauseAction);
@@ -437,8 +436,8 @@ public class DockerContainersView extends ViewPart implements
 		pauseAction.setEnabled(ContainerPropertyTester.isRunning(sel));
 		unpauseAction.setEnabled(ContainerPropertyTester.isPaused(sel));
 		startAction.setEnabled(ContainerPropertyTester.isStopped(sel));
-		stopAction.setEnabled(ContainerPropertyTester.isAnyRunning(sel));
-		killAction.setEnabled(ContainerPropertyTester.isAnyRunning(sel));
+		stopAction.setEnabled(ContainerPropertyTester.isRunning(sel));
+		killAction.setEnabled(ContainerPropertyTester.isRunning(sel));
 		removeAction.setEnabled(ContainerPropertyTester.isStopped(sel));
 	}
 
