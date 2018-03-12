@@ -95,4 +95,14 @@ public interface ITmfStateValue {
      *             If the contained value cannot be read as a String
      */
     String unboxStr();
+
+    /**
+     * Compare two state values with respect to the comparisonOperator
+     * @param object the state value to be compared with the current value
+     * @param comparisonOperator the operator to compare the state values
+     *
+     * @return The comparison result
+     * @since 4.0
+     */
+    boolean compare(Object object, String comparisonOperator);
 }

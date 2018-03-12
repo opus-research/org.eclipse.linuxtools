@@ -65,4 +65,38 @@ final class StringStateValue extends TmfStateValue {
     public String unboxStr() {
         return value;
     }
+
+    @Override
+    public boolean compare(Object object, String comparisonOperator) {
+        if (!(object instanceof StringStateValue)) {
+            return false;
+        }
+        StringStateValue other = (StringStateValue) object;
+
+        boolean result = false;
+        switch (comparisonOperator) {
+        case "EQ": //$NON-NLS-1$
+             result = (value.compareTo(other.value) == 0);
+             break;
+        case "NE": //$NON-NLS-1$
+            result = (value.compareTo(other.value) != 0);
+            break;
+        case "GE": //$NON-NLS-1$
+            result = (value.compareTo(other.value) >= 0);
+            break;
+        case "GT": //$NON-NLS-1$
+            result = (value.compareTo(other.value) > 0);
+            break;
+        case "LE": //$NON-NLS-1$
+            result = (value.compareTo(other.value) <= 0);
+            break;
+        case "LT": //$NON-NLS-1$
+            result = (value.compareTo(other.value) < 0);
+            break;
+        default:
+            result = (value.compareTo(other.value) == 0);
+            break;
+        }
+        return result;
+    }
 }
