@@ -21,7 +21,6 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.MockStatusProvider;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ClearConnectionManagerRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerConnectionManagerUtils;
@@ -53,7 +52,6 @@ public class DockerContainersViewSWTBotTest {
 	private SWTBotView dockerContainersViewBot;
 	private DockerContainersView dockerContainersView;
 	private SWTBotView dockerExplorerBotView;
-	private MockStatusProvider statusProvider;
 
 	@ClassRule
 	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(
@@ -68,11 +66,8 @@ public class DockerContainersViewSWTBotTest {
 	@Before
 	public void setup() {
 		this.bot = new SWTWorkbenchBot();
-		this.statusProvider = new MockStatusProvider("Running");
 		final DockerClient client = MockDockerClientFactory
-				.containerWithStatus(
-						MockContainerFactory.name("defaultcon").statusProvider(this.statusProvider).build(),
-						this.statusProvider)
+				.container(MockContainerFactory.name("defaultcon").status("Running").build())
 				.image(MockImageFactory.id("987654321abcde").name("default:1").build()).build();
 		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Default", client)
 				.withDefaultTCPConnectionSettings();
@@ -114,7 +109,6 @@ public class DockerContainersViewSWTBotTest {
 		});
 
 	}
-
 
 	@Test
 	public void shouldRemoveListenersWhenClosingView() {
