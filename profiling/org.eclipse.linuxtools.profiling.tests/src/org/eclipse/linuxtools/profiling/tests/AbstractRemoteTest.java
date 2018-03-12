@@ -14,6 +14,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
+
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
@@ -58,6 +62,9 @@ public abstract class AbstractRemoteTest extends AbstractTest {
     public static String CONNECTION_NAME = "localhost"; //$NON-NLS-1$
     public static final String RESOURCES_DIR = "resources/"; //$NON-NLS-1$
 
+    private IRemoteConnectionWorkingCopy fRemoteConnection;
+
+
     // Skip tests if there is not suitable connection details
     public static void checkConnectionInfo() {
         String host = System.getenv("TEST_HOST");
@@ -90,10 +97,15 @@ public abstract class AbstractRemoteTest extends AbstractTest {
      * @param absProjectPath    Absolute path to the directory to which the project should be mapped
      *                             outside the workspace.
      * @return                    A new external CDT project.
+     * @throws CoreException
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws InvocationTargetException
+     * @throws InterruptedException
      */
     @Deprecated protected IProject createRemoteExternalProject(Bundle bundle,
             final String projname, final String absProjectPath,
-            final String sourceFile) {
+            final String sourceFile) throws CoreException, URISyntaxException, IOException {
         return null;
     }
     /**
@@ -102,7 +114,7 @@ public abstract class AbstractRemoteTest extends AbstractTest {
      */
     @Deprecated protected IProject createRemoteExternalProjectAndBuild(Bundle bundle,
             String projname, String absProjectPath, String sourceFile, String host,
-            String connectionName) throws CoreException {
+            String connectionName) throws CoreException, URISyntaxException, IOException {
         HOST = host;
         CONNECTION_NAME = connectionName;
         IProject proj = createRemoteExternalProject(bundle, projname, absProjectPath, sourceFile);
@@ -115,7 +127,7 @@ public abstract class AbstractRemoteTest extends AbstractTest {
      *  rdt managed projects.
      */
     @Deprecated protected IProject createRemoteExternalProjectAndBuild(Bundle bundle,
-            String projname, String absProjectPath, String sourceFile) throws CoreException {
+            String projname, String absProjectPath, String sourceFile) throws CoreException, URISyntaxException, IOException {
         IProject proj = createRemoteExternalProject(bundle, projname, absProjectPath, sourceFile);
         buildProject(proj);
         return proj;
