@@ -18,17 +18,17 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
 /**
  * Custom assertions on an {@link SWTBotText}.
  */
-public class TextAssertions extends AbstractSWTBotAssertions<TextAssertions, SWTBotText> {
+public class TextAssertion extends AbstractSWTBotAssertion<TextAssertion, SWTBotText> {
 
-	protected TextAssertions(final SWTBotText actual) {
-		super(actual, TextAssertions.class);
+	protected TextAssertion(final SWTBotText actual) {
+		super(actual, TextAssertion.class);
 	}
 
-	public static TextAssertions assertThat(final SWTBotText actual) {
-		return new TextAssertions(actual);
+	public static TextAssertion assertThat(final SWTBotText actual) {
+		return new TextAssertion(actual);
 	}
 
-	public TextAssertions isEmpty() {
+	public TextAssertion isEmpty() {
 		notNullValue();
 		if(!actual.getText().isEmpty()) {
 			failWithMessage("Expected text widget to be empty but it contained '%s'", actual.getText());
@@ -36,7 +36,7 @@ public class TextAssertions extends AbstractSWTBotAssertions<TextAssertions, SWT
 		return this;
 	}
 
-	public TextAssertions textEquals(final String expectedContent) {
+	public TextAssertion textEquals(final String expectedContent) {
 		notNullValue();
 		if(!actual.getText().equals(expectedContent)) {
 			failWithMessage("Expected text widget to contain '%s' but it contained '%s'", expectedContent, actual.getText());

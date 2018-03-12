@@ -22,18 +22,18 @@ import org.eclipse.linuxtools.internal.docker.ui.views.DockerImageHierarchyView;
 /**
  * Custom assertions on an {@link DockerImageHierarchyView}.
  */
-public class DockerImageHierarchyViewAssertions
-		extends AbstractAssert<DockerImageHierarchyViewAssertions, DockerImageHierarchyView> {
+public class DockerImageHierarchyViewAssertion
+		extends AbstractAssert<DockerImageHierarchyViewAssertion, DockerImageHierarchyView> {
 
-	protected DockerImageHierarchyViewAssertions(final DockerImageHierarchyView actual) {
-		super(actual, DockerImageHierarchyViewAssertions.class);
+	protected DockerImageHierarchyViewAssertion(final DockerImageHierarchyView actual) {
+		super(actual, DockerImageHierarchyViewAssertion.class);
 	}
 
-	public static DockerImageHierarchyViewAssertions assertThat(final DockerImageHierarchyView actual) {
-		return new DockerImageHierarchyViewAssertions(actual);
+	public static DockerImageHierarchyViewAssertion assertThat(final DockerImageHierarchyView actual) {
+		return new DockerImageHierarchyViewAssertion(actual);
 	}
 
-	public DockerImageHierarchyViewAssertions isEmpty() {
+	public DockerImageHierarchyViewAssertion isEmpty() {
 		notNullValue();
 		try {
 			// let's make sure changes in the UI were taken into account before
@@ -48,7 +48,7 @@ public class DockerImageHierarchyViewAssertions
 		return this;
 	}
 
-	public DockerImageHierarchyViewAssertions isNotEmpty() {
+	public DockerImageHierarchyViewAssertion isNotEmpty() {
 		notNullValue();
 		if(!actual.isShowingConnectionsPane()) {
 			failWithMessage("Expected Docker Explorer View to show the connections pane but it did not");
@@ -68,7 +68,7 @@ public class DockerImageHierarchyViewAssertions
 			final IDockerImage selectedImage = (IDockerImage) selectedElement;
 			if (!selectedImage.id().equals(expectedSelection.id())) {
 				failWithMessage(
-						"Expected Docker Image Hierarchy view to have a Docker images with id <%s> as the selected element, but it was <%s>",
+						"Expected Docker Image Hierarchy view to have a Docker image with id <%s> as the selected element, but it was <%s>",
 						expectedSelection.id(), ((IDockerImage) selectedElement).id());
 			}
 		} else {
