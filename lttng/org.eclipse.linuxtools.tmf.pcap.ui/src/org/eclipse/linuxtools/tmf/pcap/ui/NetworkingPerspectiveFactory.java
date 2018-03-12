@@ -14,8 +14,6 @@ package org.eclipse.linuxtools.tmf.pcap.ui;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.linuxtools.tmf.pcap.ui.graph.NetworkGraphView;
-import org.eclipse.linuxtools.tmf.pcap.ui.stream.StreamDiagramLoader;
 import org.eclipse.linuxtools.tmf.pcap.ui.stream.StreamListView;
 import org.eclipse.linuxtools.tmf.ui.project.wizards.NewTmfProjectWizard;
 import org.eclipse.linuxtools.tmf.ui.views.colors.ColorsView;
@@ -52,8 +50,6 @@ public class NetworkingPerspectiveFactory implements IPerspectiveFactory {
     private static final String STATISTICS_VIEW_ID = TmfStatisticsView.ID;
     private static final String COLOR_VIEW_ID = ColorsView.ID;
     private static final String STREAM_LIST_VIEW_ID = StreamListView.ID;
-    private static final String STREAM_DIAGRAM_VIEW_ID = StreamDiagramLoader.ID;
-    private static final String NETWORK_GRAPH_VIEW_ID = NetworkGraphView.ID;
 
     // ------------------------------------------------------------------------
     // IPerspectiveFactory
@@ -85,8 +81,6 @@ public class NetworkingPerspectiveFactory implements IPerspectiveFactory {
         bottomRightFolder.addView(FILTER_VIEW_ID);
         bottomRightFolder.addView(BOOKMARKS_VIEW_ID);
         bottomRightFolder.addView(STREAM_LIST_VIEW_ID);
-        bottomRightFolder.addView(STREAM_DIAGRAM_VIEW_ID);
-        bottomRightFolder.addView(NETWORK_GRAPH_VIEW_ID);
 
         // Populate menus, etc
         layout.addPerspectiveShortcut(ID);

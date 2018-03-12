@@ -57,11 +57,11 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     private static final @NonNull Map<String, String> EMPTY_MAP = ImmutableMap.of();
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
     private static final int CONFIDENCE = 50;
-    private @Nullable PcapFile fPcapFile; // not final because of initTrace();
+    private @Nullable PcapFile fPcapFile;
     private @Nullable ImmutableMap<String, String> fTraceProperties = null;
 
     @Override
-    public ITmfLocation getCurrentLocation() {
+    public synchronized ITmfLocation getCurrentLocation() {
         PcapFile pcap = fPcapFile;
         if (pcap == null) {
             return new TmfLongLocation(0);
@@ -70,15 +70,13 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     }
 
     @Override
-    public double getLocationRatio(@Nullable ITmfLocation location) {
+    public synchronized double getLocationRatio(@Nullable ITmfLocation location) {
         TmfLongLocation loc = (TmfLongLocation) location;
         PcapFile pcap = fPcapFile;
         if (loc == null || pcap == null) {
             return 0;
         }
         try {
-            // I have some doubt about what happens during indexing. Should I
-            // use this.getNbEvents() instead of pcap.getTotalNbPackets()?
             return (pcap.getTotalNbPackets() == 0 ? 0 : ((double) loc.getLocationInfo()) / pcap.getTotalNbPackets());
         } catch (IOException | BadPcapFileException e) {
             String message = e.getMessage();
@@ -92,7 +90,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     }
 
     @Override
-    public void initTrace(@Nullable IResource resource, @Nullable String path, @Nullable Class<? extends ITmfEvent> type) throws TmfTraceException {
+    public synchronized void initTrace(@Nullable IResource resource, @Nullable String path, @Nullable Class<? extends ITmfEvent> type) throws TmfTraceException {
         super.initTrace(resource, path, type);
         if (path == null) {
             throw new TmfTraceException("No path has been specified."); //$NON-NLS-1$
@@ -105,7 +103,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     }
 
     @Override
-    public @Nullable PcapEvent parseEvent(@Nullable ITmfContext context) {
+    public synchronized @Nullable PcapEvent parseEvent(@Nullable ITmfContext context) {
         if (context == null) {
             return null;
         }
@@ -145,7 +143,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     }
 
     @Override
-    public ITmfContext seekEvent(double ratio) {
+    public synchronized ITmfContext seekEvent(double ratio) {
         long position;
         PcapFile pcap = fPcapFile;
         if (pcap == null) {
@@ -171,7 +169,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     }
 
     @Override
-    public ITmfContext seekEvent(@Nullable ITmfLocation location) {
+    public synchronized ITmfContext seekEvent(@Nullable ITmfLocation location) {
         TmfLongLocation loc = (TmfLongLocation) location;
         if (loc == null) {
             return new TmfContext(new TmfLongLocation(0));
@@ -203,6 +201,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
         }
         try {
             pcap.close();
+            fPcapFile = null;
         } catch (IOException e) {
             String message = e.getMessage();
             if (message == null) {
@@ -214,7 +213,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
     }
 
     @Override
-    public Map<String, String> getTraceProperties() {
+    public synchronized Map<String, String> getTraceProperties() {
         PcapFile pcap = fPcapFile;
         if (pcap == null) {
             return EMPTY_MAP;
@@ -225,7 +224,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
             @SuppressWarnings("null")
             @NonNull ImmutableMap<String, String> newProperties = ImmutableMap.<String, String> builder()
                     .put(Messages.PcapTrace_Version, String.format("%d%c%d", pcap.getMajorVersion(), '.', pcap.getMinorVersion())) //$NON-NLS-1$
-                    .put(Messages.PcapTrace_TimeZoneCorrection, pcap.getTimeZoneCorrection() + " second") //$NON-NLS-1$
+                    .put(Messages.PcapTrace_TimeZoneCorrection, pcap.getTimeZoneCorrection() + " s") //$NON-NLS-1$
                     .put(Messages.PcapTrace_TimestampAccuracy, String.valueOf(pcap.getTimeAccuracy()))
                     .put(Messages.PcapTrace_MaxSnapLength, pcap.getSnapLength() + " bytes") //$NON-NLS-1$
                     .put(Messages.PcapTrace_LinkLayerHeaderType, LinkTypeHelper.toString((int) pcap.getDataLinkType()) + " (" + pcap.getDataLinkType() + ")") //$NON-NLS-1$ //$NON-NLS-2$

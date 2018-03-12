@@ -26,31 +26,13 @@
             name="%view.stream.list"
             restorable="true">
       </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.tmf.pcap.ui.view.category.network"
-            class="org.eclipse.linuxtools.tmf.pcap.ui.graph.NetworkGraphView"
-            icon="icons/graph.png"
-            id="org.eclipse.linuxtools.tmf.pcap.ui.view.graph"
-            name="%view.network.graph"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="false"
-            category="org.eclipse.linuxtools.tmf.pcap.ui.view.category.network"
-            class="org.eclipse.linuxtools.tmf.ui.views.uml2sd.SDView"
-            icon="icons/stream_diagram_view.gif"
-            id="org.eclipse.linuxtools.tmf.pcap.ui.view.stream.diagram"
-            name="%view.stream.diagram"
-            restorable="true">
-      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
             class="org.eclipse.linuxtools.tmf.pcap.ui.NetworkingPerspectiveFactory"
             fixed="false"
-            icon="icons/network.svg"
+            icon="icons/network.png"
             id="org.eclipse.linuxtools.tmf.pcap.ui.perspective.network"
             name="%perspective.networking">
       </perspective>
@@ -64,16 +46,6 @@
                class="org.eclipse.linuxtools.tmf.pcap.core.analysis.StreamListAnalysis">
          </analysisModuleClass>
       </output>
-   </extension>
-   <extension
-         point="org.eclipse.linuxtools.tmf.ui.uml2SDLoader">
-      <uml2SDLoader
-            class="org.eclipse.linuxtools.tmf.pcap.ui.stream.StreamDiagramLoader"
-            default="true"
-            id="org.eclipse.linuxtools.tmf.pcap.ui.stream.diagram.loader"
-            name="Stream Diagram Loader"
-            view="org.eclipse.linuxtools.tmf.pcap.ui.view.stream.diagram">
-      </uml2SDLoader>
    </extension>
 
 </plugin>

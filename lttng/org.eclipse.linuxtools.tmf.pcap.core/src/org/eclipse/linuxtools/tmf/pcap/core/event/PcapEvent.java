@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.tmf.pcap.core.event;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,6 @@ public class PcapEvent extends TmfEvent {
     /** Packet Protocol Field ID */
     public static final String EVENT_FIELD_PACKET_PROTOCOL = ":protocol:"; //$NON-NLS-1$
 
-    private static final List<TmfProtocol> EMPTY_LIST = new ArrayList<>();
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
     private final Packet fPacket;
@@ -158,7 +158,7 @@ public class PcapEvent extends TmfEvent {
 
     /**
      * Method that returns the most encapsulated protocol in this PcapEvent. If
-     * it is an unknown protocol, it returns the last known protocol. *
+     * it is an unknown protocol, it returns the last known protocol.
      *
      * @return The most encapsulated TmfProtocol.
      */
@@ -167,7 +167,7 @@ public class PcapEvent extends TmfEvent {
     }
 
     /**
-     * Method that returns a list of all the protocols in this PcapEvent. *
+     * Method that returns a list of all the protocols in this PcapEvent.
      *
      * @return A list containing all the TmfProtocol.
      */
@@ -185,8 +185,7 @@ public class PcapEvent extends TmfEvent {
 
         if (packet == null) {
             @SuppressWarnings("null")
-            @NonNull
-            List<TmfProtocol> emptyList = ImmutableList.copyOf(EMPTY_LIST);
+            @NonNull List<TmfProtocol> emptyList = Collections.EMPTY_LIST;
             fList = emptyList;
             return fList;
         }
@@ -200,8 +199,7 @@ public class PcapEvent extends TmfEvent {
         }
 
         @SuppressWarnings("null")
-        @NonNull
-        ImmutableList<TmfProtocol> immutableList = ImmutableList.copyOf(list);
+        @NonNull ImmutableList<TmfProtocol> immutableList = ImmutableList.copyOf(list);
         fList = immutableList;
         return immutableList;
     }
@@ -209,7 +207,7 @@ public class PcapEvent extends TmfEvent {
     /**
      * Getter method that returns the packet. This is default visible since it
      * is only used by tmf.pcap.core and thus should not be visible to other
-     * plugins
+     * packages
      *
      * @return The packet.
      */

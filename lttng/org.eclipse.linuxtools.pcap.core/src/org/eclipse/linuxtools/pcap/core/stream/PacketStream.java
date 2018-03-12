@@ -12,10 +12,13 @@
 
 package org.eclipse.linuxtools.pcap.core.stream;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.pcap.core.endpoint.ProtocolEndpointPair;
 import org.eclipse.linuxtools.pcap.core.packet.Packet;
 import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
 import org.eclipse.linuxtools.pcap.core.protocol.pcap.PcapPacket;
+
+import com.google.common.math.DoubleMath;
 
 // TODO decide if default modifier a good idea. This allows only the
 // stream builder to call that method (and any class that is added to this
@@ -31,7 +34,8 @@ import org.eclipse.linuxtools.pcap.core.protocol.pcap.PcapPacket;
  */
 public class PacketStream {
 
-    private static final String EMPTY_STRING = ""; //$NON-NLS-1$
+    private static final double SECOND_TO_NANOSECOND = 1000000000.0;
+    private static final double DELTA = 0.000000001;
     private final Protocol fProtocol;
     private final int fId;
     private final ProtocolEndpointPair fEndpointPair;
@@ -41,7 +45,7 @@ public class PacketStream {
     private long fNbBytesAtoB;
     private long fNbBytesBtoA;
     private long fStartTime;
-    private long fStopTime;
+    private long fEndTime;
 
     /**
      * Constructor of a packet stream.
@@ -62,8 +66,8 @@ public class PacketStream {
         fNbPacketsBtoA = 0;
         fNbBytesAtoB = 0;
         fNbBytesBtoA = 0;
-        fStartTime = -1;
-        fStopTime = -1;
+        fStartTime = Long.MAX_VALUE;
+        fEndTime = Long.MIN_VALUE;
     }
 
     /**
@@ -89,8 +93,7 @@ public class PacketStream {
             fNbPacketsBtoA++;
             fNbBytesBtoA += packet.getOriginalLength();
         } else {
-            // This packet doesn't belong here! How dare he be there?!?
-            return;
+            throw new IllegalStateException();
         }
 
         // Update start and stop time
@@ -106,13 +109,8 @@ public class PacketStream {
         default:
             throw new IllegalArgumentException("The timestamp precision is not valid!"); //$NON-NLS-1$
         }
-
-        if ((fStartTime == -1) || (fStartTime > timestamp)) {
-            fStartTime = timestamp;
-        }
-        if ((fStopTime == -1) || (fStopTime < timestamp)) {
-            fStopTime = timestamp;
-        }
+        fStartTime = Math.min(fStartTime, timestamp);
+        fEndTime = Math.max(fEndTime, timestamp);
     }
 
     /**
@@ -155,12 +153,10 @@ public class PacketStream {
     @Override
     public synchronized String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Stream " + getUniqueID() + ", Number of Packets: " + (fNbPacketsAtoB + fNbPacketsBtoA) + "\n"); //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+        sb.append("Stream " + getUniqueID() + ", Number of Packets: " + getNbPackets() + "\n"); //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
 
-        String string = sb.toString();
-        if (string == null) {
-            return EMPTY_STRING;
-        }
+        @SuppressWarnings("null")
+        @NonNull String string = sb.toString();
         return string;
 
     }
@@ -234,7 +230,7 @@ public class PacketStream {
      * @return The stop time.
      */
     public synchronized long getStopTime() {
-        return fStopTime;
+        return fEndTime;
     }
 
     /**
@@ -243,7 +239,7 @@ public class PacketStream {
      * @return The duration of this stream.
      */
     public synchronized double getDuration() {
-        return (fStopTime - fStartTime) / 1000000000.0;
+        return (fEndTime - fStartTime) / SECOND_TO_NANOSECOND;
     }
 
     /**
@@ -252,7 +248,7 @@ public class PacketStream {
      * @return the average byte per second from A to B.
      */
     public synchronized double getBPSAtoB() {
-        if (getDuration() == 0) {
+        if (DoubleMath.fuzzyEquals(getDuration(), 0, DELTA)) {
             return 0;
         }
         return fNbBytesAtoB / getDuration();
@@ -264,7 +260,7 @@ public class PacketStream {
      * @return the average byte per second from B to A.
      */
     public synchronized double getBPSBtoA() {
-        if (getDuration() == 0) {
+        if (DoubleMath.fuzzyEquals(getDuration(), 0, DELTA)) {
             return 0;
         }
         return fNbBytesBtoA / getDuration();

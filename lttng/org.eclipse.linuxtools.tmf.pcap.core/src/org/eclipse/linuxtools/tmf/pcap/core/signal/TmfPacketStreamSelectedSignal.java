@@ -18,12 +18,12 @@ import org.eclipse.linuxtools.tmf.pcap.core.event.TmfPacketStream;
 
 /**
  * TmfSignal that is broadcasted when a new packet stream is chosen. Views that
- * are network-specific can uses this signal to track when the user request a
+ * are network-specific can uses this signal to track when the user selects a
  * new stream.
  *
  * @author Vincent Perot
  */
-public class TmfNewPacketStreamSignal extends TmfSignal {
+public class TmfPacketStreamSelectedSignal extends TmfSignal {
 
     private final @Nullable TmfPacketStream fStream;
 
@@ -38,13 +38,9 @@ public class TmfNewPacketStreamSignal extends TmfSignal {
      *            The new stream. It can be null if the user cleared the
      *            selection.
      */
-    public TmfNewPacketStreamSignal(Object source, int reference, @Nullable TmfPacketStream stream) {
+    public TmfPacketStreamSelectedSignal(Object source, int reference, @Nullable TmfPacketStream stream) {
         super(source, reference);
-        if (stream == null) {
-            fStream = null;
-        } else {
             fStream = stream;
-        }
     }
 
     /**

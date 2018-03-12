@@ -37,9 +37,8 @@ import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEvent;
 import org.eclipse.linuxtools.tmf.pcap.core.event.TmfPacketStream;
 import org.eclipse.linuxtools.tmf.pcap.core.event.TmfPacketStreamBuilder;
 import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
-import org.eclipse.linuxtools.tmf.pcap.core.signal.TmfNewPacketStreamSignal;
+import org.eclipse.linuxtools.tmf.pcap.core.signal.TmfPacketStreamSelectedSignal;
 import org.eclipse.linuxtools.tmf.pcap.core.trace.PcapTrace;
-import org.eclipse.linuxtools.tmf.ui.TmfUiRefreshHandler;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
 import org.eclipse.linuxtools.tmf.ui.views.TmfView;
 import org.eclipse.linuxtools.tmf.ui.views.filter.FilterManager;
@@ -50,6 +49,7 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
@@ -67,11 +67,9 @@ import org.eclipse.ui.PlatformUI;
  * Class that represents the Stream List View. Such a view lists all the
  * available streams from the current experiment. <br>
  * <br>
- * TODO Investigate if the multithreading handling is adequate. I feel like it
- * is possible that an UpdateUI is called after a resetView (which is bad in
- * case of a trace closed). <br>
- * <br>
- * FIXME analysis is leaking ressource. Alex told me not to worry about it since
+ * TODO Switch to TmfUiRefreshHandler once the behavior is fixed
+ *
+ * FIXME analysis is leaking ressource. Someone I will not name told me not to worry about it since
  * AnalysisModule will not be autocloseable later.
  *
  * @author Vincent Perot
@@ -226,10 +224,17 @@ public class StreamListView extends TmfView {
         fStopThread = true;
 
         // Remove all content in tables
-        TmfUiRefreshHandler.getInstance().queueUpdate(this, new Runnable() {
+        final Display display = Display.getDefault();
+        if (display == null || display.isDisposed()) {
+            return;
+        }
+        display.asyncExec(new Runnable() {
 
             @Override
             public void run() {
+                if (display.isDisposed()) {
+                    return;
+                }
                 Map<TmfProtocol, Table> tableMap = fTableMap;
                 if (tableMap == null) {
                     return;
@@ -244,10 +249,17 @@ public class StreamListView extends TmfView {
     }
 
     private void updateUI() {
-        TmfUiRefreshHandler.getInstance().queueUpdate(this, new Runnable() {
+        final Display display = Display.getDefault();
+        if (display == null || display.isDisposed()) {
+            return;
+        }
+        display.asyncExec(new Runnable() {
 
             @Override
             public void run() {
+                if (display.isDisposed()) {
+                    return;
+                }
                 ITmfTrace trace = fCurrentTrace;
                 if (trace == null) {
                     return;
@@ -264,8 +276,7 @@ public class StreamListView extends TmfView {
                 }
                 for (TmfProtocol p : tables.keySet()) {
                     @SuppressWarnings("null")
-                    @NonNull
-                    TmfProtocol protocol = p;
+                    @NonNull TmfProtocol protocol = p;
                     TmfPacketStreamBuilder builder = analysis.getBuilder(protocol);
                     if (builder != null && !(tables.get(protocol).isDisposed())) {
                         for (TmfPacketStream stream : builder.getStreams()) {
@@ -367,7 +378,7 @@ public class StreamListView extends TmfView {
 
                     @Override
                     public void handleEvent(@Nullable Event event) {
-                        TmfSignal signal = new TmfNewPacketStreamSignal(this, 0, fCurrentStream);
+                        TmfSignal signal = new TmfPacketStreamSelectedSignal(this, 0, fCurrentStream);
                         TmfSignalManager.dispatchSignal(signal);
                     }
                 });
@@ -377,7 +388,7 @@ public class StreamListView extends TmfView {
 
                     @Override
                     public void handleEvent(@Nullable Event event) {
-                        TmfSignal signal = new TmfNewPacketStreamSignal(this, 0, null);
+                        TmfSignal signal = new TmfPacketStreamSelectedSignal(this, 0, null);
                         TmfSignalManager.dispatchSignal(signal);
 
                     }
@@ -420,8 +431,8 @@ public class StreamListView extends TmfView {
                             FilterView filterView = (FilterView) view;
                             filterView.addFilter(filter);
                         } catch (final PartInitException e) {
-                            TraceUtils.displayErrorMsg(Messages.StreamListView_ExtractAsFilter, "Error opening view " + getName() + e.getMessage()); //$NON-NLS-1$
-                            Activator.logError("Error opening view " + getName(), e); //$NON-NLS-1$
+                            TraceUtils.displayErrorMsg(Messages.StreamListView_ExtractAsFilter, "Error opening view " + FilterView.ID + e.getMessage()); //$NON-NLS-1$
+                            Activator.logError("Error opening view " + FilterView.ID, e); //$NON-NLS-1$
                             return;
                         }
 
@@ -481,32 +492,6 @@ public class StreamListView extends TmfView {
         CTabFolder tabFolder = fTabFolder;
         if (tabFolder != null && !(tabFolder.isDisposed())) {
             tabFolder.setFocus();
-        }
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-
-        Map<TmfProtocol, Table> tables = fTableMap;
-        if (tables != null) {
-            for (TmfProtocol p : tables.keySet()) {
-                if (!(tables.get(p).isDisposed())) {
-                    tables.get(p).dispose();
-                }
-            }
-        }
-        CTabFolder tabFolder = fTabFolder;
-        if (tabFolder != null) {
-            CTabItem[] tabItem = tabFolder.getItems();
-            for (int i = 0; i < tabItem.length; i++) {
-                if (!(tabItem[i].isDisposed())) {
-                    tabItem[i].dispose();
-                }
-            }
-        }
-        if (tabFolder != null && !(tabFolder.isDisposed())) {
-            tabFolder.dispose();
         }
     }
 
