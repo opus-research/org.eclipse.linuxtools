@@ -912,8 +912,24 @@
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.showInSystemExplorer"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.ShowInSystemExplorerCommandHandler">
+          <enabledWhen>
+	     		<with
+	                variable="selection">
+	            <iterate ifEmpty="false">
+                  <and>
+                    <instanceof
+                      value="org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProvider$DockerContainerVolume">
+                    </instanceof>
+                    <test
+                      property="org.eclipse.linuxtools.docker.propertytesters.volume.hasHostPath"
+                      value="true">
+                    </test>
+                  </and>
+                </iterate>
+                </with>
+          </enabledWhen>
      	</handler>
-  <handler
+        <handler
         class="org.eclipse.linuxtools.internal.docker.ui.commands.ExecContainerCommandHandler"
         commandId="org.eclipse.linuxtools.docker.ui.commands.execContainer">
      <enabledWhen>
@@ -1025,6 +1041,13 @@
 	        properties="existsActiveConnection,existsAnyConnection,connectionIsEstablished"
 	        type="java.lang.Object">
 	    </propertyTester>
+		<propertyTester
+	        class="org.eclipse.linuxtools.internal.docker.ui.propertytesters.VolumePropertyTester"
+	        id="org.eclipse.linuxtools.docker.volumePropertyTester"
+	        namespace="org.eclipse.linuxtools.docker.propertytesters.volume"
+	        properties="hasHostPath"
+	        type="java.lang.Object">
+	    </propertyTester>
 	</extension>
 		
     <extension
@@ -1133,16 +1156,11 @@
 	               checkEnabled="false">
 	               <with
 	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
 	                <iterate
 	                      ifEmpty="false"
-	                      operator="or">
-	                      <or>
-			                 <instanceof
-			                       value="org.eclipse.linuxtools.docker.core.IDockerConnection" />
-	                      </or>
+	                      operator="and">
+		                 <instanceof
+		                       value="org.eclipse.linuxtools.docker.core.IDockerConnection" />
 	                </iterate>
 	               </with>
 	            </visibleWhen>
