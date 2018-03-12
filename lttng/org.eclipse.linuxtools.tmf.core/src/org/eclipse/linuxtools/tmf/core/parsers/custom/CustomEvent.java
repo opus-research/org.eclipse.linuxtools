@@ -23,7 +23,6 @@ import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTraceDefinition.OutputColumn;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -228,7 +227,7 @@ public class CustomEvent extends TmfEvent {
             TmfTimestampFormat timestampFormat = new TmfTimestampFormat(timestampInputFormat);
             try {
                 long time = timestampFormat.parseValue(timestampString);
-                timestamp = new TmfNanoTimestamp(getTrace().getTimestampTransform().transform(time));
+                timestamp = new TmfTimestamp(time, ITmfTimestamp.NANOSECOND_SCALE);
                 setTimestamp(timestamp);
             } catch (ParseException e) {
                 setTimestamp(TmfTimestamp.ZERO);
