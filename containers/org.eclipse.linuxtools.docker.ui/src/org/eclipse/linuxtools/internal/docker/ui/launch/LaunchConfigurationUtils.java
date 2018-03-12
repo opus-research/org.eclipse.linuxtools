@@ -69,8 +69,6 @@ import org.eclipse.swt.widgets.Button;
  */
 public class LaunchConfigurationUtils {
 
-	public static final String RUN_IMAGE_CONFIGURATION_TYPE = "org.eclipse.linuxtools.docker.ui.runDockerImageLaunchConfigurationType"; //$NON-NLS-1$
-
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
 			"YYYY-MM-dd HH:mm:ss");
 
@@ -122,7 +120,8 @@ public class LaunchConfigurationUtils {
 			final ILaunchManager manager = DebugPlugin.getDefault()
 					.getLaunchManager();
 			final ILaunchConfigurationType type = manager
-					.getLaunchConfigurationType(RUN_IMAGE_CONFIGURATION_TYPE);
+					.getLaunchConfigurationType(
+							IRunDockerImageLaunchConfigurationConstants.CONFIG_TYPE_ID);
 			final String imageName = image.repoTags().get(0);
 			// using the image repo + first tag
 			final ILaunchConfigurationWorkingCopy workingCopy = getLaunchConfigurationworkingCopy(
@@ -146,8 +145,11 @@ public class LaunchConfigurationUtils {
 			if (hostConfig.publishAllPorts()) {
 				final IDockerImageInfo imageInfo = image.getConnection()
 						.getImageInfo(image.id());
-				workingCopy.setAttribute(PUBLISHED_PORTS, serializePortBindings(
-						imageInfo.containerConfig().exposedPorts()));
+				if (imageInfo != null) {
+					workingCopy.setAttribute(PUBLISHED_PORTS,
+							serializePortBindings(imageInfo.containerConfig()
+									.exposedPorts()));
+				}
 			} else {
 				workingCopy.setAttribute(PUBLISHED_PORTS,
 						serializePortBindings(hostConfig.portBindings()));
@@ -322,7 +324,6 @@ public class LaunchConfigurationUtils {
 		return lastLaunchConfiguration;
 	}
 	
-
 	/**
 	 * Returns the {@link ILaunchConfigurationWorkingCopy} with the given type
 	 * and <strong>IDockerImage's name</strong>.
@@ -475,4 +476,5 @@ public class LaunchConfigurationUtils {
 		}
 		return path;
 	}
+
 }

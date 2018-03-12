@@ -10,16 +10,12 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.cdt.launch;bundle-version="7.0.0",
  org.eclipse.core.filesystem;bundle-version="1.3.100",
  org.eclipse.cdt.debug.ui,
- org.eclipse.core.expressions,
- org.eclipse.rse.core;bundle-version="3.0.0",
- org.eclipse.rse.subsystems.files.core
+ org.eclipse.core.expressions
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.cdt.debug.core,
  org.eclipse.cdt.launch,
- org.eclipse.cdt.launch.remote,
- org.eclipse.cdt.launch.remote.tabs,
  org.eclipse.cdt.launch.ui,
  org.eclipse.cdt.ui,
  org.eclipse.cdt.ui.newui,
@@ -32,11 +28,6 @@ Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.debug.ui.actions,
  org.eclipse.debug.ui.sourcelookup,
  org.eclipse.jface.text,
- org.eclipse.linuxtools.internal.valgrind.launch,
- org.eclipse.rse.core.model,
- org.eclipse.rse.files.ui.dialogs,
- org.eclipse.rse.ui.actions,
- org.eclipse.rse.ui.dialogs,
  org.eclipse.ui,
  org.eclipse.ui.console
 Export-Package: org.eclipse.linuxtools.internal.profiling.launch;x-int

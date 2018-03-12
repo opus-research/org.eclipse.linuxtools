@@ -27,10 +27,11 @@ import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
- * Command handler to kill all the selected {@link IDockerImage}
+ * Base handler for commands on {@link IDockerImage}
  * 
  * @author jjohnstn
  *
@@ -71,7 +72,10 @@ public abstract class BaseImagesCommandHandler extends AbstractHandler {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				MessageDialog.openError(Display.getCurrent().getActiveShell(),
+				MessageDialog
+						.openError(
+								PlatformUI.getWorkbench()
+										.getActiveWorkbenchWindow().getShell(),
 						errorMessage,
 						e.getMessage());
 			}

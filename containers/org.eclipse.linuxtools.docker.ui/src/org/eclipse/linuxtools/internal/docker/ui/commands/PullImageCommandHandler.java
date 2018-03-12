@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015,2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,6 +26,7 @@ import org.eclipse.linuxtools.internal.docker.ui.views.ImagePullProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImagePull;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
@@ -38,17 +39,28 @@ public class PullImageCommandHandler extends AbstractHandler {
 	private final static String PULL_IMAGE_JOB_TITLE = "ImagePull.title"; //$NON-NLS-1$
 	private final static String PULL_IMAGE_JOB_TASK = "ImagePull.msg"; //$NON-NLS-1$
 	private static final String ERROR_PULLING_IMAGE = "ImagePullError.msg"; //$NON-NLS-1$
+	private static final String ERROR_PULLING_IMAGE_NO_CONNECTION = "command.pullImage.failure.no_connection"; //$NON-NLS-1$
+	private static final String MISSING_CONNECTION = "missing_connection"; //$NON-NLS-1$
 
 	@Override
 	public Object execute(final ExecutionEvent event) {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		final IDockerConnection connection = CommandUtils
 				.getCurrentConnection(activePart);
-		final ImagePull wizard = new ImagePull(connection);
-		final boolean pullImage = CommandUtils.openWizard(wizard,
-				HandlerUtil.getActiveShell(event));
-		if (pullImage) {
-			performPullImage(connection, wizard.getImageName());
+		if (connection == null) {
+			MessageDialog.openError(
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getShell(),
+					CommandMessages.getString(MISSING_CONNECTION),
+					CommandMessages
+							.getString(ERROR_PULLING_IMAGE_NO_CONNECTION));
+		} else {
+			final ImagePull wizard = new ImagePull(connection);
+			final boolean pullImage = CommandUtils.openWizard(wizard,
+					HandlerUtil.getActiveShell(event));
+			if (pullImage) {
+				performPullImage(connection, wizard.getImageName());
+			}
 		}
 		return null;
 	}
@@ -74,7 +86,9 @@ public class PullImageCommandHandler extends AbstractHandler {
 						@Override
 						public void run() {
 							MessageDialog.openError(
-									Display.getCurrent().getActiveShell(),
+									PlatformUI.getWorkbench()
+											.getActiveWorkbenchWindow()
+											.getShell(),
 									DVMessages.getFormattedString(
 											ERROR_PULLING_IMAGE, imageName),
 									e.getMessage());

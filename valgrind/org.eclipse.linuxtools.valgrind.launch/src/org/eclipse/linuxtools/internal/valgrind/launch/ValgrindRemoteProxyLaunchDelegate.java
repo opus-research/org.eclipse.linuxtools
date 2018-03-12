@@ -17,11 +17,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 
-import org.eclipse.cdt.debug.core.CDebugUtils;
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
-import org.eclipse.cdt.launch.remote.IRemoteConnectionConfigurationConstants;
-import org.eclipse.cdt.launch.remote.RSEHelper;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -31,21 +32,19 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindUIPlugin;
 import org.eclipse.linuxtools.internal.valgrind.ui.ValgrindViewPart;
 import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
+import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
+import org.eclipse.linuxtools.profiling.launch.RemoteConnection;
+import org.eclipse.linuxtools.profiling.launch.RemoteConnectionException;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.linuxtools.valgrind.core.IValgrindMessage;
 import org.eclipse.linuxtools.valgrind.launch.IValgrindOutputDirectoryProvider;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.rse.core.RSECorePlugin;
-import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
-import org.eclipse.rse.services.files.IFileService;
-import org.eclipse.rse.services.files.IHostFile;
 import org.osgi.framework.Version;
 
 /**
@@ -112,243 +111,190 @@ public class ValgrindRemoteProxyLaunchDelegate extends ValgrindLaunchConfigurati
         return valgrindVersion;
     }
 
+
     @Override
     public void launch(final ILaunchConfiguration config, String mode,
             final ILaunch launch, IProgressMonitor m) throws CoreException {
-
-        boolean remoteTmpDirectoryCreated = false;
-        String tmpFolderName = null;
-        IFileService fileService = null;
-
         if (m == null) {
             m = new NullProgressMonitor();
-        } else {
-            // check for cancellation
-            if (m.isCanceled()) {
-                return;
-            }
         }
 
-        SubMonitor monitor = SubMonitor.convert(m, 100);
+        // Clear process as we wait on it to be instantiated
+        process = null;
+
+        SubMonitor monitor = SubMonitor.convert(m,
+                Messages.getString("ValgrindRemoteLaunchDelegate.task_name"), 10); //$NON-NLS-1$
+        // check for cancellation
+        if (monitor.isCanceled()) {
+            return;
+        }
 
         this.config = config;
-        this.configUtils = new ConfigUtils(config);
         this.launch = launch;
-        // tool that was launched
-        this.toolID = getTool(config);
-        // ask tool extension for arguments
-        this.dynamicDelegate = getDynamicDelegate(toolID);
-
-        if (!RSECorePlugin.isInitComplete(RSECorePlugin.INIT_MODEL)) {
-            monitor.setTaskName(Messages.getString("ValgrindRemoteProxyLaunchDelegate.init_rse")); //$NON-NLS-1$
-            try {
-                RSECorePlugin.waitForInitCompletion(RSECorePlugin.INIT_MODEL);
-            } catch (InterruptedException e) {
-                throw new CoreException(new Status(IStatus.ERROR,
-                        getPluginID(), IStatus.OK, e.getLocalizedMessage(), e));
-            }
-        }
-        monitor.worked(2);
         try {
-            IPath localOutputDir;
-
             // remove any output from previous run
             ValgrindUIPlugin.getDefault().resetView();
             // reset stored launch data
             getPlugin().setCurrentLaunchConfiguration(null);
             getPlugin().setCurrentLaunch(null);
 
+            this.configUtils = new ConfigUtils(config);
             IProject project = configUtils.getProject();
-            valgrindVersion = getValgrindVersion(project);
-
-            fileService = (IFileService) RSEHelper
-                    .getConnectedRemoteFileService(
-                            RSEHelper.getCurrentConnection(config),
-                            monitor.newChild(2));
-
-            // Create empty tmp directory for log files on remote target
-            tmpFolderName = createRemoteTmpDir(fileService, monitor);
-            remoteTmpDirectoryCreated = true;
-
-            // Create empty local output directory
-            localOutputDir = createLocalOutputDir();
-
-            // Kick off Valgrind in a a new process, this will download the
-            // file to run valgrind against if skip download is not set.
-            // The call will block and wait until valgrind has finished.
-            runValgrind(monitor);
-
-            // Retrieve the log file from the remote target.
-            retrieveLogFiles(fileService, tmpFolderName, localOutputDir, monitor);
-
-            // Parse the log files and display the results.
-            processLogFiles(project, localOutputDir, monitor);
-
-
-        } catch (CoreException e) {
-            throw e;
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-
-            // remove remote log dir and all files under it (if created)
-            if (fileService != null && tmpFolderName != null && remoteTmpDirectoryCreated) {
-                try {
-                    fileService.delete("/tmp/", //$NON-NLS-1$
-                            tmpFolderName,
-                            monitor.newChild(5));
-                } catch (SystemMessageException e) {
-                    e.printStackTrace();
+            ValgrindUIPlugin.getDefault().setProfiledProject(project);
+            URI exeURI = new URI(configUtils.getExecutablePath());
+            RemoteConnection exeRC = new RemoteConnection(exeURI);
+            monitor.worked(1);
+            String valgrindPathString = RuntimeProcessFactory.getFactory().whichCommand(VALGRIND_CMD, project);
+            IPath valgrindFullPath = Path.fromOSString(valgrindPathString);
+            boolean copyExecutable = configUtils.getCopyExecutable();
+            if (copyExecutable) {
+                URI copyExeURI = new URI(configUtils.getCopyFromExecutablePath());
+                RemoteConnection copyExeRC = new RemoteConnection(copyExeURI);
+                IRemoteFileProxy copyExeRFP = copyExeRC.getRmtFileProxy();
+                IFileStore copyExeFS = copyExeRFP.getResource(copyExeURI.getPath());
+                IRemoteFileProxy exeRFP = exeRC.getRmtFileProxy();
+                IFileStore exeFS = exeRFP.getResource(exeURI.getPath());
+                IFileInfo exeFI = exeFS.fetchInfo();
+                if (exeFI.isDirectory()) {
+                    // Assume the user wants to copy the file to the given directory, using
+                    // the same filename as the "copy from" executable.
+                    IPath copyExePath = Path.fromOSString(copyExeURI.getPath());
+                    IPath newExePath = Path.fromOSString(exeURI.getPath()).append(copyExePath.lastSegment());
+                    // update the exeURI with the new path.
+                    exeURI = new URI(exeURI.getScheme(), exeURI.getAuthority(), newExePath.toString(), exeURI.getQuery(), exeURI.getFragment());
+                    exeFS = exeRFP.getResource(exeURI.getPath());
                 }
+                copyExeFS.copy(exeFS, EFS.OVERWRITE | EFS.SHALLOW, SubMonitor.convert(monitor, 1));
+                // Note: assume that we don't need to create a new exeRC since the
+                // scheme and authority remain the same between the original exeURI and the new one.
+            }
+            valgrindVersion = getValgrindVersion(project);
+            IPath remoteBinFile = Path.fromOSString(exeURI.getPath());
+            String configWorkingDir = configUtils.getWorkingDirectory();
+            IFileStore workingDir;
+            if(configWorkingDir == null){
+                // If no working directory was provided, use the directory containing the
+                // the executable as the working directory.
+                IPath workingDirPath = remoteBinFile.removeLastSegments(1);
+                IRemoteFileProxy workingDirRFP = exeRC.getRmtFileProxy();
+                workingDir = workingDirRFP.getResource(workingDirPath.toOSString());
+            } else {
+                URI workingDirURI = new URI(configUtils.getWorkingDirectory());
+                RemoteConnection workingDirRC = new RemoteConnection(workingDirURI);
+                IRemoteFileProxy workingDirRFP = workingDirRC.getRmtFileProxy();
+                workingDir = workingDirRFP.getResource(workingDirURI.getPath());
             }
 
-            monitor.done();
-        }
-    }
+            IPath remoteLogDir = Path.fromOSString("/tmp/"); //$NON-NLS-1$
+            outputPath = remoteLogDir.append("eclipse-valgrind-" + System.currentTimeMillis()); //$NON-NLS-1$
 
-    private String createRemoteTmpDir(IFileService fileService, SubMonitor monitor) throws SystemMessageException {
-        // Create a directory on the remote target to store the Valgrind log
-        // files into.
-        String tmpFolderName = "eclipse-valgrind-" + System.currentTimeMillis(); //$NON-NLS-1$
-        outputPath = Path.fromOSString("/tmp/" + tmpFolderName); //$NON-NLS-1$
-        fileService.createFolder("/tmp/", //$NON-NLS-1$
-                tmpFolderName,
-                monitor.newChild(2));
-        monitor.worked(2);
+            exeRC.createFolder(outputPath, SubMonitor.convert(monitor, 1));
 
-        return tmpFolderName;
-    }
-
-
-    private void setupArgs(StringBuffer allArgs, String remoteExePath) throws CoreException {
-        String[] valgrindArgs = getValgrindArgumentsArray(config);
-        String[] executableArgs = getProgramArgumentsArray(config);
-
-        for (String valgrindArg : valgrindArgs) {
-            allArgs.append(valgrindArg);
-            allArgs.append(" "); //$NON-NLS-1$
-        }
-        allArgs.append(remoteExePath);
-        allArgs.append(" "); //$NON-NLS-1$
-        for (String executableArg : executableArgs) {
-            allArgs.append(executableArg);
-            allArgs.append(" "); //$NON-NLS-1$
-        }
-        System.out.println(allArgs.toString());
-    }
-
-    private IPath createLocalOutputDir() throws CoreException {
-        try {
-            IPath localOutputDir;
-            IValgrindOutputDirectoryProvider provider =
-                    getPlugin().getOutputDirectoryProvider();
+            // create/empty local output directory
+            IValgrindOutputDirectoryProvider provider = getPlugin().getOutputDirectoryProvider();
             setOutputPath(config, provider.getOutputPath());
+            IPath localOutputDir = null;
+            try {
+                localOutputDir = provider.getOutputPath();
+                createDirectory(localOutputDir);
+            } catch (IOException e2) {
+                throw new CoreException(new Status(IStatus.ERROR, ValgrindLaunchPlugin.PLUGIN_ID, IStatus.OK,
+                        "", e2)); //$NON-NLS-1$
+            }
 
-            localOutputDir = provider.getOutputPath();
-            createDirectory(localOutputDir);
+            // tool that was launched
+            toolID = getTool(config);
+            // ask tool extension for arguments
+            dynamicDelegate = getDynamicDelegate(toolID);
 
-            return localOutputDir;
-        } catch (IOException e2) {
-            throw new CoreException(new Status(IStatus.ERROR,
-                    ValgrindLaunchPlugin.PLUGIN_ID, IStatus.OK,
-                    "", e2)); //$NON-NLS-1$
-        }
-    }
+            String[] valgrindArgs = getValgrindArgumentsArray(config);
+            String[] executableArgs = getProgramArgumentsArray(config);
+            String[] allArgs = new String[executableArgs.length + valgrindArgs.length + 2];
 
-    private void runValgrind(SubMonitor monitor) throws CoreException, InterruptedException {
-        StringBuffer allArgs = new StringBuffer(1024);
+            int idx = 0;
+            allArgs[idx++] = VALGRIND_CMD;
+            for (String valgrindArg : valgrindArgs) {
+                allArgs[idx++] = valgrindArg;
+            }
+            allArgs[idx++] = remoteBinFile.toOSString();
+            for (String executableArg : executableArgs) {
+                allArgs[idx++] = executableArg;
+            }
 
-        IPath localExePath = CDebugUtils.verifyProgramPath(config);
+            Process p = RuntimeProcessFactory.getFactory().exec(allArgs, new String[0], workingDir, project);
 
-        String remoteExePath = config.getAttribute(
-                IRemoteConnectionConfigurationConstants.ATTR_REMOTE_PATH,
-                ""); //$NON-NLS-1$
+            int state = p.waitFor();
 
-        String prelaunchCmd = config.getAttribute(
-                IRemoteConnectionConfigurationConstants.ATTR_PRERUN_COMMANDS,
-                ""); //$NON-NLS-1$
+            if (state != IRemoteCommandLauncher.OK) {
+                abort(Messages.getString("ValgrindLaunchConfigurationDelegate.Launch_exited_status") + " " //$NON-NLS-1$ //$NON-NLS-2$
+                        + state + ". " + NLS.bind(Messages.getString("ValgrindRemoteProxyLaunchDelegate.see_reference"), "IRemoteCommandLauncher") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        + "\n",  //$NON-NLS-1$
+                        null, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
+            }
 
-        setupArgs(allArgs, remoteExePath);
 
-        // Download the binary to the remote before debugging. The RSEHelper
-        // will check the skip download field in the config.
-        if (localExePath != null) {
-            monitor.setTaskName(Messages.getString("ValgrindRemoteProxyLaunchDelegate.download_exe")); //$NON-NLS-1$
-            RSEHelper.remoteFileDownload(config, launch, localExePath.toString(),
-                    remoteExePath, monitor.newChild(10));
-        }
+            if (p.exitValue() != 0) {
+                String line = null;
 
-        monitor.setTaskName(Messages.getString("ValgrindRemoteProxyLaunchDelegate.start")); //$NON-NLS-1$
-        Process remoteProcess = RSEHelper.remoteShellExec(config, prelaunchCmd,
-                VALGRIND_CMD, allArgs.toString(), monitor.newChild(10));
-        DebugPlugin.newProcess(launch, remoteProcess,
-                renderProcessLabel(localExePath.toOSString()));
+                StringBuilder valgrindOutSB = new StringBuilder();
+                BufferedReader valgrindOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                while((line = valgrindOut.readLine()) != null ){
+                    valgrindOutSB.append(line);
+                }
 
-        // Wait until Valgrind has finished.
-        int state = remoteProcess.waitFor();
-        monitor.worked(10);
+                StringBuilder valgrindErrSB = new StringBuilder();
+                BufferedReader valgrindErr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                while((line = valgrindErr.readLine()) != null ){
+                    valgrindErrSB.append(line);
+                }
 
-        monitor.setTaskName(Messages.getString("ValgrindRemoteProxyLaunchDelegate.process_log")); //$NON-NLS-1$
-        if (state != IRemoteCommandLauncher.OK) {
-            abort(Messages.getString("ValgrindLaunchConfigurationDelegate.Launch_exited_status") + " " //$NON-NLS-1$ //$NON-NLS-2$
-                    + state + ". " + NLS.bind(Messages.getString("ValgrindRemoteProxyLaunchDelegate.see_reference"), "IRemoteCommandLauncher") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    + "\n",  //$NON-NLS-1$
-                    null, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
-        }
-    }
+                abort(NLS.bind("ValgrindRemoteProxyLaunchDelegate.Stdout", valgrindOutSB.toString()) + //$NON-NLS-1$
+                        "\n" + NLS.bind("ValgrindRemoteProxyLaunchDelegate.Stderr", valgrindErrSB.toString()), //$NON-NLS-1$ //$NON-NLS-2$
+                        null, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
+            }
 
-    private void retrieveLogFiles(IFileService fileService, String tmpFolderName, IPath localOutputDir, SubMonitor monitor) throws SystemMessageException {
-        // Retrieve the log files from the remote target and store on the
-        // host ready for processing.
-        IHostFile logFilesOnTarget[] = fileService.list(
-                "/tmp/" + tmpFolderName, //$NON-NLS-1$
-                 "*", //$NON-NLS-1$
-                 IFileService.FILE_TYPE_FILES,
-                 monitor.newChild(1));
-        for (IHostFile logFile : logFilesOnTarget) {
-            IPath localValgrindFile = localOutputDir.append(logFile.getName());
             // move remote log files to local directory
-            fileService.download("/tmp/" + tmpFolderName, logFile.getName(), //$NON-NLS-1$
-                    localValgrindFile.toFile(), false,
-                    fileService.getEncoding(monitor.newChild(1)),
-                    monitor.newChild(1));
+            exeRC.download(outputPath, localOutputDir, SubMonitor.convert(monitor, 1));
+
+            // remove remote log dir and all files under it
+            exeRC.delete(outputPath, SubMonitor.convert(monitor, 1));
+
+            // store these for use by other classes
+            getPlugin().setCurrentLaunchConfiguration(config);
+            getPlugin().setCurrentLaunch(launch);
+
+            // parse Valgrind logs
+            IValgrindMessage[] messages = parseLogs(localOutputDir);
+
+            // create launch summary string to distinguish this launch
+            launchStr = createLaunchStr(valgrindFullPath);
+
+            // create view
+            ValgrindUIPlugin.getDefault().createView(launchStr, toolID);
+            // set log messages
+            ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
+            view.setMessages(messages);
+            monitor.worked(1);
+
+            // pass off control to extender
+            dynamicDelegate.handleLaunch(config, launch, localOutputDir, monitor.newChild(2));
+
+            // initialize tool-specific part of view
+            dynamicDelegate.initializeView(view.getDynamicView(), launchStr, monitor.newChild(1));
+
+            // refresh view
+            ValgrindUIPlugin.getDefault().refreshView();
+
+            // show view
+            ValgrindUIPlugin.getDefault().showView();
+            monitor.worked(1);
+
+        } catch (URISyntaxException|IOException|RemoteConnectionException|InterruptedException e) {
+            abort(e.getLocalizedMessage(), null, ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
+        } finally {
+            monitor.done();
+            m.done();
         }
-    }
-
-    private void processLogFiles(IProject project, IPath localOutputDir, SubMonitor monitor) throws IOException, CoreException {
-        //Store these for use by other classes
-        getPlugin().setCurrentLaunchConfiguration(config);
-        getPlugin().setCurrentLaunch(launch);
-
-        // Parse Valgrind logs
-        IValgrindMessage[] messages = parseLogs(localOutputDir);
-        monitor.worked(20);
-
-        // create launch summary string to distinguish this launch
-        String valgrindPathString = RuntimeProcessFactory.getFactory().whichCommand(
-                    VALGRIND_CMD, project);
-        IPath valgrindFullPath = Path.fromOSString(valgrindPathString);
-        launchStr = createLaunchStr(valgrindFullPath);
-
-        // Create view
-        ValgrindUIPlugin.getDefault().createView(launchStr, toolID);
-        // Set log messages
-        ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
-        view.setMessages(messages);
-        monitor.worked(5);
-
-        // Pass off control to extender
-        dynamicDelegate.handleLaunch(config, launch, localOutputDir,
-                monitor.newChild(1));
-        // Initialize tool-specific part of view
-        dynamicDelegate.initializeView(view.getDynamicView(), launchStr,
-                monitor.newChild(1));
-
-        // refresh view
-        ValgrindUIPlugin.getDefault().refreshView();
-        // show view
-        ValgrindUIPlugin.getDefault().showView();
-        monitor.worked(5);
     }
 
     private String createLaunchStr(IPath valgrindPath) throws CoreException {
