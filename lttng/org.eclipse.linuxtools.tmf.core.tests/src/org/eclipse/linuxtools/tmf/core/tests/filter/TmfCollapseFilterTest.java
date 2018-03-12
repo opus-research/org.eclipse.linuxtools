@@ -42,10 +42,10 @@ public class TmfCollapseFilterTest {
     // Variables
     // ------------------------------------------------------------------------
 
-    private CollapsibleEvent collapsibleEvent1 = new CollapsibleEvent(true);
-    private CollapsibleEvent collapsibleEvent2 = new CollapsibleEvent(true);
-    private CollapsibleEvent collapsibleEvent3 = new CollapsibleEvent(false);
-    private NonCollapsibleEvent nonCollapsibleEvent1 = new NonCollapsibleEvent();
+    private CollapsibleEvent fCollapsibleEvent1 = new CollapsibleEvent(true);
+    private CollapsibleEvent fCollapsibleEvent2 = new CollapsibleEvent(true);
+    private CollapsibleEvent fCollapsibleEvent3 = new CollapsibleEvent(false);
+    private NonCollapsibleEvent fNonCollapsibleEvent1 = new NonCollapsibleEvent();
     private TmfCollapseFilter fFilter = new TmfCollapseFilter();
 
     // ------------------------------------------------------------------------
@@ -57,15 +57,15 @@ public class TmfCollapseFilterTest {
 
         TmfCollapseFilter filter = new TmfCollapseFilter();
 
-        assertTrue(filter.matches(collapsibleEvent1));
-        assertFalse(filter.matches(collapsibleEvent2));
-        assertFalse(filter.matches(collapsibleEvent1));
-        assertFalse(filter.matches(collapsibleEvent2));
-        assertTrue(filter.matches(nonCollapsibleEvent1));
-        assertTrue(filter.matches(nonCollapsibleEvent1));
-        assertTrue(filter.matches(collapsibleEvent1));
-        assertFalse(filter.matches(collapsibleEvent2));
-        assertTrue(filter.matches(collapsibleEvent3));
+        assertTrue(filter.matches(fCollapsibleEvent1));
+        assertFalse(filter.matches(fCollapsibleEvent2));
+        assertFalse(filter.matches(fCollapsibleEvent1));
+        assertFalse(filter.matches(fCollapsibleEvent2));
+        assertTrue(filter.matches(fNonCollapsibleEvent1));
+        assertTrue(filter.matches(fNonCollapsibleEvent1));
+        assertTrue(filter.matches(fCollapsibleEvent1));
+        assertFalse(filter.matches(fCollapsibleEvent2));
+        assertTrue(filter.matches(fCollapsibleEvent3));
     }
 
     @Test

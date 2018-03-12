@@ -269,12 +269,12 @@ public class TmfEventsCache {
      * Update event repeat count at index
      *
      * @param index
-     *            The index this event will occupy in the cache
+     *            The index this event occupies in the cache
      *
      * @since 3.1
      */
     public synchronized void updateCollapsedEvent(int index) {
-        int i = index - fCacheStartIndex - 1;
+        int i = index - fCacheStartIndex;
         if (i < fCache.length) {
             fCache[i].repeatCount++;
         }

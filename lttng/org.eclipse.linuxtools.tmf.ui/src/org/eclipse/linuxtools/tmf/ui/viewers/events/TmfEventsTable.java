@@ -1591,7 +1591,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         refresh = true;
                     } else {
                         if (filter instanceof TmfCollapseFilter) {
-                            fCache.updateCollapsedEvent((int)fFilterMatchCount);
+                            fCache.updateCollapsedEvent((int) fFilterMatchCount - 1);
                         }
                     }
 
