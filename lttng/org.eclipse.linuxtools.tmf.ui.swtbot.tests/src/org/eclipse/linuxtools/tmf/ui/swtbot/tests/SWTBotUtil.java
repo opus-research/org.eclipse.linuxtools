@@ -23,9 +23,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.linuxtools.tmf.ui.swtbot.tests.conditions.ConditionHelpers;
 import org.eclipse.linuxtools.tmf.ui.views.TracingPerspectiveFactory;
 import org.eclipse.swt.widgets.Display;
@@ -202,28 +200,5 @@ public abstract class SWTBotUtil {
                     + " that useUIThread is set to false in the pom.xml");
         }
 
-    }
-
-    public static void openTrace(final String projectName, final String tracePath, final String traceType) {
-        final Exception exception[] = new Exception[1];
-        exception[0] = null;
-        UIThreadRunnable.syncExec(new VoidResult() {
-            @Override
-            public void run() {
-                try {
-                    IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-                    TmfTraceFolder destinationFolder = TmfProjectRegistry.getProject(project, true).getTracesFolder();
-                    TmfOpenTraceHelper.openTraceFromPath(destinationFolder, tracePath, PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), traceType);
-                } catch (CoreException e) {
-                    exception[0] = e;
-                }
-            }
-        });
-        if (exception[0] != null) {
-            fail(exception[0].getMessage());
-        }
-
-        delay(1000);
-        waitForJobs();
     }
 }
