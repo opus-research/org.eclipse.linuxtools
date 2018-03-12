@@ -17,12 +17,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.MenuManager;
@@ -38,7 +32,6 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
-import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener2;
@@ -84,8 +77,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	private static final String SHOW_ALL_IMAGES_COMMAND_ID = "org.eclipse.linuxtools.docker.ui.commands.showAllImages"; //$NON-NLS-1$
 	private static final String SHOW_ALL_IMAGES_PREFERENCE = "showAllImages"; //$NON-NLS-1$
 
-	private final static String NoConnectionSelected = "ViewerNoConnectionSelected.msg"; //$NON-NLS-1$
-	private final static String ConnectionNotAvailable = "ViewerConnectionNotAvailable.msg"; //$NON-NLS-1$
+	private final static String DaemonMissing = "ViewerDaemonMissing.msg"; //$NON-NLS-1$
 	private final static String ViewAllTitle = "ImagesViewTitle.all.msg"; //$NON-NLS-1$
 	private final static String ViewFilteredTitle = "ImagesViewTitle.filtered.msg"; //$NON-NLS-1$
 
@@ -153,7 +145,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	public void createPartControl(final Composite parent) {
 		final FormToolkit toolkit = new FormToolkit(parent.getDisplay());
 		form = toolkit.createForm(parent);
-		form.setText(DVMessages.getString(NoConnectionSelected));
+		form.setText(DVMessages.getString(DaemonMissing));
 		final Composite container = form.getBody();
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(0, 0).applyTo(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(container);
@@ -297,7 +289,14 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		viewer.setComparator(comparator);
 		// apply search filter
 		this.viewer.addFilter(getImagesFilter());
-		setConnection(CommandUtils.getCurrentConnection(null));
+		// default to first active connection or currently selected connection
+		// in Explorer View
+		IDockerConnection firstActiveConnection = CommandUtils
+				.getCurrentConnection(null);
+		if (firstActiveConnection != null) {
+			setConnection(firstActiveConnection);
+			connection.addImageListener(this);
+		}
 		// get the current selection in the tableviewer
 		getSite().setSelectionProvider(viewer);
 	}
@@ -358,14 +357,21 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		final ITreeSelection treeSelection = (ITreeSelection) selection;
-		if(treeSelection.isEmpty()) {
+		// empty the viewer if the selection is empty
+		if (treeSelection.isEmpty()) {
 			setConnection(null);
 			return;
 		}
-		final Object firstSegment = treeSelection.getPaths()[0].getFirstSegment();
-		if(firstSegment instanceof IDockerConnection) {
-			final IDockerConnection connection = (IDockerConnection) firstSegment;
-			setConnection(connection);
+		// remove this view as a container listener on the former select
+		// connection
+		if (this.connection != null) {
+			this.connection.removeImageListener(this);
+		}
+		final Object firstSegment = treeSelection.getPaths()[0]
+				.getFirstSegment();
+		if (firstSegment instanceof IDockerConnection) {
+			setConnection((IDockerConnection) firstSegment);
+			this.connection.addImageListener(this);
 		}
 	}
 	
@@ -389,14 +395,8 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 				|| this.form == null
 				|| this.connection == null) {
 			return;
-		} else if (this.connection
-				.getState() == EnumDockerConnectionState.CLOSED) {
-			this.form.setText(DVMessages.getFormattedString(
-					ConnectionNotAvailable, connection.getName()));
-			this.form.setEnabled(false);
 		} else if (!this.connection.isImagesLoaded()) {
-			this.form.setEnabled(false);
-			this.form.setText(connection.getName());
+			form.setText(connection.getName());
 		} else {
 			final List<ViewerFilter> filters = Arrays
 					.asList(this.viewer.getFilters());
@@ -412,7 +412,6 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 								.toString(connection.getImages().size()) }));
 
 			}
-			this.form.setEnabled(true);
 		}
 	}
 	
@@ -423,33 +422,14 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		return connection;
 	}
 
-	private void setConnection(final IDockerConnection connection) {
-		if (connection != null && connection.equals(this.connection)) {
-			return;
-		}
-		if (this.connection != null) {
-			this.connection.removeImageListener(this);
-		}
-		this.connection = connection;
-		if (this.viewer != null && this.connection != null) {
-			final Job refreshJob = new Job(
-					DVMessages.getString("ImagesRefresh.msg")) {
-
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					connection.getImages(true);
-					connection.addImageListener(DockerImagesView.this);
-					Display.getDefault().asyncExec(() -> {
-						viewer.setInput(connection);
-						refreshViewTitle();
-					});
-					return Status.OK_STATUS;
-				}
-			};
-			refreshJob.schedule();
-		} else if (this.viewer != null) {
-			viewer.setInput(new IDockerContainer[0]);
-			form.setText(DVMessages.getString(NoConnectionSelected));
+	private void setConnection(final IDockerConnection conn) {
+		this.connection = conn;
+		if (conn != null) {
+			viewer.setInput(conn);
+			refreshViewTitle();
+		} else {
+			viewer.setInput(new IDockerImage[0]);
+			form.setText(DVMessages.getString(DaemonMissing));
 		}
 	}
 
@@ -512,26 +492,8 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	@Override
 	public void changeEvent(final IDockerConnection connection,
 			final int type) {
-		if (type == IDockerConnectionManagerListener.UPDATE_SETTINGS_EVENT) {
-			final Job refreshJob = new Job(
-					DVMessages.getString("ImagesRefresh.msg")) {
-
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					connection.getImages(true);
-					return Status.OK_STATUS;
-				}
-			};
-			refreshJob.addJobChangeListener(new JobChangeAdapter() {
-				@Override
-				public void done(IJobChangeEvent event) {
-					Display.getDefault().asyncExec(() -> refreshViewTitle());
-				}
-
-			});
-			refreshJob.schedule();
-		} else if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
-			Display.getDefault().asyncExec(() -> refreshViewTitle());
+		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
+			refreshViewTitle();
 		}
 	}
 }
