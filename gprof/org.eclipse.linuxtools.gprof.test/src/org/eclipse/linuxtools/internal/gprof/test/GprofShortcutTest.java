@@ -10,7 +10,8 @@
 *******************************************************************************/
 package org.eclipse.linuxtools.internal.gprof.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.core.resources.ProjectScope;
@@ -52,6 +53,7 @@ public class GprofShortcutTest extends AbstractTest {
 
     @Before
     public void setUp() throws Exception {
+        assumeCpp();
         proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest2"); //$NON-NLS-1$
         ProjectScope ps = new ProjectScope(proj.getProject());
         ScopedPreferenceStore scoped = new ScopedPreferenceStore(ps, ProviderProfileConstants.PLUGIN_ID);

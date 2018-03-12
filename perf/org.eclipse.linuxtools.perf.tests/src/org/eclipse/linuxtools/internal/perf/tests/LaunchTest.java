@@ -40,6 +40,7 @@ public class LaunchTest extends AbstractTest {
 
     @Before
     public void setUp() throws Exception {
+        assumeCpp();
         proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest"); //$NON-NLS-1$
         config = createConfiguration(proj.getProject());
 
