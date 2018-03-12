@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Ericsson
+ * Copyright (c) 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
- *   Bernd Hufmann - Add content column
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.gdbtrace.ui.views.events;
@@ -39,8 +38,7 @@ public class GdbEventTableColumns implements ITmfEventTableColumns {
     static final @NonNull Collection<TmfEventTableColumn> GDB_COLUMNS = ImmutableList.of(
             new GdbTraceFrameColumn(),
             new GdbTracepointColumn(),
-            new GdbFileColumn(),
-            TmfEventTableColumn.BaseColumns.CONTENTS
+            new GdbFileColumn()
             );
 
     private static class GdbTraceFrameColumn extends TmfEventTableFieldColumn {
