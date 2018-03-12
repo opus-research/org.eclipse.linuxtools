@@ -18,7 +18,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.docker.core.EnumDockerStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
-import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.ContainerFileProxy;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
@@ -70,11 +69,7 @@ public class ContainerCopyTo extends Wizard {
 		// it is running and it has specified to use a tty
 		boolean usingTTY = false;
 		if (isRunning) {
-			IDockerContainerInfo info = connection
-					.getContainerInfo(container.id());
-			if (info != null) {
-				usingTTY = info.config().tty();
-			}
+			usingTTY = container.info().config().tty();
 		}
 
 		mainPage = new ContainerCopyToPage(sfo.getResult(), provider,
