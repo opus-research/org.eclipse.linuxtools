@@ -74,7 +74,7 @@ public class TestCustomTxtWizard {
 
     private static final String MANAGE_CUSTOM_PARSERS_SHELL_TITLE = "Manage Custom Parsers";
     private static final String PROJECT_NAME = "Test";
-    private static final String EXPECTED_TEST_DEFINITION = "<Definition name=\"Test\">\n" +
+    private static final String EXPECTED_TEST_DEFINITION = "<Definition category= \"Custom Text\" name=\"Test\">\n" +
             "<TimeStampOutputFormat>ss</TimeStampOutputFormat>\n" +
             "<InputLine>\n" +
             "<Cardinality max=\"2147483647\" min=\"0\"/>\n" +
