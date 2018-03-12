@@ -85,13 +85,9 @@ public class ProviderLaunchConfigurationDelegate extends AbstractCLaunchDelegate
 
             // launch delegate
             if (delegate != null) {
-            	try {
-            		delegate.launch(config, mode, launch, monitor);
-            	} catch(CoreException e) {
-            		errorDialog(Messages.ProviderLaunchError_msg_0, e.getMessage());
-            	}
+                delegate.launch(config, mode, launch, monitor);
             } else {
-            	String message = providerToolName.isEmpty() ?
+                String message = providerToolName.isEmpty() ?
                         NLS.bind(Messages.ProviderProfilerMissing_msg_0, providerId)
                         : NLS.bind(Messages.ProviderProfilerMissing_msg_1, providerToolName);
                 infoDialog(Messages.ProviderProfilerMissing_title_0, message);
@@ -102,11 +98,6 @@ public class ProviderLaunchConfigurationDelegate extends AbstractCLaunchDelegate
     // Display an information dialog to denote there are no profiling plug-ins installed.
     private void infoDialog(final String title, final String message) {
         ProfileLaunchPlugin.getShell().getDisplay().asyncExec( () -> MessageDialog.openInformation(ProfileLaunchPlugin.getShell(), title, message));
-    }
-
-    // Display an error dialog to denote an error scenario.
-    private void errorDialog(final String title, final String message) {
-        ProfileLaunchPlugin.getShell().getDisplay().asyncExec( () -> MessageDialog.openError(ProfileLaunchPlugin.getShell(), title, message));
     }
 
     @Override
