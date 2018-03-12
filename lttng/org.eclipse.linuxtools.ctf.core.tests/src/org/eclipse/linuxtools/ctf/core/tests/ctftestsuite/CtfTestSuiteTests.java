@@ -86,9 +86,7 @@ public class CtfTestSuiteTests {
         addDirsFrom(dirs, BASE_PATH + "stress/metadata/fail", false);
         addDirsFrom(dirs, BASE_PATH + "stress/metadata/pass", true);
         addDirsFrom(dirs, BASE_PATH + "stress/stream/fail", false);
-
-        // TODO Update for the new directory layout
-        //addDirsFrom(dirs, BASE_PATH + "stress/stream/pass", true);
+        addDirsFrom(dirs, BASE_PATH + "stress/stream/pass", true);
 
         return dirs;
     }
