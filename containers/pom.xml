@@ -27,7 +27,6 @@
   <modules>
     <module>org.eclipse.linuxtools.docker.core</module>
     <module>org.eclipse.linuxtools.docker.ui</module>
-    <module>org.eclipse.linuxtools.docker.docs</module>
     <module>org.eclipse.linuxtools.docker-feature</module>
   </modules>
 
