@@ -7,7 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Alexandre Montplaisir - Initial API and implementation
+ *   Matthew Khouzam - Initial API and implementation
+ *   Alexandre Montplaisir - Updated to new Event Table API
  *******************************************************************************/
 
 package org.eclipse.linuxtools.btf.ui;
@@ -16,18 +17,19 @@ import java.util.Collection;
 
 import org.eclipse.linuxtools.btf.core.trace.BtfColumnNames;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.ITmfEventTableColumns;
+import org.eclipse.linuxtools.tmf.ui.viewers.events.TmfEventsTable;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableColumn;
 import org.eclipse.linuxtools.tmf.ui.viewers.events.columns.TmfEventTableFieldColumn;
+import org.eclipse.swt.widgets.Composite;
 
 import com.google.common.collect.ImmutableList;
 
 /**
- * Columns to use in the BTF event table
+ * BTF event viewer
  *
- * @author Alexandre Montplaisir
+ * @author Matthew Khouzam
  */
-public class BtfEventTableColumns implements ITmfEventTableColumns {
+public class BtfEventViewer extends TmfEventsTable {
 
     // ------------------------------------------------------------------------
     // Column definition
@@ -127,11 +129,18 @@ public class BtfEventTableColumns implements ITmfEventTableColumns {
     }
 
     // ------------------------------------------------------------------------
-    // ITmfEventTableColumns
+    // Constructor
     // ------------------------------------------------------------------------
 
-    @Override
-    public Collection<? extends TmfEventTableColumn> getEventTableColumns() {
-        return BTF_COLUMNS;
+    /**
+     * Basic constructor, will use default column data.
+     *
+     * @param parent
+     *            The parent composite UI object
+     * @param cacheSize
+     *            The size of the event table cache
+     */
+    public BtfEventViewer(Composite parent, int cacheSize) {
+        super(parent, cacheSize, BTF_COLUMNS);
     }
 }

@@ -193,9 +193,8 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     /**
      * Default set of columns to use for trace types that do not specify
      * anything
-     * @since 3.1
      */
-    public static final Collection<TmfEventTableColumn> DEFAULT_COLUMNS = ImmutableList.of(
+    private static final Collection<TmfEventTableColumn> DEFAULT_COLUMNS = ImmutableList.of(
             TmfEventTableColumn.BaseColumns.TIMESTAMP,
             TmfEventTableColumn.BaseColumns.SOURCE,
             TmfEventTableColumn.BaseColumns.EVENT_TYPE,
@@ -410,7 +409,11 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
 
         // Create the UI columns in the table
         for (TmfEventTableColumn col : fColumns) {
-            fTable.addColumn(col.getHeaderName(), col.getHeaderTooltip(), col.getFilterFieldId());
+            TableColumn column = fTable.newTableColumn(SWT.LEFT);
+            column.setText(col.getHeaderName());
+            column.setToolTipText(col.getHeaderTooltip());
+            column.setData(Key.FIELD_ID, col.getFilterFieldId());
+            column.pack();
         }
 
         // Set the frozen row for header row
