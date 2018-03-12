@@ -94,4 +94,4 @@ invalid_since_tag_version=Error
 malformed_since_tag=Error
 missing_since_tag=Error
 report_api_breakage_when_major_version_incremented=Disabled
-report_resolution_errors_api_component=Disabled
+report_resolution_errors_api_component=Warning
