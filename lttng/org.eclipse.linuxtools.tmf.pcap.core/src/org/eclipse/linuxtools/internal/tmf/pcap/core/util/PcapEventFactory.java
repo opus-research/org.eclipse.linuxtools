@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.pcap.core.packet.Packet;
@@ -77,7 +78,7 @@ public class PcapEventFactory {
         default:
             throw new IllegalArgumentException("The timestamp precision is not valid!"); //$NON-NLS-1$
         }
-        String fileName = pcap.getPath().substring(pcap.getPath().lastIndexOf('/') + 1);
+        String fileName = (new Path(pcap.getPath())).lastSegment();
         if (fileName == null) {
             fileName = EMPTY_STRING;
         }
