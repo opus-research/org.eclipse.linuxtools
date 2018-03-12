@@ -69,8 +69,7 @@ public class OpenAction extends Action {
     @Override
     public void run() {
         try {
-            Object service = page.getActivePart().getSite().getService(IHandlerService.class);
-            IHandlerService handlerService = (IHandlerService) service;
+            IHandlerService handlerService = (IHandlerService) page.getActivePart().getSite().getService(IHandlerService.class);
             boolean executeCommand = ((element instanceof TmfTraceElement) || (element instanceof TmfAnalysisOutputElement));
 
             if (!executeCommand && element instanceof TmfExperimentElement) {
