@@ -10,11 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
-import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.CPU_PRIORITY;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.DATA_VOLUMES;
-import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.ENABLE_LIMITS;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.ENV_VARIABLES;
-import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.MEMORY_LIMIT;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -26,16 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.beans.IBeanValueProperty;
-import org.eclipse.core.databinding.observable.ChangeEvent;
-import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.map.IObservableMap;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.property.Properties;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -182,6 +174,13 @@ image);
 				"ImageRunResourceVolVarPage.enableLimitationButton")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.applyTo(enableResourceLimitationButton);
+		dbc.bindValue(
+				WidgetProperties.selection()
+						.observe(enableResourceLimitationButton),
+				BeanProperties
+						.value(ImageRunResourceVolumesVariablesModel.class,
+								ImageRunResourceVolumesVariablesModel.ENABLE_RESOURCE_LIMITATIONS)
+						.observe(model));
 		final int COLUMNS = 5;
 		final int INDENT = 20;
 		final Composite subContainer = new Composite(container, SWT.NONE);
@@ -199,28 +198,36 @@ image);
 				.grab(false, false).applyTo(cpuPriorityLabel);
 		final Button lowCPULimitationButton = new Button(subContainer,
 				SWT.RADIO);
-		bindButton(lowCPULimitationButton,
-				ImageRunResourceVolumesVariablesModel.CPU_LOW);
 		lowCPULimitationButton.setText(WizardMessages
 				.getString("ImageRunResourceVolVarPage.lowButton")); //$NON-NLS-1$
+		lowCPULimitationButton.addSelectionListener(
+				onCpuShareWeighting(ImageRunResourceVolumesVariablesModel.LOW));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.applyTo(lowCPULimitationButton);
 		final Button mediumCPULimitationButton = new Button(subContainer,
 				SWT.RADIO);
 		mediumCPULimitationButton.setText(WizardMessages
 				.getString("ImageRunResourceVolVarPage.mediumButton")); //$NON-NLS-1$
-		bindButton(mediumCPULimitationButton,
-				ImageRunResourceVolumesVariablesModel.CPU_MEDIUM);
+		mediumCPULimitationButton.addSelectionListener(onCpuShareWeighting(
+				ImageRunResourceVolumesVariablesModel.MEDIUM));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.applyTo(mediumCPULimitationButton);
 		final Button highCPULimitationButton = new Button(subContainer,
 				SWT.RADIO);
+		mediumCPULimitationButton.setSelection(true);
 		highCPULimitationButton.setText(WizardMessages
 				.getString("ImageRunResourceVolVarPage.highButton")); //$NON-NLS-1$
-		bindButton(highCPULimitationButton,
-				ImageRunResourceVolumesVariablesModel.CPU_HIGH);
+		highCPULimitationButton.addSelectionListener(onCpuShareWeighting(
+				ImageRunResourceVolumesVariablesModel.HIGH));
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(2, 1)
 				.applyTo(highCPULimitationButton);
+		dbc.bindValue(
+				WidgetProperties.selection()
+						.observe(enableResourceLimitationButton),
+				BeanProperties
+						.value(ImageRunResourceVolumesVariablesModel.class,
+								ImageRunResourceVolumesVariablesModel.ENABLE_RESOURCE_LIMITATIONS)
+						.observe(model));
 
 		// Memory limitation
 		final Label memoryLimitLabel = new Label(subContainer, SWT.NONE);
@@ -259,65 +266,29 @@ image);
 				.grab(false, false).applyTo(memoryLimitValueLabel);
 
 		// enable/disable controls
-		final IObservableValue enableResourceLimitationsObservable = BeanProperties
-				.value(ImageRunResourceVolumesVariablesModel.class,
-						ImageRunResourceVolumesVariablesModel.ENABLE_RESOURCE_LIMITATIONS)
-				.observe(model);
-		dbc.bindValue(
-				WidgetProperties.selection()
-						.observe(enableResourceLimitationButton),
-				enableResourceLimitationsObservable);
-		enableResourceLimitationsObservable
-				.addChangeListener(onEnableResourceLimitation(subContainer));
+		enableResourceLimitationButton
+				.addSelectionListener(onEnableResourceLimitation(subContainer));
 		toggleResourceLimitationControls(subContainer);
 
 	}
 
-	/**
-	 * Binds the given <code>cpuShares</code> value to the given {@link Button}
-	 * when it is selected.
-	 * 
-	 * @param button
-	 *            the {@link Button} to bind
-	 * @param cpuShares
-	 *            the <code>cpuShares</code> to bind to the {@link Button}
-	 * @return
-	 */
-	private Binding bindButton(final Button button, final long cpuShares) {
-		return dbc.bindValue(WidgetProperties.selection().observe(button),
-				BeanProperties
-						.value(ImageRunResourceVolumesVariablesModel.class,
-								ImageRunResourceVolumesVariablesModel.CPU_SHARE_WEIGHT)
-						.observe(model),
-				new UpdateValueStrategy() {
-					@Override
-					public Object convert(Object value) {
-						if (value.equals(Boolean.TRUE)) {
-							return cpuShares;
-						}
-						return null;
-					}
-
-				}, new UpdateValueStrategy() {
-					@Override
-					public Object convert(final Object value) {
-						if (value.equals(cpuShares)) {
-							button.setEnabled(true);
-						}
-						return value.equals(cpuShares);
-					}
-				});
+	private SelectionListener onCpuShareWeighting(final int cpuShareWeigth) {
+		return new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				model.setCpuShareWeight(cpuShareWeigth);
+			}
+		};
 	}
 
-	private IChangeListener onEnableResourceLimitation(
+	private SelectionListener onEnableResourceLimitation(
 			final Composite container) {
-		return new IChangeListener() {
-
+		return new SelectionAdapter() {
 			@Override
-			public void handleChange(ChangeEvent event) {
+			public void widgetSelected(final SelectionEvent e) {
 				toggleResourceLimitationControls(container);
-
 			}
+
 		};
 	}
 
@@ -427,23 +398,6 @@ image);
 				model.setEnvironmentVariables(
 						lastLaunchConfiguration.getAttribute(ENV_VARIABLES,
 								Collections.<String> emptyList()));
-				// resource limitations
-				model.setEnableResourceLimitations(lastLaunchConfiguration
-						.getAttribute(ENABLE_LIMITS, false));
-				model.setCpuShareWeight(Long.parseLong(lastLaunchConfiguration
-						.getAttribute(CPU_PRIORITY, Long.toString(
-								ImageRunResourceVolumesVariablesModel.CPU_MEDIUM))));
-				// retrieve memory limit in bytes and converts in MB in the
-				// wizard model
-				final long memoryLimit = Long.parseLong(
-						lastLaunchConfiguration.getAttribute(
-						MEMORY_LIMIT,
-								Long.toString(
-										ImageRunResourceVolumesVariablesModel.DEFAULT_MEMORY
-												* 1048576)));
-				// make sure memory limit is not higher than maxMemory
-				model.setMemoryLimit(Math.min(model.getTotalMemory(),
-						memoryLimit / 1048576));
 			}
 			model.setDataVolumes(volumes.values());
 			model.setSelectedDataVolumes(selectedVolumes);

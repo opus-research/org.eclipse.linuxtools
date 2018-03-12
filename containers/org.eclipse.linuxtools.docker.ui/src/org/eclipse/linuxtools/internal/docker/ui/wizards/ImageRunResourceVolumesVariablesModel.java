@@ -37,16 +37,13 @@ public class ImageRunResourceVolumesVariablesModel
 	}
 
 	/** the 'low' CPU share weight variableValue. */
-	public static final long CPU_LOW = 512l;
+	public static final int LOW = 512;
 
 	/** the default 'medium' CPU share weight variableValue. */
-	public static final long CPU_MEDIUM = 1024l;
+	public static final int MEDIUM = 1024;
 
 	/** the 'high' CPU share weight variableValue. */
-	public static final long CPU_HIGH = 2048l;
-
-	/** default memory limit (in MB) */
-	public static final int DEFAULT_MEMORY = 512;
+	public static final int HIGH = 2048;
 
 	public static final String ENABLE_RESOURCE_LIMITATIONS = "enableResourceLimitations"; //$NON-NLS-1$
 
@@ -68,9 +65,9 @@ public class ImageRunResourceVolumesVariablesModel
 
 	private IDockerImageInfo imageInfo = null;
 
-	private long memoryLimit = DEFAULT_MEMORY;
+	private int memoryLimit = 512;
 
-	private long cpuShareWeighting = CPU_MEDIUM;
+	private int cpuShareWeighting = 1024;
 
 	private Set<DataVolumeModel> selectedDataVolumes = new HashSet<>();
 
@@ -218,20 +215,29 @@ public class ImageRunResourceVolumesVariablesModel
 	 * 
 	 * @return
 	 */
-	public long getMemoryLimit() {
+	public int getMemoryLimit() {
 		return memoryLimit;
 	}
 
-	public void setMemoryLimit(final long memoryLimit) {
+	/**
+	 * The memory allocated for the container, in Bytes.
+	 * 
+	 * @return
+	 */
+	public long getMemory() {
+		return memoryLimit * 1048576;
+	}
+
+	public void setMemoryLimit(final int memoryLimit) {
 		firePropertyChange(MEMORY_LIMIT, this.memoryLimit,
 				this.memoryLimit = memoryLimit);
 	}
 
-	public long getCpuShareWeight() {
+	public int getCpuShareWeight() {
 		return cpuShareWeighting;
 	}
 
-	public void setCpuShareWeight(final long cpuShareWeighting) {
+	public void setCpuShareWeight(final int cpuShareWeighting) {
 		firePropertyChange(CPU_SHARE_WEIGHT, this.cpuShareWeighting,
 				this.cpuShareWeighting = cpuShareWeighting);
 	}
