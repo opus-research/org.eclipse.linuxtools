@@ -44,7 +44,7 @@ import org.eclipse.ui.PlatformUI;
  */
 public class BuildDockerImageJob extends Job implements IDockerProgressHandler {
 
-	private static final String BUILD_IMAGE_JOB_TITLE = "BuildImageJob.title"; //$NON-NLS-1$
+	private static final String BUILD_IMAGE_JOB_TITLE = "BuildImageJog.title"; //$NON-NLS-1$
 	private static final String BUILD_IMAGE_ERROR_MESSAGE = "BuildImageError.msg"; //$NON-NLS-1$
 	private static final String DOCKERFILE_LINE_COUNT_ERROR = "ImageBuildError.msg"; //$NON-NLS-1$
 	private static final String SKIP_EMPTY_DOCKERFILE = "SkipEmptydockerfile.msg"; //$NON-NLS-1$
@@ -107,7 +107,6 @@ public class BuildDockerImageJob extends Job implements IDockerProgressHandler {
 			if (numberOfBuildOperations == 0) {
 				Activator.log(new Status(IStatus.WARNING, Activator.PLUGIN_ID,
 						JobMessages.getString(SKIP_EMPTY_DOCKERFILE)));
-				this.progressMonitor = progressMonitor;
 			} else {
 				this.console.clearConsole();
 				this.console.activate();

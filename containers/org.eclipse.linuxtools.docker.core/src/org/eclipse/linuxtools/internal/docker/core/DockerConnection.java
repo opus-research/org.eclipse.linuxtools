@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.ProcessingException;
@@ -54,7 +53,6 @@ import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConfParameter;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IDockerConnection2;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionInfo;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings.BindingType;
@@ -66,7 +64,6 @@ import org.eclipse.linuxtools.docker.core.IDockerContainerListener;
 import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageBuildOptions;
-import org.eclipse.linuxtools.docker.core.IDockerImageHiearchyNode;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
 import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
@@ -119,8 +116,7 @@ import com.spotify.docker.client.messages.Version;
  * 
  *
  */
-public class DockerConnection
-		implements IDockerConnection, IDockerConnection2, Closeable {
+public class DockerConnection implements IDockerConnection, Closeable {
 
 	// Builder allowing different binding modes (unix socket vs TCP connection)
 	public static class Builder {
@@ -260,11 +256,9 @@ public class DockerConnection
 						addContainerListener(dcrm);
 					}
 				} catch (DockerCertificateException e) {
-					setState(EnumDockerConnectionState.CLOSED);
 					throw new DockerException(NLS
 							.bind(Messages.Open_Connection_Failure, this.name,
-									this.getUri()),
-							e);
+									this.getUri()));
 				}
 			}
 			// then try to ping the Docker daemon to verify the connection
@@ -324,15 +318,13 @@ public class DockerConnection
 			if (this.client != null) {
 				this.client.ping();
 			} else {
-				throw new DockerException(NLS.bind(
-						Messages.Docker_Daemon_Ping_Failure, this.getName()));
+				throw new DockerException(Messages.Docker_Daemon_Ping_Failure);
 			}
 			setState(EnumDockerConnectionState.ESTABLISHED);
 		} catch (com.spotify.docker.client.DockerException
 				| InterruptedException e) {
 			setState(EnumDockerConnectionState.CLOSED);
-			throw new DockerException(NLS.bind(
-					Messages.Docker_Daemon_Ping_Failure, this.getName()), e);
+			throw new DockerException(Messages.Docker_Daemon_Ping_Failure, e);
 		}
 	}
 
@@ -415,10 +407,7 @@ public class DockerConnection
 							ping();
 						} catch (DockerException e) {
 							Activator.logErrorMessage(
-									NLS.bind(
-											Messages.Docker_Daemon_Ping_Failure,
-											this.getName()),
-									e);
+									Messages.Docker_Daemon_Ping_Failure, e);
 							return Status.CANCEL_STATUS;
 						}
 						return Status.OK_STATUS;
@@ -736,68 +725,6 @@ public class DockerConnection
 		return this.containers;
 	}
 
-	public Set<String> getContainerIdsWithLabels(Map<String, String> labels)
-			throws DockerException {
-		Set<String> labelSet = new HashSet<>();
-		try {
-			final List<Container> nativeContainers = new ArrayList<>();
-			synchronized (clientLock) {
-				// Check that client is not null as this connection may have
-				// been closed but there is an async request to filter the
-				// containers list left in the queue
-				if (client == null) {
-					// in that case the list becomes empty, which is fine is
-					// there's no client.
-					return Collections.emptySet();
-				}
-				DockerClient clientCopy = getClientCopy();
-				DockerClient.ListContainersParam[] parms = new DockerClient.ListContainersParam[2];
-				parms[0] = DockerClient.ListContainersParam.allContainers();
-				// DockerClient doesn't support multiple labels with its
-				// ListContainersParam so we have
-				// to do a kludge and put in control chars ourselves and pretend
-				// we have a label with no value.
-				String separator = "";
-				StringBuffer labelString = new StringBuffer();
-				for (Entry<String, String> entry : labels.entrySet()) {
-					labelString.append(separator);
-					if (entry.getValue() == null || "".equals(entry.getValue())) //$NON-NLS-1$
-						labelString.append(entry.getKey());
-					else {
-						labelString.append(
-								entry.getKey() + "=" + entry.getValue()); //$NON-NLS-1$
-					}
-					separator = "\",\""; //$NON-NLS-1$
-				}
-				parms[1] = DockerClient.ListContainersParam
-						.withLabel(labelString.toString());
-				nativeContainers.addAll(clientCopy.listContainers(parms));
-			}
-			// We have a list of containers with labels. Now, we create a Set of
-			// ids which contain those labels to use in filtering a list of
-			// Containers
-			for (Container nativeContainer : nativeContainers) {
-				labelSet.add(nativeContainer.id());
-			}
-		} catch (DockerTimeoutException e) {
-			if (isOpen()) {
-				Activator.log(new Status(IStatus.WARNING, Activator.PLUGIN_ID,
-						Messages.Docker_Connection_Timeout, e));
-				close();
-			}
-		} catch (com.spotify.docker.client.DockerException
-				| InterruptedException e) {
-			if (isOpen() && e.getCause() != null
-					&& e.getCause().getCause() != null
-					&& e.getCause().getCause() instanceof ProcessingException) {
-				close();
-			} else {
-				throw new DockerException(e.getMessage());
-			}
-		}
-		return labelSet;
-	}
-
 	/**
 	 * Sorts the given values using the given comparator and returns the result
 	 * in a {@link List}
@@ -1042,24 +969,6 @@ public class DockerConnection
 	}
 
 	@Override
-	public IDockerProgressHandler getDefaultBuildImageProgressHandler(
-			String image, int lines) {
-		return new DefaultImageBuildProgressHandler(this, image, lines);
-	}
-
-	@Override
-	public IDockerProgressHandler getDefaultPullImageProgressHandler(
-			String image) {
-		return new DefaultImagePullProgressHandler(this, image);
-	}
-
-	@Override
-	public IDockerProgressHandler getDefaultPushImageProgressHandler(
-			String image) {
-		return new DefaultImagePushProgressHandler(this, image);
-	}
-
-	@Override
 	public void pullImage(final String id, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
 		try {
@@ -1169,30 +1078,8 @@ public class DockerConnection
 	@Override
 	public void tagImage(final String name, final String newTag) throws DockerException,
 			InterruptedException {
-		tagImage(name, newTag, false);
-	}
-
-	/**
-	 * Adds a tag to an existing image while specifying the <code>force</code>
-	 * flag.
-	 * 
-	 * @param name
-	 *            the image id
-	 * @param newTag
-	 *            the new tag to add to the given image
-	 * @param force
-	 *            the {@code force} flag to force the operation if
-	 *            <code>true</code>.
-	 * @throws DockerException
-	 *             in case of underlying problem (server error)
-	 * @throws InterruptedException
-	 *             if the thread was interrupted
-	 */
-	// TODO: add to the API in version 3.0.0
-	public void tagImage(final String name, final String newTag,
-			final boolean force) throws DockerException, InterruptedException {
 		try {
-			client.tag(name, newTag, force);
+			client.tag(name, newTag);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
@@ -1724,19 +1611,8 @@ public class DockerConnection
 		ContainerInfo info;
 		try {
 			info = client.inspectContainer(id);
-			/*
-			 * Workaround error message thrown to stderr due to lack of Guava
-			 * 18.0. Remove this when we begin using Guava 18.0.
-			 */
-			PrintStream oldErr = System.err;
-			System.setErr(new PrintStream(new OutputStream() {
-				@Override
-				public void write(int b) {
-				}
-			}));
 			client.commitContainer(id, repo, tag, info.config(), comment,
 					author);
-			System.setErr(oldErr);
 			// update images list
 			// FIXME: are we refreshing the list of images twice ?
 			listImages();
@@ -1782,8 +1658,7 @@ public class DockerConnection
 		try {
 			AuthConfig authConfig = AuthConfig.builder()
 					.username(new String(cfg.getUsername()))
-					.password(cfg.getPassword() != null
-							? new String(cfg.getPassword()) : null)
+					.password(new String(cfg.getPassword()))
 					.email(new String(cfg.getEmail()))
 					.serverAddress(new String(cfg.getServerAddress())).build();
 			return client.auth(authConfig);
@@ -2106,55 +1981,5 @@ public class DockerConnection
 		}
 	}
 
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof IDockerConnection) {
-			return getSettings()
-					.equals(((IDockerConnection) other).getSettings());
-		}
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		return getSettings().hashCode();
-	}
-
-	/**
-	 * Retrieves the whole hierarchy for the given {@link IDockerImage}. This
-	 * includes the path to all known parent images, along with all derived
-	 * images based on the given {@code image}.
-	 * 
-	 * @param image
-	 *            the {@link IDockerImage} for which the hierarchy should be
-	 *            resolved
-	 * @return the {@link IDockerImageHiearchyNode} as a node that can be
-	 *         traversed.
-	 */
-	// @Override
-	// TODO: add this method in the IDockerConnection interface
-	public IDockerImageHiearchyNode resolveImageHierarchy(
-			final IDockerImage image) {
-		// recursively find all parents and build associated
-		// IDockerImageHiearchyNode instances
-		return new DockerImageHiearchyNode(image,
-				getImageHierarchy(image.parentId()));
-	}
-
-	private IDockerImageHiearchyNode getImageHierarchy(final String imageId) {
-		// recursively find all parents and build associated
-		// IDockerImageHiearchyNode instances
-		final Optional<IDockerImage> optionalParentImage = this.images.stream()
-				.filter(image -> image.id().equals(imageId)).findFirst();
-		// parent image found: get its own parent image hierarchy
-		if (optionalParentImage.isPresent()) {
-			//
-			final IDockerImage parentImage = optionalParentImage.get();
-			return new DockerImageHiearchyNode(parentImage,
-					getImageHierarchy(parentImage.parentId()));
-		}
-		// no parent image found: stop here.
-		return null;
-	}
 
 }

@@ -21,9 +21,6 @@ public interface IDockerImage {
 
 	String createdDate();
 
-	/**
-	 * @return the full image id
-	 */
 	String id();
 
 	String parentId();

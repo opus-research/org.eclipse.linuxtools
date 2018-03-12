@@ -151,11 +151,6 @@ public class DockerExplorerView extends CommonNavigator implements
 		getCommonViewer().addFilter(containersAndImagesSearchFilter);
 		DockerConnectionManager.getInstance()
 				.addConnectionManagerListener(this);
-		if (DockerConnectionManager.getInstance().getConnections().length > 0) {
-			IDockerConnection conn = DockerConnectionManager.getInstance()
-					.getConnections()[0];
-			getCommonViewer().setSelection(new StructuredSelection(conn));
-		}
 	}
 
 	/**
@@ -195,6 +190,10 @@ public class DockerExplorerView extends CommonNavigator implements
 		super.createPartControl(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
 				.grab(true, true).applyTo(getCommonViewer().getControl());
+		if (DockerConnectionManager.getInstance().getConnections().length > 0) {
+			IDockerConnection conn = DockerConnectionManager.getInstance().getConnections()[0];
+			getCommonViewer().setSelection(new StructuredSelection(conn));
+		}
 		return form;
 	}
 
@@ -287,15 +286,13 @@ public class DockerExplorerView extends CommonNavigator implements
 			switch (type) {
 			case IDockerConnectionManagerListener.ADD_EVENT:
 				registerListeners(connection);
-				// getCommonViewer().refresh();
-				// getCommonViewer()
-				// .setSelection(new StructuredSelection(connection));
+				getCommonViewer().refresh();
+				getCommonViewer()
+						.setSelection(new StructuredSelection(connection));
 				break;
 			case IDockerConnectionManagerListener.RENAME_EVENT:
-				getCommonViewer().refresh(connection);
-				break;
 			case IDockerConnectionManagerListener.UPDATE_SETTINGS_EVENT:
-				getCommonViewer().refresh();
+				getCommonViewer().refresh(connection);
 				break;
 			case IDockerConnectionManagerListener.REMOVE_EVENT:
 				unregisterListeners(connection);

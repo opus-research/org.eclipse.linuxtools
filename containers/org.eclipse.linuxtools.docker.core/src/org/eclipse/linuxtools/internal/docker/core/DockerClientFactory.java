@@ -100,8 +100,7 @@ public class DockerClientFactory {
 				.serverAddress(info.getServerAddress())
 				.username(info.getUsername())
 				.email(info.getEmail())
-				.password(info.getPassword() != null
-						? new String(info.getPassword()) : null)
+				.password(new String(info.getPassword()))
 				.build();
 		return authAccount;
 	}

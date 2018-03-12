@@ -39,14 +39,6 @@ public class UnixSocketConnectionSettings extends BaseConnectionSettings {
 		return BindingType.UNIX_SOCKET_CONNECTION;
 	}
 
-	@Override
-	public Object[] getProperties() {
-		return new Object[] {
-				new Object[] { "Type", this.getType().toString() }, //$NON-NLS-1$
-				new Object[] { "Socket", this.getPath() }, //$NON-NLS-1$
-		};
-	}
-
 	/**
 	 * @return the path to the Unix Socket
 	 */
@@ -66,7 +58,7 @@ public class UnixSocketConnectionSettings extends BaseConnectionSettings {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + ((path == null) ? 0 : path.hashCode());
 		return result;
 	}
@@ -75,6 +67,9 @@ public class UnixSocketConnectionSettings extends BaseConnectionSettings {
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
+		}
+		if (!super.equals(obj)) {
+			return false;
 		}
 		if (getClass() != obj.getClass()) {
 			return false;

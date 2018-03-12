@@ -48,15 +48,6 @@ public class TCPConnectionSettings extends BaseConnectionSettings {
 		return BindingType.TCP_CONNECTION;
 	}
 
-	@Override
-	public Object[] getProperties() {
-		return new Object[] {
-				new Object[] { "Type", this.getType().toString() }, //$NON-NLS-1$
-				new Object[] { "Host", this.getHost() }, //$NON-NLS-1$
-				new Object[] { "Certificates", //$NON-NLS-1$
-						this.getPathToCertificates() }, };
-	}
-
 	/**
 	 * @return the host
 	 */
@@ -118,7 +109,7 @@ public class TCPConnectionSettings extends BaseConnectionSettings {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + ((host == null) ? 0 : host.hashCode());
 		result = prime * result + ((pathToCertificates == null) ? 0
 				: pathToCertificates.hashCode());
@@ -129,6 +120,9 @@ public class TCPConnectionSettings extends BaseConnectionSettings {
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
+		}
+		if (!super.equals(obj)) {
+			return false;
 		}
 		if (getClass() != obj.getClass()) {
 			return false;

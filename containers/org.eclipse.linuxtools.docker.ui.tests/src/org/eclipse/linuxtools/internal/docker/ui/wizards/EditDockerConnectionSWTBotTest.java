@@ -26,11 +26,11 @@ import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionStorageManager;
+import org.eclipse.linuxtools.docker.core.IDockerContainerConfig;
 import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageBuildOptions;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
-import org.eclipse.linuxtools.internal.docker.core.DockerContainerConfig;
 import org.eclipse.linuxtools.internal.docker.core.TCPConnectionSettings;
 import org.eclipse.linuxtools.internal.docker.core.UnixSocketConnectionSettings;
 import org.eclipse.linuxtools.internal.docker.ui.launch.IBuildDockerImageLaunchConfigurationConstants;
@@ -140,7 +140,7 @@ public class EditDockerConnectionSWTBotTest {
 
 	private String configureRunImageLaunchConfiguration(final IDockerConnection connection) {
 		final IDockerImage image = MockDockerImageFactory.name("image").connection(connection).build();
-		final DockerContainerConfig containerConfig = MockDockerContainerConfigFactory.cmd("cmd").build();
+		final IDockerContainerConfig containerConfig = MockDockerContainerConfigFactory.cmd("cmd").build();
 		final IDockerHostConfig hostConfig = MockDockerHostConfigFactory.publishAllPorts(true).build();
 		final ILaunchConfiguration runImageLaunchConfiguration = LaunchConfigurationUtils
 				.createRunImageLaunchConfiguration(image, containerConfig, hostConfig, "some_container", false);
@@ -499,9 +499,6 @@ public class EditDockerConnectionSWTBotTest {
 		DockerConnectionManagerUtils.configureConnectionManager(connectionStorageManager);
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
 		assertThat(connectionTreeItem).isNotNull();
-		// let's ignore the connection savings that may have occurred when
-		// adding elements from the extension points
-		Mockito.reset(connectionStorageManager);
 		// when
 		openConnectionEditionWizard("Test");
 		bot.text(0).setText("foo");
@@ -514,7 +511,7 @@ public class EditDockerConnectionSWTBotTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void shouldSaveConnectionWhenUnixSocketConnectionSettingsChanged() throws IOException {
+	public void shouldSaveConnectionWhenUnixSockerConnectionSettingsChanged() throws IOException {
 		// given
 		final IDockerConnection connection = configureUnixSocketConnection("Test");
 		final IDockerConnectionStorageManager connectionStorageManager = MockDockerConnectionStorageManagerFactory
@@ -523,9 +520,6 @@ public class EditDockerConnectionSWTBotTest {
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
 		assertThat(connectionTreeItem).isNotNull();
 		final File tmpDockerSocketFile = folder.newFile("docker.sock");
-		// let's ignore the connection savings that may have occurred when
-		// adding elements from the extension points
-		Mockito.reset(connectionStorageManager);
 		// when
 		openConnectionEditionWizard("Test");
 		bot.text(1).setText(tmpDockerSocketFile.getAbsolutePath());
@@ -548,9 +542,6 @@ public class EditDockerConnectionSWTBotTest {
 		DockerConnectionManagerUtils.configureConnectionManager(connectionStorageManager);
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
 		assertThat(connectionTreeItem).isNotNull();
-		// let's ignore the connection savings that may have occurred when
-		// adding elements from the extension points
-		Mockito.reset(connectionStorageManager);
 		// when
 		openConnectionEditionWizard("Test");
 		bot.text(2).setText("https://foo.bar:1234");
@@ -573,9 +564,6 @@ public class EditDockerConnectionSWTBotTest {
 		DockerConnectionManagerUtils.configureConnectionManager(connectionStorageManager);
 		final SWTBotTreeItem connectionTreeItem = SWTUtils.getTreeItem(dockerExplorer.bot(), "Test");
 		assertThat(connectionTreeItem).isNotNull();
-		// let's ignore the connection savings that may have occurred when
-		// adding elements from the extension points
-		Mockito.reset(connectionStorageManager);
 		// when
 		openConnectionEditionWizard("Test");
 		bot.text(0).setText("foo");

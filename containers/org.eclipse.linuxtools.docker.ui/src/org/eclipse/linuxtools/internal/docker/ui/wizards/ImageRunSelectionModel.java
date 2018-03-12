@@ -69,7 +69,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public static final String PRIVILEGED = "privileged"; //$NON-NLS-1$
 
-	private String selectedConnectionName = "";
+	private String selectedConnectionName;
 
 	private List<String> connectionNames;
 
@@ -108,8 +108,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	public ImageRunSelectionModel(
 			final IDockerConnection selectedConnection) {
 		refreshConnectionNames();
-		if (selectedConnection != null)
-			setSelectedConnectionName(selectedConnection.getName());
+		setSelectedConnectionName(selectedConnection.getName());
 		refreshImageNames();
 	}
 

@@ -64,14 +64,6 @@
              name="%DockerExplorerView.name"
              restorable="true">
        </view>
-       <view
-             category="org.eclipse.linuxtools.docker.ui"
-             class="org.eclipse.linuxtools.internal.docker.ui.views.DockerImageHierarchyView"
-             icon="icons/class_hi.png"
-             id="org.eclipse.linuxtools.docker.ui.dockerImageHierarchyView"
-             name="%DockerImageHierarchyView.name"
-             restorable="true">
-       </view>
        
    </extension>
    <extension
@@ -152,32 +144,6 @@
             name="%StoppedContainerViewFilter.name">
       </commonFilter>
    </extension>
-   <extension
-         point="org.eclipse.ui.navigator.viewer">
-      <viewer
-            viewerId="org.eclipse.linuxtools.docker.ui.dockerImageHierarchyView">
-      </viewer>
-      <viewerContentBinding
-            viewerId="org.eclipse.linuxtools.docker.ui.dockerImageHierarchyView">
-         <includes>
-            <contentExtension
-                  isRoot="true"
-                  pattern="org.eclipse.linuxtools.docker.ui.dockerImageHierarchyContent">
-            </contentExtension>
-         </includes>
-      </viewerContentBinding>
-   </extension>
-   <extension
-         point="org.eclipse.ui.navigator.navigatorContent">
-      <navigatorContent
-            id="org.eclipse.linuxtools.docker.ui.dockerImageHierarchyContent"
-            name="%DockerImageHierarchyContent.name"
-            contentProvider="org.eclipse.linuxtools.internal.docker.ui.views.DockerImageHierarchyContentProvider"
-            labelProvider="org.eclipse.linuxtools.internal.docker.ui.views.DockerImageHierarchyLabelProvider"
-            priority="highest">
-         <triggerPoints></triggerPoints>
-      </navigatorContent>
-   </extension>
 
    <!-- Refresh View -->
 	<extension
@@ -256,20 +222,6 @@
 		         id="org.eclipse.ui.commands.toggleState">
 		   </state>
         </command>
-  		<command
-        	description="%command.filtercontainerswithlabels.description"
-        	id="org.eclipse.linuxtools.docker.ui.commands.filterContainersWithLabels"
-        	name="%command.filtercontainerswithlabels.name">
-     		<state
-           		class="org.eclipse.ui.handlers.RegistryToggleState:true"
-           		id="org.eclipse.ui.commands.toggleState">
-     		</state>
-  		</command>
-    <command
-          description="%command.configurelabels.description"
-          id="org.eclipse.linuxtools.docker.ui.commands.configureLabels"
-          name="%command.configurelabels.name">
-    </command>
 		<command
 	        description="%command.pullimage.description"
 	        id="org.eclipse.linuxtools.docker.ui.commands.pullImage"
@@ -335,11 +287,6 @@
               description="%command.execcontainer.description"
               id="org.eclipse.linuxtools.docker.ui.commands.execContainer"
               name="%command.execcontainer.name">
-        </command>
-        <command
-              description="%command.openImageHierarchy.description"
-              id="org.eclipse.linuxtools.docker.ui.commands.openImageHierarchyView"
-              name="%command.openImageHierarchy.name">
         </command>
 		      
 	</extension>
@@ -531,24 +478,9 @@
               commandId="org.eclipse.linuxtools.docker.ui.commands.showAllContainers"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.ShowAllContainersCommandHandler">
      	</handler>
-  		<handler
-              commandId="org.eclipse.linuxtools.docker.ui.commands.filterContainersWithLabels"
-        	  class="org.eclipse.linuxtools.internal.docker.ui.commands.FilterContainersWithLabelsCommandHandler">
-  		</handler>
-    <handler
-          class="org.eclipse.linuxtools.internal.docker.ui.commands.ConfigureLabelsCommandHandler"
-          commandId="org.eclipse.linuxtools.docker.ui.commands.configureLabels">
-    </handler>
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.pullImage"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.PullImageCommandHandler">
-     <enabledWhen>
-        <test
-              forcePluginActivation="true"
-              property="org.eclipse.linuxtools.docker.propertytesters.connection.existsActiveConnection"
-              value="true">
-        </test>
-     </enabledWhen>
      	</handler>
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.pushImage"
@@ -605,13 +537,6 @@
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.buildImage"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.BuildImageCommandHandler">
-     <enabledWhen>
-        <test
-              forcePluginActivation="true"
-              property="org.eclipse.linuxtools.docker.propertytesters.connection.existsActiveConnection"
-              value="true">
-        </test>
-     </enabledWhen>
      	</handler>
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.removeImages"
@@ -699,21 +624,6 @@
         </with>
      </enabledWhen>
   </handler>
-  <handler
-        class="org.eclipse.linuxtools.internal.docker.ui.commands.OpenImageHierarchyViewCommandHandler"
-        commandId="org.eclipse.linuxtools.docker.ui.commands.openImageHierarchyView">
-     <enabledWhen>
-        <with
-              variable="selection">
-           <iterate
-                 ifEmpty="false">
-              <instanceof
-                    value="org.eclipse.linuxtools.docker.core.IDockerImage">
-              </instanceof>
-           </iterate>
-        </with>
-     </enabledWhen>
-  </handler>
      	
 	</extension>
 	<!-- property testers -->
@@ -732,13 +642,6 @@
         namespace="org.eclipse.linuxtools.docker.propertytesters.image"
         properties="canBeTagged,hasMultipleTags"
         type="org.eclipse.linuxtools.docker.core.IDockerImage">
-  </propertyTester>
-  <propertyTester
-        class="org.eclipse.linuxtools.internal.docker.ui.propertytesters.ConnectionPropertyTester"
-        id="org.eclipse.linuxtools.docker.activeconnectionPropertyTester"
-        namespace="org.eclipse.linuxtools.docker.propertytesters.connection"
-        properties="existsActiveConnection,existsAnyConnection"
-        type="java.lang.Object">
   </propertyTester>
 	</extension>
 		
@@ -797,7 +700,7 @@
 	            </visibleWhen>
 				</command>
 		</menuContribution>
-		<!-- explorer view toolbar: enable connection -->
+		
 	    <menuContribution
 	        locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
 	       <command
@@ -1201,35 +1104,9 @@
 	     		</visibleWhen>
 		     </command>
 		</menuContribution>
-		<!-- Docker Explorer View: open hierarchy -->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.edit">
-	  		<command
-           commandId="org.eclipse.linuxtools.docker.ui.commands.openImageHierarchyView"
-           icon="icons/class_hi.png"
-           label="%command.openImageHierarchy.label"
-           mnemonic="R"
-           style="push">
-	            <visibleWhen
-	               checkEnabled="false">
-	               <with
-	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
-	                <iterate
-	                      ifEmpty="false"
-	                      operator="and">
-	                 <instanceof
-	                       value="org.eclipse.linuxtools.docker.core.IDockerImage" />
-	                </iterate>
-	               </with>
-	         </visibleWhen>
-	      </command>
-		</menuContribution>
 		<!-- explorer view context menu: push image -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.tags">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.removeImages">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.pushImage"
 		          icon="icons/push.gif"
@@ -1279,7 +1156,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: tag image -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.pushImage">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.tags">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.tagImage"
 		          icon="icons/tag.gif"
@@ -1409,28 +1286,6 @@
 					mnemonic="A">
 				</command>
 		</menuContribution>
- 		<!-- containers view menu: filter containers by label -->
-  		<menuContribution
-        	locationURI="menu:org.eclipse.linuxtools.docker.ui.dockerContainersView">
-     			<command
-           			commandId="org.eclipse.linuxtools.docker.ui.commands.filterContainersWithLabels"
-           			icon="icons/filter_ps.gif"
-           			id="org.eclipse.linuxtools.docker.ui.commands.filterContainersWithLabels"
-           			style="toggle">
-     			</command>
-        <separator
-              name="org.eclipse.linuxtools.docker.ui.containers.view.separator"
-              visible="true">
-        </separator>
-  		</menuContribution>
-    <menuContribution
-          allPopups="false"
-          locationURI="menu:org.eclipse.linuxtools.docker.ui.dockerContainersView">
-       <command
-             commandId="org.eclipse.linuxtools.docker.ui.commands.configureLabels"
-             style="push">
-       </command>
-    </menuContribution>
 		<!-- images view toolbar: pull image -->
 		<menuContribution
 			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerImagesView">
@@ -1597,14 +1452,7 @@
          tab="org.eclipse.linuxtools.docker.ui.properties.connection.info">
 					<input type="org.eclipse.linuxtools.docker.core.IDockerConnection"/>
 			</propertySection>
-   		<propertySection
-         class="org.eclipse.linuxtools.internal.docker.ui.views.ConnectionSettingsPropertySection"
-         enablesFor="1"
-         id="org.eclipse.linuxtools.docker.ui.properties.connection.settings.section"
-         tab="org.eclipse.linuxtools.docker.ui.properties.connection.settings">
-         			<input type="org.eclipse.linuxtools.docker.core.IDockerConnection"/>
-   			</propertySection>
-		<propertySection
+			<propertySection
          class="org.eclipse.linuxtools.internal.docker.ui.views.ContainerInspectPropertySection"
          enablesFor="1"
          id="org.eclipse.linuxtools.docker.ui.properties.container.inspect.section"
@@ -1642,11 +1490,6 @@
              category="org.eclipse.linuxtools.docker.ui.properties.connection"
              id="org.eclipse.linuxtools.docker.ui.properties.connection.info"
              label="%Info.label">
-       </propertyTab>
-       <propertyTab
-             category="org.eclipse.linuxtools.docker.ui.properties.connection"
-             id="org.eclipse.linuxtools.docker.ui.properties.connection.settings"
-             label="%Settings.label">
        </propertyTab>
        <propertyTab
              category="org.eclipse.linuxtools.docker.ui.properties.container"

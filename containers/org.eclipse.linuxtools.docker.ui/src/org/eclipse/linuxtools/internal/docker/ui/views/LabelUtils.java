@@ -12,28 +12,21 @@
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerPortBinding;
 import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
-import org.eclipse.linuxtools.internal.docker.core.DockerImage;
-import org.eclipse.swt.custom.StyledText;
 
 /**
  * @author xcoulon
  *
  */
-public class LabelProviderUtils {
+public class LabelUtils {
 	
 	public static final String CREATION_DATE_PATTERN = "yyyy-MM-dd";
 
@@ -144,42 +137,4 @@ public class LabelProviderUtils {
 		return value.toString();
 	}
 	
-	/**
-	 * @param dockerImage
-	 *            the {@link IDockerImage} whose {@link StyledText} needs to be
-	 *            provided
-	 * @return the {@link StyledText} for the given {@link IDockerImage}.
-	 */
-	public static StyledString getStyleString(final IDockerImage dockerImage) {
-		final StringBuilder messageBuilder = new StringBuilder(
-				dockerImage.repo());
-		final int startTags = messageBuilder.length();
-		if (!dockerImage.tags().isEmpty()) {
-			final List<String> tags = new ArrayList<>(dockerImage.tags());
-			Collections.sort(tags);
-			messageBuilder.append(": ");
-			for (Iterator<String> tagIterator = tags.iterator(); tagIterator
-					.hasNext();) {
-				messageBuilder.append(tagIterator.next());
-				if (tagIterator.hasNext()) {
-					messageBuilder.append(", ");
-				}
-			}
-		}
-		final int startImageId = messageBuilder.length();
-		// TODO: remove the cast to 'DockerImage' once the 'shortId()'
-		// method is in the public API
-		messageBuilder.append(" (")
-				.append(((DockerImage) dockerImage).shortId()).append(')');
-		final String message = messageBuilder.toString();
-		final StyledString styledString = new StyledString(message);
-		// styled tags
-		styledString.setStyle(startTags, startImageId - startTags,
-				StyledString.COUNTER_STYLER);
-		// styled image id
-		styledString.setStyle(startImageId, message.length() - startImageId,
-				StyledString.QUALIFIER_STYLER);
-		return styledString;
-	}
-
 }

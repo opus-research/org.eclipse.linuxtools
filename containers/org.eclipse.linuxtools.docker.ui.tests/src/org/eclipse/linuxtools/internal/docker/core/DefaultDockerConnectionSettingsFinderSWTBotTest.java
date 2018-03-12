@@ -33,23 +33,12 @@ public class DefaultDockerConnectionSettingsFinderSWTBotTest {
 		// actually, the DOCKER_TLS_VERIFY is not used. If DOCKER_CERT_PATH is set, the we assume that DOCKER_TLS_VERIFY is '1'
 		//properties.setProperty(DefaultDockerConnectionSettingsFinder.DOCKER_TLS_VERIFY, "1");
 		// when
-		final IDockerConnectionSettings connectionSettings = ShellConnectionSettingsProvider.createDockerConnectionSettings(properties);
+		final IDockerConnectionSettings connectionSettings = new DefaultDockerConnectionSettingsFinder().createDockerConnectionSettings(properties);
 		// then
 		assertThat(connectionSettings.isSettingsResolved()).isFalse();
 		assertThat(connectionSettings.getType()).isEqualTo(BindingType.TCP_CONNECTION);
 		assertThat(((TCPConnectionSettings)connectionSettings).getHost()).isEqualTo("https://foo");
 		assertThat(((TCPConnectionSettings)connectionSettings).getPathToCertificates()).isEqualTo("/path/to/certs");
-		Object[] connectionProperties = ((TCPConnectionSettings)connectionSettings).getProperties();
-		assertThat(connectionProperties.length == 3);
-		Object[] firstProperty = (Object[])connectionProperties[0];
-		assertThat(((String)firstProperty[0]).equals("Type"));
-		assertThat(((String)firstProperty[1]).equals("TCP_CONNECTION"));
-		Object[] secondProperty = (Object[]) connectionProperties[1];
-		assertThat(((String) secondProperty[0]).equals("Host"));
-		assertThat(((String) secondProperty[1]).equals("https://foo"));
-		Object[] thirdProperty = (Object[]) connectionProperties[2];
-		assertThat(((String) thirdProperty[0]).equals("Certificates"));
-		assertThat(((String) thirdProperty[1]).equals("/path/to/certs"));
 		assertThat(((TCPConnectionSettings)connectionSettings).isTlsVerify()).isTrue();
 	}
 
@@ -61,7 +50,7 @@ public class DefaultDockerConnectionSettingsFinderSWTBotTest {
 		// actually, the DOCKER_TLS_VERIFY is not used. If DOCKER_CERT_PATH is set, the we assume that DOCKER_TLS_VERIFY is '1'
 		//properties.setProperty(DefaultDockerConnectionSettingsFinder.DOCKER_TLS_VERIFY, "1");
 		// when
-		final IDockerConnectionSettings connectionSettings = ShellConnectionSettingsProvider.createDockerConnectionSettings(properties);
+		final IDockerConnectionSettings connectionSettings = new DefaultDockerConnectionSettingsFinder().createDockerConnectionSettings(properties);
 		// then
 		assertThat(connectionSettings).isNull();
 	}

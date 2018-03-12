@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
@@ -127,13 +126,13 @@ public class DockerExplorerViewSWTBotTest {
 		final SWTBotTreeItem imagesTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, connectionName, "Images");
 		SWTUtils.asyncExec(() -> imagesTreeItem.expand());
 		// select both containers
-		SWTUtils.getTreeItem(imagesTreeItem, imageNames).select();
+		SWTUtils.select(imagesTreeItem, imageNames);
 	}
 
 	@Test
 	public void shouldDisplayExplanationPane() {
-		// when
-		ClearConnectionManagerRule.removeAllConnections(DockerConnectionManager.getInstance());
+		// given
+		DockerConnectionManagerUtils.configureConnectionManager();
 		// then
 		DockerExplorerViewAssertion.assertThat(dockerExplorerView).isEmpty();
 	}
@@ -290,9 +289,9 @@ public class DockerExplorerViewSWTBotTest {
 		dockerExplorerViewBot.bot().tree().contextMenu("Refresh").click();
 		SWTUtils.asyncExec(() -> containers.expand());
 		// then all items should remain expanded (after they were reloaded)
-		SWTBotTreeItemAssertions.assertThat(SWTUtils.getTreeItem(containers, "foo_bar", "Links")).isExpanded();
-		SWTBotTreeItemAssertions.assertThat(SWTUtils.getTreeItem(containers, "foo_bar", "Ports")).isExpanded();
-		SWTBotTreeItemAssertions.assertThat(SWTUtils.getTreeItem(containers, "foo_bar", "Volumes")).isExpanded();
+		SWTBotTreeItemAssertions.assertThat(SWTUtils.select(containers, "foo_bar", "Links")).isExpanded();
+		SWTBotTreeItemAssertions.assertThat(SWTUtils.select(containers, "foo_bar", "Ports")).isExpanded();
+		SWTBotTreeItemAssertions.assertThat(SWTUtils.select(containers, "foo_bar", "Volumes")).isExpanded();
 	}
 
 	@Test
@@ -512,9 +511,6 @@ public class DockerExplorerViewSWTBotTest {
 		SWTUtils.getContextMenu(dockerExplorerViewBot.bot().tree(), "Show In", "Properties").click();
 		// the properties view should be visible
 		assertThat(this.bot.viewById("org.eclipse.ui.views.PropertySheet").isActive()).isEqualTo(true);
-		SWTBotView propertiesViewBot = bot.viewById("org.eclipse.ui.views.PropertySheet");
-		SWTUtils.getContextMenu(propertiesViewBot.bot().tree().select(1), "Copy").click();
-		this.dockerExplorerView = (DockerExplorerView) (dockerExplorerViewBot.getViewReference().getView(true));
 	}
 
 	@Test

@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat - Initial Contribution
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.docker.core;
+package org.eclipse.linuxtools.internal.docker.ui.views;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +20,10 @@ import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerProgressDetail;
 import org.eclipse.linuxtools.docker.core.IDockerProgressHandler;
 import org.eclipse.linuxtools.docker.core.IDockerProgressMessage;
+import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
+import org.eclipse.linuxtools.internal.docker.ui.ProgressJob;
 
-public class DefaultImagePushProgressHandler implements IDockerProgressHandler {
+public class ImagePushProgressHandler implements IDockerProgressHandler {
 
 	private final static String IMAGE_UPLOAD_COMPLETE = "ImageUploadComplete.msg"; //$NON-NLS-1$
 	private final static String IMAGE_UPLOAD_ALREADY_COMPLETE = "ImageUploadAlreadyComplete.msg"; //$NON-NLS-1$
@@ -34,7 +36,7 @@ public class DefaultImagePushProgressHandler implements IDockerProgressHandler {
 
 	private Map<String, ProgressJob> progressJobs = new HashMap<>();
 
-	public DefaultImagePushProgressHandler(IDockerConnection connection, String image) {
+	public ImagePushProgressHandler(IDockerConnection connection, String image) {
 		this.image = image;
 		this.connection = (DockerConnection) connection;
 	}
@@ -51,19 +53,16 @@ public class DefaultImagePushProgressHandler implements IDockerProgressHandler {
 			ProgressJob p = progressJobs.get(id);
 			if (p == null) {
 				String status = message.status();
-				if (status.equals(DockerMessages.getString(IMAGE_UPLOAD_COMPLETE))
-						|| status.contains(DockerMessages.getString(IMAGE_UPLOAD_ALREADY_COMPLETE))) {
+				if (status.equals(DVMessages.getString(IMAGE_UPLOAD_COMPLETE))
+						|| status.contains(DVMessages.getString(IMAGE_UPLOAD_ALREADY_COMPLETE))) {
 					connection.getImages(true);
 				} else {
 					ProgressJob newJob = new ProgressJob(
-							DockerMessages.getFormattedString(
+							DVMessages.getFormattedString(
 									IMAGE_UPLOADING_JOBNAME, image),
-							DockerMessages.getFormattedString(
+							DVMessages.getFormattedString(
 									IMAGE_UPLOADING_IMAGE, id));
-					// job.setUser(false) will show all pull job (one per image
-					// layer) in the progress
-					// view but not in multiple dialog
-					newJob.setUser(false);
+					newJob.setUser(true);
 					newJob.setPriority(Job.LONG);
 					newJob.schedule();
 					progressJobs.put(id, newJob);
@@ -71,11 +70,11 @@ public class DefaultImagePushProgressHandler implements IDockerProgressHandler {
 
 			} else {
 				String status = message.status();
-				if (status.equals(DockerMessages.getString(IMAGE_UPLOAD_COMPLETE))
-						|| status.contains(DockerMessages.getString(IMAGE_UPLOAD_ALREADY_COMPLETE))) {
+				if (status.equals(DVMessages.getString(IMAGE_UPLOAD_COMPLETE))
+						|| status.contains(DVMessages.getString(IMAGE_UPLOAD_ALREADY_COMPLETE))) {
 					p.setPercentageDone(100);
 					connection.getImages(true);
-				} else if (status.startsWith(DockerMessages
+				} else if (status.startsWith(DVMessages
 						.getString(IMAGE_UPLOADING))) {
 					IDockerProgressDetail detail = message.progressDetail();
 					if (detail != null) {

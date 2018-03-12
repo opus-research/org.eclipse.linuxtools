@@ -177,13 +177,6 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		service.refreshElements(SHOW_ALL_IMAGES_COMMAND_ID, null);
 		DockerConnectionManager.getInstance()
 				.addConnectionManagerListener(this);
-		// On startup, this view might get set up after the Docker Explorer View
-		// and so we won't get the notification when it chooses the connection.
-		// Find out if it has a selection and set our connection appropriately.
-		ISelection selection = getSite().getWorkbenchWindow()
-				.getSelectionService().getSelection(DockerExplorerView.VIEW_ID);
-		if (selection != null)
-			selectionChanged(null, selection);
 	}
 	
 	private void createTableViewer(final Composite container) {
@@ -259,7 +252,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 			@Override
 			public String getText(final Object element) {
 				if (element instanceof IDockerImage) {
-					return LabelProviderUtils.toCreatedDate(Long
+					return LabelUtils.toCreatedDate(Long
 							.parseLong(((IDockerImage) element).created()));
 				}
 				return super.getText(element);
