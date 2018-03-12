@@ -290,6 +290,7 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
 
                 Integer parentTid = ((Long) content.getField(LttngStrings.PARENT_TID).getValue()).intValue();
                 Integer childTid = ((Long) content.getField(LttngStrings.CHILD_TID).getValue()).intValue();
+                Integer childTgid = ((Long) content.getField(LttngStrings.CHILD_PID).getValue()).intValue();
 
                 Integer parentTidNode = ss.getQuarkRelativeAndAdd(getNodeThreads(), parentTid.toString());
                 Integer childTidNode = ss.getQuarkRelativeAndAdd(getNodeThreads(), childTid.toString());
@@ -297,6 +298,11 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
                 /* Assign the PPID to the new process */
                 quark = ss.getQuarkRelativeAndAdd(childTidNode, Attributes.PPID);
                 value = TmfStateValue.newValueInt(parentTid);
+                ss.modifyAttribute(ts, value, quark);
+
+                /* Assign the TGID to the new process */
+                quark = ss.getQuarkRelativeAndAdd(childTidNode, Attributes.TGID);
+                value = TmfStateValue.newValueInt(childTgid);
                 ss.modifyAttribute(ts, value, quark);
 
                 /* Set the new process' exec_name */
@@ -383,6 +389,12 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
                         value = TmfStateValue.newValueInt(pid);
                     }
                     ss.modifyAttribute(ts, value, quark);
+                }
+
+                /* Set the process' TGID */
+                quark = ss.getQuarkRelativeAndAdd(curThreadNode, Attributes.TGID);
+                if (ss.queryOngoingState(quark).isNull()) {
+                    ss.modifyAttribute(ts, TmfStateValue.newValueInt(pid), quark);
                 }
 
                 /* Set the process' status */
