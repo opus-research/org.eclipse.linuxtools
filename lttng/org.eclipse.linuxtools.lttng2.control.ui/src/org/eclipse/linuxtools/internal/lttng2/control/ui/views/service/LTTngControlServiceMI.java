@@ -29,24 +29,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IBaseEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IChannelInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IDomainInfo;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IFieldInfo;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.IProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.ISessionInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.ISnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IUstProviderInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.LogLevelType;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceDomainType;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceEnablement;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceEventType;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.TraceLogLevel;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.BaseEventInfo;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.BufferType;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.ChannelInfo;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.DomainInfo;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.EventInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.FieldInfo;
-import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.ProbeEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.SessionInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.SnapshotInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.impl.UstProviderInfo;
@@ -262,7 +252,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 NodeList rawDomains = rawInfo.getChildNodes();
                 IDomainInfo domain = null;
                 for (int j = 0; j < rawDomains.getLength(); j++) {
-                    if (rawDomains.item(j).getNodeName().equalsIgnoreCase(MIStrings.DOMAIN)) {
+                    if (rawDomains.item(i).getNodeName().equalsIgnoreCase(MIStrings.DOMAIN)) {
                         domain = parseDomain(rawDomains.item(j));
                         sessionInfo.addDomain(domain);
                     }
@@ -283,139 +273,13 @@ public class LTTngControlServiceMI extends LTTngControlService {
     }
 
     /**
-     * @param rawDomain
+     * @param domain
      *            a domain xml node
-     * @return a populated {@link DomainInfo} object
-     * @throws ExecutionException
-     *             when missing required xml element (type)
+     * @return {@link IDomainInfo}
      */
-    protected IDomainInfo parseDomain(Node rawDomain) throws ExecutionException {
-        IDomainInfo domain = null;
-        // Get the type
-        Node rawType = getFirstOf(rawDomain.getChildNodes(), MIStrings.TYPE);
-        if (rawType == null) {
-            throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
-        }
-        String rawTypeString = rawType.getTextContent().toLowerCase();
-        TraceDomainType domainType = TraceDomainType.valueOfString(rawTypeString);
-        switch (domainType) {
-        case KERNEL:
-            domain = new DomainInfo(Messages.TraceControl_KernelProviderDisplayName);
-            domain.setIsKernel(true);
-            break;
-        case UST:
-            domain = new DomainInfo(Messages.TraceControl_UstGlobalDomainDisplayName);
-            domain.setIsKernel(false);
-            break;
-        case JUL:
-            /**
-             * TODO: Support for JUL JUL substructure and semantic is not the
-             * same as a regular UST or Kernel Domain There is no channel under
-             * JUL domain only events. The channel is activated in UST Channel
-             */
-            domain = new DomainInfo(Messages.TraceControl_JULDomainDisplayName);
-            domain.setIsKernel(false);
-            break;
-        case UNKNOWN:
-            domain = new DomainInfo(Messages.TraceControl_UnknownDomainDisplayName);
-            domain.setIsKernel(false);
-            break;
-        default:
-            throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
-        }
-
-        NodeList rawInfos = rawDomain.getChildNodes();
-        for (int i = 0; i < rawInfos.getLength(); i++) {
-            Node rawInfo = rawInfos.item(i);
-            switch (rawInfo.getNodeName()) {
-            case MIStrings.BUFFER_TYPE:
-                BufferType bufferType = BufferType.valueOfString(rawInfo.getTextContent());
-                domain.setBufferType(bufferType);
-                break;
-            case MIStrings.CHANNELS:
-                ArrayList<IChannelInfo> channels = new ArrayList<>();
-                parseChannel(rawInfo.getChildNodes(), channels);
-                if (channels.size() > 0) {
-                    domain.setChannels(channels);
-                }
-                break;
-            default:
-                break;
-            }
-        }
-
-        return domain;
-    }
-
-    private static void parseChannel(NodeList rawChannels, ArrayList<IChannelInfo> channels) throws ExecutionException {
-        IChannelInfo channel = null;
-        for (int i = 0; i < rawChannels.getLength(); i++) {
-            Node rawChannel = rawChannels.item(i);
-            if (rawChannel.getNodeName().equalsIgnoreCase(MIStrings.CHANNEL)) {
-                channel = new ChannelInfo(""); //$NON-NLS-1$
-
-                // Populate the channel
-                NodeList rawInfos = rawChannel.getChildNodes();
-                Node rawInfo = null;
-                for (int j = 0; j < rawInfos.getLength(); j++) {
-                    rawInfo = rawInfos.item(j);
-                    switch (rawInfo.getNodeName()) {
-                    case MIStrings.NAME:
-                        channel.setName(rawInfo.getTextContent());
-                        break;
-                    case MIStrings.ENABLED:
-                        channel.setState(TraceEnablement.valueOfString(rawInfo.getTextContent()));
-                        break;
-                    case MIStrings.EVENTS:
-                        List<IEventInfo> events = new ArrayList<>();
-                        getEventInfo(rawInfo.getChildNodes(), events);
-                        channel.setEvents(events);
-                        break;
-                    case MIStrings.ATTRIBUTES:
-                        NodeList rawAttributes = rawInfo.getChildNodes();
-                        for (int k = 0; k < rawAttributes.getLength(); k++) {
-                            Node attribute = rawAttributes.item(k);
-                            switch (attribute.getNodeName()) {
-                            case MIStrings.OVERWRITE_MODE:
-                                channel.setOverwriteMode(!LTTngControlServiceConstants.OVERWRITE_MODE_ATTRIBUTE_FALSE_MI.equalsIgnoreCase(attribute.getTextContent()));
-                                break;
-                            case MIStrings.SUBBUF_SIZE:
-                                channel.setSubBufferSize(Long.valueOf(attribute.getTextContent()));
-                                break;
-                            case MIStrings.NUM_SUBBUF:
-                                channel.setNumberOfSubBuffers(Integer.valueOf(attribute.getTextContent()));
-                                break;
-                            case MIStrings.SWITCH_TIMER_INTERVAL:
-                                channel.setSwitchTimer(Long.valueOf(attribute.getTextContent()));
-                                break;
-                            case MIStrings.READ_TIMER_INTERVAL:
-                                channel.setReadTimer(Long.valueOf(attribute.getTextContent()));
-                                break;
-                            case MIStrings.OUTPUT_TYPE:
-                                channel.setOutputType(attribute.getTextContent());
-                                break;
-                            case MIStrings.TRACEFILE_SIZE:
-                                // TODO: currently not supported by tmf
-                                break;
-                            case MIStrings.TRACEFILE_COUNT:
-                                // TODO: currently not supported by tmf
-                                break;
-                            case MIStrings.LIVE_TIMER_INTERVAL:
-                                // TODO: currently not supported by tmf
-                                break;
-                            default:
-                                break;
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                    }
-                }
-                channels.add(channel);
-            }
-        }
-
+    protected IDomainInfo parseDomain(Node domain) {
+        // TODO JRJ - STUB
+        return null;
     }
 
     @Override
@@ -436,7 +300,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
         Document document = getDocumentFromStrings(result.getOutput());
         NodeList rawEvents = document.getElementsByTagName(MIStrings.EVENT);
-        getBaseEventInfo(rawEvents, events);
+        parseXmlEvents(rawEvents, events);
         return events;
     }
 
@@ -478,7 +342,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 case MIStrings.EVENTS:
                     List<IBaseEventInfo> events = new ArrayList<>();
                     NodeList rawEvents = info.getChildNodes();
-                    getBaseEventInfo(rawEvents, events);
+                    parseXmlEvents(rawEvents, events);
                     providerInfo.setEvents(events);
                     break;
                 default:
@@ -604,20 +468,20 @@ public class LTTngControlServiceMI extends LTTngControlService {
     }
 
     /**
-     * @param xmlBaseEvents
-     *            a Node list of base xml event element
+     * @param xmlEvents
+     *            a Node list of xml event element
      * @param events
      *            list of event generated by the parsing of the xml event
      *            element
      * @throws ExecutionException
      *             when a raw event is not a complete/valid xml event
      */
-    static void getBaseEventInfo(NodeList xmlBaseEvents, List<IBaseEventInfo> events) throws ExecutionException {
+    protected void parseXmlEvents(NodeList xmlEvents, List<IBaseEventInfo> events) throws ExecutionException {
         IBaseEventInfo eventInfo = null;
-        for (int i = 0; i < xmlBaseEvents.getLength(); i++) {
-            NodeList rawInfos = xmlBaseEvents.item(i).getChildNodes();
+        for (int i = 0; i < xmlEvents.getLength(); i++) {
+            NodeList rawInfos = xmlEvents.item(i).getChildNodes();
             // Search for name
-            if (xmlBaseEvents.item(i).getNodeName().equalsIgnoreCase(MIStrings.EVENT)) {
+            if (xmlEvents.item(i).getNodeName().equalsIgnoreCase(MIStrings.EVENT)) {
                 Node rawName = getFirstOf(rawInfos, MIStrings.NAME);
                 if (rawName == null) {
                     throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
@@ -643,116 +507,6 @@ public class LTTngControlServiceMI extends LTTngControlService {
                         break;
                     }
                 }
-                events.add(eventInfo);
-            }
-        }
-    }
-
-    /**
-     * @param xmlBaseEvents
-     *            a Node list of xml event element linked to a session
-     * @param events
-     *            list of event generated by the parsing of the xml event
-     *            element
-     * @throws ExecutionException
-     *             when a raw event is not a complete/valid xml event
-     */
-    static void getEventInfo(NodeList xmlEvents, List<IEventInfo> events) throws ExecutionException {
-        IEventInfo eventInfo = null;
-        for (int i = 0; i < xmlEvents.getLength(); i++) {
-            NodeList rawInfos = xmlEvents.item(i).getChildNodes();
-            // Search for name
-            if (xmlEvents.item(i).getNodeName().equalsIgnoreCase(MIStrings.EVENT)) {
-                Node rawName = getFirstOf(rawInfos, MIStrings.NAME);
-                if (rawName == null) {
-                    throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
-                }
-
-                eventInfo = new EventInfo(rawName.getTextContent());
-
-                // Basic information
-                for (int j = 0; j < rawInfos.getLength(); j++) {
-                    Node infoNode = rawInfos.item(j);
-                    switch (infoNode.getNodeName()) {
-                    case MIStrings.TYPE:
-                        eventInfo.setEventType(infoNode.getTextContent());
-                        break;
-                    case MIStrings.LOGLEVEL_TYPE:
-                        eventInfo.setLogLevelType(LogLevelType.valueOfString(infoNode.getTextContent()));
-                        break;
-                    case MIStrings.LOGLEVEL:
-                        eventInfo.setLogLevel(TraceLogLevel.valueOfString(infoNode.getTextContent()));
-                        break;
-                    case MIStrings.ENABLED:
-                        eventInfo.setState(TraceEnablement.valueOfString(infoNode.getTextContent()));
-                        break;
-                    case MIStrings.FILTER:
-                        // TODO
-                        // See bug 334 http://bugs.lttng.org/issues/334 from
-                        // LTTng
-                        // For now we emulate the a behavior, and simply put
-                        // "with filter"
-                        eventInfo.setFilterExpression("with filter"); //$NON-NLS-1$
-                        break;
-                    case MIStrings.EXCLUSION:
-                        // TODO:Currently not supported by tmf
-                        // ExclusionS element is ignored
-                        break;
-                    default:
-                        break;
-                    }
-                }
-
-                boolean isProbeFunction = (eventInfo.getEventType().equals(TraceEventType.PROBE)) || (eventInfo.getEventType().equals(TraceEventType.FUNCTION));
-                if (isProbeFunction) {
-                    IProbeEventInfo probeEvent = new ProbeEventInfo(eventInfo);
-                    eventInfo = probeEvent;
-                    // get attributes
-                    Node rawAttributes = getFirstOf(rawInfos, MIStrings.ATTRIBUTES);
-                    if (rawAttributes == null) {
-                        throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
-                    }
-
-                    Node rawDataNode = null;
-                    switch (probeEvent.getEventType()) {
-                    case PROBE:
-                        rawDataNode = getFirstOf(rawAttributes.getChildNodes(), MIStrings.PROBE_ATTRIBUTES);
-                        break;
-                    case FUNCTION:
-                        rawDataNode = getFirstOf(rawAttributes.getChildNodes(), MIStrings.FUNCTION_ATTRIBUTES);
-                        break;
-                    case SYSCALL:
-                    case TRACEPOINT:
-                    case UNKNOWN:
-                    default:
-                        throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
-                    }
-
-                    if (rawDataNode == null) {
-                        throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
-                    }
-
-                    // Extract info
-                    NodeList rawDatas = rawDataNode.getChildNodes();
-                    for (int j = 0; j < rawDatas.getLength(); j++) {
-                        Node rawData = rawDatas.item(j);
-                        switch (rawData.getNodeName()) {
-                        case MIStrings.SYMBOL_NAME:
-                            probeEvent.setSymbol(rawData.getTextContent());
-                            break;
-                        case MIStrings.ADDRESS:
-                            probeEvent.setAddress(rawData.getTextContent());
-                            break;
-                        case MIStrings.OFFSET:
-                            probeEvent.setOffset(rawData.getTextContent());
-                            break;
-                        default:
-                            break;
-                        }
-                    }
-                }
-
-                // Add the event
                 events.add(eventInfo);
             }
         }
