@@ -19,13 +19,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import org.eclipse.linuxtools.internal.tmf.pcap.core.analysis.StreamListAnalysis;
+import org.eclipse.linuxtools.internal.tmf.pcap.core.event.TmfPacketStreamBuilder;
+import org.eclipse.linuxtools.internal.tmf.pcap.core.protocol.TmfProtocol;
+import org.eclipse.linuxtools.internal.tmf.pcap.core.trace.PcapTrace;
 import org.eclipse.linuxtools.pcap.core.tests.shared.PcapTestTrace;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.pcap.core.analysis.StreamListAnalysis;
-import org.eclipse.linuxtools.tmf.pcap.core.event.TmfPacketStreamBuilder;
-import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
-import org.eclipse.linuxtools.tmf.pcap.core.trace.PcapTrace;
 import org.junit.Test;
 
 /**
@@ -61,7 +61,7 @@ public class StreamListAnalysisTest {
     public void canExecuteTest() throws TmfTraceException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        String path = trace.getPath();
+        String path = trace.getPath().toString();
         try (PcapTrace pcapTrace = new PcapTrace();
                 StreamListAnalysis analysis = new StreamListAnalysis();) {
             analysis.setId(StreamListAnalysis.ID);
@@ -83,7 +83,7 @@ public class StreamListAnalysisTest {
     public void executeAnalysisTest() throws TmfAnalysisException, TmfTraceException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        String path = trace.getPath();
+        String path = trace.getPath().toString();
         try (PcapTrace pcapTrace = new PcapTrace();
                 StreamListAnalysis analysis = new StreamListAnalysis();) {
             pcapTrace.initTrace(null, path, null);
