@@ -42,7 +42,7 @@ public class CTFStreamInputPacketIndexTest {
     @Before
     public void setUp() throws CTFReaderException {
         fixture = new StreamInputPacketIndex();
-        fixture.add(new StreamInputPacketIndexEntry(1L, 0L));
+        fixture.addEntry(new StreamInputPacketIndexEntry(1L, 0L,0L));
     }
 
     /**
@@ -52,6 +52,7 @@ public class CTFStreamInputPacketIndexTest {
     public void testStreamInputPacketIndex() {
         assertNotNull(fixture);
     }
+
 
     /**
      * Run the ListIterator<StreamInputPacketIndexEntry> listIterator() method

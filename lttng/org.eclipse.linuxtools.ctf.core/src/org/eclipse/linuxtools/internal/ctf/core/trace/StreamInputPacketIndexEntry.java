@@ -39,6 +39,11 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
     private final long fOffsetBytes;
 
     /**
+     * Offset of the data in the packet, in bits
+     */
+    private final long fDataOffsetBits;
+
+    /**
      * Packet size, in bits
      */
     private final long fPacketSizeBits;
@@ -85,17 +90,23 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
      *            offset in the file for the start of data
      * @param fileSizeBytes
      *            number of bytes in a file
+     *
+     * @param position
+     *            position in the bitbuffer for the number of bytes this packet
+     *            is located at
      */
 
-    public StreamInputPacketIndexEntry(long dataOffsetBits, long fileSizeBytes) {
+    public StreamInputPacketIndexEntry(long dataOffsetBits, long fileSizeBytes, long position) {
+        fDataOffsetBits = dataOffsetBits;
         fContentSizeBits = (fileSizeBytes * 8);
         fPacketSizeBits = (fileSizeBytes * 8);
-        fOffsetBytes = dataOffsetBits;
+        fOffsetBytes = position;
         fLostEvents = 0;
         fTarget = ""; //$NON-NLS-1$
         fTargetID = 0;
         fTimestampBegin = Long.MIN_VALUE;
         fTimestampEnd = Long.MAX_VALUE;
+
     }
 
     /**
@@ -107,10 +118,13 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
      *            packet context
      * @param fileSizeBytes
      *            number of bytes in a file
+     * @param position
+     *            position in the bitbuffer that the packet is located at
      * @param lostSoFar
      *            number of lost events so far
      */
-    public StreamInputPacketIndexEntry(long dataOffsetBits, StructDefinition streamPacketContextDef, long fileSizeBytes, long lostSoFar) {
+    public StreamInputPacketIndexEntry(long dataOffsetBits, StructDefinition streamPacketContextDef, long fileSizeBytes, long position, long lostSoFar) {
+        fDataOffsetBits = dataOffsetBits;
         for (String field : streamPacketContextDef.getDeclaration()
                 .getFieldsList()) {
             IDefinition id = streamPacketContextDef.lookupDefinition(field);
@@ -187,7 +201,7 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
             fLostEvents = 0;
         }
 
-        fOffsetBytes = dataOffsetBits;
+        fOffsetBytes = position;
     }
 
     // ------------------------------------------------------------------------
@@ -222,6 +236,13 @@ public class StreamInputPacketIndexEntry implements Comparable<StreamInputPacket
      */
     public long getOffsetBytes() {
         return fOffsetBytes;
+    }
+
+    /**
+     * @return the dataOffsetBits
+     */
+    public long getDataOffsetBits() {
+        return fDataOffsetBits;
     }
 
     /**

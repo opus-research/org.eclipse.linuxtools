@@ -181,7 +181,8 @@ public class PcapPacketTest {
     public void CompletePcapPacketTest() throws IOException, BadPcapFileException, BadPacketException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_UDP;
         assumeTrue(trace.exists());
-        try (PcapFile file = new PcapFile(trace.getPath());) {
+        String path = trace.getPath();
+        try (PcapFile file = new PcapFile(path);) {
 
             file.seekPacket(36);
             PcapPacket packet = file.parseNextPacket();
@@ -197,7 +198,7 @@ public class PcapPacketTest {
 
             // Abstract methods Testing
             assertTrue(packet.validate());
-            assertEquals(86567859, packet.hashCode());
+            assertEquals(842182851, packet.hashCode());
             assertFalse(packet.equals(null));
             assertFalse(packet.equals(file.parseNextPacket()));
 

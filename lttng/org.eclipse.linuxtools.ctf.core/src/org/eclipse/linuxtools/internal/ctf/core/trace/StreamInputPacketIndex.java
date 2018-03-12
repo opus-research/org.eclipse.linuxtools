@@ -15,7 +15,6 @@
 package org.eclipse.linuxtools.internal.ctf.core.trace;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -27,10 +26,9 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 /**
  * <b><u>StreamInputPacketIndex</u></b>
  * <p>
- * This is a data structure containing entries, you may append to this and read
- * it. It is not thread safe.
+ * TODO Implement me. Please.
  */
-public class StreamInputPacketIndex {
+public class StreamInputPacketIndex implements List<StreamInputPacketIndexEntry> {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -47,13 +45,7 @@ public class StreamInputPacketIndex {
     // Getters/Setters/Predicates
     // ------------------------------------------------------------------------
 
-    /**
-     * Returns a list iterator over the elements in this list (in proper
-     * sequence).
-     *
-     * @return a list iterator over the elements in this list (in proper
-     *         sequence)
-     */
+    @Override
     public ListIterator<StreamInputPacketIndexEntry> listIterator() {
         return fEntries.listIterator();
     }
@@ -65,6 +57,7 @@ public class StreamInputPacketIndex {
      *            the position to get
      * @return the iterator
      */
+    @Override
     public ListIterator<StreamInputPacketIndexEntry> listIterator(int n) {
         return fEntries.listIterator(n);
     }
@@ -74,111 +67,34 @@ public class StreamInputPacketIndex {
     // ------------------------------------------------------------------------
 
     /**
-     * Returns the number of elements in this data structure. If this data
-     * structure contains more than <tt>Integer.MAX_VALUE</tt> elements, returns
-     * <tt>Integer.MAX_VALUE</tt>.
-     *
-     * @return the number of elements in this data structure
-     */
-    public int size() {
-        return fEntries.size();
-    }
-
-    /**
-     * Returns <tt>true</tt> if this data structure contains no elements.
-     *
-     * @return <tt>true</tt> if this data structure contains no elements
-     */
-    public boolean isEmpty() {
-        return fEntries.isEmpty();
-    }
-
-    /**
-     * Returns <tt>true</tt> if this data structure contains the specified
-     * element. More formally, returns <tt>true</tt> if and only if this data
-     * structure contains at least one element <tt>e</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.
-     *
-     * @param o
-     *            element whose presence in this data structure is to be tested
-     * @return <tt>true</tt> if this data structure contains the specified
-     *         element
-     * @throws ClassCastException
-     *             if the type of the specified element is incompatible with
-     *             this data structure (<a
-     *             href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException
-     *             if the specified element is null and this data structure does
-     *             not permit null elements (<a
-     *             href="Collection.html#optional-restrictions">optional</a>)
-     */
-    public boolean contains(Object o) {
-        return fEntries.contains(o);
-    }
-
-    /**
-     * Returns an iterator over the elements in this data structure in proper
-     * sequence.
-     *
-     * @return an iterator over the elements in this data structure in proper
-     *         sequence
-     */
-    public Iterator<StreamInputPacketIndexEntry> iterator() {
-        return fEntries.iterator();
-    }
-
-    /**
-     * Returns an array containing all of the elements in this data structure in
-     * proper sequence (from first to last element).
-     *
-     * <p>
-     * The returned array will be "safe" in that no references to it are
-     * maintained by this data structure. (In other words, this method must
-     * allocate a new array even if this data structure is backed by an array).
-     * The caller is thus free to modify the returned array.
-     *
-     * <p>
-     * This method acts as bridge between array-based and collection-based APIs.
-     *
-     * @return an array containing all of the elements in this data structure in
-     *         proper sequence
-     * @see Arrays#asList(Object[])
-     */
-    public Object[] toArray() {
-        return fEntries.toArray();
-    }
-
-    /**
-     * Appends the specified element to the end of this data structure (optional
+     * Appends the specified element to the end of this list (optional
      * operation).
      *
      * <p>
-     * Data structures that support this operation may place limitations on what
-     * elements may be added to this data structure. In particular, some data
-     * structures will refuse to add null elements, and others will impose
-     * restrictions on the type of elements that may be added. data structure
-     * classes should clearly specify in their documentation any restrictions on
-     * what elements may be added.
+     * Lists that support this operation may place limitations on what elements
+     * may be added to this list. In particular, some lists will refuse to add
+     * null elements, and others will impose restrictions on the type of
+     * elements that may be added. List classes should clearly specify in their
+     * documentation any restrictions on what elements may be added.
      *
      * @param entry
-     *            element to be appended to this data structure
+     *            element to be appended to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})
      * @throws UnsupportedOperationException
-     *             if the <tt>add</tt> operation is not supported by this data
-     *             structure
+     *             if the <tt>add</tt> operation is not supported by this list
      * @throws ClassCastException
      *             if the class of the specified element prevents it from being
-     *             added to this data structure
+     *             added to this list
      * @throws NullPointerException
-     *             if the specified element is null and this data structure does
-     *             not permit null elements
+     *             if the specified element is null and this list does not
+     *             permit null elements
      * @throws IllegalArgumentException
      *             if some property of this element prevents it from being added
-     *             to this data structure
+     *             to this list
      * @throws CTFReaderException
      *             If there was a problem reading the entry
      */
-    public boolean add(StreamInputPacketIndexEntry entry)
+    public boolean addEntry(StreamInputPacketIndexEntry entry)
             throws CTFReaderException {
 
         /* Validate consistent entry. */
@@ -190,10 +106,11 @@ public class StreamInputPacketIndex {
          * Validate entries are inserted in monotonic increasing timestamp
          * order.
          */
-        if (!fEntries.isEmpty() && (entry.getTimestampBegin() < fLastElement.getTimestampBegin())) {
-            throw new CTFReaderException("Packets begin timestamp decreasing"); //$NON-NLS-1$
+        if (!fEntries.isEmpty()) {
+            if (entry.getTimestampBegin() < fLastElement.getTimestampBegin()) {
+                throw new CTFReaderException("Packets begin timestamp decreasing"); //$NON-NLS-1$
+            }
         }
-
         fEntries.add(entry);
         fLastElement = fEntries.get(fEntries.size() - 1);
         return true;
@@ -274,42 +191,21 @@ public class StreamInputPacketIndex {
         return fLastElement;
     }
 
-    /**
-     * Returns the element at the specified position in this data structure.
-     *
-     * @param index
-     *            index of the element to return
-     * @return the element at the specified position in this data structure
-     * @throws IndexOutOfBoundsException
-     *             if the index is out of range (
-     *             <tt>index &lt; 0 || index &gt;= size()</tt>)
-     */
+    @Override
+    public boolean isEmpty() {
+        return fEntries.isEmpty();
+    }
+
+    @Override
     public StreamInputPacketIndexEntry get(int index) {
         return fEntries.get(index);
     }
 
     /**
-     * Returns the index of the first occurrence of the specified element in
-     * this data structure, or -1 if this data structure does not contain the
-     * element. More formally, returns the lowest index <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
-     * or -1 if there is no such index. This will work in log(n) time since the
-     * data structure contains elements in a non-repeating increasing manner.
-     *
-     * @param o
-     *            element to search for
-     * @return the index of the first occurrence of the specified element in
-     *         this data structure, or -1 if this data structure does not
-     *         contain the element
-     * @throws ClassCastException
-     *             if the type of the specified element is incompatible with
-     *             this data structure (<a
-     *             href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException
-     *             if the specified element is null and this data structure does
-     *             not permit null elements (<a
-     *             href="Collection.html#optional-restrictions">optional</a>)
+     * This will work in log(n) time since the data structure contains elements
+     * in a non-repeating increasing manner.
      */
+    @Override
     public int indexOf(Object o) {
         int indexOf = -1;
         if (o instanceof StreamInputPacketIndexEntry) {
@@ -319,4 +215,97 @@ public class StreamInputPacketIndex {
         return (indexOf < 0) ? -1 : indexOf;
     }
 
+    @Override
+    public int size() {
+        return fEntries.size();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return fEntries.contains(o);
+    }
+
+    @Override
+    public Iterator<StreamInputPacketIndexEntry> iterator() {
+        return fEntries.iterator();
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        return fEntries.containsAll(c);
+    }
+
+    @Override
+    public Object[] toArray() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends StreamInputPacketIndexEntry> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends StreamInputPacketIndexEntry> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public StreamInputPacketIndexEntry set(int index, StreamInputPacketIndexEntry element) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void add(int index, StreamInputPacketIndexEntry element) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public StreamInputPacketIndexEntry remove(int index) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        return fEntries.lastIndexOf(o);
+    }
+
+    @Override
+    public List<StreamInputPacketIndexEntry> subList(int fromIndex, int toIndex) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean add(StreamInputPacketIndexEntry e) {
+        try {
+            return addEntry(e);
+        } catch (CTFReaderException e1) {
+        }
+        return false;
+    }
 }
