@@ -27,7 +27,6 @@ import org.eclipse.test.performance.Dimension;
 import org.eclipse.test.performance.Performance;
 import org.eclipse.test.performance.PerformanceMeter;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
@@ -63,17 +62,13 @@ public class EventMatchingBenchmark {
         try (CtfTmfTrace trace1 = CtfTmfTestTrace.SYNC_SRC.getTrace();
                 CtfTmfTrace trace2 = CtfTmfTestTrace.SYNC_DEST.getTrace();) {
             Set<ITmfTrace> traces = ImmutableSet.of((ITmfTrace) trace1, trace2);
-            runCpuTest(traces, "Match TCP events", 40);
+            runCpuTest(traces, "Match TCP events", 100);
         }
     }
 
     /**
      * Run the benchmark with 3 bigger traces
-     *
-     * TODO: For now, this test takes a lot of RAM. To run, remove the @Ignore
-     * and set at least 1024Mb RAM, or else there is OutOfMemoryError exception
      */
-    @Ignore
     @Test
     public void testDjangoTraces() {
         assumeTrue(CtfTmfTestTrace.DJANGO_CLIENT.exists());

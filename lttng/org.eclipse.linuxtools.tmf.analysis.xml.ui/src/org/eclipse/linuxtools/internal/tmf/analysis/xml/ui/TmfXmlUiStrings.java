@@ -25,6 +25,7 @@ public interface TmfXmlUiStrings {
 
     /* XML generic Element attribute names */
     static final String TIME_GRAPH_VIEW = "timeGraphView";
+    static final String XY_VIEW = "xyView";
 
     /* View elements and attributes */
     static final String ENTRY_ELEMENT = "entry";
@@ -35,22 +36,6 @@ public interface TmfXmlUiStrings {
     static final String PARENT_ELEMENT = "parent";
     static final String NAME_ELEMENT = "name";
     static final String ID_ELEMENT = "id";
-    static final String LABEL_ELEMENT = "label";
-
-
-    /* XML Element Name */
-
-    static final String EVENT_HANDLER = "eventHandler";
-    static final String STATE_ATTRIBUTE = "stateAttribute";
-    static final String STATE_VALUE = "stateValue";
-
-
-    /* XML Condition strings */
-    static final String IF = "if";
-    static final String CONDITION = "condition";
-    static final String THEN = "then";
-    static final String ELSE = "else";
-
 
     /* Generic strings for the XML module */
     static final String XML_OUTPUT_DATA = "xmlOutputData";

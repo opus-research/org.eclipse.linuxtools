@@ -75,7 +75,6 @@ public class XmlUtils {
         IPath path = Activator.getDefault().getStateLocation();
         path = path.addTrailingSeparator().append(XML_DIRECTORY);
 
-
         /* Check if directory exists, otherwise create it */
         File dir = path.toFile();
         if (!dir.exists() || !dir.isDirectory()) {

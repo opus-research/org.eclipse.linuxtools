@@ -83,7 +83,6 @@ public class TmfXmlStateChange {
          * child nodes is either a list of TmfXmlStateAttributes and
          * TmfXmlStateValues, or an if-then-else series of nodes.
          */
-
         Node ifNode = statechange.getElementsByTagName(TmfXmlStrings.IF).item(0);
         if (ifNode != null) {
             /* the state change has a condition */
@@ -144,7 +143,6 @@ public class TmfXmlStateChange {
                 fElseChange = null;
             }
         }
-
 
         @Override
         public void handleEvent(@NonNull ITmfEvent event) throws AttributeNotFoundException, StateValueTypeException, TimeRangeException {

@@ -146,7 +146,9 @@ public interface ITmfTrace extends ITmfEventProvider {
      * @param resource
      *            the trace resource
      * @param path
-     *            the trace path
+     *            the trace path. The path should suitable for passing to
+     *            <code>java.io.File(String)</code> and should use the
+     *            platform-dependent path separator.
      * @param type
      *            the trace event type
      * @throws TmfTraceException
@@ -183,11 +185,13 @@ public interface ITmfTrace extends ITmfEventProvider {
      * @param project
      *            the eclipse project
      * @param path
-     *            the trace path
+     *            the trace path. The path should suitable for passing to
+     *            <code>java.io.File(String)</code> and should use the
+     *            platform-dependent path separator.
      *
      * @return an IStatus object with validation result. Use severity OK to
      *         indicate success.
-     * @see {@link TraceValidationStatus}
+     * @see TraceValidationStatus
      * @since 2.0
      */
     IStatus validate(IProject project, String path);
@@ -444,7 +448,7 @@ public interface ITmfTrace extends ITmfEventProvider {
      * Creates a timestamp for this trace, using the transformation formula
      *
      * @param ts
-     *            The time in long with which to create the timestamp
+     *            The time in nanoseconds with which to create the timestamp
      * @return The new timestamp
      * @since 3.0
      */

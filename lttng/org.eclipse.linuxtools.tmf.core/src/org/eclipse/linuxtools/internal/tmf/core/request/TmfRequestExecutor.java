@@ -56,8 +56,8 @@ public class TmfRequestExecutor implements Executor {
     private final String fExecutorName;
 
     // The request queues
-    private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<>(100);
-    private final Queue<TmfEventThread> fBackgroundTasks = new ArrayBlockingQueue<>(100);
+    private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<>(10);
+    private final Queue<TmfEventThread> fBackgroundTasks = new ArrayBlockingQueue<>(10);
 
     // The tasks
     private TmfEventThread fActiveTask;
@@ -89,14 +89,14 @@ public class TmfRequestExecutor implements Executor {
     /**
      * @return the shutdown state (i.e. if it is accepting new requests)
      */
-    public synchronized boolean isShutdown() {
+    public boolean isShutdown() {
         return fExecutor.isShutdown();
     }
 
     /**
      * @return the termination state
      */
-    public synchronized boolean isTerminated() {
+    public boolean isTerminated() {
         return fExecutor.isTerminated();
     }
 
@@ -143,9 +143,13 @@ public class TmfRequestExecutor implements Executor {
         ExecutionType priority = thread.getExecType();
 
         if (priority == ExecutionType.FOREGROUND) {
-            fForegroundTasks.add(wrapper);
+            if (!fForegroundTasks.offer(wrapper)) {
+                wrapper.cancel();
+            }
         } else {
-            fBackgroundTasks.add(wrapper);
+            if (!fBackgroundTasks.offer(wrapper)) {
+                wrapper.cancel();
+            }
         }
     }
 
@@ -172,22 +176,30 @@ public class TmfRequestExecutor implements Executor {
                 schedule();
             } else if (fActiveTask.getExecType() == ExecutionType.FOREGROUND) {
                 if (fActiveTask.getThread().isCompleted()) {
+                    fActiveTask = null;
                     schedule();
                 } else {
                     if (hasTasks()) {
                         fActiveTask.getThread().suspend();
-                        fForegroundTasks.add(fActiveTask);
+                        if (!fForegroundTasks.offer(fActiveTask)) {
+                            fActiveTask.cancel();
+                            fActiveTask = null;
+                        }
                         schedule();
                     }
                 }
 
             } else if (fActiveTask.getExecType() == ExecutionType.BACKGROUND) {
                 if (fActiveTask.getThread().isCompleted()) {
+                    fActiveTask = null;
                     schedule();
                 } else {
                     if (hasTasks()) {
                         fActiveTask.getThread().suspend();
-                        fBackgroundTasks.add(fActiveTask);
+                        if (!fBackgroundTasks.offer(fActiveTask)) {
+                            fActiveTask.cancel();
+                            fActiveTask = null;
+                        }
                         schedule();
                     }
                 }

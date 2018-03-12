@@ -17,7 +17,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.util.List;
@@ -96,7 +95,6 @@ public abstract class AbstractProviderTest {
     @Before
     public void setUp() {
         CtfTmfTestTrace testTrace = getTestTrace();
-        assumeTrue(testTrace.exists());
 
         fTrace = testTrace.getTrace();
         fModule = new TestLttngCallStackModule();
@@ -136,6 +134,7 @@ public abstract class AbstractProviderTest {
     @Test
     public void testOtherUstTrace() {
         /* Initialize the trace and analysis module */
+        File suppDir;
         try (CtfTmfTrace ustTrace = otherUstTrace.getTrace();) {
             try (TestLttngCallStackModule module = new TestLttngCallStackModule();) {
                 try {
@@ -152,11 +151,10 @@ public abstract class AbstractProviderTest {
                 assertTrue(ss.getStartTime() >= ustTrace.getStartTime().normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue());
                 assertEquals(0, ss.getNbAttributes());
             }
-            /* Dispose the trace */
-            File suppDir = new File(TmfTraceManager.getSupplementaryFileDir(ustTrace));
-            deleteDirectory(suppDir);
-            assertFalse(suppDir.exists());
+            suppDir = new File(TmfTraceManager.getSupplementaryFileDir(ustTrace));
         }
+        deleteDirectory(suppDir);
+        assertFalse(suppDir.exists());
     }
 
     /**
