@@ -20,9 +20,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
-import org.eclipse.linuxtools.docker.core.IDockerImageHierarchyImageNode;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.swt.widgets.Composite;
@@ -46,28 +47,26 @@ public class ImageInspectPropertySection extends BasePropertySection {
 	@Override
 	public void setInput(final IWorkbenchPart part, final ISelection selection) {
 		super.setInput(part, selection);
-		final Object input = getSelection(selection);
-		final IDockerConnection parentConnection = getConnection(part,
-				selection);
-		final IDockerImageInfo containerInfo = getImageInfo(parentConnection,
-				input);
-		if (getTreeViewer() != null && containerInfo != null) {
-			getTreeViewer().setInput(containerInfo);
+		Object input = null;
+		if (selection instanceof ITreeSelection)
+			input = ((ITreeSelection) selection).getFirstElement();
+		else if (selection instanceof IStructuredSelection)
+			input = ((IStructuredSelection) selection).getFirstElement();
+		Assert.isTrue(input instanceof IDockerImage);
+		this.selectedImage = (IDockerImage) input;
+		final IDockerConnection parentConnection;
+		if (part instanceof DockerImagesView) {
+			parentConnection = ((DockerImagesView) part).getConnection();
+		} else {
+		    parentConnection = (IDockerConnection) ((ITreeSelection) selection)
+				.getPathsFor(selectedImage)[0].getFirstSegment();
+		}
+		this.imageInfo = getImageInfo(parentConnection, selectedImage);
+		if (getTreeViewer() != null && this.imageInfo != null) {
+			getTreeViewer().setInput(imageInfo);
 			getTreeViewer().expandAll();
 		}
 	}
-
-	private IDockerImageInfo getImageInfo(
-			final IDockerConnection parentConnection, final Object input) {
-		Assert.isTrue(input instanceof IDockerImage
-				|| input instanceof IDockerImageHierarchyImageNode);
-		if (input instanceof IDockerImage) {
-			return getImageInfo(parentConnection, (IDockerImage) input);
-		}
-		return getImageInfo(parentConnection,
-				((IDockerImageHierarchyImageNode) input).getElement());
-	}
-
 
 	/**
 	 * @return the {@link IDockerImageInfo} for the given

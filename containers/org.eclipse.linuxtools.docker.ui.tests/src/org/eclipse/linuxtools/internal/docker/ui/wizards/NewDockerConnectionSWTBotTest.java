@@ -16,17 +16,10 @@ import java.io.IOException;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
-import org.eclipse.linuxtools.internal.docker.core.SystemUtils;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionSettingsFinder;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ButtonAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CheckBoxAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseShellRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerConnectionManagerUtils;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.RadioAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTBotTreeItemAssertions;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTUtils;
@@ -46,14 +39,11 @@ import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotToolbarButton;
 import org.eclipse.ui.PlatformUI;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.spotify.docker.client.DockerClient;
 
 /**
  * Testing the {@link NewDockerConnection} {@link Wizard}
@@ -89,22 +79,6 @@ public class NewDockerConnectionSWTBotTest {
 				|| v.getReference().getId().equals(DockerImagesView.VIEW_ID)).forEach(v -> v.close());
 		dockerExplorerViewBot.setFocus();
 		this.addConnectionButton = dockerExplorerViewBot.toolbarButton("&Add Connection");
-	}
-
-	private IDockerConnection configureUnixSocketConnection(final String connectionName, final String pathToSocket) {
-		final DockerClient client = MockDockerClientFactory.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from(connectionName, client)
-				.withUnixSocketConnectionSettings(pathToSocket);
-		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		return dockerConnection;
-	}
-
-	private IDockerConnection configureTCPConnection(final String connectionName, final String host) {
-		final DockerClient client = MockDockerClientFactory.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from(connectionName, client)
-				.withTCPConnectionSettings(host, null);
-		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		return dockerConnection;
 	}
 
 	@Test
@@ -200,128 +174,49 @@ public class NewDockerConnectionSWTBotTest {
 	}
 
 	@Test
-	public void shouldNotAllowNewConnectionWithDifferentNameAndSameUnixSocketSettings() throws IOException {
-		// given
-		final String dockerSocketTmpPath = File.createTempFile("docker", ".sock").getAbsolutePath();
-		MockDockerConnectionSettingsFinder.validUnixSocketConnectionAvailable("Mock",
-				"unix://" + dockerSocketTmpPath);
-		// add an existing connection based on the settings above
-		configureUnixSocketConnection("Mock", dockerSocketTmpPath);
-		// when open wizard
-		addConnectionButton.click();
-		bot.waitUntil(Conditions.shellIsActive(WizardMessages.getString("NewDockerConnection.title"))); //$NON-NLS-1$
-		// when changing connection name
-		bot.text(0).setText("foo");
-		// then the wizard should not allow for completion because a connection
-		// with the connection settings already exists.
-		ButtonAssertion.assertThat(bot.button("Finish")).isNotEnabled();
-	}
-
-	@Test
-	public void shouldNotAllowNewConnectionWithDifferentNameAndSameTCPSettings() throws IOException {
-		// given
-		MockDockerConnectionSettingsFinder.validTCPConnectionAvailable("Mock", "https://foo:1234", null);
-		// add an existing connection based on the settings above
-		configureTCPConnection("Mock", "https://foo:1234");
-		// when open wizard
-		addConnectionButton.click();
-		bot.waitUntil(Conditions.shellIsActive(WizardMessages.getString("NewDockerConnection.title"))); //$NON-NLS-1$
-		// when changing connection name
-		bot.text(0).setText("foo");
-		// then the wizard should not allow for completion because a connection
-		// with the connection settings already exists.
-		ButtonAssertion.assertThat(bot.button("Finish")).isNotEnabled();
-	}
-
-	@Test
-	public void shouldAllowNewConnectionWithDifferentNameAndUnixSettings() throws IOException {
-		// given
-		final String dockerSocketTmpPath = File.createTempFile("docker", ".sock").getAbsolutePath();
-		configureUnixSocketConnection("Bar", dockerSocketTmpPath);
-		MockDockerConnectionSettingsFinder.validUnixSocketConnectionAvailable("Mock",
-				"unix://" + dockerSocketTmpPath);
-		final String otherDockerSocketTmpPath = File.createTempFile("docker", ".sock").getAbsolutePath();
-		// when open wizard
-		addConnectionButton.click();
-		bot.waitUntil(Conditions.shellIsActive(WizardMessages.getString("NewDockerConnection.title"))); //$NON-NLS-1$
-		// when changing connection name
-		bot.text(0).setText("foo");
-		bot.checkBox(0).select();
-		bot.text(1).setText(otherDockerSocketTmpPath);
-		// then the wizard should not allow for completion because a connection
-		// with the connection settings already exists.
-		ButtonAssertion.assertThat(bot.button("Finish")).isEnabled();
-	}
-
-	@Test
-	public void shouldAllowNewConnectionWithDifferentNameAndTCPSettings() throws IOException {
-		// given
-		MockDockerConnectionSettingsFinder.validTCPConnectionAvailable("Mock", "https://foo:1234", null);
-		// add an existing connection based on the settings above
-		configureTCPConnection("Mock", "https://foo");
-		// when open wizard
-		addConnectionButton.click();
-		bot.waitUntil(Conditions.shellIsActive(WizardMessages.getString("NewDockerConnection.title"))); //$NON-NLS-1$
-		// when changing connection name
-		bot.text(0).setText("foo");
-		bot.checkBox(0).select();
-		bot.text(2).setText("https://bar:1234");
-		// then the wizard should not allow for completion because a connection
-		// with the connection settings already exists.
-		ButtonAssertion.assertThat(bot.button("Finish")).isEnabled();
-	}
-
-	@Test
 	public void shouldPopulateConnectionWithClipboard() {
-		verifyPopulateConnectionWithClipboard(DND.CLIPBOARD);
+		final int [] DND_TYPE = {DND.SELECTION_CLIPBOARD, DND.CLIPBOARD};
+		for (int i = 0; i < DND_TYPE.length; i++) {
+			// Clear the clipboards
+			Display.getDefault().syncExec(() -> {
+				Clipboard clip = new Clipboard(Display.getCurrent());
+				clip.clearContents(DND.CLIPBOARD);
+				clip.clearContents(DND.SELECTION_CLIPBOARD);
+			});
 
-	}
+			// given
+			final int DND_VALUE = DND_TYPE[i];
+			final String[] connectionData = new String[] {
+					"DOCKER_HOST=https://1.2.3.4:1234 DOCKER_CERT_PATH=/path/to/certs DOCKER_TLS_VERIFY=1" };
+			Display.getDefault().syncExec(() -> {
+				Clipboard clip = new Clipboard(Display.getCurrent());
+				clip.setContents(connectionData, new Transfer[] { TextTransfer.getInstance() },
+						DND_VALUE);
+			});
+			// when
+			addConnectionButton.click();
+			// then
+			// Connection name
+			TextAssertion.assertThat(bot.text(0)).isEnabled().isEmpty();
+			// "Use custom connection settings" should be enabled and checked
+			CheckBoxAssertion.assertThat(bot.checkBox(0)).isEnabled().isChecked();
+			// "Unix socket" radio should be enabled and unselected
+			RadioAssertion.assertThat(bot.radio(0)).isEnabled().isNotSelected();
+			// "Unix socket path" text should be disabled and empty
+			TextAssertion.assertThat(bot.text(1)).isNotEnabled().isEmpty();
+			// "TCP Connection" radio should be enabled and selected
+			RadioAssertion.assertThat(bot.radio(1)).isEnabled().isSelected();
+			// "URI" should be enabled and not empty
+			TextAssertion.assertThat(bot.text(2)).isEnabled().textEquals("https://1.2.3.4:1234");
+			// "Enable Auth" checkbox should be enabled and selected
+			CheckBoxAssertion.assertThat(bot.checkBox(1)).isEnabled().isChecked();
+			// "Path" for certs should be enabled and not empty
+			TextAssertion.assertThat(bot.text(3)).isEnabled().textEquals("/path/to/certs");
 
-	@Test
-	public void shouldPopulateConnectionWithSelectionClipboard() {
-		// SELECTION_CLIPBOARD does not seem to be supported on platforms other
-		// than Linux (GTK/Motif)
-		Assume.assumeTrue("This test only runs on Linux", SystemUtils.isLinux());
-		verifyPopulateConnectionWithClipboard(DND.SELECTION_CLIPBOARD);
-	}
+			// Close wizard
+			bot.button("Cancel").click();
+		}
 
-	private void verifyPopulateConnectionWithClipboard(final int clipboardType) {
-		// Clear all clipboards
-		Display.getDefault().syncExec(() -> {
-			Clipboard clip = new Clipboard(Display.getCurrent());
-			clip.clearContents(DND.CLIPBOARD);
-			clip.clearContents(DND.SELECTION_CLIPBOARD);
-		});
-
-		// given
-		final String[] connectionData = new String[] {
-				"DOCKER_HOST=https://1.2.3.4:1234 DOCKER_CERT_PATH=/path/to/certs DOCKER_TLS_VERIFY=1" };
-		Display.getDefault().syncExec(() -> {
-			Clipboard clip = new Clipboard(Display.getCurrent());
-			clip.setContents(connectionData, new Transfer[] { TextTransfer.getInstance() }, clipboardType);
-		});
-		// when
-		addConnectionButton.click();
-		// then
-		// Connection name
-		TextAssertion.assertThat(bot.text(0)).isEnabled().isEmpty();
-		// "Use custom connection settings" should be enabled and checked
-		CheckBoxAssertion.assertThat(bot.checkBox(0)).isEnabled().isChecked();
-		// "Unix socket" radio should be enabled and unselected
-		RadioAssertion.assertThat(bot.radio(0)).isEnabled().isNotSelected();
-		// "Unix socket path" text should be disabled and empty
-		TextAssertion.assertThat(bot.text(1)).isNotEnabled().isEmpty();
-		// "TCP Connection" radio should be enabled and selected
-		RadioAssertion.assertThat(bot.radio(1)).isEnabled().isSelected();
-		// "URI" should be enabled and not empty
-		TextAssertion.assertThat(bot.text(2)).isEnabled().textEquals("https://1.2.3.4:1234");
-		// "Enable Auth" checkbox should be enabled and selected
-		CheckBoxAssertion.assertThat(bot.checkBox(1)).isEnabled().isChecked();
-		// "Path" for certs should be enabled and not empty
-		TextAssertion.assertThat(bot.text(3)).isEnabled().textEquals("/path/to/certs");
-
-		// Close wizard
-		bot.button("Cancel").click();
 	}
 
 }
