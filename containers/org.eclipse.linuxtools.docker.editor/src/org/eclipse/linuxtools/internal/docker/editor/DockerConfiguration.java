@@ -8,6 +8,7 @@
 package org.eclipse.linuxtools.internal.docker.editor;
 
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -70,5 +71,10 @@ public class DockerConfiguration extends TextSourceViewerConfiguration {
 	@Override
 	protected boolean isShownInText(Annotation annotation) {
 		return true;
+	}
+	
+	@Override
+	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+		return null;
 	}
 }
