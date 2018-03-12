@@ -38,7 +38,6 @@ import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.Named;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.RestResponse;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.Space;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.SpaceResponse;
-import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.SpaceSingleResponse;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.User;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.UserSingleResponse;
 import org.eclipse.linuxtools.internal.mylyn.osio.rest.core.response.data.UsersResponse;
@@ -219,59 +218,12 @@ public class OSIORestClient {
 		});
 	}
 
-	public Space getSpaceById(String spaceId, TaskRepository taskRepository) throws CoreException {
-		OSIORestConfiguration config = null;
-		config = connector.getRepositoryConfiguration(taskRepository);
-		Map<String, Space> spaces = config.getSpaces();
-		Space space = null;
-		for (Space s : spaces.values()) {
-			if (s.getId().equals(spaceId)) {
-				space = s;
-				break;
-			}
-		}
-		if (space == null) {
-
-			Map<String, Space> externalSpaces = config.getExternalSpaces();
-			for (Space s : spaces.values()) {
-				if (s.getId().equals(spaceId)) {
-					space = s;
-					break;
-				}
-			}
-			if (space == null) {
-				SpaceSingleResponse spaceResponse = null;
-				try {
-					spaceResponse = new OSIORestGetRequest<SpaceSingleResponse>(client, "/spaces/" + spaceId, new TypeToken<SpaceSingleResponse>() {}).run(new NullOperationMonitor());
-					space = spaceResponse.getData();
-					Map<String, WorkItemTypeData> workItemTypes = getSpaceWorkItemTypes(new NullOperationMonitor(), space);
-					space.setWorkItemTypes(workItemTypes);
-					Map<String, WorkItemLinkTypeData> workItemLinkTypes = getSpaceWorkItemLinkTypes(new NullOperationMonitor(), space);
-					space.setWorkItemLinkTypes(workItemLinkTypes);
-					Map<String, Area> areas = getSpaceAreas(new NullOperationMonitor(), space);
-					space.setAreas(areas);
-					Map<String, Iteration> iterations = getSpaceIterations(new NullOperationMonitor(), space);
-					space.setIterations(iterations);
-					Map<String, Label> labels = getSpaceLabels(new NullOperationMonitor(), space);
-					space.setLabels(labels);
-					Map<String, User> users = getUsers(new NullOperationMonitor(), space);
-					space.setUsers(users);
-				} catch (OSIORestException e) {
-					com.google.common.base.Throwables.propagate(
-							new CoreException(new Status(IStatus.ERROR, OSIORestCore.ID_PLUGIN,
-									"Can not find Space (" + spaceId + ")"))); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-				externalSpaces.put(space.getName(), space);
-			}
-		}
-		return space;
-	}
-	
 	public Map<String, String> getSpaceLinkTypes(String spaceId, TaskRepository taskRepository) {
 		Space s = null;
+		OSIORestConfiguration config;
 		Map<String, String> linkMap = new LinkedHashMap<>();
 		try {
-			s = getSpaceById(spaceId, taskRepository);
+			config = connector.getRepositoryConfiguration(taskRepository);
 		} catch (CoreException e1) {
 			StatusHandler.log(new Status(IStatus.ERROR, OSIORestCore.ID_PLUGIN,
 					NLS.bind("Unexpected error during retrieval of configuration for Task Repository {0}", //$NON-NLS-1$
@@ -280,12 +232,37 @@ public class OSIORestClient {
 
 			return linkMap;
 		}
-		if (s != null) {
-			Map<String, WorkItemLinkTypeData> linkTypes = s.getWorkItemLinkTypes();
-			for (WorkItemLinkTypeData linkType : linkTypes.values()) {
-				linkMap.put(linkType.getAttributes().getForwardName(), linkType.getId());
-				linkMap.put(linkType.getAttributes().getReverseName(), linkType.getId());
+
+		try {
+			Map<String, Space> spaces = getCachedSpaces(new NullOperationMonitor());
+			if (spaces != null) {
+				for (Space space : spaces.values()) {
+					if (space.getId().equals(spaceId)) {
+						s = space;
+						break;
+					}
+				}
+				if (s == null && (spaces = config.getExternalSpaces()) != null) {
+					for (Space space : spaces.values()) {
+						if (space.getId().equals(spaceId)) {
+							s = space;
+							break;
+						}
+					}
+				}
+				if (s != null) {
+					Map<String, WorkItemLinkTypeData> linkTypes = s.getWorkItemLinkTypes();
+					for (WorkItemLinkTypeData linkType : linkTypes.values()) {
+						linkMap.put(linkType.getAttributes().getForwardName(), linkType.getId());
+						linkMap.put(linkType.getAttributes().getReverseName(), linkType.getId());
+					}
+				}
 			}
+		} catch (OSIORestException e) {
+			StatusHandler.log(new Status(IStatus.ERROR, OSIORestCore.ID_PLUGIN,
+					NLS.bind("Unexpected error during retrieval of work item link types for space {0}", //$NON-NLS-1$
+							spaceId),
+					e));
 		}
 		return linkMap;
 	}
@@ -326,7 +303,6 @@ public class OSIORestClient {
 			OSIORestConfiguration config;
 			try {
 				config = connector.getRepositoryConfiguration(repository);
-				space = getSpaceById(spaceId, repository);
 			} catch (CoreException e1) {
 				throw new OSIORestException(e1);
 			}
@@ -339,7 +315,23 @@ public class OSIORestClient {
 					newComment.setValue("");
 				}
 			}
-
+			Map<String, Space> spaces = config.getSpaces();
+			for (Space s : spaces.values()) {
+				if (s.getId().equals(spaceId)) {
+					space = s;
+					break;
+				}
+			}
+			if (space == null) {
+				Map<String, Space> externalSpaces = config.getExternalSpaces();
+				for (Space s : externalSpaces.values()) {
+					if (s.getId().equals(spaceId)) {
+						space = s;
+						break;
+					}
+				}
+			}
+			
 			TaskAttribute removeLinks = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().REMOVE_LINKS.getKey());
 			if (removeLinks != null) {
 				List<String> links = removeLinks.getValues();
@@ -425,11 +417,12 @@ public class OSIORestClient {
 				String workitemquery = "/workitems/" + wid; //$NON-NLS-1$
 				TaskData taskData = new OSIORestGetSingleTaskData(client, connector, workitemquery, taskRepository)
 						.run(monitor);
-				Map<String, Space> spaces = config.getSpaces();
-				Space space = null;
-				String spaceId = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().SPACE_ID.getKey()).getValue();
-				space = getSpaceById(spaceId, taskRepository);
-				
+				Map<String, Space> spaces = getCachedSpaces(monitor);
+				Space space = spaces.get(spaceName);
+				if (space == null) {
+					Map<String, Space> externalSpaces = config.getExternalSpaces();
+					space = externalSpaces.get(spaceName);
+				}
 				new OSIORestGetTaskComments(getClient(), space,taskData).run(monitor);
 				new OSIORestGetTaskCreator(getClient(), taskData).run(monitor);
 				new OSIORestGetTaskLabels(getClient(), space, taskData).run(monitor);
