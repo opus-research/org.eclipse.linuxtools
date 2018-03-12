@@ -217,13 +217,6 @@ public class OSIORestClient {
 			}
 			return new RepositoryResponse(ResponseKind.TASK_CREATED, id);
 		} else {
-			OSIORestConfiguration config;
-			try {
-				config = connector.getRepositoryConfiguration(repository);
-			} catch (CoreException e1) {
-				throw new OSIORestException(e1);
-			}
-
 			TaskAttribute newComment = taskData.getRoot().getAttribute(OSIORestTaskSchema.getDefault().NEW_COMMENT.getKey());
 			if (newComment != null) {
 				String value = newComment.getValue();
@@ -232,7 +225,7 @@ public class OSIORestClient {
 					newComment.setValue("");
 				}
 			}
-			new OSIORestPatchUpdateTask(client, taskData, oldAttributes, config.getSpaces()).run(monitor);
+			new OSIORestPatchUpdateTask(client, taskData, oldAttributes, getCachedSpaces(new NullOperationMonitor())).run(monitor);
 			return new RepositoryResponse(ResponseKind.TASK_UPDATED, taskData.getTaskId());
 		}
 	}
