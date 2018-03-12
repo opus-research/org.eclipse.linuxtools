@@ -81,12 +81,26 @@ public class ContainerLinkDialog extends Dialog {
 	protected void configureShell(final Shell shell) {
 		super.configureShell(shell);
 		setShellStyle(getShellStyle() | SWT.RESIZE);
-		shell.setText("Container Linking");
+		shell.setText(WizardMessages.getString("ContainerLinkDialog.title")); //$NON-NLS-1$
 	}
 
 	@Override
 	protected Point getInitialSize() {
 		return new Point(400, super.getInitialSize().y);
+	}
+
+	/**
+	 * Disable the 'OK' button by default
+	 */
+	@Override
+	protected Button createButton(Composite parent, int id, String label,
+			boolean defaultButton) {
+		final Button button = super.createButton(parent, id, label,
+				defaultButton);
+		if (id == IDialogConstants.OK_ID) {
+			button.setEnabled(false);
+		}
+		return button;
 	}
 
 	@Override
@@ -95,15 +109,17 @@ public class ContainerLinkDialog extends Dialog {
 		final Composite container = new Composite(parent, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
 				.span(COLUMNS, 1).grab(true, false).applyTo(container);
-		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
+		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(10, 10)
 				.applyTo(container);
 		final Label explanationLabel = new Label(container, SWT.NONE);
 		explanationLabel
-				.setText("Select a container to link and give it an alias:"); //$NON-NLS-1$
+.setText(WizardMessages
+				.getString("ContainerLinkDialog.explanationLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(false, false).applyTo(explanationLabel);
 		final Label containerLabel = new Label(container, SWT.NONE);
-		containerLabel.setText("Container:"); //$NON-NLS-1$
+		containerLabel.setText(
+				WizardMessages.getString("ContainerLinkDialog.containerLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(containerLabel);
 		final Combo containerSelectionCombo = new Combo(container, SWT.NONE);
@@ -130,7 +146,8 @@ public class ContainerLinkDialog extends Dialog {
 						containerSelectionCombo),
 				null, null);
 		final Label aliasLabel = new Label(container, SWT.NONE);
-		aliasLabel.setText("Alias:"); //$NON-NLS-1$
+		aliasLabel.setText(
+				WizardMessages.getString("ContainerLinkDialog.aliasLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(aliasLabel);
 		final Text containerAliasText = new Text(container, SWT.BORDER);
@@ -158,32 +175,20 @@ public class ContainerLinkDialog extends Dialog {
 								ContainerLinkDialogModel.CONTAINER_ALIAS)
 						.observe(model));
 		containerNameObservable.addValueChangeListener(
-				onContainerLinkSettingsChanged(errorMessageLabel));
+onContainerLinkSettingsChanged());
 		containerAliasObservable.addValueChangeListener(
-				onContainerLinkSettingsChanged(errorMessageLabel));
+onContainerLinkSettingsChanged());
 		return container;
 	}
 
-	private IValueChangeListener onContainerLinkSettingsChanged(
-			final Label errorMessageLabel) {
+	private IValueChangeListener onContainerLinkSettingsChanged() {
 		return new IValueChangeListener() {
 
 			@Override
 			public void handleValueChange(ValueChangeEvent event) {
-				validateInput(errorMessageLabel);
+				validateInput();
 			}
 		};
-	}
-
-	@Override
-	protected Button createButton(Composite parent, int id, String label,
-			boolean defaultButton) {
-		final Button button = super.createButton(parent, id, label,
-				defaultButton);
-		if (id == IDialogConstants.OK_ID) {
-			button.setEnabled(false);
-		}
-		return button;
 	}
 
 	public String getContainerName() {
@@ -221,7 +226,7 @@ public class ContainerLinkDialog extends Dialog {
 		};
 	}
 
-	private void validateInput(final Label errorMessageLabel) {
+	private void validateInput() {
 		final String selectedContainerName = model.getContainerName();
 		final Object[] containerNames = model.getContainerNames().toArray();
 		final String containerAlias = model.getContainerAlias();
@@ -244,9 +249,9 @@ public class ContainerLinkDialog extends Dialog {
 
 	class ContainerLinkDialogModel extends BaseDatabindingModel {
 
-		public static final String CONTAINER_NAME = "containerName";
+		public static final String CONTAINER_NAME = "containerName"; //$NON-NLS-1$
 
-		public static final String CONTAINER_ALIAS = "containerAlias";
+		public static final String CONTAINER_ALIAS = "containerAlias"; //$NON-NLS-1$
 
 		private String containerName;
 

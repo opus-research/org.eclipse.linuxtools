@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.internal.docker.ui.databinding.BaseDatabindingMode
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ExposedPortModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -37,7 +38,7 @@ import org.eclipse.swt.widgets.Text;
  */
 public class ContainerPortDialog extends Dialog {
 
-	private static final String PORT_TYPE = "/tcp";
+	private static final String PORT_TYPE = "/tcp"; //$NON-NLS-1$
 
 	private final ContainerPortDialogModel model;
 
@@ -61,7 +62,22 @@ public class ContainerPortDialog extends Dialog {
 	protected void configureShell(final Shell shell) {
 		super.configureShell(shell);
 		setShellStyle(getShellStyle() | SWT.RESIZE);
-		shell.setText("Exposing a Container Port");
+		shell.setText(
+				WizardMessages.getString("ContainerPortDialog.shellTitle")); //$NON-NLS-1$
+	}
+
+	/**
+	 * Disable the 'OK' button by default
+	 */
+	@Override
+	protected Button createButton(Composite parent, int id, String label,
+			boolean defaultButton) {
+		final Button button = super.createButton(parent, id, label,
+				defaultButton);
+		if (id == IDialogConstants.OK_ID) {
+			button.setEnabled(false);
+		}
+		return button;
 	}
 
 	@Override
@@ -75,28 +91,32 @@ public class ContainerPortDialog extends Dialog {
 		final Composite container = new Composite(parent, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
 				.span(COLUMNS, 1).grab(true, true).applyTo(container);
-		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
+		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(10, 10)
 				.applyTo(container);
 		final Label explanationLabel = new Label(container, SWT.NONE);
-		explanationLabel.setText("Specify the container port to expose:"); //$NON-NLS-1$
+		explanationLabel.setText(WizardMessages
+				.getString("ContainerPortDialog.explanationLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.span(COLUMNS, 1).grab(false, false).applyTo(explanationLabel);
 		final Label containerLabel = new Label(container, SWT.NONE);
-		containerLabel.setText("Container port:"); //$NON-NLS-1$
+		containerLabel.setText(
+				WizardMessages.getString("ContainerPortDialog.containerLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(containerLabel);
 		final Text containerPortText = new Text(container, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).applyTo(containerPortText);
 		final Label hostAddressLabel = new Label(container, SWT.NONE);
-		hostAddressLabel.setText("Host address:"); //$NON-NLS-1$
+		hostAddressLabel.setText(WizardMessages
+				.getString("ContainerPortDialog.hostAddressLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(hostAddressLabel);
 		final Text hostAddressText = new Text(container, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(true, false).applyTo(hostAddressText);
 		final Label hostPortLabel = new Label(container, SWT.NONE);
-		hostPortLabel.setText("Host port:"); //$NON-NLS-1$
+		hostPortLabel.setText(
+				WizardMessages.getString("ContainerPortDialog.hostPortLabel")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(hostPortLabel);
 		final Text hostPortText = new Text(container, SWT.BORDER);
@@ -131,29 +151,26 @@ public class ContainerPortDialog extends Dialog {
 						.observe(model));
 
 		containerPortObservable.addValueChangeListener(
-				onContainerPortSettingsChanged(errorMessageLabel));
+onContainerPortSettingsChanged());
 		hostPortObservable.addValueChangeListener(
-				onContainerPortSettingsChanged(errorMessageLabel));
+onContainerPortSettingsChanged());
 		hostAddressObservable.addValueChangeListener(
-				onContainerPortSettingsChanged(errorMessageLabel));
+onContainerPortSettingsChanged());
 		return container;
 	}
 
-	private IValueChangeListener onContainerPortSettingsChanged(
-			final Label errorMessageLabel) {
+	private IValueChangeListener onContainerPortSettingsChanged() {
 		return new IValueChangeListener() {
 
 			@Override
 			public void handleValueChange(ValueChangeEvent event) {
-				validateInput(errorMessageLabel);
+				validateInput();
 			}
 		};
 	}
 
-	private void validateInput(final Label errorMessageLabel) {
+	private void validateInput() {
 		final String containerPort = model.getContainerPort();
-		final String hostAddress = model.getHostAddress();
-		final String hostPort = model.getHostPort();
 		if (containerPort == null || containerPort.isEmpty()) {
 			setOkButtonEnabled(false);
 		} else {
@@ -172,11 +189,11 @@ public class ContainerPortDialog extends Dialog {
 
 	class ContainerPortDialogModel extends BaseDatabindingModel {
 
-		public static final String CONTAINER_PORT = "containerPort";
+		public static final String CONTAINER_PORT = "containerPort"; //$NON-NLS-1$
 
-		public static final String HOST_ADDRESS = "hostAddress";
+		public static final String HOST_ADDRESS = "hostAddress"; //$NON-NLS-1$
 
-		public static final String HOST_PORT = "hostPort";
+		public static final String HOST_PORT = "hostPort"; //$NON-NLS-1$
 
 		private String containerPort;
 

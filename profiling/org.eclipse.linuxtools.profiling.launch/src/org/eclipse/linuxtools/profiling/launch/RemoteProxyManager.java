@@ -35,6 +35,7 @@ public class RemoteProxyManager implements IRemoteProxyManager {
     protected static final String LOCALSCHEME = "file"; //$NON-NLS-1$
 
     private static RemoteProxyManager manager;
+    private LocalFileProxy lfp;
     /**
      * @since 2.1
      */
@@ -55,7 +56,9 @@ public class RemoteProxyManager implements IRemoteProxyManager {
     }
 
     LocalFileProxy getLocalFileProxy(URI uri) {
-        return new LocalFileProxy(uri);
+        if (lfp == null)
+            lfp = new LocalFileProxy(uri);
+        return lfp;
     }
     /**
      * @param schemeId The protocol scheme to be used.
