@@ -63,10 +63,7 @@ public abstract class TapsetParser extends Job {
 
     @Override
     protected void canceling() {
-        Thread thread = getThread();
-        if (thread != null) {
-            thread.interrupt();
-        }
+        getThread().interrupt();
     }
 
     /**
@@ -205,8 +202,6 @@ public abstract class TapsetParser extends Job {
                 port, EnvironmentVariablesPreferencePage.getEnvironmentVariables());
         if (channel == null) {
             displayError(Messages.TapsetParser_CannotRunStapTitle, Messages.TapsetParser_CannotRunStapMessage);
-        } else {
-            channel.getSession().disconnect();
         }
 
         return (!getErrors ? str : strErr).toString();

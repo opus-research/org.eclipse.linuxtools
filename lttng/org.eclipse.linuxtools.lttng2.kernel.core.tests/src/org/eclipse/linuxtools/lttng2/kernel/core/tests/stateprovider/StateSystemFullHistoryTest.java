@@ -32,6 +32,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -49,8 +50,11 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
     private File stateFileBenchmark;
     private TestLttngKernelAnalysisModule module;
 
-    @Override
-    protected ITmfStateSystem initialize() {
+    /**
+     * Initialize the test cases (build the history file once for all tests).
+     */
+    @Before
+    public void initialize() {
         stateFile = createStateFile(TEST_FILE_NAME);
         stateFileBenchmark = createStateFile(BENCHMARK_FILE_NAME);
 
@@ -62,23 +66,19 @@ public class StateSystemFullHistoryTest extends StateSystemTest {
         }
         module.schedule();
         assertTrue(module.waitForCompletion());
-        return module.getStateSystem();
+        ssq = module.getStateSystem();
+
+        assertNotNull(ssq);
     }
 
     /**
      * Clean-up
      */
     @After
-    public void cleanup() {
-        if (module != null) {
-            module.close();
-        }
-        if (stateFile != null) {
-            stateFile.delete();
-        }
-        if (stateFileBenchmark != null) {
-            stateFileBenchmark.delete();
-        }
+    public void tearDownClass() {
+        module.close();
+        stateFile.delete();
+        stateFileBenchmark.delete();
     }
 
     // ------------------------------------------------------------------------

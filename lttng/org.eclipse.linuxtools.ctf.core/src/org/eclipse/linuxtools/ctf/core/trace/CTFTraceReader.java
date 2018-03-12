@@ -13,7 +13,6 @@
 
 package org.eclipse.linuxtools.ctf.core.trace;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -105,7 +104,7 @@ public class CTFTraceReader implements AutoCloseable {
          */
         fStartTime = 0;
         if (hasMoreEvents()) {
-            fStartTime = getTopStream().getCurrentEvent().getTimestamp();
+            fStartTime = fPrio.peek().getCurrentEvent().getTimestamp();
             setEndTime(fStartTime);
         }
     }
@@ -135,11 +134,7 @@ public class CTFTraceReader implements AutoCloseable {
     public void close() {
         for (CTFStreamInputReader reader : fStreamInputReaders) {
             if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    Activator.logError(e.getMessage(), e);
-                }
+                reader.close();
             }
         }
         fStreamInputReaders.clear();
@@ -518,7 +513,7 @@ public class CTFTraceReader implements AutoCloseable {
      *
      */
     public boolean isLive() {
-        return getTopStream().isLive();
+        return fPrio.peek().isLive();
     }
 
     @Override

@@ -139,12 +139,7 @@ abstract public class AbstractTracePackageWizardPage extends WizardPage {
                 if (parentElement != null) {
                     if (parentElement.getChildren() != null) {
                         for (TracePackageElement child : parentElement.getChildren()) {
-                            if (fElementViewer.getGrayed(child)) {
-                                oneChecked = true;
-                                allChecked = false;
-                                break;
-                            }
-                            boolean checked = fElementViewer.getChecked(child);
+                            boolean checked = fElementViewer.getChecked(child) && !fElementViewer.getGrayed(child);
                             oneChecked |= checked;
                             allChecked &= checked;
                         }

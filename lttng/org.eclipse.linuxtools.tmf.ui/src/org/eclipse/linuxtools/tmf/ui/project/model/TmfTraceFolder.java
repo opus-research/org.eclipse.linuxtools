@@ -22,6 +22,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -111,7 +112,7 @@ public class TmfTraceFolder extends TmfProjectModelElement implements IPropertyS
             for (IResource resource : members) {
                 String name = resource.getName();
                 boolean isFolder = resource instanceof IFolder &&
-                        (TmfTraceType.getTraceTypeId(resource) == null);
+                        (resource.getPersistentProperty(TmfCommonConstants.TRACETYPE) == null);
                 ITmfProjectModelElement element = childrenMap.get(name);
                 if (isFolder && !(element instanceof TmfTraceFolder) && !(element instanceof TmfTraceElement)) {
                     if (TmfTraceType.isDirectoryTrace(resource.getLocationURI().getPath())) {

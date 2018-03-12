@@ -434,7 +434,7 @@ public class HistogramDataModel implements IHistogramDataModel {
      * @see org.eclipse.linuxtools.tmf.ui.views.distribution.model.IBaseDistributionModel#clear()
      */
     @Override
-    public synchronized void clear() {
+    public void clear() {
         Arrays.fill(fBuckets, null);
         Arrays.fill(fLostEventsBuckets, 0);
         fNbEvents = 0;
@@ -489,7 +489,7 @@ public class HistogramDataModel implements IHistogramDataModel {
      * @since 3.0
      */
     @Override
-    public synchronized void countEvent(long eventCount, long timestamp, ITmfTrace trace) {
+    public void countEvent(long eventCount, long timestamp, ITmfTrace trace) {
 
         // Validate
         if (timestamp < 0) {
@@ -521,16 +521,14 @@ public class HistogramDataModel implements IHistogramDataModel {
         } else {
 
             // get offset for adjustment
-            long preMergeOffset = getOffset(timestamp);
+            int offset = getOffset(timestamp);
 
             // Compact as needed
-            while ((fLastBucket + preMergeOffset) >= fNbBuckets) {
+            while ((fLastBucket + offset) >= fNbBuckets) {
                 mergeBuckets();
-                preMergeOffset = getOffset(timestamp);
+                offset = getOffset(timestamp);
             }
 
-            // after merging the offset should be less than number of buckets
-            int offset = (int) preMergeOffset;
             moveBuckets(offset);
 
             fLastBucket = fLastBucket + offset;
@@ -568,7 +566,7 @@ public class HistogramDataModel implements IHistogramDataModel {
      *            Full range or time range for histogram request
      * @since 2.2
      */
-    public synchronized void countLostEvent(TmfTimeRange timeRange, long nbLostEvents, boolean fullRange) {
+    public void countLostEvent(TmfTimeRange timeRange, long nbLostEvents, boolean fullRange) {
 
         // Validate
         if (timeRange.getStartTime().getValue() < 0 || timeRange.getEndTime().getValue() < 0) {
@@ -709,8 +707,8 @@ public class HistogramDataModel implements IHistogramDataModel {
         }
     }
 
-    private long getOffset(long timestamp) {
-        long offset = (fFirstBucketTime - timestamp) / fBucketDuration;
+    private int getOffset(long timestamp) {
+        int offset = (int) ((fFirstBucketTime - timestamp) / fBucketDuration);
         if (((fFirstBucketTime - timestamp) % fBucketDuration) != 0) {
             offset++;
         }

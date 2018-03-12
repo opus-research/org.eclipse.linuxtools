@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2014 Intel Corporation, Ericsson
+ * Copyright (c) 2007, 2013 Intel Corporation, Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,9 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
-import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimePreferences;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
@@ -61,12 +59,6 @@ public class Utils {
          * @since 2.0
          */
         NUMBER,
-
-        /**
-         * Timestamp displayed as cycles
-         * @since 3.2
-         */
-        CYCLES
     }
 
     /**
@@ -88,9 +80,6 @@ public class Utils {
 
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
-    private static final long HOURS_PER_DAY = 24;
-    private static final long MIN_PER_HOUR = 60;
-    private static final long SEC_PER_MIN = 60;
     private static final long SEC_IN_NS = 1000000000;
     private static final long MILLISEC_IN_NS = 1000000;
 
@@ -262,8 +251,8 @@ public class Utils {
      * @param rect
      *            The rectangle object which is being drawn
      * @param transp
-     *            If true the background will be transparent
-     * @return The width of the written text
+     *            Should we transpose the color
+     * @return The X coordinate where we have written
      */
     public static int drawText(GC gc, String text, Rectangle rect, boolean transp) {
         Point size = gc.stringExtent(text);
@@ -283,8 +272,8 @@ public class Utils {
      * @param y
      *            the Y coordinate of the starting point
      * @param transp
-     *            If true the background will be transparent
-     * @return The width of the written text
+     *            Should we transpose the color
+     * @return The X coordinate where we have written
      */
     public static int drawText(GC gc, String text, int x, int y, boolean transp) {
         Point size = gc.stringExtent(text);
@@ -314,10 +303,6 @@ public class Utils {
      * @since 2.0
      */
     public static int drawText(GC gc, String text, int x, int y, int width, boolean isCentered, boolean isTransparent) {
-        if (width < 1) {
-            return 0;
-        }
-
         int len = text.length();
         int textWidth = 0;
         boolean isReallyCentered = isCentered;
@@ -349,15 +334,11 @@ public class Utils {
      * @return the formatted time
      */
     public static String formatTime(long time, TimeFormat format, Resolution resolution) {
-        switch (format) {
-        case CALENDAR:
+        // if format is absolute (Calendar)
+        if (format == TimeFormat.CALENDAR) {
             return formatTimeAbs(time, resolution);
-        case NUMBER:
+        } else if (format == TimeFormat.NUMBER) {
             return NumberFormat.getInstance().format(time);
-        case CYCLES:
-            return NumberFormat.getInstance().format(time) + Messages.Utils_ClockCyclesUnit;
-        case RELATIVE:
-        default:
         }
 
         StringBuffer str = new StringBuffer();
@@ -410,66 +391,6 @@ public class Utils {
         // append the Milliseconds, MicroSeconds and NanoSeconds as specified in
         // the Resolution
         str.append(formatNs(time, res));
-        return str.toString();
-    }
-
-    /**
-     * Formats time delta
-     *
-     * @param delta
-     *            The time delta, in ns
-     * @param format
-     *            The time format to use
-     * @param resolution
-     *            The resolution to use
-     * @since 3.2
-     * @return the formatted time delta
-     */
-    public static String formatDelta(long delta, TimeFormat format, Resolution resolution) {
-        if (format == TimeFormat.CALENDAR) {
-            return formatDeltaAbs(delta, resolution);
-        }
-        return formatTime(delta, format, resolution);
-    }
-
-    /**
-     * Formats time delta in ns to Calendar format, only formatting the years,
-     * days, hours or minutes if necessary.
-     *
-     * @param delta
-     *            The time delta, in ns
-     * @param resolution
-     *            The resolution to use
-     * @return the formatted time delta
-     * @since 3.2
-     */
-    public static String formatDeltaAbs(long delta, Resolution resolution) {
-        StringBuffer str = new StringBuffer();
-        if (delta < 0) {
-            str.append('-');
-        }
-        long ns = Math.abs(delta);
-        long seconds = TimeUnit.NANOSECONDS.toSeconds(ns);
-        long minutes = TimeUnit.NANOSECONDS.toMinutes(ns);
-        long hours = TimeUnit.NANOSECONDS.toHours(ns);
-        long days = TimeUnit.NANOSECONDS.toDays(ns);
-        if (days > 0) {
-            str.append(days);
-            str.append("d "); //$NON-NLS-1$
-        }
-        if (hours > 0) {
-            str.append(hours % HOURS_PER_DAY);
-            str.append("h "); //$NON-NLS-1$
-        }
-        if (minutes > 0) {
-            str.append(minutes % MIN_PER_HOUR);
-            str.append("m "); //$NON-NLS-1$
-        }
-        str.append(seconds % SEC_PER_MIN);
-        str.append('.');
-        // append the ms, us and ns as specified in the resolution
-        str.append(formatNs(delta, resolution));
-        str.append("s"); //$NON-NLS-1$
         return str.toString();
     }
 
@@ -753,74 +674,5 @@ public class Utils {
             return -1;
         }
         return 0;
-    }
-
-    /**
-     * Calculates the square of the distance between two points.
-     *
-     * @param x1
-     *            x-coordinate of point 1
-     * @param y1
-     *            y-coordinate of point 1
-     * @param x2
-     *            x-coordinate of point 2
-     * @param y2
-     *            y-coordinate of point 2
-     *
-     * @return the square of the distance in pixels^2
-     * @since 3.2
-     */
-    public static double distance2(int x1, int y1, int x2, int y2) {
-        int dx = x2 - x1;
-        int dy = y2 - y1;
-        int d2 = dx * dx + dy * dy;
-        return d2;
-    }
-
-    /**
-     * Calculates the distance between a point and a line segment. If the point
-     * is in the perpendicular region between the segment points, return the
-     * distance from the point to its projection on the segment. Otherwise
-     * return the distance from the point to its closest segment point.
-     *
-     * @param px
-     *            x-coordinate of the point
-     * @param py
-     *            y-coordinate of the point
-     * @param x1
-     *            x-coordinate of segment point 1
-     * @param y1
-     *            y-coordinate of segment point 1
-     * @param x2
-     *            x-coordinate of segment point 2
-     * @param y2
-     *            y-coordinate of segment point 2
-     *
-     * @return the distance in pixels
-     * @since 3.2
-     */
-    public static double distance(int px, int py, int x1, int y1, int x2, int y2) {
-        double length2 = distance2(x1, y1, x2, y2);
-        if (length2 == 0) {
-            return Math.sqrt(distance2(px, py, x1, y1));
-        }
-        // 'r' is the ratio of the position, between segment point 1 and segment
-        // point 2, of the projection of the point on the segment
-        double r = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / length2;
-        if (r <= 0.0) {
-            // the projection is before segment point 1, return distance from
-            // the point to segment point 1
-            return Math.sqrt(distance2(px, py, x1, y1));
-        }
-        if (r >= 1.0) {
-            // the projection is after segment point 2, return distance from
-            // the point to segment point 2
-            return Math.sqrt(distance2(px, py, x2, y2));
-        }
-        // the projection is between the segment points, return distance from
-        // the point to its projection on the segment
-        int x = (int) (x1 + r * (x2 - x1));
-        int y = (int) (y1 + r * (y2 - y1));
-        return Math.sqrt(distance2(px, py, x, y));
     }
 }

@@ -259,6 +259,9 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
         fSelectedEvents = new ArrayList<>();
 
         if (fIsTracepoints) {
+            List<ITraceControlComponent> comps = fProviderGroup.getChildren(KernelProviderComponent.class);
+            fIsAllTracepoints = fTracepointsViewer.getChecked(comps.get(0));
+
             Object[] checkedElements = fTracepointsViewer.getCheckedElements();
             for (int i = 0; i < checkedElements.length; i++) {
                 ITraceControlComponent component = (ITraceControlComponent)checkedElements[i];
@@ -266,13 +269,6 @@ public class EnableKernelEventComposite extends Composite implements IEnableKern
                     fSelectedEvents.add(component.getName());
                 }
             }
-            // verify if all events are selected
-            int nbEvents = 0;
-            List<ITraceControlComponent> comps = fProviderGroup.getChildren(KernelProviderComponent.class);
-            for (ITraceControlComponent comp : comps) {
-                nbEvents += comp.getChildren().length;
-            }
-            fIsAllTracepoints = (nbEvents == fSelectedEvents.size());
         }
 
         if (fIsDynamicProbe) {
