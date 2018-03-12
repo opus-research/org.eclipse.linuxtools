@@ -14,7 +14,7 @@
   <parent>
     <artifactId>linuxtools-changelog-parent</artifactId>
     <groupId>org.eclipse.linuxtools.changelog</groupId>
-    <version>4.1.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.changelog.ui.tests</artifactId>
@@ -42,6 +42,14 @@
           <surefire.timeout>1800</surefire.timeout>
           <forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

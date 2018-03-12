@@ -7,8 +7,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.changelog.ui.tests.swtbot;
 
-import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
@@ -24,6 +24,7 @@ import org.junit.runners.Suite.SuiteClasses;
         FormatChangeLogSWTBotTest.class
     }
 )
+
 public class AllSWTBotTests {
     // empty
 }

@@ -1,13 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2013 Red Hat Inc.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    Andrew Ferrazzutti <aferrazz@redhat.com> - initial API and implementation
- *******************************************************************************/
 package org.eclipse.linuxtools.internal.systemtap.graphing.ui.charts;
 
 import org.eclipse.swt.widgets.Composite;
@@ -54,7 +44,7 @@ public class BarChart extends Chart {
      * cut off if there isn't enough room to display them fully. Use this
      * instead of accessing the chart's x-axis and setting its category
      * series directly.
-     * @param series The category series.
+     * @param series
      */
     public void setCategorySeries(String[] series) {
         xAxis.setCategorySeries(series);
@@ -76,7 +66,6 @@ public class BarChart extends Chart {
      * Returns a list of the full (non-trimmed) label names of each bar.
      * Use this instead of accessing the x-axis' category series, which
      * may contain trimmed label names.
-     * @return An array containing the names of each bar in the chart.
      */
     public String[] getCategorySeries() {
         String[] copiedCategorySeries = null;

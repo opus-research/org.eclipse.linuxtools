@@ -231,7 +231,7 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
             return element;
         }
         if (!(element instanceof IProject)) {
-            return element.getAdapter(IProject.class);
+            return (IAdaptable) element.getAdapter(IProject.class);
         }
         return element;
     }

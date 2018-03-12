@@ -190,6 +190,9 @@ public class LibHoverPreferencePage extends FieldEditorPreferencePage implements
 
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
+     */
     @Override
     public void init(IWorkbench workbench) {
     }

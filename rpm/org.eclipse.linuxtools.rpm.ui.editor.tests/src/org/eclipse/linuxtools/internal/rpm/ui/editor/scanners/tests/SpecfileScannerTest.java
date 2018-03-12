@@ -37,11 +37,22 @@ public class SpecfileScannerTest extends AScannerTest {
         scanner = new SpecfileScanner(new ColorManager());
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.linuxtools.rpm.ui.editor.tests.AScannerTest#getContents()
+     */
     @Override
     protected String getContents() {
         return "# This is a comment\nName: test\n%prep\n%{name}\n%define\n%if\nName=test";
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.linuxtools.rpm.ui.editor.tests.AScannerTest#getScanner()
+     */
     @Override
     protected RuleBasedScanner getScanner() {
         return scanner;

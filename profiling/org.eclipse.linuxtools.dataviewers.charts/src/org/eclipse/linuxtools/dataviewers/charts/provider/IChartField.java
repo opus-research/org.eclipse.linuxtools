@@ -20,7 +20,7 @@ public interface IChartField extends ISTDataViewersField {
     /**
      * Returns the number to display in the chart for this object.
      *
-     * @param obj The field to retrieve from.
+     * @param obj
      * @return the corresponding number value
      */
     Number getNumber(Object obj);

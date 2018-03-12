@@ -34,31 +34,49 @@ public abstract class StorageEditorInput implements IStorageEditorInput {
         fStorage = storage;
     }
 
+    /**
+     * @see IStorageEditorInput#getStorage()
+     */
     @Override
     public IStorage getStorage() {
         return fStorage;
     }
 
+    /**
+     * @see IStorageEditorInput#getImageDescriptor()
+     */
     @Override
     public ImageDescriptor getImageDescriptor() {
         return null;
     }
 
+    /**
+     * @see IStorageEditorInput#getName()
+     */
     @Override
     public String getName() {
         return getStorage().getName();
     }
 
+    /**
+     * @see IStorageEditorInput#getPersistable()
+     */
     @Override
     public IPersistableElement getPersistable() {
         return null;
     }
 
+    /**
+     * @see IStorageEditorInput#getToolTipText()
+     */
     @Override
     public String getToolTipText() {
         return getStorage().getFullPath().toOSString();
     }
 
+    /**
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object object) {
         if (object == this) {
@@ -72,13 +90,20 @@ public abstract class StorageEditorInput implements IStorageEditorInput {
         return false;
     }
 
+    /**
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         return getStorage().hashCode();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
+     */
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    @SuppressWarnings({ "rawtypes" })
+    public Object getAdapter(Class adapter) {
         return null;
     }
 

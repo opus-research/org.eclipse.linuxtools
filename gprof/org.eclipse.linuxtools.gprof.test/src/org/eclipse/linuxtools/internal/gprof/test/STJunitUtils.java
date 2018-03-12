@@ -160,13 +160,13 @@ public class STJunitUtils {
             if (equals && deleteDumpFileIfOk) {
                 new File(dumpFile).delete();
             }
-        }catch (FileNotFoundException e) {
+        }catch (FileNotFoundException _) {
             message += "... FAILED: One of these files may not exist";
-            assertNull(message, e);
+            assertNull(message, _);
         }
-        catch (Exception e) {
+        catch (Exception _) {
             message += ": exception raised ... FAILED";
-            assertNull(message, e);
+            assertNull(message, _);
         }
         return equals;
     }

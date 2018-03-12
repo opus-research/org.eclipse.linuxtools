@@ -228,8 +228,6 @@ public class PerfCore {
             perfVersion = perfVersion.substring(0, index);
         }
         perfVersion = perfVersion.replace("perf version", "").trim(); //$NON-NLS-1$ //$NON-NLS-2$
-        if (perfVersion.length() == 0)
-        	return null;
         return new Version(perfVersion);
     }
 
@@ -453,7 +451,7 @@ public class PerfCore {
                     if (items.length != 5) {
                         continue;
                     }
-                    percent = Float.parseFloat(items[0].replace("%", "")); //$NON-NLS-1$ //$NON-NLS-2$
+                    percent = Float.parseFloat(items[0]); //percent column
                     samples = Double.parseDouble(items[1].trim()); //samples column
                     comm = items[2].trim(); //command column
                     dso = items[3].trim(); //dso column

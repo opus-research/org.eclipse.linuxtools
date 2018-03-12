@@ -41,8 +41,7 @@
    </extension>
    <extension
          point="org.eclipse.ui.startup">
-      <startup
-            class="org.eclipse.linuxtools.internal.cdt.libhover.devhelp.DevHelpStartup">
-      </startup>
+      <startup></startup>
    </extension>
+
 </plugin>

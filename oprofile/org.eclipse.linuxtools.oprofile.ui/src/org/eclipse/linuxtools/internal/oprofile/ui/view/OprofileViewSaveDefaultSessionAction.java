@@ -97,12 +97,12 @@ public class OprofileViewSaveDefaultSessionAction extends Action {
                         }
                         // clear out collected data by this session
                         // if opcontol is used
-                        if (Oprofile.OprofileProject.OPCONTROL_BINARY
+                        if (!Oprofile.OprofileProject.OPERF_BINARY
                                 .equals(Oprofile.OprofileProject
                                         .getProfilingBinary())) {
                             OprofileCorePlugin.getDefault()
                                     .getOpcontrolProvider().reset();
-                        } else if (Oprofile.OprofileProject.OPERF_BINARY.equals(Oprofile.OprofileProject.getProfilingBinary())){
+                        } else {
                             // remove oprofile_data so current event no longer
                             // be there
                             OprofileViewDeleteSessionAction

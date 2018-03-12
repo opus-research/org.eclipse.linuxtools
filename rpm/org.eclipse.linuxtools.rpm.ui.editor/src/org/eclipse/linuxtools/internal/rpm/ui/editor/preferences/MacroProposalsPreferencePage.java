@@ -411,6 +411,9 @@ public class MacroProposalsPreferencePage extends FieldEditorPreferencePage
             swap(true);
         }
 
+        /*
+         * @see FieldEditor.setEnabled(boolean,Composite).
+         */
         @Override
         public void setEnabled(boolean enabled, Composite parent) {
             super.setEnabled(enabled, parent);

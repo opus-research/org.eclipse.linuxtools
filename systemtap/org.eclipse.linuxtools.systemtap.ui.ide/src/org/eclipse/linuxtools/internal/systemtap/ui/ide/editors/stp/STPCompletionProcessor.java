@@ -375,6 +375,10 @@ public class STPCompletionProcessor implements IContentAssistProcessor, ITextHov
         return Pattern.matches("\\W", Character.toString(c)); //$NON-NLS-1$
     }
 
+    public void waitForInitialization() {
+        this.stpMetadataSingleton.waitForInitialization();
+    }
+
     @Override
     public IContextInformation[] computeContextInformation(ITextViewer viewer,
             int offset) {

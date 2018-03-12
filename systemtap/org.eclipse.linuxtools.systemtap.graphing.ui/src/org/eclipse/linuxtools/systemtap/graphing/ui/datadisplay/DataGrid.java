@@ -7,7 +7,6 @@
  *
  * Contributors:
  *     IBM Corporation - Jeff Briggs, Henry Hughes, Ryan Morse
- *     Red Hat Inc. - ongoing maintenance
  *******************************************************************************/
 
 package org.eclipse.linuxtools.systemtap.graphing.ui.datadisplay;
@@ -48,6 +47,8 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
+
+
 public class DataGrid implements IUpdateListener {
 
     public static final int NONE = 0;
@@ -68,8 +69,6 @@ public class DataGrid implements IUpdateListener {
     private IPropertyChangeListener propertyChangeListener;
 
     /**
-     * @param composite The {@link Composite} in which the grid will reside.
-     * @param set The data set this grid is associated with.
      * @since 3.0 set must be a IFilteredDataSet.
      */
     public DataGrid(Composite composite, IFilteredDataSet set) {

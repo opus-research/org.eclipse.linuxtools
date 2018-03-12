@@ -75,12 +75,20 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
     // The shared instance
     private static ValgrindLaunchPlugin plugin;
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     */
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     */
     @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
@@ -96,6 +104,9 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
         return plugin;
     }
 
+    /**
+     * @since 0.10
+     */
     public Version getValgrindVersion(IProject project) throws CoreException {
         Version valgrindVersion;
         try {
@@ -125,6 +136,9 @@ public class ValgrindLaunchPlugin extends AbstractUIPlugin {
         valgrindCommand = command;
     }
 
+    /**
+     * @since 0.10
+     */
     protected ValgrindCommand getValgrindCommand() {
         if (valgrindCommand == null) {
             valgrindCommand = new ValgrindCommand();

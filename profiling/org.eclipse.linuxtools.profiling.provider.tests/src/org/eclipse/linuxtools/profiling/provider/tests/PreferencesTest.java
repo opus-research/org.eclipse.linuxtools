@@ -15,12 +15,8 @@ import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.widget
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withRegex;
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withStyle;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceDescription;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.DebugUITools;
@@ -29,6 +25,8 @@ import org.eclipse.linuxtools.internal.profiling.launch.provider.launch.Provider
 import org.eclipse.linuxtools.profiling.tests.AbstractTest;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -39,6 +37,7 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotCheckBox;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotRadio;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
@@ -47,7 +46,6 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.eclipse.ui.PlatformUI;
 import org.hamcrest.Matcher;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.FrameworkUtil;
@@ -126,13 +124,20 @@ public class PreferencesTest extends AbstractTest{
         }
 
         // Turn off automatic building by default to avoid timing issues
-        IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        IWorkspaceDescription desc = workspace.getDescription();
-        boolean isAutoBuilding = desc.isAutoBuilding();
-        if (isAutoBuilding) {
-            desc.setAutoBuilding(false);
-            workspace.setDescription(desc);
+        SWTBotMenu windowsMenu = bot.menu("Window"); //$NON-NLS-1$
+        windowsMenu.menu("Preferences").click(); //$NON-NLS-1$
+        SWTBotShell shell = bot.shell("Preferences"); //$NON-NLS-1$
+        shell.activate();
+        bot.text().setText("Workspace"); //$NON-NLS-1$
+        bot.waitUntil(new NodeAvailableAndSelect(bot.tree(), "General", "Workspace")); //$NON-NLS-1$ //$NON-NLS-2$
+        SWTBotCheckBox buildAuto = bot.checkBox("Build automatically"); //$NON-NLS-1$
+        if (buildAuto != null && buildAuto.isChecked()) {
+            buildAuto.click();
         }
+        bot.sleep(1000);
+        bot.button("Apply").click(); //$NON-NLS-1$
+        bot.button("OK").click(); //$NON-NLS-1$
+        bot.waitUntil(shellCloses(shell));
     }
 
     @Test
@@ -177,13 +182,14 @@ public class PreferencesTest extends AbstractTest{
         bot.button("OK").click(); //$NON-NLS-1$
     }
 
-    @Ignore
     @Test
     public void testProfileProject() throws Exception {
         SWTWorkbenchBot bot = new SWTWorkbenchBot();
         proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), PROJ_NAME);
         try {
             testProfileProjectActions(bot);
+        } catch (Exception e) {
+            throw e;
         } finally {
             deleteProject(proj);
         }
@@ -275,7 +281,7 @@ public class PreferencesTest extends AbstractTest{
      *
      * @param name partial label of radio button to deselect.
      */
-    private static void deselectSelectionByName(final String name, final SWTWorkbenchBot bot) {
+    public static void deselectSelectionByName(final String name, final SWTWorkbenchBot bot) {
         UIThreadRunnable.syncExec(new VoidResult() {
             @Override
             public void run() {
@@ -286,6 +292,27 @@ public class PreferencesTest extends AbstractTest{
 
                 Button b = (Button) bot.widget(matcher); // the current selection
                 b.setSelection(false);
+            }
+        });
+    }
+
+    /**
+     * Click specfied menu item.
+     *
+     * @param menuItem
+     *            menu item to click
+     */
+    public static void click(final MenuItem menuItem) {
+        final Event event = new Event();
+        event.time = (int) System.currentTimeMillis();
+        event.widget = menuItem;
+        event.display = menuItem.getDisplay();
+        event.type = SWT.Selection;
+
+        UIThreadRunnable.asyncExec(menuItem.getDisplay(), new VoidResult() {
+            @Override
+            public void run() {
+                menuItem.notifyListeners(SWT.Selection, event);
             }
         });
     }

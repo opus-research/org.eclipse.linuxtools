@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
@@ -42,7 +41,6 @@ import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
     private static RuntimeProcessFactory instance = null;
     private static final String WHICH_CMD = "which"; //$NON-NLS-1$
-    private static final String WHERE_CMD = "where"; //$NON-NLS-1$
 
     private String[] tokenizeCommand(String command) {
         StringTokenizer tokenizer = new StringTokenizer(command);
@@ -64,8 +62,7 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
         return cmdarray;
     }
 
-
-   /**
+    /**
      * Used to get the full command path. It will look for the command in the
      * system path and in the path selected in 'Linux Tools Path' preference page
      * in the informed project.
@@ -75,63 +72,57 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
      * used to look for the command.
      * @return The full command path if command was found or the command if
      * command was not found.
-     * @throws IOException If problem executing the command occured.
      *
      * @since 1.1
      */
     public String whichCommand(String command, IProject project) throws IOException {
-        String[] envp = updateEnvironment(null, project);
-        try {
-            IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(project);
-            URI whichUri;
-            // For Windows, we use the where command, otherwise, we use the Unix which command
-            if ((project != null && Platform.OS_WIN32.equals(RemoteProxyManager.getInstance().getOS(project)))
-                    || Platform.OS_WIN32.equals(Platform.getOS())) {
-                whichUri = URI.create(WHERE_CMD);
-            } else {
-                whichUri = URI.create(WHICH_CMD);
-            }
-            IPath whichPath = new Path(proxy.toPath(whichUri));
-            IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(project);
-            Process pProxy = launcher.execute(whichPath, new String[]{command}, envp, null, new NullProgressMonitor());
-            if (pProxy != null) {
+        if (project != null) {
+            String[] envp = updateEnvironment(null, project);
+            try {
+                IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(project);
+                URI whichUri = URI.create(WHICH_CMD);
+                IPath whichPath = new Path(proxy.toPath(whichUri));
+                IRemoteCommandLauncher launcher = RemoteProxyManager.getInstance().getLauncher(project);
+                Process pProxy = launcher.execute(whichPath, new String[]{command}, envp, null, new NullProgressMonitor());
+                if (pProxy != null) {
 
-                String errorLine;
-                try (BufferedReader error = new BufferedReader(
-                        new InputStreamReader(pProxy.getErrorStream()))) {
-                    if ((errorLine = error.readLine()) != null) {
-                        throw new IOException(errorLine);
+                    String errorLine;
+                    try (BufferedReader error = new BufferedReader(
+                            new InputStreamReader(pProxy.getErrorStream()))) {
+                        if ((errorLine = error.readLine()) != null) {
+                            throw new IOException(errorLine);
+                        }
                     }
-                }
-                ArrayList<String> lines = new ArrayList<>();
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(pProxy.getInputStream()))) {
-                    String readLine = reader.readLine();
-                    while (readLine != null) {
-                        lines.add(readLine);
-                        readLine = reader.readLine();
+                    ArrayList<String> lines = new ArrayList<>();
+                    try (BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(pProxy.getInputStream()))) {
+                        String readLine = reader.readLine();
+                        while (readLine != null) {
+                            lines.add(readLine);
+                            readLine = reader.readLine();
+                        }
                     }
-                }
-                if (!lines.isEmpty()) {
-                    if (project != null && project.getLocationURI() != null) {
-                        if (project.getLocationURI().toString()
-                                .startsWith("rse:")) { //$NON-NLS-1$
-                            // RSE output
-                            if (lines.size() > 1) {
-                                command = lines.get(lines.size() - 2);
+                    if (!lines.isEmpty()) {
+                        if (project.getLocationURI() != null) {
+                            if (project.getLocationURI().toString()
+                                    .startsWith("rse:")) { //$NON-NLS-1$
+                                // RSE output
+                                if (lines.size() > 1) {
+                                    command = lines.get(lines.size() - 2);
+                                }
+                            } else {
+                                // Remotetools output
+                                command = lines.get(0);
                             }
                         } else {
-                            // Remotetools output
+                            // Local output
                             command = lines.get(0);
                         }
-                    } else {
-                        // Local output
-                        command = lines.get(0);
                     }
                 }
+            } catch (CoreException e) {
+                // Failed to call 'which', do nothing
             }
-        } catch (CoreException e) {
-            // Failed to call 'which', do nothing
         }
         return command;
     }
@@ -153,7 +144,6 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
      * @param project The current project. If null, only system path will be
      * used to look for the command.
      * @return The process started by exec.
-     * @throws IOException If problem executing the command occured.
      */
     public Process exec(String cmd, IProject project) throws IOException {
         return exec(cmd, null, (IFileStore)null, project);
@@ -166,7 +156,6 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
      * @param project The current project. If null, only system path will be
      * used to look for the command.
      * @return The process started by exec.
-     * @throws IOException If problem executing the command occured.
      */
     public Process exec(String[] cmdarray, IProject project) throws IOException {
         return exec(cmdarray, null, project);
@@ -181,7 +170,6 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
      * @param project The current project. If null, only system path will be
      * used to look for the command.
      * @return The process started by exec.
-     * @throws IOException If problem executing the command occured.
      */
     public Process exec(String[] cmdarray, String[] envp, IProject project) throws IOException {
         return exec(cmdarray, envp, (IFileStore)null, project);
@@ -196,7 +184,6 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
      * @param project The current project. If null, only system path will be
      * used to look for the command.
      * @return The process started by exec.
-     * @throws IOException If problem executing the command occured.
      */
     public Process exec(String cmd, String[] envp, IProject project) throws IOException {
         return exec(cmd, envp, (IFileStore)null, project);
@@ -230,7 +217,6 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
      * @param project The current project. If null, only system path will be
      * used to look for the command.
      * @return The process started by exec.
-     * @throws IOException If problem executing the command occured.
      *
      * @since 1.1
      */
@@ -250,7 +236,6 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
      * used to look for the command.
      * @param pty PTY for use with Eclipse Console.
      * @return The process started by exec.
-     * @throws IOException If problem executing the command occured.
      *
      * @since 3.0
      */
@@ -309,10 +294,23 @@ public class RuntimeProcessFactory extends LinuxtoolsProcessFactory {
      * @param project The current project. If null, only system path will be
      * used to look for the command.
      * @return The process started by sudoExec
-     * @throws IOException If problem executing the command occured.
      */
     public Process sudoExec(String[] cmdarray, IProject project) throws IOException {
-        return sudoExec(cmdarray, null, null, project);
+        return sudoExec(cmdarray, null, project);
+    }
+
+    /**
+     * Execute one command, as root, using the path selected in 'Linux Tools Path'
+     * preference page in the informed project.
+     * @param cmdarray An array with the command to be executed and its params.
+     * @param envp An array with extra enviroment variables to be used when running
+     * the command
+     * @param project The current project. If null, only system path will be
+     * used to look for the command.
+     * @return The process started by sudoExec
+     */
+    private Process sudoExec(String[] cmdarray, String[] envp, IProject project) throws IOException {
+        return sudoExec(cmdarray, envp, (IFileStore)null, project);
     }
 
     /**

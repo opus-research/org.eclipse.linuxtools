@@ -29,6 +29,9 @@ public class MailHyperlink extends URLHyperlink {
         fURLString = urlString;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.hyperlink.URLHyperlink#open()
+     */
     @Override
     public void open() {
         if (fURLString != null) {

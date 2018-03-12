@@ -41,7 +41,7 @@ public class GraphingUIPlugin extends AbstractUIPlugin {
     }
 
     /**
-     * @return the shared {@link GraphingUIPlugin} instance.
+     * Returns the shared instance.
      */
     public static GraphingUIPlugin getDefault() {
         return plugin;

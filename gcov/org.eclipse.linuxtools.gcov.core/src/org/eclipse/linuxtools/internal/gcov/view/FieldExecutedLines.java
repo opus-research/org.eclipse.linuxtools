@@ -18,11 +18,19 @@ import org.eclipse.linuxtools.internal.gcov.model.TreeElement;
 
 public class FieldExecutedLines extends AbstractSTDataViewersField implements IChartField {
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderText()
+     */
     @Override
     public String getColumnHeaderText() {
         return Messages.FieldExecutedLines_column_header;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getValue(java.lang.Object)
+     */
     @Override
     public String getValue(Object obj) {
         int v = getExecutedLines(obj);
@@ -60,6 +68,10 @@ public class FieldExecutedLines extends AbstractSTDataViewersField implements IC
         return 0;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.dataviewers.charts.provider.IChartField#getNumber(java.lang.Object)
+     */
     @Override
     public Integer getNumber(Object obj) {
         return getExecutedLines(obj);

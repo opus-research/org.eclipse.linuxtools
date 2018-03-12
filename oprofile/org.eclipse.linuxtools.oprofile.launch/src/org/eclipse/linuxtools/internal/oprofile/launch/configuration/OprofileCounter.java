@@ -283,11 +283,9 @@ public class OprofileCounter {
 
     // Returns the event with the same label as the parameter STR
     private OpEvent eventFromString(String str) {
-        if (eventList != null) {
-            for (int i = 0; i < eventList.length; i++) {
-                if (eventList[i].getText().equals(str))
-                    return eventList[i];
-            }
+        for (int i = 0; i < eventList.length; i++) {
+            if (eventList[i].getText().equals(str))
+                return eventList[i];
         }
 
         return null;

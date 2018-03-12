@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+   Copyright (C) 2013, Red Hat, Inc. and others
+
+   All rights reserved. This program and the accompanying materials
+   are made available under the terms of the Eclipse Public License v1.0
+   which accompanies this distribution, and is available at
+   http://www.eclipse.org/legal/epl-v10.html
+-->
+
+<project name="Extract Traces" default="main" >
+<target name="main">
+  <echo message="Attempting to download test traces"/>
+  <get ignoreerrors="true" maxtime="60" skipexisting="true" dest="sample-ctf-trace-20120412.tar.bz2" src="http://lttng.org/files/samples/sample-ctf-trace-20120412.tar.bz2"/>
+  <get ignoreerrors="true" maxtime="60" skipexisting="true" dest="trace2.tar.bz2" src="http://www.dorsal.polymtl.ca/~alexmont/data/trace2.tar.bz2"/>
+  <get ignoreerrors="true" maxtime="20" skipexisting="true" dest="kernel_vm.tar.bz2" src="http://www.dorsal.polymtl.ca/~alexmont/data/kernel_vm.tar.bz2" />
+  <get ignoreerrors="true" maxtime="20" skipexisting="true" dest="synctraces.tar.gz" src="http://www.dorsal.polymtl.ca/~gbastien/traces/synctraces.tar.gz" />
+  <get ignoreerrors="true" maxtime="200" skipexisting="true" dest="django-benchmark.tar.gz" src="http://www.dorsal.polymtl.ca/~gbastien/traces/django-benchmark.tgz" />
+  <get ignoreerrors="true" maxtime="20" skipexisting="true" dest="hello-lost.tar.bz2" src="http://www.dorsal.polymtl.ca/~alexmont/data/hello-lost.tar.bz2" />
+  <get ignoreerrors="true" maxtime="20" skipexisting="true" dest="cyg-profile.tar.bz2" src="http://www.dorsal.polymtl.ca/~alexmont/data/cyg-profile.tar.bz2" />
+  <get ignoreerrors="true" maxtime="20" skipexisting="true" dest="funky_trace.tar.bz2" src="http://www.dorsal.polymtl.ca/~alexmont/data/funky_trace.tar.bz2" />
+  <get ignoreerrors="true" maxtime="200" skipexisting="true" dest="testtraceExp.zip" src="http://secretaire.dorsal.polymtl.ca/~mattkhouzam/testTrace-200Overlap.zip" />
+  <exec executable = "git" failifexecutionfails="false" timeout="20000">
+    <arg value = "clone"/>
+    <arg value = "https://github.com/efficios/ctf-testsuite.git"/>
+  </exec>
+  <condition property="testSuiteExists">
+    <and>
+      <available file="ctf-testsuite" type="dir"/>
+    </and>
+  </condition>
+  <antcall target="pullTestSuite"/>
+  <condition property="tracesExist">
+    <and>
+      <available file="sample-ctf-trace-20120412.tar.bz2"/>
+      <available file="trace2.tar.bz2"/>
+      <available file="kernel_vm.tar.bz2" />
+      <available file="synctraces.tar.gz" />
+      <available file="django-benchmark.tar.gz" />
+      <available file="hello-lost.tar.bz2" />
+      <available file="cyg-profile.tar.bz2" />
+      <available file="funky_trace.tar.bz2" />
+    </and>
+  </condition>
+  <antcall target="extractTraces"/>
+</target>
+
+<target name="pullTestSuite" if="testSuiteExists">
+  <exec executable = "git" failifexecutionfails="false" dir="ctf-testsuite" timeout="20000">
+    <arg value = "pull"/>
+  </exec>
+</target>
+
+<target name="extractTraces" if="tracesExist">
+    <bunzip2 src="sample-ctf-trace-20120412.tar.bz2"/>
+    <bunzip2 src="trace2.tar.bz2"/>
+    <bunzip2 src="kernel_vm.tar.bz2" />
+    <gunzip src="synctraces.tar.gz" />
+    <gunzip src="django-benchmark.tar.gz" />
+    <bunzip2 src="hello-lost.tar.bz2" />
+    <bunzip2 src="cyg-profile.tar.bz2" />
+    <bunzip2 src="funky_trace.tar.bz2" />
+    <unzip src="testtraceExp.zip" dest="./exp" />
+
+    <untar src="sample-ctf-trace-20120412.tar" dest="." />
+    <untar src="trace2.tar" dest="." />
+    <untar src="kernel_vm.tar" dest="." />
+    <untar src="synctraces.tar" dest="." />
+    <untar src="django-benchmark.tar" dest="." />
+    <untar src="hello-lost.tar" dest="." />
+    <untar src="cyg-profile.tar" dest="." />
+    <untar src="funky_trace.tar" dest="." />
+
+    <echo message="Traces extracted successfully"/>
+</target>
+</project>

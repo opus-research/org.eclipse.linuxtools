@@ -79,7 +79,6 @@ public class ValgrindExportWizard extends Wizard implements IExportWizard {
             e.printStackTrace();
             return false;
         } catch (InterruptedException e) {
-            //ignore
         }
 
         return true;

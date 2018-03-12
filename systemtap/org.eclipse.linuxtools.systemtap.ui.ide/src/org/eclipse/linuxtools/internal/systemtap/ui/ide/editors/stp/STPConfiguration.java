@@ -44,6 +44,9 @@ public class STPConfiguration extends SourceViewerConfiguration {
         this.processor = new STPCompletionProcessor();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getConfiguredContentTypes(org.eclipse.jface.text.source.ISourceViewer)
+     */
     @Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
         return new String[] {
@@ -52,6 +55,9 @@ public class STPConfiguration extends SourceViewerConfiguration {
                 STPPartitionScanner.STP_CONDITIONAL};
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getContentAssistant(org.eclipse.jface.text.source.ISourceViewer)
+     */
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant = new ContentAssistant();
@@ -84,6 +90,11 @@ public class STPConfiguration extends SourceViewerConfiguration {
         return scanner;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getReconciler(org.eclipse.jface.text.source.ISourceViewer)
+     *
+     * Return the reconciler built on the custom Systemtap reconciling strategy that enables code folding for this editor.
+     */
     @Override
     public IReconciler getReconciler(ISourceViewer sourceViewer)
     {

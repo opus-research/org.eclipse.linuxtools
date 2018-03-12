@@ -35,6 +35,7 @@ public class RemoteProxyManager implements IRemoteProxyManager {
     protected static final String LOCALSCHEME = "file"; //$NON-NLS-1$
 
     private static RemoteProxyManager manager;
+    private LocalFileProxy lfp;
     /**
      * @since 2.1
      */
@@ -55,12 +56,14 @@ public class RemoteProxyManager implements IRemoteProxyManager {
     }
 
     LocalFileProxy getLocalFileProxy(URI uri) {
-        return new LocalFileProxy(uri);
+        if (lfp == null)
+            lfp = new LocalFileProxy(uri);
+        return lfp;
     }
     /**
-     * @param schemeId The protocol scheme to be used.
+     * @param schemeId
      * @return The {@link IRemoteProxyManager} for the given scheme.
-     * @throws CoreException If a problem getting remote proxy manager for this scheme occurred.
+     * @throws CoreException
      * @since 2.1
      */
     protected IRemoteProxyManager getRemoteManager(String schemeId) throws CoreException {
@@ -121,9 +124,6 @@ public class RemoteProxyManager implements IRemoteProxyManager {
             IRemoteProxyManager manager = getRemoteManager(scheme);
             if (manager != null)
                 return manager.getLauncher(uri);
-            else
-                throw new CoreException(new Status(IStatus.ERROR, ProfileLaunchPlugin.PLUGIN_ID,
-                        IStatus.OK, Messages.RemoteProxyManager_unrecognized_scheme + scheme, null));
         }
         return new LocalLauncher();
     }
@@ -149,9 +149,6 @@ public class RemoteProxyManager implements IRemoteProxyManager {
             IRemoteProxyManager manager = getRemoteManager(scheme);
             if (manager != null)
                 return manager.getOS(uri);
-            else
-                throw new CoreException(new Status(IStatus.ERROR, ProfileLaunchPlugin.PLUGIN_ID,
-                        IStatus.OK, Messages.RemoteProxyManager_unrecognized_scheme + scheme, null));
         }
         return Platform.getOS();
     }
@@ -172,9 +169,9 @@ public class RemoteProxyManager implements IRemoteProxyManager {
      * of pure remote and sync projects. Synchronized projects
      * have a cached path and a remote one, and this method
      * returns the remote one.
-     * @param project The project which location is needed.
-     * @return The URI to the project location.
-     * @throws CoreException If problem retrieving remote proxy occured.
+     * @param project
+     * @return The project location.
+     * @throws CoreException
      * @since 2.2
      */
     public String getRemoteProjectLocation(IProject project) throws CoreException {

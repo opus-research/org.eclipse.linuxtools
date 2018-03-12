@@ -70,7 +70,7 @@ public class Command implements Runnable {
      */
     protected final String[] envVars;
 
-    protected Process process = null;
+    protected Process process;
     /**
      * @since 2.1
      */
@@ -115,7 +115,7 @@ public class Command implements Runnable {
      * Starts the <code>Thread</code> that the new <code>Process</code> will run in.
      * This must be called in order to get the process to start running.
      * Note that this method only takes effect the first time it is called.
-     * @throws CoreException If initializing failed.
+     * @throws CoreException
      */
     public void start() throws CoreException {
         if (started || stopped) {
@@ -136,22 +136,24 @@ public class Command implements Runnable {
     /**
      * Starts up the process that will execute the provided command and registers
      * the <code>StreamGobblers</code> with their respective streams.
-     * @return The status from the initializing process
      * @since 2.0
      */
     protected IStatus init() {
         try {
             process = RuntimeProcessFactory.getFactory().exec(cmd, envVars, project);
+
+            if (process == null) {
+                return new Status(IStatus.ERROR, StructuresPlugin.PLUGIN_ID, Messages.Command_failedToRunSystemtap);
+            }
+
+            errorGobbler = new StreamGobbler(process.getErrorStream());
+            inputGobbler = new StreamGobbler(process.getInputStream());
+
+            transferListeners();
+            return Status.OK_STATUS;
         } catch (IOException e) {
             return new Status(IStatus.ERROR, StructuresPlugin.PLUGIN_ID, e.getMessage(), e);
         }
-        if (process == null) {
-            return new Status(IStatus.ERROR, StructuresPlugin.PLUGIN_ID, Messages.Command_failedToRunSystemtap);
-        }
-        errorGobbler = new StreamGobbler(process.getErrorStream());
-        inputGobbler = new StreamGobbler(process.getInputStream());
-        transferListeners();
-        return Status.OK_STATUS;
     }
 
     /**
@@ -284,7 +286,7 @@ public class Command implements Runnable {
 
     /**
      * Removes the provided listener from those monitoring the InputStream.
-     * @param listener An <code>IGobblerListener</code> that is monitoring the stream.
+     * @param listener An </code>IGobblerListener</code> that is monitoring the stream.
      */
     public void removeInputStreamListener(IGobblerListener listener) {
         if (inputGobbler != null) {
@@ -296,7 +298,7 @@ public class Command implements Runnable {
 
     /**
      * Removes the provided listener from those monitoring the ErrorStream.
-     * @param listener An <code>IGobblerListener</code> that is monitoring the stream.
+     * @param listener An </code>IGobblerListener</code> that is monitoring the stream.
      */
     public void removeErrorStreamListener(IGobblerListener listener) {
         if (errorGobbler != null) {
@@ -310,7 +312,6 @@ public class Command implements Runnable {
      * Saves the input stream data to a permanent file. Any new data on the
      * stream will automatically be saved to the file.
      * @param file The file to save the InputStream to.
-     * @return True if the save was successful, false otherwise.
      */
     public boolean saveLog(File file) {
         return logger.saveLog(file);

@@ -89,37 +89,37 @@ public class ProfileUIUtils {
         }
     }
 
-    /**
-     * Open a file in the Editor at the specified offset, highlighting the given length
-     *
-     * @param path : Absolute path pointing to the file which will be opened.
-     * @param line - line number to select, 0 to not select a line
-     * @param project - current project object
-     * @throws BadLocationException - Line number not valid in file
-     * @throws PartInitException if the editor could not be initialized
-     * @throws CoreException if the proxy cannot be initialized
-     * @since 3.1
-     */
-    public static void openEditorAndSelect(String path, int line, IProject project) throws PartInitException, BadLocationException, CoreException {
-        IWorkbenchPage activePage = ProfileUIPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        IRemoteFileProxy proxy = null;
-        proxy = RemoteProxyManager.getInstance().getFileProxy(project);
-        IFileStore file = proxy.getResource(path);
-        if (file.fetchInfo().exists()) {
-            IEditorPart editor = IDE.openEditorOnFileStore(activePage, file);
-            if (editor instanceof ITextEditor) {
-                ITextEditor textEditor = (ITextEditor) editor;
+	/**
+	 * Open a file in the Editor at the specified offset, highlighting the given length
+	 *
+	 * @param path : Absolute path pointing to the file which will be opened.
+	 * @param line - line number to select, 0 to not select a line
+	 * @param project - current project object
+	 * @throws BadLocationException - Line number not valid in file
+	 * @throws PartInitException if the editor could not be initialized
+	 * @throws CoreException if the proxy cannot be initialized
+	 * @since 3.1
+	 */
+	public static void openEditorAndSelect(String path, int line, IProject project) throws PartInitException, BadLocationException, CoreException {
+		IWorkbenchPage activePage = ProfileUIPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		IRemoteFileProxy proxy = null;
+		proxy = RemoteProxyManager.getInstance().getFileProxy(project);
+		IFileStore file = proxy.getResource(path);
+		if (file.fetchInfo().exists()) {
+			IEditorPart editor = IDE.openEditorOnFileStore(activePage, file);
+			if (editor instanceof ITextEditor) {
+				ITextEditor textEditor = (ITextEditor) editor;
 
-                if (line > 0) {
-                    IDocumentProvider provider = textEditor.getDocumentProvider();
-                    IDocument document = provider.getDocument(textEditor.getEditorInput());
+				if (line > 0) {
+					IDocumentProvider provider = textEditor.getDocumentProvider();
+					IDocument document = provider.getDocument(textEditor.getEditorInput());
 
-                    int start = document.getLineOffset(line - 1); //zero-indexed
-                    textEditor.selectAndReveal(start, 0);
-                }
-            }
-        }
-    }
+					int start = document.getLineOffset(line - 1); //zero-indexed
+					textEditor.selectAndReveal(start, 0);
+				}
+			}
+		}
+	}
 
 
     /**
@@ -233,7 +233,7 @@ public class ProfileUIUtils {
      *
      * @param absPath An absolute path (usually to some file/folder in a project)
      * @return an ICProject corresponding to the project that contains the absolute path
-     * @throws CoreException can be thrown if visiting (accepting) a project walking the ICElement tree fails.
+     * @throws CoreException
      */
     public static ICProject findCProjectWithAbsolutePath(final String absPath) throws CoreException{
         final String workspaceLoc = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
@@ -319,14 +319,13 @@ public class ProfileUIUtils {
 
     /**
      * Helper function for findFunctionsInProject
-     * @param project   C Project Type
-     * @param functionName  Name of a function
-     * @param numArgs  The number of arguments this function is expected to have
-     * A value of -1 will ignore the number of arguments when searching
-     * @param fileHint  The name of the file where we expect to find functionName
-     * It is null if we do not want to use this option
-     * @param needResult true if result is needed
-     * @return Absolute paths of files and the function's corresponding node-offset and length
+     * @param project
+     * @param functionName
+     * @param numArgs
+     * @param fileHint
+     * @param needResult True if the function should relax constraints in order
+     * to return some value. False if a failure to find the function(s) is acceptable.
+     * @return The functions found.
      * @since 3.0
      */
     public static Map<String,int[]> findFunctionsInProject(ICProject project, String functionName,

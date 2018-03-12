@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.gcov.parser;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.File;
@@ -34,7 +33,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.binutils.utils.STSymbolManager;
 import org.eclipse.linuxtools.internal.gcov.Activator;
@@ -57,9 +55,6 @@ public class CovManager implements Serializable {
      *
      */
     private static final long serialVersionUID = 5582066617970911413L;
-
-    private static String winOSType = ""; //$NON-NLS-1$
-
     // input
     private final String binaryPath;
     // results
@@ -93,8 +88,10 @@ public class CovManager implements Serializable {
 
     /**
      * parse coverage files, execute resolve graph algorithm, process counts for functions, lines and folders.
-     * @param List of coverage files paths
-     * @throws CoreException, IOException, InterruptedException
+     * @param List
+     *            of coverage files paths
+     * @throws CoreException
+     *             , IOException, InterruptedException
      */
 
     public void processCovFiles(List<String> covFilesPaths, String initialGcda) throws CoreException, IOException {
@@ -142,9 +139,8 @@ public class CovManager implements Serializable {
 
             // parse GCDA file
             traceFile = openTraceFileStream(gcdaPath, ".gcda", sourcePath); //$NON-NLS-1$
-            if (traceFile == null) {
+            if (traceFile == null)
                 return;
-            }
             if (noRcrd.getFnctns().isEmpty()) {
                 String message = NLS.bind(Messages.CovManager_No_Funcs_Error, gcnoPath);
                 Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
@@ -160,10 +156,8 @@ public class CovManager implements Serializable {
         }
 
         // to fill the view title
-        if (daRcrd != null) {
-            nbrPgmRuns = daRcrd.getPgmSmryNbrPgmRuns();
-        }
-
+        if (daRcrd != null)
+            nbrPgmRuns = daRcrd.getObjSmryNbrPgmRuns();
         /* process counts from data parsed */
 
         // solve graph for each function
@@ -192,9 +186,8 @@ public class CovManager implements Serializable {
         for (SourceFile sf : allSrcs) {
             File srcFile = new File(sf.getName());
             String folderName = srcFile.getParent();
-            if (folderName == null) {
+            if (folderName == null)
                 folderName = "?"; //$NON-NLS-1$
-            }
             Folder folder = null;
             for (Folder f : allFolders) {
                 if (f.getPath().equals(folderName)) {
@@ -216,7 +209,8 @@ public class CovManager implements Serializable {
 
     /**
      * fill the model by count results
-     * @throws CoreException, IOException, InterruptedException
+     * @throws CoreException
+     *             , IOException, InterruptedException
      */
 
     public void fillGcovView() {
@@ -255,48 +249,9 @@ public class CovManager implements Serializable {
         }
     }
 
-    // Get the Windows OS Type.  We might have to change a path over to Windows format
-    // and this is different on Cygwin vs MingW.
-    private String getWinOSType() {
-        if (winOSType.equals("")) { //$NON-NLS-1$
-            try {
-                Process process = Runtime.getRuntime().exec(new String[] {"sh", "-c", "echo $OSTYPE"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                
-                String firstLine = null;
-                try (BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    firstLine = stdout.readLine();
-                }
-                if (firstLine != null) {
-                    winOSType = firstLine.trim();
-                }
-            } catch (IOException e) {
-                // ignore
-            }
-        }
-        return winOSType;
-    }
-
-    // Get the OS path string.  For Cygwin, translate We add a Win check to handle MingW.
-    // For MingW, we would rather represent C:\a\b as /C/a/b which
-    // doesn't cause Makefile to choke. For Cygwin we use /cygdrive/C/a/b
-    private String getTransformedPathString(IPath path) {
-        String s = path.toOSString();
-        if (Platform.getOS().equals(Platform.OS_WIN32)) {
-            if (getWinOSType().equals("cygwin")) { //$NON-NLS-1$
-                s = s.replaceAll("^\\\\cygdrive\\\\([a-zA-Z])", "$1:"); //$NON-NLS-1$ //$NON-NLS-2$
-            } else {
-                s = s.replaceAll("^\\\\([a-zA-Z])", "$1:"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-        }
-        return s;
-    }
-
     // transform String path to stream
     private DataInput openTraceFileStream(String filePath, String extension, Map<File, File> sourcePath)
             throws FileNotFoundException {
-        Path p = new Path(filePath);
-        // get the file path transformed to work on local OS (e.g. Windows)
-        filePath = getTransformedPathString(p);
         File f = new File(filePath).getAbsoluteFile();
         String filename = f.getName();
         if (f.isFile() && f.canRead()) {

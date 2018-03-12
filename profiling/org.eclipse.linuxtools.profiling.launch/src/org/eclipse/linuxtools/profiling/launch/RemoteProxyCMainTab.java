@@ -128,6 +128,13 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         fSpecifyCoreFile = (flags & SPECIFY_CORE_FILE) != 0;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse
+     * .swt.widgets.Composite)
+     */
     @Override
     public void createControl(Composite parent) {
         Composite comp = new Composite(parent, SWT.NONE);
@@ -186,6 +193,13 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         fTerminalButton.setEnabled(PTY.isSupported());
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.debug.ui.ILaunchConfigurationTab#initializeFrom(org.eclipse
+     * .debug.core.ILaunchConfiguration)
+     */
     @Override
     public void initializeFrom(ILaunchConfiguration config) {
         filterPlatform = getPlatform(config);
@@ -968,6 +982,13 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.
+     * debug.core.ILaunchConfigurationWorkingCopy)
+     */
     @Override
     public void setDefaults(ILaunchConfigurationWorkingCopy config) {
         // We set empty attributes for project & program so that when one config
@@ -1015,8 +1036,8 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
     /**
      * Set the program name attributes on the working copy based on the
      * ICElement.
-     * @param cElement The element to get data from.
-     * @param config The configuration to initialize
+     * @param cElement
+     * @param config
      */
     protected void initializeProgramName(ICElement cElement,
             ILaunchConfigurationWorkingCopy config) {
@@ -1097,11 +1118,21 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         return TAB_ID;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getName()
+     */
     @Override
     public String getName() {
         return LaunchMessages.CMainTab_Main;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getImage()
+     */
     @Override
     public Image getImage() {
         return LaunchImages.get(LaunchImages.IMG_VIEW_MAIN_TAB);

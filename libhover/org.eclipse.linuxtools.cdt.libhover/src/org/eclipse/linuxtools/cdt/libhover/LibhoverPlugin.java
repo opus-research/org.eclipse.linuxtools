@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.cdt.libhover;
 import org.eclipse.core.resources.ISaveContext;
 import org.eclipse.core.resources.ISaveParticipant;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.linuxtools.internal.cdt.libhover.LibHover;
@@ -36,12 +35,6 @@ public class LibhoverPlugin extends AbstractUIPlugin {
     // The shared instance
     private static LibhoverPlugin plugin;
 
-    // Location set aside for this plug-in to save state
-    private static IPath stateLocation;
-
-    // Preference store to use when saving libhover data
-    private static IPreferenceStore preferenceStore;
-
     static {
         plugin = new LibhoverPlugin();
     }
@@ -52,6 +45,10 @@ public class LibhoverPlugin extends AbstractUIPlugin {
     public LibhoverPlugin() {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     */
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
@@ -77,17 +74,15 @@ public class LibhoverPlugin extends AbstractUIPlugin {
     }
 
     private void save() {
-        if (stateLocation == null)
-            stateLocation = this.getStateLocation();
-        if (preferenceStore == null)
-            preferenceStore = this.getPreferenceStore();
-        LibHover.saveLibraries(stateLocation, preferenceStore);
+        LibHover.saveLibraries();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     */
     @Override
     public void stop(BundleContext context) throws Exception {
-        stateLocation = this.getStateLocation();
-        preferenceStore = this.getPreferenceStore();
         plugin = null;
         super.stop(context);
     }

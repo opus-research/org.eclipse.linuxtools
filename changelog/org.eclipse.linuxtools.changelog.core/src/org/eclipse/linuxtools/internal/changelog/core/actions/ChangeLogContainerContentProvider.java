@@ -42,6 +42,9 @@ public class ChangeLogContainerContentProvider implements ITreeContentProvider {
     public void dispose() {
     }
 
+    /*
+     * @see org.eclipse.jface.viewers.ITreeContentProvider#getChildren(java.lang.Object)
+     */
     @Override
     public Object[] getChildren(Object element) {
         if (element instanceof IWorkspace) {
@@ -89,11 +92,17 @@ public class ChangeLogContainerContentProvider implements ITreeContentProvider {
       return new Object[0];
     }
 
+    /*
+     * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
+     */
     @Override
     public Object[] getElements(Object element) {
         return getChildren(element);
     }
 
+    /*
+     * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
+     */
     @Override
     public Object getParent(Object element) {
         if (element instanceof IResource) {
@@ -102,11 +111,17 @@ public class ChangeLogContainerContentProvider implements ITreeContentProvider {
         return null;
     }
 
+    /*
+     * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
+     */
     @Override
     public boolean hasChildren(Object element) {
         return getChildren(element).length > 0;
     }
 
+    /*
+     * @see org.eclipse.jface.viewers.IContentProvider#inputChanged
+     */
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
     }

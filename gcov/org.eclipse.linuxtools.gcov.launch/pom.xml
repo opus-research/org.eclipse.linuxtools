@@ -14,11 +14,11 @@
   <parent>
     <artifactId>linuxtools-gcov-parent</artifactId>
     <groupId>org.eclipse.linuxtools.gcov</groupId>
-    <version>4.1.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.gcov.launch</artifactId>
-  <version>1.1.0-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 
   <name>Linux Tools GCov Launch Plug-in</name>

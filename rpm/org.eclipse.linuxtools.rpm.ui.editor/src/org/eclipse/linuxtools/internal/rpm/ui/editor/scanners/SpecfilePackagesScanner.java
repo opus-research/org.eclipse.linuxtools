@@ -37,9 +37,9 @@ public class SpecfilePackagesScanner extends RuleBasedScanner {
 
     protected static final String[] PACKAGES_TAGS = {
             "BuildRequires", "BuildConflicts", //$NON-NLS-1$ //$NON-NLS-2$
-            "BuildPreReq", "Enhances", "Recommends", "Requires", "Requires(post)", "Requires(postun)", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+            "BuildPreReq", "Requires", "Requires(post)", "Requires(postun)", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
             "Requires(pre)", "Requires(preun)", "Requires(hint)", "Conflicts", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-            "Obsoletes", "Prereq", "Suggests", "Supplements" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            "Obsoletes", "Prereq" }; //$NON-NLS-1$ //$NON-NLS-2$
 
     public SpecfilePackagesScanner(ColorManager manager) {
         super();
@@ -68,7 +68,7 @@ public class SpecfilePackagesScanner extends RuleBasedScanner {
         List<String[]> rpmPackages = Activator.getDefault().getRpmPackageList()
                 .getProposals(""); //$NON-NLS-1$
         char[] startWith = {' ', '\t', ',', ':'};
-        for (String[] item : rpmPackages) {
+        for (String[] item: rpmPackages){
             // FIXME Perhaps, that can slow down the scanning?
             for (char startChar : startWith) {
                 wordRule.addWord(startChar + item[0], packageToken);

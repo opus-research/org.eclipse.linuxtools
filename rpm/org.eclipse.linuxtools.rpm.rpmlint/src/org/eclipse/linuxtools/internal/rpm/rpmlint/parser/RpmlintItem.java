@@ -154,6 +154,9 @@ public class RpmlintItem {
         }
     }
 
+    /**
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();

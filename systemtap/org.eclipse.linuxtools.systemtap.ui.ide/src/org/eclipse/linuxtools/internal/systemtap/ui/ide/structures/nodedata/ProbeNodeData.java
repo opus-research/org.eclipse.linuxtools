@@ -13,7 +13,7 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata;
 
 import java.text.MessageFormat;
 
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.tparsers.ProbeParser;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.ProbeParser;
 
 public class ProbeNodeData implements ISearchableNode {
     static final String ID = "ProbeNodeData"; //$NON-NLS-1$
