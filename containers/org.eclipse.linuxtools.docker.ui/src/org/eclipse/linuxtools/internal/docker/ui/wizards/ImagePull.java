@@ -12,6 +12,7 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import org.eclipse.jface.wizard.Wizard;
 
+@Deprecated
 public class ImagePull extends Wizard {
 
 	private ImagePullPage mainPage;
