@@ -67,12 +67,8 @@ public class PartialStateSystemTest extends StateSystemTest {
      */
     @After
     public void cleanup() {
-        if (module != null) {
-            module.close();
-        }
-        if (stateFile != null) {
-            stateFile.delete();
-        }
+        module.close();
+        stateFile.delete();
     }
 
     /**

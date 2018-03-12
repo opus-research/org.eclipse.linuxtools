@@ -51,7 +51,6 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource2;
@@ -554,13 +553,7 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
      * @since 2.2
      */
     public void delete(IProgressMonitor progressMonitor) throws CoreException {
-        // Close editors in UI Thread
-        Display.getDefault().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                closeEditors();
-            }
-        });
+        closeEditors();
 
         IPath path = fResource.getLocation();
         if (path != null) {
