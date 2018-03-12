@@ -17,9 +17,9 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
-import org.jboss.reddeer.common.wait.TimePeriod;
-import org.jboss.reddeer.common.wait.WaitWhile;
-import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.eclipse.reddeer.common.wait.TimePeriod;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +40,7 @@ public class PushImageTest extends AbstractImageBotTest {
 
 	private static final String IMAGE_NAME = "test_push";
 	private static final String REGISTRY_ACCOUNT = System.getProperty(DOCKER_HUB_USERNAME) + "@https://index.docker.io";
-	private static String IMAGE_TAG = System.getProperty(DOCKER_HUB_USERNAME) + "/variables";
+	private static String IMAGE_TAG = "docker.io/" + System.getProperty(DOCKER_HUB_USERNAME) + "/variables";
 
 	private String imageNewTag = "";
 	

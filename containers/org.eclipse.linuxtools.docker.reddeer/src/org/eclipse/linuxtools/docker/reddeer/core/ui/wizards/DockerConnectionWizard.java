@@ -8,26 +8,20 @@
  * Contributor:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
+package org.eclipse.linuxtools.docker.reddeer.core.ui.wizards;
 
-package org.eclipse.linuxtools.docker.reddeer.preferences;
-
-import org.eclipse.reddeer.core.reference.ReferencedComposite;
-import org.eclipse.reddeer.jface.preference.PreferencePage;
-import org.eclipse.reddeer.swt.impl.text.LabeledText;
+import org.eclipse.reddeer.jface.wizard.WizardDialog;
 
 /**
  * 
- * 
  * @author jkopriva@redhat.com
+ *
  */
 
-public class DockerPreferencePage extends PreferencePage {
-
-	public DockerPreferencePage(ReferencedComposite referencedComposite) {
-		super(referencedComposite,"Docker");
+public class DockerConnectionWizard  extends WizardDialog {
+	
+	public DockerConnectionWizard() {
+		super("New Docker Connection");
 	}
 
-	public void setContainerRefreshRate(int seconds) {
-		new LabeledText("Container Refresh Rate (seconds)").setText(String.valueOf(seconds));
-	}
 }

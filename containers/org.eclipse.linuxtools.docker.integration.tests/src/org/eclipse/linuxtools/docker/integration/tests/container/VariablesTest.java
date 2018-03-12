@@ -18,6 +18,7 @@ import org.eclipse.linuxtools.docker.integration.tests.mock.MockDockerConnection
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunResourceVolumesVariablesPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
+import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
@@ -26,8 +27,8 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFacto
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageInfoFactory;
-import org.jboss.reddeer.common.wait.WaitWhile;
-import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,10 +78,11 @@ public class VariablesTest extends AbstractImageBotTest {
 		new WaitWhile(new JobIsRunning());
 
 		imagesTab.runImage(IMAGE_NAME);
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
+		ImageRunWizard wizard = new ImageRunWizard();
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.next();
-		ImageRunResourceVolumesVariablesPage secondPage = new ImageRunResourceVolumesVariablesPage();
+		ImageRunResourceVolumesVariablesPage secondPage = new ImageRunResourceVolumesVariablesPage(wizard);
 		secondPage.addEnviromentVariable("FOO", "barbarbar");
 		if (mockitoIsUsed()) {
 			MockDockerClientFactory.addContainer(this.client, this.createdContainer, this.containerInfo);
