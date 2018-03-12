@@ -115,23 +115,23 @@ public class CreateVMPage extends WizardPage {
 				vmmNameObservable);
 
 		// Box name
-		final Label boxRefLabel = new Label(container, SWT.NONE);
-		boxRefLabel
-				.setText(WizardMessages.getString("CreateVMPage.boxRef.label")); //$NON-NLS-1$
+		final Label boxNameLabel = new Label(container, SWT.NONE);
+		boxNameLabel
+				.setText(WizardMessages.getString("CreateVMPage.boxName.label")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(boxRefLabel);
+				.grab(false, false).applyTo(boxNameLabel);
 
-		final Text boxRefText = new Text(container, SWT.BORDER);
+		final Text boxNameText = new Text(container, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).applyTo(boxRefText);
-		boxRefText.setToolTipText(
-				WizardMessages.getString("CreateVMPage.boxRef.tooltip")); //$NON-NLS-1$
+				.grab(true, false).applyTo(boxNameText);
+		boxNameText.setToolTipText(
+				WizardMessages.getString("CreateVMPage.boxName.tooltip")); //$NON-NLS-1$
 		// Box Name binding
-		final IObservableValue boxRefObservable = BeanProperties
+		final IObservableValue boxNameObservable = BeanProperties
 				.value(CreateVMPageModel.class, CreateVMPageModel.BOX_REF)
 				.observe(model);
-		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxRefText),
-				boxRefObservable);
+		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxNameText),
+				boxNameObservable);
 
 		// Box name search
 		final Button boxSearchButton = new Button(container, SWT.NONE);
@@ -189,10 +189,10 @@ public class CreateVMPage extends WizardPage {
 		vgFilesearchButton.addSelectionListener(onSearchImage());
 
 		customVMFileButton.addSelectionListener(
-				onCheckCustomVMFile(vmNameText, boxRefText, boxLocText, vgFilesearchButton, boxSearchButton));
+				onCheckCustomVMFile(vmNameText, boxNameText, boxLocText, vgFilesearchButton, boxSearchButton));
 
 		dbc.addValidationStatusProvider(new CreateVMValidationStatusProvider(vmmNameObservable,
-				boxRefObservable, boxLocObservable));
+				boxNameObservable, boxLocObservable));
 
 		advanced = new CreateVMAdvancedComposite(
 				container, model);
@@ -205,7 +205,7 @@ public class CreateVMPage extends WizardPage {
 	}
 
 	private SelectionListener onCheckCustomVMFile(Text vmNameText,
-			Text boxRefText, Text boxLocText, Button searchButton,
+			Text boxNameText, Text boxLocText, Button searchButton,
 			Button boxSearchButton) {
 		return new SelectionAdapter() {
 
@@ -215,14 +215,14 @@ public class CreateVMPage extends WizardPage {
 					Button bt = (Button) e.widget;
 					if (bt.getSelection()) {
 						vmNameText.setEnabled(false);
-						boxRefText.setEnabled(false);
+						boxNameText.setEnabled(false);
 						boxSearchButton.setEnabled(false);
 						searchButton.setEnabled(true);
 						boxLocText.setEnabled(true);
 						model.setVFileMode(true);
 					} else {
 						vmNameText.setEnabled(true);
-						boxRefText.setEnabled(true);
+						boxNameText.setEnabled(true);
 						boxSearchButton.setEnabled(true);
 						searchButton.setEnabled(false);
 						boxLocText.setEnabled(false);
@@ -269,12 +269,12 @@ public class CreateVMPage extends WizardPage {
 
 	public class CreateVMValidationStatusProvider extends MultiValidator {
 
-		private IObservableValue vmNameOb, boxRefOb, boxLocOb;
+		private IObservableValue vmNameOb, boxNameOb, boxLocOb;
 
 		public CreateVMValidationStatusProvider(IObservableValue vmNameOb,
-				IObservableValue boxRefOb, IObservableValue boxLocOb) {
+				IObservableValue boxNameOb, IObservableValue boxLocOb) {
 			this.vmNameOb = vmNameOb;
-			this.boxRefOb = boxRefOb;
+			this.boxNameOb = boxNameOb;
 			this.boxLocOb = boxLocOb;
 		}
 
@@ -287,15 +287,15 @@ public class CreateVMPage extends WizardPage {
 		@Override
 		protected IStatus validate() {
 			String vmName = (String) vmNameOb.getValue();
-			String boxRef = (String) boxRefOb.getValue();
+			String boxName = (String) boxNameOb.getValue();
 			String boxLoc = (String) boxLocOb.getValue();
 			if (!model.getVFileMode()) {
 				if (vmName == null || vmName.isEmpty()) {
 					return ValidationStatus.error(WizardMessages
 							.getString("CreateVMPage.emptyVMName")); //$NON-NLS-1$
-				} else if (boxRef == null || boxRef.isEmpty()) {
+				} else if (boxName == null || boxName.isEmpty()) {
 					return ValidationStatus.error(WizardMessages
-							.getString("CreateVMPage.emptyBoxRef")); //$NON-NLS-1$
+							.getString("CreateVMPage.emptyBoxName")); //$NON-NLS-1$
 				}
 			} else {
 				if (boxLoc == null || boxLoc.isEmpty()) {
