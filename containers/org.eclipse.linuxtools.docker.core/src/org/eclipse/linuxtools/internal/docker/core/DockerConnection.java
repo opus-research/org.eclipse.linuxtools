@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -174,8 +174,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	private List<IDockerImage> images;
 	private boolean imagesLoaded = false;
 
-	ListenerList<IDockerContainerListener> containerListeners;
-	ListenerList<IDockerImageListener> imageListeners;
+	ListenerList containerListeners;
+	ListenerList imageListeners;
 
 	/**
 	 * Constructor for a unix socket based connection
@@ -336,7 +336,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void addContainerListener(IDockerContainerListener listener) {
 		if (containerListeners == null)
-			containerListeners = new ListenerList<>(ListenerList.IDENTITY);
+			containerListeners = new ListenerList(ListenerList.IDENTITY);
 		containerListeners.add(listener);
 	}
 
@@ -371,8 +371,11 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	// accordingly.
 	public void notifyContainerListeners(List<IDockerContainer> list) {
 		if (containerListeners != null) {
-			for (IDockerContainerListener listener : containerListeners) {
-				listener.listChanged(this, list);
+			Object[] listeners = containerListeners.getListeners();
+			for (int i = 0; i < listeners.length; ++i) {
+				((IDockerContainerListener) listeners[i])
+						.listChanged(this,
+						list);
 			}
 		}
 	}
@@ -673,7 +676,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void addImageListener(IDockerImageListener listener) {
 		if (imageListeners == null)
-			imageListeners = new ListenerList<>(ListenerList.IDENTITY);
+			imageListeners = new ListenerList(ListenerList.IDENTITY);
 		imageListeners.add(listener);
 	}
 
@@ -685,8 +688,9 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	public void notifyImageListeners(List<IDockerImage> list) {
 		if (imageListeners != null) {
-			for (IDockerImageListener listener : imageListeners) {
-				listener.listChanged(this, list);
+			Object[] listeners = imageListeners.getListeners();
+			for (int i = 0; i < listeners.length; ++i) {
+				((IDockerImageListener) listeners[i]).listChanged(this, list);
 			}
 		}
 	}
