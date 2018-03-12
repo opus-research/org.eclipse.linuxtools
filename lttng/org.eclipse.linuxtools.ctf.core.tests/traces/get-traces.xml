@@ -11,15 +11,15 @@
 <project name="Extract Traces" default="main" >
 <target name="main">
   <echo message="Attempting to download test traces"/>
-  <get ignoreerrors="true" dest="sample-ctf-trace-20120412.tar.bz2" skipexisting="true" src="http://lttng.org/files/samples/sample-ctf-trace-20120412.tar.bz2"/>
-  <get ignoreerrors="true" dest="trace2.tar.bz2" skipexisting="true" src="http://www.dorsal.polymtl.ca/~alexmont/data/trace2.tar.bz2"/>
-  <get ignoreerrors="true" dest="kernel_vm.tar.bz2" skipexisting="true" src="http://www.dorsal.polymtl.ca/~alexmont/data/kernel_vm.tar.bz2" />
-  <get ignoreerrors="true" dest="synctraces.tar.gz" skipexisting="true" src="http://www.dorsal.polymtl.ca/~gbastien/traces/synctraces.tar.gz" />
-  <get ignoreerrors="true" dest="django-benchmark.tar.gz" skipexisting="true" src="http://www.dorsal.polymtl.ca/~gbastien/traces/django-benchmark.tgz" />
-  <get ignoreerrors="true" dest="hello-lost.tar.bz2" skipexisting="true" src="http://www.dorsal.polymtl.ca/~alexmont/data/hello-lost.tar.bz2" />
-  <get ignoreerrors="true" dest="cyg-profile.tar.bz2" skipexisting="true" src="http://www.dorsal.polymtl.ca/~alexmont/data/cyg-profile.tar.bz2" />
-  <get ignoreerrors="true" dest="funky_trace.tar.bz2" skipexisting="true" src="http://www.dorsal.polymtl.ca/~alexmont/data/funky_trace.tar.bz2" />
-  <get ignoreerrors="true" dest="testtraceExp.zip" skipexisting="true" src="http://secretaire.dorsal.polymtl.ca/~mattkhouzam/testTrace-200Overlap.zip" />
+  <get ignoreerrors="true" dest="sample-ctf-trace-20120412.tar.bz2" skipexisting="true" src="https://dl.dropboxusercontent.com/sh/oe1ohfl8aeneg4a/AACpfONcBSAaL1b0j7sxijtAa/trace2.tar.bz2"/>
+  <get ignoreerrors="true" dest="trace2.tar.bz2" skipexisting="true" src="https://dl.dropboxusercontent.com/sh/oe1ohfl8aeneg4a/AACpfONcBSAaL1b0j7sxijtAa/trace2.tar.bz2"/>
+  <get ignoreerrors="true" dest="kernel_vm.tar.bz2" skipexisting="true" src="https://dl.dropboxusercontent.com/sh/oe1ohfl8aeneg4a/AADIKsbHRxWe49Dimnb1GYTWa/kernel_vm.tar.bz2" />
+  <get ignoreerrors="true" dest="synctraces.tar.gz" skipexisting="true" src="https://dl.dropboxusercontent.com/sh/oe1ohfl8aeneg4a/AADK8dNCgvTaPLMfN3-4ja2-a/synctraces.tar.gz" />
+  <get ignoreerrors="true" dest="django-benchmark.tar.gz" skipexisting="true" src="https://dl.dropboxusercontent.com/sh/oe1ohfl8aeneg4a/AAAHTrj13xlvwWrPWKlkVkCQa/django-benchmark.tar.gz" />
+  <get ignoreerrors="true" dest="hello-lost.tar.bz2" skipexisting="true" src="https://dl.dropboxusercontent.com/sh/oe1ohfl8aeneg4a/AAB7ltT_B1uki3iFPH7cK708a/hello-lost.tar.bz2" />
+  <get ignoreerrors="true" dest="cyg-profile.tar.bz2" skipexisting="true" src="https://dl.dropboxusercontent.com/sh/oe1ohfl8aeneg4a/AACUlgYOgXdtVTv2Mvl-R0i5a/cyg-profile.tar.bz2" />
+  <get ignoreerrors="true" dest="funky_trace.tar.bz2" skipexisting="true" src="https://dl.dropboxusercontent.com/sh/oe1ohfl8aeneg4a/AAB2z4qeGkf4PmVQ9yZgFIWCa/funky_trace.tar.bz2" />
+  <get ignoreerrors="true" dest="testtraceExp.zip" skipexisting="true" src="https://dl.dropboxusercontent.com/sh/oe1ohfl8aeneg4a/AABIkFhXzbp-9-ng2d7EbfYTa/testtraceExp.zip" />
   <exec executable = "git" failifexecutionfails="false" timeout="20000">
     <arg value = "clone"/>
     <arg value = "https://github.com/efficios/ctf-testsuite.git"/>
