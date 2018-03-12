@@ -33,13 +33,12 @@ import org.eclipse.linuxtools.internal.vagrant.core.EnvironmentsManager;
 import org.eclipse.linuxtools.internal.vagrant.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
@@ -89,13 +88,12 @@ public class CreateVMPage extends WizardPage {
 
 	@Override
 	public void createControl(Composite parent) {
-		ScrolledComposite scrollTop = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
-		scrollTop.setExpandVertical(true);
-		scrollTop.setExpandHorizontal(true);
-
-		final Composite container = new Composite(scrollTop, SWT.NONE);
+		parent.setLayout(new GridLayout());
+		final Composite container = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(3).margins(6, 6)
 				.applyTo(container);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(1, 1)
+				.grab(true, false).applyTo(container);
 
 		// VM Name
 		final Label vmNameLabel = new Label(container, SWT.NONE);
@@ -197,17 +195,12 @@ public class CreateVMPage extends WizardPage {
 				boxRefObservable, boxLocObservable));
 
 		advanced = new CreateVMAdvancedComposite(
-				container, scrollTop, model);
+				container, model);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(3, 1)
 				.grab(true, false).applyTo(advanced);
 
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
-
-		scrollTop.setContent(container);
-		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		scrollTop.setSize(point);
-		scrollTop.setMinSize(point);
 		setControl(container);
 	}
 

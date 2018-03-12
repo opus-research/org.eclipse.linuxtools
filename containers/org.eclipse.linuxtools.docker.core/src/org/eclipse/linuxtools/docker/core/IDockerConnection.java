@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014-2016 Red Hat.
+ * Copyright (c) 2014 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -65,7 +65,7 @@ public interface IDockerConnection {
 	/**
 	 * @return the {@link IDockerImageInfo} for the {@link IDockerImage}
 	 *         identified by the given {@code id} or <code>null</code> if none
-	 *         was found or if the underlying client was not initialized
+	 *         was found.
 	 * @param id
 	 *            the {@link IDockerImage} id
 	 */
@@ -157,11 +157,8 @@ public interface IDockerConnection {
 	public void close();
 
 	/**
-	 * @return the {@link IDockerConnectionInfo} associated with this
-	 *         {@link IDockerConnection} or <code>null</code> if the underlying
-	 *         client was not initialized.
-	 * @throws DockerException
-	 *             if info retrieval failed
+	 * @return the {@link IDockerConnectionInfo} associated with this {@link IDockerConnection}
+	 * @throws DockerException if info retrieval failed
 	 */
 	public IDockerConnectionInfo getInfo() throws DockerException;
 

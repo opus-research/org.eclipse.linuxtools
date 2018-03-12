@@ -121,7 +121,7 @@ public class DefaultDockerConnectionSettingsFinder
 	 * @return {@code IDockerConnectionSettings} if the Unix socket exists and
 	 *         is readable and writable, {@code null} otherwise.
 	 */
-	public IDockerConnectionSettings defaultsWithUnixSocket() {
+	private IDockerConnectionSettings defaultsWithUnixSocket() {
 		final File unixSocketFile = new File("/var/run/docker.sock"); //$NON-NLS-1$
 		if (unixSocketFile.exists() && unixSocketFile.canRead()
 				&& unixSocketFile.canWrite()) {
@@ -146,7 +146,7 @@ public class DefaultDockerConnectionSettingsFinder
 	 * @return {@code IDockerConnectionSettings} if the {@code DOCKER_xxx}
 	 *         environment variables exist, {@code null} otherwise.
 	 */
-	public IDockerConnectionSettings defaultsWithSystemEnv() {
+	private IDockerConnectionSettings defaultsWithSystemEnv() {
 		final String dockerHostEnv = System.getenv(DOCKER_HOST);
 		if (dockerHostEnv != null) {
 			final String tlsVerifyEnv = System.getenv(DOCKER_TLS_VERIFY);
@@ -165,8 +165,9 @@ public class DefaultDockerConnectionSettingsFinder
 	 * 
 	 * @return {@code IDockerConnectionSettings} if the {@code DOCKER_xxx}
 	 *         environment variables exist, {@code null} otherwise.
+	 * @throws DockerException
 	 */
-	public IDockerConnectionSettings defaultsWithShellEnv() {
+	private IDockerConnectionSettings defaultsWithShellEnv() {
 		try {
 			final String connectionSettingsDetectionScriptName = getConnectionSettingsDetectionScriptName();
 			if (connectionSettingsDetectionScriptName == null) {
@@ -186,7 +187,20 @@ public class DefaultDockerConnectionSettingsFinder
 				// read content from process input stream
 				final Properties dockerSettings = new Properties();
 				dockerSettings.load(processInputStream);
-				return createDockerConnectionSettings(dockerSettings);
+				final Object dockerHostEnvVariable = dockerSettings.get(DOCKER_HOST);
+				final Object dockerTlsVerifyEnvVariable = dockerSettings
+						.get(DOCKER_TLS_VERIFY);
+				final Object dockerCertPathEnvVariable = dockerSettings
+						.get(DOCKER_CERT_PATH);
+				return new TCPConnectionSettings(
+						dockerHostEnvVariable != null
+								? dockerHostEnvVariable.toString() : null,
+						dockerTlsVerifyEnvVariable != null
+								? dockerTlsVerifyEnvVariable
+										.equals(DOCKER_TLS_VERIFY_TRUE)
+								: null,
+						dockerCertPathEnvVariable != null
+								? dockerCertPathEnvVariable.toString() : null);
 			} else {
 				// log what happened if the process did not end as expected
 				// an exit value of 1 should indicate no connection found
@@ -205,24 +219,6 @@ public class DefaultDockerConnectionSettingsFinder
 					Messages.Retrieve_Default_Settings_Failure, e));
 		}
 		return null;
-	}
-
-	public IDockerConnectionSettings createDockerConnectionSettings(
-			final Properties dockerSettings) {
-		final Object dockerHostEnvVariable = dockerSettings.get(DOCKER_HOST);
-		final Object dockerTlsVerifyEnvVariable = dockerSettings
-				.get(DOCKER_TLS_VERIFY);
-		final Object dockerCertPathEnvVariable = dockerSettings
-				.get(DOCKER_CERT_PATH);
-		return new TCPConnectionSettings(
-				dockerHostEnvVariable != null
-						? dockerHostEnvVariable.toString() : null,
-				dockerTlsVerifyEnvVariable != null
-						? dockerTlsVerifyEnvVariable
-								.equals(DOCKER_TLS_VERIFY_TRUE)
- : false,
-				dockerCertPathEnvVariable != null
-						? dockerCertPathEnvVariable.toString() : null);
 	}
 
 	/**
