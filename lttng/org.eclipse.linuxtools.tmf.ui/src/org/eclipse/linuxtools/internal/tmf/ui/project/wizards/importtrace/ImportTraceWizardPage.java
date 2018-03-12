@@ -175,6 +175,9 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
     private Button fImportFromDirectoryRadio;
     // The import from archive radio button
     private Button fImportFromArchiveRadio;
+    // Flag to remember the "create links" checkbox when it gets disabled by
+    // the import from archive radio button
+    private Boolean fPreviousCreateLinksValue = true;
     /** The archive name field */
     private Combo fArchiveNameField;
     /** The archive browse button. */
@@ -487,6 +490,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             fArchiveBrowseButton.setEnabled(true);
             updateFromSourceField();
             fArchiveNameField.setFocus();
+            fPreviousCreateLinksValue = fCreateLinksInWorkspaceButton.getSelection();
             fCreateLinksInWorkspaceButton.setSelection(false);
             fCreateLinksInWorkspaceButton.setEnabled(false);
         }
@@ -500,7 +504,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             fArchiveBrowseButton.setEnabled(false);
             updateFromSourceField();
             directoryNameField.setFocus();
-            fCreateLinksInWorkspaceButton.setSelection(true);
+            fCreateLinksInWorkspaceButton.setSelection(fPreviousCreateLinksValue);
             fCreateLinksInWorkspaceButton.setEnabled(true);
         }
     }
@@ -701,25 +705,25 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             rootElement = importStructureProvider.getIFileSystemObject(sourceDirectory);
         } else {
             // Import from archive
-            FileSystemObjectLeveledImportStructureProvider leveledIportStructureProvider = null;
+            FileSystemObjectLeveledImportStructureProvider leveledImportStructureProvider = null;
             String archivePath = getSourceArchiveFile() != null ? getSourceArchiveFile().getAbsolutePath() : ""; //$NON-NLS-1$
             if (ArchiveFileManipulations.isTarFile(archivePath)) {
                 if (ensureTarSourceIsValid(archivePath)) {
-                	// We close the file when we dispose the import provider, see disposeSelectionGroupRoot
+                    // We close the file when we dispose the import provider, see disposeSelectionGroupRoot
                     TarFile tarFile = getSpecifiedTarSourceFile(archivePath);
-                    leveledIportStructureProvider = new FileSystemObjectLeveledImportStructureProvider(new TarLeveledStructureProvider(tarFile), archivePath);
+                    leveledImportStructureProvider = new FileSystemObjectLeveledImportStructureProvider(new TarLeveledStructureProvider(tarFile), archivePath);
                 }
             } else if (ensureZipSourceIsValid(archivePath)) {
                 // We close the file when we dispose the import provider, see disposeSelectionGroupRoot
                 @SuppressWarnings("resource")
                 ZipFile zipFile = getSpecifiedZipSourceFile(archivePath);
-                leveledIportStructureProvider = new FileSystemObjectLeveledImportStructureProvider(new ZipLeveledStructureProvider(zipFile), archivePath);
+                leveledImportStructureProvider = new FileSystemObjectLeveledImportStructureProvider(new ZipLeveledStructureProvider(zipFile), archivePath);
             }
-            if (leveledIportStructureProvider == null) {
+            if (leveledImportStructureProvider == null) {
                 return null;
             }
-            rootElement = leveledIportStructureProvider.getRoot();
-            importStructureProvider = leveledIportStructureProvider;
+            rootElement = leveledImportStructureProvider.getRoot();
+            importStructureProvider = leveledImportStructureProvider;
         }
 
         if (rootElement == null) {
@@ -838,7 +842,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
     private boolean ensureTarSourceIsValid(String archivePath) {
         TarFile specifiedFile = getSpecifiedTarSourceFile(archivePath);
-        if( specifiedFile == null ) {
+        if (specifiedFile == null) {
             return false;
         }
         return ArchiveFileManipulations.closeTarFile(specifiedFile, getShell());
@@ -1001,8 +1005,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
     @Override
     public boolean validateSourceGroup() {
 
-        File sourceArchiveFile = getSourceArchiveFile();
-        File source = fImportFromDirectoryRadio.getSelection() ? getSourceDirectory() : sourceArchiveFile;
+        File source = fImportFromDirectoryRadio.getSelection() ? getSourceDirectory() : getSourceArchiveFile();
         if (source == null) {
             setMessage(Messages.ImportTraceWizard_SelectTraceSourceEmpty);
             setErrorMessage(null);
@@ -1015,8 +1018,8 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
             return false;
         }
 
-        if (!fImportFromDirectoryRadio.getSelection() && sourceArchiveFile != null) {
-            if (!ensureTarSourceIsValid(getSourceArchiveFile().getAbsolutePath()) && !ensureZipSourceIsValid(getSourceArchiveFile().getAbsolutePath())) {
+        if (!fImportFromDirectoryRadio.getSelection()) {
+            if (!ensureTarSourceIsValid(source.getAbsolutePath()) && !ensureZipSourceIsValid(source.getAbsolutePath())) {
                 setMessage(null);
                 setErrorMessage(Messages.ImportTraceWizard_BadArchiveFormat);
                 return false;
@@ -1336,7 +1339,7 @@ public class ImportTraceWizardPage extends WizardResourceImportPage {
 
             // Find a sensible root element
             TraceFileSystemElement root = subList.get(0);
-            while(root.getParent() != null) {
+            while (root.getParent() != null) {
                 root = (TraceFileSystemElement) root.getParent();
             }
 
