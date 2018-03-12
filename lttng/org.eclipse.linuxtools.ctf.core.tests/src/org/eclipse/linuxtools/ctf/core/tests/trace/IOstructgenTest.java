@@ -21,11 +21,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.tests.CtfCoreTestPlugin;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
@@ -274,7 +272,7 @@ public class IOstructgenTest {
     private static final String allDressedTSDL = metadataDecs + environmentMD + clockMD
             + ctfStart + ctfHeaders + ctfBody + enumMd + callsiteMD;
 
-    static final String tempTraceDir = CtfCoreTestPlugin.getTemporaryDirPath()
+    static final String tempTraceDir = System.getProperty("java.io.tmpdir")
             + File.separator + "tempTrace";
 
     private static final int DATA_SIZE = 4096;
@@ -511,8 +509,8 @@ public class IOstructgenTest {
         trace = new CTFTrace(tempTraceDir);
         assertNotNull(trace);
 
-        final List<IEventDeclaration> eventDeclarations = new ArrayList<>(trace.getEventDeclarations(0L));
-        final EventDeclaration eventDeclaration = (EventDeclaration) eventDeclarations.get(2);
+        Map<Long, IEventDeclaration> events = trace.getEvents(0L);
+        final EventDeclaration eventDeclaration = (EventDeclaration) events.get(2L);
         assertEquals("http://example.com/path_to_model?q=ust_tests_demo:done",
                 eventDeclaration.getCustomAttribute("model.emf.uri"));
     }

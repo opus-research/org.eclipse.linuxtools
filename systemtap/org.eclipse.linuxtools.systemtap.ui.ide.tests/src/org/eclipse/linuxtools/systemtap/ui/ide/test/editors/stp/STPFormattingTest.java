@@ -64,7 +64,7 @@ public class STPFormattingTest {
      * @param partitioning
      * @param owner may be null
      */
-    private static void setupDocumentPartitioner(IDocument document, String partitioning) {
+    private void setupDocumentPartitioner(IDocument document, String partitioning) {
         IDocumentPartitioner partitioner = new FastPartitioner(new STPPartitionScanner(), STPPartitionScanner.STP_PARTITION_TYPES);
         if (document instanceof IDocumentExtension3) {
             IDocumentExtension3 extension3= (IDocumentExtension3) document;
@@ -75,7 +75,7 @@ public class STPFormattingTest {
         partitioner.connect(document);
     }
 
-    private static AutoEditTester createAutoEditTester() {
+    private AutoEditTester createAutoEditTester() {
         IDocument doc = new Document();
         setupDocumentPartitioner(doc, STPPartitionScanner.STP_PARTITIONING);
         AutoEditTester tester = new AutoEditTester(doc, STPPartitionScanner.STP_PARTITIONING);
@@ -155,6 +155,7 @@ public class STPFormattingTest {
         // Verify we don't add square brackets inside a char specifier
         tester.type("\na[3]='[");
 
+        System.out.println(tester.fDoc.get());
         assertEquals(3, tester.getCaretLine());
         assertEquals(8, tester.getCaretColumn());
         assertEquals("\ta[3]='[", tester.getLine());
@@ -233,6 +234,7 @@ public class STPFormattingTest {
         // Verify we don't add quotes inside a char specifier
         tester.type("\na[3]='\"");
 
+        System.out.println(tester.fDoc.get());
         assertEquals(3, tester.getCaretLine());
         assertEquals(8, tester.getCaretColumn());
         assertEquals("\ta[3]='\"", tester.getLine());

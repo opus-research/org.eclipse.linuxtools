@@ -26,161 +26,37 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
  * @author Alexandre Montplaisir
  */
 public enum CtfTestTrace {
-    /**
-     * Example kernel trace
-     *
-     * <pre>
-     * Trace Size: 13 MB
-     * Tracer: lttng-modules 2.0.0
-     * Event count: 695 319
-     * Kernel version: 3.0.0-16-generic-pae
-     * Trace length: 10s
-     * </pre>
-     */
+    /** Example kernel trace */
     KERNEL("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel"),
 
-    /**
-     * Another kernel trace
-     *
-     * <pre>
-     * Trace Size: 14 MB
-     * Tracer: lttng-modules 2.0.0
-     * Event count: 595 641
-     * Kernel version: 3.2.0-18-generic
-     * Trace length: 11s
-     * </pre>
-     */
+    /** Another kernel trace */
     TRACE2("../org.eclipse.linuxtools.ctf.core.tests/traces/trace2"),
 
-    /**
-     * Kernel trace with event contexts: pid, ppid, tid, procname,
-     * perf_page_fault, perf_major_faults, perf_minor_faults
-     *
-     * <pre>
-     * Trace Size: 56 MB
-     * Tracer: lttng-modules 2.1.0
-     * Event count: 714 484
-     * Kernel version: 3.8.1
-     * Trace length: 29s
-     * </pre>
-     */
+    /** Kernel trace with event contexts */
     KERNEL_VM("../org.eclipse.linuxtools.ctf.core.tests/traces/kernel_vm"),
 
-    /**
-     * Kernel trace with all events enabled. Contains 'inet_sock_local_*' events
-     * provided by Francis's Giraldeau lttng-modules addons branch to trace TCP
-     * events. Can be used along with {@link CtfTestTrace#SYNC_DEST} for trace
-     * synchronization.
-     *
-     * <pre>
-     * Trace Size: 2.4 MB
-     * Tracer: lttng-modules 2.1.0
-     * Event count: 110 771
-     * Kernel version: 3.6.11-1-ARCH
-     * Trace length: 22s
-     * </pre>
-     */
+    /** Trace synchronization: source trace */
     SYNC_SRC("../org.eclipse.linuxtools.ctf.core.tests/traces/synctraces/scp_src"),
 
-    /**
-     * Kernel trace with all events enabled. Contains 'inet_sock_local_*' events
-     * provided by Francis's Giraldeau lttng-modules addons branch to trace TCP
-     * events. Can be used along with {@link CtfTestTrace#SYNC_SRC} for trace
-     * synchronization.
-     *
-     * <pre>
-     * Trace Size: 1.9 MB
-     * Tracer: lttng-modules 2.1.0
-     * Event count: 85 729
-     * Kernel version: 3.6.11-1-ARCH
-     * Trace length: 17s
-     * </pre>
-     */
+    /** Trace synchronization: destination trace */
     SYNC_DEST("../org.eclipse.linuxtools.ctf.core.tests/traces/synctraces/scp_dest"),
 
-    /**
-     * LTTng Kernel trace. Contains 'inet_sock_local_*' events provided by
-     * Francis's Giraldeau lttng-modules addons branch to trace TCP events. Can
-     * be used along with {@link CtfTestTrace#DJANGO_DB} and
-     * {@link CtfTestTrace#DJANGO_HTTPD} for trace synchronization.
-     *
-     * <pre>
-     * Trace Size: 33 MB
-     * Tracer: lttng-modules 2.4.0
-     * Event count: 754 787
-     * Kernel version: 3.13.0-24-generic
-     * Trace length: 15s
-     * </pre>
-     */
+    /** Trace synchronization (case 2): django client trace */
     DJANGO_CLIENT("../org.eclipse.linuxtools.ctf.core.tests/traces/django-benchmark/django-client"),
 
-    /**
-     * LTTng Kernel trace. Contains 'inet_sock_local_*' events provided by
-     * Francis's Giraldeau lttng-modules addons branch to trace TCP events. Can
-     * be used along with {@link CtfTestTrace#DJANGO_CLIENT} and
-     * {@link CtfTestTrace#DJANGO_HTTPD} for trace synchronization.
-     *
-     * <pre>
-     * Trace Size: 28 MB
-     * Tracer: lttng-modules 2.4.0
-     * Event count: 692 098
-     * Kernel version: 3.13.0-24-generic
-     * Trace length: 14s
-     * </pre>
-     */
+    /** Trace synchronization (case 2): django db trace */
     DJANGO_DB("../org.eclipse.linuxtools.ctf.core.tests/traces/django-benchmark/django-db"),
 
-    /**
-     * LTTng Kernel trace. Contains 'inet_sock_local_*' events provided by
-     * Francis's Giraldeau lttng-modules addons branch to trace TCP events. Can
-     * be used along with {@link CtfTestTrace#DJANGO_DB} and
-     * {@link CtfTestTrace#DJANGO_CLIENT} for trace synchronization.
-     *
-     * <pre>
-     * Trace Size: 31 MB
-     * Tracer: lttng-modules 2.4.0
-     * Event count: 779 096
-     * Kernel version:3.13.0-24-generic
-     * Trace length: 13s
-     * </pre>
-     */
+    /** Trace synchronization (case 2): django web server trace */
     DJANGO_HTTPD("../org.eclipse.linuxtools.ctf.core.tests/traces/django-benchmark/django-httpd"),
 
-    /**
-     * UST trace with lots of lost events
-     *
-     * <pre>
-     * Trace Size: 3.4 MB
-     * Tracer: lttng-ust 2.3
-     * Event count: 1 000 000, with 967 700 lost events
-     * Trace length: 279ms
-     * </pre>
-     */
+    /** UST trace with lots of lost events */
     HELLO_LOST("../org.eclipse.linuxtools.ctf.core.tests/traces/hello-lost"),
 
-    /**
-     * UST trace with lttng-ust-cyg-profile events (aka -finstrument-functions)
-     *
-     * <pre>
-     * Trace Size: 236 KB
-     * Tracer: lttng-ust 2.3
-     * Event count: 4 977
-     * Trace length: 10s
-     * </pre>
-     */
+    /** UST trace with lttng-ust-cyg-profile events (aka -finstrument-functions) */
     CYG_PROFILE("../org.eclipse.linuxtools.ctf.core.tests/traces/cyg-profile/glxgears-cyg-profile"),
 
-    /**
-     * UST trace with lttng-ust-cyg-profile-fast events (no address in
-     * func_exit)
-     *
-     * <pre>
-     * Trace Size: 184 KB
-     * Tracer: lttng-ust 2.3
-     * Event count: 5 161
-     * Trace length: 11s
-     * </pre>
-     */
+    /** UST trace with lttng-ust-cyg-profile-fast events (no address in func_exit) */
     CYG_PROFILE_FAST("../org.eclipse.linuxtools.ctf.core.tests/traces/cyg-profile/glxgears-cyg-profile-fast"),
 
     /** Autogenerated Syntetic trace */
@@ -191,6 +67,7 @@ public enum CtfTestTrace {
 
     /** Set of many traces, do not call getTrace */
     TRACE_EXPERIMENT("../org.eclipse.linuxtools.ctf.core.tests/traces/exp");
+
 
     private final String fPath;
     private CTFTrace fTrace = null;

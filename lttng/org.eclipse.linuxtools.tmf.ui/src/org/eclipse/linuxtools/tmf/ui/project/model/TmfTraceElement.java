@@ -44,16 +44,12 @@ import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlEvent;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTrace;
 import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
-import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
-import org.eclipse.linuxtools.tmf.core.synchronization.TimestampTransformFactory;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource2;
@@ -87,23 +83,20 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
     private static final String sfName = Messages.TmfTraceElement_Name;
     private static final String sfPath = Messages.TmfTraceElement_Path;
     private static final String sfLocation = Messages.TmfTraceElement_Location;
-    private static final String sfTraceType = Messages.TmfTraceElement_EventType;
+    private static final String sfEventType = Messages.TmfTraceElement_EventType;
     private static final String sfIsLinked = Messages.TmfTraceElement_IsLinked;
     private static final String sfSourceLocation = Messages.TmfTraceElement_SourceLocation;
-    private static final String sfTimeOffset = Messages.TmfTraceElement_TimeOffset;
     private static final String sfTracePropertiesCategory = Messages.TmfTraceElement_TraceProperties;
 
     private static final ReadOnlyTextPropertyDescriptor sfNameDescriptor = new ReadOnlyTextPropertyDescriptor(sfName, sfName);
     private static final ReadOnlyTextPropertyDescriptor sfPathDescriptor = new ReadOnlyTextPropertyDescriptor(sfPath, sfPath);
     private static final ReadOnlyTextPropertyDescriptor sfLocationDescriptor = new ReadOnlyTextPropertyDescriptor(sfLocation, sfLocation);
-    private static final ReadOnlyTextPropertyDescriptor sfTypeDescriptor = new ReadOnlyTextPropertyDescriptor(sfTraceType, sfTraceType);
+    private static final ReadOnlyTextPropertyDescriptor sfTypeDescriptor = new ReadOnlyTextPropertyDescriptor(sfEventType, sfEventType);
     private static final ReadOnlyTextPropertyDescriptor sfIsLinkedDescriptor = new ReadOnlyTextPropertyDescriptor(sfIsLinked, sfIsLinked);
     private static final ReadOnlyTextPropertyDescriptor sfSourceLocationDescriptor = new ReadOnlyTextPropertyDescriptor(sfSourceLocation, sfSourceLocation);
-    private static final ReadOnlyTextPropertyDescriptor sfTimeOffsetDescriptor = new ReadOnlyTextPropertyDescriptor(sfTimeOffset, sfTimeOffset);
 
     private static final IPropertyDescriptor[] sfDescriptors = { sfNameDescriptor, sfPathDescriptor, sfLocationDescriptor,
-            sfTypeDescriptor, sfIsLinkedDescriptor, sfSourceLocationDescriptor,
-            sfTimeOffsetDescriptor};
+            sfTypeDescriptor, sfIsLinkedDescriptor, sfSourceLocationDescriptor };
 
     static {
         sfNameDescriptor.setCategory(sfResourcePropertiesCategory);
@@ -112,10 +105,7 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
         sfTypeDescriptor.setCategory(sfResourcePropertiesCategory);
         sfIsLinkedDescriptor.setCategory(sfResourcePropertiesCategory);
         sfSourceLocationDescriptor.setCategory(sfResourcePropertiesCategory);
-        sfTimeOffsetDescriptor.setCategory(sfResourcePropertiesCategory);
     }
-
-    private static final TmfTimestampFormat OFFSET_FORMAT = new TmfTimestampFormat("T.SSS SSS SSS s"); //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Static initialization
@@ -213,14 +203,14 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
             if (getTraceType() != null) {
                 if (getTraceType().startsWith(CustomTxtTrace.class.getCanonicalName())) {
                     for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                        if (getTraceType().equals(CustomTxtTrace.class.getCanonicalName() + ':' + def.categoryName+ ':' + def.definitionName)) {
+                        if (getTraceType().equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                             return new CustomTxtTrace(def);
                         }
                     }
                 }
                 if (getTraceType().startsWith(CustomXmlTrace.class.getCanonicalName())) {
                     for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                        if (getTraceType().equals(CustomXmlTrace.class.getCanonicalName() + ':' + def.categoryName+ ':' + def.definitionName)) {
+                        if (getTraceType().equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                             return new CustomXmlTrace(def);
                         }
                     }
@@ -249,14 +239,14 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
             if (getTraceType() != null) {
                 if (getTraceType().startsWith(CustomTxtTrace.class.getCanonicalName())) {
                     for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
-                        if (getTraceType().equals(CustomTxtTrace.class.getCanonicalName() + ':' + def.categoryName+ ':' + def.definitionName)) {
+                        if (getTraceType().equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                             return new CustomTxtEvent(def);
                         }
                     }
                 }
                 if (getTraceType().startsWith(CustomXmlTrace.class.getCanonicalName())) {
                     for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
-                        if (getTraceType().equals(CustomXmlTrace.class.getCanonicalName() + ':' + def.categoryName+ ':' + def.definitionName)) {
+                        if (getTraceType().equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
                             return new CustomXmlEvent(def);
                         }
                     }
@@ -395,7 +385,7 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
     private Map<String, String> getTraceProperties() {
         for (ITmfTrace openedTrace : TmfTraceManager.getInstance().getOpenedTraces()) {
             for (ITmfTrace singleTrace : TmfTraceManager.getTraceSet(openedTrace)) {
-                if (getElementUnderTraceFolder().getResource().equals(singleTrace.getResource())) {
+                if (this.getLocation().getPath().endsWith(singleTrace.getPath())) {
                     if (singleTrace instanceof ITmfTraceProperties) {
                         ITmfTraceProperties traceProperties = (ITmfTraceProperties) singleTrace;
                         return traceProperties.getTraceProperties();
@@ -457,20 +447,10 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
             return ""; //$NON-NLS-1$
         }
 
-        if (sfTraceType.equals(id)) {
+        if (sfEventType.equals(id)) {
             if (getTraceType() != null) {
-                TraceTypeHelper helper = TmfTraceType.getTraceType(getTraceType());
-                if (helper != null) {
-                    return helper.getCategoryName() + " : " + helper.getName(); //$NON-NLS-1$
-                }
-            }
-            return ""; //$NON-NLS-1$
-        }
-
-        if (sfTimeOffset.equals(id)) {
-            long offset = TimestampTransformFactory.getTimestampTransform(getElementUnderTraceFolder().getResource()).transform(0);
-            if (offset != 0) {
-                return OFFSET_FORMAT.format(offset);
+                IConfigurationElement ce = sfTraceTypeAttributes.get(getTraceType());
+                return (ce != null) ? (getCategory(ce) + " : " + ce.getAttribute(TmfTraceType.NAME_ATTR)) : ""; //$NON-NLS-1$ //$NON-NLS-2$
             }
             return ""; //$NON-NLS-1$
         }
@@ -484,6 +464,17 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
         }
 
         return null;
+    }
+
+    private static String getCategory(IConfigurationElement ce) {
+        String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
+        if (categoryId != null) {
+            IConfigurationElement category = sfTraceCategories.get(categoryId);
+            if (category != null) {
+                return category.getAttribute(TmfTraceType.NAME_ATTR);
+            }
+        }
+        return "[no category]"; //$NON-NLS-1$
     }
 
     @Override
@@ -570,13 +561,7 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
      * @since 2.2
      */
     public void delete(IProgressMonitor progressMonitor) throws CoreException {
-        // Close editors in UI Thread
-        Display.getDefault().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                closeEditors();
-            }
-        });
+        closeEditors();
 
         IPath path = fResource.getLocation();
         if (path != null) {

@@ -42,6 +42,10 @@ public class CreaterepoDeltaPropertyPage extends CreaterepoPropertyPage {
         super(Messages.CreaterepoDeltaPropertyPage_description);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.rpm.createrepo.preference.CreaterepoPropertyPage#addContents(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Composite addContents(Composite parent) {
         composite = new Composite(parent, SWT.NONE);
@@ -110,6 +114,10 @@ public class CreaterepoDeltaPropertyPage extends CreaterepoPropertyPage {
         return composite;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#performDefaults()
+     */
     @Override
     public void performDefaults() {
         Activator.getDefault().getPreferenceStore().setToDefault(CreaterepoPreferenceConstants.PREF_DELTA_ENABLE);
@@ -119,6 +127,10 @@ public class CreaterepoDeltaPropertyPage extends CreaterepoPropertyPage {
         peDirectories.loadDefault();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#performOk()
+     */
     @Override
     public boolean performOk() {
         Activator.getDefault().getPreferenceStore().setValue(CreaterepoPreferenceConstants.PREF_DELTA_ENABLE,
@@ -131,6 +143,10 @@ public class CreaterepoDeltaPropertyPage extends CreaterepoPropertyPage {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.linuxtools.internal.rpm.createrepo.preference.CreaterepoPropertyPage#checkState()
+     */
     @Override
     protected void checkState() {
         if (!ifeNumDeltas.isValid() || !ifeMaxSizeDeltas.isValid()) {

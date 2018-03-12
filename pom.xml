@@ -17,11 +17,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <prerequisites>
-    <maven>3.1.1</maven>
+    <maven>3.0.5</maven>
   </prerequisites>
   <groupId>org.eclipse.linuxtools</groupId>
   <artifactId>linuxtools-parent</artifactId>
-  <version>3.2.0-SNAPSHOT</version>
+  <version>3.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools Parent</name>
@@ -90,7 +90,7 @@
                 </dependency>
               </dependencies>
               <product>org.eclipse.platform.ide</product>
-	      <argLine>${tycho.testArgLine} -Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m -Declipse.valgrind.tests.runValgrind=no -Dorg.eclipse.swt.browser.UseWebKitGTK=true</argLine>
+	      <argLine>-Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m -Declipse.valgrind.tests.runValgrind=no -Dorg.eclipse.swt.browser.UseWebKitGTK=true</argLine>
 	    </configuration>
 	  </plugin>
           <plugin>
@@ -133,7 +133,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>sonar-maven-plugin</artifactId>
-            <version>2.4</version>
+            <version>2.3.1</version>
           </plugin>
           <plugin>
             <groupId>org.eclipse.tycho.extras</groupId>
@@ -257,7 +257,7 @@
        <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.2.201409121644</version>
+        <version>0.7.0.201403182114</version>
         <executions>
           <execution>
            <id>pre-test</id>
@@ -275,13 +275,10 @@
           </execution>
           <execution>
             <id>post-test</id>
-            <phase>post-integration-test</phase>
+            <phase>test</phase>
             <goals>
               <goal>report</goal>
             </goals>
-            <configuration>
-              <dataFile>${sonar.jacoco.reportPath}</dataFile>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -338,7 +335,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.4</version>
+          <version>3.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -348,7 +345,7 @@
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-	  <version>2.10.1</version>
+	  <version>2.9.1</version>
           <configuration>
             <excludePackageNames>org.eclipse.linuxtools.internal.*:*.test*</excludePackageNames>
           </configuration>

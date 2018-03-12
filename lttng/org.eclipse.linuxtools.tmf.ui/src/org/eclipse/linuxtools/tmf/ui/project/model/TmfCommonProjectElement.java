@@ -36,6 +36,10 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTrace;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomTxtTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTrace;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
 import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
@@ -110,7 +114,22 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
 
         Class<? extends ITmfTrace> traceClass = null;
 
-        if (helper != null) {
+        if (helper == null && getTraceType() != null) {
+            if (fTraceTypeId.startsWith(CustomTxtTrace.class.getCanonicalName())) {
+                for (CustomTxtTraceDefinition def : CustomTxtTraceDefinition.loadAll()) {
+                    if (fTraceTypeId.equals(CustomTxtTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
+                        traceClass = CustomTxtTrace.class;
+                    }
+                }
+            }
+            if (fTraceTypeId.startsWith(CustomXmlTrace.class.getCanonicalName())) {
+                for (CustomXmlTraceDefinition def : CustomXmlTraceDefinition.loadAll()) {
+                    if (fTraceTypeId.equals(CustomXmlTrace.class.getCanonicalName() + ":" + def.definitionName)) { //$NON-NLS-1$
+                        traceClass = CustomTxtTrace.class;
+                    }
+                }
+            }
+        } else if (helper != null) {
             traceClass = helper.getTraceClass();
         }
 
@@ -161,12 +180,12 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
     }
 
     /**
-     * Refreshes the trace type field by reading the trace type persistent
-     * property of the resource.
+     * Refreshes the trace type filed by reading the trace type persistent
+     * property of the resource referenece.
      */
     public void refreshTraceType() {
         try {
-            fTraceTypeId = TmfTraceType.getTraceTypeId(getResource());
+            fTraceTypeId = getResource().getPersistentProperty(TmfCommonConstants.TRACETYPE);
         } catch (CoreException e) {
             Activator.getDefault().logError(NLS.bind(Messages.TmfCommonProjectElement_ErrorRefreshingProperty, getName()), e);
         }
@@ -193,7 +212,6 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
     /**
      * Return the element path relative to its common element (traces folder,
      * experiments folder or experiment element).
-     *
      * @return The element path
      */
     public String getElementPath() {
@@ -346,21 +364,19 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
         /* Copy the trace */
         try {
             getResource().copy(newPath, IResource.FORCE | IResource.SHALLOW, null);
-            IResource trace = ((IFolder) getParent().getResource()).findMember(newName);
 
             /* Delete any bookmarks file found in copied trace folder */
-            if (trace instanceof IFolder) {
-                IFolder folderTrace = (IFolder) trace;
-                for (IResource member : folderTrace.members()) {
-                    String traceTypeId = TmfTraceType.getTraceTypeId(member);
-                    if (TmfTrace.class.getCanonicalName().equals(traceTypeId)) {
+            IFolder folder = ((IFolder) getParent().getResource()).getFolder(newName);
+            if (folder.exists()) {
+                for (IResource member : folder.members()) {
+                    if (TmfTrace.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
                         member.delete(true, null);
-                    } else if (TmfExperiment.class.getCanonicalName().equals(traceTypeId)) {
+                    } else if (TmfExperiment.class.getCanonicalName().equals(member.getPersistentProperty(TmfCommonConstants.TRACETYPE))) {
                         member.delete(true, null);
                     }
                 }
             }
-            return trace;
+            return folder;
         } catch (CoreException e) {
 
         }
@@ -479,12 +495,7 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
      * trace resource
      */
     public void refreshSupplementaryFolder() {
-        IFolder supplFolder = createSupplementaryFolder();
-        try {
-            supplFolder.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-        } catch (CoreException e) {
-            Activator.getDefault().logError("Error refreshing supplementary folder " + supplFolder, e); //$NON-NLS-1$
-        }
+        createSupplementaryFolder();
     }
 
     /**
@@ -539,7 +550,7 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
         deleteSupplementaryResources(getSupplementaryResources());
     }
 
-    private IFolder createSupplementaryFolder() {
+    private void createSupplementaryFolder() {
         IFolder supplFolder = prepareTraceSupplementaryFolder(getSupplementaryFolderPath(), true);
 
         try {
@@ -547,7 +558,7 @@ public abstract class TmfCommonProjectElement extends TmfProjectModelElement {
         } catch (CoreException e) {
             Activator.getDefault().logError("Error setting persistant property " + TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER, e); //$NON-NLS-1$
         }
-        return supplFolder;
+
     }
 
     // -------------------------------------------------------
