@@ -141,7 +141,6 @@ public abstract class GcovTest extends AbstractTest {
     }
 
     private void testGcovFileDetails(final String filename, final String binPath) {
-    	System.out.println("filename is " + filename);
         openGcovResult(project.getFile(filename), binPath, false);
 
         display.syncExec(() -> {
@@ -232,8 +231,6 @@ public abstract class GcovTest extends AbstractTest {
     }
 
     private void openGcovResult(final IFile file, String binaryPath, final boolean isCompleteCoverageResultWanted) {
-    	System.out.println("openGcovResult file exists is " + file.exists());
-    	System.out.println("file.getLocation() is " + file.getLocation());
         new OpenGCAction().autoOpen(file.getLocation(), binaryPath, isCompleteCoverageResultWanted);
     }
 

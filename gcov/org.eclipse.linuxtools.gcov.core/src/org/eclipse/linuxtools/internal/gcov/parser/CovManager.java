@@ -233,7 +233,6 @@ public class CovManager implements Serializable {
         // fill rootNode model: the entry of the contentProvider
         rootNode = new CovRootTreeElement(Messages.CovManager_Summary, summaryTotal, summaryExecuted,
                 summaryInstrumented);
-        System.out.println("fillGcovView binarypath is " + binaryPath);
         IBinaryObject binaryObject = STSymbolManager.sharedInstance.getBinaryObject(new Path(binaryPath));
 
         for (Folder fldr : allFolders) {
@@ -249,9 +248,6 @@ public class CovManager implements Serializable {
 
                 for (GcnoFunction fnctn : src.getFnctns()) {
                     String name = fnctn.getName();
-                    System.out.println(name);
-                    System.out.println(binaryObject);
-                    System.out.println(project);
                     name = STSymbolManager.sharedInstance.demangle(binaryObject, name, project);
                     srcTreeElem.addChild(new CovFunctionTreeElement(srcTreeElem, name, fnctn.getSrcFile(), fnctn
                             .getFirstLineNmbr(), fnctn.getCvrge().getLinesExecuted(), fnctn.getCvrge()
