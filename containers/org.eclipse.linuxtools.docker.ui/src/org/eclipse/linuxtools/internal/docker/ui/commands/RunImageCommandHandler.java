@@ -11,7 +11,7 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.commands;
 
-import static org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils.getRunConsole;
+import java.io.OutputStream;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -118,14 +118,10 @@ public class RunImageCommandHandler extends AbstractHandler {
 					final SubProgressMonitor startContainerMonitor = new SubProgressMonitor(
 							monitor, 1);
 					startContainerMonitor.beginTask("Starting container...", 1);
-					final RunConsole console = getRunConsole(connection,
-							container);
-					if (console != null) {
-						// if we are auto-logging, show the console
-						console.showConsole();
-					}
+					final OutputStream consoleOutputStream = getConsoleOutputStream(
+							connection, container, containerConfig);
 					((DockerConnection) connection).startContainer(containerId,
-							hostConfig, console.getOutputStream());
+							hostConfig, consoleOutputStream);
 					startContainerMonitor.done();
 				} catch (final DockerException | InterruptedException e) {
 					Display.getDefault().syncExec(new Runnable() {
@@ -150,6 +146,21 @@ public class RunImageCommandHandler extends AbstractHandler {
 		};
 		runImageJob.schedule();
 
+	}
+
+	private OutputStream getConsoleOutputStream(
+			final IDockerConnection connection,
+			final IDockerContainer container,
+			final IDockerContainerConfig containerConfig) {
+		if (containerConfig.tty()) {
+			final RunConsole rc = RunConsole.findConsole(container);
+			if (rc != null) {
+				rc.attachToConsole(connection);
+				final OutputStream consoleOutputStream = rc.getOutputStream();
+				return consoleOutputStream;
+			}
+		}
+		return null;
 	}
 
 	/**
