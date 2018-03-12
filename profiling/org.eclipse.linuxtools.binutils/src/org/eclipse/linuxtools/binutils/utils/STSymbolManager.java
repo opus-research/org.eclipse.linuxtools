@@ -214,8 +214,9 @@ public class STSymbolManager {
      */
     public synchronized int getLineNumber(IBinaryObject program, IAddress address, IProject project) {
         Addr2line addr2line = getAddr2line(program, project);
-        if (addr2line == null)
+        if (addr2line == null) {
             return -1;
+        }
         try {
             return addr2line.getLineNumber(address);
         } catch (IOException e) {
@@ -245,8 +246,9 @@ public class STSymbolManager {
      */
     public synchronized String getFileName(IBinaryObject program, IAddress address, IProject project) {
         Addr2line addr2line = getAddr2line(program, project);
-        if (addr2line == null)
+        if (addr2line == null) {
             return null;
+        }
         try {
             return addr2line.getFileName(address);
         } catch (IOException e) {
@@ -364,8 +366,9 @@ public class STSymbolManager {
         List<IBinaryParser> parsers;
         if (c != null) {
             IBinaryObject object = getAlreadyExistingBinaryObject(c);
-            if (object != null)
+            if (object != null) {
                 return object;
+            }
             parsers = getBinaryParser(c.getProject());
         } else {
             parsers = new LinkedList<>();
@@ -487,8 +490,9 @@ public class STSymbolManager {
         List<IBinaryParser> parsers = new LinkedList<>();
 
         ICProjectDescription projDesc = CCorePlugin.getDefault().getProjectDescription(project);
-        if (projDesc == null)
+        if (projDesc == null) {
             return parsers;
+        }
         ICConfigurationDescription[] cfgs = projDesc.getConfigurations();
         String[] binaryParserIds = CoreModelUtil.getBinaryParserIds(cfgs);
 

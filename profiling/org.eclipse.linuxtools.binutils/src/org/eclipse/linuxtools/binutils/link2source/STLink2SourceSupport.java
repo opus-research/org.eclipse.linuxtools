@@ -180,7 +180,7 @@ public final class STLink2SourceSupport {
     /**
      * @param path The path of the file.
      * @param project The project to look into.
-     * @return The file if found of null otherwise.
+     * @return The file if found, null otherwise.
      * @since 5.0
      */
     public static IFile getFileForPath(IPath path, IProject project) {
