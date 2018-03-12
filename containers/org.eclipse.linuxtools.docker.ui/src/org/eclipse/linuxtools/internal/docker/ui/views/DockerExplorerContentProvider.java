@@ -85,7 +85,9 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				return new Object[] { new DockerImagesCategory(connection),
 						new DockerContainersCategory(connection) };
 			} else if (connection
-					.getState() == EnumDockerConnectionState.UNKNOWN) {
+					.getState() == EnumDockerConnectionState.UNKNOWN
+					|| connection
+							.getState() == EnumDockerConnectionState.CLOSED) {
 				open(connection);
 				return new Object[] { new LoadingStub(connection) };
 			}
@@ -267,7 +269,9 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				&& (((IDockerConnection) element)
 						.getState() == EnumDockerConnectionState.ESTABLISHED
 						|| ((IDockerConnection) element)
-								.getState() == EnumDockerConnectionState.UNKNOWN))
+								.getState() == EnumDockerConnectionState.UNKNOWN
+						|| ((IDockerConnection) element)
+								.getState() == EnumDockerConnectionState.CLOSED))
 				|| element instanceof DockerContainersCategory
 				|| element instanceof DockerImagesCategory
 				|| element instanceof IDockerContainer
