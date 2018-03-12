@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2016 IBM Corporation and others.
+ * Copyright (c) 2010, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -60,7 +60,8 @@ public class ScpExec extends Command {
             transferListeners();
             return Status.OK_STATUS;
         } catch (final JSchException|IOException e) {
-            return new Status(IStatus.ERROR, ConsoleLogPlugin.PLUGIN_ID, Messages.ScpExec_FileTransferFailed, e);
+            final IStatus status = new Status(IStatus.ERROR, ConsoleLogPlugin.PLUGIN_ID, Messages.ScpExec_FileTransferFailed, e);
+            return status;
         }
     }
 

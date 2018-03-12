@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,39 +14,39 @@ import java.util.List;
 
 public interface IDockerContainer {
 
-	String id();
+	public String id();
 
-	String image();
+	public String image();
 
-	String command();
+	public String command();
 
-	Long created();
+	public Long created();
 
 	/**
 	 * @return The status string for the container
 	 */
-	String status();
+	public String status();
 
-	List<IDockerPortMapping> ports();
+	public List<IDockerPortMapping> ports();
 
 	/**
 	 * @return The first name of the container
 	 */
-	String name();
+	public String name();
 	
 	/**
 	 * @return All the names of the container
 	 */
-	List<String> names();
+	public List<String> names();
 
-	Long sizeRw();
+	public Long sizeRw();
 
-	Long sizeRootFs();
+	public Long sizeRootFs();
 	
 	/**
 	 * @return the {@link IDockerConnection} associated with (or used to retrieve) this {@link IDockerContainer}
 	 */
-	IDockerConnection getConnection();
+	public IDockerConnection getConnection();
 
 	/**
 	 * @return the {@link IDockerContainerInfo} by calling the Docker daemon
@@ -54,7 +54,7 @@ public interface IDockerContainer {
 	 *         {@link IDockerContainer} if it was not loaded before, otherwise
 	 *         uses the previous version.
 	 */
-	IDockerContainerInfo info();
+	public IDockerContainerInfo info();
 
 
 }

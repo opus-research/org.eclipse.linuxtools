@@ -1,5 +1,5 @@
 /*******************************************************************************
- * (C) Copyright 2010, 2016 IBM Corp. and others.
+ * (C) Copyright 2010 IBM Corp. 2010
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,8 @@
  *    Thavidu Ranatunga (IBM) - Initial implementation.
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.model;
+
+import org.eclipse.linuxtools.internal.perf.model.PMFile;
 
 public class PMDso extends TreeParent {
     private String path = null;
@@ -43,7 +45,7 @@ public class PMDso extends TreeParent {
         if (getPercent() != -1) {
             prefix += getPercent() + "% (" + getFormattedSamples() + " samples) in "; //$NON-NLS-1$ //$NON-NLS-2$
         }
-        if (kernel) {
+        if (kernel == true) {
             prefix += "[k] "; //$NON-NLS-1$
         }
         if (path != null) {

@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2016 Red Hat, Inc. and others.
+ * Copyright (c) 2004, 2008, 2009 Red Hat, Inc.
+ * (C) Copyright 2010 IBM Corp. 2010
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -325,7 +326,7 @@ public class PerfEventsTab extends AbstractLaunchConfigurationTab {
         }
 
         //Flag for multiple events
-        if ((chkDefaultEvent.getSelection() == false) && !selectedEvents.isEmpty()) {
+        if ((chkDefaultEvent.getSelection() == false) && (selectedEvents.size() >= 1)) {
             wconfig.setAttribute(PerfPlugin.ATTR_MultipleEvents, true);
         } else {
             wconfig.setAttribute(PerfPlugin.ATTR_MultipleEvents, false);
