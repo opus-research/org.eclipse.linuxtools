@@ -79,15 +79,6 @@ public class TraceSessionGroup extends TraceControlComponent {
         return getTargetNode().isSnapshotSupported();
     }
 
-    /**
-     * Returns if node supports live or not
-     *
-     * @return <code>true</code> if it supports live else <code>false</code>
-     */
-    public boolean isLiveSupported() {
-        return getTargetNode().isLiveSupported();
-    }
-
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------

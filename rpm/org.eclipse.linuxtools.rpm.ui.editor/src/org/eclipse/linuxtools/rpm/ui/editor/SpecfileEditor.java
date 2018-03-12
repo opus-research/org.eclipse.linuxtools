@@ -145,6 +145,12 @@ public class SpecfileEditor extends TextEditor {
         return super.getAdapter(required);
     }
 
+    /*
+     * @see
+     * org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createSourceViewer
+     * (org.eclipse.swt.widgets.Composite,
+     * org.eclipse.jface.text.source.IVerticalRuler, int)
+     */
     @Override
     protected ISourceViewer createSourceViewer(Composite parent,
             IVerticalRuler ruler, int styles) {
@@ -170,9 +176,11 @@ public class SpecfileEditor extends TextEditor {
         return specfile;
     }
 
-    /**
+    /*
      * If there is no explicit document provider set, the implicit one is
      * re-initialized based on the given editor input.
+     *
+     * @see org.eclipse.ui.texteditor.AbstractTextEditor#setDocumentProvider(org.eclipse.ui.IEditorInput)
      */
     @Override
     protected void setDocumentProvider(IEditorInput input) {
@@ -186,6 +194,11 @@ public class SpecfileEditor extends TextEditor {
         return fDocumentProvider;
     }
 
+    /*
+     * @see
+     * org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createPartControl
+     * (org.eclipse.swt.widgets.Composite)
+     */
     @Override
     public void createPartControl(Composite parent) {
         super.createPartControl(parent);

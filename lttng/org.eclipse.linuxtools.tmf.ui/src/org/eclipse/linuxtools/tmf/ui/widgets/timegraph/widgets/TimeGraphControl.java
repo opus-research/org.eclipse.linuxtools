@@ -1415,7 +1415,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
         double pixelsPerNanoSec = (rect.width <= RIGHT_MARGIN) ? 0 : (double) (rect.width - RIGHT_MARGIN) / (time1 - time0);
 
         if (item.fEntry.hasTimeEvents()) {
-            gc.setClipping(new Rectangle(nameSpace, 0, bounds.width - nameSpace, bounds.height));
             fillSpace(rect, gc, selected);
             // Drawing rectangle is smaller than reserved space
             stateRect.y += 3;
@@ -1449,7 +1448,6 @@ public class TimeGraphControl extends TimeGraphBaseControl
                     lastX = x;
                 }
             }
-            gc.setClipping((Rectangle) null);
         }
         fTimeGraphProvider.postDrawEntry(entry, rect, gc);
     }
@@ -1474,11 +1472,9 @@ public class TimeGraphControl extends TimeGraphBaseControl
         if (fHideArrows) {
             return;
         }
-        gc.setClipping(new Rectangle(nameSpace, 0, bounds.width - nameSpace, bounds.height));
         for (ILinkEvent event : links) {
             drawLink(event, bounds, timeProvider, nameSpace, gc);
         }
-        gc.setClipping((Rectangle) null);
     }
 
     /**
