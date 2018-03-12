@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -17,8 +18,12 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainerElement;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -34,6 +39,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 
 public class ImageBuildPage extends WizardPage {
 
@@ -197,10 +207,24 @@ public class ImageBuildPage extends WizardPage {
 				String dir = directoryText.getText();
 				IFileStore fileStore = EFS.getLocalFileSystem().getStore(
 						new Path(dir).append("Dockerfile")); //$NON-NLS-1$
-				DockerfileEditDialog d = new DockerfileEditDialog(
-						container.getShell(),
-						fileStore);
-				d.open();
+				java.nio.file.Path filePath = Paths.get(dir, "Dockerfile"); //$NON-NLS-1$
+				if (!Files.exists(filePath)) {
+					try {
+						Files.createFile(filePath);
+					} catch (IOException e1) {
+						// File won't exist, and directory should be writable
+					}
+				}
+				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				try {
+					IDE.openEditorOnFileStore(page, fileStore);
+					IWorkbenchPartSite site = page.getActivePart().getSite();
+					EModelService s = site.getService(EModelService.class);
+					MPartSashContainerElement p = site.getService(MPart.class);
+					s.detach(p, 100, 100, 500, 375);
+				} catch (PartInitException e1) {
+					Activator.log(e1);
+				}
 				validate();
 			}
 
