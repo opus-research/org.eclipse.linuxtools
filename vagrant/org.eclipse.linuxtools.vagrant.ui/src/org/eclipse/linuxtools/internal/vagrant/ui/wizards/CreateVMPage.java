@@ -123,7 +123,7 @@ public class CreateVMPage extends WizardPage {
 
 		final Text boxNameText = new Text(container, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).applyTo(boxNameText);
+				.grab(true, false).span(2, 1).applyTo(boxNameText);
 		boxNameText.setToolTipText(
 				WizardMessages.getString("CreateVMPage.boxName.tooltip")); //$NON-NLS-1$
 		// Box Name binding
@@ -132,14 +132,6 @@ public class CreateVMPage extends WizardPage {
 				.observe(model);
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(boxNameText),
 				boxNameObservable);
-
-		// Box name search
-		final Button boxSearchButton = new Button(container, SWT.NONE);
-		boxSearchButton
-				.setText(WizardMessages.getString("CreateVMPage.search.label")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(boxSearchButton);
-		boxSearchButton.addSelectionListener(onSearchImage());
 
 		// VM File Checkbox
 		final Button customVMFileButton = new Button(container, SWT.CHECK);
@@ -179,17 +171,17 @@ public class CreateVMPage extends WizardPage {
 			}
 		});
 
-		// Vagrantfile search
-		final Button vgFilesearchButton = new Button(container, SWT.NONE);
-		vgFilesearchButton
+		// search
+		final Button searchButton = new Button(container, SWT.NONE);
+		searchButton
 				.setText(WizardMessages.getString("CreateVMPage.search.label")); //$NON-NLS-1$
-		vgFilesearchButton.setEnabled(false);
+		searchButton.setEnabled(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(vgFilesearchButton);
-		vgFilesearchButton.addSelectionListener(onSearchImage());
+				.grab(false, false).applyTo(searchButton);
+		searchButton.addSelectionListener(onSearchImage());
 
 		customVMFileButton.addSelectionListener(
-				onCheckCustomVMFile(vmNameText, boxNameText, boxLocText, vgFilesearchButton, boxSearchButton));
+				onCheckCustomVMFile(vmNameText, boxNameText, boxLocText, searchButton));
 
 		dbc.addValidationStatusProvider(new CreateVMValidationStatusProvider(vmmNameObservable,
 				boxNameObservable, boxLocObservable));
@@ -205,8 +197,7 @@ public class CreateVMPage extends WizardPage {
 	}
 
 	private SelectionListener onCheckCustomVMFile(Text vmNameText,
-			Text boxNameText, Text boxLocText, Button searchButton,
-			Button boxSearchButton) {
+			Text boxNameText, Text boxLocText, Button searchButton) {
 		return new SelectionAdapter() {
 
 			@Override
@@ -216,14 +207,12 @@ public class CreateVMPage extends WizardPage {
 					if (bt.getSelection()) {
 						vmNameText.setEnabled(false);
 						boxNameText.setEnabled(false);
-						boxSearchButton.setEnabled(false);
 						searchButton.setEnabled(true);
 						boxLocText.setEnabled(true);
 						model.setBoxLocMode(true);
 					} else {
 						vmNameText.setEnabled(true);
 						boxNameText.setEnabled(true);
-						boxSearchButton.setEnabled(true);
 						searchButton.setEnabled(false);
 						boxLocText.setEnabled(false);
 						model.setBoxLocMode(false);
@@ -246,12 +235,8 @@ public class CreateVMPage extends WizardPage {
 				FileDialog fd = new FileDialog(getShell());
 				String location = fd.open();
 				if (location != null && !location.isEmpty()) {
-					if (location.endsWith("box")) { // $NON-NLS-1
-						model.setBoxName(location);
-					} else {
-						model.setVMFile(location);
-						vmFileChanged(location);
-					}
+					model.setVMFile(location);
+					vmFileChanged(location);
 				}
 			}
 		};
