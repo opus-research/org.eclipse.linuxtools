@@ -78,9 +78,16 @@ public class TraceControlCreateSessionTests {
         fFacility = TraceControlTestFacility.getInstance();
         fFacility.init();
         fProxy = new TestRemoteSystemProxy();
-        URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path(TraceControlTestFacility.DIRECTORY + File.separator + TEST_STREAM), null);
+        URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path(TraceControlTestFacility.DIRECTORY + File.separator + getTestStream()), null);
         File testfile = new File(FileLocator.toFileURL(location).toURI());
         fTestFile = testfile.getAbsolutePath();
+    }
+
+    /**
+     * @return
+     */
+    protected String getTestStream() {
+        return TEST_STREAM;
     }
 
     /**
@@ -145,12 +152,7 @@ public class TraceControlCreateSessionTests {
         sessionDialogStub.setStreamedTrace(true);
         TraceSessionComponent session = fFacility.createSession(groups[1]);
 
-        // Verify that session was created
-        assertNotNull(session);
-        assertEquals("mysession", session.getName());
-        assertEquals("file:///tmp", session.getSessionPath());
-        assertTrue(!session.isStreamedTrace());
-        assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
+        fileSessionAssertion(session);
         sessionDialogStub.setNetworkUrl(null);
         sessionDialogStub.setStreamedTrace(false);
 
@@ -171,12 +173,7 @@ public class TraceControlCreateSessionTests {
 
         session = fFacility.createSession(groups[1]);
 
-        // Verify that session was created
-        assertNotNull(session);
-        assertEquals("mysession", session.getName());
-        assertEquals("tcp://172.0.0.1:5342 [data: 5343]", session.getSessionPath());
-        assertTrue(session.isStreamedTrace());
-        assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
+        ctrlDataSessionAssertion(session);
         sessionDialogStub.setControlUrl(null);
         sessionDialogStub.setDataUrl(null);
         sessionDialogStub.setStreamedTrace(false);
@@ -197,12 +194,7 @@ public class TraceControlCreateSessionTests {
 
         session = fFacility.createSession(groups[1]);
 
-        // Verify that session was created
-        assertNotNull(session);
-        assertEquals("mysession", session.getName());
-        assertEquals("net://172.0.0.1:1234 [data: 2345]", session.getSessionPath());
-        assertTrue(session.isStreamedTrace());
-        assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
+        networkSessionAssertion(session);
         sessionDialogStub.setNetworkUrl(null);
 
         fFacility.destroySession(session);
@@ -221,12 +213,7 @@ public class TraceControlCreateSessionTests {
 
         session = fFacility.createSession(groups[1]);
 
-        // Verify that session was created
-        assertNotNull(session);
-        assertEquals("mysession", session.getName());
-        assertEquals("net://[ffff::eeee:dddd:cccc:0]:5342/mysession-20130221-144451 [data: 5343]", session.getSessionPath());
-        assertTrue(session.isStreamedTrace());
-        assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
+        ipv6NetworkSessionAssertion(session);
         sessionDialogStub.setNetworkUrl(null);
 
         fFacility.destroySession(session);
@@ -247,6 +234,58 @@ public class TraceControlCreateSessionTests {
 
         fFacility.executeCommand(node, "delete");
         assertEquals(0,fFacility.getControlView().getTraceControlRoot().getChildren().length);
+    }
+
+    /**
+     * Test if the creation of a session with an ipv6 url worked
+     * @param session the ipv6 session object to verify
+     */
+    protected void ipv6NetworkSessionAssertion(TraceSessionComponent session) {
+        // Verify that session was created
+        assertNotNull(session);
+        assertEquals("mysession", session.getName());
+        assertEquals("net://[ffff::eeee:dddd:cccc:0]:5342/mysession-20130221-144451 [data: 5343]", session.getSessionPath());
+        assertTrue(session.isStreamedTrace());
+        assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
+    }
+
+    /**
+     * Test if the creation of a session with a net url worked
+     * @param session the net session object to verify
+     */
+    protected void networkSessionAssertion(TraceSessionComponent session) {
+        // Verify that session was created
+        assertNotNull(session);
+        assertEquals("mysession", session.getName());
+        assertEquals("net://172.0.0.1:1234 [data: 2345]", session.getSessionPath());
+        assertTrue(session.isStreamedTrace());
+        assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
+    }
+
+    /**
+     * Test if the creation of a session with a data and control url worked
+     * @param session the session object to verify
+     */
+    protected void ctrlDataSessionAssertion(TraceSessionComponent session) {
+        // Verify that session was created
+        assertNotNull(session);
+        assertEquals("mysession", session.getName());
+        assertEquals("tcp://172.0.0.1:5342 [data: 5343]", session.getSessionPath());
+        assertTrue(session.isStreamedTrace());
+        assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
+    }
+
+    /**
+     * Test if the creation of a session with a file url worked
+     * @param session the session object to verify
+     */
+    protected void fileSessionAssertion(TraceSessionComponent session) {
+        // Verify that session was created
+        assertNotNull(session);
+        assertEquals("mysession", session.getName());
+        assertEquals("file:///tmp", session.getSessionPath());
+        assertTrue(!session.isStreamedTrace());
+        assertEquals(TraceSessionState.INACTIVE, session.getSessionState());
     }
 
 }
