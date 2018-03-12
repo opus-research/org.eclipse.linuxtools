@@ -156,9 +156,9 @@ public class ImageRun extends Wizard {
 			switch (dataVolume.getMountType()) {
 			case HOST_FILE_SYSTEM:
 				String bind = convertToUnixPath(dataVolume.getHostPathMount())
-						+ ':' + dataVolume.getContainerPath() + ':' + 'Z';
+						+ ':' + dataVolume.getContainerPath();
 				if (dataVolume.isReadOnly()) {
-					bind += ",ro"; //$NON-NLS-1$
+					bind += ':' + "ro";
 				}
 				binds.add(bind);
 				break;
