@@ -16,7 +16,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection2;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
@@ -72,8 +71,8 @@ public class RetrieveImageHierarchyJob extends Job {
 				this.imageHierarchy = connection
 						.resolveImageHierarchy((IDockerImage) selectedElement);
 			} else {
-				Activator.log(new DockerException(JobMessages
-						.getString("RetrieveImageHierarchyJob.error"))); //$NON-NLS-1$
+				Activator.logErrorMessage(JobMessages
+						.getString("RetrieveImageHierarchyJob.error")); //$NON-NLS-1$
 			}
 		} finally {
 			monitor.done();
