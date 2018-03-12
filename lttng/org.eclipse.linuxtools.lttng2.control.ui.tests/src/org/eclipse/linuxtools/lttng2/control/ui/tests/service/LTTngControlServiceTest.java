@@ -79,7 +79,7 @@ public class LTTngControlServiceTest {
     private static final String SCEN_GET_SESSION_NAMES1 = "GetSessionNames1";
     private static final String SCEN_GET_SESSION_NAME_NOT_EXIST = "GetSessionNameNotExist";
     private static final String SCEN_GET_SESSION_NAME_NOT_EXIST_VERBOSE = "GetSessionNameNotExistVerbose";
-    protected static final String SCEN_GET_SESSION_GARBAGE_OUT = "GetSessionGarbageOut";
+    private static final String SCEN_GET_SESSION_GARBAGE_OUT = "GetSessionGarbageOut";
     private static final String SCEN_GET_SESSION1 = "GetSession1";
     private static final String SCEN_GET_KERNEL_PROVIDER1 = "GetKernelProvider1";
     private static final String SCEN_LIST_WITH_NO_KERNEL1 = "ListWithNoKernel1";
@@ -107,7 +107,7 @@ public class LTTngControlServiceTest {
     private static final String SCEN_CREATE_SNAPSHOT_SESSION = "CreateSessionSnapshot";
     private static final String SCEN_CREATE_STREAMED_SNAPSHOT_SESSION = "CreateSessionStreamedSnapshot";
     private static final String SCEN_CREATE_SNAPSHOT_SESSION_ERRORS = "CreateSessionSnapshotErrors";
-    protected static final String SCEN_CREATE_LIVE_SESSION = "CreateSessionLive";
+    private static final String SCEN_CREATE_LIVE_SESSION = "CreateSessionLive";
     private static final String SCEN_CREATE_LIVE_SESSION_ERRORS = "CreateSessionLiveErrors";
 
     // ------------------------------------------------------------------------
@@ -116,8 +116,8 @@ public class LTTngControlServiceTest {
 
     private CommandShellFactory fShellFactory;
     private String fTestfile;
-    protected LTTngToolsFileShell fShell;
-    protected ILttngControlService fService;
+    private LTTngToolsFileShell fShell;
+    private ILttngControlService fService;
 
     // ------------------------------------------------------------------------
     // Housekeeping
@@ -133,43 +133,15 @@ public class LTTngControlServiceTest {
     public void setUp() throws Exception {
         fShellFactory = CommandShellFactory.getInstance();
 
-        URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path(getTestDirectory() + File.separator + getTestStream()), null);
+        URL location = FileLocator.find(FrameworkUtil.getBundle(this.getClass()), new Path(DIRECTORY + File.separator + TEST_STREAM), null);
         File testfile = new File(FileLocator.toFileURL(location).toURI());
         fTestfile = testfile.getAbsolutePath();
 
         fShell = fShellFactory.getFileShell();
         fShell.loadScenarioFile(fTestfile);
-        fService = getControlService();
-        if (fService == null) {
-            throw new Exception("Unable to obtain a valid ControlService");
-        }
+        fService = new LTTngControlService(fShell);
 
         ControlPreferences.getInstance().init(Activator.getDefault().getPreferenceStore());
-    }
-
-    /**
-     * @return the string of the test directory to use
-     */
-    protected String getTestDirectory() {
-        return DIRECTORY;
-    }
-
-    /**
-     * @return the LttngCon
-     */
-    protected ILttngControlService getControlService() {
-        return new LTTngControlService(fShell);
-    }
-
-    public LTTngToolsFileShell getfShell() {
-        return fShell;
-    }
-
-    /**
-     * @return
-     */
-    protected String getTestStream() {
-        return TEST_STREAM;
     }
 
     @After
@@ -413,7 +385,7 @@ public class LTTngControlServiceTest {
             assertEquals(TraceEnablement.DISABLED, ustEvents[0].getState());
 
             assertEquals("*", ustEvents[1].getName());
-            assertEquals(getAllEventTraceLogLevel(), ustEvents[1].getLogLevel());
+            assertEquals(TraceLogLevel.LEVEL_UNKNOWN, ustEvents[1].getLogLevel());
             assertEquals(TraceEventType.TRACEPOINT, ustEvents[1].getEventType());
             assertEquals(TraceEnablement.ENABLED, ustEvents[1].getState());
 
@@ -430,13 +402,6 @@ public class LTTngControlServiceTest {
         } catch (ExecutionException e) {
             fail(e.toString());
         }
-    }
-
-    /**
-     * @return
-     */
-    protected TraceLogLevel getAllEventTraceLogLevel() {
-        return TraceLogLevel.LEVEL_UNKNOWN;
     }
 
     public void testGetKernelProvider() {
