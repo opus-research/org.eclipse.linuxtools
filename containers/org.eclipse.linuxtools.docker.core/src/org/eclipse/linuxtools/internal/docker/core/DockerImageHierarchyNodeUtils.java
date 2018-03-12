@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.internal.docker.core;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
@@ -61,8 +62,7 @@ public class DockerImageHierarchyNodeUtils {
 		// IDockerImageHierarchyNode instances
 		return images.stream().filter(image -> image.id().equals(parentImageId))
 				// parent image found: get its own parent image hierarchy
-				.map(parentImage -> new DockerImageHierarchyImageNode(
-						parentImage,
+				.map(parentImage -> new DockerImageHierarchyNode(parentImage,
 						getImageParentImageNode(images,
 								parentImage.parentId())))
 				.findFirst()
@@ -89,8 +89,7 @@ public class DockerImageHierarchyNodeUtils {
 		return images.stream()
 				.filter(image -> image.repoTags().contains(parentImageName))
 				// parent image found: get its own parent image hierarchy
-				.map(parentImage -> new DockerImageHierarchyImageNode(
-						parentImage,
+				.map(parentImage -> new DockerImageHierarchyNode(parentImage,
 						getImageParentImageNode(images, parentImage.parentId())))
 				.findFirst()
 				// no parent image found: stop here.
@@ -101,7 +100,7 @@ public class DockerImageHierarchyNodeUtils {
 			final List<IDockerImage> images,
 			final List<IDockerContainer> containers, final IDockerImage image,
 			final IDockerImageHierarchyNode parentImageNode) {
-		final DockerImageHierarchyNode imageNode = new DockerImageHierarchyImageNode(
+		final DockerImageHierarchyNode imageNode = new DockerImageHierarchyNode(
 				image, parentImageNode);
 		// also includes all children images/containers, recursively
 		resolveChildrenImageNodes(images, containers, image.id(),
@@ -117,22 +116,20 @@ public class DockerImageHierarchyNodeUtils {
 		// recursively find all parents and build associated
 		// IDockerImageHierarchyNode instances
 		images.stream().filter(image -> image.parentId() != null
-				&& image.parentId().equals(imageId))
-				// use the flatMap below to duplicate images that have multiple repos
-				//.flatMap(image -> DockerImage.duplicateImageByRepo(image))
-				.forEach(image -> {
-					final DockerImageHierarchyNode childNode = new DockerImageHierarchyImageNode(
+				&& image.parentId().equals(imageId)).map(image -> {
+					final DockerImageHierarchyNode childNode = new DockerImageHierarchyNode(
 							image, parentNode);
 					resolveChildrenImageNodes(images, containers, image.id(),
 							image.repoTags(),
 							childNode);
-				});
+					return childNode;
+				}).collect(Collectors.toList());
 		containers.stream()
 				.filter(container -> container.image() != null
 						&& imageRepoTags.contains(container.image()))
-				.forEach(container -> new DockerImageHierarchyContainerNode(
-						container,
-						parentNode));
+				.map(container -> new DockerImageHierarchyNode(container,
+						parentNode))
+				.collect(Collectors.toList());
 	}
 
 	private static DockerImageHierarchyNode getDockerImageHierarchyNode(
@@ -140,7 +137,7 @@ public class DockerImageHierarchyNodeUtils {
 			final IDockerImageHierarchyNode parentImageNode) {
 		// recursively find all parents and build associated
 		// IDockerImageHierarchyNode instances
-		final DockerImageHierarchyNode containerNode = new DockerImageHierarchyContainerNode(
+		final DockerImageHierarchyNode containerNode = new DockerImageHierarchyNode(
 				container, parentImageNode);
 		// there's no children images/containers for a container, so let's just
 		// return the node

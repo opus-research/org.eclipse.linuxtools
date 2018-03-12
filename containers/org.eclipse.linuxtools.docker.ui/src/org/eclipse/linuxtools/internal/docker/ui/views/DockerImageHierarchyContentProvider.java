@@ -12,9 +12,10 @@
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.docker.core.IDockerImageHierarchyNode;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImageHierarchyView.DockerImageHiearchy;
-
 
 /**
  * The {@link ITreeContentProvider} implementation for the
@@ -23,6 +24,14 @@ import org.eclipse.linuxtools.internal.docker.ui.views.DockerImageHierarchyView.
 public class DockerImageHierarchyContentProvider
 		implements ITreeContentProvider {
 
+	private TreeViewer viewer;
+
+	@Override
+	public void inputChanged(final Viewer viewer, final Object oldInput,
+			final Object newInput) {
+		this.viewer = (TreeViewer) viewer;
+	}
+
 	@Override
 	public Object[] getElements(Object inputElement) {
 		if (inputElement instanceof DockerImageHiearchy) {
@@ -30,7 +39,8 @@ public class DockerImageHierarchyContentProvider
 			return new Object[] { dockerImageHiearchy.getRoot() };
 		} else if (inputElement instanceof IDockerImageHierarchyNode) {
 			final IDockerImageHierarchyNode imageHiearchyNode = (IDockerImageHierarchyNode) inputElement;
-			if (imageHiearchyNode.getChildren() != null) {
+			if (imageHiearchyNode != null
+					&& imageHiearchyNode.getChildren() != null) {
 				return imageHiearchyNode.getChildren().toArray();
 			}
 		}
@@ -59,7 +69,5 @@ public class DockerImageHierarchyContentProvider
 		}
 		return false;
 	}
-
-	
 
 }
