@@ -11,9 +11,8 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.testutils;
 
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionStorageManager;
@@ -31,10 +30,10 @@ public class MockDockerConnectionStorageManagerFactory {
 		return connectionStorageManager;
 	}
 	
-	public static IDockerConnectionStorageManager providing(final IDockerConnection... mockedConnections) {
+	public static IDockerConnectionStorageManager load(IDockerConnection... mockedConnections) {
 		final IDockerConnectionStorageManager connectionStorageManager = Mockito
 				.mock(IDockerConnectionStorageManager.class);
-		Mockito.when(connectionStorageManager.loadConnections()).thenReturn(Stream.of(mockedConnections).collect(Collectors.toList()));
+		Mockito.when(connectionStorageManager.loadConnections()).thenReturn(Arrays.asList(mockedConnections));
 		return connectionStorageManager;
 	}
 
