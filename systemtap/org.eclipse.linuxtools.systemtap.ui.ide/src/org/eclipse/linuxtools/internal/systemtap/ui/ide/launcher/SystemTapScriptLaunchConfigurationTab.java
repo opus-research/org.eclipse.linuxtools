@@ -28,9 +28,12 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.IDEPlugin;
 import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.ExceptionErrorDialog;
 import org.eclipse.linuxtools.systemtap.ui.editor.PathEditorInput;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -122,13 +125,18 @@ public class SystemTapScriptLaunchConfigurationTab extends
         scriptSettingsGroup.setLayout(layout);
         scriptPathText = new Text(scriptSettingsGroup,  SWT.SINGLE | SWT.BORDER);
         scriptPathText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        scriptPathText.addModifyListener(e -> updateLaunchConfigurationDialog());
+        scriptPathText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateLaunchConfigurationDialog();
+            }
+        });
         Button selectScriptButon = new Button(scriptSettingsGroup, 0);
         GridData gridData = new GridData();
         gridData.widthHint = 110;
         selectScriptButon.setLayoutData(gridData);
         selectScriptButon.setText(Messages.SystemTapScriptLaunchConfigurationTab_browse);
-        selectScriptButon.addSelectionListener(new SelectionAdapter() {
+        selectScriptButon.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -136,6 +144,10 @@ public class SystemTapScriptLaunchConfigurationTab extends
                 if (path != null) {
                     scriptPathText.setText(path);
                 }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
 
@@ -167,9 +179,19 @@ public class SystemTapScriptLaunchConfigurationTab extends
         userSettingsGroup.setLayoutData( new GridData(SWT.FILL, SWT.FILL, true, false));
         userSettingsGroup.setText(Messages.SystemTapScriptLaunchConfigurationTab_user);
 
-        userNameText.addModifyListener(e -> updateLaunchConfigurationDialog());
+        userNameText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateLaunchConfigurationDialog();
+            }
+        });
 
-        userPasswordText.addModifyListener(e -> updateLaunchConfigurationDialog());
+        userPasswordText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateLaunchConfigurationDialog();
+            }
+        });
 
         // Host settings
         hostSettingsGroup = new Group(top, SWT.SHADOW_ETCHED_IN);
@@ -190,7 +212,12 @@ public class SystemTapScriptLaunchConfigurationTab extends
         hostNameText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         localHostCheckButton.setLayoutData(gridData);
         localHostCheckButton.addSelectionListener(checkListener);
-        hostNameText.addModifyListener(e -> updateLaunchConfigurationDialog());
+        hostNameText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateLaunchConfigurationDialog();
+            }
+        });
 
         portCheckButton = new Button(hostSettingsGroup, SWT.CHECK);
         portCheckButton.setText(Messages.SystemTapScriptLaunchConfigurationTab_useDefaultPort);
@@ -204,18 +231,26 @@ public class SystemTapScriptLaunchConfigurationTab extends
         portText = new Text(hostSettingsGroup, SWT.SINGLE | SWT.BORDER);
         portText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         portText.setTextLimit(5);
-        portText.addVerifyListener(e -> {
-		    if (e.keyCode == SWT.BS) {
-		        return;
-		    }
-		    for (int i = 0, n = e.text.length(); i < n; i++) {
-		        if (!Character.isDigit(e.text.charAt(i))) {
-		            e.doit = false;
-		            return;
-		        }
-		    }
-		});
-        portText.addModifyListener(e -> updateLaunchConfigurationDialog());
+        portText.addVerifyListener(new VerifyListener() {
+            @Override
+            public void verifyText(VerifyEvent e) {
+                if (e.keyCode == SWT.BS) {
+                    return;
+                }
+                for (int i = 0, n = e.text.length(); i < n; i++) {
+                    if (!Character.isDigit(e.text.charAt(i))) {
+                        e.doit = false;
+                        return;
+                    }
+                }
+            }
+        });
+        portText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateLaunchConfigurationDialog();
+            }
+        });
     }
 
     private void setUserGroupEnablement(boolean enable) {

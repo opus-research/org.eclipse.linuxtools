@@ -53,14 +53,17 @@ public class ErrorView extends ViewPart {
      * @param log The details for an error message to display in the table.
      */
     public void add(final String[] log) {
-        table.getControl().getDisplay().syncExec(() -> {
-		    table.addRow(log);
+        table.getControl().getDisplay().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                table.addRow(log);
 
-		    try {
-		        PlatformUI.getWorkbench().getWorkbenchWindows()[0].getActivePage().showView(ID);
-		    } catch(PartInitException pie) {
-		    }
-		});
+                try {
+                    PlatformUI.getWorkbench().getWorkbenchWindows()[0].getActivePage().showView(ID);
+                } catch(PartInitException pie) {
+                }
+            }
+        });
     }
 
     /**
