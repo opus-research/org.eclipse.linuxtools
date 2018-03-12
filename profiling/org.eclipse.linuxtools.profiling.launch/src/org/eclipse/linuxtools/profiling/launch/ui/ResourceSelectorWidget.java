@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2017 IBM Corporation and others.
+ * Copyright (c) 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,7 +19,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
 import org.eclipse.osgi.util.TextProcessor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -173,7 +174,12 @@ public class ResourceSelectorWidget {
         // browse button
         browseButton = new Button(browserComp, SWT.PUSH);
         browseButton.setText(BROWSE_LABEL);
-        browseButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> handleURIBrowseButtonPressed()));
+        browseButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                handleURIBrowseButtonPressed();
+            }
+        });
 
         uriField.addModifyListener(e -> updateFilesystemSelector(uriField.getText()));
     }

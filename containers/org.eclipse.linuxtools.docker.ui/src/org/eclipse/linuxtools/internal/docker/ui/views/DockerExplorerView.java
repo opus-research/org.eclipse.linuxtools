@@ -38,7 +38,8 @@ import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.NewDockerConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -244,12 +245,15 @@ public class DockerExplorerView extends CommonNavigator implements
 		return form;
 	}
 
-	private SelectionListener onExplanationClicked() {
-		return SelectionListener.widgetSelectedAdapter(e -> CommandUtils
-				.openWizard(new NewDockerConnection(), PlatformUI.getWorkbench()
-						.getModalDialogShellProvider().getShell())
-
-		);
+	private SelectionAdapter onExplanationClicked() {
+		return new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				CommandUtils.openWizard(new NewDockerConnection(),
+						PlatformUI.getWorkbench().getModalDialogShellProvider()
+								.getShell());
+			}
+		};
 	}
 
 	/**

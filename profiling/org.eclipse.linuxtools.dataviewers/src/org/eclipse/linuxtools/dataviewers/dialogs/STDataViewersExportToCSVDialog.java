@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2017 STMicroelectronics and others.
+ * Copyright (c) 2009 STMicroelectronics.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,6 +24,7 @@ import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersCSVExport
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersCSVExporterConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -165,14 +166,23 @@ public class STDataViewersExportToCSVDialog extends Dialog {
 
         Button browseOutputButton = new Button(browseComposite, SWT.PUSH);
         browseOutputButton.setText("File System...");
-		browseOutputButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> handleBrowse()));
+        browseOutputButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                handleBrowse();
+            }
+        });
         layoutData = new GridData(SWT.RIGHT, SWT.FILL, false, false, 1, 1);
         browseOutputButton.setLayoutData(layoutData);
 
         Button browseOutputInWorkspaceButton = new Button(browseComposite, SWT.PUSH);
         browseOutputInWorkspaceButton.setText("Workspace...");
-		browseOutputInWorkspaceButton
-				.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> handleBrowseWorkspace()));
+        browseOutputInWorkspaceButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                handleBrowseWorkspace();
+            }
+        });
         layoutData = new GridData(SWT.RIGHT, SWT.FILL, false, false, 1, 1);
         browseOutputInWorkspaceButton.setLayoutData(layoutData);
     }

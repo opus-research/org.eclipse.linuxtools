@@ -37,6 +37,8 @@ import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumes
 import org.eclipse.linuxtools.internal.docker.ui.wizards.LabelVariableModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.WizardMessages;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
@@ -176,51 +178,63 @@ public class RunImageLabelsTab extends AbstractLaunchConfigurationTab {
 
 	private SelectionListener onAddLabelVariable(
 			final TableViewer labelVariablesTableViewer) {
-		return SelectionListener.widgetSelectedAdapter(e -> {
-			final ContainerLabelVariableDialog dialog = new ContainerLabelVariableDialog(
-					getShell());
-			dialog.create();
-			if (dialog.open() == IDialogConstants.OK_ID) {
-				model.getLabelVariables().add(dialog.getLabelVariable());
-				labelVariablesTableViewer.add(dialog.getLabelVariable());
-				labelVariablesTableViewer.refresh();
-				updateLaunchConfigurationDialog();
+		return new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final ContainerLabelVariableDialog dialog = new ContainerLabelVariableDialog(
+						getShell());
+				dialog.create();
+				if (dialog.open() == IDialogConstants.OK_ID) {
+					model.getLabelVariables().add(dialog.getLabelVariable());
+					labelVariablesTableViewer.add(dialog.getLabelVariable());
+					labelVariablesTableViewer.refresh();
+					updateLaunchConfigurationDialog();
+				}
 			}
-		});
+		};
 	}
 
 	private SelectionListener onEditLabelVariable(
 			final TableViewer labelVariablesTableViewer) {
-		return SelectionListener.widgetSelectedAdapter(e -> {
-			final LabelVariableModel selectedVariable = (LabelVariableModel) labelVariablesTableViewer
-					.getStructuredSelection().getFirstElement();
-			final ContainerLabelVariableDialog dialog = new ContainerLabelVariableDialog(
-					getShell(), selectedVariable);
-			dialog.create();
-			if (dialog.open() == IDialogConstants.OK_ID) {
-				selectedVariable.setName(dialog.getLabelVariable().getName());
-				selectedVariable.setValue(dialog.getLabelVariable().getValue());
-				labelVariablesTableViewer.refresh();
+		return new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final LabelVariableModel selectedVariable = (LabelVariableModel) labelVariablesTableViewer
+						.getStructuredSelection().getFirstElement();
+				final ContainerLabelVariableDialog dialog = new ContainerLabelVariableDialog(
+						getShell(), selectedVariable);
+				dialog.create();
+				if (dialog.open() == IDialogConstants.OK_ID) {
+					selectedVariable
+							.setName(dialog.getLabelVariable().getName());
+					selectedVariable.setValue(
+							dialog.getLabelVariable().getValue());
+					labelVariablesTableViewer.refresh();
+				}
+				updateLaunchConfigurationDialog();
 			}
-			updateLaunchConfigurationDialog();
-		});
+		};
 	}
 
 	private SelectionListener onRemoveLabelVariable(
 			final TableViewer labelVariablesTableViewer) {
-		return SelectionListener.widgetSelectedAdapter(e -> {
-			final IStructuredSelection selection = labelVariablesTableViewer
-					.getStructuredSelection();
-			for (@SuppressWarnings("unchecked")
-			Iterator<LabelVariableModel> iterator = selection
-					.iterator(); iterator.hasNext();) {
-				LabelVariableModel m = iterator.next();
-				model.removeLabelVariable(m);
-				labelVariablesTableViewer.remove(m);
-				labelVariablesTableViewer.refresh();
+		return new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final IStructuredSelection selection = labelVariablesTableViewer
+						.getStructuredSelection();
+				for (@SuppressWarnings("unchecked")
+				Iterator<LabelVariableModel> iterator = selection
+						.iterator(); iterator.hasNext();) {
+					LabelVariableModel m = iterator.next();
+					model.removeLabelVariable(m);
+					labelVariablesTableViewer.remove(m);
+					labelVariablesTableViewer.refresh();
+				}
+				updateLaunchConfigurationDialog();
 			}
-			updateLaunchConfigurationDialog();
-		});
+		};
 	}
 
 	private static void setControlsEnabled(final Control[] controls,

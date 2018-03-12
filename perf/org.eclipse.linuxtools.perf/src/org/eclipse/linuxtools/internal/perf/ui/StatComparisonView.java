@@ -36,6 +36,7 @@ import org.eclipse.linuxtools.internal.perf.model.PMStatEntry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
@@ -81,10 +82,18 @@ public class StatComparisonView extends Viewer {
         reverse.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_SYNCED));
         reverse.setToolTipText(Messages.StatComparisonView_reverseToolTip);
         reverse.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		reverse.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-			toggleReverse();
-			setInput(fInput);
-		}));
+        reverse.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                toggleReverse();
+                setInput(fInput);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
 
         text = new StyledText(fComposite, SWT.V_SCROLL | SWT.H_SCROLL);
         text.setAlwaysShowScrollBars(false);

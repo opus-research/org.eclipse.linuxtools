@@ -29,6 +29,8 @@ import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunNetworkModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.WizardMessages;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
@@ -238,18 +240,26 @@ public class RunImageNetworkTab extends AbstractLaunchConfigurationTab
 
 	private SelectionListener onContainerSelection(final Button containerButton,
 			final Combo containerList) {
-		return SelectionListener.widgetSelectedAdapter(e -> {
-			final boolean selection = containerButton.getSelection();
-			containerList.setEnabled(selection);
-		});
+		return new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final boolean selection = containerButton.getSelection();
+				containerList.setEnabled(selection);
+			}
+		};
 	}
 
 	private SelectionListener onOtherSelection(final Button otherButton,
 			final Text otherText) {
-		return SelectionListener.widgetSelectedAdapter(e -> {
-			final boolean selection = otherButton.getSelection();
-			otherText.setEnabled(selection);
-		});
+		return new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final boolean selection = otherButton.getSelection();
+				otherText.setEnabled(selection);
+			}
+		};
 	}
 
 	@Override

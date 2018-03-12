@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 Red Hat.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,8 @@ import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -30,6 +32,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+/**
+ * 
+ */
 public class ImagePullPage extends ImagePullPushPage<ImagePullPageModel> {
 
 	private final IDockerConnection connection;
@@ -128,18 +133,23 @@ public class ImagePullPage extends ImagePullPushPage<ImagePullPageModel> {
 	 * @return
 	 */
 	private SelectionListener onSearchImage() {
-		return SelectionListener.widgetSelectedAdapter(e -> {
-			final ImageSearch imageSearchWizard = new ImageSearch(
-					ImagePullPage.this.connection,
-					ImagePullPage.this.getModel().getSelectedImageName(),
-					ImagePullPage.this.getModel().getSelectedRegistry());
-			final boolean completed = CommandUtils.openWizard(imageSearchWizard,
-					getShell());
-			if (completed) {
-				ImagePullPage.this.getModel().setSelectedImageName(
-						imageSearchWizard.getSelectedImage());
+		return new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final ImageSearch imageSearchWizard = new ImageSearch(
+						ImagePullPage.this.connection,
+						ImagePullPage.this.getModel().getSelectedImageName(),
+						ImagePullPage.this.getModel()
+								.getSelectedRegistry());
+				final boolean completed = CommandUtils
+						.openWizard(imageSearchWizard, getShell());
+				if (completed) {
+					ImagePullPage.this.getModel().setSelectedImageName(
+							imageSearchWizard.getSelectedImage());
+				}
 			}
-		});
+		};
 	}
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2017 IBM Corporation and others.
+ * Copyright (c) 2011, 2014 IBM Corporation
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,7 +26,8 @@ import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.linuxtools.tools.launch.core.LaunchCoreConstants;
 import org.eclipse.linuxtools.tools.launch.core.properties.LinuxtoolsPathProperty;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -115,7 +116,12 @@ public class LinuxtoolsPathPropertyPage extends PropertyPage {
         systemEnvButton = new Button(radios, SWT.RADIO);
         systemEnvButton.setText(Messages.LINUXTOOLS_PATH_SYSTEM_ENV);
         systemEnvButton.setSelection(systemPathSelected);
-        systemEnvButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateOptionsEnable()));
+        systemEnvButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    updateOptionsEnable();
+                }
+        });
 
         customButton = new Button(radios, SWT.RADIO);
         customButton.setText(Messages.LINUXTOOLS_PATH_CUSTOM);
