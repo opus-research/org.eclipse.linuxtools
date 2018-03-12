@@ -1286,7 +1286,6 @@ public class DockerConnection implements IDockerConnection {
 		try {
 			// pause container
 			client.pauseContainer(id);
-			listContainers(); // update container list
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {

@@ -19,6 +19,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -283,11 +284,12 @@ public class DockerExplorerView extends CommonNavigator implements
 					// following is to force Container property testers
 					// to run again after list is updated. They won't do so by
 					// default.
-					ISelection selection = getCommonViewer().getSelection();
+					final ITreeSelection selection = getCommonViewer()
+							.getStructuredSelection();
+					getCommonViewer().refresh();
 					if (selection != null) {
 						getCommonViewer().setSelection(selection, false);
 					}
-					getCommonViewer().refresh(connection, true);
 				}
 			});
 		}
