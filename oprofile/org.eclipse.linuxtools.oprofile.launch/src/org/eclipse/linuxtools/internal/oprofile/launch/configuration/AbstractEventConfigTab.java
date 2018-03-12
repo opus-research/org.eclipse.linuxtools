@@ -274,9 +274,11 @@ public abstract class AbstractEventConfigTab extends AbstractLaunchConfiguration
                             // First check min count
                             int min = event.getMinCount();
                             if (counters[i].getCount() < min) {
-								setErrorMessage(MessageFormat.format(
-										OprofileLaunchMessages.getString("tab.event.counterSettings.count.too-small"), //$NON-NLS-1$
-										min));
+                                Object[] args = new Object[] { min };
+                                setErrorMessage(MessageFormat
+                                        .format(OprofileLaunchMessages
+                                                .getString("tab.event.counterSettings.count.too-small"), //$NON-NLS-1$
+                                                args));
                                 valid = false;
                                 break;
                             }
@@ -996,7 +998,8 @@ public abstract class AbstractEventConfigTab extends AbstractLaunchConfiguration
          */
         private String getMinCountErrorMessage(int min) {
             String msg = OprofileLaunchMessages.getString("tab.event.counterSettings.count.too-small"); //$NON-NLS-1$
-            return MessageFormat.format(msg, Integer.valueOf(min));
+            Object[] args = new Object[] { Integer.valueOf(min) };
+            return MessageFormat.format(msg, args);
         }
 
         /**

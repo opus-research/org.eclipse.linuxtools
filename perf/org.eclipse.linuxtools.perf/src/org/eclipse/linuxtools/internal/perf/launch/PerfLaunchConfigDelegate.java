@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2017 Red Hat, Inc. and others
+ * Copyright (c) 2004, 2008, 2009 Red Hat, Inc. and others
+ * (C) Copyright IBM Corp. 2010
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -265,8 +266,8 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
         } catch (URISyntaxException e) {
             MessageDialog.openError(Display.getCurrent().getActiveShell(), Messages.MsgProxyError, Messages.MsgProxyError);
         }
-		String title = renderProcessLabel(MessageFormat.format(Messages.PerfLaunchConfigDelegate_stat_title,
-				binURI.getPath(), args.toString(), String.valueOf(runCount)));
+        Object[] titleArgs = new Object[]{binURI.getPath(), args.toString(), String.valueOf(runCount)};
+        String title = renderProcessLabel(MessageFormat.format(Messages.PerfLaunchConfigDelegate_stat_title, titleArgs));
 
         List<String> configEvents = config.getAttribute(PerfPlugin.ATTR_SelectedEvents,
                 PerfPlugin.ATTR_SelectedEvents_default);

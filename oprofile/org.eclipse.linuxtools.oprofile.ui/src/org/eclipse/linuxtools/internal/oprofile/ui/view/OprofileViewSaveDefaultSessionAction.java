@@ -134,20 +134,24 @@ public class OprofileViewSaveDefaultSessionAction extends Action {
             if (index != -1) {
                 String format = OprofileUiMessages
                         .getString("savedialog.validator.invalidChar"); //$NON-NLS-1$
-				return MessageFormat.format(format, newText.substring(index, index + 1), newText);
+                Object[] fmtArgs = new Object[] {
+                        newText.substring(index, index + 1), newText };
+                return MessageFormat.format(format, fmtArgs);
             }
 
             // Cannot contain whitespace
             if (newText.contains(" ") || newText.contains("\t")) { //$NON-NLS-1$ //$NON-NLS-2$
                 String format = OprofileUiMessages
                         .getString("savedialog.validator.containsWhitespace"); //$NON-NLS-1$
-                return MessageFormat.format(format, newText);
+                Object[] fmtArgs = new Object[] { newText };
+                return MessageFormat.format(format, fmtArgs);
             }
 
             if (session.existsSession(newText)) {
                 String format = OprofileUiMessages
                         .getString("savedialog.validator.exists"); //$NON-NLS-1$
-                return MessageFormat.format(format, newText);
+                Object[] fmtArgs = new Object[] { newText };
+                return MessageFormat.format(format, fmtArgs);
             }
 
             // Must not already exist (opcontrol doesn't allow it)
@@ -164,7 +168,8 @@ public class OprofileViewSaveDefaultSessionAction extends Action {
             if (fileStore.fetchInfo().exists()) {
                 String format = OprofileUiMessages
                         .getString("savedialog.validator.exists"); //$NON-NLS-1$
-                return MessageFormat.format(format, newText);
+                Object[] fmtArgs = new Object[] { newText };
+                return MessageFormat.format(format, fmtArgs);
             }
 
             // Everything OK
