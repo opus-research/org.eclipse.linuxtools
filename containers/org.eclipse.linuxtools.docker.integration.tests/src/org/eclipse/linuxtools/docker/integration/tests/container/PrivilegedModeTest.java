@@ -17,16 +17,17 @@ import org.eclipse.linuxtools.docker.integration.tests.image.AbstractImageBotTes
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockDockerConnectionManager;
 import org.eclipse.linuxtools.docker.reddeer.condition.ContainerIsDeployedCondition;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
+import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
-import org.jboss.reddeer.common.wait.WaitUntil;
-import org.jboss.reddeer.common.wait.WaitWhile;
-import org.jboss.reddeer.core.condition.JobIsRunning;
-import org.jboss.reddeer.eclipse.ui.views.properties.PropertiesView;
+import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.eclipse.ui.views.properties.PropertySheet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +58,8 @@ public class PrivilegedModeTest extends AbstractImageBotTest {
 	public void testPrivilegedMode() {
 		DockerImagesTab imagesTab = openDockerImagesTab();
 		imagesTab.runImage(IMAGE_NAME + ":" + IMAGE_TAG);
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
+		ImageRunWizard wizard = new ImageRunWizard();
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.setAllocatePseudoTTY();
 		firstPage.setKeepSTDINOpen();
@@ -71,7 +73,7 @@ public class PrivilegedModeTest extends AbstractImageBotTest {
 			new WaitUntil(new ContainerIsDeployedCondition(CONTAINER_NAME, getConnection()));
 		}
 		new WaitWhile(new JobIsRunning());
-		PropertiesView propertiesView = openPropertiesTabForContainer("Inspect", CONTAINER_NAME);
+		PropertySheet propertiesView = openPropertiesTabForContainer("Inspect", CONTAINER_NAME);
 		String privilegedProp = propertiesView.getProperty("HostConfig", "Privileged").getPropertyValue();
 		assertTrue("Container is not running in privileged mode!", privilegedProp.equals("true"));
 	}

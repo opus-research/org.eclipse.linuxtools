@@ -14,11 +14,12 @@ package org.eclipse.linuxtools.docker.integration.tests.ui;
 import org.eclipse.linuxtools.docker.integration.tests.image.AbstractImageBotTest;
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
+import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerContainersTab;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
-import org.jboss.reddeer.common.wait.WaitWhile;
-import org.jboss.reddeer.core.condition.JobIsRunning;
-import org.jboss.reddeer.eclipse.ui.views.properties.PropertiesView;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.eclipse.ui.views.properties.PropertySheet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,8 @@ public class PropertiesViewTest extends AbstractImageBotTest {
 	public void testContainerPropertiesTab() {
 		DockerImagesTab imagesTab = openDockerImagesTab();
 		imagesTab.runImage(IMAGE_NAME);
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
+		ImageRunWizard wizard = new ImageRunWizard();
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.finish();
 		// new WaitWhile(new ContainerIsDeployedCondition(CONTAINER_NAME,
@@ -58,7 +60,7 @@ public class PropertiesViewTest extends AbstractImageBotTest {
 		}
 		getConnection();
 		// open Properties view
-		PropertiesView propertiesView = new PropertiesView();
+		PropertySheet propertiesView = new PropertySheet();
 		propertiesView.open();
 		containerTab.select(CONTAINER_NAME);
 		propertiesView.selectTab("Info");
@@ -71,7 +73,7 @@ public class PropertiesViewTest extends AbstractImageBotTest {
 		// DockerExplorerView de = new DockerExplorerView();
 		// de.open();
 		// de.getDockerConnectionByName(getConnection().getName()).getImage(IMAGE_NAME).select();
-		PropertiesView propertiesView = new PropertiesView();
+		PropertySheet propertiesView = new PropertySheet();
 		propertiesView.open();
 		propertiesView.selectTab("Info");
 	}

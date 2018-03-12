@@ -22,6 +22,7 @@ import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.condition.ContainerIsDeployedCondition;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunResourceVolumesVariablesPage;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
+import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.docker.reddeer.ui.BrowserView;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
@@ -29,10 +30,10 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFact
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
-import org.jboss.reddeer.common.wait.WaitUntil;
-import org.jboss.reddeer.common.wait.WaitWhile;
-import org.jboss.reddeer.core.condition.JobIsRunning;
-import org.jboss.reddeer.eclipse.condition.ConsoleHasNoChange;
+import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.eclipse.condition.ConsoleHasNoChange;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,12 +67,13 @@ public class VolumeMountTest extends AbstractImageBotTest {
 		DockerImagesTab imagesTab = openDockerImagesTab();
 		imagesTab.runImage(IMAGE_UHTTPD + ":" + IMAGE_TAG_LATEST);
 
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
+		ImageRunWizard wizard = new ImageRunWizard();
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.setPublishAllExposedPorts(true);
 		firstPage.next();
 
-		ImageRunResourceVolumesVariablesPage secondPage = new ImageRunResourceVolumesVariablesPage();
+		ImageRunResourceVolumesVariablesPage secondPage = new ImageRunResourceVolumesVariablesPage(wizard);
 		String volumePath = (new File(VOLUME_PATH)).getCanonicalPath();
 		secondPage.addDataVolumeToHost(CONTAINER_PATH, volumePath);
 		secondPage.finish();

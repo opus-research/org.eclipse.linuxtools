@@ -8,28 +8,42 @@
  * Contributors: 
  * Red Hat, Inc. - initial API and implementation 
  ******************************************************************************/ 
+
+
+/*******************************************************************************
+ * Copyright (c) 2017 Red Hat, Inc and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat Inc. - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.docker.reddeer.ui;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.reddeer.common.logging.Logger;
-import org.jboss.reddeer.common.wait.TimePeriod;
-import org.jboss.reddeer.common.wait.WaitWhile;
-import org.jboss.reddeer.core.condition.JobIsRunning;
-import org.jboss.reddeer.eclipse.core.resources.AbstractProject;
-import org.jboss.reddeer.eclipse.core.resources.ExplorerItem;
-import org.jboss.reddeer.eclipse.core.resources.Project;
-import org.jboss.reddeer.eclipse.exception.EclipseLayerException;
-import org.jboss.reddeer.eclipse.utils.DeleteUtils;
-import org.jboss.reddeer.jface.viewer.handler.TreeViewerHandler;
-import org.jboss.reddeer.swt.api.Shell;
-import org.jboss.reddeer.swt.api.TreeItem;
-import org.jboss.reddeer.swt.impl.button.CheckBox;
-import org.jboss.reddeer.swt.impl.button.PushButton;
-import org.jboss.reddeer.swt.impl.menu.ContextMenu;
-import org.jboss.reddeer.swt.impl.shell.DefaultShell;
-import org.jboss.reddeer.swt.impl.tree.DefaultTree;
+import org.eclipse.reddeer.common.logging.Logger;
+import org.eclipse.reddeer.common.wait.TimePeriod;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.eclipse.core.resources.AbstractProject;
+import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
+import org.eclipse.reddeer.eclipse.core.resources.DefaultProjectItem;
+import org.eclipse.reddeer.eclipse.core.resources.ProjectItem;
+import org.eclipse.reddeer.eclipse.exception.EclipseLayerException;
+import org.eclipse.reddeer.eclipse.utils.DeleteUtils;
+import org.eclipse.reddeer.jface.handler.TreeViewerHandler;
+import org.eclipse.reddeer.swt.api.Shell;
+import org.eclipse.reddeer.swt.api.TreeItem;
+import org.eclipse.reddeer.swt.impl.button.CheckBox;
+import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
+import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 
 /**
  * Common ancestor for Package and Project Explorer and Resource Navigator and any similar ones.
@@ -66,10 +80,10 @@ public class AbstractExplorer extends WorkbenchView {
 	 * Selects all projects. If there are not projects do nothing.
 	 */
 	public void selectAllProjects(){
-		List<Project> projects = getProjects();
+		List<DefaultProject> projects = getProjects();
 		List<TreeItem> projectsItems = new ArrayList<TreeItem>();
 		if (projects.size() > 0) {
-			for (Project project: projects) {
+			for (DefaultProject project: projects) {
 				projectsItems.add(project.getTreeItem());
 			}
 		}
@@ -98,28 +112,30 @@ public class AbstractExplorer extends WorkbenchView {
 	 * 
 	 * @return list of projects in explorer
 	 */
-	public List<Project> getProjects(){
-		List<Project> projects = new ArrayList<Project>();
+	public List<DefaultProject> getProjects(){
+		List<DefaultProject> projects = new ArrayList<DefaultProject>();
 
 		TreeViewerHandler treeViewerHandler = TreeViewerHandler.getInstance();
 		
 		for (TreeItem item : getTree().getItems()){
 			String projectName = treeViewerHandler.getNonStyledText(item);
 			log.debug("Getting project with name "+projectName);
-			projects.add(new Project(item));
+			if (org.eclipse.reddeer.direct.project.Project.isProject(projectName)) {
+				projects.add(new DefaultProject(item));
+			}
 		}
 		return projects;
 	}
 	
 	/**
-	 * Provides list of all items in explorer.
+	 * Provides list of all project items in the explorer.
 	 * @return list of explorer items
 	 */
-	public List<ExplorerItem> getExplorerItems() {
-		List<ExplorerItem> items = new ArrayList<ExplorerItem>();
+	public List<ProjectItem> getProjectItems() {
+		List<ProjectItem> items = new ArrayList<ProjectItem>();
 		
 		for (TreeItem item : getTree().getItems()) {
-			items.add(new ExplorerItem(item));
+			items.add(new DefaultProjectItem(item));
 		}		
 		return items;
 	}
@@ -151,9 +167,9 @@ public class AbstractExplorer extends WorkbenchView {
 		activate();
 		if(getProjects().size() > 0){
 			selectAllProjects();
-			new ContextMenu("Refresh").select();
+			new ContextMenuItem("Refresh").select();
 			new WaitWhile(new JobIsRunning(), timeout);
-			new ContextMenu("Delete").select();
+			new ContextMenuItem("Delete").select();
 			Shell s = new DefaultShell("Delete Resources");
 			new CheckBox().toggle(deleteFromFileSystem);
 			new PushButton("OK").click();
@@ -163,7 +179,7 @@ public class AbstractExplorer extends WorkbenchView {
 
 	private DefaultTree getTree(){
 		activate();
-		return new DefaultTree();
+		return new DefaultTree(cTabItem);
 	}
 		
 	/**
@@ -172,9 +188,9 @@ public class AbstractExplorer extends WorkbenchView {
 	 * @param projectName name of a project
 	 * @return project with specified name
 	 */
-	public Project getProject(String projectName){
+	public DefaultProject getProject(String projectName){
 		activate();
-		for (Project project : getProjects()){
+		for (DefaultProject project : getProjects()){
 			if (project.getName().equals(projectName)){
 				return project;
 			}
@@ -185,6 +201,7 @@ public class AbstractExplorer extends WorkbenchView {
 	/**
 	 * Gets project with specific project type defined by subclass of Abstract Project.
 	 * 
+	 * @param <T> specific project type
 	 * @param projectName name of project to get
 	 * @param projectType type of project to get
 	 * @return project of specific type with defined name
