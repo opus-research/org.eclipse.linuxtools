@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.core.timestamp;
 
+import java.io.Serializable;
+
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 
 /**
@@ -37,7 +39,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
  * @see ITmfEvent
  * @see TmfTimeRange
  */
-public interface ITmfTimestamp extends Comparable<ITmfTimestamp> {
+public interface ITmfTimestamp extends Comparable<ITmfTimestamp>, Serializable{
 
     // ------------------------------------------------------------------------
     // Constants
