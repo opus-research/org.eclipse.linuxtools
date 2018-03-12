@@ -311,6 +311,11 @@ public interface LTTngControlServiceConstants {
      */
     static final Pattern TRACE_NETWORK_PATH_PATTERN = Pattern.compile("\\s*Trace\\s+path\\:\\s+(net|net4|net6|tcp|tcp6)\\:\\/\\/(.*)(\\:(\\d*)\\/(.*)\\[data\\:\\s+(\\d*)\\]){0,1}"); //$NON-NLS-1$
     /**
+     * Pattern to match session path for network tracing
+     * Note: file for protocol is not considered as network trace since local consumer will be used.
+     */
+    static final Pattern TRACE_NETWORK_PATTERN = Pattern.compile("\\s*(net|net4|net6|tcp|tcp4|tcp6)\\:\\/\\/(.*)(\\:(\\d*)\\/(.*)\\[data\\:\\s+(\\d*)\\]){0,1}"); //$NON-NLS-1$
+    /**
      * Sub-pattern to pattern TRACE_NETWORK_PATH_PATTERN to match file protocol
      */
     static final Pattern TRACE_FILE_PROTOCOL_PATTERN = Pattern.compile("(file)\\:\\/\\/(.*)"); //$NON-NLS-1$
@@ -421,7 +426,7 @@ public interface LTTngControlServiceConstants {
     /**
      * Pattern to match for session command output for "session name not found".
      */
-    static final Pattern SESSION_NOT_FOUND_ERROR_PATTERN = Pattern.compile("\\s*Error:\\s+Session\\s+name.*not\\s+found"); //$NON-NLS-1$
+    static final Pattern SESSION_NOT_FOUND_ERROR_PATTERN = Pattern.compile("\\s*Error:\\s+Session\\s+name\\s+not\\s+found"); //$NON-NLS-1$
     /**
      * Pattern to match introduction line of context list.
      */
