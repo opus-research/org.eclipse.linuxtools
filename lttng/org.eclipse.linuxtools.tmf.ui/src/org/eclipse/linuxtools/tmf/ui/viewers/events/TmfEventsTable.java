@@ -19,10 +19,9 @@ package org.eclipse.linuxtools.tmf.ui.viewers.events;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -50,6 +49,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EValidator;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -76,9 +76,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.internal.tmf.ui.commands.ExportToTextCommandHandler;
 import org.eclipse.linuxtools.internal.tmf.ui.dialogs.MultiLineInputDialog;
-import org.eclipse.linuxtools.internal.tmf.ui.viewers.events.columns.TmfContentsColumn;
-import org.eclipse.linuxtools.internal.tmf.ui.viewers.events.columns.TmfTimestampColumn;
-import org.eclipse.linuxtools.internal.tmf.ui.viewers.events.columns.TmfTypeColumn;
 import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
@@ -170,13 +167,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      * Empty string array, used by {@link #getItemStrings}.
      * @since 3.0
      */
-    protected static final String[] EMPTY_STRING_ARRAY = new String[0];
-
-    /**
-     * Empty string
-     * @since 3.1
-     */
-    protected static final String EMPTY_STRING = ""; //$NON-NLS-1$
+    protected static final @NonNull String[] EMPTY_STRING_ARRAY = new String[0];
 
     private static final Image BOOKMARK_IMAGE = Activator.getDefault().getImageFromPath(
             "icons/elcl16/bookmark_obj.gif"); //$NON-NLS-1$
@@ -287,13 +278,14 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     private Color fGreenColor;
     private Font fBoldFont;
 
-    private final List<TmfEventTableColumn> fColumns = new LinkedList<>();
-    {
-        /* Start with the default columns */
-        fColumns.add(new TmfTimestampColumn());
-        fColumns.add(new TmfTypeColumn());
-        fColumns.add(new TmfContentsColumn());
-    }
+    // Table column names
+    private static final String[] COLUMN_NAMES = new String[] { Messages.TmfEventsTable_TimestampColumnHeader,
+        Messages.TmfEventsTable_SourceColumnHeader, Messages.TmfEventsTable_TypeColumnHeader,
+        Messages.TmfEventsTable_ReferenceColumnHeader, Messages.TmfEventsTable_ContentColumnHeader };
+
+    private static final ColumnData[] COLUMN_DATA = new ColumnData[] { new ColumnData(COLUMN_NAMES[0], 100, SWT.LEFT),
+        new ColumnData(COLUMN_NAMES[1], 100, SWT.LEFT), new ColumnData(COLUMN_NAMES[2], 100, SWT.LEFT),
+        new ColumnData(COLUMN_NAMES[3], 100, SWT.LEFT), new ColumnData(COLUMN_NAMES[4], 100, SWT.LEFT) };
 
     // Event cache
     private final TmfEventsCache fCache;
@@ -309,7 +301,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     // ------------------------------------------------------------------------
 
     /**
-     * Basic constructor, will only use the default columns
+     * Basic constructor, will use default column data.
      *
      * @param parent
      *            The parent composite UI object
@@ -317,41 +309,20 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      *            The size of the event table cache
      */
     public TmfEventsTable(final Composite parent, final int cacheSize) {
-        this(parent, cacheSize, Collections.EMPTY_SET);
+        this(parent, cacheSize, COLUMN_DATA);
     }
 
     /**
-     * @param parent
-     *            The parent composite UI object
-     * @param cacheSize
-     *            The size of the event table cache
-     * @param columnData
-     *            Unused
-     * @deprecated Deprecated constructor, use
-     *             {@link #TmfEventsTable(Composite, int, Collection)}
-     */
-    @Deprecated
-    public TmfEventsTable(final Composite parent, int cacheSize, final ColumnData[] columnData) {
-        this(parent, cacheSize);
-    }
-
-    /**
-     * Advanced constructor, where we also define which additional columns to
-     * use.
+     * Advanced constructor, where we also define which column data to use.
      *
      * @param parent
      *            The parent composite UI object
      * @param cacheSize
      *            The size of the event table cache
-     * @param extraColumns
-     *            The extra columns (in addition to the default ones) to use in
-     *            this table. The iteration order of this collection will
-     *            correspond to the initial ordering of this series of columns
-     *            in the table.
-     * @since 3.1
+     * @param columnData
+     *            The column data to use for this table
      */
-    public TmfEventsTable(final Composite parent, int cacheSize,
-            Collection<? extends TmfEventTableColumn> extraColumns) {
+    public TmfEventsTable(final Composite parent, int cacheSize, final ColumnData[] columnData) {
         super("TmfEventsTable"); //$NON-NLS-1$
 
         fComposite = new Composite(parent, SWT.NONE);
@@ -376,22 +347,16 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         fTable.setHeaderVisible(true);
         fTable.setLinesVisible(true);
 
-        // Setup the columns
-        synchronized (fColumns) {
-            if (extraColumns != null) {
-                fColumns.addAll(extraColumns);
-            }
+        // Set the columns
+        setColumnHeaders(columnData);
 
-            fTable.setColumnHeaders(getColumnData(fColumns));
-
-            // Set the column field IDs for the default columns
+        // Set the default column field ids if this is not a subclass
+        if (Arrays.equals(columnData, COLUMN_DATA)) {
             fTable.getColumns()[0].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_TIMESTAMP);
             fTable.getColumns()[1].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_SOURCE);
             fTable.getColumns()[2].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_TYPE);
             fTable.getColumns()[3].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_REFERENCE);
             fTable.getColumns()[4].setData(Key.FIELD_ID, ITmfEvent.EVENT_FIELD_CONTENT);
-
-            // TODO Set those keys for the extra columns?
         }
 
         // Set the frozen row for header row
@@ -623,10 +588,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
 
         createPopupMenu();
     }
-
-    // ------------------------------------------------------------------------
-    // Operations
-    // ------------------------------------------------------------------------
 
     /**
      * Create a pop-up menu.
@@ -1033,13 +994,11 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
 
     /**
      * @param columnData
-     *            columnData
-     * @deprecated The column headers are now set at the constructor, this
-     *             shouldn't be called anymore.
+     *
+     * FIXME: Add support for column selection
      */
-    @Deprecated
     protected void setColumnHeaders(final ColumnData[] columnData) {
-        /* No-op */
+        fTable.setColumnHeaders(columnData);
     }
 
     /**
@@ -1053,7 +1012,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      *            Which rank this event has in the trace/experiment
      */
     protected void setItemData(final TableItem item, final ITmfEvent event, final long rank) {
-        item.setText(getItemStrings(fColumns, event));
+        item.setText(getItemStrings(event));
         item.setData(event);
         item.setData(Key.TIMESTAMP, new TmfTimestamp(event.getTimestamp()));
         item.setData(Key.RANK, rank);
@@ -1900,80 +1859,28 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     }
 
     /**
-     * Get the array of {@link ColumnData} corresponding to the columns passed
-     * in parameter. The order of the ColumData objects in the array will
-     * correspond to the iteration order of 'columns'.
-     *
-     * <p>
-     * To ensure consistent results, make sure only call this within a scope
-     * synchronized on 'columns'! If the order of 'columns' changes right after
-     * this method is called, the returned value won't be ordered correctly
-     * anymore.
-     */
-    private static ColumnData[] getColumnData(List<TmfEventTableColumn> columns) {
-        synchronized (columns) {
-            List<ColumnData> data = new ArrayList<>(columns.size());
-            for (TmfEventTableColumn column : columns) {
-                data.add(column.getColumnData());
-            }
-            return data.toArray(new ColumnData[0]);
-        }
-    }
-
-    /**
-     * Get the array of item strings (e.g., what to display in each cell of the
-     * table row) corresponding to the columns and trace event passed in
-     * parameter. The order of the Strings in the returned array will correspond
-     * to the iteration order of 'columns'.
-     *
-     * <p>
-     * To ensure consistent results, make sure only call this within a scope
-     * synchronized on 'columns'! If the order of 'columns' changes right after
-     * this method is called, the returned value won't be ordered correctly
-     * anymore.
-     */
-    private static String[] getItemStrings(List<TmfEventTableColumn> columns, ITmfEvent event) {
-        synchronized (columns) {
-            List<String> itemStrings = new ArrayList<>(columns.size());
-            for (TmfEventTableColumn column : columns) {
-                itemStrings.add(column.getItemString(event));
-            }
-            return itemStrings.toArray(new String[0]);
-        }
-    }
-
-    /**
      * Get the contents of the row in the events table corresponding to an
-     * event. The order of the elements corresponds to the current order of the
-     * columns.
+     * event. The order of the elements corresponds to the order of the columns.
+     *
+     * TODO Use column IDs, not indexes, so that the column order can be
+     * re-arranged.
      *
      * @param event
      *            The event printed in this row
      * @return The event row entries
      * @since 3.0
-     * @deprecated Columns should not get their "item strings" this way anymore,
-     *             those are now defined per column, in
-     *             {@link TmfEventTableColumn#getItemString(ITmfEvent)}. If you
-     *             still want the item strings of this table for other reasons,
-     *             you can use {@link #getCurrentItemStrings(ITmfEvent)}.
      */
-    @Deprecated
     public String[] getItemStrings(ITmfEvent event) {
-        return getCurrentItemStrings(event);
-    }
-
-    /**
-     * Get the row elements corresponding to a given events. They will be
-     * ordered according to the current ordering of the columns, which might not
-     * always be the same.
-     *
-     * @param event
-     *            The event for which to print the elements
-     * @return The row entries, one for each column
-     * @since 3.1
-     */
-    public String[] getCurrentItemStrings(ITmfEvent event) {
-        return getItemStrings(fColumns, event);
+        if (event == null) {
+            return EMPTY_STRING_ARRAY;
+        }
+        return new String[] {
+                event.getTimestamp().toString(),
+                event.getSource(),
+                event.getType().getName(),
+                event.getReference(),
+                event.getContent().toString()
+        };
     }
 
     /**
