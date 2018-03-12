@@ -15,17 +15,28 @@ package org.eclipse.linuxtools.tmf.core.trace.text;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.io.BufferedRandomAccessFile;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
+import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TraceValidationStatus;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfPersistentlyIndexable;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.ITmfTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.TmfBTreeTraceIndexer;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.ITmfCheckpoint;
+import org.eclipse.linuxtools.tmf.core.trace.indexer.checkpoint.TmfCheckpoint;
 import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
 
@@ -40,8 +51,9 @@ import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
  *
  * @since 3.0
  */
-public abstract class TextTrace<T extends TextTraceEvent> extends AbstractCustomTrace {
+public abstract class TextTrace<T extends TextTraceEvent> extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable {
 
+    private static final TmfLongLocation NULL_LOCATION = new TmfLongLocation(-1L);
     private static final int MAX_LINES = 100;
     private static final int MAX_CONFIDENCE = 100;
 
@@ -95,12 +107,112 @@ public abstract class TextTrace<T extends TextTraceEvent> extends AbstractCustom
         return new TraceValidationStatus(confidence, Activator.PLUGIN_ID);
 
     }
+    @Override
+    public void initTrace(IResource resource, String path, Class<? extends ITmfEvent> type) throws TmfTraceException {
+        super.initTrace(resource, path, type);
+        try {
+            fFile = new BufferedRandomAccessFile(getPath(), "r"); //$NON-NLS-1$
+        } catch (IOException e) {
+            throw new TmfTraceException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public synchronized void dispose() {
+        super.dispose();
+        if (fFile != null) {
+            try {
+                fFile.close();
+            } catch (IOException e) {
+            } finally {
+                fFile = null;
+            }
+        }
+    }
+
+    @Override
+    public synchronized TextTraceContext seekEvent(ITmfLocation location) {
+        TextTraceContext context = new TextTraceContext(NULL_LOCATION, ITmfContext.UNKNOWN_RANK);
+        if (NULL_LOCATION.equals(location) || fFile == null) {
+            return context;
+        }
+        try {
+            if (location == null) {
+                fFile.seek(0);
+            } else if (location.getLocationInfo() instanceof Long) {
+                fFile.seek((Long) location.getLocationInfo());
+            }
+            long rawPos = fFile.getFilePointer();
+            String line = fFile.getNextLine();
+            while (line != null) {
+                Matcher matcher = getFirstLinePattern().matcher(line);
+                if (matcher.matches()) {
+                    setupContext(context, rawPos, line, matcher);
+                    return context;
+                }
+                rawPos = fFile.getFilePointer();
+                line = fFile.getNextLine();
+            }
+            return context;
+        } catch (IOException e) {
+            Activator.logError("Error seeking file: " + getPath(), e); //$NON-NLS-1$
+            return context;
+        }
+    }
 
     private void setupContext(TextTraceContext context, long rawPos, String line, Matcher matcher) throws IOException {
         context.setLocation(new TmfLongLocation(rawPos));
         context.firstLineMatcher = matcher;
         context.firstLine = line;
         context.nextLineLocation = fFile.getFilePointer();
+    }
+
+    @Override
+    public synchronized TextTraceContext seekEvent(double ratio) {
+        if (fFile == null) {
+            return new TextTraceContext(NULL_LOCATION, ITmfContext.UNKNOWN_RANK);
+        }
+        try {
+            long pos = (long) (ratio * fFile.length());
+            while (pos > 0) {
+                fFile.seek(pos - 1);
+                if (fFile.read() == '\n') {
+                    break;
+                }
+                pos--;
+            }
+            ITmfLocation location = new TmfLongLocation(Long.valueOf(pos));
+            TextTraceContext context = seekEvent(location);
+            context.setRank(ITmfContext.UNKNOWN_RANK);
+            return context;
+        } catch (IOException e) {
+            Activator.logError("Error seeking file: " + getPath(), e); //$NON-NLS-1$
+            return new TextTraceContext(NULL_LOCATION, ITmfContext.UNKNOWN_RANK);
+        }
+    }
+
+    @Override
+    public double getLocationRatio(ITmfLocation location) {
+        if (fFile == null) {
+            return 0;
+        }
+        try {
+            long length = fFile.length();
+            if (length == 0) {
+                return 0;
+            }
+            if (location.getLocationInfo() instanceof Long) {
+                return (double) ((Long) location.getLocationInfo()) / length;
+            }
+        } catch (IOException e) {
+            Activator.logError("Error reading file: " + getPath(), e); //$NON-NLS-1$
+        }
+        return 0;
+    }
+
+    @Override
+    public ITmfLocation getCurrentLocation() {
+        return null;
     }
 
     @Override
@@ -193,38 +305,9 @@ public abstract class TextTrace<T extends TextTraceEvent> extends AbstractCustom
      */
     protected abstract void parseNextLine(T event, String line);
 
-
-    @Override
-    public synchronized TextTraceContext seekEvent(double ratio) {
-        return (TextTraceContext)super.seekEvent(ratio);
-    }
-
-    @Override
-    public synchronized TextTraceContext seekEvent(ITmfLocation location) {
-        return (TextTraceContext)super.seekEvent(location);
-    }
-
     // ------------------------------------------------------------------------
     // Helper methods
     // ------------------------------------------------------------------------
-
-    @Override
-    protected TmfContext match(TmfContext context, long rawPos, String line) throws IOException {
-        Matcher matcher = getFirstLinePattern().matcher(line);
-        if (matcher.matches()) {
-            if (context instanceof TextTraceContext) {
-                TextTraceContext textTraceContext = (TextTraceContext) context;
-                setupContext(textTraceContext, rawPos, line, matcher);
-                return context;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    protected TmfContext getNullContext() {
-        return new TextTraceContext(NULL_LOCATION, ITmfContext.UNKNOWN_RANK);
-    }
 
     /**
      * Strip quotes surrounding a string
@@ -234,7 +317,7 @@ public abstract class TextTrace<T extends TextTraceEvent> extends AbstractCustom
      * @return The string without quotes
      */
     protected static String replaceQuotes(String input) {
-        String out = input.replaceAll("^\"|(\"\\s*)$", ""); //$NON-NLS-1$//$NON-NLS-2$
+        String out = input.replaceAll("^\"|(\"\\s*)$", "");  //$NON-NLS-1$//$NON-NLS-2$
         return out;
     }
 
@@ -246,17 +329,32 @@ public abstract class TextTrace<T extends TextTraceEvent> extends AbstractCustom
      * @return The string without brackets
      */
     protected static String replaceBrackets(String input) {
-        String out = input.replaceAll("^\\{|(\\}\\s*)$", ""); //$NON-NLS-1$//$NON-NLS-2$
+        String out = input.replaceAll("^\\{|(\\}\\s*)$", "");  //$NON-NLS-1$//$NON-NLS-2$
         return out;
     }
 
+    private static int fCheckpointSize = -1;
+
     @Override
-    protected BufferedRandomAccessFile getFile() {
-        return fFile;
+    public synchronized int getCheckpointSize() {
+        if (fCheckpointSize == -1) {
+            TmfCheckpoint c = new TmfCheckpoint(TmfTimestamp.ZERO, new TmfLongLocation(0L), 0);
+            ByteBuffer b = ByteBuffer.allocate(ITmfCheckpoint.MAX_SERIALIZE_SIZE);
+            b.clear();
+            c.serialize(b);
+            fCheckpointSize = b.position();
+        }
+
+        return fCheckpointSize;
     }
 
     @Override
-    protected void setFile(BufferedRandomAccessFile file) {
-        fFile = file;
+    protected ITmfTraceIndexer createIndexer(int interval) {
+        return new TmfBTreeTraceIndexer(this, interval);
+    }
+
+    @Override
+    public ITmfLocation restoreLocation(ByteBuffer bufferIn) {
+        return new TmfLongLocation(bufferIn);
     }
 }

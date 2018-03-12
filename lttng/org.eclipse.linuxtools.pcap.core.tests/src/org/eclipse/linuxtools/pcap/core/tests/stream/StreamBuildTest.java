@@ -18,11 +18,11 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 
-import org.eclipse.linuxtools.internal.pcap.core.protocol.Protocol;
-import org.eclipse.linuxtools.internal.pcap.core.stream.PacketStream;
-import org.eclipse.linuxtools.internal.pcap.core.stream.PacketStreamBuilder;
-import org.eclipse.linuxtools.internal.pcap.core.trace.BadPcapFileException;
+import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
+import org.eclipse.linuxtools.pcap.core.stream.PacketStream;
+import org.eclipse.linuxtools.pcap.core.stream.PacketStreamBuilder;
 import org.eclipse.linuxtools.pcap.core.tests.shared.PcapTestTrace;
+import org.eclipse.linuxtools.pcap.core.trace.BadPcapFileException;
 import org.junit.Test;
 
 /**
@@ -43,9 +43,10 @@ public class StreamBuildTest {
         assumeTrue(trace.exists());
 
         try {
+            String file = trace.getPath();
             // Test Ethernet II stream
             PacketStreamBuilder builder = new PacketStreamBuilder(Protocol.ETHERNET_II);
-            builder.parsePcapFile(trace.getPath());
+            builder.parsePcapFile(file);
             assertEquals(Protocol.ETHERNET_II, builder.getProtocol());
             // Should do one loop only, so hardcoded values are okay.
             for (PacketStream stream : builder.getStreams()) {
@@ -65,7 +66,7 @@ public class StreamBuildTest {
 
             // Test TCP streams and other constructor
             builder = new PacketStreamBuilder(Protocol.TCP);
-            builder.parsePcapFile(trace.getPath());
+            builder.parsePcapFile(file);
             assertEquals(Protocol.TCP, builder.getProtocol());
 
             PacketStream stream = builder.getStream(0);

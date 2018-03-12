@@ -19,12 +19,12 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 
-import org.eclipse.linuxtools.internal.pcap.core.packet.BadPacketException;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.Protocol;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.pcap.PcapPacket;
-import org.eclipse.linuxtools.internal.pcap.core.trace.BadPcapFileException;
-import org.eclipse.linuxtools.internal.pcap.core.trace.PcapFile;
+import org.eclipse.linuxtools.pcap.core.packet.BadPacketException;
+import org.eclipse.linuxtools.pcap.core.protocol.Protocol;
+import org.eclipse.linuxtools.pcap.core.protocol.pcap.PcapPacket;
 import org.eclipse.linuxtools.pcap.core.tests.shared.PcapTestTrace;
+import org.eclipse.linuxtools.pcap.core.trace.BadPcapFileException;
+import org.eclipse.linuxtools.pcap.core.trace.PcapFile;
 import org.junit.Test;
 
 /**
@@ -51,7 +51,8 @@ public class PcapFileReadTest {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_UDP;
         assumeTrue(trace.exists());
 
-        try (PcapFile file = new PcapFile(trace.getPath());) {
+        String path = trace.getPath();
+        try (PcapFile file = new PcapFile(path);) {
 
             PcapPacket packet = file.parseNextPacket();
             if (packet == null) {

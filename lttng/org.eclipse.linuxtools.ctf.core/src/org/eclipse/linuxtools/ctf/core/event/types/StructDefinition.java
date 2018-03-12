@@ -33,8 +33,6 @@ import com.google.common.collect.ImmutableMap.Builder;
  * contains other datatypes in fields. they are stored in an hashmap and indexed
  * by names which are strings.
  *
- * TODO: move me to internal
- *
  * @version 1.0
  * @author Matthew Khouzam
  * @author Simon Marchi
