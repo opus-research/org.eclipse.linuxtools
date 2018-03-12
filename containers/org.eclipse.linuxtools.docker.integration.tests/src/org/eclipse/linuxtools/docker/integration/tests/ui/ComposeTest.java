@@ -43,7 +43,6 @@ import org.jboss.reddeer.swt.api.Menu;
 import org.jboss.reddeer.swt.exception.SWTLayerException;
 import org.jboss.reddeer.swt.impl.button.FinishButton;
 import org.jboss.reddeer.swt.impl.button.OkButton;
-import org.jboss.reddeer.swt.impl.button.PushButton;
 import org.jboss.reddeer.swt.impl.combo.LabeledCombo;
 import org.jboss.reddeer.swt.impl.menu.ContextMenu;
 import org.jboss.reddeer.swt.impl.menu.ShellMenu;
@@ -149,7 +148,7 @@ public class ComposeTest extends AbstractImageBotTest {
 		new OkButton().click();
 		try {
 			new DefaultShell("Docker Compose");
-			new PushButton("Apply and Close").click();
+			new OkButton().click();
 			fail("Docker Compose has not been found! Is it installed and the path is correct?");
 		} catch (SWTLayerException ex) {
 		}
