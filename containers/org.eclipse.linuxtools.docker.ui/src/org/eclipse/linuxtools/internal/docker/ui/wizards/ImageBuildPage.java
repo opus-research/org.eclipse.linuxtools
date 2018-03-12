@@ -29,8 +29,8 @@ import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -108,7 +108,7 @@ public class ImageBuildPage extends WizardPage {
 			error = true;
 		} else {
 			if (name.contains(":")) { //$NON-NLS-$
-				if (name.substring(name.indexOf(':') + 1).contains(":")) { //$NON-NLS-1$
+				if (name.substring(name.indexOf(":") + 1).contains(":")) { //$NON-NLS-1$ //$NON-NLS-2$
 					setErrorMessage(WizardMessages.getString(INVALID_ID));
 					error = true;
 				}
@@ -186,7 +186,7 @@ public class ImageBuildPage extends WizardPage {
 
 		Button browse = new Button(container, SWT.NULL);
 		browse.setText(WizardMessages.getString(BROWSE_LABEL));
-		browse.addSelectionListener(new SelectionAdapter() {
+		browse.addSelectionListener(new SelectionListener() {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -195,12 +195,18 @@ public class ImageBuildPage extends WizardPage {
 				if (k != null)
 					directoryText.setText(k);
 			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// ignore for now
+			}
+
 		});
 
 		editButton = new Button(container, SWT.NULL);
 		editButton.setText(WizardMessages.getString(EDIT_LABEL));
 		editButton.setEnabled(false);
-		editButton.addSelectionListener(new SelectionAdapter() {
+		editButton.addSelectionListener(new SelectionListener() {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -228,6 +234,12 @@ public class ImageBuildPage extends WizardPage {
 				}
 				validate();
 			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// ignore for now
+			}
+
 		});
 
 		Point p1 = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
