@@ -109,52 +109,10 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
             case LttngStrings.EXIT_SYSCALL:
             /* Fields: int64 ret */
             {
-                final int systemCallNode = getNodeSyscall(currentThreadNode);
-
-                /* Name and return value of the exit syscall. */
-                final String systemCallExited = ss.queryOngoingState(systemCallNode).unboxStr();
-                final int systemCallRet = ((Long) event.getContent().getField(LttngStrings.RET).getValue()).intValue();
-
-                /* Do some per-syscall specific work. */
-                switch (systemCallExited) {
-                case LttngStrings.SYS_OPEN:
-                    if (systemCallRet > 0) {
-                        /*
-                         * The file was successfully opened, add a record in the
-                         * file descriptor table of the process.
-                         */
-                        final ITmfStateValue filename = ss.queryOngoingState(ss.getQuarkRelative(systemCallNode, Attributes.FILENAME));
-                        final int fileDescriptorNode = getFileDescriptorNode(currentThreadNode, systemCallRet);
-                        final int fileDescriptorFilenameNode = ss.getQuarkRelativeAndAdd(fileDescriptorNode, Attributes.FILENAME);
-
-                        ss.modifyAttribute(ts, filename, fileDescriptorFilenameNode);
-                    }
-
-                    break;
-                case LttngStrings.SYS_CLOSE:
-                    if (systemCallRet == 0) {
-                        /*
-                         * The file was successfully closed, forget everything
-                         * we know about this file descriptor.
-                         */
-                        final int fileDescriptor = ss.queryOngoingState(ss.getQuarkRelative(systemCallNode, Attributes.FILE_DESCRIPTOR)).unboxInt();
-                        final int fileDescriptorNode = getFileDescriptorNode(currentThreadNode, fileDescriptor);
-
-                        ss.removeAttribute(ts, fileDescriptorNode);
-                    }
-                    break;
-                default:
-                    break;
-
-                }
-
-                /* Now do the general syscall work. */
-
-                /*
-                 * Clear the current system call on the process, including the
-                 * subattributes.
-                 */
-                ss.removeAttribute(ts, systemCallNode);
+                /* Clear the current system call on the process */
+                quark = ss.getQuarkRelativeAndAdd(currentThreadNode, Attributes.SYSTEM_CALL);
+                value = TmfStateValue.nullValue();
+                ss.modifyAttribute(ts, value, quark);
 
                 /* Put the process' status back to user mode */
                 quark = ss.getQuarkRelativeAndAdd(currentThreadNode, Attributes.STATUS);
@@ -455,16 +413,6 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
             }
                 break;
 
-            case LttngStrings.STATEDUMP_FILE_DESCRIPTOR: {
-                final int fd = ((Long) event.getContent().getField(LttngStrings.FD).getValue()).intValue();
-                final int pid = ((Long) event.getContent().getField(LttngStrings.PID).getValue()).intValue();
-                final String filename = (String) event.getContent().getField(LttngStrings.FILENAME).getValue();
-                final int fakeCurrentThread = getNodeThread(pid);
-                final int fileDescriptorNode = getFileDescriptorNode(fakeCurrentThread, fd);
-                ss.modifyAttribute(ts, TmfStateValue.newValueString(filename), fileDescriptorNode);
-            }
-                break;
-
             case LttngStrings.SCHED_WAKEUP:
             case LttngStrings.SCHED_WAKEUP_NEW:
             /* Fields (same fields for both types):
@@ -500,39 +448,10 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
                      * syscall names are listed into the event type
                      */
 
-                    final int systemCallNode = getNodeSyscall(currentThreadNode);
-
-                    /* Do some per-syscall specific work. */
-                    switch (eventName) {
-                    case LttngStrings.SYS_OPEN: {
-                        /*
-                         * Record the filename, we'll need it when we exit the
-                         * open syscall.
-                         */
-                        final String filename = (String) event.getContent().getField(LttngStrings.FILENAME).getValue();
-                        final int systemCallFilenameNode = ss.getQuarkRelativeAndAdd(systemCallNode, Attributes.FILENAME);
-                        ss.modifyAttribute(ts, TmfStateValue.newValueString(filename), systemCallFilenameNode);
-                    }
-                        break;
-                    case LttngStrings.SYS_CLOSE: {
-                        /*
-                         * Record the file descriptor, we'll need it when we
-                         * exit the close syscall.
-                         */
-                        final int fileDescriptor = ((Long) event.getContent().getField(LttngStrings.FD).getValue()).intValue();
-                        final int systemCallFileDescriptorNode = ss.getQuarkRelativeAndAdd(systemCallNode, Attributes.FILE_DESCRIPTOR);
-                        ss.modifyAttribute(ts, TmfStateValue.newValueInt(fileDescriptor), systemCallFileDescriptorNode);
-                    }
-                        break;
-                    default:
-                        break;
-                    }
-
-                    /* Now do the general syscall work. */
-
                     /* Assign the new system call to the process */
+                    quark = ss.getQuarkRelativeAndAdd(currentThreadNode, Attributes.SYSTEM_CALL);
                     value = TmfStateValue.newValueString(eventName);
-                    ss.modifyAttribute(ts, value, systemCallNode);
+                    ss.modifyAttribute(ts, value, quark);
 
                     /* Put the process in system call mode */
                     quark = ss.getQuarkRelativeAndAdd(currentThreadNode, Attributes.STATUS);
@@ -585,51 +504,12 @@ public class LttngKernelStateProvider extends AbstractTmfStateProvider {
         return ss.getQuarkAbsoluteAndAdd(Attributes.THREADS);
     }
 
-    /** Get the node corresponding to a thread id. */
-    private int getNodeThread(int tid) {
-        return ss.getQuarkAbsoluteAndAdd(Attributes.THREADS, String.valueOf(tid));
-    }
-
     private int getNodeIRQs() {
         return ss.getQuarkAbsoluteAndAdd(Attributes.RESOURCES, Attributes.IRQS);
     }
 
     private int getNodeSoftIRQs() {
         return ss.getQuarkAbsoluteAndAdd(Attributes.RESOURCES, Attributes.SOFT_IRQS);
-    }
-
-    /** Get the syscall node for a given thread. */
-    private int getNodeSyscall(int currentThreadNode) {
-        return ss.getQuarkRelativeAndAdd(currentThreadNode, Attributes.SYSTEM_CALL);
-    }
-
-    /**
-     * Get the node of the thread group leader for a given thread. The thread
-     * group leader is the initial thread of a thread group, and is the one for
-     * which tid == pid.
-     */
-    private int getThreadGroupLeaderNode(int currentThreadNode) throws AttributeNotFoundException {
-        final int tgidNode = ss.getQuarkRelative(currentThreadNode, Attributes.TGID);
-        final int tgid = ss.queryOngoingState(tgidNode).unboxInt();
-        return ss.getQuarkRelative(getNodeThreads(), String.valueOf(tgid));
-    }
-
-    /**
-     * Get the node for the file descriptor table for a given thread. Since file
-     * descriptors are per-process and not per-thread, we keep it under the node
-     * of the thread group leader.
-     */
-    private int getFileDescriptorTableNode(int currentThreadNode) throws AttributeNotFoundException {
-        return ss.getQuarkRelativeAndAdd(getThreadGroupLeaderNode(currentThreadNode), Attributes.FILE_DESCRIPTORS);
-    }
-
-    /**
-     * Get the node for a particular file descriptor for a given thread. See
-     * comments about {@link #getFileDescriptorTableNode(int currentThreadNode)
-     * getFileDescriptorTableNode}.
-     */
-    private int getFileDescriptorNode(int currentThreadNode, int fd) throws AttributeNotFoundException {
-        return ss.getQuarkRelativeAndAdd(getFileDescriptorTableNode(currentThreadNode), String.valueOf(fd));
     }
 
     // ------------------------------------------------------------------------
