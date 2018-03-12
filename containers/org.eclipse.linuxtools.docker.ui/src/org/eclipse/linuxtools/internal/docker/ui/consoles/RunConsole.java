@@ -17,7 +17,6 @@ import java.io.OutputStream;
 
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
-import org.eclipse.linuxtools.docker.core.IDockerContainerState;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -147,14 +146,10 @@ public class RunConsole extends IOConsole {
 			try {
 				DockerConnection conn = (DockerConnection) connection;
 				if (conn.getContainerInfo(containerId).config().openStdin()) {
-					IDockerContainerState state = conn
-							.getContainerInfo(containerId).state();
-					do {
-						if (!state.running() && state.finishDate() == null) {
-							Thread.sleep(300);
-						}
-						state = conn.getContainerInfo(containerId).state();
-					} while (!state.running() && state.finishDate() == null);
+					while (!conn.getContainerInfo(containerId).state()
+							.running()) {
+						Thread.sleep(1000);
+					}
 					conn.attachCommand(containerId, in, out);
 				}
 			} catch (Exception e) {
@@ -169,14 +164,10 @@ public class RunConsole extends IOConsole {
 			try {
 				DockerConnection conn = (DockerConnection) connection;
 				if (conn.getContainerInfo(containerId).config().openStdin()) {
-					IDockerContainerState state = conn
-							.getContainerInfo(containerId).state();
-					do {
-						if (!state.running() && state.finishDate() == null) {
-							Thread.sleep(300);
-						}
-						state = conn.getContainerInfo(containerId).state();
-					} while (!state.running() && state.finishDate() == null);
+					while (!conn.getContainerInfo(containerId).state()
+							.running()) {
+						Thread.sleep(1000);
+					}
 					conn.attachCommand(containerId, null, null);
 				}
 			} catch (Exception e) {
