@@ -120,7 +120,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 
 		public Builder tcpHost(String tcpHost) {
-			if (tcpHost != null && !tcpHost.isEmpty()) {
+			if (tcpHost != null) {
 				if (!tcpHost.matches("\\w+://.*")) { //$NON-NLS-1$
 					tcpHost = "tcp://" + tcpHost; //$NON-NLS-1$
 				}
@@ -281,8 +281,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void ping() throws DockerException {
 		try {
-			if (this.client != null) {
-				this.client.ping();
+			if (client != null) {
+				client.ping();
 			} else {
 				throw new DockerException(Messages.Docker_Daemon_Ping_Failure);
 			}
@@ -295,7 +295,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void close() {
 		synchronized (clientLock) {
-			if (this.client != null) {
+			if (client != null) {
 				this.client.close();
 				this.client = null;
 			}
@@ -304,12 +304,9 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public IDockerConnectionInfo getInfo() throws DockerException {
-		if (this.client == null) {
-			return null;
-		}
 		try {
-			final Info info = this.client.info();
-			final Version version = this.client.version();
+			final Info info = client.info();
+			final Version version = client.version();
 			return new DockerConnectionInfo(info, version);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
@@ -656,11 +653,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public IDockerImageInfo getImageInfo(String id) {
-		if (this.client == null) {
-			return null;
-		}
 		try {
-			final ImageInfo info = this.client.inspectImage(id);
+			final ImageInfo info = client.inspectImage(id);
 			return new DockerImageInfo(info);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			Activator.logErrorMessage(e.message());
