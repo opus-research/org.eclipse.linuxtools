@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, SAP AG
+ * Copyright (c) 2010, 2016 SAP AG
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,7 +17,6 @@ import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
@@ -27,7 +26,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
-import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.results.WidgetResult;
 import org.eclipse.swtbot.swt.finder.widgets.AbstractSWTBot;
 import org.hamcrest.Matcher;
@@ -52,17 +50,13 @@ public class ContextMenuHelper {
 
         // show
         final MenuItem menuItem = UIThreadRunnable
-                .syncExec(new WidgetResult<MenuItem>() {
-                    @Override
-                    public MenuItem run() {
-                        MenuItem theItem = getMenuItem(bot, texts);
-                        if (theItem != null && !theItem.isEnabled())
-                            throw new IllegalStateException(
-                                    "Menu item is diabled");
+				.syncExec((WidgetResult<MenuItem>) () -> {
+					MenuItem theItem = getMenuItem(bot, texts);
+					if (theItem != null && !theItem.isEnabled())
+						throw new IllegalStateException("Menu item is diabled");
 
-                        return theItem;
-                    }
-                });
+					return theItem;
+				});
         if (menuItem == null) {
             throw new WidgetNotFoundException("Could not find menu: "
                     + Arrays.asList(texts));
@@ -72,14 +66,11 @@ public class ContextMenuHelper {
         click(menuItem);
 
         // hide
-        UIThreadRunnable.syncExec(new VoidResult() {
-            @Override
-            public void run() {
-                if (menuItem.isDisposed())
-                    return; // menu already gone
-                hide(menuItem.getParent());
-            }
-        });
+		UIThreadRunnable.syncExec(() -> {
+			if (menuItem.isDisposed())
+				return; // menu already gone
+			hide(menuItem.getParent());
+		});
     }
 
     private static MenuItem getMenuItem(final AbstractSWTBot<?> bot,
@@ -103,48 +94,6 @@ public class ContextMenuHelper {
         return theItem;
     }
 
-    /**
-     * Checks if the context menu matching the text is enabled
-     *
-     * @param bot
-     *
-     * @param texts
-     *            the text on the context menu.
-     * @return true if the context menu is enabled
-     * @throws WidgetNotFoundException
-     *             if the widget is not found.
-     */
-    public static boolean isContextMenuItemEnabled(final AbstractSWTBot<?> bot,
-            final String... texts) {
-
-        final AtomicBoolean enabled = new AtomicBoolean(false);
-        // show
-        final MenuItem menuItem = UIThreadRunnable
-                .syncExec(new WidgetResult<MenuItem>() {
-                    @Override
-                    public MenuItem run() {
-                        MenuItem theItem = getMenuItem(bot, texts);
-                        if (theItem != null && theItem.isEnabled())
-                            enabled.set(true);
-                        return theItem;
-                    }
-                });
-        if (menuItem == null) {
-            throw new WidgetNotFoundException("Could not find menu: "
-                    + Arrays.asList(texts));
-        }
-        // hide
-        UIThreadRunnable.syncExec(new VoidResult() {
-            @Override
-            public void run() {
-                if (menuItem.isDisposed())
-                    return; // menu already gone
-                hide(menuItem.getParent());
-            }
-        });
-        return enabled.get();
-    }
-
     private static MenuItem show(final Menu menu, final Matcher<MenuItem> matcher) {
         if (menu != null) {
             menu.notifyListeners(SWT.Show, new Event());
@@ -166,12 +115,7 @@ public class ContextMenuHelper {
         event.display = menuItem.getDisplay();
         event.type = SWT.Selection;
 
-        UIThreadRunnable.asyncExec(menuItem.getDisplay(), new VoidResult() {
-            @Override
-            public void run() {
-                menuItem.notifyListeners(SWT.Selection, event);
-            }
-        });
+		UIThreadRunnable.asyncExec(menuItem.getDisplay(), () -> menuItem.notifyListeners(SWT.Selection, event));
     }
 
     private static void hide(final Menu menu) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009-2015 STMicroelectronics and others.
+ * Copyright (c) 2009-2016 STMicroelectronics and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,6 +8,7 @@
  * Contributors:
  *    Xavier Raynaud <xavier.raynaud@st.com> - initial API and implementation
  *    Red Hat Inc. - ongoing maintenance
+ *    Ingenico - Vincent Guignot <vincent.guignot@ingenico.com> - Add binutils strings
  *******************************************************************************/
 package org.eclipse.linuxtools.binutils.utils;
 
@@ -83,24 +84,21 @@ public class STSymbolManager {
      * Constructor
      */
     private STSymbolManager() {
-        Runnable worker = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    do {
-                        try {
-                            Thread.sleep(AUTO_DISPOSE_TIMEOUT);
-                        } catch (InterruptedException e) {
-                            break;
-                        }
-                        cleanup();
-                    } while (true);
-                } catch (Exception e) {
-                    Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
-                    Activator.getDefault().getLog().log(s);
-                }
-            }
-        };
+        Runnable worker = () -> {
+		    try {
+		        do {
+		            try {
+		                Thread.sleep(AUTO_DISPOSE_TIMEOUT);
+		            } catch (InterruptedException e1) {
+		                break;
+		            }
+		            cleanup();
+		        } while (true);
+		    } catch (Exception e2) {
+		        Status s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, e2.getMessage(), e2);
+		        Activator.getDefault().getLog().log(s);
+		    }
+		};
         new Thread(worker, "ST System Analysis Symbol Manager").start(); //$NON-NLS-1$
         // TODO: perhaps this thread has to be lazy-created ?
         // and perhaps this thread has to destroy itself when it is no longer
@@ -328,6 +326,24 @@ public class STSymbolManager {
     }
 
     /**
+     * Gets the strings support for the given program.
+     * @param program
+     * @param project
+     * @return an instance of Strings suitable for the given program
+     * @since 6.0
+     */
+    public synchronized STStrings getStrings(IBinaryObject program, IProject project) {
+        STStrings strings = null;
+        try {
+            strings = STBinutilsFactoryManager.getStrings(program.getCPU(), project);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return strings;
+    }
+
+	/**
      * Gets the IBinaryObject corresponding to the given path (absolute path in filesystem). If a IBinaryObject
      * corresponding to the given path has been already built by eclipse, return it. Otherwise build a new
      * IBinaryObject, according to project preferences. Note that it may return null if the path is invalid, or is not a
