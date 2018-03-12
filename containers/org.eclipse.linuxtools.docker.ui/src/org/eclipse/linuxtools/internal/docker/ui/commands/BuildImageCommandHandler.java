@@ -34,7 +34,6 @@ import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.jobs.BuildDockerImageJob;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageBuild;
-import org.eclipse.linuxtools.internal.docker.ui.wizards.NewDockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.WizardMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -76,41 +75,17 @@ public class BuildImageCommandHandler extends AbstractHandler {
 				connection = connections[0];
 		}
 		if (connection == null || !connection.isOpen()) {
-			if (DockerConnectionManager.getInstance().getConnections().length == 0) {
-				Display.getDefault().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						boolean confirm = MessageDialog.openQuestion(
-								PlatformUI.getWorkbench()
-										.getActiveWorkbenchWindow().getShell(),
-								CommandMessages.getString(
-										"BuildImageCommandHandler.no.connections.msg"), //$NON-NLS-1$
-								CommandMessages.getString(
-										"BuildImageCommandHandler.no.connections.desc")); //$NON-NLS-1$
-						if (confirm) {
-							NewDockerConnection newConnWizard = new NewDockerConnection();
-							CommandUtils.openWizard(newConnWizard,
-									HandlerUtil.getActiveShell(event));
-						}
-					}
-				});
-			} else {
-				// if no active connection, issue error message dialog and
-				// return
-				Display.getDefault().syncExec(() -> MessageDialog.openError(
-						PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-								.getShell(),
-						CommandMessages
-								.getString("ErrorNoActiveConnection.msg"), //$NON-NLS-1$
-						CommandMessages
-								.getString(
-										"ErrorNoActiveConnection.desc"))); //$NON-NLS-1$
-			}
-		} else {
-			final boolean buildImage = wizardDialog.open() == Window.OK;
-			if (buildImage) {
-				performBuildImage(wizard);
-			}
+			// if no active connection, issue error message dialog and return
+			Display.getDefault().syncExec(() -> MessageDialog.openError(
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getShell(),
+					WizardMessages.getString("ErrorNoActiveConnection.msg"), //$NON-NLS-1$
+					WizardMessages.getString("ErrorNoActiveConnection.desc"))); //$NON-NLS-1$
+			return null;
+		}
+		final boolean buildImage = wizardDialog.open() == Window.OK;
+		if (buildImage) {
+			performBuildImage(wizard);
 		}
 		return null;
 	}
