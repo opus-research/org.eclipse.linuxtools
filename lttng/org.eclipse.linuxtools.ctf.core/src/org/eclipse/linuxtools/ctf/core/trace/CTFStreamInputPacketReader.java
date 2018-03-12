@@ -149,7 +149,7 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
         if (!(fStreamEventHeaderDecl instanceof StructDeclaration)) {
             throw new IllegalStateException("Definition is not a struct definition, this is a deprecated method that doesn't work so well, stop using it."); //$NON-NLS-1$
         }
-        return ((StructDeclaration)fStreamEventHeaderDecl).createDefinition(this, LexicalScope.STREAM_EVENT_HEADER, input);
+        return ((StructDeclaration) fStreamEventHeaderDecl).createDefinition(this, LexicalScope.STREAM_EVENT_HEADER, input);
     }
 
     /**
@@ -365,7 +365,10 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
             if (fStreamEventHeaderDecl instanceof IEventHeaderDeclaration) {
                 fCurrentStreamEventHeaderDef = (ICompositeDefinition) fStreamEventHeaderDecl.createDefinition(null, "", currentBitBuffer); //$NON-NLS-1$
                 EventHeaderDefinition ehd = (EventHeaderDefinition) fCurrentStreamEventHeaderDef;
-                eventID = ehd.getId();
+                if (ehd.getId() > Integer.MAX_VALUE) {
+                    throw new CTFReaderException("ID larger than " + Integer.MAX_VALUE + " is currently unsupported by the parser"); //$NON-NLS-1$//$NON-NLS-2$
+                }
+                eventID = (int) ehd.getId();
                 timestamp = calculateTimestamp(ehd.getTimestamp(), ehd.getTimestampLength());
             } else {
                 fCurrentStreamEventHeaderDef = ((StructDeclaration) fStreamEventHeaderDecl).createDefinition(null, LexicalScope.EVENT_HEADER, currentBitBuffer);
@@ -499,7 +502,8 @@ public class CTFStreamInputPacketReader implements IDefinitionScope, AutoCloseab
      * Get stream event header
      *
      * @return the stream event header
-     * @deprecated use {@link CTFStreamInputPacketReader#getStreamEventHeaderDefinition()}
+     * @deprecated use
+     *             {@link CTFStreamInputPacketReader#getStreamEventHeaderDefinition()}
      */
     @Deprecated
     public StructDefinition getCurrentStreamEventHeader() {

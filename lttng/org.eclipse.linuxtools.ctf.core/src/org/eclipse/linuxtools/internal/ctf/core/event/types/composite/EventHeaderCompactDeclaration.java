@@ -109,7 +109,7 @@ public class EventHeaderCompactDeclaration extends Declaration implements IEvent
         }
         // needed since we read 5 bits
         input.position(input.position() + 3);
-        int id = (int) input.get(ID_SIZE, false);
+        long id = input.get(ID_SIZE, false);
         long timestampLong = input.get(FULL_TS, false);
         input.setByteOrder(bo);
         return new EventHeaderDefinition(this, id, timestampLong, FULL_TS);
