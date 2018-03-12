@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.ws.rs.ProcessingException;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
@@ -176,7 +174,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	// containers indexed by id
 	private Map<String, IDockerContainer> containersById;
 	// flag to indicate if the connection to the Docker daemon is active
-	private boolean active = true;
+	private boolean active = false;
 	private boolean containersLoaded = false;
 	private List<IDockerImage> images;
 	private boolean imagesLoaded = false;
@@ -283,27 +281,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	public void setDockerClientFactory(
 			final DockerClientFactory dockerClientFactory) {
 		this.dockerClientFactory = dockerClientFactory;
-	}
-
-	@Override
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setInactive() {
-		active = false;
-		images = Collections.emptyList();
-		containers = Collections.emptyList();
-		notifyContainerListeners(containers);
-		notifyImageListeners(images);
-	}
-
-	public void setActive() {
-		active = true;
-		getContainers(true);
-		getImages(true);
-		notifyContainerListeners(containers);
-		notifyImageListeners(images);
 	}
 
 	@Override
@@ -466,9 +443,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public List<IDockerContainer> getContainers(final boolean force) {
-		if (!isActive()) {
-			return Collections.emptyList();
-		}
 		if (!isContainersLoaded() || force) {
 			try {
 				return listContainers();
@@ -618,12 +592,12 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			}
 		} catch (com.spotify.docker.client.DockerException
 				| InterruptedException e) {
-			if (active && e.getCause() != null
-					&& e.getCause().getCause() != null
-					&& e.getCause().getCause() instanceof ProcessingException) {
-				setInactive();
-			} else {
-				throw new DockerException(e.getMessage());
+			if (active) {
+				active = false;
+				throw new DockerException(
+						NLS.bind(Messages.List_Docker_Containers_Failure,
+								this.getName()),
+						e);
 			}
 		} finally {
 			// assign the new list of containers in a locked block of code to
@@ -775,9 +749,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		synchronized (imageLock) {
 			latestImages = this.images;
 		}
-		if (!isActive()) {
-			return Collections.emptyList();
-		}
 		if (!isImagesLoaded() || force) {
 			try {
 				latestImages = listImages();
@@ -789,6 +760,13 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			} finally {
 				this.imagesLoaded = true;
 			}
+		}
+		// avoid returning a 'null' list.
+		if (this.images == null) {
+			this.images = Collections.emptyList();
+		}
+		if (latestImages == null) {
+			latestImages = Collections.emptyList();
 		}
 		return latestImages;
 	}
@@ -802,7 +780,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	public List<IDockerImage> listImages() throws DockerException {
 		final List<IDockerImage> tempImages = new ArrayList<>();
 		synchronized (imageLock) {
-			List<Image> rawImages = new ArrayList<>();
+			List<Image> rawImages = null;
 			try {
 				synchronized (clientLock) {
 					// Check that client is not null as this connection may have
@@ -817,13 +795,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				throw new DockerException(e.message());
 			} catch (com.spotify.docker.client.DockerException
 					| InterruptedException e) {
-				if (active && e.getCause() != null
-						&& e.getCause().getCause() != null
-						&& e.getCause().getCause() instanceof ProcessingException) {
-					setInactive();
-				} else {
-					throw new DockerException(e.getMessage());
-				}
+				DockerException f = new DockerException(e);
+				throw f;
 			}
 			// We have a list of images. Now, we translate them to our own
 			// core format in case we decide to change the underlying engine
