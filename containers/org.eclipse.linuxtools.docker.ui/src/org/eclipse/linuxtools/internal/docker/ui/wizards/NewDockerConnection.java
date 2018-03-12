@@ -20,8 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * Wizard to add a Docker connection
- * 
+ * Wizard to add a Docker daemon connection
  * @author xcoulon
  *
  */
@@ -29,10 +28,7 @@ public class NewDockerConnection extends Wizard {
 	
 	private NewDockerConnectionPage wizardPage;
 	private IDockerConnection dockerConnection;
-	
-	/**
-	 * Constructor.
-	 */
+
 	public NewDockerConnection() {
 		super();
 		setNeedsProgressMonitor(true);
@@ -55,13 +51,13 @@ public class NewDockerConnection extends Wizard {
 			new MessageDialog(
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 							.getShell(),
-					WizardMessages.getString("DockerConnection.failure"), //$NON-NLS-1$
+					WizardMessages.getString("NewDockerConnection.failure"), //$NON-NLS-1$
 					null,
-					WizardMessages.getString("DockerConnection.failMessage"), //$NON-NLS-1$
+					WizardMessages.getString("NewDockerConnection.failMessage"), //$NON-NLS-1$
 					SWT.ICON_ERROR,
 					new String[] { WizardMessages
-							.getString("DockerConnectionPage.ok") }, //$NON-NLS-1$
-					0).open();
+							.getString("NewDockerConnectionPage.ok") }, //$NON-NLS-1$
+					0).open(); // ;
 		}
 		return false;
 	}
@@ -69,4 +65,5 @@ public class NewDockerConnection extends Wizard {
 	public IDockerConnection getDockerConnection() {
 		return dockerConnection;
 	}
+
 }
