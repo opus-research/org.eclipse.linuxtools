@@ -16,14 +16,20 @@ package org.eclipse.linuxtools.internal.perf;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.List;
 
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.linuxtools.internal.perf.model.TreeParent;
+import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -107,7 +113,6 @@ public class PerfPlugin extends AbstractUIPlugin {
     public static final String PERF_DEAFULT_OLD_STAT = "perf.old.stat"; //$NON-NLS-1$
     public static final boolean DEBUG_ON = false; //Spew debug messages or not.
 
-
     // The shared instance
     private static PerfPlugin plugin;
 
@@ -125,6 +130,10 @@ public class PerfPlugin extends AbstractUIPlugin {
 
     // Current working directory
     private IPath curWorkingDir;
+
+    // The last profiled project
+    private IProject profiledProject;
+
 
     public TreeParent getModelRoot() {
         return _modelRoot;
@@ -144,6 +153,24 @@ public class PerfPlugin extends AbstractUIPlugin {
 
     public IPath getWorkingDir(){
         return curWorkingDir;
+    }
+
+    /**
+     * Get the working directory.
+     * @return the URI of the working directory or null.
+     */
+    public URI getWorkingDirURI() {
+        try {
+            IRemoteFileProxy fileProxy = RemoteProxyManager.getInstance().getFileProxy(getProfiledProject());
+            IPath wd = getWorkingDir();
+            if(wd == null || fileProxy == null) {
+                return null;
+            }
+            IFileStore fs = fileProxy.getResource(wd.toOSString());
+            return fs.toURI();
+        } catch (CoreException e) {
+            return null;
+        }
     }
 
     /**
@@ -256,4 +283,21 @@ public class PerfPlugin extends AbstractUIPlugin {
         });
     }
 
+	/**
+	 * Get the project to be profiled
+	 *
+	 * @return project
+	 */
+	public IProject getProfiledProject() {
+		return profiledProject;
+	}
+
+	/**
+	 * Set the project to be profiled
+	 *
+	 * @param project
+	 */
+	public void setProfiledProject(IProject project) {
+		profiledProject = project;
+	}
 }
