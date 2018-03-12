@@ -17,7 +17,6 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -55,7 +54,6 @@ import org.eclipse.linuxtools.internal.lttng2.control.ui.views.handlers.XmlMiVal
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.messages.Messages;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.ICommandResult;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote.ICommandShell;
-import org.eclipse.osgi.util.NLS;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -239,34 +237,10 @@ public class LTTngControlServiceMI extends LTTngControlService {
         }
 
         // Populate session information
-        Node rawSession = sessionsNode.item(0);
-        parseSession(sessionInfo, rawSession);
-
-        // Fetch the snapshot info
-        if (sessionInfo.isSnapshotSession()) {
-            ISnapshotInfo snapshot = getSnapshotInfo(sessionName, monitor);
-            sessionInfo.setSnapshotInfo(snapshot);
-        }
-
-        return sessionInfo;
-    }
-
-    /**
-     * @param sessionInfo
-     * @param rawSession
-     * @throws ExecutionException
-     */
-    private void parseSession(ISessionInfo sessionInfo, Node rawSession) throws ExecutionException {
-        if (!rawSession.getNodeName().equalsIgnoreCase(MIStrings.SESSION)){
-            throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
-        }
-        NodeList rawSessionInfos = rawSession.getChildNodes();
+        NodeList rawSessionInfos = sessionsNode.item(0).getChildNodes();
         for (int i = 0; i < rawSessionInfos.getLength(); i++) {
             Node rawInfo = rawSessionInfos.item(i);
             switch (rawInfo.getNodeName()) {
-            case MIStrings.NAME:
-                sessionInfo.setName(rawInfo.getTextContent());
-                break;
             case MIStrings.PATH:
                 sessionInfo.setSessionPath(rawInfo.getTextContent());
                 break;
@@ -298,6 +272,14 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 break;
             }
         }
+
+        // Fetch the snapshot info
+        if (sessionInfo.isSnapshotSession()) {
+            ISnapshotInfo snapshot = getSnapshotInfo(sessionName, monitor);
+            sessionInfo.setSnapshotInfo(snapshot);
+        }
+
+        return sessionInfo;
     }
 
     /**
@@ -511,139 +493,10 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public ISessionInfo createSession(ISessionInfo sessionInfo, IProgressMonitor monitor) throws ExecutionException {
-        if (sessionInfo.isStreamedTrace()) {
-            return createStreamedSession(sessionInfo, monitor);
-        }
-
-        String newName = formatParameter(sessionInfo.getName());
-        String newPath = formatParameter(sessionInfo.getSessionPath());
-
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
-
-        if (newPath != null && !"".equals(newPath)) { //$NON-NLS-1$
-            command.append(LTTngControlServiceConstants.OPTION_OUTPUT_PATH);
-            command.append(newPath);
-        }
-
-        if (sessionInfo.isSnapshotSession()) {
-            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
-        }
-
-        ICommandResult result = executeCommand(command.toString(), monitor);
-
-        Document document = getDocumentFromStrings(result.getOutput());
-        NodeList sessions = document.getElementsByTagName(MIStrings.SESSION);
-
-        // Number of session should be equal to 1
-        if (sessions.getLength() != 1 ) {
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n"  //$NON-NLS-1$//$NON-NLS-2$
-                    + NLS.bind(Messages.TraceControl_UnexpectedNumberOfElementError, MIStrings.SESSION ) + " " + sessions.getLength()); //$NON-NLS-1$
-        }
-
-        // Fetch a session from output
-        ISessionInfo outputSession = new SessionInfo(""); //$NON-NLS-1$
-        parseSession(outputSession, sessions.item(0));
-
-        // Verify session name
-        if ((outputSession.getName().equals("")) || (!"".equals(sessionInfo.getName()) && !outputSession.getName().equals(sessionInfo.getName()))) { //$NON-NLS-1$ //$NON-NLS-2$
-            // Unexpected name returned
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                    Messages.TraceControl_UnexpectedNameError + ": " + outputSession.getName()); //$NON-NLS-1$
-        }
-
-        // Verify session path
-        if (!sessionInfo.isSnapshotSession() &&
-                ((outputSession.getSessionPath() == null) || ((sessionInfo.getSessionPath() != null) && (!outputSession.getSessionPath().contains(sessionInfo.getSessionPath()))))) {
-            // Unexpected path
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                    Messages.TraceControl_UnexpectedPathError + ": " + outputSession.getName()); //$NON-NLS-1$
-        }
-
-        if (sessionInfo.isSnapshotSession()) {
-            // Make it a snapshot session - content of snapshot info need to
-            // set afterwards using getSession() or getSnapshotInfo()
-            sessionInfo.setSnapshotInfo(new SnapshotInfo("")); //$NON-NLS-1$
-        } else {
-            sessionInfo.setSessionPath(outputSession.getSessionPath());
-        }
-
-        return sessionInfo;
+        // TODO Auto-generated method stub
+        return null;
     }
 
-    private ISessionInfo createStreamedSession(ISessionInfo sessionInfo, IProgressMonitor monitor) throws ExecutionException {
-
-        String newName = formatParameter(sessionInfo.getName());
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
-
-        if (sessionInfo.isSnapshotSession()) {
-            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
-        } else if (sessionInfo.isLive()) {
-            command.append(LTTngControlServiceConstants.OPTION_LIVE);
-            if (sessionInfo.getLiveDelay() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                command.append(sessionInfo.getLiveDelay());
-            }
-        }
-
-        if (sessionInfo.getNetworkUrl() != null) {
-            command.append(LTTngControlServiceConstants.OPTION_NETWORK_URL);
-            command.append(sessionInfo.getNetworkUrl());
-        } else {
-            command.append(LTTngControlServiceConstants.OPTION_CONTROL_URL);
-            command.append(sessionInfo.getControlUrl());
-
-            command.append(LTTngControlServiceConstants.OPTION_DATA_URL);
-            command.append(sessionInfo.getDataUrl());
-        }
-
-        ICommandResult result = executeCommand(command.toString(), monitor);
-
-        Document document = getDocumentFromStrings(result.getOutput());
-        NodeList sessions = document.getElementsByTagName(MIStrings.SESSION);
-
-        // Number of session should be equal to 1
-        if (sessions.getLength() != 1 ) {
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n"  //$NON-NLS-1$//$NON-NLS-2$
-                    + NLS.bind(Messages.TraceControl_UnexpectedNumberOfElementError, MIStrings.SESSION ) + " " + sessions.getLength()); //$NON-NLS-1$
-        }
-
-        // Fetch a session from output
-        ISessionInfo outputSession = new SessionInfo(""); //$NON-NLS-1$
-        parseSession(outputSession, sessions.item(0));
-
-        // Verify session name
-        if ((outputSession.getName().equals("")) || (!"".equals(sessionInfo.getName()) && !outputSession.getName().equals(sessionInfo.getName()))) { //$NON-NLS-1$ //$NON-NLS-2$
-            // Unexpected name returned
-            throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                    Messages.TraceControl_UnexpectedNameError + ": " + outputSession.getName()); //$NON-NLS-1$
-        }
-
-        sessionInfo.setStreamedTrace(true);
-
-        // Verify session path
-        if (sessionInfo.getNetworkUrl() != null) {
-            if (!sessionInfo.isSnapshotSession() && (outputSession.getSessionPath() == null)) {
-                // Unexpected path
-                throw new ExecutionException(Messages.TraceControl_CommandError + " " + command + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.TraceControl_UnexpectedPathError + ": " + outputSession.getName()); //$NON-NLS-1$
-            }
-
-            if (sessionInfo.isSnapshotSession()) {
-                sessionInfo.setStreamedTrace(false);
-            } else {
-                sessionInfo.setSessionPath(outputSession.getSessionPath());
-                // Check file protocol
-                Matcher matcher = LTTngControlServiceConstants.TRACE_FILE_PROTOCOL_PATTERN.matcher(outputSession.getSessionPath());
-                if (matcher.matches()) {
-                    sessionInfo.setStreamedTrace(false);
-                }
-            }
-        }
-
-        // When using controlUrl and dataUrl the full session path is not known yet
-        // and will be set later on when listing the session
-
-        return sessionInfo;
-    }
     @Override
     public void destroySession(String sessionName, IProgressMonitor monitor) throws ExecutionException {
         // TODO Auto-generated method stub
