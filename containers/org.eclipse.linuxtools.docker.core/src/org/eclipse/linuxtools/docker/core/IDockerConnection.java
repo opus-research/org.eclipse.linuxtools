@@ -217,6 +217,16 @@ public interface IDockerConnection {
 	 */
 	List<IDockerImage> listImages() throws DockerException;
 
+	/**
+	 * Get the default progress handler for pulling images.
+	 * 
+	 * @param image
+	 *            name of image being pulled
+	 * @return progress handler
+	 * @since 2.1
+	 */
+	IDockerProgressHandler getDefaultPullImageProgressHandler(String image);
+
 	void pullImage(String id, IDockerProgressHandler handler)
 			throws DockerException, InterruptedException;
 
@@ -229,6 +239,16 @@ public interface IDockerConnection {
 
 	List<IDockerImageSearchResult> searchImages(final String term)
 			throws DockerException;
+
+	/**
+	 * Get the default progress handler for pushing images.
+	 * 
+	 * @param image
+	 *            name of image being pushed
+	 * @return progress handler
+	 * @since 2.1
+	 */
+	IDockerProgressHandler getDefaultPushImageProgressHandler(String image);
 
 	void pushImage(String name, IDockerProgressHandler handler)
 			throws DockerException, InterruptedException;
@@ -303,6 +323,19 @@ public interface IDockerConnection {
 	 */
 	int auth(final IRegistryAccount config)
 			throws DockerException, InterruptedException;
+
+	/**
+	 * Get the default progress handler for building images.
+	 * 
+	 * @param image
+	 *            name of image being built
+	 * @param lines
+	 *            number of lines in Dockerfile
+	 * @return progress handler
+	 * @since 2.1
+	 */
+	IDockerProgressHandler getDefaultBuildImageProgressHandler(String image,
+			int lines);
 
 	String buildImage(IPath path, IDockerProgressHandler handler)
 			throws DockerException, InterruptedException;
