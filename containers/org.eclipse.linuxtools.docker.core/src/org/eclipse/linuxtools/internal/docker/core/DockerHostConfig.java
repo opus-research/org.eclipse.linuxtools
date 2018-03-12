@@ -30,10 +30,10 @@ public class DockerHostConfig implements IDockerHostConfig {
 	private final List<String> binds;
 	private final String containerIDFile;
 	private final List<IDockerConfParameter> lxcConf;
-	private final boolean privileged;
+	private final Boolean privileged;
 	private final Map<String, List<IDockerPortBinding>> portBindings;
 	private final List<String> links;
-	private final boolean publishAllPorts;
+	private final Boolean publishAllPorts;
 	private final List<String> dns;
 	private final List<String> dnsSearch;
 	private final List<String> volumesFrom;
@@ -48,9 +48,8 @@ public class DockerHostConfig implements IDockerHostConfig {
 				this.lxcConf.add(new DockerConfParameter(lxcConfParameter));
 			}
 		}
-		this.privileged = hostConfig.privileged() != null
-				? hostConfig.privileged() : false;
-		this.portBindings = new HashMap<>();
+		this.privileged = hostConfig.privileged();
+		this.portBindings = new HashMap<String, List<IDockerPortBinding>>();
 		if(hostConfig != null && hostConfig.portBindings() != null) {
 			for(Entry<String, List<PortBinding>> entry : hostConfig.portBindings().entrySet()) {
 				final List<IDockerPortBinding> portBindings = new ArrayList<>();
@@ -61,8 +60,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 			}
 		}
 		this.links = hostConfig.links();
-		this.publishAllPorts = hostConfig.publishAllPorts() != null
-				? hostConfig.publishAllPorts() : false;
+		this.publishAllPorts = hostConfig.publishAllPorts();
 		this.dns = hostConfig.dns();
 		this.dnsSearch = hostConfig.dnsSearch();
 		this.volumesFrom = hostConfig.volumesFrom();
@@ -73,12 +71,10 @@ public class DockerHostConfig implements IDockerHostConfig {
 		this.binds = builder.binds;
 		this.containerIDFile = builder.containerIDFile;
 		this.lxcConf = builder.lxcConf;
-		this.privileged = builder.privileged != null ? builder.privileged
-				: false;
+		this.privileged = builder.privileged;
 		this.portBindings = builder.portBindings;
 		this.links = builder.links;
-		this.publishAllPorts = builder.publishAllPorts != null
-				? builder.publishAllPorts : false;
+		this.publishAllPorts = builder.publishAllPorts;
 		this.dns = builder.dns;
 		this.dnsSearch = builder.dnsSearch;
 		this.volumesFrom = builder.volumesFrom;
@@ -101,7 +97,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 	}
 
 	@Override
-	public boolean privileged() {
+	public Boolean privileged() {
 		return privileged;
 	}
 
@@ -116,7 +112,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 	}
 
 	@Override
-	public boolean publishAllPorts() {
+	public Boolean publishAllPorts() {
 		return publishAllPorts;
 	}
 
@@ -160,7 +156,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 
 
 		public Builder binds(final List<String> binds) {
-			this.binds = new ArrayList<>(binds);
+			this.binds = new ArrayList<String>(binds);
 			return this;
 		}
 
@@ -183,7 +179,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 		}
 
 		public Builder lxcConf(final List<IDockerConfParameter> lxcConf) {
-			this.lxcConf = new ArrayList<>(lxcConf);
+			this.lxcConf = new ArrayList<IDockerConfParameter>(lxcConf);
 			return this;
 		}
 
@@ -216,7 +212,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 		}
 
 		public Builder links(final List<String> links) {
-			this.links = new ArrayList<>(links);
+			this.links = new ArrayList<String>(links);
 			return this;
 		}
 
@@ -239,7 +235,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 		}
 
 		public Builder dns(final List<String> dns) {
-			this.dns = new ArrayList<>(dns);
+			this.dns = new ArrayList<String>(dns);
 			return this;
 		}
 
@@ -253,7 +249,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 		}
 
 		public Builder dnsSearch(final List<String> dnsSearch) {
-			this.dnsSearch = new ArrayList<>(dnsSearch);
+			this.dnsSearch = new ArrayList<String>(dnsSearch);
 			return this;
 		}
 
@@ -267,7 +263,7 @@ public class DockerHostConfig implements IDockerHostConfig {
 		}
 
 		public Builder volumesFrom(final List<String> volumesFrom) {
-			this.volumesFrom = new ArrayList<>(volumesFrom);
+			this.volumesFrom = new ArrayList<String>(volumesFrom);
 			return this;
 		}
 

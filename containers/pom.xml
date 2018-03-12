@@ -9,7 +9,7 @@
         <parent>
           <groupId>org.eclipse.linuxtools</groupId>
           <artifactId>linuxtools-parent</artifactId>
-          <version>4.1.0-SNAPSHOT</version>
+          <version>4.0.0-SNAPSHOT</version>
         </parent>
 
 	<properties>
@@ -27,7 +27,6 @@
   <modules>
     <module>org.eclipse.linuxtools.docker.core</module>
     <module>org.eclipse.linuxtools.docker.ui</module>
-    <module>org.eclipse.linuxtools.docker.docs</module>
     <module>org.eclipse.linuxtools.docker-feature</module>
   </modules>
 

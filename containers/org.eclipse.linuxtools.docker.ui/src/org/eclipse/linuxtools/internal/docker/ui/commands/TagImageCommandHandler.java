@@ -14,6 +14,8 @@ import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -30,7 +32,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-public class TagImageCommandHandler extends AbstractHandler {
+public class TagImageCommandHandler extends AbstractHandler implements
+		IHandler {
 
 	private final static String TAG_IMAGE_JOB_TITLE = "ImageTagTitle.msg"; //$NON-NLS-1$
 	private final static String TAG_IMAGE_MSG = "ImageTag.msg"; //$NON-NLS-1$
@@ -40,7 +43,7 @@ public class TagImageCommandHandler extends AbstractHandler {
 	private IDockerImage image;
 
 	@Override
-	public Object execute(final ExecutionEvent event) {
+	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		List<IDockerImage> selectedImages = CommandUtils
 				.getSelectedImages(activePart);
@@ -70,8 +73,7 @@ public class TagImageCommandHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final String tag = wizard.getTag();
-				monitor.beginTask(
-						DVMessages.getFormattedString(TAG_IMAGE_MSG, tag), 2);
+				monitor.beginTask(DVMessages.getString(TAG_IMAGE_MSG), 2);
 				// tag the image and let the progress
 				// handler refresh the images when done
 				try {

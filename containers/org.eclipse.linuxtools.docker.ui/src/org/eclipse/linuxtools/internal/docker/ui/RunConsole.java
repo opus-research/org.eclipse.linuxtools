@@ -19,7 +19,6 @@ import java.nio.channels.WritableByteChannel;
 
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.swt.custom.StyledText;
@@ -43,8 +42,10 @@ public class RunConsole extends IOConsole {
 	/** Id of this console. */
 	public static final String ID = "containerLog"; //$NON-NLS-1$
 	public static final String CONTAINER_LOG_TITLE = "ContainerLog.title"; //$NON-NLS-1$
+	public static final String DEFAULT_ID = "__DEFAULT_ID__"; //$NON-NLS-1$
 
 	private String containerId;
+	private String id;
 	private OutputStream outputStream;
 	private boolean attached = false;
 	private final WritableByteChannel[] ptyOutRef = new WritableByteChannel[1];
@@ -53,17 +54,13 @@ public class RunConsole extends IOConsole {
 	 * Returns a reference to the console that is for the given container id. If
 	 * such a console does not yet exist, it will be created.
 	 *
-	 * @param container
-	 *            The container this console will be for. Should not be
+	 * @param containerId
+	 *            The container this console will be for. Must not be
 	 *            <code>null</code>.
-	 * @return A console instance or <code>null</code> if the given container
-	 *         was <code>null</code>.
+	 * @return A console instance.
 	 */
-	public static RunConsole findConsole(final IDockerContainer container) {
-		if (container == null) {
-			return null;
-		}
-		return findConsole(container.id(), container.name());
+	public static RunConsole findConsole(String containerId) {
+		return findConsole(containerId, DEFAULT_ID);
 	}
 
 	/**
@@ -76,24 +73,31 @@ public class RunConsole extends IOConsole {
 	 * @param id
 	 *            The secondary id used to identify consoles belonging to
 	 *            various owners.
-	 * @param name
-	 *            the name of the console to create if it did not already exist
 	 * @return A console instance.
 	 */
-	public static RunConsole findConsole(final String containerId,
-			final String name) {
+	public static RunConsole findConsole(String containerId, String id) {
+		return findConsole(containerId, id, containerId.substring(0, 8));
+	}
+
+	public static RunConsole findConsole(String containerId, String id,
+			String name) {
+		RunConsole ret = null;
 		for (IConsole cons : ConsolePlugin.getDefault().getConsoleManager()
 				.getConsoles()) {
 			if (cons instanceof RunConsole
-					&& ((RunConsole) cons).containerId.equals(containerId)) {
-				return (RunConsole) cons;
+					&& ((RunConsole) cons).containerId.equals(containerId)
+					&& ((RunConsole) cons).id.equals(id)) {
+				ret = (RunConsole) cons;
 			}
 		}
 		// no existing console, create new one
-		final RunConsole console = new RunConsole(containerId, name);
-		ConsolePlugin.getDefault().getConsoleManager()
-				.addConsoles(new IConsole[] { console });
-		return console;
+		if (ret == null) {
+			ret = new RunConsole(containerId, id, name);
+			ConsolePlugin.getDefault().getConsoleManager()
+					.addConsoles(new IConsole[] { ret });
+		}
+
+		return ret;
 	}
 
 	@Override
@@ -217,10 +221,11 @@ public class RunConsole extends IOConsole {
 	 * @param name
 	 *            The name to use for the console.
 	 */
-	private RunConsole(String containerId, String name) {
+	private RunConsole(String containerId, String id, String name) {
 		super(DVMessages.getFormattedString(CONTAINER_LOG_TITLE, name), ID,
 				null, true);
 		this.containerId = containerId;
+		this.id = id;
 	}
 
 	/*
@@ -251,7 +256,7 @@ public class RunConsole extends IOConsole {
 		private boolean isCtrlOn;
 
 		private final int CTRL_CODE = 262144;
-		private final int C_CODE = 'c';
+		private final int C_CODE = (int) 'c';
 		private final int TAB_CODE = 9;
 
 		public TTYKeyListener() {
@@ -273,6 +278,7 @@ public class RunConsole extends IOConsole {
 						break;
 					}
 				} catch (IOException e1) {
+					e1.printStackTrace();
 				}
 			}
 		}
@@ -300,6 +306,7 @@ public class RunConsole extends IOConsole {
 						break;
 					}
 				} catch (IOException e1) {
+					e1.printStackTrace();
 				}
 			}
 		}

@@ -28,7 +28,6 @@ import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.EnumDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
-import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -69,8 +68,8 @@ public class NewDockerConnectionPage extends WizardPage {
 	private Text tcpCertPathText;
 
 	public NewDockerConnectionPage() {
-		super("NewDockerConnectionPage", "Connect to a Docker daemon",
-				SWTImagesFactory.DESC_BANNER_REPOSITORY);
+		super("NewDockerConnectionPage", "Connect to a Docker daemon", Activator
+				.getImageDescriptor("icons/banner-repository.gif"));
 		setMessage("Select the binding mode to connect to the Docker daemon");
 	}
 
@@ -111,6 +110,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(connectionNameLabel);
 		connectionNameText = new Text(container, SWT.BORDER);
 		connectionNameText.setToolTipText("Name of the connection");
+		//connectionNameText.setText(this.connectionName);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).span(2, 1)
 				.applyTo(connectionNameText);
 
@@ -208,7 +208,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		try {
 			getWizard().getContainer().run(true, true, new IRunnableWithProgress() {
 				@Override
-						public void run(final IProgressMonitor monitor) {
+				public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					monitor.beginTask("Retrieving Docker connection settings...", 1);
 					try {
 						final DockerConnection.Defaults defaults = new DockerConnection.Defaults();
@@ -358,7 +358,6 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private ModifyListener onConnectionNameModification() {
 		return new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				NewDockerConnectionPage.this.connectionName = ((Text) evt.widget).getText();
 			}
@@ -367,7 +366,6 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private ModifyListener onUnixSocketModification() {
 		return new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				NewDockerConnectionPage.this.unixSocketPath = ((Text) evt.widget).getText();
 			}
@@ -376,7 +374,6 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private ModifyListener onTcpHostModification() {
 		return new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				NewDockerConnectionPage.this.tcpHost = ((Text) evt.widget).getText();
 			}
@@ -385,7 +382,6 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private ModifyListener onTcpCertPathModification() {
 		return new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				NewDockerConnectionPage.this.tcpCertPath = ((Text) evt.widget).getText();
 			}
@@ -406,7 +402,7 @@ public class NewDockerConnectionPage extends WizardPage {
 				try {
 					getWizard().getContainer().run(true, false, new IRunnableWithProgress() {
 						@Override
-						public void run(final IProgressMonitor monitor) {
+						public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 							monitor.beginTask("Pinging Docker daemon...", IProgressMonitor.UNKNOWN);
 							try {
 								final DockerConnection dockerConnection = getDockerConnection();

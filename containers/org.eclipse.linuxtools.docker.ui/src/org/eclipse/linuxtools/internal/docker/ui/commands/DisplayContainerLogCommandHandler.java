@@ -15,6 +15,8 @@ import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
@@ -28,16 +30,17 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-public class DisplayContainerLogCommandHandler extends AbstractHandler {
+public class DisplayContainerLogCommandHandler extends AbstractHandler implements
+ IHandler {
 
 	private static final String CONTAINER_LOG_TITLE = "ContainerLog.title"; //$NON-NLS-1$
-	private static final String ERROR_LOGGING_CONTAINER = "ContainerLogError.msg"; //$NON-NLS-1$
+	private static final String ERROR_LOGGING_CONTAINER = "ContainerLoggingError.msg"; //$NON-NLS-1$
 
 	private IDockerConnection connection;
 	private IDockerContainer container;
 
 	@Override
-	public Object execute(final ExecutionEvent event) {
+	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		List<IDockerContainer> selectedContainers = CommandUtils
 				.getSelectedContainers(activePart);
@@ -50,7 +53,8 @@ public class DisplayContainerLogCommandHandler extends AbstractHandler {
 		final String id = container.id();
 		final String name = container.name();
 		try {
-			final RunConsole rc = RunConsole.findConsole(id, name);
+			final RunConsole rc = RunConsole
+					.findConsole(id);
 			if (!rc.isAttached()) {
 				rc.attachToConsole(connection);
 			}
