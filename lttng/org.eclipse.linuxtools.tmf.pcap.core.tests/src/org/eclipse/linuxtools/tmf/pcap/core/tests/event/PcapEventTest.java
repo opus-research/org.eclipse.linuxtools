@@ -21,15 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.linuxtools.internal.pcap.core.trace.BadPcapFileException;
-import org.eclipse.linuxtools.internal.pcap.core.trace.PcapFile;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.event.PcapEvent;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.protocol.TmfPcapProtocol;
-import org.eclipse.linuxtools.internal.tmf.pcap.core.trace.PcapTrace;
 import org.eclipse.linuxtools.pcap.core.tests.shared.PcapTestTrace;
+import org.eclipse.linuxtools.pcap.core.trace.BadPcapFileException;
+import org.eclipse.linuxtools.pcap.core.trace.PcapFile;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.trace.TmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.location.TmfLongLocation;
+import org.eclipse.linuxtools.tmf.pcap.core.event.PcapEvent;
+import org.eclipse.linuxtools.tmf.pcap.core.protocol.TmfProtocol;
+import org.eclipse.linuxtools.tmf.pcap.core.trace.PcapTrace;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableList;
 public class PcapEventTest {
 
     private static PcapEvent fEvent;
-    private static List<TmfPcapProtocol> fProtocolList;
+    private static List<TmfProtocol> fProtocolList;
 
     /**
      * Initialize the Packet and the EventField.
@@ -60,19 +60,20 @@ public class PcapEventTest {
 
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        try (PcapFile pcap = new PcapFile(trace.getPath());
+        String file = trace.getPath();
+        try (PcapFile pcap = new PcapFile(file);
                 PcapTrace pcapTrace = new PcapTrace();) {
-            pcapTrace.initTrace(null, trace.getPath().toString(), PcapEvent.class);
+            pcapTrace.initTrace(null, trace.getPath(), PcapEvent.class);
             fEvent = pcapTrace.parseEvent(new TmfContext(new TmfLongLocation(3), 3));
         }
 
         // Initialize protocol list.
-        List<TmfPcapProtocol> list = new ArrayList<>();
-        list.add(TmfPcapProtocol.PCAP);
-        list.add(TmfPcapProtocol.ETHERNET_II);
-        list.add(TmfPcapProtocol.IPV4);
-        list.add(TmfPcapProtocol.TCP);
-        list.add(TmfPcapProtocol.UNKNOWN);
+        List<TmfProtocol> list = new ArrayList<>();
+        list.add(TmfProtocol.PCAP);
+        list.add(TmfProtocol.ETHERNET_II);
+        list.add(TmfProtocol.IPV4);
+        list.add(TmfProtocol.TCP);
+        list.add(TmfProtocol.UNKNOWN);
         fProtocolList = ImmutableList.copyOf(list);
     }
 
@@ -89,7 +90,7 @@ public class PcapEventTest {
      */
     @Test
     public void getMostEncapsulatedProtocolTest() {
-        assertEquals(TmfPcapProtocol.TCP, fEvent.getMostEncapsulatedProtocol());
+        assertEquals(TmfProtocol.TCP, fEvent.getMostEncapsulatedProtocol());
     }
 
     /**
@@ -97,7 +98,7 @@ public class PcapEventTest {
      */
     @Test
     public void getFieldsTest() {
-        Map<String, String> map = fEvent.getFields(TmfPcapProtocol.IPV4);
+        Map<String, String> map = fEvent.getFields(TmfProtocol.IPV4);
         if (map == null) {
             fail("getFieldsTest() failed because map is null!");
             return;
@@ -110,7 +111,7 @@ public class PcapEventTest {
      */
     @Test
     public void getPayloadTest() {
-        ByteBuffer bb = fEvent.getPayload(TmfPcapProtocol.TCP);
+        ByteBuffer bb = fEvent.getPayload(TmfProtocol.TCP);
         if (bb == null) {
             fail("getPayloadTest() failed because bb is null!");
             return;
@@ -123,7 +124,7 @@ public class PcapEventTest {
      */
     @Test
     public void getSourceEndpointTest() {
-        assertEquals("00:00:01:00:00:00/145.254.160.237/3372", fEvent.getSourceEndpoint(TmfPcapProtocol.TCP));
+        assertEquals("00:00:01:00:00:00/145.254.160.237/3372", fEvent.getSourceEndpoint(TmfProtocol.TCP));
     }
 
     /**
@@ -131,7 +132,7 @@ public class PcapEventTest {
      */
     @Test
     public void getDestinationEndpointTest() {
-        assertEquals("fe:ff:20:00:01:00", fEvent.getDestinationEndpoint(TmfPcapProtocol.ETHERNET_II));
+        assertEquals("fe:ff:20:00:01:00", fEvent.getDestinationEndpoint(TmfProtocol.ETHERNET_II));
     }
 
     /**
@@ -147,7 +148,7 @@ public class PcapEventTest {
      */
     @Test
     public void toStringAtSpecificProtocolTest() {
-        assertEquals("Src: 145.254.160.237 , Dst: 65.208.228.223", fEvent.toString(TmfPcapProtocol.IPV4));
+        assertEquals("Src: 145.254.160.237 , Dst: 65.208.228.223", fEvent.toString(TmfProtocol.IPV4));
     }
 
 }
