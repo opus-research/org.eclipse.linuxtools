@@ -141,9 +141,7 @@ public class DefaultDockerConnectionSettingsFinder
 		try {
 			final DockerClient client = new DockerClientFactory()
 					.getClient(connectionSettings);
-			if (client != null) {
-				return client.info().name();
-			}
+			return client.info().name();
 		} catch (DockerCertificateException
 				| com.spotify.docker.client.DockerException
 				| InterruptedException e) {
@@ -246,12 +244,9 @@ public class DefaultDockerConnectionSettingsFinder
 		final Object dockerHostEnvVariable = dockerSettings.get(DOCKER_HOST);
 		final Object dockerCertPathEnvVariable = dockerSettings
 				.get(DOCKER_CERT_PATH);
-		// at least 'dockerHostEnvVariable' should be not null
-		if (dockerHostEnvVariable == null) {
-			return null;
-		}
 		return new TCPConnectionSettings(
-				dockerHostEnvVariable.toString(),
+				dockerHostEnvVariable != null
+						? dockerHostEnvVariable.toString() : null,
 				dockerCertPathEnvVariable != null
 						? dockerCertPathEnvVariable.toString() : null);
 	}
@@ -313,11 +308,11 @@ public class DefaultDockerConnectionSettingsFinder
 	 *         *Nix) or <code>null</code> if the current OS is not supported.
 	 */
 	private String getConnectionSettingsDetectionScriptName() {
-		if (SystemUtils.isLinux()) {
+		if (Platform.getOS().equals(Platform.OS_LINUX)) {
 			return "script.sh";//$NON-NLS-1$
-		} else if (SystemUtils.isMac()) {
+		} else if (Platform.getOS().equals(Platform.OS_MACOSX)) {
 			return "script-macosx.sh";//$NON-NLS-1$
-		} else if (SystemUtils.isWindows()) {
+		} else if (Platform.getOS().equals(Platform.OS_WIN32)) {
 			return "script.bat"; //$NON-NLS-1$
 		}
 		return null;
