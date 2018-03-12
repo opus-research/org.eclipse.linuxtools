@@ -14,9 +14,7 @@ package org.eclipse.linuxtools.internal.docker.ui.views;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -30,6 +28,7 @@ import org.eclipse.swt.widgets.Display;
  */
 public class DockerImagesContentProvider implements ITreeContentProvider{
 
+	private static final String LoadingImages = "ImagesLoadJob.msg"; //$NON-NLS-1$
 	private static final Object[] EMPTY = new Object[0];
 	private TableViewer viewer;
 	
@@ -63,22 +62,16 @@ public class DockerImagesContentProvider implements ITreeContentProvider{
 	 *            the selected {@link DockerConnection}
 	 */
 	private void loadImages(final IDockerConnection connection) {
-		final Job loadImagesJob = new Job(DVMessages
-				.getFormattedString("ImagesLoadJob.msg", connection.getUri())) {
+		final Job loadImagesJob = new Job(DVMessages.getString(LoadingImages)) {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				connection.getImages(true);
+				Display.getDefault().asyncExec(() -> {
+					connection.getImages(true);
+					viewer.refresh();
+				});
 				return Status.OK_STATUS;
 			}
 		};
-		loadImagesJob.addJobChangeListener(new JobChangeAdapter() {
-			@Override
-			public void done(IJobChangeEvent event) {
-				Display.getDefault().asyncExec(() -> {
-					viewer.refresh();
-				});
-			}
-		});
 		loadImagesJob.schedule();
 	}
 	

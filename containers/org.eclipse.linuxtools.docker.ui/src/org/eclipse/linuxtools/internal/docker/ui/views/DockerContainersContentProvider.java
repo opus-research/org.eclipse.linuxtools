@@ -14,9 +14,7 @@ package org.eclipse.linuxtools.internal.docker.ui.views;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -25,8 +23,6 @@ import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProv
 import org.eclipse.swt.widgets.Display;
 
 /**
- * Content provider for the {@link DockerContainersView}
- * 
  * @author xcoulon
  *
  */
@@ -62,23 +58,14 @@ public class DockerContainersContentProvider implements ITreeContentProvider{
 	 * @param containersCategory the selected {@link DockerContainersCategory}
 	 */
 	private void loadContainers(final IDockerConnection connection) {
-		final Job loadContainersJob = new Job(DVMessages
-				.getFormattedString("ContainersLoadJob.msg", //$NON-NLS-1$
-						connection.getUri())) {
+		final Job loadContainersJob = new Job("Loading containers...") {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				connection.getContainers(true);
+				Display.getDefault().asyncExec(() -> viewer.refresh());
 				return Status.OK_STATUS;
 			}
 		};
-		loadContainersJob.addJobChangeListener(new JobChangeAdapter() {
-			@Override
-			public void done(IJobChangeEvent event) {
-				Display.getDefault().asyncExec(() -> {
-					viewer.refresh();
-				});
-			}
-		});
 		loadContainersJob.schedule();
 	}
 	

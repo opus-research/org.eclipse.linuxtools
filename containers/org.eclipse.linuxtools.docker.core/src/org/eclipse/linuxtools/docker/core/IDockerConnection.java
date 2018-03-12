@@ -397,10 +397,7 @@ public interface IDockerConnection {
 	 */
 	void removeTag(String tag) throws DockerException, InterruptedException;
 
-	/**
-	 * @return the state of the connection
-	 */
-	EnumDockerConnectionState getState();
+	boolean isActive();
 
 	/**
 	 * @return the {@link IDockerConnectionSettings} associated with this
