@@ -3690,7 +3690,7 @@ Used Java Heap: It is the difference between the memory used at the beginning of
 
 == Adding a protocol ==
 
-Supporting a new network protocol in TMF is straightforward. The architecture is made so that minimal effort is required to support new protocols. In this tutorial, the UDP protocol will be added to the list of supported protocols.
+Supporting a new network protocol in TMF is straightforward. Minimal effort is required to support new protocols. In this tutorial, the UDP protocol will be added to the list of supported protocols.
 
 === Architecture ===
 
