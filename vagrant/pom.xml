@@ -25,7 +25,6 @@
   <modules>
     <module>org.eclipse.linuxtools.vagrant.core</module>
     <module>org.eclipse.linuxtools.vagrant.ui</module>
-    <module>org.eclipse.linuxtools.vagrant.docs</module>
     <module>org.eclipse.linuxtools.vagrant-feature</module>
   </modules>
 
