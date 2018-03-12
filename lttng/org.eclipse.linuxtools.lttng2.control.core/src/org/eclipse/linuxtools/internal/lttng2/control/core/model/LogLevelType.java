@@ -11,8 +11,6 @@
  *********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.core.model;
 
-import java.security.InvalidParameterException;
-
 /**
  * <p>
  * Type of log Level enumeration.
@@ -26,16 +24,13 @@ public enum LogLevelType {
     // Enum definition
     // ------------------------------------------------------------------------
     /** range of log levels [0,logLevel] */
-    LOGLEVEL("<=", "RANGE"), //$NON-NLS-1$ //$NON-NLS-2$
-
-    /** all log level */
-    LOGLEVEL_ALL(":", "ALL"),  //$NON-NLS-1$//$NON-NLS-2$
+    LOGLEVEL("<="), //$NON-NLS-1$
 
     /** single log level */
-    LOGLEVEL_ONLY("==", "SINGLE"), //$NON-NLS-1$ //$NON-NLS-2$
+    LOGLEVEL_ONLY("=="), //$NON-NLS-1$
 
     /** no log level */
-    LOGLEVEL_NONE("", "UNKNOWN"); //$NON-NLS-1$ //$NON-NLS-2$
+    LOGLEVEL_NONE(""); //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Constuctors
@@ -45,9 +40,8 @@ public enum LogLevelType {
      * Private constructor
      * @param name the name of state
      */
-    private LogLevelType(String shortName, String miName) {
+    private LogLevelType(String shortName) {
         fShortName = shortName;
-        fMiName = miName;
     }
 
      // ------------------------------------------------------------------------
@@ -57,7 +51,6 @@ public enum LogLevelType {
      * Name of enum.
      */
     private final String fShortName;
-    private final String fMiName;
 
     // ------------------------------------------------------------------------
     // Accessors
@@ -69,33 +62,4 @@ public enum LogLevelType {
         return fShortName;
     }
 
-    /**
-     * @return machine interface name string
-     */
-    public String getMiName() {
-        return fMiName;
-    }
-
-    // ------------------------------------------------------------------------
-    // Utility
-    // ------------------------------------------------------------------------
-    /**
-     * Return the corresponding {@link LogLevelType} to String "name"
-     * @param name String to compare to retrieve the good LogLevelType
-     * @return the corresponding {@link LogLevelType}
-     */
-    public static LogLevelType valueOfString(String name) {
-        if (name == null) {
-            throw new InvalidParameterException();
-        }
-        for (LogLevelType lltype : LogLevelType.values()) {
-            boolean isEqual = lltype.fShortName.equalsIgnoreCase(name) || lltype.fMiName.equalsIgnoreCase(name);
-            if (isEqual) {
-                return lltype;
-            }
-        }
-
-        // No match
-        return LogLevelType.LOGLEVEL_NONE;
-    }
 }
