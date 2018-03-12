@@ -842,10 +842,17 @@ public class LTTngControlServiceMI extends LTTngControlService {
                     }
 
                     Node rawDataNode = null;
-                    TraceEventType eventType = probeEvent.getEventType();
-                    if (eventType == TraceEventType.FUNCTION || eventType == TraceEventType.PROBE) {
+                    switch (probeEvent.getEventType()) {
+                    case PROBE:
                         rawDataNode = getFirstOf(rawAttributes.getChildNodes(), MIStrings.PROBE_ATTRIBUTES);
-                    } else if (eventType == TraceEventType.SYSCALL || eventType == TraceEventType.TRACEPOINT || eventType == TraceEventType.UNKNOWN || true) {
+                        break;
+                    case FUNCTION:
+                        rawDataNode = getFirstOf(rawAttributes.getChildNodes(), MIStrings.FUNCTION_ATTRIBUTES);
+                        break;
+                    case SYSCALL:
+                    case TRACEPOINT:
+                    case UNKNOWN:
+                    default:
                         throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
                     }
 
