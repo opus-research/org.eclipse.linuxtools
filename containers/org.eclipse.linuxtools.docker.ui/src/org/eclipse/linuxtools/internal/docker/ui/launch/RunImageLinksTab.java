@@ -248,8 +248,6 @@ public class RunImageLinksTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(final ILaunchConfiguration configuration) {
-		if (model == null)
-			return;
 		try {
 			// model needs to be recycled
 			model.removeLinks();
@@ -271,8 +269,6 @@ public class RunImageLinksTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		if (model == null)
-			return;
 		ArrayList<String> linksList = new ArrayList<>();
 		for (Object o : model.getLinks()) {
 			ImageRunSelectionModel.ContainerLinkModel m = (ImageRunSelectionModel.ContainerLinkModel) o;

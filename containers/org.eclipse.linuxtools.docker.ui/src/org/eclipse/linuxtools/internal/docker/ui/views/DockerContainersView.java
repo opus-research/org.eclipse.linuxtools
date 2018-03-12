@@ -308,12 +308,11 @@ public class DockerContainersView extends ViewPart implements
 		this.viewer.setComparator(comparator);
 		// apply search filter
 		this.viewer.addFilter(getContainersFilter());
-		// default to first active connection or currently selected connection
-		// in Explorer View
-		IDockerConnection firstActiveConnection = CommandUtils
-				.getCurrentConnection(null);
-		if (firstActiveConnection != null) {
-			setConnection(firstActiveConnection);
+		final IDockerConnection[] connections = DockerConnectionManager
+				.getInstance()
+				.getConnections();
+		if (connections.length > 0) {
+			setConnection(connections[0]);
 			connection.addContainerListener(this);
 		}
 		this.viewer.addSelectionChangedListener(onContainerSelection());
@@ -446,13 +445,12 @@ public class DockerContainersView extends ViewPart implements
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		final ITreeSelection treeSelection = (ITreeSelection) selection;
-		if (treeSelection.isEmpty()) {
+		if(treeSelection.isEmpty()) {
 			setConnection(null);
 			return;
 		}
-		// remove this view as a container listener on the former select
-		// connection
-		if (this.connection != null) {
+		// remove this view as a container listener on the former select connection 
+		if(this.connection != null) {
 			this.connection.removeContainerListener(this);
 		}
 		final Object firstSegment = treeSelection.getPaths()[0].getFirstSegment();
