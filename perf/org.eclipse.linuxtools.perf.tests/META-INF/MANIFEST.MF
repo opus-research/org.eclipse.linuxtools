@@ -10,4 +10,3 @@ Require-Bundle:
  org.junit,
  org.eclipse.linuxtools.profiling.tests
 Bundle-Vendor: %provider
-Automatic-Module-Name: org.eclipse.linuxtools.perf.tests

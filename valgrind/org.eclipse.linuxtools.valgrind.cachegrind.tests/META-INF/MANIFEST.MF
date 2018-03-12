@@ -18,4 +18,3 @@ Import-Package:
  org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.ui.texteditor
-Automatic-Module-Name: org.eclipse.linuxtools.valgrind.cachegrind.tests

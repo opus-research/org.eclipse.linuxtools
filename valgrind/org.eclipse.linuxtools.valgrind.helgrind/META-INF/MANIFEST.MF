@@ -16,4 +16,3 @@ Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.linuxtools.valgrind.launch,
  org.eclipse.linuxtools.valgrind.ui
 Bundle-Vendor: %Bundle-Vendor.0
-Automatic-Module-Name: org.eclipse.linuxtools.valgrind.helgrind
