@@ -50,6 +50,7 @@ public class ImageRun extends Wizard {
 
 	private final ImageRunSelectionPage imageRunSelectionPage;
 	private final ImageRunResourceVolumesVariablesPage imageRunResourceVolumesPage;
+	private final ImageRunNetworkPage2 imageRunNetworkPage;
 
 	/**
 	 * Constructor when an {@link IDockerConnection} has been selected to run an
@@ -67,6 +68,7 @@ public class ImageRun extends Wizard {
 		this.imageRunSelectionPage = new ImageRunSelectionPage(connection);
 		this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
 				connection);
+		this.imageRunNetworkPage = new ImageRunNetworkPage2(connection);
 	}
 
 	/**
@@ -92,12 +94,15 @@ public class ImageRun extends Wizard {
 				lastLaunchConfiguration);
 		this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
 				selectedImage, lastLaunchConfiguration);
+		this.imageRunNetworkPage = new ImageRunNetworkPage2(selectedImage,
+				lastLaunchConfiguration);
 	}
 
 	@Override
 	public void addPages() {
 		addPage(imageRunSelectionPage);
 		addPage(imageRunResourceVolumesPage);
+		addPage(imageRunNetworkPage);
 	}
 
 	@Override
@@ -127,6 +132,8 @@ public class ImageRun extends Wizard {
 				.getModel();
 		final ImageRunResourceVolumesVariablesModel resourcesModel = this.imageRunResourceVolumesPage
 				.getModel();
+		// final ImageRunNetworkModel networkModel = this.imageRunNetworkPage
+		// .getModel();
 
 		final DockerHostConfig.Builder hostConfigBuilder = new DockerHostConfig.Builder();
 		if (selectionModel.isPublishAllPorts()) {
@@ -192,6 +199,7 @@ public class ImageRun extends Wizard {
 		hostConfigBuilder.binds(binds);
 		hostConfigBuilder.volumesFrom(volumesFrom);
 		hostConfigBuilder.privileged(selectionModel.isPrivileged());
+		// hostConfigBuilder.networkMode(networkModel.getNetworkMode());
 		// memory constraints (in bytes)
 		if (resourcesModel.isEnableResourceLimitations()) {
 			hostConfigBuilder.memory(resourcesModel.getMemoryLimit() * MB);
