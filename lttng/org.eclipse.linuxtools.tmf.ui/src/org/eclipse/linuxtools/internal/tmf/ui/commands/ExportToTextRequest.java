@@ -67,7 +67,7 @@ public class ExportToTextRequest extends TmfEventRequest {
         try {
             if (fFilter == null || fFilter.matches(event)) {
                 if (fTable != null) {
-                    String[] entries = fTable.getCurrentItemStrings(event);
+                    String[] entries = fTable.getItemStrings(event);
                     boolean needTab = false;
                     for (String entry : entries) {
                         if (needTab) {
