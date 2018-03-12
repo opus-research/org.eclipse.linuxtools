@@ -62,11 +62,6 @@ public class EventDeclaration implements IEventDeclaration {
     private StructDeclaration fFields = null;
 
     /**
-     * Event id (can be null if only event in the stream).
-     */
-    private Integer fId = (int) UNSET_EVENT_ID;
-
-    /**
      * Stream to which belongs this event.
      */
     private CTFStream fStream = null;
@@ -79,7 +74,7 @@ public class EventDeclaration implements IEventDeclaration {
     /** Map of this event type's custom CTF attributes */
     private final Map<String, String> fCustomAttributes = new HashMap<>();
 
-    private int fIntId = (int) UNSET_EVENT_ID;
+    private int fId = (int) UNSET_EVENT_ID;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -188,8 +183,7 @@ public class EventDeclaration implements IEventDeclaration {
         if (id < 0 || id > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("id out of range"); //$NON-NLS-1$
         }
-        fId = Integer.valueOf((int) id);
-        fIntId = (int) id;
+        fId = (int) id;
     }
 
     @Override
@@ -203,7 +197,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return the event id
      */
     public int id() {
-        return fIntId;
+        return fId;
     }
 
     /**
@@ -255,7 +249,7 @@ public class EventDeclaration implements IEventDeclaration {
      * @return is the id set?
      */
     public boolean idIsSet() {
-        return (fId != null && fId != UNSET_EVENT_ID);
+        return (fId  != UNSET_EVENT_ID);
     }
 
     /**
@@ -335,11 +329,7 @@ public class EventDeclaration implements IEventDeclaration {
         } else if (!fFields.equals(other.fFields)) {
             return false;
         }
-        if (fId == null) {
-            if (other.fId != null) {
-                return false;
-            }
-        } else if (!fId.equals(other.fId)) {
+        if (fId != (other.fId)) {
             return false;
         }
         if (fName == null) {
@@ -369,7 +359,7 @@ public class EventDeclaration implements IEventDeclaration {
         result = (prime * result)
                 + ((fContext == null) ? 0 : fContext.hashCode());
         result = (prime * result) + ((fFields == null) ? 0 : fFields.hashCode());
-        result = (prime * result) + ((fId == null) ? 0 : fId.hashCode());
+        result = (prime * result) + fId;
         result = (prime * result) + ((fName == null) ? 0 : fName.hashCode());
         result = (prime * result) + ((fStream == null) ? 0 : fStream.hashCode());
         result = (prime * result) + fCustomAttributes.hashCode();
