@@ -338,8 +338,6 @@ public class RunImagePortsTab extends AbstractLaunchConfigurationTab
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		if (model == null)
-			return;
 		try {
 			// recycle the model
 			model.removeExposedPorts();
@@ -377,8 +375,6 @@ public class RunImagePortsTab extends AbstractLaunchConfigurationTab
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		if (model == null)
-			return;
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.PUBLISH_ALL_PORTS,
 				model.isPublishAllPorts());
