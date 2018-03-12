@@ -31,4 +31,11 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.pde.api.tools.apiAnalysisNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>test_xml_files/xml1</name>
+			<type>1</type>
+			<locationURI>/home/naser/Desktop/xml1</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

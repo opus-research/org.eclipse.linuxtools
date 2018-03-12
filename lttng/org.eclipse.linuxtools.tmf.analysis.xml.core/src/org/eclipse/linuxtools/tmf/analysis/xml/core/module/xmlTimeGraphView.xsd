@@ -9,6 +9,7 @@
  *
  * Contributors:
  *   Florian Wininger - Initial API and implementation
+ *	 Naser Ezzati - Add entryLabel tags to put labels on the state system entries
  *************************************************************************** -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	attributeFormDefault="unqualified" elementFormDefault="qualified">
@@ -33,7 +34,7 @@
 	</xs:complexType>
 
 	<xs:complexType name="headOutput">
-		<xs:annotation>
+			<xs:annotation>
 			<xs:documentation>Declares the meta-information that can be defined for an XML time graph view.</xs:documentation></xs:annotation>
 		<xs:sequence>
 			<xs:element maxOccurs="unbounded" minOccurs="0" name="analysis">
@@ -76,13 +77,126 @@
 			<xs:element maxOccurs="1" minOccurs="0" name="name" type="viewStateAttribute" >
 				<xs:annotation>
 					<xs:documentation>Specify how to find the name of this entry. Typically, the name will be human-readable. If not specified, the display attribute's name will be used as the name.</xs:documentation></xs:annotation></xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="entryLabel" type="entryLabel" >
+				<xs:annotation>
+					<xs:documentation>Specify how to show the label of this entry. It defines the attribute path for the corresponding entry in the attribute tree</xs:documentation></xs:annotation></xs:element>					
 			<xs:element maxOccurs="unbounded" minOccurs="0" name="entry" type="viewEntry" >
 				<xs:annotation>
 					<xs:documentation>Define child entries for this entry. Child entries will be shown as children of this entry (with or without additional parent/child relationship defined through the viewEntry element's "parent" element).</xs:documentation></xs:annotation></xs:element>
+							
 		</xs:sequence>
 		<xs:attribute name="path" type="xs:string" use="required" >
 			<xs:annotation>
 				<xs:documentation>The path of the entry in the state system. Wildcards '*' may be used. For example, to display entries from all CPUs, the path could be "CPUs/*" and one entry will be created for each sub-attribute of the "CPUs" attribute. Each entry will be used as the base for all child elements, unless specified otherwise.</xs:documentation></xs:annotation></xs:attribute>
+				
+				
+	</xs:complexType>
+
+	<xs:complexType name="entryLabel">
+		<xs:annotation>
+			<xs:documentation>Specify how to show the label of this entry. It defines the attribute path for the corresponding entry in the attribute tree</xs:documentation></xs:annotation>
+		<xs:choice maxOccurs="1" minOccurs="0">
+			<xs:sequence maxOccurs="1" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Describe a single attribute assignation. Simply put: a state change where path/to/attribute=value.</xs:documentation></xs:annotation>
+				<xs:element maxOccurs="1" minOccurs="0" name="stateAttribute" type="viewStateAttribute" >
+					<xs:annotation>
+						<xs:documentation>Explain how to reach an attribute in the state system. It describes the path/to/attribute.</xs:documentation></xs:annotation></xs:element>
+			</xs:sequence>
+			  <xs:sequence maxOccurs="1" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Describe a conditional state change, where different path conditions may lead to different state changes.</xs:documentation></xs:annotation>
+				<xs:element maxOccurs="1" minOccurs="1" name="if" type="viewConditionSingle" >
+					<xs:annotation>
+						<xs:documentation>Define the condition to verify.</xs:documentation></xs:annotation></xs:element>
+				<xs:element maxOccurs="1" minOccurs="1" name="then" type="viewStateChange" >
+					<xs:annotation>
+						<xs:documentation>Define the state change to use if the previous condition is true.</xs:documentation></xs:annotation></xs:element>
+				<xs:element maxOccurs="1" minOccurs="0" name="else" type="viewStateChange" >
+					<xs:annotation>
+						<xs:documentation>Optionally define the state change to use if the condition is false.</xs:documentation></xs:annotation></xs:element>
+			</xs:sequence>
+		</xs:choice>
+	</xs:complexType>	
+	
+	<xs:complexType name="viewCondition">
+		<xs:annotation>
+			<xs:documentation>Define a conditional statement. Conditions may use values of the state system or from the event being handled. This element defines a statement in the form of "if (some_path == value)".</xs:documentation></xs:annotation>
+		<xs:sequence maxOccurs="1" minOccurs="1">			
+				<xs:element maxOccurs="unbounded" minOccurs="1" name="stateAttribute" type="viewStateAttribute" >
+					<xs:annotation>
+						<xs:documentation>Compare the current value of an attribute of the state system.</xs:documentation></xs:annotation></xs:element>
+				<xs:element maxOccurs="1" minOccurs="1" name="stateValue" type="viewStateAttribute" >
+				<xs:annotation>
+					<xs:documentation>Define the value to compare to.</xs:documentation></xs:annotation></xs:element>
+		</xs:sequence>
+		<xs:anyAttribute />
+	</xs:complexType>
+		
+	<xs:complexType name="viewConditionSingle">
+		<xs:annotation>
+			<xs:documentation>Define a conditional statement with only one child. From this element, a condition may be composed of other conditional elements to create more complex conditional statements.</xs:documentation></xs:annotation>
+		<xs:choice maxOccurs="1" minOccurs="1">
+			<xs:element name="condition" type="viewCondition" >
+				<xs:annotation>
+					<xs:documentation>Define a condition element, in the form "if (some_path == value)".</xs:documentation></xs:annotation></xs:element>
+			<xs:element name="not" type="viewConditionSingle" >
+				<xs:annotation>
+					<xs:documentation>Negate the result of the following condition, allowing statements of the form "if (!cond)".</xs:documentation></xs:annotation></xs:element>
+			<xs:element name="and" type="viewConditionMultiple" >
+				<xs:annotation>
+					<xs:documentation>ANDs 2 conditional statements, allowing statements of the form "if (condA AND condB)"</xs:documentation></xs:annotation></xs:element>
+			<xs:element name="or" type="viewConditionMultiple" >
+				<xs:annotation>
+					<xs:documentation>ORs 2 conditional statements, allowing statements of the form "if (condA OR condB)"</xs:documentation></xs:annotation></xs:element>
+		</xs:choice>
+		<xs:anyAttribute />
+	</xs:complexType>
+	
+	<xs:complexType name="viewConditionMultiple">
+		<xs:annotation>
+			<xs:documentation>Allows the composition of more than one conditional statements.</xs:documentation></xs:annotation>
+		<xs:sequence maxOccurs="unbounded" minOccurs="1">
+			<xs:element maxOccurs="1" minOccurs="0" name="condition" type="viewCondition" >
+				<xs:annotation>
+					<xs:documentation>Define a condition element, in the form "if (some_path == value)".</xs:documentation></xs:annotation></xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="or" type="viewConditionMultiple" >
+				<xs:annotation>
+					<xs:documentation>ORs 2 conditional statements, allowing statements of the form "if (condA OR condB)"</xs:documentation></xs:annotation></xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="and" type="viewConditionMultiple" >
+				<xs:annotation>
+					<xs:documentation>ANDs 2 conditional statements, allowing statements of the form "if (condA AND condB)"</xs:documentation></xs:annotation></xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="not" type="viewConditionSingle" >
+				<xs:annotation>
+					<xs:documentation>Negate the result of the following condition, allowing statements of the form "if (!cond)".</xs:documentation></xs:annotation></xs:element>
+		</xs:sequence>
+		<xs:anyAttribute />
+	</xs:complexType>
+	<xs:complexType name="viewStateChange">
+			<xs:annotation>
+			<xs:documentation>Define a change of state in the state system being built.</xs:documentation></xs:annotation>
+			<xs:choice maxOccurs="1" minOccurs="1">
+				<xs:sequence maxOccurs="1" minOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Describe a single attribute assignation. Simply put: a state change where path/to/attribute=value.</xs:documentation></xs:annotation>
+					<xs:element maxOccurs="unbounded" minOccurs="1" name="stateAttribute" type="viewStateAttribute" >
+						<xs:annotation>
+							<xs:documentation>Explain how to reach an attribute in the state system. It describes the path/to/attribute.</xs:documentation></xs:annotation></xs:element>
+				</xs:sequence>
+				<xs:sequence maxOccurs="1" minOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Describe a conditional state change, where different path conditions may lead to different state changes.</xs:documentation></xs:annotation>
+					<xs:element maxOccurs="1" minOccurs="1" name="if" type="viewConditionSingle" >
+						<xs:annotation>
+							<xs:documentation>Define the condition to verify.</xs:documentation></xs:annotation></xs:element>
+					<xs:element maxOccurs="1" minOccurs="1" name="then" type="viewStateChange" >
+						<xs:annotation>
+							<xs:documentation>Define the state change to use if the previous condition is true.</xs:documentation></xs:annotation></xs:element>
+					<xs:element maxOccurs="1" minOccurs="0" name="else" type="viewStateChange" >
+						<xs:annotation>
+							<xs:documentation>Optionally define the state change to use if the condition is false.</xs:documentation></xs:annotation></xs:element>
+				</xs:sequence>
+			</xs:choice>
 	</xs:complexType>
 
 	<xs:complexType name="viewStateAttribute">
@@ -108,6 +222,18 @@
 					<xs:enumeration value="self" >
 						<xs:annotation>
 							<xs:documentation>This type indicates that the requested attribute is the attribute itself. For this attribute, the reference is always relative (setting it to absolute will be ignored).</xs:documentation></xs:annotation></xs:enumeration>
+					<xs:enumeration value="null" >
+						<xs:annotation>
+							<xs:documentation>Indicate that the value is a null value.</xs:documentation></xs:annotation></xs:enumeration>
+					<xs:enumeration value="int" >
+						<xs:annotation>
+							<xs:documentation>The value is a constant of type integer.</xs:documentation></xs:annotation></xs:enumeration>
+					<xs:enumeration value="long" >
+						<xs:annotation>
+							<xs:documentation>The value is a constant of type long</xs:documentation></xs:annotation></xs:enumeration>
+					<xs:enumeration value="string" >
+						<xs:annotation>
+							<xs:documentation>The value is a constant of type string</xs:documentation></xs:annotation></xs:enumeration>
 				</xs:restriction>
 			</xs:simpleType>
 		</xs:attribute>

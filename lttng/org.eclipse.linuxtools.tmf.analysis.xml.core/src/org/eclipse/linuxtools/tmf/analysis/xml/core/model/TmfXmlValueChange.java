@@ -7,61 +7,63 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Florian Wininger - Initial API and implementation
+ *   Naser Ezzati - Initial API and implementation
  ******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.analysis.xml.core.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.IXmlStateSystemContainer;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.stateprovider.TmfXmlStrings;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- * This Class implement a State Change in the XML-defined state system
+ * This Class implement a condition For putting labels on entries in the XML-defined state system
  *
  * <pre>
- *  example 1: Simple state change
- *  <stateChange>
- *      <stateAttribute type="location" value="CurrentThread" />
+ *  example 1: Simple Condition
+ *  <entryLabel>
  *      <stateAttribute type="constant" value="System_call" />
- *      <stateValue type="null" />
- *  </stateChange>
+ *  </entryLabel>
  *
  *  example 2: Conditional state change
- *  <stateChange>
+ * <entryLabel>
  *     <if>
  *      <condition>
  *        <stateAttribute type="location" value="CurrentThread" />
- *        <stateAttribute type="constant" value="System_call" />
- *        <stateValue type="null" />
+ *        <stateAttribute type="constant" value="Status" />
+ *        <stateValue type="int" value="3" />
  *      </condition>
  *     </if>
  *    <then>
- *      <stateAttribute type="location" value="CurrentThread" />
- *      <stateAttribute type="constant" value="Status" />
- *      <stateValue int="$PROCESS_STATUS_RUN_USERMODE"/>
+ *      <stateAttribute type="constant" value="System_call" />
  *    </then>
  *    <else>
- *      <stateAttribute type="location" value="CurrentThread" />
- *      <stateAttribute type="constant" value="Status" />
- *      <stateValue int="$PROCESS_STATUS_RUN_SYSCALL"/>
+ *       <if>
+ *          <condition>
+ *            <stateAttribute type="location" value="CurrentThread" />
+ *            <stateAttribute type="constant" value="Status" />
+ *            <stateValue type="int" value="2" />
+ *          </condition>
+ *       </if>
+ *          <then>
+ *            <stateAttribute type="constant" value="Status" />
+ *          </then>
  *    </else>
- *  </stateChange>
+ * </entryLabel>
  * </pre>
  *
- * @author Florian Wininger
+ * @author Naser Ezzati
+ * @since 2.0
  */
-public class TmfXmlStateChange {
+public class TmfXmlValueChange {
 
     private final IXmlStateChange fChange;
     private final IXmlStateSystemContainer fContainer;
@@ -76,7 +78,7 @@ public class TmfXmlStateChange {
      * @param container
      *            The state system container this state change belongs to
      */
-    public TmfXmlStateChange(ITmfXmlModelFactory modelFactory, Element statechange, IXmlStateSystemContainer container) {
+    public TmfXmlValueChange(ITmfXmlModelFactory modelFactory, Element statechange, IXmlStateSystemContainer container) {
         fContainer = container;
 
         /*
@@ -95,25 +97,29 @@ public class TmfXmlStateChange {
     }
 
     /**
-     * Execute the state change for an event. If necessary, it validates the
+     * Execute the state change for an entry. If necessary, it validates the
      * condition and executes the required change.
      *
-     * @param event
-     *            The event to process
+     * @param quark
+     *            The quark to process
+     * @param time
+     *            The time to check the value of quark
      * @throws AttributeNotFoundException
      *             Pass through the exception it received
      * @throws TimeRangeException
      *             Pass through the exception it received
      * @throws StateValueTypeException
      *             Pass through the exception it received
+     * @return   the quark for the label or -1 if there is no value or the condition is not true
      */
-    public void handleEvent(@NonNull ITmfEvent event) throws AttributeNotFoundException, StateValueTypeException, TimeRangeException {
-        fChange.handleEvent(event);
+    public int handleEntry(int quark, long time) throws AttributeNotFoundException, StateValueTypeException, TimeRangeException {
+        return fChange.handleEntry(quark, time);
     }
 
     /* Interface for both private classes to handle the event */
     private interface IXmlStateChange {
-        void handleEvent(@NonNull ITmfEvent event) throws AttributeNotFoundException, StateValueTypeException, TimeRangeException;
+
+        int handleEntry(int quark,long time) throws AttributeNotFoundException, StateValueTypeException, TimeRangeException;
     }
 
     /**
@@ -121,8 +127,8 @@ public class TmfXmlStateChange {
      */
     private class XmlConditionalChange implements IXmlStateChange {
         private final TmfXmlCondition fCondition;
-        private final TmfXmlStateChange fThenChange;
-        private final TmfXmlStateChange fElseChange;
+        private final TmfXmlValueChange fThenChange;
+        private final TmfXmlValueChange fElseChange;
 
         public XmlConditionalChange(ITmfXmlModelFactory modelFactory, Element statechange) {
             /*
@@ -135,22 +141,21 @@ public class TmfXmlStateChange {
             if (thenNode == null) {
                 throw new IllegalArgumentException("Conditional state change: there should be a then clause."); //$NON-NLS-1$
             }
-            fThenChange = modelFactory.createStateChange((Element) thenNode, fContainer);
+            fThenChange = modelFactory.createValueChange((Element) thenNode, fContainer);
 
             Node elseNode = statechange.getElementsByTagName(TmfXmlStrings.ELSE).item(0);
             if (elseNode != null) {
-                fElseChange = modelFactory.createStateChange((Element) elseNode, fContainer);
+                fElseChange = modelFactory.createValueChange((Element) elseNode, fContainer);
             } else {
                 fElseChange = null;
             }
         }
 
-
         @Override
-        public void handleEvent(@NonNull ITmfEvent event) throws AttributeNotFoundException, StateValueTypeException, TimeRangeException {
-            TmfXmlStateChange toExecute = fThenChange;
+        public int handleEntry(int quark, long time) throws AttributeNotFoundException, StateValueTypeException, TimeRangeException {
+            TmfXmlValueChange toExecute = fThenChange;
             try {
-                if (!fCondition.testForEvent(event)) {
+                if (!fCondition.testForEntry(quark, time)) {
                     toExecute = fElseChange;
                 }
             } catch (AttributeNotFoundException e) {
@@ -158,13 +163,16 @@ public class TmfXmlStateChange {
                  * An attribute in the condition did not exist (yet), return
                  * from the state change
                  */
-                return;
+                return -1;
+            } catch (StateSystemDisposedException e) {
+
+                return -1;
             }
 
             if (toExecute == null) {
-                return;
+                return -1;
             }
-            toExecute.handleEvent(event);
+            return toExecute.handleEntry(quark, time);
         }
     }
 
@@ -172,7 +180,8 @@ public class TmfXmlStateChange {
      * State change with no condition
      */
     private class XmlStateValueChange implements IXmlStateChange {
-        private final ITmfXmlStateValue fValue;
+
+        private final ITmfXmlStateAttribute fAttribute;
 
         public XmlStateValueChange(ITmfXmlModelFactory modelFactory, Element statechange) {
             List<Element> childElements = XmlUtils.getChildElements(statechange);
@@ -182,24 +191,19 @@ public class TmfXmlStateChange {
              * to reach to value to set
              */
             Element stateValueElement = childElements.remove(childElements.size() - 1);
-            List<ITmfXmlStateAttribute> attributes = new ArrayList<>();
-            for (Element element : childElements) {
-                if (!element.getNodeName().equals(TmfXmlStrings.STATE_ATTRIBUTE)) {
-                    throw new IllegalArgumentException("TmfXmlStateChange: a state change must have only TmfXmlStateAttribute elements before the state value"); //$NON-NLS-1$
-                }
-                ITmfXmlStateAttribute attribute = modelFactory.createStateAttribute(element, fContainer);
-                attributes.add(attribute);
+            if (!stateValueElement.getNodeName().equals(TmfXmlStrings.STATE_ATTRIBUTE)) {
+                throw new IllegalArgumentException("TmfXmlStateChange: a state change must have only TmfXmlStateAttribute elements before the state value"); //$NON-NLS-1$
             }
-            if (attributes.isEmpty()) {
-                throw new IllegalArgumentException("TmfXmlStateChange: a state change must have at least one TmfXmlStateAttribute element before the state value"); //$NON-NLS-1$
-            }
-            fValue = modelFactory.createStateValue(stateValueElement, fContainer, attributes);
+
+            fAttribute = modelFactory.createStateAttribute(stateValueElement, fContainer);
+
         }
 
         @Override
-        public void handleEvent(@NonNull ITmfEvent event) throws AttributeNotFoundException, StateValueTypeException, TimeRangeException {
-            fValue.handleEvent(event);
+        public int handleEntry(int quark, long time) throws AttributeNotFoundException, StateValueTypeException, TimeRangeException {
+            return fAttribute.getAttributeQuark(quark);
         }
+
     }
 
 }
