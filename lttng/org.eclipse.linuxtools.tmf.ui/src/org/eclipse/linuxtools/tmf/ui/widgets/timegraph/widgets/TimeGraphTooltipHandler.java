@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2007, 2013 Intel Corporation, Ericsson
+ * Copyright (c) 2007, 2014 Intel Corporation, Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.ITimeGraphPresentationProvider;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.NullTimeEvent;
@@ -52,7 +53,7 @@ public class TimeGraphTooltipHandler {
 
     private Shell fTipShell;
     private Composite fTipComposite;
-    private final ITimeDataProvider fTimeDataProvider;
+    private ITimeDataProvider fTimeDataProvider;
     private ITimeGraphPresentationProvider fTimeGraphProvider = null;
 
     /**
@@ -70,6 +71,18 @@ public class TimeGraphTooltipHandler {
 
         this.fTimeGraphProvider = graphProv;
         this.fTimeDataProvider = timeProv;
+    }
+
+    /**
+     * Set the time data provider
+     *
+     * @param timeDataProvider
+     *            The time data provider
+     *
+     * @since 3.1
+     */
+    public void setTimeProvider(ITimeDataProvider timeDataProvider) {
+        fTimeDataProvider = timeDataProvider;
     }
 
     private void createTooltipShell(Shell parent) {
@@ -208,34 +221,84 @@ public class TimeGraphTooltipHandler {
 
                         Resolution res = Resolution.NANOSEC;
                         TimeFormat tf = fTimeDataProvider.getTimeFormat();
-                        if (tf == TimeFormat.CALENDAR) {
-                            addItem(Messages.TmfTimeTipHandler_TRACE_DATE, eventStartTime > -1 ?
-                                    Utils.formatDate(eventStartTime)
-                                    : "?"); //$NON-NLS-1$
-                        }
-                        if (eventDuration > 0) {
-                            addItem(Messages.TmfTimeTipHandler_TRACE_START_TIME, eventStartTime > -1 ?
-                                    Utils.formatTime(eventStartTime, tf, res)
-                                    : "?"); //$NON-NLS-1$
-
-                            addItem(Messages.TmfTimeTipHandler_TRACE_STOP_TIME, eventEndTime > -1 ?
-                                    Utils.formatTime(eventEndTime, tf, res)
-                                    : "?"); //$NON-NLS-1$
-                        } else {
-                            addItem(Messages.TmfTimeTipHandler_TRACE_EVENT_TIME, eventStartTime > -1 ?
-                                    Utils.formatTime(eventStartTime, tf, res)
-                                    : "?"); //$NON-NLS-1$
-                        }
-
-                        if (eventDuration > 0) {
-                            // Duration in relative format in any case
-                            if (tf == TimeFormat.CALENDAR) {
-                                tf = TimeFormat.RELATIVE;
+                        String startTime = "?"; //$NON-NLS-1$
+                        String duration = "?"; //$NON-NLS-1$
+                        String endTime = "?"; //$NON-NLS-1$
+                        if (fTimeDataProvider instanceof ITimeDataProviderConverter) {
+                            ITimeDataProviderConverter tdp = (ITimeDataProviderConverter) fTimeDataProvider;
+                            if (eventStartTime > -1) {
+                                eventStartTime = tdp.convertTime(eventStartTime);
+                                startTime = Utils.formatTime(eventStartTime, tf, res);
                             }
-                            addItem(Messages.TmfTimeTipHandler_DURATION, eventDuration > -1 ?
-                                    Utils.formatTime(eventDuration, tf, res)
-                                    : "?"); //$NON-NLS-1$
+                            if (eventEndTime > -1) {
+                                eventEndTime = tdp.convertTime(eventEndTime);
+                                endTime = Utils.formatTime(eventEndTime, tf, res);
+                            }
+                            if (eventDuration > -1) {
+                                duration = Utils.formatDelta(eventEndTime - eventStartTime, tf, res);
+                            }
+                        } else {
+                            if (eventStartTime > -1) {
+                                startTime = Utils.formatTime(eventStartTime, tf, res);
+                            }
+                            if (eventEndTime > -1) {
+                                endTime = Utils.formatTime(eventEndTime, tf, res);
+                            }
+                            if (eventDuration > -1) {
+                                duration = Utils.formatDelta(eventDuration, tf, res);
+                            }
                         }
+                        if (tf == TimeFormat.CALENDAR) {
+                            addItem(Messages.TmfTimeTipHandler_TRACE_DATE,
+                                    eventStartTime > -1 ? Utils.formatDate(eventStartTime) : "?"); //$NON-NLS-1$
+                        }
+                        if (eventDuration > 0) {
+                            addItem(Messages.TmfTimeTipHandler_TRACE_START_TIME, startTime);
+                            addItem(Messages.TmfTimeTipHandler_TRACE_STOP_TIME, endTime);
+                        } else {
+                            addItem(Messages.TmfTimeTipHandler_TRACE_EVENT_TIME, startTime);
+                        }
+
+                        if (eventDuration > 0) {
+                            addItem(Messages.TmfTimeTipHandler_DURATION, duration);
+                        }
+                    }
+                }
+            }
+
+            private void fillValues(ILinkEvent linkEvent) {
+                addItem(Messages.TmfTimeTipHandler_LINK_SOURCE, linkEvent.getEntry().getName());
+                addItem(Messages.TmfTimeTipHandler_LINK_TARGET, linkEvent.getDestinationEntry().getName());
+
+                // This block receives a list of <String, String> values to be added to the tip table
+                Map<String, String> eventAddOns = fTimeGraphProvider.getEventHoverToolTipInfo(linkEvent);
+                if (eventAddOns != null) {
+                    for (Iterator<String> iter = eventAddOns.keySet().iterator(); iter.hasNext();) {
+                        String message = iter.next();
+                        addItem(message, eventAddOns.get(message));
+                    }
+                }
+                if (fTimeGraphProvider.displayTimesInTooltip()) {
+                    long sourceTime = linkEvent.getTime();
+                    long duration = linkEvent.getDuration();
+                    long targetTime = sourceTime + duration;
+                    if (fTimeDataProvider instanceof ITimeDataProviderConverter) {
+                        ITimeDataProviderConverter tdp = (ITimeDataProviderConverter) fTimeDataProvider;
+                        sourceTime = tdp.convertTime(sourceTime);
+                        targetTime = tdp.convertTime(targetTime);
+                        duration = targetTime - sourceTime;
+                    }
+                    Resolution res = Resolution.NANOSEC;
+                    TimeFormat tf = fTimeDataProvider.getTimeFormat();
+                    if (tf == TimeFormat.CALENDAR) {
+                        addItem(Messages.TmfTimeTipHandler_TRACE_DATE, Utils.formatDate(sourceTime));
+                    }
+                    if (duration > 0) {
+                        addItem(Messages.TmfTimeTipHandler_LINK_SOURCE_TIME, Utils.formatTime(sourceTime, tf, res));
+                        addItem(Messages.TmfTimeTipHandler_LINK_TARGET_TIME, Utils.formatTime(targetTime, tf, res));
+                        addItem(Messages.TmfTimeTipHandler_DURATION, Utils.formatDelta(duration, tf, res));
+                    } else {
+                        addItem(Messages.TmfTimeTipHandler_LINK_TIME, Utils.formatTime(sourceTime, tf, res));
                     }
                 }
             }
@@ -248,11 +311,19 @@ public class TimeGraphTooltipHandler {
                 Point pt = new Point(event.x, event.y);
                 TimeGraphControl timeGraphControl = (TimeGraphControl) event.widget;
                 createTooltipShell(timeGraphControl.getShell());
-                ITimeGraphEntry entry = timeGraphControl.getEntry(pt);
                 for (Control child : fTipComposite.getChildren()) {
                     child.dispose();
                 }
-                fillValues(pt, timeGraphControl, entry);
+                if ((event.stateMask & SWT.MODIFIER_MASK) != SWT.SHIFT) {
+                    ILinkEvent linkEvent = timeGraphControl.getArrow(pt);
+                    if (linkEvent != null) {
+                        fillValues(linkEvent);
+                    }
+                }
+                if (fTipComposite.getChildren().length == 0) {
+                    ITimeGraphEntry entry = timeGraphControl.getEntry(pt);
+                    fillValues(pt, timeGraphControl, entry);
+                }
                 if (fTipComposite.getChildren().length == 0) {
                     return;
                 }
