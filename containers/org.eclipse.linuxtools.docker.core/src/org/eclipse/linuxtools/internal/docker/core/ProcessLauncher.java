@@ -11,23 +11,14 @@
 
 package org.eclipse.linuxtools.internal.docker.core;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.linuxtools.docker.core.Activator;
 import org.eclipse.linuxtools.docker.core.DockerException;
-import org.eclipse.linuxtools.docker.core.DockerProcessException;
 
 /**
  * A utility class to run Java {@link Process} such as {@code docker-machine} or
@@ -93,7 +84,7 @@ public class ProcessLauncher {
 			final boolean commandExists = new ProcessLauncher()
 					.checkPathToCommand(baseCmdDir, cmdName);
 			if (!commandExists) {
-				throw new DockerProcessException(
+				throw new DockerException(
 						ProcessMessages.getFormattedString("Command_Not_Found", //$NON-NLS-1$
 								baseCmdDir, cmdName));
 			}
@@ -132,17 +123,10 @@ public class ProcessLauncher {
 					.collect(Collectors.joining(" "));
 		}
 
-		/**
-		 * Starts the process from the current settings.
-		 * 
-		 * @return the {@link Process} that was started by this process builder
-		 * @throws DockerException
-		 *             if an error occurred
-		 */
 		public Process start() throws DockerException {
 			try {
 				return this.processBuilder.start();
-			} catch (Throwable e) {
+			} catch (IOException e) {
 				throw new DockerException(ProcessMessages
 						.getFormattedString("Process_Start_Exception", //$NON-NLS-1$
 								processBuilder.command().stream()
@@ -150,57 +134,6 @@ public class ProcessLauncher {
 								e.getMessage()),
 						e);
 			}
-		}
-
-		/**
-		 * Starts the {@link Process} from the current settings and returns the
-		 * output.
-		 * 
-		 * @return the process output once it has completed.
-		 * @throws DockerException
-		 *             if an error occurred
-		 */
-		public String[] startAndGetResult() throws DockerException {
-			final Process process = start();
-			return extractResult(process);
-		}
-
-		private String[] extractResult(final Process process) {
-			try {
-			process.waitFor();
-			if (process.exitValue() == 0) {
-				final List<String> result = new ArrayList<>();
-				try (final InputStream inputStream = process.getInputStream();
-						final BufferedReader buff = new BufferedReader(
-								new InputStreamReader(inputStream))) {
-					String line;
-					while ((line = buff.readLine()) != null) {
-						result.add(line);
-					}
-				}
-				return result.toArray(new String[0]);
-			} else {
-				final StringBuffer errorMessage = new StringBuffer();
-				try (final InputStream errorStream = process.getErrorStream();
-						final BufferedReader buff = new BufferedReader(
-								new InputStreamReader(errorStream))) {
-					String line;
-					while ((line = buff.readLine()) != null) {
-						errorMessage.append(line).append('\n'); // $NON-NLS-1$
-					}
-				}
-				Activator.log(new Status(IStatus.WARNING, Activator.PLUGIN_ID,
-						ProcessMessages.getFormattedString("Process_Error", //$NON-NLS-1$
-											this.getCommand(),
-								process.exitValue(), errorMessage.toString())));
-			}
-			} catch (IOException | InterruptedException e) {
-				Activator.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-						ProcessMessages.getFormattedString("Process_Exception", //$NON-NLS-1$
-								this.getCommand(), e.getMessage()),
-						e));
-			}
-			return new String[0];
 		}
 	}
 

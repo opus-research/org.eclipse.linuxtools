@@ -42,7 +42,7 @@ public class DockerCompose {
 	 * @param processLauncher
 	 *            the new {@link ProcessLauncher}.
 	 */
-	public void setProcessLauncher(final ProcessLauncher processLauncher) {
+	public void setProcessLauncher(ProcessLauncher processLauncher) {
 		this.processLauncher = processLauncher;
 	}
 
