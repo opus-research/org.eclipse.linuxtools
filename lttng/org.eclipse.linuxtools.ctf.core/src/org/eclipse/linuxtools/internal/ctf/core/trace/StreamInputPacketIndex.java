@@ -14,9 +14,8 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.trace;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ListIterator;
+import java.util.Vector;
 
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
@@ -35,7 +34,7 @@ public class StreamInputPacketIndex {
      * Entries of the index. They are sorted by increasing begin timestamp.
      * index builder.
      */
-    private final List<StreamInputPacketIndexEntry> fEntries = new ArrayList<>();
+    private final Vector<StreamInputPacketIndexEntry> entries = new Vector<>();
 
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates
@@ -46,8 +45,8 @@ public class StreamInputPacketIndex {
      *
      * @return the entries
      */
-    public List<StreamInputPacketIndexEntry> getEntries() {
-        return fEntries;
+    public Vector<StreamInputPacketIndexEntry> getEntries() {
+        return this.entries;
     }
 
     /**
@@ -56,7 +55,7 @@ public class StreamInputPacketIndex {
      * @return an iterator to the entries
      */
     public ListIterator<StreamInputPacketIndexEntry> listIterator() {
-        return fEntries.listIterator();
+        return this.entries.listIterator();
     }
 
     /**
@@ -67,7 +66,7 @@ public class StreamInputPacketIndex {
      * @return the iterator
      */
     public ListIterator<StreamInputPacketIndexEntry> listIterator(int n) {
-        return fEntries.listIterator(n);
+        return this.entries.listIterator(n);
     }
 
     // ------------------------------------------------------------------------
@@ -92,13 +91,13 @@ public class StreamInputPacketIndex {
         }
 
         /* Validate entries are inserted in monotonic increasing timestamp order. */
-        if (!fEntries.isEmpty()) {
-            if (entry.getTimestampBegin() < fEntries.get(fEntries.size()-1)
+        if (!this.entries.isEmpty()) {
+            if (entry.getTimestampBegin() < this.entries.lastElement()
                     .getTimestampBegin()) {
                 throw new CTFReaderException("Packets begin timestamp decreasing"); //$NON-NLS-1$
             }
         }
-        fEntries.add(entry);
+        this.entries.add(entry);
     }
 
     /**
@@ -114,7 +113,7 @@ public class StreamInputPacketIndex {
         /*
          * Start with min and max covering all the elements.
          */
-        int max = fEntries.size() - 1;
+        int max = this.entries.size() - 1;
         int min = 0;
 
         int guessI;
@@ -123,8 +122,8 @@ public class StreamInputPacketIndex {
         /*
          * If the index is empty, return the iterator at the very beginning.
          */
-        if (getEntries().isEmpty()) {
-            return getEntries().listIterator();
+        if (this.getEntries().isEmpty()) {
+            return this.getEntries().listIterator();
         }
 
         if (timestamp < 0) {
@@ -137,7 +136,7 @@ public class StreamInputPacketIndex {
              * Guess in the middle of min and max.
              */
             guessI = min + ((max - min) / 2);
-            guessEntry = fEntries.get(guessI);
+            guessEntry = this.entries.get(guessI);
 
             /*
              * If we reached the point where we focus on a single packet, our
@@ -162,6 +161,6 @@ public class StreamInputPacketIndex {
             }
         }
 
-        return fEntries.listIterator(guessI);
+        return this.entries.listIterator(guessI);
     }
 }
