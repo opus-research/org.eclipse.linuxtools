@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
-import java.util.List;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -21,7 +19,6 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.swt.widgets.Display;
 
@@ -31,6 +28,7 @@ import org.eclipse.swt.widgets.Display;
  */
 public class DockerImagesContentProvider implements ITreeContentProvider{
 
+	private static final String LoadingImages = "ImagesLoadJob.msg"; //$NON-NLS-1$
 	private static final Object[] EMPTY = new Object[0];
 	private TableViewer viewer;
 	
@@ -48,11 +46,7 @@ public class DockerImagesContentProvider implements ITreeContentProvider{
 		if(inputElement instanceof IDockerConnection) {
 			final IDockerConnection connection = (IDockerConnection)inputElement;
 			if (connection.isImagesLoaded()) {
-				final List<IDockerImage> images = connection.getImages();
-				if(images == null) {
-					return EMPTY;
-				}
-				return images.toArray();
+				return connection.getImages().toArray();
 			}
 			loadImages(connection);
 			return EMPTY;
@@ -68,12 +62,11 @@ public class DockerImagesContentProvider implements ITreeContentProvider{
 	 *            the selected {@link DockerConnection}
 	 */
 	private void loadImages(final IDockerConnection connection) {
-		final Job loadImagesJob = new Job(DVMessages
-				.getFormattedString("ImagesLoadJob.msg", connection.getUri())) {
+		final Job loadImagesJob = new Job(DVMessages.getString(LoadingImages)) {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				connection.getImages(true);
 				Display.getDefault().asyncExec(() -> {
+					connection.getImages(true);
 					viewer.refresh();
 				});
 				return Status.OK_STATUS;
