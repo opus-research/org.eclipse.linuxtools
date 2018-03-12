@@ -120,7 +120,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		}
 
 		public Builder tcpHost(String tcpHost) {
-			if (tcpHost != null) {
+			if (tcpHost != null && !tcpHost.isEmpty()) {
 				if (!tcpHost.matches("\\w+://.*")) { //$NON-NLS-1$
 					tcpHost = "tcp://" + tcpHost; //$NON-NLS-1$
 				}
@@ -281,8 +281,8 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void ping() throws DockerException {
 		try {
-			if (client != null) {
-				client.ping();
+			if (this.client != null) {
+				this.client.ping();
 			} else {
 				throw new DockerException(Messages.Docker_Daemon_Ping_Failure);
 			}
@@ -295,7 +295,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public void close() {
 		synchronized (clientLock) {
-			if (client != null) {
+			if (this.client != null) {
 				this.client.close();
 				this.client = null;
 			}
@@ -304,9 +304,12 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public IDockerConnectionInfo getInfo() throws DockerException {
+		if (this.client == null) {
+			return null;
+		}
 		try {
-			final Info info = client.info();
-			final Version version = client.version();
+			final Info info = this.client.info();
+			final Version version = this.client.version();
 			return new DockerConnectionInfo(info, version);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
@@ -653,8 +656,11 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public IDockerImageInfo getImageInfo(String id) {
+		if (this.client == null) {
+			return null;
+		}
 		try {
-			final ImageInfo info = client.inspectImage(id);
+			final ImageInfo info = this.client.inspectImage(id);
 			return new DockerImageInfo(info);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			Activator.logErrorMessage(e.message());
@@ -753,7 +759,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 
 	@Override
 	public List<IDockerImage> listImages() throws DockerException {
-		final List<IDockerImage> tempImages = new ArrayList<>();
+		final List<IDockerImage> dilist = new ArrayList<>();
 		synchronized (imageLock) {
 			List<Image> rawImages = null;
 			try {
@@ -762,7 +768,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 					// been closed but there is an async request to update the
 					// images list left in the queue
 					if (client == null)
-						return tempImages;
+						return dilist;
 					rawImages = client.listImages(
 							DockerClient.ListImagesParam.allImages());
 				}
@@ -789,27 +795,25 @@ public class DockerConnection implements IDockerConnection, Closeable {
 						&& imageParentIds.contains(rawImage.id());
 				final boolean danglingImage = !taggedImage
 						&& !intermediateImage;
-				// return one IDockerImage per repo/tags, ie, raw image with
-				// multiple names will result in multiple IDockerImages, but an
-				// image with a single name
-				// and multiple tags will result in a single IDockerImage
+				// FIXME: if an image with a unique ID belongs to multiple repos, we should
+				// probably have multiple instances of IDockerImage
 				final Map<String, List<String>> repoTags = DockerImage.extractTagsByRepo(rawImage.repoTags());
 				for(Entry<String, List<String>> entry : repoTags.entrySet()) {
 					final String repo = entry.getKey();
 					final List<String> tags = entry.getValue();
-					tempImages.add(new DockerImage(this, rawImage
+					dilist.add(new DockerImage(this, rawImage
 							.repoTags(), repo, tags, rawImage.id(), rawImage.parentId(),
 							rawImage.created(), rawImage.size(), rawImage
 									.virtualSize(), intermediateImage,
 							danglingImage));
 				}
 			}
-			images = tempImages;
+			images = dilist;
 		}
 		// Perform notification outside of lock so that listener doesn't cause a
 		// deadlock to occur
-		notifyImageListeners(tempImages);
-		return tempImages;
+		notifyImageListeners(dilist);
+		return dilist;
 	}
 
 	@Override
