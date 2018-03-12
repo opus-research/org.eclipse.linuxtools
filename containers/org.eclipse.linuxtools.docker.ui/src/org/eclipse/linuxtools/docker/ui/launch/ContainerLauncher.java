@@ -304,9 +304,7 @@ public class ContainerLauncher {
 						// Look for any Display Log console that the user may
 						// have opened which would be
 						// separate and make sure it is removed as well
-						RunConsole rc2 = RunConsole
-								.findConsole(((DockerConnection) connection)
-										.getContainer(containerId));
+						RunConsole rc2 = RunConsole.findConsole(containerId);
 						if (rc2 != null)
 							RunConsole.removeConsole(rc2);
 						((DockerConnection) connection)

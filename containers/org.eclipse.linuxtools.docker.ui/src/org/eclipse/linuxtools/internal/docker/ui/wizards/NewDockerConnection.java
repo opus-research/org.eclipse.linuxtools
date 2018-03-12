@@ -40,6 +40,9 @@ public class NewDockerConnection extends Wizard {
 		addPage(wizardPage);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.wizard.Wizard#performFinish()
+	 */
 	@Override
 	public boolean performFinish() {
 		try {
