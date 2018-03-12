@@ -20,11 +20,13 @@
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -49,12 +51,17 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
+import org.eclipse.linuxtools.tmf.core.util.Pair;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
 import org.eclipse.linuxtools.tmf.ui.properties.ReadOnlyTextPropertyDescriptor;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource2;
+
+import com.ibm.icu.text.DateFormat;
+import com.ibm.icu.text.NumberFormat;
 
 /**
  * Implementation of trace model element representing a trace. It provides
@@ -88,6 +95,8 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
     private static final String sfTraceType = Messages.TmfTraceElement_EventType;
     private static final String sfIsLinked = Messages.TmfTraceElement_IsLinked;
     private static final String sfSourceLocation = Messages.TmfTraceElement_SourceLocation;
+    private static final String sfLastModified = Messages.TmfTraceElement_LastModified;
+    private static final String sfSize = Messages.TmfTraceElement_Size;
     private static final String sfTracePropertiesCategory = Messages.TmfTraceElement_TraceProperties;
 
     private static final ReadOnlyTextPropertyDescriptor sfNameDescriptor = new ReadOnlyTextPropertyDescriptor(sfName, sfName);
@@ -96,9 +105,11 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
     private static final ReadOnlyTextPropertyDescriptor sfTypeDescriptor = new ReadOnlyTextPropertyDescriptor(sfTraceType, sfTraceType);
     private static final ReadOnlyTextPropertyDescriptor sfIsLinkedDescriptor = new ReadOnlyTextPropertyDescriptor(sfIsLinked, sfIsLinked);
     private static final ReadOnlyTextPropertyDescriptor sfSourceLocationDescriptor = new ReadOnlyTextPropertyDescriptor(sfSourceLocation, sfSourceLocation);
+    private static final ReadOnlyTextPropertyDescriptor sfLastModifiedDescriptor = new ReadOnlyTextPropertyDescriptor(sfLastModified, sfLastModified);
+    private static final ReadOnlyTextPropertyDescriptor sfSizeDescriptor = new ReadOnlyTextPropertyDescriptor(sfSize, sfSize);
 
     private static final IPropertyDescriptor[] sfDescriptors = { sfNameDescriptor, sfPathDescriptor, sfLocationDescriptor,
-            sfTypeDescriptor, sfIsLinkedDescriptor, sfSourceLocationDescriptor };
+            sfTypeDescriptor, sfIsLinkedDescriptor, sfSourceLocationDescriptor, sfLastModifiedDescriptor, sfSizeDescriptor };
 
     static {
         sfNameDescriptor.setCategory(sfResourcePropertiesCategory);
@@ -107,6 +118,8 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
         sfTypeDescriptor.setCategory(sfResourcePropertiesCategory);
         sfIsLinkedDescriptor.setCategory(sfResourcePropertiesCategory);
         sfSourceLocationDescriptor.setCategory(sfResourcePropertiesCategory);
+        sfLastModifiedDescriptor.setCategory(sfResourcePropertiesCategory);
+        sfSizeDescriptor.setCategory(sfResourcePropertiesCategory);
     }
 
     // ------------------------------------------------------------------------
@@ -449,6 +462,30 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
             return ""; //$NON-NLS-1$
         }
 
+        if (sfLastModified.equals(id)) {
+            try {
+                long date = EFS.getStore(getResource().getLocationURI()).fetchInfo().getLastModified();
+                DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM);
+                return format.format(new Date(date));
+            } catch (CoreException e) {
+            }
+            return ""; //$NON-NLS-1$
+        }
+
+        if (sfSize.equals(id)) {
+            try {
+                if (getResource() instanceof IFolder) {
+                    Pair<Long, Integer> sizeCount = getFolderSize(getResource());
+                    return NLS.bind(Messages.TmfTraceElement_FolderSizeString,
+                            NumberFormat.getInstance().format(sizeCount.getFirst()), sizeCount.getSecond());
+                }
+                long size = EFS.getStore(getResource().getLocationURI()).fetchInfo().getLength();
+                return NLS.bind(Messages.TmfTraceElement_FileSizeString, NumberFormat.getInstance().format(size));
+            } catch (CoreException e) {
+            }
+            return ""; //$NON-NLS-1$
+        }
+
         if (sfTraceType.equals(id)) {
             if (getTraceType() != null) {
                 TraceTypeHelper helper = TmfTraceType.getTraceType(getTraceType());
@@ -468,6 +505,28 @@ public class TmfTraceElement extends TmfCommonProjectElement implements IActionF
         }
 
         return null;
+    }
+
+    private Pair<Long, Integer> getFolderSize(IResource resource) {
+        Pair<Long, Integer> sizeCount = new Pair<>(0L, 0);
+        computeSize(sizeCount, resource);
+        return sizeCount;
+    }
+
+    private void computeSize(Pair<Long, Integer> sizeCount, IResource resource) {
+        try {
+            if (resource instanceof IFolder) {
+                IFolder folder = (IFolder) resource;
+                for (IResource member : folder.members()) {
+                    computeSize(sizeCount, member);
+                }
+                return;
+            }
+            long size = EFS.getStore(resource.getLocationURI()).fetchInfo().getLength();
+            sizeCount.setFirst(sizeCount.getFirst() + size);
+            sizeCount.setSecond(sizeCount.getSecond() + 1);
+        } catch (CoreException e) {
+        }
     }
 
     @Override
