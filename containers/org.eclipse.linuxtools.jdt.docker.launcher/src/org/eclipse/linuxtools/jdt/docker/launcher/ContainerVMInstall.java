@@ -19,7 +19,6 @@ import org.eclipse.jdt.launching.IVMInstallType;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.LibraryLocation;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
-import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 
 public class ContainerVMInstall implements IVMInstall {
@@ -27,11 +26,9 @@ public class ContainerVMInstall implements IVMInstall {
 	private ILaunchConfiguration config;
 	private String name;
 	private File installLocation;
-	private IDockerImage image;
 
-	public ContainerVMInstall (ILaunchConfiguration cfg, IDockerImage img) {
+	public ContainerVMInstall (ILaunchConfiguration cfg) {
 		this.config = cfg;
-		this.image = img;
 	}
 
 	@Override
@@ -42,14 +39,15 @@ public class ContainerVMInstall implements IVMInstall {
 
 	@Override
 	public String getId() {
-		return image.id();
+		//TODO : Should be something the image name that got passed in
+		return Long.toString(System.currentTimeMillis());
 	}
 
 	@Override
 	public String getName() {
 		if (name == null) {
 			DockerConnection conn = (DockerConnection) DockerConnectionManager.getInstance().getFirstConnection();
-			ImageQuery q = new ImageQuery(conn, image.id());
+			ImageQuery q = new ImageQuery(conn, "fedora-java");
 			name = q.getDefaultJVMName();
 			q.destroy();
 		}
@@ -65,7 +63,7 @@ public class ContainerVMInstall implements IVMInstall {
 	public File getInstallLocation() {
 		if (installLocation == null) {
 			DockerConnection conn = (DockerConnection) DockerConnectionManager.getInstance().getFirstConnection();
-			ImageQuery q = new ImageQuery(conn, image.id());
+			ImageQuery q = new ImageQuery(conn, "fedora-java");
 			installLocation = q.getDefaultJVMInstallLocation();
 			q.destroy();
 		}
@@ -119,13 +117,13 @@ public class ContainerVMInstall implements IVMInstall {
 	}
 
 	// org.eclipse.jdt.internal.launching.StandardVMType#findJavaExecutable(File)
-	public File findJavaExecutable(File vmInstallLocation) {
+	public static File findJavaExecutable(File vmInstallLocation) {
 		final String JRE = "jre"; //$NON-NLS-1$
 		final String[] fgCandidateJavaFiles = {"javaw", "javaw.exe", "java", "java.exe", "j9w", "j9w.exe", "j9", "j9.exe"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		final String[] fgCandidateJavaLocations = {"bin" + File.separatorChar, JRE + File.separatorChar + "bin" + File.separatorChar}; //$NON-NLS-1$ //$NON-NLS-2$
 
 		DockerConnection conn = (DockerConnection) DockerConnectionManager.getInstance().getFirstConnection();
-		ImageQuery q = new ImageQuery(conn, image.id());
+		ImageQuery q = new ImageQuery(conn, "fedora-java");
 
 		// Try each candidate in order.  The first one found wins.  Thus, the order
 		// of fgCandidateJavaLocations and fgCandidateJavaFiles is significant.
