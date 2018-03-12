@@ -38,20 +38,8 @@ public class DockerConnectionManagerUtils {
 	 */
 	public static void configureConnectionManager(
 			final IDockerConnection... connections) {
-		final IDockerConnectionStorageManager connectionStorageManager = MockDockerConnectionStorageManagerFactory.providing(connections);
-		configureConnectionManager(connectionStorageManager);
-	}
-	
-	/**
-	 * Configures the {@link DockerConnectionManager} with the given array of
-	 * {@link IDockerConnection} (can be mocked) and refreshes the associated
-	 * {@link DockerExplorerView}.
-	 * 
-	 * @param connectionStorageManager the {@link IDockerConnectionStorageManager} to use (can be mocked)
-	 */
-	public static void configureConnectionManager(final IDockerConnectionStorageManager connectionStorageManager) {
 		DockerConnectionManager.getInstance()
-				.setConnectionStorageManager(connectionStorageManager);
+				.setConnectionStorageManager(MockDockerConnectionStorageManagerFactory.providing(connections));
 		final SWTWorkbenchBot bot = new SWTWorkbenchBot();
 		final DockerExplorerView dockerExplorerView = getView(bot, DockerExplorerView.VIEW_ID);
 		final DockerContainersView dockerContainersView = getView(bot, DockerContainersView.VIEW_ID);
