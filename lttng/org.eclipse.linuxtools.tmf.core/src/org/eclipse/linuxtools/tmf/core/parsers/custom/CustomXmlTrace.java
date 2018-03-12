@@ -60,7 +60,7 @@ import org.xml.sax.SAXParseException;
  * @author Patrick Tassé
  * @since 3.0
  */
-public class CustomXmlTrace extends TmfTrace implements  ITmfPersistentlyIndexable {
+public class CustomXmlTrace extends TmfTrace implements ITmfPersistentlyIndexable {
 
     private static final TmfLongLocation NULL_LOCATION = new TmfLongLocation(-1L);
     private static final int DEFAULT_CACHE_SIZE = 100;
@@ -245,7 +245,11 @@ public class CustomXmlTrace extends TmfTrace implements  ITmfPersistentlyIndexab
         try {
             if (fFile.getFilePointer() != (Long) context.getLocation().getLocationInfo() + 1)
             {
-                fFile.seek((Long) context.getLocation().getLocationInfo() + 1); // +1 is for the <
+                fFile.seek((Long) context.getLocation().getLocationInfo() + 1); // +1
+                                                                                // is
+                                                                                // for
+                                                                                // the
+                                                                                // <
             }
             final StringBuffer elementBuffer = new StringBuffer("<"); //$NON-NLS-1$
             readElement(elementBuffer, fFile);
@@ -292,10 +296,12 @@ public class CustomXmlTrace extends TmfTrace implements  ITmfPersistentlyIndexab
             // The following catches xml parsing exceptions
             db.setErrorHandler(new ErrorHandler() {
                 @Override
-                public void error(final SAXParseException saxparseexception) throws SAXException {}
+                public void error(final SAXParseException saxparseexception) throws SAXException {
+                }
 
                 @Override
-                public void warning(final SAXParseException saxparseexception) throws SAXException {}
+                public void warning(final SAXParseException saxparseexception) throws SAXException {
+                }
 
                 @Override
                 public void fatalError(final SAXParseException saxparseexception) throws SAXException {
