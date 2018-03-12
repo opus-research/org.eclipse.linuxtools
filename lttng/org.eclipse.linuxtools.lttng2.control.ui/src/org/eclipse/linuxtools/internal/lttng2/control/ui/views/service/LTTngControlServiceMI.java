@@ -298,9 +298,18 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 break;
             }
         }
+
+        if (!sessionInfo.isSnapshotSession()) {
+            Matcher matcher = LTTngControlServiceConstants.TRACE_NETWORK_PATTERN.matcher(sessionInfo.getSessionPath());
+            if (matcher.matches()) {
+                sessionInfo.setStreamedTrace(true);
+            }
+        }
     }
 
     /**
+     * Parse a raw domain XML node to a IDomainInfo object
+     *
      * @param rawDomain
      *            a domain xml node
      * @return a populated {@link DomainInfo} object
@@ -352,7 +361,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                 break;
             case MIStrings.CHANNELS:
                 ArrayList<IChannelInfo> channels = new ArrayList<>();
-                parseChannel(rawInfo.getChildNodes(), channels);
+                parseChannels(rawInfo.getChildNodes(), channels);
                 if (channels.size() > 0) {
                     domain.setChannels(channels);
                 }
@@ -365,7 +374,17 @@ public class LTTngControlServiceMI extends LTTngControlService {
         return domain;
     }
 
-    private static void parseChannel(NodeList rawChannels, ArrayList<IChannelInfo> channels) throws ExecutionException {
+    /**
+     * Parse a list of raw channel XML node into an ArrayList of IChannelInfo
+     *
+     * @param rawChannes
+     *            List of raw channel XML node
+     * @param channels
+     *            the parsed channels list
+     * @throws ExecutionException
+     *             when missing required xml element (type)
+     */
+    private static void parseChannels(NodeList rawChannels, ArrayList<IChannelInfo> channels) throws ExecutionException {
         IChannelInfo channel = null;
         for (int i = 0; i < rawChannels.getLength(); i++) {
             Node rawChannel = rawChannels.item(i);
@@ -413,10 +432,10 @@ public class LTTngControlServiceMI extends LTTngControlService {
                                 channel.setOutputType(attribute.getTextContent());
                                 break;
                             case MIStrings.TRACEFILE_SIZE:
-                                // TODO: currently not supported by tmf
+                                channel.setMaxSizeTraceFiles(Integer.parseInt(attribute.getTextContent()));
                                 break;
                             case MIStrings.TRACEFILE_COUNT:
-                                // TODO: currently not supported by tmf
+                                channel.setMaxNumberTraceFiles(Integer.parseInt(attribute.getTextContent()));
                                 break;
                             case MIStrings.LIVE_TIMER_INTERVAL:
                                 // TODO: currently not supported by tmf
@@ -580,19 +599,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
             return createStreamedSession(sessionInfo, monitor);
         }
 
-        String newName = formatParameter(sessionInfo.getName());
-        String newPath = formatParameter(sessionInfo.getSessionPath());
-
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
-
-        if (newPath != null && !"".equals(newPath)) { //$NON-NLS-1$
-            command.append(LTTngControlServiceConstants.OPTION_OUTPUT_PATH);
-            command.append(newPath);
-        }
-
-        if (sessionInfo.isSnapshotSession()) {
-            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
-        }
+        StringBuffer command = prepareSessionCreationCommand(sessionInfo);
 
         ICommandResult result = executeCommand(command.toString(), monitor);
 
@@ -627,38 +634,15 @@ public class LTTngControlServiceMI extends LTTngControlService {
         if (sessionInfo.isSnapshotSession()) {
             // Make it a snapshot session - content of snapshot info need to
             // set afterwards using getSession() or getSnapshotInfo()
-            sessionInfo.setSnapshotInfo(new SnapshotInfo("")); //$NON-NLS-1$
-        } else {
-            sessionInfo.setSessionPath(outputSession.getSessionPath());
+            outputSession.setSnapshotInfo(new SnapshotInfo("")); //$NON-NLS-1$
         }
 
-        return sessionInfo;
+        return outputSession;
     }
 
     private ISessionInfo createStreamedSession(ISessionInfo sessionInfo, IProgressMonitor monitor) throws ExecutionException {
 
-        String newName = formatParameter(sessionInfo.getName());
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
-
-        if (sessionInfo.isSnapshotSession()) {
-            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
-        } else if (sessionInfo.isLive()) {
-            command.append(LTTngControlServiceConstants.OPTION_LIVE);
-            if (sessionInfo.getLiveDelay() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                command.append(sessionInfo.getLiveDelay());
-            }
-        }
-
-        if (sessionInfo.getNetworkUrl() != null) {
-            command.append(LTTngControlServiceConstants.OPTION_NETWORK_URL);
-            command.append(sessionInfo.getNetworkUrl());
-        } else {
-            command.append(LTTngControlServiceConstants.OPTION_CONTROL_URL);
-            command.append(sessionInfo.getControlUrl());
-
-            command.append(LTTngControlServiceConstants.OPTION_DATA_URL);
-            command.append(sessionInfo.getDataUrl());
-        }
+        StringBuffer command = prepareStreamedSessionCreationCommand(sessionInfo);
 
         ICommandResult result = executeCommand(command.toString(), monitor);
 
@@ -682,6 +666,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
                     Messages.TraceControl_UnexpectedNameError + ": " + outputSession.getName()); //$NON-NLS-1$
         }
 
+        sessionInfo.setName(outputSession.getName());
         sessionInfo.setStreamedTrace(true);
 
         // Verify session path
@@ -777,7 +762,7 @@ public class LTTngControlServiceMI extends LTTngControlService {
      * @throws ExecutionException
      *             when a raw event is not a complete/valid xml event
      */
-    static void getBaseEventInfo(NodeList xmlBaseEvents, List<IBaseEventInfo> events) throws ExecutionException {
+    private static void getBaseEventInfo(NodeList xmlBaseEvents, List<IBaseEventInfo> events) throws ExecutionException {
         IBaseEventInfo eventInfo = null;
         for (int i = 0; i < xmlBaseEvents.getLength(); i++) {
             NodeList rawInfos = xmlBaseEvents.item(i).getChildNodes();
@@ -915,6 +900,12 @@ public class LTTngControlServiceMI extends LTTngControlService {
                             break;
                         }
                     }
+                }
+
+                // Syscalls does not have name.
+                // Let put one to make sure this is user friendly via UI
+                if (eventInfo.getEventType().equals(TraceEventType.SYSCALL)) {
+                    eventInfo.setName(TraceEventType.SYSCALL.getInName());
                 }
 
                 // Add the event

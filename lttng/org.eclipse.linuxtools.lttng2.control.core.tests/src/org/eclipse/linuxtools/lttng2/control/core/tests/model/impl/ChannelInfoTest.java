@@ -72,7 +72,7 @@ public class ChannelInfoTest {
 
         assertEquals("test", result.getName());
         assertEquals(0, result.getNumberOfSubBuffers());
-        assertEquals("unknown", result.getOutputType());
+        assertEquals("", result.getOutputType());
         assertEquals(false, result.isOverwriteMode());
         assertEquals(0, result.getReadTimer());
         assertEquals("disabled", result.getState().getInName());
