@@ -257,7 +257,7 @@ public class DockerRegistryAccountPreferencePage extends PreferencePage
 	@Override
 	public void init(IWorkbench workbench) {
 		// reinit passwords list
-		passwords = RegistryAccountManager.getInstance().getAccounts(false);
+		passwords = RegistryAccountManager.getInstance().getAccounts();
 
 		// refresh password table
 		if (pwdTableViewer != null) {
