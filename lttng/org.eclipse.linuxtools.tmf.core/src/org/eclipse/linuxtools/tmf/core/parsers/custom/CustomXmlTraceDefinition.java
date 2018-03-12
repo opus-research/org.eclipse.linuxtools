@@ -584,31 +584,10 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             // The following allows xml parsing without access to the dtd
-            EntityResolver resolver = new EntityResolver() {
-                @Override
-                public InputSource resolveEntity(String publicId, String systemId) {
-                    String empty = ""; //$NON-NLS-1$
-                    ByteArrayInputStream bais = new ByteArrayInputStream(empty.getBytes());
-                    return new InputSource(bais);
-                }
-            };
-            db.setEntityResolver(resolver);
+            db.setEntityResolver(createEmptyEntityResolver());
 
             // The following catches xml parsing exceptions
-            db.setErrorHandler(new ErrorHandler() {
-                @Override
-                public void error(SAXParseException saxparseexception) throws SAXException {
-                }
-
-                @Override
-                public void warning(SAXParseException saxparseexception) throws SAXException {
-                }
-
-                @Override
-                public void fatalError(SAXParseException saxparseexception) throws SAXException {
-                    throw saxparseexception;
-                }
-            });
+            db.setErrorHandler(createErrorHandler());
 
             CustomXmlTraceDefinition value = lookupXmlDefinition(definitionName, db, CUSTOM_XML_TRACE_DEFINITIONS_PATH_NAME);
             if (value == null) {
@@ -743,31 +722,10 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             // The following allows xml parsing without access to the dtd
-            EntityResolver resolver = new EntityResolver() {
-                @Override
-                public InputSource resolveEntity(String publicId, String systemId) {
-                    String empty = ""; //$NON-NLS-1$
-                    ByteArrayInputStream bais = new ByteArrayInputStream(empty.getBytes());
-                    return new InputSource(bais);
-                }
-            };
-            db.setEntityResolver(resolver);
+            db.setEntityResolver(createEmptyEntityResolver());
 
             // The following catches xml parsing exceptions
-            db.setErrorHandler(new ErrorHandler() {
-                @Override
-                public void error(SAXParseException saxparseexception) throws SAXException {
-                }
-
-                @Override
-                public void warning(SAXParseException saxparseexception) throws SAXException {
-                }
-
-                @Override
-                public void fatalError(SAXParseException saxparseexception) throws SAXException {
-                    throw saxparseexception;
-                }
-            });
+            db.setErrorHandler(createErrorHandler());
 
             File file = new File(CUSTOM_XML_TRACE_DEFINITIONS_PATH_NAME);
             Document doc = db.parse(file);
@@ -817,5 +775,43 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
         } catch (TransformerException e) {
             Activator.logError("Error deleteing CustomXmlTraceDefinition: definitionName=" + definitionName, e); //$NON-NLS-1$
         }
+    }
+
+    /**
+     * creates a new empty entity resolver
+     *
+     * @return a new entity resolver
+     */
+    private static EntityResolver createEmptyEntityResolver() {
+        return new EntityResolver() {
+            @Override
+            public InputSource resolveEntity(String publicId, String systemId) {
+                String empty = ""; //$NON-NLS-1$
+                ByteArrayInputStream bais = new ByteArrayInputStream(empty.getBytes());
+                return new InputSource(bais);
+            }
+        };
+    }
+
+    /**
+     * Creates an error handler for parse exceptions
+     *
+     * @return a new error handler
+     */
+    private static ErrorHandler createErrorHandler() {
+        return new ErrorHandler() {
+            @Override
+            public void error(SAXParseException saxparseexception) throws SAXException {
+            }
+
+            @Override
+            public void warning(SAXParseException saxparseexception) throws SAXException {
+            }
+
+            @Override
+            public void fatalError(SAXParseException saxparseexception) throws SAXException {
+                throw saxparseexception;
+            }
+        };
     }
 }
