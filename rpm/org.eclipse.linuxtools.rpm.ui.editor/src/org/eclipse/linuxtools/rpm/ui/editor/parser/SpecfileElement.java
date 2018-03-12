@@ -86,7 +86,7 @@ public class SpecfileElement {
                 return toResolve;
             }
         }
-        return UiUtils.resolveDefines(specfile, toResolve);
+        return UiUtils.resolveDefines(this, toResolve);
     }
 
     /**
@@ -102,7 +102,7 @@ public class SpecfileElement {
             if ((specfile == null || toResolve.equals("")) && toResolve.length() > 2 && toResolve.substring(2, toResolve.length() - 1).equals(name)) { //$NON-NLS-1$
                 return toResolve;
             }
-            str = RPMQuery.eval(UiUtils.resolveDefines(specfile, toResolve)).trim();
+            str = RPMQuery.eval(UiUtils.resolveDefines(this, toResolve)).trim();
         } catch (CoreException e) {
             SpecfileLog.logError(NLS.bind(Messages.getString("SpecfileElement_unableToResolve"), toResolve), e); //$NON-NLS-1$
         }
