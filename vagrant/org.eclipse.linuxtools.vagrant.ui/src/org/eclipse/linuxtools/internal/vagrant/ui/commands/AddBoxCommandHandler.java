@@ -20,8 +20,10 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
 import org.eclipse.linuxtools.internal.vagrant.ui.views.DVMessages;
 import org.eclipse.linuxtools.internal.vagrant.ui.wizards.AddBoxWizard;
+import org.eclipse.linuxtools.internal.vagrant.ui.wizards.WizardMessages;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.VagrantException;
+import org.eclipse.linuxtools.vagrant.core.VagrantService;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -33,11 +35,18 @@ public class AddBoxCommandHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(final ExecutionEvent event) {
-		final AddBoxWizard wizard = new AddBoxWizard();
-		final boolean pullImage = CommandUtils.openWizard(wizard,
-				HandlerUtil.getActiveShell(event));
-		if (pullImage) {
-			performPullImage(wizard.getBoxName(), wizard.getBoxLoc());
+		if (VagrantConnection.findVagrantPath() == null) {
+			Display.getDefault().syncExec(() -> MessageDialog.openError(Display.getCurrent()
+					.getActiveShell(),
+					WizardMessages.getString("VagrantCommandNotFound.title"), //$NON-NLS-1$
+					WizardMessages.getString("VagrantCommandNotFound.msg"))); //$NON-NLS-1$
+		} else {
+			final AddBoxWizard wizard = new AddBoxWizard();
+			final boolean pullImage = CommandUtils.openWizard(wizard,
+					HandlerUtil.getActiveShell(event));
+			if (pullImage) {
+				performPullImage(wizard.getBoxName(), wizard.getBoxLoc());
+			}
 		}
 		return null;
 	}
@@ -53,7 +62,7 @@ public class AddBoxCommandHandler extends AbstractHandler {
 				// pull the image and let the progress
 				// handler refresh the images when done
 				try {
-					IVagrantConnection connection = VagrantConnection.getInstance();
+					IVagrantConnection connection = VagrantService.getInstance();
 					connection.addBox(boxName, boxLoc);
 					connection.getBoxes(true);
 				} catch (final VagrantException e) {
