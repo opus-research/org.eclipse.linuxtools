@@ -46,6 +46,7 @@ public class HttpHijackWorkaround {
 				"input", //$NON-NLS-1$
 				"in", //$NON-NLS-1$
 				"in", //$NON-NLS-1$
+				"in", //$NON-NLS-1$
 				"wrappedStream", //$NON-NLS-1$
 				"in", //$NON-NLS-1$
 				"instream" //$NON-NLS-1$
@@ -55,6 +56,7 @@ public class HttpHijackWorkaround {
 				LogReader.class.getName(),
 				"org.glassfish.jersey.message.internal.ReaderInterceptorExecutor$UnCloseableInputStream", //$NON-NLS-1$
 				"org.glassfish.jersey.message.internal.EntityInputStream", //$NON-NLS-1$
+				FilterInputStream.class.getName(),
 				FilterInputStream.class.getName(),
 				FilterInputStream.class.getName(),
 				"org.apache.http.conn.EofSensorInputStream", //$NON-NLS-1$
