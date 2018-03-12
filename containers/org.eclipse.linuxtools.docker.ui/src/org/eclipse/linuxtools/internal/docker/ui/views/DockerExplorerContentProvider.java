@@ -28,8 +28,6 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
-import org.eclipse.linuxtools.docker.core.DockerException;
-import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
@@ -38,7 +36,6 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerNetworkSettings;
 import org.eclipse.linuxtools.docker.core.IDockerPortBinding;
 import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
-import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainer;
 import org.eclipse.linuxtools.internal.docker.core.DockerImage;
@@ -77,18 +74,9 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 	@Override
 	public Object[] getChildren(final Object parentElement) {
 		if (parentElement instanceof IDockerConnection) {
-			// check the connection availability before returning the
-			// 'containers' and 'images' child nodes.
-			final IDockerConnection connection = (IDockerConnection) parentElement;
-			if (connection.isOpen()) {
-				return new Object[] { new DockerImagesCategory(connection),
-						new DockerContainersCategory(connection) };
-			} else if (connection
-					.getState() == EnumDockerConnectionState.UNKNOWN) {
-				open(connection);
-				return new Object[] { new LoadingStub(connection) };
-			}
-			return new Object[0];
+			final IDockerConnection dockerConnection = (IDockerConnection) parentElement;
+			return new Object[] { new DockerImagesCategory(dockerConnection),
+					new DockerContainersCategory(dockerConnection) };
 		} else if (parentElement instanceof DockerContainersCategory) {
 			final DockerContainersCategory containersCategory = (DockerContainersCategory) parentElement;
 			final IDockerConnection connection = containersCategory.getConnection();
@@ -167,44 +155,6 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 	 * Call the {@link IDockerConnection#getContainers(boolean)} in a background
 	 * job to avoid blocking the UI.
 	 * 
-	 * @param connection
-	 *            the connection to ping
-	 */
-	private void open(final IDockerConnection connection) {
-		final Job pingJob = new Job(
-				DVMessages.getString("PingJob.msg")) { //$NON-NLS-1$
-			@Override
-			protected IStatus run(final IProgressMonitor monitor) {
-				try {
-					connection.open(true);
-					connection.ping();
-					return Status.OK_STATUS;
-				} catch (DockerException e) {
-					Activator.logErrorMessage(DVMessages.getFormattedString(
-							"PingJobError.msg", connection.getUri())); //$NON-NLS-1$
-					return Status.CANCEL_STATUS;
-				}
-			}
-
-			@Override
-			public boolean belongsTo(Object family) {
-				return family == DockerExplorerView.class;
-			}
-		};
-		pingJob.addJobChangeListener(new JobChangeAdapter() {
-			@Override
-			public void done(final IJobChangeEvent event) {
-				Display.getDefault()
-						.asyncExec(() -> refreshTarget(connection));
-			}
-		});
-		pingJob.schedule();
-	}
-
-	/**
-	 * Call the {@link IDockerConnection#getContainers(boolean)} in a background
-	 * job to avoid blocking the UI.
-	 * 
 	 * @param containersCategory
 	 *            the selected {@link DockerContainersCategory}
 	 */
@@ -226,6 +176,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 		loadContainersJob.addJobChangeListener(new JobChangeAdapter() {
 			@Override
 			public void done(final IJobChangeEvent event) {
+				event.getResult();
 				Display.getDefault()
 						.asyncExec(() -> refreshTarget(containersCategory));
 			}
@@ -255,6 +206,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 		loadContainersJob.addJobChangeListener(new JobChangeAdapter() {
 			@Override
 			public void done(final IJobChangeEvent event) {
+				event.getResult();
 				Display.getDefault().asyncExec(() -> {
 					refreshTarget(container);
 					if (expandedTreePaths != null) {
@@ -309,11 +261,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 	@Override
 	public boolean hasChildren(final Object element) {
-		return ((element instanceof IDockerConnection
-				&& (((IDockerConnection) element)
-						.getState() == EnumDockerConnectionState.ESTABLISHED
-						|| ((IDockerConnection) element)
-								.getState() == EnumDockerConnectionState.UNKNOWN))
+		return (element instanceof IDockerConnection
 				|| element instanceof DockerContainersCategory
 				|| element instanceof DockerImagesCategory
 				|| element instanceof IDockerContainer

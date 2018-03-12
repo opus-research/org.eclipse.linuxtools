@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionStorageManager;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
@@ -49,8 +51,14 @@ public class DockerConnectionManager {
 	public void reloadConnections() {
 		this.connections = connectionStorageManager.loadConnections();
 		for (IDockerConnection connection : connections) {
+			try {
+				connection.open(true);
 				notifyListeners(connection,
 						IDockerConnectionManagerListener.ADD_EVENT);
+			} catch (DockerException e) {
+				Activator.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+						e.getMessage()));
+			}
 		}
 	}
 
@@ -93,7 +101,10 @@ public class DockerConnectionManager {
 		return null;
 	}
 
-	public void addConnection(final IDockerConnection dockerConnection) {
+	public void addConnection(final IDockerConnection dockerConnection) throws DockerException {
+		if(!dockerConnection.isOpen()) {
+			dockerConnection.open(true);
+		}
 		connections.add(dockerConnection);
 		saveConnections();
 		notifyListeners(dockerConnection,
@@ -227,9 +238,11 @@ public class DockerConnectionManager {
 		final boolean nameChanged = connection.setName(name);
 		final boolean settingsChanged = connection
 				.setSettings(connectionSettings);
-		if (nameChanged || settingsChanged) {
+		if (nameChanged) {
 			notifyListeners(connection,
 					IDockerConnectionManagerListener.RENAME_EVENT);
+		}
+		if (nameChanged || settingsChanged) {
 			saveConnections();
 			return true;
 		}
