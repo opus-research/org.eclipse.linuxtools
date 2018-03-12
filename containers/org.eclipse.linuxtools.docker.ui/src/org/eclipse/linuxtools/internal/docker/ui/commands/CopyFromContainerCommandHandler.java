@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.docker.ui.commands;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -110,17 +109,10 @@ public class CopyFromContainerCommandHandler extends AbstractHandler {
 											COPY_FROM_CONTAINER_JOB_SUBTASK,
 											proxy.getFullPath()));
 							monitor.worked(1);
-							InputStream in = ((DockerConnection) connection)
-									.copyContainer(container.id(),
-											proxy.getLink());
-							/*
-							 * The input stream from copyContainer might be
-							 * incomplete or non-blocking so we should wrap it
-							 * in a stream that is guaranteed to block until
-							 * data is available.
-							 */
 							TarArchiveInputStream k = new TarArchiveInputStream(
-									new BlockingInputStream(in));
+									((DockerConnection) connection)
+											.copyContainer(container.id(),
+													proxy.getLink()));
 							TarArchiveEntry te = null;
 							while ((te = k.getNextTarEntry()) != null) {
 								long size = te.getSize();
@@ -178,22 +170,6 @@ public class CopyFromContainerCommandHandler extends AbstractHandler {
 
 		copyFromContainerJob.schedule();
 
-	}
-
-	/**
-	 * A blocking input stream that waits until data is available.
-	 */
-	public class BlockingInputStream extends InputStream {
-		private InputStream in;
-
-		public BlockingInputStream(InputStream in) {
-			this.in = in;
-		}
-
-		@Override
-		public int read() throws IOException {
-			return in.read();
-		}
 	}
 
 }
