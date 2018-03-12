@@ -28,11 +28,6 @@ public class GcovTestCLibrary extends GcovTest {
     }
 
     @Override
-    protected boolean useDefaultBin() {
-        return false;
-    }
-
-    @Override
     public void testGcovSummaryByLaunch() {
     }
 
