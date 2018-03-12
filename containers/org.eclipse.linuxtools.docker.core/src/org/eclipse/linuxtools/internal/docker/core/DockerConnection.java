@@ -816,7 +816,11 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			final List<ImageSearchResult> searchResults = client.searchImages(term);
 			final List<IDockerImageSearchResult> results = new ArrayList<>();
 			for(ImageSearchResult r : searchResults) {
-				results.add(new DockerImageSearchResult(r.getDescription(), r.isOfficial(), r.isAutomated(), r.getName(), r.getStarCount()));
+				if (r.getName().contains(term)) {
+					results.add(new DockerImageSearchResult(r.getDescription(),
+							r.isOfficial(), r.isAutomated(), r.getName(),
+							r.getStarCount()));
+				}
 			}
 			return results;
 		} catch (com.spotify.docker.client.DockerException | InterruptedException e) {
