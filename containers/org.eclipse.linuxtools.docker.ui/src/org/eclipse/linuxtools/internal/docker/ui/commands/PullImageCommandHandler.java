@@ -63,8 +63,8 @@ public class PullImageCommandHandler extends AbstractHandler {
 			final boolean pullImage = CommandUtils.openWizard(wizard,
 					HandlerUtil.getActiveShell(event));
 			if (pullImage) {
-				performPullImage(connection, wizard.getSelectedImageName(),
-						wizard.getSelectedRegistryAccount());
+				performPullImage(connection, wizard.getImageName(),
+						wizard.getRegistry());
 			}
 		}
 		return null;
@@ -82,13 +82,12 @@ public class PullImageCommandHandler extends AbstractHandler {
 				// pull the image and let the progress
 				// handler refresh the images when done
 				try {
-					if (registry == null || registry.isDockerHubRegistry()) {
+					if (registry == null) {
 						((DockerConnection) connection).pullImage(imageName,
 								new ImagePullProgressHandler(connection,
 										imageName));
 					} else {
-						String fullImageName = registry.getServerHost() + '/'
-								+ imageName;
+						String fullImageName = registry.getServerAddress() + '/' + imageName;
 						if (registry instanceof IRegistryAccount) {
 							IRegistryAccount account = (IRegistryAccount) registry;
 							((DockerConnection) connection).pullImage(fullImageName,

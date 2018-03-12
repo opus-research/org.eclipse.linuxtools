@@ -256,25 +256,6 @@ public interface IDockerConnection {
 			throws DockerException, InterruptedException;
 
 	/**
-	 * Adds a tag to an existing image while specifying the <code>force</code>
-	 * flag.
-	 * 
-	 * @param name
-	 *            the image id
-	 * @param newTag
-	 *            the new tag to add to the given image
-	 * @param force
-	 *            the {@code force} flag to force the operation if
-	 *            <code>true</code>.
-	 * @throws DockerException
-	 *             in case of underlying problem (server error)
-	 * @throws InterruptedException
-	 *             if the thread was interrupted
-	 */
-	void tagImage(String name, String newTag, boolean force)
-			throws DockerException, InterruptedException;
-
-	/**
 	 * Copy a file or directory from a Container into a tar InputStream.
 	 * 
 	 * @param id

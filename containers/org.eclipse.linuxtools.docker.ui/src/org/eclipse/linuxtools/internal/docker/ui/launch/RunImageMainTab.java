@@ -42,12 +42,12 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
-import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.core.RegistryInfo;
@@ -465,7 +465,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 				final ImageSearch imageSearchWizard = new ImageSearch(
 						RunImageMainTab.this.model.getSelectedConnection(),
 						RunImageMainTab.this.model.getSelectedImageName(),
-						new RegistryInfo(IRegistry.DOCKERHUB_REGISTRY, true));
+						new RegistryInfo(AbstractRegistry.DOCKERHUB_REGISTRY));
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {

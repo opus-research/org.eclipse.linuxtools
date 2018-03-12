@@ -45,6 +45,11 @@ import com.spotify.docker.client.messages.ImageSearchResult;
  */
 public abstract class AbstractRegistry implements IRegistry {
 
+	public static final String[] DOCKERHUB_REGISTRY_ALIASES = new String[] {
+			"registry.hub.docker.com", //$NON-NLS-1$
+			"index.docker.io" //$NON-NLS-1$
+	};
+	public static final String DOCKERHUB_REGISTRY = "index.docker.io"; //$NON-NLS-1$
 	// Cache the URL for searches to avoid excessive calls
 	private String cachedHTTPServerAddress;
 	// Cache the result of isVersion2 to avoid excessive calls
@@ -176,7 +181,8 @@ public abstract class AbstractRegistry implements IRegistry {
 
 			// Docker Hub Registry format is actually different from an actual
 			// registry
-		} else if (isDockerHubRegistry()) {
+		} else if (dockerHubAliases.stream()
+				.anyMatch(a -> getServerAddress().contains(a))) {
 			queryTagsResource = client.target(getHTTPServerAddress()).path("v1") //$NON-NLS-1$
 					.path("repositories").path(repository).path("tags"); //$NON-NLS-1$ //$NON-NLS-2$
 			GenericType<List<RepositoryTag>> REPOSITORY_TAGS_RESULT_LIST = new GenericType<List<RepositoryTag>>() {

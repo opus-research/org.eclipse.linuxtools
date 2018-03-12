@@ -33,10 +33,10 @@ public class ImageTagPage extends WizardPage {
 
 	private String tag;
 
-	public ImageTagPage(final String imageName) {
+	public ImageTagPage() {
 		super(WizardMessages.getString(NAME));
+		setDescription(WizardMessages.getString(DESC));
 		setTitle(WizardMessages.getString(TITLE));
-		setDescription(WizardMessages.getFormattedString(DESC, imageName));
 		setImageDescriptor(SWTImagesFactory.DESC_WIZARD);
 	}
 

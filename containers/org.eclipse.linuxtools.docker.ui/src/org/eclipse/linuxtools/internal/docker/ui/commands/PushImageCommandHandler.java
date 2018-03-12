@@ -45,20 +45,20 @@ public class PushImageCommandHandler extends AbstractHandler {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		final IDockerImage selectedImage = RunImageCommandHandler
 				.getSelectedImage(activePart);
-		final ImagePush wizard = new ImagePush(selectedImage,
-				selectedImage.repo() + ":" + selectedImage.tags().get(0));
+		final ImagePush wizard = new ImagePush(selectedImage);
 		final boolean pushImage = CommandUtils.openWizard(wizard,
 				HandlerUtil.getActiveShell(event));
 		if (pushImage) {
 			final IDockerConnection connection = CommandUtils
 					.getCurrentConnection(activePart);
-			performPushImage(wizard, connection);
+			IRegistry info = wizard.getRegistry();
+			performPushImage(wizard, connection, info);
 		}
 		return null;
 	}
 	
 	private void performPushImage(final ImagePush wizard,
-			final IDockerConnection connection) {
+			final IDockerConnection connection, final IRegistry info) {
 		if (connection == null) {
 			Display.getDefault()
 					.syncExec(() -> MessageDialog.openError(
@@ -74,11 +74,7 @@ public class PushImageCommandHandler extends AbstractHandler {
 
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				final String imageNameTag = wizard.getImageTag();
-				final IRegistry info = wizard.getRegistry();
-				final boolean forceTagging = wizard.isForceTagging();
-				final boolean keepTaggedImage = wizard.isKeepTaggedImage();
-
+				final String tag = wizard.getImageTag();
 				monitor.beginTask(DVMessages.getString(PUSH_IMAGE_JOB_TASK),
 						IProgressMonitor.UNKNOWN);
 				// push the image and let the progress
@@ -86,21 +82,20 @@ public class PushImageCommandHandler extends AbstractHandler {
 				String tmpRegistryTag = null;
 				boolean createdTag = false;
 				try {
-					if (info.isDockerHubRegistry()) {
-						connection.pushImage(imageNameTag,
+					String repo = info.getServerAddress();
+					tmpRegistryTag = repo + '/' + tag;
+					if (!connection.hasImage(repo, tag)) {
+						connection.tagImage(tag, tmpRegistryTag);
+						createdTag = true;
+					}
+
+					if (info instanceof IRegistryAccount) {
+						IRegistryAccount acc = (IRegistryAccount) info;
+						connection.pushImage(tmpRegistryTag, acc,
 								new ImagePushProgressHandler(connection,
 										tmpRegistryTag));
-					} else if (info instanceof IRegistryAccount) {
-						final IRegistryAccount registryAccount = (IRegistryAccount) info;
-						// remove the scheme in the URL if any was set
-						final String registryHost = info.getServerHost();
-						tmpRegistryTag = registryHost + '/' + imageNameTag; // $NON-NLS-1$
-						if (!connection.hasImage(registryHost, imageNameTag)) {
-							connection.tagImage(imageNameTag, tmpRegistryTag,
-									forceTagging);
-							createdTag = true;
-						}
-						connection.pushImage(tmpRegistryTag, registryAccount,
+					} else {
+						connection.pushImage(tmpRegistryTag,
 								new ImagePushProgressHandler(connection,
 										tmpRegistryTag));
 					}
@@ -109,14 +104,13 @@ public class PushImageCommandHandler extends AbstractHandler {
 							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 									.getShell(),
 							DVMessages.getFormattedString(ERROR_PUSHING_IMAGE,
-									imageNameTag),
+									tag),
 							e.getMessage()));
 					// for now
 				} catch (InterruptedException e) {
 					// do nothing
 				} finally {
-					if (tmpRegistryTag != null && createdTag
-							&& !keepTaggedImage) {
+					if (tmpRegistryTag != null && createdTag) {
 						try {
 							connection.removeTag(tmpRegistryTag);
 							connection.getImages(true);
@@ -129,9 +123,9 @@ public class PushImageCommandHandler extends AbstractHandler {
 				return Status.OK_STATUS;
 			}
 
-
 		};
 		pushImageJob.schedule();
 	}
+
 
 }
