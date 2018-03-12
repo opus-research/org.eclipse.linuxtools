@@ -42,6 +42,7 @@ public class LaunchConfigTabTest extends AbstractCachegrindTest {
 
     @Before
     public void prep() throws Exception {
+        assumeCpp();
         proj = createProjectAndBuild("cpptest"); //$NON-NLS-1$
 
         config = createConfiguration(proj.getProject());
