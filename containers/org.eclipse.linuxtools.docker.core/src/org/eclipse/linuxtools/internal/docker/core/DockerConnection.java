@@ -73,7 +73,7 @@ import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerClient.AttachParameter;
 import com.spotify.docker.client.DockerClient.BuildParameter;
-import com.spotify.docker.client.DockerClient.LogsParameter;
+import com.spotify.docker.client.DockerClient.LogsParam;
 import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerConfig;
@@ -482,12 +482,12 @@ public class DockerConnection implements IDockerConnection, Closeable {
 				LogStream stream = null;
 
 				if (timestamps)
-					stream = copyClient.logs(id, LogsParameter.FOLLOW,
-							LogsParameter.STDOUT, LogsParameter.STDERR,
-							LogsParameter.TIMESTAMPS);
+					stream = copyClient.logs(id, LogsParam.follow(),
+							LogsParam.stdout(), LogsParam.stderr(),
+							LogsParam.timestamps());
 				else
-					stream = copyClient.logs(id, LogsParameter.FOLLOW,
-							LogsParameter.STDOUT, LogsParameter.STDERR);
+					stream = copyClient.logs(id, LogsParam.follow(),
+							LogsParam.stdout(), LogsParam.stderr());
 
 				// First time through, don't sleep before showing log data
 				int delayTime = 100;
