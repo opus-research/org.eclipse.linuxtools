@@ -24,7 +24,6 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         TestCustomTxtWizard.class,
         TestCustomXmlWizard.class,
-        TestImportExportWizard.class,
         TracingPerspectiveChecker.class
 })
 public class AllTmfUISWTBotTests {
