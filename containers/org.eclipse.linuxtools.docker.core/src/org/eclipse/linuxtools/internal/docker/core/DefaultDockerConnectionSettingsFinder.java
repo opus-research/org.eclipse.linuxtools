@@ -35,8 +35,8 @@ import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettingsProvider;
 
+import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
 
 /**
  * A utility class that looks for candidate {@link IDockerConnection}s on the
@@ -135,7 +135,7 @@ public class DefaultDockerConnectionSettingsFinder
 				return client.info().name();
 			}
 		} catch (DockerCertificateException
-				| com.spotify.docker.client.exceptions.DockerException
+				| com.spotify.docker.client.DockerException
 				| InterruptedException e) {
 			// ignore and return null
 		}
