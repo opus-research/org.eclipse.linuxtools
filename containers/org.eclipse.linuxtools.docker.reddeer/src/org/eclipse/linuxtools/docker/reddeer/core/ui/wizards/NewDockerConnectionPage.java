@@ -12,22 +12,23 @@
 package org.eclipse.linuxtools.docker.reddeer.core.ui.wizards;
 
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerExplorerView;
-import org.eclipse.reddeer.common.wait.TimePeriod;
-import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.jface.wizard.WizardPage;
-import org.eclipse.reddeer.swt.api.Button;
-import org.eclipse.reddeer.swt.api.Table;
-import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
-import org.eclipse.reddeer.swt.impl.button.CheckBox;
-import org.eclipse.reddeer.swt.impl.button.FinishButton;
-import org.eclipse.reddeer.swt.impl.button.OkButton;
-import org.eclipse.reddeer.swt.impl.button.PushButton;
-import org.eclipse.reddeer.swt.impl.button.RadioButton;
-import org.eclipse.reddeer.swt.impl.table.DefaultTable;
-import org.eclipse.reddeer.swt.impl.text.LabeledText;
-import org.eclipse.reddeer.swt.impl.toolbar.DefaultToolItem;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.jboss.reddeer.common.wait.TimePeriod;
+import org.jboss.reddeer.common.wait.WaitUntil;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.core.condition.ShellWithTextIsAvailable;
+import org.jboss.reddeer.jface.wizard.WizardPage;
+import org.jboss.reddeer.swt.api.Button;
+import org.jboss.reddeer.swt.api.Table;
+import org.jboss.reddeer.swt.condition.WidgetIsEnabled;
+import org.jboss.reddeer.swt.impl.button.CheckBox;
+import org.jboss.reddeer.swt.impl.button.FinishButton;
+import org.jboss.reddeer.swt.impl.button.OkButton;
+import org.jboss.reddeer.swt.impl.button.PushButton;
+import org.jboss.reddeer.swt.impl.button.RadioButton;
+import org.jboss.reddeer.swt.impl.table.DefaultTable;
+import org.jboss.reddeer.swt.impl.text.LabeledText;
+import org.jboss.reddeer.swt.impl.toolbar.DefaultToolItem;
 
 /**
  * 
@@ -38,22 +39,21 @@ public class NewDockerConnectionPage extends WizardPage {
 	private static final String NEW_DOCKER_CONNECTION_SHELL = "New Docker Connection";
 
 	public NewDockerConnectionPage() {
-		super(null);
+		super();
 	}
 
 	public void open() {
 		new DockerExplorerView().open();
 		new DefaultToolItem("Add Connection").click();
-		new WaitUntil(new ShellIsAvailable(NEW_DOCKER_CONNECTION_SHELL), TimePeriod.LONG);
+		new WaitUntil(new ShellWithTextIsAvailable(NEW_DOCKER_CONNECTION_SHELL));
 	}
 
 	public void finish() {
-		new WaitUntil(new ShellIsAvailable(NEW_DOCKER_CONNECTION_SHELL));
-		if (new FinishButton().isEnabled()) {
-			new FinishButton().click();
-		}
+		new WaitUntil(new ShellWithTextIsAvailable(NEW_DOCKER_CONNECTION_SHELL));
+		new WaitUntil(new WidgetIsEnabled(new FinishButton()));
+		new FinishButton().click();
 
-		new WaitWhile(new ShellIsAvailable(NEW_DOCKER_CONNECTION_SHELL), TimePeriod.LONG);
+		new WaitWhile(new ShellWithTextIsAvailable(NEW_DOCKER_CONNECTION_SHELL), TimePeriod.LONG);
 		new WaitWhile(new JobIsRunning(), TimePeriod.VERY_LONG);
 	}
 
@@ -92,13 +92,13 @@ public class NewDockerConnectionPage extends WizardPage {
 	public void pingConnection() {
 		Button testConnectionButton = new PushButton("Test Connection");
 		testConnectionButton.click();
-		new WaitUntil(new ShellIsAvailable("Success"));
+		new WaitUntil(new ShellWithTextIsAvailable("Success"));
 		new OkButton().click();
 	}
 
 	public void search(String connectionName) {
 		new PushButton("Search...").click();
-		new WaitUntil(new ShellIsAvailable("Docker Connection Selection"));
+		new WaitUntil(new ShellWithTextIsAvailable("Docker Connection Selection"));
 		Table table = new DefaultTable();
 		table.getItem(connectionName).select();
 		new OkButton().click();
