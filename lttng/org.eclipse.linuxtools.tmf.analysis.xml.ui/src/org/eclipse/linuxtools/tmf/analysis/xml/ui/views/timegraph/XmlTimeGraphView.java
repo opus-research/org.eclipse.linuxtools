@@ -31,7 +31,6 @@ import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.TmfXmlUiStrings;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.views.XmlViewInfo;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
-import org.eclipse.linuxtools.statesystem.core.StateSystemUtils;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
@@ -445,17 +444,9 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
             boolean root = true;
             if (!entry.getParentId().isEmpty()) {
                 XmlEntry parent = entryMap.get(entry.getParentId());
-                /*
-                 * Associate the parent entry only if their time overlap. A
-                 * child entry may start before its parent, for example at the
-                 * beginning of the trace if a parent has not yet appeared in
-                 * the state system. We just want to make sure that the entry
-                 * didn't start after the parent ended or ended before the
-                 * parent started.
-                 */
                 if (parent != null &&
-                        !((entry.getStartTime() >= parent.getEndTime()) &&
-                        entry.getEndTime() <= parent.getStartTime())) {
+                        entry.getStartTime() >= parent.getStartTime() &&
+                        entry.getStartTime() <= parent.getEndTime()) {
                     parent.addChild(entry);
                     root = false;
                 }
@@ -484,7 +475,7 @@ public class XmlTimeGraphView extends AbstractTimeGraphView {
         try {
             if (xmlEntry.getType() == EntryDisplayType.DISPLAY) {
 
-                List<ITmfStateInterval> statusIntervals = StateSystemUtils.queryHistoryRange(ssq, quark, realStart, realEnd - 1, resolution, monitor);
+                List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(quark, realStart, realEnd - 1, resolution, monitor);
                 eventList = new ArrayList<>(statusIntervals.size());
                 long lastEndTime = -1;
                 for (ITmfStateInterval statusInterval : statusIntervals) {

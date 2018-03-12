@@ -19,7 +19,8 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.tmf.analysis.xml.ui.TmfXmlUiStrings;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
-import org.eclipse.linuxtools.statesystem.core.StateSystemUtils;
+import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.ITmfXmlModelFactory;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.ITmfXmlStateAttribute;
@@ -150,14 +151,20 @@ public class XmlEntry extends TimeGraphEntry implements IXmlStateSystemContainer
 
     /** Return the state value of the first interval with a non-null value */
     private String getFirstValue(Element stateAttribute) {
-
         ITmfXmlModelFactory factory = TmfXmlReadOnlyModelFactory.getInstance();
         ITmfXmlStateAttribute display = factory.createStateAttribute(stateAttribute, this);
         int quark = display.getAttributeQuark(fBaseQuark);
         if (quark != IXmlStateSystemContainer.ERROR_QUARK) {
-            ITmfStateInterval firstInterval = StateSystemUtils.queryUntilNonNullValue(fSs, quark, getStartTime(), getEndTime());
-            if (firstInterval != null) {
-                return firstInterval.getStateValue().toString();
+            try {
+                /* Find the first attribute with a parent */
+                List<ITmfStateInterval> execNameIntervals = fSs.queryHistoryRange(quark, getStartTime(), getEndTime());
+                for (ITmfStateInterval execNameInterval : execNameIntervals) {
+
+                    if (!execNameInterval.getStateValue().isNull()) {
+                        return execNameInterval.getStateValue().toString();
+                    }
+                }
+            } catch (AttributeNotFoundException | StateSystemDisposedException e) {
             }
         }
         return EMPTY_STRING;
