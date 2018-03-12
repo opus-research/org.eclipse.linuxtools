@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -92,36 +91,19 @@ public class LTTngControlService implements ILttngControlService {
     // ------------------------------------------------------------------------
 
     @Override
-    public String getVersionString() {
+    public String getVersion() {
         if (fVersion == null) {
             return "Unknown"; //$NON-NLS-1$
         }
         return fVersion.toString();
     }
 
-    @Override
-    public LttngVersion getVersion() {
-        return fVersion;
-    }
-
     /**
      * Sets the version of the LTTng 2.0 control service.
-     *
-     * @param version
-     *            - a version to set
+     * @param version - a version to set
      */
     public void setVersion(String version) {
         fVersion = new LttngVersion(version);
-    }
-
-    /**
-     * Sets the version of the LTTng 2.x control service.
-     *
-     * @param version
-     *            - a version to set
-     */
-    public void setVersion(LttngVersion version) {
-        fVersion = version;
     }
 
     @Override
@@ -151,10 +133,8 @@ public class LTTngControlService implements ILttngControlService {
 
         // Output:
         // Available tracing sessions:
-        // 1) mysession1 (/home/user/lttng-traces/mysession1-20120123-083928)
-        // [inactive]
-        // 2) mysession (/home/user/lttng-traces/mysession-20120123-083318)
-        // [inactive]
+        // 1) mysession1 (/home/user/lttng-traces/mysession1-20120123-083928) [inactive]
+        // 2) mysession (/home/user/lttng-traces/mysession-20120123-083318) [inactive]
         //
         // Use lttng list <session_name> for more details
 
@@ -169,25 +149,6 @@ public class LTTngControlService implements ILttngControlService {
             index++;
         }
         return retArray.toArray(new String[retArray.size()]);
-    }
-
-    /**
-     * Check if there is a pattern to be ignored into a sequence of string
-     *
-     * @param input
-     *            an arrays of string
-     * @param pattern
-     *            the pattern to search for
-     * @return if the pattern exist into the array of string
-     */
-    protected boolean ignoredPattern(String[] input, Pattern pattern) {
-        for (String line : input) {
-            Matcher matcher = pattern.matcher(line);
-            if (matcher.matches()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -335,15 +296,21 @@ public class LTTngControlService implements ILttngControlService {
 
         List<IBaseEventInfo> events = new ArrayList<>();
 
-        if (result.getErrorOutput() != null) {
+        if (result.getOutput() != null) {
             // Ignore the following 2 cases:
             // Spawning a session daemon
             // Error: Unable to list kernel events
             // or:
             // Error: Unable to list kernel events
             //
-            if (ignoredPattern(result.getErrorOutput(), LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN)) {
-                return events;
+            int index = 0;
+            while (index < result.getOutput().length) {
+                String line = result.getOutput()[index];
+                Matcher matcher = LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(line);
+                if (matcher.matches()) {
+                    return events;
+                }
+                index++;
             }
         }
 
@@ -374,22 +341,27 @@ public class LTTngControlService implements ILttngControlService {
         ICommandResult result = executeCommand(command.toString(), monitor, false);
         List<IUstProviderInfo> allProviders = new ArrayList<>();
 
-        // Workaround for versions 2.0.x which causes a segmentation fault for
-        // this command
+        // Workaround for versions 2.0.x which causes a segmentation fault for this command
         // if LTTng Tools is compiled without UST support.
         if (!isVersionSupported("2.1.0") && (result.getResult() != 0)) { //$NON-NLS-1$
             return allProviders;
         }
 
-        if (result.getErrorOutput() != null) {
+        if (result.getOutput() != null) {
             // Ignore the following 2 cases:
             // Spawning a session daemon
             // Error: Unable to list UST events: Listing UST events failed
             // or:
             // Error: Unable to list UST events: Listing UST events failed
             //
-            if (ignoredPattern(result.getErrorOutput(), LTTngControlServiceConstants.LIST_UST_NO_UST_PROVIDER_PATTERN)) {
-                return allProviders;
+            int index = 0;
+            while (index < result.getOutput().length) {
+                String line = result.getOutput()[index];
+                Matcher matcher = LTTngControlServiceConstants.LIST_UST_NO_UST_PROVIDER_PATTERN.matcher(line);
+                if (matcher.matches()) {
+                    return allProviders;
+                }
+                index++;
             }
         }
 
@@ -407,18 +379,18 @@ public class LTTngControlService implements ILttngControlService {
         // ust_tests_hello:tptest_sighandler (loglevel: TRACE_EMERG0) (type:
         // tracepoint)
         // ust_tests_hello:tptest (loglevel: TRACE_EMERG0) (type: tracepoint)
-        // field: doublefield (float)
-        // field: floatfield (float)
-        // field: stringfield (string)
+        //    field: doublefield (float)
+        //    field: floatfield (float)
+        //    field: stringfield (string)
         //
         // PID: 6459 - Name:
         // /home/user/git/lttng-ust/tests/hello.cxx/.libs/lt-hello
         // ust_tests_hello:tptest_sighandler (loglevel: TRACE_EMERG0) (type:
         // tracepoint)
         // ust_tests_hello:tptest (loglevel: TRACE_EMERG0) (type: tracepoint)
-        // field: doublefield (float)
-        // field: floatfield (float)
-        // field: stringfield (string)
+        //    field: doublefield (float)
+        //    field: floatfield (float)
+        //    field: stringfield (string)
 
         IUstProviderInfo provider = null;
 
@@ -446,13 +418,24 @@ public class LTTngControlService implements ILttngControlService {
             return createStreamedSession(sessionInfo, monitor);
         }
 
-        StringBuffer command = prepareSessionCreationCommand(sessionInfo);
+        String newName = formatParameter(sessionInfo.getName());
+        String newPath = formatParameter(sessionInfo.getSessionPath());
+
+        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
+
+        if (newPath != null && !"".equals(newPath)) { //$NON-NLS-1$
+            command.append(LTTngControlServiceConstants.OPTION_OUTPUT_PATH);
+            command.append(newPath);
+        }
+
+        if (sessionInfo.isSnapshotSession()) {
+            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
+        }
 
         ICommandResult result = executeCommand(command.toString(), monitor);
 
-        // Session myssession2 created.
-        // Traces will be written in
-        // /home/user/lttng-traces/myssession2-20120209-095418
+        //Session myssession2 created.
+        //Traces will be written in /home/user/lttng-traces/myssession2-20120209-095418
         String[] output = result.getOutput();
 
         // Get and session name and path
@@ -500,33 +483,30 @@ public class LTTngControlService implements ILttngControlService {
 
     }
 
-    /**
-     * Basic generation of command for session creation
-     *
-     * @param sessionInfo
-     *            the session to create
-     * @return the basic command for command creation
-     */
-    protected StringBuffer prepareSessionCreationCommand(ISessionInfo sessionInfo) {
+    private ISessionInfo createStreamedSession(ISessionInfo sessionInfo, IProgressMonitor monitor) throws ExecutionException {
+
         String newName = formatParameter(sessionInfo.getName());
-        String newPath = formatParameter(sessionInfo.getSessionPath());
-
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
-
-        if (newPath != null && !"".equals(newPath)) { //$NON-NLS-1$
-            command.append(LTTngControlServiceConstants.OPTION_OUTPUT_PATH);
-            command.append(newPath);
-        }
 
         if (sessionInfo.isSnapshotSession()) {
             command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
+        } else if (sessionInfo.isLive()) {
+            command.append(LTTngControlServiceConstants.OPTION_LIVE);
+            if (sessionInfo.getLiveDelay() != LTTngControlServiceConstants.UNUSED_VALUE) {
+                command.append(sessionInfo.getLiveDelay());
+            }
         }
-        return command;
-    }
 
-    private ISessionInfo createStreamedSession(ISessionInfo sessionInfo, IProgressMonitor monitor) throws ExecutionException {
+        if (sessionInfo.getNetworkUrl() != null) {
+            command.append(LTTngControlServiceConstants.OPTION_NETWORK_URL);
+            command.append(sessionInfo.getNetworkUrl());
+        } else {
+            command.append(LTTngControlServiceConstants.OPTION_CONTROL_URL);
+            command.append(sessionInfo.getControlUrl());
 
-        StringBuffer command = prepareStreamedSessionCreationCommand(sessionInfo);
+            command.append(LTTngControlServiceConstants.OPTION_DATA_URL);
+            command.append(sessionInfo.getDataUrl());
+        }
 
         ICommandResult result = executeCommand(command.toString(), monitor);
 
@@ -582,43 +562,10 @@ public class LTTngControlService implements ILttngControlService {
             }
         }
 
-        // When using controlUrl and dataUrl the full session path is not known
-        // yet and will be set later on when listing the session
+        // When using controlUrl and dataUrl the full session path is not known yet
+        // and will be set later on when listing the session
 
         return sessionInfo;
-    }
-
-    /**
-     * Basic generation of command for streamed session creation
-     *
-     * @param sessionInfo
-     *            the session to create
-     * @return the basic command for command creation
-     */
-    protected StringBuffer prepareStreamedSessionCreationCommand(ISessionInfo sessionInfo) {
-        String newName = formatParameter(sessionInfo.getName());
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_CREATE_SESSION, newName);
-
-        if (sessionInfo.isSnapshotSession()) {
-            command.append(LTTngControlServiceConstants.OPTION_SNAPSHOT);
-        } else if (sessionInfo.isLive()) {
-            command.append(LTTngControlServiceConstants.OPTION_LIVE);
-            if (sessionInfo.getLiveDelay() != LTTngControlServiceConstants.UNUSED_VALUE) {
-                command.append(sessionInfo.getLiveDelay());
-            }
-        }
-
-        if (sessionInfo.getNetworkUrl() != null) {
-            command.append(LTTngControlServiceConstants.OPTION_NETWORK_URL);
-            command.append(sessionInfo.getNetworkUrl());
-        } else {
-            command.append(LTTngControlServiceConstants.OPTION_CONTROL_URL);
-            command.append(sessionInfo.getControlUrl());
-
-            command.append(LTTngControlServiceConstants.OPTION_DATA_URL);
-            command.append(sessionInfo.getDataUrl());
-        }
-        return command;
     }
 
     @Override
@@ -628,13 +575,19 @@ public class LTTngControlService implements ILttngControlService {
         StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_DESTROY_SESSION, newName);
 
         ICommandResult result = executeCommand(command.toString(), monitor, false);
-        String[] errorOutput = result.getErrorOutput();
+        String[] output = result.getOutput();
 
         boolean isError = isError(result);
-        if (isError && (errorOutput != null)) {
-            if (ignoredPattern(result.getErrorOutput(), LTTngControlServiceConstants.SESSION_NOT_FOUND_ERROR_PATTERN)) {
-                isError = false;
-
+        if (isError && (output != null)) {
+            int index = 0;
+            while (index < output.length) {
+                String line = output[index];
+                Matcher matcher = LTTngControlServiceConstants.SESSION_NOT_FOUND_ERROR_PATTERN.matcher(line);
+                if (matcher.matches()) {
+                    // Don't treat this as an error
+                    isError = false;
+                }
+                index++;
             }
         }
 
@@ -642,7 +595,7 @@ public class LTTngControlService implements ILttngControlService {
             throw new ExecutionException(Messages.TraceControl_CommandError + " " + command.toString() + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        // Session <sessionName> destroyed
+        //Session <sessionName> destroyed
     }
 
     @Override
@@ -654,7 +607,7 @@ public class LTTngControlService implements ILttngControlService {
 
         executeCommand(command.toString(), monitor);
 
-        // Session <sessionName> started
+        //Session <sessionName> started
     }
 
     @Override
@@ -664,7 +617,7 @@ public class LTTngControlService implements ILttngControlService {
 
         executeCommand(command.toString(), monitor);
 
-        // Session <sessionName> stopped
+        //Session <sessionName> stopped
 
     }
 
@@ -697,40 +650,40 @@ public class LTTngControlService implements ILttngControlService {
         command.append(newSessionName);
 
         if (info != null) {
-            // --discard Discard event when buffers are full (default)
+//            --discard            Discard event when buffers are full (default)
 
-            // --overwrite Flight recorder mode
+//            --overwrite          Flight recorder mode
             if (info.isOverwriteMode()) {
                 command.append(LTTngControlServiceConstants.OPTION_OVERWRITE);
             }
-            // --subbuf-size SIZE Subbuffer size in bytes
-            // (default: 4096, kernel default: 262144)
+//            --subbuf-size SIZE   Subbuffer size in bytes
+//                                     (default: 4096, kernel default: 262144)
             if (info.getSubBufferSize() != LTTngControlServiceConstants.UNUSED_VALUE) {
                 command.append(LTTngControlServiceConstants.OPTION_SUB_BUFFER_SIZE);
                 command.append(String.valueOf(info.getSubBufferSize()));
             }
 
-            // --num-subbuf NUM Number of subbufers
+//            --num-subbuf NUM     Number of subbufers
             if (info.getNumberOfSubBuffers() != LTTngControlServiceConstants.UNUSED_VALUE) {
                 command.append(LTTngControlServiceConstants.OPTION_NUM_SUB_BUFFERS);
                 command.append(String.valueOf(info.getNumberOfSubBuffers()));
             }
 
-            // --switch-timer USEC Switch timer interval in usec
+//            --switch-timer USEC  Switch timer interval in usec
             if (info.getSwitchTimer() != LTTngControlServiceConstants.UNUSED_VALUE) {
                 command.append(LTTngControlServiceConstants.OPTION_SWITCH_TIMER);
                 command.append(String.valueOf(info.getSwitchTimer()));
             }
 
-            // --read-timer USEC Read timer interval in usec
+//            --read-timer USEC    Read timer interval in usec
             if (info.getReadTimer() != LTTngControlServiceConstants.UNUSED_VALUE) {
                 command.append(LTTngControlServiceConstants.OPTION_READ_TIMER);
                 command.append(String.valueOf(info.getReadTimer()));
             }
 
             if (isVersionSupported("2.2.0")) { //$NON-NLS-1$
-                // --buffers-uid Every application sharing the same UID use the
-                // same buffers --buffers-pid Buffers are allocated per PID
+//                --buffers-uid  Every application sharing the same UID use the same buffers
+//                --buffers-pid Buffers are allocated per PID
                 if (!isKernel) {
                     if (info.getBufferType() == BufferType.BUFFER_PER_PID) {
                         command.append(LTTngControlServiceConstants.OPTION_PER_PID_BUFFERS);
@@ -740,13 +693,13 @@ public class LTTngControlService implements ILttngControlService {
                     }
                 }
 
-                // -C SIZE Maximum size of trace files in bytes
+//                -C SIZE   Maximum size of trace files in bytes
                 if (info.getMaxSizeTraceFiles() != LTTngControlServiceConstants.UNUSED_VALUE) {
                     command.append(LTTngControlServiceConstants.OPTION_MAX_SIZE_TRACE_FILES);
                     command.append(String.valueOf(info.getMaxSizeTraceFiles()));
                 }
 
-                // -W NUM Maximum number of trace files
+//                -W NUM   Maximum number of trace files
                 if (info.getMaxNumberTraceFiles() != LTTngControlServiceConstants.UNUSED_VALUE) {
                     command.append(LTTngControlServiceConstants.OPTION_MAX_TRACE_FILES);
                     command.append(String.valueOf(info.getMaxNumberTraceFiles()));
@@ -1079,15 +1032,14 @@ public class LTTngControlService implements ILttngControlService {
      */
     protected boolean isError(ICommandResult result) {
         // Check return code and length of returned strings
-
-        if ((result.getResult()) != 0) {
+        if ((result.getResult()) != 0 || (result.getOutput().length < 1)) {
             return true;
         }
 
         // Look for error pattern
         int index = 0;
-        while (index < result.getErrorOutput().length) {
-            String line = result.getErrorOutput()[index];
+        while (index < result.getOutput().length) {
+            String line = result.getOutput()[index];
             Matcher matcher = LTTngControlServiceConstants.ERROR_PATTERN.matcher(line);
             if (matcher.matches()) {
                 return true;
@@ -1106,16 +1058,11 @@ public class LTTngControlService implements ILttngControlService {
      * @return - the formatted output
      */
     public static String formatOutput(ICommandResult result) {
-        if ((result == null) || ((result.getOutput() == null || result.getOutput().length == 0) && (result.getErrorOutput() == null || result.getErrorOutput().length == 0))) {
+        if ((result == null) || result.getOutput() == null || result.getOutput().length == 0) {
             return ""; //$NON-NLS-1$
         }
         String[] output = result.getOutput();
-        String[] errorOutput = result.getErrorOutput();
         StringBuffer ret = new StringBuffer();
-        ret.append("Error Ouptut:\n"); //$NON-NLS-1$
-        for (int i = 0; i < errorOutput.length; i++) {
-           ret.append(errorOutput[i]).append("\n"); //$NON-NLS-1$
-        }
         ret.append("Return Value: "); //$NON-NLS-1$
         ret.append(result.getResult());
         ret.append("\n"); //$NON-NLS-1$
@@ -1294,8 +1241,7 @@ public class LTTngControlService implements ILttngControlService {
                 eventInfo.setState(matcher.group(5));
                 String filter = matcher.group(6);
                 if (filter != null) {
-                    // remove '[' and ']'
-                    filter = filter.substring(1, filter.length() - 1);
+                    filter = filter.substring(1, filter.length() - 1); // remove '[' and ']'
                     eventInfo.setFilterExpression(filter);
                 }
                 events.add(eventInfo);
@@ -1307,13 +1253,12 @@ public class LTTngControlService implements ILttngControlService {
                 eventInfo.setState(matcher2.group(3));
                 String filter = matcher2.group(4);
                 if (filter != null) {
-                    // remove '[' and ']'
-                    filter = filter.substring(1, filter.length() - 1);
+                    filter = filter.substring(1, filter.length() - 1); // remove '[' and ']'
                     eventInfo.setFilterExpression(filter);
                 }
 
                 if ((eventInfo.getEventType() == TraceEventType.PROBE) ||
-                        (eventInfo.getEventType() == TraceEventType.FUNCTION)) {
+                        (eventInfo.getEventType() == TraceEventType.FUNCTION)){
                     IProbeEventInfo probeEvent = new ProbeEventInfo(eventInfo.getName());
                     probeEvent.setLogLevel(eventInfo.getLogLevel());
                     probeEvent.setEventType(eventInfo.getEventType());
@@ -1400,8 +1345,7 @@ public class LTTngControlService implements ILttngControlService {
             String line = output[index];
             Matcher matcher = LTTngControlServiceConstants.PROVIDER_EVENT_PATTERN.matcher(line);
             if (matcher.matches()) {
-                // sched_kthread_stop (loglevel: TRACE_EMERG0) (type:
-                // tracepoint)
+                // sched_kthread_stop (loglevel: TRACE_EMERG0) (type: tracepoint)
                 eventInfo = new BaseEventInfo(matcher.group(1).trim());
                 eventInfo.setLogLevel(matcher.group(2).trim());
                 eventInfo.setEventType(matcher.group(3).trim());
@@ -1424,6 +1368,7 @@ public class LTTngControlService implements ILttngControlService {
         }
         return index;
     }
+
 
     /**
      * Parse a field's information.
@@ -1458,11 +1403,9 @@ public class LTTngControlService implements ILttngControlService {
     }
 
     /**
-     * Formats a command parameter for the command execution i.e. adds quotes at
-     * the beginning and end if necessary.
-     *
-     * @param parameter
-     *            - parameter to format
+     * Formats a command parameter for the command execution i.e. adds quotes
+     * at the beginning and end if necessary.
+     * @param parameter - parameter to format
      * @return formated parameter
      */
     protected String formatParameter(String parameter) {
@@ -1480,8 +1423,7 @@ public class LTTngControlService implements ILttngControlService {
     }
 
     /**
-     * @param strings
-     *            array of string that makes up a command line
+     * @param strings array of string that makes up a command line
      * @return string buffer with created command line
      */
     protected StringBuffer createCommand(String... strings) {

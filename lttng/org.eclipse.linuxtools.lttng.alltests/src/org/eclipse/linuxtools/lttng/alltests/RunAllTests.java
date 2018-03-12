@@ -37,8 +37,7 @@ import org.junit.runners.Suite;
     org.eclipse.linuxtools.tmf.analysis.xml.ui.tests.AllAnalysisXmlUiTests.class,
     org.eclipse.linuxtools.tmf.core.tests.AllTmfCoreTests.class,
     org.eclipse.linuxtools.tmf.ui.tests.AllTmfUITests.class,
-    org.eclipse.linuxtools.tmf.ctf.core.tests.AllTests.class,
-    org.eclipse.linuxtools.tmf.pcap.core.tests.AllTmfPcapCoreTests.class
+    org.eclipse.linuxtools.tmf.ctf.core.tests.AllTests.class
 })
 public class RunAllTests {
 
