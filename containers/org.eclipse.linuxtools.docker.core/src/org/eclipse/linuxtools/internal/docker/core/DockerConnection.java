@@ -215,7 +215,8 @@ public class DockerConnection implements IDockerConnection {
 						connectionSettingsDetectionScript);
 				final Process process = Runtime.getRuntime().exec(cmdArray);
 				process.waitFor();
-				if (process.exitValue() == 0) {
+				final int exitValue = process.exitValue();
+				if (exitValue == 0) {
 					final InputStream processInputStream = process
 							.getInputStream();
 					// read content from temp file
@@ -241,12 +242,15 @@ public class DockerConnection implements IDockerConnection {
 					return true;
 				} else {
 					// log what happened if the process did not end as expected
-					final InputStream processErrorStream = process
-							.getErrorStream();
-					final String errorMessage = streamToString(
-							processErrorStream);
-					Activator.log(new Status(IStatus.ERROR,
-							Activator.PLUGIN_ID, errorMessage));
+					// an exit value of 1 should indicate no connection found
+					if (exitValue != 1) {
+						final InputStream processErrorStream = process
+								.getErrorStream();
+						final String errorMessage = streamToString(
+								processErrorStream);
+						Activator.log(new Status(IStatus.ERROR,
+								Activator.PLUGIN_ID, errorMessage));
+					}
 				}
 			} catch (IOException | IllegalArgumentException
 					| InterruptedException e) {
@@ -428,7 +432,7 @@ public class DockerConnection implements IDockerConnection {
 
 		public Builder tcpCertPath(final String tcpCertPath) {
 			this.tcpCertPath = tcpCertPath;
-			if (this.tcpHost != null) {
+			if (this.tcpHost != null && this.tcpCertPath != null) {
 				this.tcpHost = tcpHost.replace("http://", "https://");
 			}
 			return this;
@@ -1005,20 +1009,6 @@ public class DockerConnection implements IDockerConnection {
 	}
 
 	@Override
-	public boolean hasImage(final String repository, final String tag) {
-		for (IDockerImage image : getImages()) {
-			if (image.repo().equals(repository)) {
-				for (String imageTag : image.tags()) {
-					if (imageTag.startsWith(tag)) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	@Override
 	public void pullImage(final String id, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
 		try {
@@ -1046,6 +1036,8 @@ public class DockerConnection implements IDockerConnection {
 		}
 	}
 	
+	
+
 	@Override
 	public void pushImage(final String name, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
