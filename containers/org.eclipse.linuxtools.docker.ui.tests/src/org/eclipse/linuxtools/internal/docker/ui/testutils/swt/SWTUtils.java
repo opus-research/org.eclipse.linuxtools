@@ -107,7 +107,11 @@ public class SWTUtils {
 				}
 			}
 		});
-		waitForJobsToComplete();
+		
+		Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+		while (!Job.getJobManager().isIdle()) {
+			Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+		}
 		if (!failure.isEmpty()) {
 			throw failure.poll();
 		}
@@ -161,7 +165,7 @@ public class SWTUtils {
 		}
 		return null;
 	}
-
+	
 	private static SWTBotTreeItem getTreeItem(final SWTBotTreeItem[] treeItems, final String[] paths) {
 		final SWTBotTreeItem swtBotTreeItem = Stream.of(treeItems).filter(item -> item.getText().startsWith(paths[0])).findFirst().get();
 		if(paths.length > 1) {
