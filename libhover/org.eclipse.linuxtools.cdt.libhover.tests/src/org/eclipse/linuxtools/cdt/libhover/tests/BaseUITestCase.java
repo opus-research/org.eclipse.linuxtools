@@ -56,6 +56,7 @@ public class BaseUITestCase {
 	public void tearDown() throws Exception {
 		runEventQueue(0);
 		ResourceHelper.cleanUp();
+        TestScannerProvider.clear();
 	}
 
 	protected void runEventQueue(int time) {
