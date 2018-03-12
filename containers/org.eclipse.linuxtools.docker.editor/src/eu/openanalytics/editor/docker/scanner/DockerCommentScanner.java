@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.docker.editor.scanner;
+package eu.openanalytics.editor.docker.scanner;
 
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
@@ -14,7 +14,8 @@ import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.linuxtools.internal.docker.editor.syntax.SyntaxColors;
+
+import eu.openanalytics.editor.docker.syntax.SyntaxColors;
 
 public class DockerCommentScanner extends RuleBasedScanner {
 

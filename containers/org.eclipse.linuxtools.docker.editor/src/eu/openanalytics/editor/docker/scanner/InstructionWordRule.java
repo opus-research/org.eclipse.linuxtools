@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
-package org.eclipse.linuxtools.internal.docker.editor.scanner;
+package eu.openanalytics.editor.docker.scanner;
 
 import java.io.IOException;
 
@@ -14,8 +14,9 @@ import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
-import org.eclipse.linuxtools.internal.docker.editor.Activator;
-import org.eclipse.linuxtools.internal.docker.editor.util.AssetLoader;
+
+import eu.openanalytics.editor.docker.Activator;
+import eu.openanalytics.editor.docker.util.AssetLoader;
 
 public class InstructionWordRule extends WordRule {
 
