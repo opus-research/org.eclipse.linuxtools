@@ -31,6 +31,16 @@
             description="%commands.control.new.description"
             id="org.eclipse.linuxtools.internal.lttng2.ui.commands.control.newConnection"
             name="%commands.control.new">
+         <commandParameter
+               id="org.eclipse.linuxtools.lttng2.control.ui.remoteServicesIdParameter"
+               name="%commandParameter.remoteServicesId.name"
+               optional="true">
+         </commandParameter>
+         <commandParameter
+               id="org.eclipse.linuxtools.lttng2.control.ui.connectionNameParameter"
+               name="%commandParameter.connectionName.name"
+               optional="true">
+         </commandParameter>
       </command>
       <command
             categoryId="org.eclipse.linuxtools.internal.lttng2.ui.commands.control.category"
@@ -1233,20 +1243,6 @@
       </handler>
       
    </extension>
-
-    <extension
-          point="org.eclipse.rse.core.systemTypes">
-       <systemType
-             description="%trace.control.rse.system.type.description"
-             icon="icons/obj16/systemlttng2.gif"
-             iconLive="icons/obj16/systemlttng2-live.gif"
-             id="org.eclipse.linuxtools.internal.lttng2.ui.control.systemType"
-             label="%trace.control.rse.system.type.name"
-             name="org.eclipse.linuxtools.internal.lttng2.ui.control.systemType"
-             subsystemConfigurationIds="ssh.shells;ssh.files;ssh.terminals;processes.shell.linux">
-       </systemType>
-    </extension>
-
    <extension
          point="org.eclipse.ui.preferencePages">
       <page

@@ -42,7 +42,6 @@ public class ToolTipChartMouseMoveListener extends AbstractChartMouseMoveListene
     @Override
     public void exit() {
         super.exit();
-        System.out.println(this + ": hiding tooltip"); //$NON-NLS-1$
         tipShell.setVisible(false);
     }
 
@@ -50,13 +49,11 @@ public class ToolTipChartMouseMoveListener extends AbstractChartMouseMoveListene
         Point cursorLocation = Display.getCurrent().getCursorLocation();
         tipShell.setLocation(cursorLocation.x + TIP_OFFSET, cursorLocation.y + TIP_OFFSET);
         if (!message.equals(tipText.getText())) {
-            System.out.println(this + ": setting message\n" + message); //$NON-NLS-1$
             tipText.setText(message);
             tipText.pack();
             tipShell.pack();
         }
         if (!tipShell.isVisible()) {
-            System.out.println(this + ": showing tooltip"); //$NON-NLS-1$
             tipShell.setVisible(true);
         }
     }

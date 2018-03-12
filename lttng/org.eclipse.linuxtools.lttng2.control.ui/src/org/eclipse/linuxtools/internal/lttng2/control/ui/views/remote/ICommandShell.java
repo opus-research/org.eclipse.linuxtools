@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,8 +8,11 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
+ *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote;
+
+import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -47,25 +50,6 @@ public interface ICommandShell {
      * @throws ExecutionException
      *             If the command fails
      */
-    ICommandResult executeCommand(String command,
+    ICommandResult executeCommand(List<String> command,
             IProgressMonitor monitor) throws ExecutionException;
-
-    /**
-     * Method to execute a command on the command shell.
-     *
-     * @param command
-     *            - the command to executed
-     * @param monitor
-     *            - a progress monitor
-     * @param checkReturnValue
-     *            - flag to indicate that the command result should be checked.
-     *            If false the command result will be always 0.
-     * @return the command result
-     * @throws ExecutionException
-     *             If the command fails
-     */
-    ICommandResult executeCommand(final String command,
-            final IProgressMonitor monitor, final boolean checkReturnValue)
-            throws ExecutionException;
-
 }

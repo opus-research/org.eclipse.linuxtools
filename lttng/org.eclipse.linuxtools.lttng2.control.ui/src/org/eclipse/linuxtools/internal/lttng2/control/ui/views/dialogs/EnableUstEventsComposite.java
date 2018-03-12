@@ -262,16 +262,28 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
         fIsAllTracepoints = false;
         fSelectedEvents = new ArrayList<>();
         if (fIsTracepoints) {
-            fIsAllTracepoints = fTracepointsViewer.getChecked(fProviderGroup);
             Set<String> set = new HashSet<>();
             Object[] checkedElements = fTracepointsViewer.getCheckedElements();
+            int totalNbEvents = 0;
             for (int i = 0; i < checkedElements.length; i++) {
-                ITraceControlComponent component = (ITraceControlComponent)checkedElements[i];
-                if (!set.contains(component.getName()) && (component instanceof BaseEventComponent)) {
-                    set.add(component.getName());
-                    fSelectedEvents.add(component.getName());
+                ITraceControlComponent component = (ITraceControlComponent) checkedElements[i];
+                if (component instanceof BaseEventComponent) {
+                    totalNbEvents++;
+                    if (!set.contains(component.getName())) {
+                        set.add(component.getName());
+                        fSelectedEvents.add(component.getName());
+                    }
                 }
+
             }
+
+            // verify if all events are selected
+            int nbUstEvents = 0;
+            List<ITraceControlComponent> comps = fProviderGroup.getChildren(UstProviderComponent.class);
+            for (ITraceControlComponent comp : comps) {
+                nbUstEvents += comp.getChildren().length;
+            }
+            fIsAllTracepoints = (nbUstEvents == totalNbEvents);
         }
 
         // initialize log level event name string
@@ -317,7 +329,7 @@ public class EnableUstEventsComposite extends Composite implements IEnableUstEve
             String tempWildcard = fWildcardText.getText();
             if (tempWildcard.isEmpty() ||
                 tempWildcard.matches("\\s*") || //$NON-NLS-1$
-                (!tempWildcard.matches("^[\\s]{0,}$") && !tempWildcard.matches("^[a-zA-Z0-9\\-\\_\\*]{1,}$"))) { //$NON-NLS-1$ //$NON-NLS-2$
+                (!tempWildcard.matches("^[\\s]{0,}$") && !tempWildcard.matches("^[a-zA-Z0-9\\-\\_\\*\\\\\\']{1,}$"))) { //$NON-NLS-1$ //$NON-NLS-2$
                 MessageDialog.openError(getShell(),
                         Messages.TraceControl_EnableEventsDialogTitle,
                         Messages.TraceControl_InvalidWildcardError + " (" + tempWildcard + ") \n");  //$NON-NLS-1$ //$NON-NLS-2$
