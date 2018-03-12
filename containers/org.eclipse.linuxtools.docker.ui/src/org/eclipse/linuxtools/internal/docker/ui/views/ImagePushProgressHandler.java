@@ -53,9 +53,8 @@ public class ImagePushProgressHandler implements IDockerProgressHandler {
 			ProgressJob p = progressJobs.get(id);
 			if (p == null) {
 				String status = message.status();
-				if (status.contains(DVMessages.getString(IMAGE_UPLOAD_COMPLETE))
-						|| status.contains(DVMessages
-								.getString(IMAGE_UPLOAD_ALREADY_COMPLETE))) {
+				if (status.equals(DVMessages.getString(IMAGE_UPLOAD_COMPLETE))
+						|| status.contains(IMAGE_UPLOAD_ALREADY_COMPLETE)) {
 					connection.getImages(true);
 				} else {
 					ProgressJob newJob = new ProgressJob(
@@ -71,9 +70,8 @@ public class ImagePushProgressHandler implements IDockerProgressHandler {
 
 			} else {
 				String status = message.status();
-				if (status.contains(DVMessages.getString(IMAGE_UPLOAD_COMPLETE))
-						|| status.contains(DVMessages
-								.getString(IMAGE_UPLOAD_ALREADY_COMPLETE))) {
+				if (status.equals(DVMessages.getString(IMAGE_UPLOAD_COMPLETE))
+						|| status.contains(IMAGE_UPLOAD_ALREADY_COMPLETE)) {
 					p.setPercentageDone(100);
 					connection.getImages(true);
 				} else if (status.startsWith(DVMessages
