@@ -18,7 +18,6 @@ import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
 import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
 
-import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
 
 public class DockerContainer implements IDockerContainer {
@@ -35,17 +34,8 @@ public class DockerContainer implements IDockerContainer {
 	private Long sizeRootFs;
 	private IDockerContainerInfo containerInfo;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param connection
-	 *            the Docker connection
-	 * @param container
-	 *            the underlying {@link Container} data returned by the
-	 *            {@link DockerClient}
-	 */
 	public DockerContainer(final IDockerConnection connection,
-			final Container container) {
+			Container container) {
 		this.parent = connection;
 		this.id = container.id();
 		this.image = container.image();
@@ -70,26 +60,6 @@ public class DockerContainer implements IDockerContainer {
 			ports.add(portMapping);
 		}
 		// TODO: include volumes
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param connection
-	 *            the Docker connection
-	 * @param container
-	 *            the underlying {@link Container} data returned by the
-	 *            {@link DockerClient}
-	 * @param containerInfo
-	 *            the {@link IDockerContainerInfo} that was previously retrieved
-	 *            for this {@link IDockerContainer}, assuming it did not change
-	 *            in the mean time.
-	 */
-	public DockerContainer(final IDockerConnection connection,
-			final Container container,
-			final IDockerContainerInfo containerInfo) {
-		this(connection, container);
-		this.containerInfo = containerInfo;
 	}
 
 	@Override
@@ -153,7 +123,15 @@ public class DockerContainer implements IDockerContainer {
 		return info(false);
 	}
 
-	@Override
+	/**
+	 * @param force
+	 *            <code>true</code> to force refresh, <code>false</code> to use
+	 *            existing {@link IDockerContainerInfo} if it was loaded before.
+	 * @return the {@link IDockerContainerInfo} by calling the Docker daemon
+	 *         using the {@link IDockerConnection} associated with this
+	 *         {@link IDockerContainer}.
+	 */
+	// TODO: add this method in the public interface
 	public IDockerContainerInfo info(final boolean force) {
 		if (force || isInfoLoaded()) {
 			this.containerInfo = this.parent.getContainerInfo(id);
@@ -161,7 +139,11 @@ public class DockerContainer implements IDockerContainer {
 		return this.containerInfo;
 	}
 
-	@Override
+	/**
+	 * @return <code>true</code> if the {@link IDockerContainerInfo} has been
+	 *         loaded, <code>false</code> otherwise.
+	 */
+	// TODO: add this method in the public interface
 	public boolean isInfoLoaded() {
 		return this.containerInfo != null;
 	}
