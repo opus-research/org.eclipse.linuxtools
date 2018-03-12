@@ -39,6 +39,7 @@ public class RemoveConnectionCommandHandler extends AbstractHandler {
 			}
 			viewer.refresh();
 		}
+		// return must be null, javadoc says.
 		return null;
 	}
 

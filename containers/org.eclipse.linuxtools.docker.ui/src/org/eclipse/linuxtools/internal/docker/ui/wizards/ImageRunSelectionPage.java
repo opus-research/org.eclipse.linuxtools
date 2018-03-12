@@ -57,6 +57,7 @@ import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
+import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
@@ -690,14 +691,17 @@ public class ImageRunSelectionPage extends WizardPage {
 			public void widgetSelected(SelectionEvent e) {
 				final ImageSearch imageSearchWizard = new ImageSearch(
 						ImageRunSelectionPage.this.model
-								.getSelectedConnection(),
-						ImageRunSelectionPage.this.model
-								.getSelectedImageName());
+								.getSelectedConnection());
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {
-					model.setSelectedImageName(
-							imageSearchWizard.getSelectedImage());
+					final IDockerImageSearchResult selectedImage = imageSearchWizard
+							.getSelectedImage();
+					final DockerImageTagSearchResult selectedImageTag = imageSearchWizard
+							.getSelectedImageTag();
+					model.setSelectedImageName(selectedImage.getName()
+ + ":" //$NON-NLS-1$
+							+ selectedImageTag.getName());
 				}
 			}
 		};
