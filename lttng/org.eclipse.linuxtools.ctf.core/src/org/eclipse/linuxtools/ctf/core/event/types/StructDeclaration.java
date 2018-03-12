@@ -15,7 +15,6 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -35,7 +34,7 @@ import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class StructDeclaration extends Declaration implements ICompositeDeclaration {
+public class StructDeclaration extends Declaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -115,19 +114,27 @@ public class StructDeclaration extends Declaration implements ICompositeDeclarat
     }
 
     /**
+     * Get the field declaration corresponding to a field name.
+     *
+     * @param fieldName
+     *            The field name
+     * @return The declaration of the field, or null if there is no such field.
      * @since 3.1
      */
-    @Override
     @Nullable
     public IDeclaration getField(String fieldName) {
         return fFieldMap.get(fieldName);
     }
 
-    @Override
+    /**
+     * Gets the field list. Very important since the map of fields does not
+     * retain the order of the fields.
+     *
+     * @return the field list.
+     * @since 3.0
+     */
     public Iterable<String> getFieldsList() {
-        @SuppressWarnings("null")
-        final @NonNull Set<String> keySet = fFieldMap.keySet();
-        return keySet;
+        return fFieldMap.keySet();
     }
 
     @Override
@@ -159,20 +166,34 @@ public class StructDeclaration extends Declaration implements ICompositeDeclarat
             String fieldName, BitBuffer input) throws CTFReaderException {
         alignRead(input);
         final Definition[] myFields = new Definition[fFieldMap.size()];
-        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldName, getFieldsList(), myFields);
+        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldName, fFieldMap.keySet(), myFields);
         fillStruct(input, myFields, structDefinition);
         return structDefinition;
     }
 
     /**
+     * Accelerated create definition
+     *
+     * @param definitionScope
+     *            the definition scope
+     * @param fieldScope
+     *            the lexical scope of this element
+     * @param input
+     *            the {@Link BitBuffer} to read
+     * @return the Struct definition
+     * @throws CTFReaderException
+     *             read error and such
      * @since 3.1
      */
-    @Override
     public StructDefinition createDefinition(IDefinitionScope definitionScope,
-            @NonNull LexicalScope fieldScope, @NonNull BitBuffer input) throws CTFReaderException {
+            LexicalScope fieldScope, @NonNull BitBuffer input) throws CTFReaderException {
         alignRead(input);
         final Definition[] myFields = new Definition[fFieldMap.size()];
-        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldScope, fieldScope.getName(), getFieldsList(), myFields);
+        /*
+         * Key set is NOT null
+         */
+        @SuppressWarnings("null")
+        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldScope, fieldScope.getName(), fFieldMap.keySet(), myFields);
         fillStruct(input, myFields, structDefinition);
         return structDefinition;
     }
