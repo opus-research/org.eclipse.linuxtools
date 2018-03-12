@@ -26,6 +26,8 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.StringOutputStream;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.EnvironmentVariablesPreferencePage;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.preferences.IDEPreferenceConstants;
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.Messages;
+import org.eclipse.linuxtools.profiling.launch.IRemoteCon;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.systemtap.structures.runnable.StringStreamGobbler;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.ConsoleLogPlugin;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.preferences.ConsoleLogPreferenceConstants;
@@ -78,10 +80,14 @@ public abstract class TapsetParser extends Job {
         case IStatus.ERROR:
             if (ps.getBoolean(IDEPreferenceConstants.P_REMOTE_PROBES)) {
                 IPreferenceStore p = ConsoleLogPlugin.getDefault().getPreferenceStore();
+                String connName = p.getString(ConsoleLogPreferenceConstants.CONNECTION_NAME);
+                IRemoteCon rc = RemoteProxyManager.getInstance().getConnection("ssh"); //$NON-NLS-1$
+                String host = rc.getConnectionHost(connName);
+                String user = rc.getConnectionUser(connName);
+
                 message = MessageFormat.format(
                         Messages.TapsetParser_ErrorCannotRunRemoteStap,
-                        p.getString(ConsoleLogPreferenceConstants.SCP_USER),
-                        p.getString(ConsoleLogPreferenceConstants.HOST_NAME));
+                        user, host);
             } else {
                 message = Messages.TapsetParser_ErrorCannotRunStap;
             }
@@ -225,10 +231,12 @@ public abstract class TapsetParser extends Job {
         StringOutputStream strErr = new StringOutputStream();
 
         IPreferenceStore p = ConsoleLogPlugin.getDefault().getPreferenceStore();
-        String user = p.getString(ConsoleLogPreferenceConstants.SCP_USER);
-        String host = p.getString(ConsoleLogPreferenceConstants.HOST_NAME);
-        String password = p.getString(ConsoleLogPreferenceConstants.SCP_PASSWORD);
-        int port = p.getInt(ConsoleLogPreferenceConstants.PORT_NUMBER);
+        String connName = p.getString(ConsoleLogPreferenceConstants.CONNECTION_NAME);
+        IRemoteCon rc = RemoteProxyManager.getInstance().getConnection("ssh"); //$NON-NLS-1$
+        String host = rc.getConnectionHost(connName);
+        String user = rc.getConnectionUser(connName);
+        int port = rc.getConnectionPort(connName);
+        String password = rc.getConnectionPasswd(connName);
 
         Channel channel = LinuxtoolsProcessFactory.execRemoteAndWait(args, str, strErr, user, host, password,
                 port, EnvironmentVariablesPreferencePage.getEnvironmentVariables());
