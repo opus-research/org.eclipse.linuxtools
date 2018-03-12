@@ -108,6 +108,7 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.ContainerExit;
 import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.ExecState;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.HostConfig.LxcConfParameter;
 import com.spotify.docker.client.messages.Image;
@@ -177,6 +178,7 @@ public class DockerConnection
 	private final Object actionLock = new Object();
 	private final Object clientLock = new Object();
 	private DockerClientFactory dockerClientFactory = new DockerClientFactory();
+	private DockerClientFactory2 dockerClientFactory2 = new DockerClientFactory2();
 	private DockerClient client;
 
 	private Map<String, Job> actionJobs;
@@ -487,6 +489,25 @@ public class DockerConnection
 	private DockerClient getClientCopy() throws DockerException {
 		try {
 			return dockerClientFactory.getClient(this.connectionSettings);
+		} catch (DockerCertificateException e) {
+			throw new DockerException(NLS.bind(Messages.Open_Connection_Failure,
+					this.name, this.getUri()));
+		}
+	}
+
+	/**
+	 * Get a copy of the client to use in parallel threads for long-standing
+	 * operations such as logging or waiting until finished. The user of the
+	 * copy should close it when the operation is complete.
+	 * 
+	 * @return copy of client
+	 * @throws DockerException
+	 * @throws DockerCertificateException
+	 * @see DockerConnection#open(boolean)
+	 */
+	private DockerClient2 getClientCopy2() throws DockerException {
+		try {
+			return dockerClientFactory2.getClient(this.connectionSettings);
 		} catch (DockerCertificateException e) {
 			throw new DockerException(NLS.bind(Messages.Open_Connection_Failure,
 					this.name, this.getUri()));
@@ -1836,28 +1857,28 @@ public class DockerConnection
 			throws DockerException, InterruptedException {
 		InputStream stream;
 		try {
-			if (this.connectionInfo != null) {
-				String apiversion = connectionInfo.getApiVersion();
-				if (apiversion != null) {
-					String[] tokens = apiversion.split("\\."); //$NON-NLS-1$
-					if (tokens.length > 1) {
-						try {
-							int major = Integer.valueOf(tokens[0]);
-							int minor = Integer.valueOf(tokens[1]);
-							if (major > 1 || minor >= 24) {
-								throw new DockerException(
-										DockerMessages.getFormattedString(
-												"DockerClientVersionTooLow.error", //$NON-NLS-1$
-												"copyContainer", "1.24")); //$NON-NLS-1$ //$NON-NLS-2$
-							}
-						} catch (NumberFormatException e) {
-							// ignore for now and let things occur
-						}
-					}
-				}
-			}
-			DockerClient copy = getClientCopy();
-			stream = copy.copyContainer(id, path);
+			// if (this.connectionInfo != null) {
+			// String apiversion = connectionInfo.getApiVersion();
+			// if (apiversion != null) {
+			// String[] tokens = apiversion.split("\\."); //$NON-NLS-1$
+			// if (tokens.length > 1) {
+			// try {
+			// int major = Integer.valueOf(tokens[0]);
+			// int minor = Integer.valueOf(tokens[1]);
+			// if (major > 1 || minor >= 24) {
+			// throw new DockerException(
+			// DockerMessages.getFormattedString(
+			// "DockerClientVersionTooLow.error", //$NON-NLS-1$
+			// "copyContainer", "1.24")); //$NON-NLS-1$ //$NON-NLS-2$
+			// }
+			// } catch (NumberFormatException e) {
+			// // ignore for now and let things occur
+			// }
+			// }
+			// }
+			// }
+			DockerClient2 copy = getClientCopy2();
+			stream = copy.archiveContainer(id, path);
 		} catch (com.spotify.docker.client.DockerException e) {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
@@ -2060,53 +2081,64 @@ public class DockerConnection
 		List<ContainerFileProxy> childList = new ArrayList<>();
 		try {
 			DockerClient copyClient = getClientCopy();
+			System.out.println("exec create");
+			System.out.println("path is " + path);
 			final String execId = copyClient.execCreate(id,
 					new String[] { "/bin/sh", "-c", "ls -l -F -L -Q " + path }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					ExecCreateParam.attachStdout(),
-					ExecCreateParam.attachStderr());
+					ExecCreateParam.attachStderr(), ExecCreateParam.tty());
+			System.out.println("exec start");
 			final LogStream pty_stream = copyClient.execStart(execId);
 			try {
-				while (pty_stream.hasNext()) {
-					ByteBuffer b = pty_stream.next().content();
-					byte[] buffer = new byte[b.remaining()];
-					b.get(buffer);
-					String s = new String(buffer);
-					String[] lines = s.split("\\r?\\n"); //$NON-NLS-1$
-					for (String line : lines) {
-						if (line.trim().startsWith("total")) //$NON-NLS-1$
-							continue; // ignore the total line
-						String[] token = line.split("\\s+"); //$NON-NLS-1$
-						boolean isDirectory = token[0].startsWith("d"); //$NON-NLS-1$
-						boolean isLink = token[0].startsWith("l"); //$NON-NLS-1$
-						if (token.length > 8) {
-							// last token depends on whether we have a link or not
-							String link = null;
-							if (isLink) {
-								String linkname = token[token.length - 1];
-								if (linkname.endsWith("/")) { //$NON-NLS-1$
-									linkname = linkname.substring(0, linkname.length() - 1);
-									isDirectory = true;
+				ExecState state = copyClient.execInspect(execId);
+				do {
+					// Thread.sleep(500);
+					if (pty_stream.hasNext()) {
+						ByteBuffer b = pty_stream.next().content();
+						byte[] buffer = new byte[b.remaining()];
+						b.get(buffer);
+						String s = new String(buffer);
+						String[] lines = s.split("\\r?\\n"); //$NON-NLS-1$
+						for (String line : lines) {
+							System.out.println("line is " + line);
+							if (line.trim().startsWith("total")) //$NON-NLS-1$
+								continue; // ignore the total line
+							String[] token = line.split("\\s+"); //$NON-NLS-1$
+							boolean isDirectory = token[0].startsWith("d"); //$NON-NLS-1$
+							boolean isLink = token[0].startsWith("l"); //$NON-NLS-1$
+							if (token.length > 8) {
+								// last token depends on whether we have a link
+								// or not
+								String link = null;
+								if (isLink) {
+									String linkname = token[token.length - 1];
+									if (linkname.endsWith("/")) { //$NON-NLS-1$
+										linkname = linkname.substring(0,
+												linkname.length() - 1);
+										isDirectory = true;
+									}
+									IPath linkPath = new Path(path);
+									linkPath = linkPath.append(linkname);
+									link = linkPath.toString();
+									String name = token[token.length - 3];
+									childList.add(new ContainerFileProxy(path,
+											name, isDirectory, isLink, link));
+								} else {
+									String name = token[token.length - 1];
+									// remove quotes and any indicator char
+									name = name.substring(1, name.length()
+											- (name.endsWith("\"") ? 1 : 2));
+									childList.add(new ContainerFileProxy(path,
+											name, isDirectory));
 								}
-								IPath linkPath = new Path(path);
-								linkPath = linkPath.append(linkname);
-								link = linkPath.toString();
-								String name = token[token.length - 3];
-								childList.add(new ContainerFileProxy(path, name,
-										isDirectory, isLink, link));
-							} else {
-								String name = token[token.length - 1];
-								// remove quotes and any indicator char
-								name = name.substring(1, name.length()
-										- (name.endsWith("\"") ? 1 : 2));
-								childList.add(new ContainerFileProxy(path, name,
-										isDirectory));
 							}
 						}
+						state = copyClient.execInspect(execId);
 					}
-				}
+				} while (pty_stream.hasNext());
 			} finally {
-				if (pty_stream != null)
-					pty_stream.close();
+				// if (pty_stream != null)
+				// pty_stream.close();
 				if (copyClient != null)
 					copyClient.close();
 			}
